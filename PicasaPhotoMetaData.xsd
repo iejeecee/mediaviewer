@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" targetNamespace="http://www.w3.org/2005/Atom" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="entry">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="title" type="xs:string" />
+        <xs:element name="summary" type="xs:string" />
+        <xs:element name="category">
+          <xs:complexType>
+            <xs:attribute name="scheme" type="xs:string" use="required" />
+            <xs:attribute name="term" type="xs:string" use="required" />
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
