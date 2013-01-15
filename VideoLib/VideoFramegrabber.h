@@ -56,15 +56,7 @@ private:
 	  return (b == 0) ? a : greatestCommonDivisor(b, a % b);
 	}
 
-	void clearThumbs() {
 
-		for(int i = 0; i < (int)thumbs.size(); i++) {
-
-			delete thumbs[i];
-		}
-
-		thumbs.clear();
-	}
 
 public:
 
@@ -76,11 +68,14 @@ public:
 
 	virtual ~VideoFramegrabber() {
 
+		clearThumbs();
 	}
 
 	void grab(const std::string &videoLocation, int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs)
 	{
+
+		clearThumbs();
 
 		open(videoLocation, AVDISCARD_NONKEY);
 	
@@ -102,10 +97,10 @@ public:
 			heightScale = maxThumbHeight / (float)getHeight();
 		}
 
-		thumbWidth = int(getWidth() * std::min(widthScale, heightScale));
-		thumbHeight = int(getHeight() * std::min(widthScale, heightScale));
+		thumbWidth = int(getWidth() * std::min<float>(widthScale, heightScale));
+		thumbHeight = int(getHeight() * std::min<float>(widthScale, heightScale));
 
-		initImageConverter(PIX_FMT_RGB24, thumbWidth, thumbHeight, SPLINE);
+		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
 
 		double duration = getDurationSeconds();
 
@@ -178,6 +173,20 @@ public:
 
 	}
 
+	const std::vector<ImageRGB24 *> &getThumbs() const {
+
+		return(thumbs);
+	}
 	
+	void clearThumbs() {
+
+		for(int i = 0; i < (int)thumbs.size(); i++) {
+
+			delete thumbs[i];
+		}
+
+		thumbs.clear();
+	}
+
 };
 

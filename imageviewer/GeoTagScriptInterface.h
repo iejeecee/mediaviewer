@@ -7,8 +7,7 @@ namespace imageviewer {
 
 using namespace System;
 using namespace System::Windows::Forms;
-
-
+using namespace System::Collections::Generic;
 
 [System::Runtime::InteropServices::ComVisibleAttribute(true)] 
 public ref class GeoTagScriptInterface {

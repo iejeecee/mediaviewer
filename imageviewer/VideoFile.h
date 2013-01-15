@@ -7,6 +7,8 @@ namespace imageviewer {
 using namespace System;
 using namespace System::IO;
 using namespace System::Collections::Generic;
+using namespace VideoLib;
+using namespace System::Runtime::InteropServices;
 
 
 public ref class VideoFile : public MediaFile
@@ -16,6 +18,7 @@ public ref class VideoFile : public MediaFile
 private:
 
 	static Image ^defaultVideoThumb;
+	
 
 public:
 
@@ -38,9 +41,20 @@ public:
 
 	virtual List<MetaDataThumb ^> ^generateThumbnails() override {
 
+		VideoPreview ^preview = gcnew VideoPreview();
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
 
-		thumbs->Add(gcnew MetaDataThumb(gcnew Bitmap("C:\\game\\icons\\video.png")));
+		List<RawImageRGB24 ^> ^rawThumbs = preview->grab(Location, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT, -1, 1);
+
+		for each(RawImageRGB24 ^rawThumb in rawThumbs) {
+
+			Image ^thumbImage = ImageUtils::createImageFromArray(rawThumb->Width, rawThumb->Height,
+				Imaging::PixelFormat::Format24bppRgb, rawThumb->Data);
+
+			thumbs->Add(gcnew MetaDataThumb(thumbImage));
+		}
+
+		//thumbs->Add(gcnew MetaDataThumb(gcnew Bitmap("C:\\game\\icons\\video.png")));
 
 		return(thumbs);
 	}

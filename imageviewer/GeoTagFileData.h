@@ -1,10 +1,12 @@
 #pragma once
 
-#include "MetaData.h"
+#include "XMP_Const.h"
 
 namespace imageviewer {
 
+using namespace System;
 using namespace System::Globalization;
+using namespace XMPLib;
 
 public ref class GeoTagCoordinate
 {

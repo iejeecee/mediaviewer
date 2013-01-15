@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\XMPLib"
+				AdditionalIncludeDirectories=""
 				PreprocessorDefinitions="WIN32;_DEBUG"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
@@ -60,9 +60,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NOINHERIT) XMPLib.lib"
+				AdditionalDependencies="$(NOINHERIT) "
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\Debug"
+				AdditionalLibraryDirectories=""
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				SubSystem="2"
@@ -252,6 +252,16 @@
 			AssemblyName="DigitallyCreated.Utilities.Concurrency, Version=1.0.1.0, PublicKeyToken=79d801fe1e19f7f2, processorArchitecture=MSIL"
 			MinFrameworkVersion="196613"
 		/>
+		<AssemblyReference
+			RelativePath="..\Debug\VideoLib.dll"
+			AssemblyName="VideoLib, Version=1.0.4763.2124, processorArchitecture=x86"
+			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="..\Debug\XMPLib.dll"
+			AssemblyName="XMPLib, Version=1.0.4763.32008, processorArchitecture=x86"
+			MinFrameworkVersion="131072"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -321,10 +331,6 @@
 			</File>
 			<File
 				RelativePath=".\MediaPreviewControl.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\MetaData.cpp"
 				>
 			</File>
 			<File
@@ -833,15 +839,15 @@
 					>
 				</File>
 				<File
-					RelativePath=".\MetaData.h"
-					>
-				</File>
-				<File
-					RelativePath=".\MetaDataProperty.h"
-					>
-				</File>
-				<File
 					RelativePath=".\MetaDataTree.h"
+					>
+				</File>
+				<File
+					RelativePath=".\XMP_Const.h"
+					>
+				</File>
+				<File
+					RelativePath=".\XMP_Environment.h"
 					>
 				</File>
 				<Filter

@@ -1,12 +1,14 @@
 #pragma once
 
 #include "FormatMetaData.h"
+#include "XMP_Const.h"
 
 namespace imageviewer {
 
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::Diagnostics;
+using namespace XMPLib;
 
 
 public ref class MetaDataTreeNode abstract {
@@ -686,6 +688,29 @@ public:
 	}
 };
 
+public ref class MetaDataTree {
+
+public:
+	static MetaDataTreeNode ^create(MetaData ^data) {
+
+		List<MetaDataProperty ^> ^propsList = gcnew List<MetaDataProperty ^>();
+
+		data->iterate(kXMP_IterJustLeafNodes, propsList);
+
+		MetaDataTreeNode ^root = gcnew MetaDataTreeNameSpaceNode("root");
+
+		for each(MetaDataProperty ^p in propsList) {
+
+			String ^path = p->path;
+
+			//Debug::Print(p->path);
+			root->insertNode(p->path, p->value);
+
+		}
+
+		return(root);
+	}
+};
 
 
 /*

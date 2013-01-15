@@ -1,12 +1,14 @@
 #pragma once
 
-#include "metadata.h"
+#include "XMP_Const.h"
+#include "MetaDataTree.h"
 
 namespace imageviewer {
 
 using namespace System;
 using namespace System::Drawing;
 using namespace System::IO;
+using namespace XMPLib;
 
 public ref class MetaDataThumb
 {
@@ -410,7 +412,7 @@ public:
 
 			if(tree == nullptr && metaData != nullptr) {
 
-				tree = metaData->parse();
+				tree = MetaDataTree::create(metaData);
 			}
 
 			return(tree);

@@ -1,163 +1,95 @@
-//http://www.codeproject.com/Articles/28969/HowTo-Export-C-classes-from-a-DLL#CppMatureApproach
 #pragma once
 
-#ifdef XMPLIB_IMPORTS
-#define XMPLIB_API __declspec(dllimport)
-#else
-#define XMPLIB_API __declspec(dllexport)
-#endif
-
-#ifndef WINAPI
-#define WINAPI __stdcall
-#endif
-
-#ifdef __cplusplus
-#   define EXTERN_C     extern "C"
-#else
-#   define EXTERN_C
-#endif // __cplusplus
-
-#ifndef WIN_ENV
-#define WIN_ENV
-#endif
-
-#include <string>
-#include <vector>
-#include "XMP_Const.h"
+#include "XMPDLL.h"
+//#include "MetaDataProperty.h"
+//#include "MetaDataTree.h"
 
 namespace XMPLib {
 
-	class XMPProperty
+	using namespace System;
+	using namespace System::Collections::Generic;
+
+	public ref class MetaDataProperty 
 	{
 	public:
-		std::string schemaNS;
-		std::string propPath;
-		std::string propVal;
+
+		String ^nameSpace;
+		String ^path;
+		String ^value;
+
+		MetaDataProperty();
+		MetaDataProperty(const MetaDataProperty ^p);
+
+		virtual bool Equals(Object ^obj) override;
 
 	};
 
-	class XMPFile
+	public ref class MetaData
 	{
+
+	private:
+
+		XMPDLL::XMPFile *xmpFile;
+
 	public:
-		virtual bool open(const std::string &filename, XMP_OptionBits options) = 0;
-		virtual void release() = 0;
 
-		virtual bool dumpToDisk(const std::string &filename) const = 0;
+		// TODO: Add your methods for this class here.
+		MetaData();
+		~MetaData();
 
-		virtual bool canPutXMP() = 0;
-		virtual void putXMP() = 0;
+		bool open(String ^filename, XMP_OptionBits options); 
 
-		virtual bool getProperty(const std::string &nameSpace, 
-			const std::string &propName, 
-			std::string &propValue) const = 0;
+		bool dumpToDisk(String ^filename);
 
-		virtual bool getProperty_Date(const std::string &nameSpace,
-						    const std::string &propName,
-						    XMP_DateTime &propValue) const = 0;
+		bool canPutXMP();
+		void putXMP();
 
-		virtual void deleteProperty(const std::string &nameSpace, 
-			const std::string &propName) = 0;
-
-		virtual void setProperty_Date(const std::string &nameSpace, 
-			const std::string &propName, 
-			const XMP_DateTime &propValue) = 0;
-
-		virtual void setProperty(const std::string &nameSpace, 
-			const std::string &propName, 
-			const std::string &propValue, XMP_OptionBits options = 0) = 0;
-
-		virtual bool doesPropertyExists(const std::string &nameSpace, 
-			const std::string &propName) const = 0;
-
-		virtual int countArrayItems(const std::string &nameSpace, 
-			const std::string &arrayName) const = 0;
-
-		virtual bool getArrayItem(const std::string &nameSpace, 
-			const std::string &arrayName, 
-			int item, 
-			std::string &itemValue) const = 0;
-
-		virtual bool doesArrayItemExist(const std::string &nameSpace, 
-			const std::string &arrayName, 
-			int item) const = 0;
-
-		virtual void setArrayItem(const std::string &nameSpace, 
-			const std::string &arrayName, 
-			int item, 
-			const std::string &itemValue,
-			XMP_OptionBits options = 0) = 0;
-
-		virtual void appendArrayItem(const std::string &nameSpace, 
-			const std::string &arrayName, 
-			XMP_OptionBits arrayOptions, 
-			const char *itemValue,
-			XMP_OptionBits options = 0) = 0;		
-
-		virtual void deleteArrayItem(const std::string &nameSpace, 
-			const std::string &arrayName, 
-			int item) = 0;
-
-		virtual bool getStructField(const std::string &nameSpace,
-			const std::string &structName,
-			const std::string &fieldNameSpace,
-			const std::string &fieldName,
-			std::string &fieldValue) const = 0;
-
-		virtual void setStructField(const std::string &nameSpace,
-			const std::string &structName,
-			const std::string &fieldNameSpace,
-			const std::string &fieldName,
-			const std::string &fieldValue,
-			XMP_OptionBits options = 0) = 0;
-
-		virtual bool getLocalizedText(const std::string &nameSpace, 
-			const std::string &textName, 
-			const std::string &genericLang, 
-			const std::string &specificLang, 
-			std::string &itemValue) const = 0;
-
-		virtual void setLocalizedText(const std::string &nameSpace, 
-			const std::string &textName, 
-			const std::string &genericLang, 
-			const std::string &specificLang, 
-			const std::string &itemValue) = 0;
-
-		virtual void iterate(XMP_OptionBits options, std::vector<XMPProperty> &properties) const = 0;
-		virtual void iterate(const std::string &nameSpace, std::vector<XMPProperty> &properties) const = 0;
-		virtual void iterate(const std::string &nameSpace, XMP_OptionBits options, std::vector<XMPProperty> &properties) const = 0;
+		bool doesPropertyExists(String ^nameSpace, String ^propName);
+		bool getProperty(String ^nameSpace, String ^propName, String^ %propValue);
+		void deleteProperty(String ^nameSpace, String ^propName);
+		bool getProperty_Date(String ^nameSpace, String ^propName, DateTime %propValue);
+		void setProperty(String ^nameSpace, String ^propName, String ^propValue, XMP_OptionBits options);
+		void setProperty_Date(String ^nameSpace, String ^propName, DateTime propValue);
 		
-		virtual void catenateArrayItems(const std::string &nameSpace,
-			const std::string &arrayName,
-			const std::string &separator,
-			const std::string &quotes,
-			XMP_OptionBits options,
-			std::string &catedStr) const = 0;
+		int countArrayItems(String ^nameSpace, String ^arrayName);
+		bool getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue);
+		bool doesArrayItemExist(String ^nameSpace, String ^arrayName, int item);
+		void setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, XMP_OptionBits options);
+		void appendArrayItem(String ^nameSpace, String ^arrayName, XMP_OptionBits arrayOptions, String ^itemValue, XMP_OptionBits options);
+		void deleteArrayItem(String ^nameSpace, String ^arrayName, int item);
 
+		bool getStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
+			String ^fieldName, String ^%fieldValue);
+		void setStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
+			String ^fieldName, String ^fieldValue, XMP_OptionBits options);
+
+		bool getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue);
+		void setLocalizedText(String ^nameSpace, String ^textName, String ^genericLang, String ^specificLang, String ^itemValue);
 		
-		 
+		//MetaDataTreeNode ^parse();
+
+		void iterate(XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
+		void iterate(String ^nameSpace, List<MetaDataProperty ^> ^%properties);
+		void iterate(String ^nameSpace, XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
+		
+		static DateTime convertToDate(String ^dateString);
+
+		static void composeArrayItemPath(String ^nameSpace, 
+			String ^arrayName, 
+			int itemIndex, 
+			String ^%fullPath);
+
+		static void composeStructFieldPath(String ^nameSpace, 
+			String ^structName, 
+			String ^fieldNameSpace, 
+			String ^fieldName, 
+			String ^%fullPath);
+
+		static void encodeToBase64(String ^rawStr,
+			String ^%encodedStr); 
+
+		static void decodeFromBase64(String ^encodedStr,
+			String ^%rawStr); 
+
 	};
-
-	
-	EXTERN_C XMPLIB_API XMPFile* WINAPI newXMPFile(void);
-
-	EXTERN_C XMPLIB_API void WINAPI convertToDate(const std::string &dateString, 
-		XMP_DateTime &date);
-
-	EXTERN_C XMPLIB_API void WINAPI composeArrayItemPath(const std::string &nameSpace, 
-		const std::string &arrayName, 
-		int itemIndex, 
-		std::string &fullPath);
-
-	EXTERN_C XMPLIB_API void WINAPI composeStructFieldPath(const std::string &nameSpace, 
-		const std::string &structName, 
-		const std::string &fieldNameSpace, 
-		const std::string &fieldName, 
-		std::string &fullPath);
-
-	EXTERN_C XMPLIB_API void WINAPI encodeToBase64(const std::string &rawStr,
-		std::string &encodedStr); 
-
-	EXTERN_C XMPLIB_API void WINAPI decodeFromBase64(const std::string &encodedStr,
-		std::string &rawStr); 
-
 }

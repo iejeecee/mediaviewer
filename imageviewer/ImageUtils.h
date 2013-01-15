@@ -6,8 +6,10 @@ using namespace System;
 using namespace System::IO;
 using namespace System::Collections::Generic;
 using namespace System::Drawing;
+using namespace System::Drawing::Imaging;
 using namespace System::Drawing::Drawing2D;
 using namespace System::Windows::Forms;
+using namespace System::Runtime::InteropServices;
 
 
 public ref class ImageUtils 
@@ -68,6 +70,26 @@ public:
 		openFileDialog->FilterIndex = 1;
 
 		return(openFileDialog);
+	}
+
+	static Image ^createImageFromArray(int width, int height, 
+		Drawing::Imaging::PixelFormat format, cli::array<unsigned char> ^data) 
+	{
+
+		Bitmap ^bitmap = gcnew Bitmap(width, height, format);
+
+		Rectangle rect = Rectangle(0, 0, width, height);
+
+		BitmapData ^bmpData = bitmap->LockBits(rect, ImageLockMode::WriteOnly,
+			format);
+
+		IntPtr ptr = bmpData->Scan0;
+
+		Marshal::Copy(data, 0, ptr, data->Length);
+
+		bitmap->UnlockBits(bmpData);
+
+		return(bitmap);
 	}
 };
 
