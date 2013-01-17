@@ -56,6 +56,9 @@ private:
 	  return (b == 0) ? a : greatestCommonDivisor(b, a % b);
 	}
 
+	int round(float r) {
+		return (r > 0.0) ? (int)floor(r + 0.5) : (int)ceil(r - 0.5);
+	}
 
 
 public:
@@ -97,8 +100,8 @@ public:
 			heightScale = maxThumbHeight / (float)getHeight();
 		}
 
-		thumbWidth = int(getWidth() * std::min<float>(widthScale, heightScale));
-		thumbHeight = int(getHeight() * std::min<float>(widthScale, heightScale));
+		thumbWidth = round(getWidth() * std::min<float>(widthScale, heightScale));
+		thumbHeight = round(getHeight() * std::min<float>(widthScale, heightScale));
 
 		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
 
@@ -122,7 +125,7 @@ public:
 
 		//std::cout << "Grabbing: " << nrFrames << " frames\n";
 
-		double offset = duration * 0.01;
+		double offset = duration * 0.025;
 		double step = (duration - offset) / nrFrames;
 
 		for(frameNr = 0; frameNr < nrFrames; frameNr++) {

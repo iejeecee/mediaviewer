@@ -20,23 +20,31 @@ List<RawImageRGB24 ^> ^VideoPreview::grab(String ^videoLocation, int maxThumbWid
 
 	VideoFramegrabber grabber;
 
-	grabber.grab(marshal_as<std::string>(videoLocation), maxThumbWidth, maxThumbHeight,
-		captureInterval, nrThumbs);
+	try {
 
-	for(int i = 0; i < (int)grabber.getThumbs().size(); i++) {
+		grabber.grab(marshal_as<std::string>(videoLocation), maxThumbWidth, maxThumbHeight,
+			captureInterval, nrThumbs);
 
-		ImageRGB24 *thumb = grabber.getThumbs()[i];
+		for(int i = 0; i < (int)grabber.getThumbs().size(); i++) {
 
-		cli::array<unsigned char> ^data = gcnew cli::array<unsigned char>(thumb->getSizeBytes());
+			ImageRGB24 *thumb = grabber.getThumbs()[i];
 
-		Marshal::Copy(IntPtr((void *)thumb->getData()), data, 0, thumb->getSizeBytes());
+			cli::array<unsigned char> ^data = gcnew cli::array<unsigned char>(thumb->getSizeBytes());
 
-		images->Add(gcnew RawImageRGB24(thumb->getWidth(), thumb->getHeight(), 
-			thumb->getTimeStampSeconds(), data));
+			Marshal::Copy(IntPtr((void *)thumb->getData()), data, 0, thumb->getSizeBytes());
 
+			images->Add(gcnew RawImageRGB24(thumb->getWidth(), thumb->getHeight(), 
+				thumb->getTimeStampSeconds(), data));
+
+		}
+
+	} catch(Exception ^) {
+
+	} finally {
+
+		grabber.clearThumbs();
+		
 	}
-
-	grabber.clearThumbs();
 
 	return(images);
 }

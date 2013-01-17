@@ -22,7 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
-			ManagedExtensions="1"
+			ManagedExtensions="2"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4763.2124, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4764.26647, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4763.32008, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4763.34730, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 	</References>
@@ -702,6 +702,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath=".\VideoLibTest.h"
+				>
 			</File>
 			<Filter
 				Name="HTTP"

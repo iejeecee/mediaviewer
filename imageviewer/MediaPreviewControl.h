@@ -159,13 +159,12 @@ private:
 
 			this->media = media;
 
+			clearPictureBox();
+
 			if(String::IsNullOrEmpty(media->Location) || !media->OpenSuccess ||
 				media->MediaFormat == MediaFile::MediaType::UNKNOWN) 
 			{
-
-				clearPictureBox();
 				return;
-
 			} 
 
 			if(thumbs->Count > 0) {

@@ -13,6 +13,7 @@
 #include "Tags.h"
 #include "ImageUtils.h"
 #include "ImageFile.h"
+#include "VideoLibTest.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -81,6 +82,8 @@ namespace imageviewer {
 
 			System::Net::ServicePointManager::Expect100Continue = false;
 
+			//VideoLibTest ^test = gcnew VideoLibTest();
+			//test->start();
 
 			if(args->Length != 0) {
 

@@ -73,26 +73,20 @@ public:
 
 	void close() {
 
-		if(formatContext != NULL) {
+		if(videoCodecContext != NULL) {
 
-			if(formatContext != NULL) {
-
-				avformat_free_context(formatContext);
-			}
-		
-		} else {
-			
-			if(videoCodecContext != NULL) {
-
-				avcodec_close(videoCodecContext);				
-			}
-
-			if(audioCodecContext != NULL) {
-
-				avcodec_close(audioCodecContext);				
-			}
-
+			avcodec_close(videoCodecContext);				
 		}
+
+		if(audioCodecContext != NULL) {
+
+			avcodec_close(audioCodecContext);				
+		}
+	
+		if(formatContext != NULL) {
+					
+			avformat_close_input(&formatContext);
+		} 
 
 		formatContext = NULL;
 		videoCodecContext = NULL;

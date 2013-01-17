@@ -44,12 +44,14 @@ public:
 		VideoPreview ^preview = gcnew VideoPreview();
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
 
-		List<RawImageRGB24 ^> ^rawThumbs = preview->grab(Location, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT, -1, 1);
+		List<RawImageRGB24 ^> ^rawThumbs = preview->grab(Location, 256, 256, -1, 1);
 
 		for each(RawImageRGB24 ^rawThumb in rawThumbs) {
 
 			Image ^thumbImage = ImageUtils::createImageFromArray(rawThumb->Width, rawThumb->Height,
 				Imaging::PixelFormat::Format24bppRgb, rawThumb->Data);
+
+			delete rawThumb;
 
 			thumbs->Add(gcnew MetaDataThumb(thumbImage));
 		}

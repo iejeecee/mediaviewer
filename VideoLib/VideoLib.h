@@ -60,6 +60,14 @@ namespace VideoLib {
 			this->data = data;
 		}
 
+		~RawImageRGB24() {
+
+			if(data != nullptr) {
+				delete data;
+				data = nullptr;
+			}
+		}
+
 	};
 
 
