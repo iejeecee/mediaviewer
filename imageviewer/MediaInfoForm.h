@@ -4,6 +4,10 @@
 #include "MetaDataModel.h"
 #include "TagEditorForm.h"
 #include "GEventArgs.h"
+#include "PagerControl.h"
+#include "FileMetaData.h"
+#include "ImageUtils.h"
+#include "MediaFileFactory.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -43,6 +47,13 @@ namespace imageviewer {
 			//
 			boldFont = gcnew System::Drawing::Font(TreeViewAdv::DefaultFont, FontStyle::Bold);
 			thumbnail = nullptr;
+
+			media = gcnew List<MediaFile ^>();
+
+			metaDataError = nullptr;
+			useDefaultThumb = false;
+
+			openFailure = nullptr;
 		}
 
 	protected:
@@ -156,6 +167,8 @@ private: System::Windows::Forms::RadioButton^  deleteThumbRadioButton;
 private: System::Windows::Forms::RadioButton^  defaultThumbRadioButton;
 private: System::Windows::Forms::RadioButton^  browseThumbRadioButton;
 private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
+private: imageviewer::PagerControl^  pagerControl;
+
 
 
 
@@ -253,6 +266,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->creatorToolTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->thumbTabPage = (gcnew System::Windows::Forms::TabPage());
+			this->pagerControl = (gcnew imageviewer::PagerControl());
 			this->noChangeThumbRadioButton = (gcnew System::Windows::Forms::RadioButton());
 			this->browseThumbRadioButton = (gcnew System::Windows::Forms::RadioButton());
 			this->deleteThumbRadioButton = (gcnew System::Windows::Forms::RadioButton());
@@ -689,6 +703,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 			// 
 			// thumbTabPage
 			// 
+			this->thumbTabPage->Controls->Add(this->pagerControl);
 			this->thumbTabPage->Controls->Add(this->noChangeThumbRadioButton);
 			this->thumbTabPage->Controls->Add(this->browseThumbRadioButton);
 			this->thumbTabPage->Controls->Add(this->deleteThumbRadioButton);
@@ -706,6 +721,19 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 			this->thumbTabPage->TabIndex = 4;
 			this->thumbTabPage->Text = L"Thumb";
 			this->thumbTabPage->UseVisualStyleBackColor = true;
+			// 
+			// pagerControl
+			// 
+			this->pagerControl->BeginButtonEnabled = true;
+			this->pagerControl->CurrentPage = 0;
+			this->pagerControl->EndButtonEnabled = true;
+			this->pagerControl->Location = System::Drawing::Point(101, 322);
+			this->pagerControl->Name = L"pagerControl";
+			this->pagerControl->NextButtonEnabled = true;
+			this->pagerControl->PrevButtonEnabled = true;
+			this->pagerControl->Size = System::Drawing::Size(280, 47);
+			this->pagerControl->TabIndex = 12;
+			this->pagerControl->TotalPages = 0;
 			// 
 			// noChangeThumbRadioButton
 			// 
@@ -913,6 +941,8 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 			this->MaximizeBox = false;
 			this->Name = L"MediaInfoForm";
 			this->Text = L"MediaInfoForm";
+			this->Shown += gcnew System::EventHandler(this, &MediaInfoForm::mediaInfoForm_Shown);
+			this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &MediaInfoForm::mediaInfoForm_FormClosing);
 			this->tabControl1->ResumeLayout(false);
 			this->contentTabPage->ResumeLayout(false);
 			this->contentTabPage->PerformLayout();
@@ -930,37 +960,199 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 		}
 #pragma endregion
 
-	private: MetaDataThumb ^thumbnail;
-	private: bool isBatch;
-	private: System::Drawing::Font ^boldFont;
-	public: event EventHandler<EventArgs ^> ^OkButtonClick;
-	public: event EventHandler<GEventArgs<bool> ^> ^DefaultThumbRadioButtonCheckedChanged;
-	public: event EventHandler<GEventArgs<bool> ^> ^BrowseThumbRadioButtonCheckedChanged;
-	public: event EventHandler<GEventArgs<bool> ^> ^DeleteThumbRadioButtonCheckedChanged;
-	public: event EventHandler<GEventArgs<bool> ^> ^NoChangeThumbRadioButtonCheckedChanged;
+private:
 
-	public: property bool IsBatch {
 
-				void set(bool isBatch) {
+	MetaDataThumb ^thumbnail;
+	bool isBatch;
+	System::Drawing::Font ^boldFont;
 
-					this->isBatch = isBatch;
+	MediaFileFactory ^mediaFileFactory;
+	List<MediaFile ^> ^media;
 
-					if(isBatch == false) {
+	String ^metaDataError;
+	bool useDefaultThumb;
+	bool deleteThumbs;
+	bool useBrowsedThumb;
 
-						tabControl1->TabPages->Remove(content2TabPage);
+	Exception ^openFailure;
 
-					} else {
+	
 
-						tabControl1->TabPages->Remove(contentTabPage);
+	MetaDataThumb ^generateThumbnail(String ^path) {
+
+		Image ^fullImage = gcnew Bitmap(path);
+
+		int resizedHeight, resizedWidth;
+
+		ImageUtils::resizeRectangle(fullImage->Width, fullImage->Height, 160, 160, resizedHeight, resizedWidth);
+	
+		Image ^thumbnail = ImageUtils::resizeImage(fullImage, resizedHeight, resizedWidth);
+
+		delete fullImage;
+
+		return(gcnew MetaDataThumb(thumbnail));
+	}
+
+public:
+
+	property List<String ^> ^FileNames {
+
+		void set(List<String ^> ^fileNames) { 
+
+			media->Clear();
+			openFailure = nullptr;
+
+		
+
+				for each(String ^fileName in fileNames) {
+
+					MediaFile ^mediaFile = MediaFileFactory::openBlocking(fileName);				
+					if(mediaFile->OpenSuccess == false) {
+
+						openFailure = mediaFile->OpenError;
+						return;
+
+					} else if(mediaFile->MetaDataError) {
+
+						openFailure = mediaFile->MetaDataError;
+						return;
+					}
+
+					media->Add(mediaFile);
+
+				}
+
+				if(media->Count == 1) {
+
+					Text = Path::GetFileName(fileNames[0]) + " - Metadata";
+					IsBatch = false;
+
+					if(media[0]->MetaData->Thumbnail->Count > 0) {
+
+						Thumbnail = media[0]->MetaData->Thumbnail[0];
+					}
+
+				} else {
+
+					Text = Convert::ToString(media->Count) + " files - Combined Metadata";
+					IsBatch = true;
+				}
+
+
+				MetaDataTreeNode ^tree = media[0]->MetaData->Tree;
+
+				for(int i = 1; i < media->Count; i++) {
+
+					MetaDataTreeNode ^tempTree = media[i]->MetaData->Tree;
+
+					tree = tree->intersection(tempTree);
+
+				}			
+
+				MetaDataTreeArray ^arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:title"));
+				if(arr != nullptr && arr->Count > 0) {
+					Title = arr[0]->Data;
+				}
+
+				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:description"));
+				if(arr != nullptr && arr->Count > 0) {
+					Description = arr[0]->Data;
+				}
+
+				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:creator"));
+				if(arr != nullptr && arr->Count > 0) {
+					Author = arr[0]->Data;
+				}
+
+				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:rights"));
+				if(arr != nullptr && arr->Count > 0) {
+					Copyright = arr[0]->Data;
+				}
+
+				MetaDataTreeProperty ^prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreatorTool"));
+				if(prop != nullptr) {
+					CreatorTool = prop->Value;
+				}
+
+				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:MetadataDate"));
+				if(prop != nullptr) {
+					MetaDataDate = MetaData::convertToDate(prop->Value);
+				} else {
+					MetaDataDate = DateTime::MinValue;
+				}
+
+				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreateDate"));
+				if(prop != nullptr) {
+					CreateDate = MetaData::convertToDate(prop->Value);
+				} else {
+					CreateDate = DateTime::MinValue;
+				}
+
+				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:ModifyDate"));
+				if(prop != nullptr) {
+					ModifyDate = MetaData::convertToDate(prop->Value);
+				} else {
+					ModifyDate = DateTime::MinValue;
+				}
+
+				List<String ^> ^tags = gcnew List<String ^>();
+
+				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:subject"));
+				if(arr != nullptr) {
+
+					for each(MetaDataTreeNode ^n in arr->Child) {
+
+						tags->Add(n->Data);
 					}
 				}
 
-				bool get() {
+				Misc = tree;				
+				Tags = tags;
 
-					return(isBatch);
+		
+
+				
+			
+		}
+
+		List<String ^> ^get() {
+
+			List<String ^> ^fileNames = gcnew List<String ^>();
+
+			for each(MediaFile ^mediaFile in media) {
+
+				fileNames->Add(mediaFile->Location);
+			}
+
+			return(fileNames);
+
+		}
+	}
+
+	property bool IsBatch {
+
+			void set(bool isBatch) {
+
+				this->isBatch = isBatch;
+
+				if(isBatch == false) {
+
+					tabControl1->TabPages->Remove(content2TabPage);
+
+				} else {
+
+					tabControl1->TabPages->Remove(contentTabPage);
 				}
 			}
-	public: property String ^Title 
+
+			bool get() {
+
+				return(isBatch);
+			}
+		}
+
+	property String ^Title 
 			{
 
 				void set(String ^title) {
@@ -982,7 +1174,8 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property String ^Description 
+
+	property String ^Description 
 			{
 
 				void set(String ^description) {
@@ -1005,7 +1198,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property List<String ^> ^Tags
+	property List<String ^> ^Tags
 			{
 
 				void set(List<String ^> ^tags) {
@@ -1031,7 +1224,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property List<String ^> ^AddTags
+	property List<String ^> ^AddTags
 			{
 
 				void set(List<String ^> ^tags) {
@@ -1057,7 +1250,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property List<String ^> ^RemoveTags
+	property List<String ^> ^RemoveTags
 			{
 
 				void set(List<String ^> ^tags) {
@@ -1082,7 +1275,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(tags);
 				}
 			}
-	public: property String ^Author 
+	property String ^Author 
 			{
 
 				void set(String ^author) {
@@ -1096,7 +1289,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property String ^CreatorTool
+	property String ^CreatorTool
 			{
 
 				void set(String ^creatorTool) {
@@ -1109,7 +1302,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(creatorToolTextBox->Text);
 				}
 			}
-	public: property String ^Copyright
+	property String ^Copyright
 			{
 
 				void set(String ^copyright) {
@@ -1122,7 +1315,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(copyrightTextBox->Text);
 				}
 			}
-	public: property DateTime MetaDataDate
+	property DateTime MetaDataDate
 			{
 
 				void set(DateTime metaDataDate) {
@@ -1142,7 +1335,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(metaDataDateDateTimePicker->Value);
 				}
 			}
-	public: property DateTime CreateDate
+	property DateTime CreateDate
 			{
 
 				void set(DateTime createDate) {
@@ -1162,7 +1355,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(createDateDateTimePicker->Value);
 				}
 			}
-	public: property DateTime ModifyDate
+	property DateTime ModifyDate
 			{
 
 				void set(DateTime modifyDate) {
@@ -1183,7 +1376,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 				}
 			}
 
-	public: property MetaDataThumb ^Thumbnail
+	property MetaDataThumb ^Thumbnail
 			{
 				void set(MetaDataThumb ^thumbnail) {
 
@@ -1210,7 +1403,7 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 					return(thumbnail);
 				}
 			}
-	public: property MetaDataTreeNode ^Misc
+	property MetaDataTreeNode ^Misc
 			{
 
 				void set(MetaDataTreeNode ^node) {
@@ -1228,7 +1421,68 @@ private: System::Windows::Forms::RadioButton^  noChangeThumbRadioButton;
 
 	private: System::Void okButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-				 OkButtonClick(this, e);
+				 try {
+
+					 for each(MediaFile ^mediaFile in media) {
+
+						 mediaFile->MetaData->Creator = Author;
+						 mediaFile->MetaData->CreatorTool = CreatorTool;
+						 mediaFile->MetaData->Title = Title;
+						 mediaFile->MetaData->Description = Description;
+						 mediaFile->MetaData->Copyright = Copyright;
+
+						 List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
+
+						 if(useDefaultThumb) {
+
+							 thumbs = mediaFile->generateThumbnails();
+
+						 } else if(useBrowsedThumb) {
+
+							 thumbs->Add(Thumbnail);
+
+						 }
+
+						 mediaFile->MetaData->Thumbnail = thumbs;
+
+						 if(IsBatch) {
+
+							 for each(String ^tag in AddTags) {
+
+								 if(!mediaFile->MetaData->Tags->Contains(tag)) {
+
+									 mediaFile->MetaData->Tags->Add(tag);
+								 }
+							 }
+
+							 for each(String ^tag in RemoveTags) {
+
+								 if(mediaFile->MetaData->Tags->Contains(tag)) {
+
+									 mediaFile->MetaData->Tags->Remove(tag);
+								 }
+							 }
+
+						 } else {
+
+							 mediaFile->MetaData->Tags = Tags;
+						 }
+
+						 // close mediafile so it can obtain write access
+						 // before saving
+						 mediaFile->close();
+
+						 mediaFile->MetaData->saveToDisk();
+					 }					 
+
+				 } catch (Exception ^e) {
+
+					 MessageBox::Show(e->Message, "Error");
+
+				 } finally {
+
+					 Form::Close();
+				 }
 			 }
 	private: System::Void miscTreeView_DrawNode(System::Object^  sender, DrawEventArgs ^e) {
 
@@ -1267,6 +1521,7 @@ private: System::Void addTagButton_Click(System::Object^  sender, System::EventA
 			 addTag(addTagTextBox->Text, tagsListBox);	
 			 addTagTextBox->Clear();
 		 }
+
 private: System::Void addTagTextBox_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 
 			 if(e->KeyCode == Keys::Enter) {
@@ -1283,34 +1538,114 @@ private: System::Void deleteToolStripMenuItem_Click(System::Object^  sender, Sys
 				 tagsListBox->Items->Remove(tagsListBox->SelectedItems[0]);
 			 }
 		 }
+
 private: System::Void addTagButton2_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 addTag(addTagTextBox2->Text, addTagsListBox);	
 			 addTagTextBox2->Clear();
 		 }
+
 private: System::Void removeTagButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 addTag(removeTagTextBox->Text, removeTagsListBox);	
 			 removeTagTextBox->Clear();
 		 }
+
 private: System::Void cancelButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
 			 Form::Close();
 		 }
+
 private: System::Void defaultThumbRadioButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
-			 DefaultThumbRadioButtonCheckedChanged(this, gcnew GEventArgs<bool>(defaultThumbRadioButton->Checked));
+			 useDefaultThumb = defaultThumbRadioButton->Checked;
+
+			 if(IsBatch == false && defaultThumbRadioButton->Checked == true) {
+
+				 try {
+
+					 List<MetaDataThumb ^> ^thumbs = media[0]->generateThumbnails();
+
+					 if(thumbs->Count > 0) {
+
+						Thumbnail = thumbs[0];
+					 }
+
+				 } catch (Exception ^e) {
+
+					 MessageBox::Show(e->Message);
+				 }
+
+			 }
 		 }
 private: System::Void deleteThumbRadioButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
-			 DeleteThumbRadioButtonCheckedChanged(this, gcnew GEventArgs<bool>(deleteThumbRadioButton->Checked));
+			 deleteThumbs = deleteThumbRadioButton->Checked;
+
+			 if(deleteThumbRadioButton->Checked == true) {
+
+				 Thumbnail = nullptr;
+			 }
 		 }
 private: System::Void browseThumbRadioButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
-			 BrowseThumbRadioButtonCheckedChanged(this, gcnew GEventArgs<bool>(browseThumbRadioButton->Checked));
+			 if((useBrowsedThumb = browseThumbRadioButton->Checked) == false) return;
+
+			 OpenFileDialog ^openFileDialog = ImageUtils::createOpenImageFileDialog();
+
+			 if(openFileDialog->ShowDialog() == ::DialogResult::OK)
+			 {			
+				 try {
+
+					 Thumbnail = generateThumbnail(openFileDialog->FileName);					
+
+				 } catch (Exception ^e) {
+
+					 MessageBox::Show(e->Message);
+				 }
+
+			 } else {
+
+				 Thumbnail = nullptr;
+			 }
 		 }
 private: System::Void noChangeThumbRadioButton_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
-			 NoChangeThumbRadioButtonCheckedChanged(this, gcnew GEventArgs<bool>(noChangeThumbRadioButton->Checked));
+			 if(noChangeThumbRadioButton->Checked == false) return;
+
+			 if(IsBatch) {
+
+				 Thumbnail = nullptr;
+
+			 } else {
+
+				 if(media[0]->MetaData->Thumbnail->Count > 0) {
+
+					 Thumbnail = media[0]->MetaData->Thumbnail[0];
+
+				 } else {
+
+					 Thumbnail = nullptr;
+				 }
+			 }
+			 
+		 }
+private: System::Void mediaInfoForm_Shown(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(openFailure != nullptr) {
+
+				 MessageBox::Show(openFailure->Message, "Error");
+				 Close();
+			 }
+		 }
+private: System::Void mediaInfoForm_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
+
+			 for(int i = 0; i < media->Count; i++) {
+
+				 media[i]->close();
+
+			 }			
+
 		 }
 };
 }

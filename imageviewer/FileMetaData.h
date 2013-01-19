@@ -421,6 +421,11 @@ public:
 
 	property List<MetaDataThumb ^> ^Thumbnail {
 
+		void set(List<MetaDataThumb ^> ^thumbnail) {
+
+			this->thumbnail = thumbnail;
+		}
+
 		List<MetaDataThumb ^> ^get() {
 
 			return(thumbnail);

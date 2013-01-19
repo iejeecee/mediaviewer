@@ -198,6 +198,19 @@ public:
 
 		return("");
 	}
+
+	virtual void close() {
+
+		if(data != nullptr) {
+
+			data->Close();
+		}
+
+		if(metaData != nullptr) {
+
+			metaData->closeFile();
+		}
+	}
 };
 
 }

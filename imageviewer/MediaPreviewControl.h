@@ -182,15 +182,16 @@ private:
 				setToolTip(caption);			
 			}
 
-			media->Data->Close();
 			
 		} catch(Exception ^) {
 
 			
 		} finally {
 
+			media->close();
+
 			// release the lock on opening of images
-			mediaFileFactory->releaseOpenLock();
+			mediaFileFactory->releaseNonBlockingOpenLock();
 		}
 
 	}
@@ -270,7 +271,7 @@ public:
 		
 		clearPictureBox();
 
-		mediaFileFactory->open(fileLocation, mode);
+		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, mode);
 
 	}
 

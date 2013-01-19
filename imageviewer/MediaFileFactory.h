@@ -22,7 +22,9 @@ using namespace System::Threading;
 #define HTTP_TIMEOUT_MS (60 * 1000) 
 #define HTTP_READ_BUFFER_SIZE_BYTES 8096
 // 1 hour
-#define FILE_OPEN_TIMEOUT_MS 60 * 60 * 1000
+#define FILE_OPEN_ASYNC_TIMEOUT_MS 60 * 60 * 1000
+// 5 seconds
+#define FILE_OPEN_SYNC_TIMEOUT_MS 5 * 1000
 
 public ref class MediaFileFactory 
 {
@@ -91,7 +93,7 @@ private:
 	DigitallyCreated::Utilities::Concurrency::FifoSemaphore ^stateSemaphore;
 	List<AsyncState ^> ^activeStates;
 
-	MediaFile ^readWebData(AsyncState ^state) {
+	static MediaFile ^readWebData(AsyncState ^state) {
 
 		HttpWebResponse ^response = nullptr;
 		Stream ^responseStream = nullptr;
@@ -156,10 +158,10 @@ private:
 		}
 	}
 
-	MediaFile ^readFileData(AsyncState ^state) {
+	static MediaFile ^readFileData(AsyncState ^state, int timeoutMs) {
 
 		Stream ^data = FileUtils::waitForFileAccess(state->Location, FileAccess::Read,
-			FILE_OPEN_TIMEOUT_MS, state->IsCancelled);
+			timeoutMs, state->IsCancelled);
 		String ^mimeType = MediaFormatConvert::fileNameToMimeType(state->Location);
 
 		FileMetaData ^metaData = nullptr;
@@ -168,7 +170,6 @@ private:
 		try {
 
 			metaData = gcnew FileMetaData(state->Location);	
-			metaData->closeFile();
 
 		} catch (Exception ^e) {
 
@@ -205,18 +206,13 @@ private:
 
 			} else {
 	
-				media = readFileData(state);
+				media = readFileData(state, FILE_OPEN_ASYNC_TIMEOUT_MS);
 			}
 
 		} catch (Exception ^e) {
 
 			media->OpenError = e;
-
-			if(media->Data != nullptr) {
-
-				media->Data->Close();
-				media->Data = nullptr;
-			}			
+			media->close();		
 
 		} finally {
 
@@ -229,7 +225,7 @@ private:
 	}
 
 
-	MediaFile ^newMediaFromMimeType(AsyncState ^state, String ^mimeType) {
+	static MediaFile ^newMediaFromMimeType(AsyncState ^state, String ^mimeType) {
 
 		MediaFile ^media = nullptr;
 
@@ -265,12 +261,17 @@ public:
 		activeStates = gcnew List<AsyncState ^>();
 	}
 	
-	void open(String ^location) {
+	// open file/http stream in a non blocking fashion
+	// attempt to cancel any pending opens to speed up it's operation
+	void openNonBlockingAndCancelPending(String ^location) {
 
-		open(location, nullptr);
+		openNonBlockingAndCancelPending(location, nullptr);
 	}
 
-	void open(String ^location, Object ^userState) {
+	// open file/http stream in a non blocking fashion
+	// attempt to cancel any pending opens to speed up it's operation
+	// userstate is set on the returning mediafile
+	void openNonBlockingAndCancelPending(String ^location, Object ^userState) {
 
 		try {
 
@@ -287,6 +288,7 @@ public:
 				activeStates[i]->IsCancelled->Value = true;
 			}
 
+			// add current state to active states
 			activeStates->Add(state);
 
 			stateSemaphore->Release();
@@ -300,9 +302,46 @@ public:
 
 	}
 
-	void releaseOpenLock() {
+	// needs to be called after the user is done with the file
+	void releaseNonBlockingOpenLock() {
 
 		openSemaphore->Release();
+	}
+
+	static MediaFile ^openBlocking(String ^location) {
+
+		AsyncState ^state = gcnew AsyncState(location, nullptr);
+
+		// initialize media with a dummy in case of exceptions
+		MediaFile ^media = gcnew UnknownFile(state->Location);
+
+		try {
+
+			if(String::IsNullOrEmpty(state->Location)) {
+
+				return(media);
+
+			} else if(Util::isUrl(state->Location)) {
+
+				media = readWebData(state);
+
+			} else {
+	
+				media = readFileData(state, FILE_OPEN_SYNC_TIMEOUT_MS);
+			}
+
+		} catch (Exception ^e) {
+
+			media->OpenError = e;
+
+			if(media->Data != nullptr) {
+
+				media->close();
+				media->Data = nullptr;
+			}			
+		}
+
+		return(media);
 	}
 };
 

@@ -2,10 +2,10 @@
 
 #include "MediaFileWatcher.h"
 #include "ImageGridControl.h"
-#include "PagerControl.h"
+#include "ImageGridPagerControl.h"
 #include "ImageGridToolStripMenuItem.h"
 #include "DirectoryBrowserControl.h"
-#include "ImageInfoForm.h"
+#include "MediaInfoForm.h"
 #include "GeoTagForm.h"
 #include "Util.h"
 
@@ -49,7 +49,7 @@ namespace imageviewer {
 			mediaFileWatcher->MediaRenamed += gcnew RenamedEventHandler(this, &ImageFileBrowserControl::ImageFileWatcherThread_MediaRenamed);
 			mediaFileWatcher->CurrentMediaChanged += gcnew EventHandler<FileSystemEventArgs ^>(this, &ImageFileBrowserControl::imageFileWatcherThread_CurrentMediaChanged);
 
-			pager->imageGrid = imageGrid;
+			pager->ImageGrid = imageGrid;
 			
 		}
 
@@ -75,7 +75,7 @@ namespace imageviewer {
 		}
 	private: imageviewer::ImageGridControl^  _imageGrid;
 	private: System::Windows::Forms::SplitContainer^  splitContainer;
-	private: imageviewer::PagerControl^  pager;
+	private: imageviewer::ImageGridPagerControl^  pager;
 	private: System::Windows::Forms::SplitContainer^  splitContainer1;
 	private: imageviewer::DirectoryBrowserControl^  directoryBrowser;
 
@@ -100,7 +100,7 @@ namespace imageviewer {
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
 			this->directoryBrowser = (gcnew imageviewer::DirectoryBrowserControl());
 			this->_imageGrid = (gcnew imageviewer::ImageGridControl());
-			this->pager = (gcnew imageviewer::PagerControl());
+			this->pager = (gcnew imageviewer::ImageGridPagerControl());
 			this->splitContainer->Panel1->SuspendLayout();
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
@@ -169,7 +169,6 @@ namespace imageviewer {
 			// pager
 			// 
 			this->pager->Anchor = System::Windows::Forms::AnchorStyles::None;
-			this->pager->imageGrid = nullptr;
 			this->pager->Location = System::Drawing::Point(284, 3);
 			this->pager->Name = L"pager";
 			this->pager->Size = System::Drawing::Size(284, 37);
@@ -451,13 +450,13 @@ namespace imageviewer {
 
 				 for each(Form ^form in Application::OpenForms) {
 
-					 if(form->GetType() == ImageInfoForm::typeid) {
+					 if(form->GetType() == MediaInfoForm::typeid) {
 
-						 ImageInfoForm ^imageInfo = dynamic_cast<ImageInfoForm ^>(form);
+						 MediaInfoForm ^mediaInfo = dynamic_cast<MediaInfoForm ^>(form);
 
-						 if(Util::listSortAndCompare<String ^>(imageInfo->FileNames, fileNames)) {
+						 if(Util::listSortAndCompare<String ^>(mediaInfo->FileNames, fileNames)) {
 
-							 imageInfo->BringToFront();
+							 mediaInfo->BringToFront();
 							 return;
 						 }
 					 }
@@ -465,10 +464,10 @@ namespace imageviewer {
 				 
 				 try {
 
-					 ImageInfoForm ^imageInfo = gcnew ImageInfoForm();
-					 imageInfo->FileNames = fileNames;
+					 MediaInfoForm ^mediaInfo = gcnew MediaInfoForm();
+					 mediaInfo->FileNames = fileNames;
 
-					 imageInfo->Show();					 
+					 mediaInfo->Show();					 
 
 				 } catch (Exception ^e) {
 

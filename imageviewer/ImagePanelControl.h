@@ -177,7 +177,6 @@ private:
 			imageFormat = MediaFormatConvert::mimeTypeToImageFormat(media->MimeType);
 
 			sourceImage = gcnew Bitmap(media->Data);
-			media->Data->Close();
 			
 			displayAndCenterImage(sourceImage);
 			LoadImageFinished(this, gcnew EventArgs());
@@ -188,7 +187,8 @@ private:
 			
 		} finally {
 
-			mediaFileFactory->releaseOpenLock();			
+			media->close();
+			mediaFileFactory->releaseNonBlockingOpenLock();			
 		}
 
 	}
@@ -466,7 +466,7 @@ public:
 		
 		clearImage();
 
-		mediaFileFactory->open(fileLocation);
+		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation);
 
 	}
 

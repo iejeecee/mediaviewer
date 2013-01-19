@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ImageGridControl.h"
-
 using namespace System;
 using namespace System::ComponentModel;
 using namespace System::Collections;
@@ -17,27 +15,7 @@ namespace imageviewer {
 	/// </summary>
 	public ref class PagerControl : public System::Windows::Forms::UserControl
 	{
-	private: ImageGridControl ^_imageGrid;
 	public:
-		property ImageGridControl ^imageGrid {
-
-			void set(ImageGridControl ^imageGrid) {
-
-				_imageGrid = imageGrid;
-
-				if(imageGrid != nullptr) {
-
-					_imageGrid->UpdateImages += gcnew EventHandler<EventArgs ^>(this, &PagerControl::imageGrid_UpdateImagesEvent);
-				}
-			}
-
-			ImageGridControl ^get() {
-
-				return(_imageGrid);
-			}
-			
-		}
-
 		PagerControl(void)
 		{
 			InitializeComponent();
@@ -183,53 +161,121 @@ namespace imageviewer {
 
 		}
 #pragma endregion
-	private: System::Void beginButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-				 imageGrid->displayPage(0);
-			 }
-private: System::Void prevButton_Click(System::Object^  sender, System::EventArgs^  e) {
+public:
 
-			 imageGrid->displayPrevPage();
-		 }
+	event EventHandler<EventArgs ^> ^beginButtonClick;
+	event EventHandler<EventArgs ^> ^endButtonClick;
+	event EventHandler<EventArgs ^> ^nextButtonClick;
+	event EventHandler<EventArgs ^> ^prevButtonClick;
+
+	property int CurrentPage {
+
+		int get() {
+
+			if(String::IsNullOrEmpty(currentPageTextBox->Text)) {
+
+				return(0);
+			
+			} 
+
+			return(Convert::ToInt32(currentPageTextBox->Text));
+		}
+
+		void set(int currentPage) {
+			
+			currentPageTextBox->Text = Convert::ToString(currentPage);
+
+		}
+	}
+
+	property int TotalPages {
+
+		int get() {
+
+			if(String::IsNullOrEmpty(totalPagesTextBox->Text)) {
+
+				return(0);
+			
+			} 
+
+			return(Convert::ToInt32(totalPagesTextBox->Text));
+		}
+
+		void set(int totalPages) {
+			
+			totalPagesTextBox->Text = Convert::ToString(totalPages);
+
+		}
+	}
+
+	property bool NextButtonEnabled {
+
+		bool get() {
+
+			return(nextButton->Enabled);
+		}
+
+		void set(bool enabled) {
+			
+			nextButton->Enabled = enabled;
+		}
+	}
+
+	property bool PrevButtonEnabled {
+
+		bool get() {
+
+			return(prevButton->Enabled);
+		}
+
+		void set(bool enabled) {
+			
+			prevButton->Enabled = enabled;
+		}
+	}
+
+	property bool BeginButtonEnabled {
+
+		bool get() {
+
+			return(beginButton->Enabled);
+		}
+
+		void set(bool enabled) {
+			
+			beginButton->Enabled = enabled;
+		}
+	}
+
+	property bool EndButtonEnabled {
+
+		bool get() {
+
+			return(endButton->Enabled);
+		}
+
+		void set(bool enabled) {
+			
+			endButton->Enabled = enabled;
+		}
+	}
+
 private: System::Void nextButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 imageGrid->displayNextPage();
+			 nextButtonClick(this, e);
 		 }
 private: System::Void endButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 imageGrid->displayPage(imageGrid->getNrPages() - 1);
+			 endButtonClick(this, e);
 		 }
+private: System::Void prevButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
- private: System::Void imageGrid_UpdateImagesEvent(System::Object^  sender, System::EventArgs^  e) {
-
-		 if(imageGrid->getCurrentPage() == 0) {
-
-			 prevButton->Enabled = false;
-			 beginButton->Enabled = false;
-
-		 } else {
-
-			 prevButton->Enabled = true;
-			 beginButton->Enabled = true;
+			 prevButtonClick(this, e);
 		 }
+private: System::Void beginButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-
-		 if(imageGrid->getCurrentPage() >= imageGrid->getNrPages() - 1) {
-
-			 nextButton->Enabled = false;
-			 endButton->Enabled = false;
-
-		 } else {
-
-			 nextButton->Enabled = true;
-			 endButton->Enabled = true;
+			 beginButtonClick(this, e);
 		 }
-
-		 int curPage = imageGrid->getNrPages() > 0 ? imageGrid->getCurrentPage() + 1 : 0;
-
-		 currentPageTextBox->Text = Convert::ToString(curPage);
-		 totalPagesTextBox->Text = Convert::ToString(imageGrid->getNrPages());
-
-	 }
 };
 }

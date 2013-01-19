@@ -6,7 +6,7 @@
 #include "PicasaUser.h"
 #include "ImageGridContextMenuStrip.h"
 #include "ImageGridToolStripMenuItem.h"
-#include "PagerControl.h"
+#include "ImageGridPagerControl.h"
 #include "PicasaAsyncState.h"
 #include "PicasaLoginDialog.h"
 #include "PicasaPhotoMetaData.h"
@@ -56,7 +56,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::ToolStripMenuItem^  deleteAlbumToolStripMenuItem;
     private: System::Windows::Forms::Button^  loginButton;	
 	private: System::Windows::Forms::ImageList^  imageList;
-    private: imageviewer::PagerControl^  pager;
+    private: imageviewer::ImageGridPagerControl^  pager;
 	private: System::Windows::Forms::ToolTip^  toolTip;
 	private: System::Windows::Forms::ComboBox^  userComboBox;
 	private: delegate void UploadNextPhotoEventHandler(System::Object^ sender, PicasaAsyncState^ e);
@@ -96,7 +96,7 @@ namespace imageviewer {
 			imageGrid->ImageGridMouseDown += gcnew EventHandler<ImageGridMouseEventArgs^>(this, &PicasaForm::picasaImage_Click);
 			imageGrid->UpdateImages += gcnew EventHandler<EventArgs^>(this, &PicasaForm::imageGrid_UpdatePhotosEvent);
 
-			pager->imageGrid = imageGrid;
+			pager->ImageGrid = imageGrid;
 
 			service = gcnew PicasaService("exampleCo-exampleApp-1");
 			service->AsyncOperationCompleted += gcnew AsyncOperationCompletedEventHandler(this, &PicasaForm::picasaService_asyncOperationCompleted);
@@ -173,7 +173,7 @@ namespace imageviewer {
 			this->loginButton = (gcnew System::Windows::Forms::Button());
 			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
-			this->pager = (gcnew imageviewer::PagerControl());
+			this->pager = (gcnew imageviewer::ImageGridPagerControl());
 			this->_imageGrid = (gcnew imageviewer::ImageGridControl());
 			this->albumContextMenuStrip->SuspendLayout();
 			this->SuspendLayout();
@@ -307,7 +307,7 @@ namespace imageviewer {
 			// 
 			// pager
 			// 
-			this->pager->imageGrid = nullptr;
+			this->pager->ImageGrid = nullptr;
 			this->pager->Location = System::Drawing::Point(894, 634);
 			this->pager->Name = L"pager";
 			this->pager->Size = System::Drawing::Size(275, 38);

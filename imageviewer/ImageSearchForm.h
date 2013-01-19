@@ -4,7 +4,7 @@
 #include "MediaFormatConvert.h"
 #include "ImageGridControl.h"
 #include "ImageGridToolStripMenuItem.h"
-#include "PagerControl.h"
+#include "ImageGridPagerControl.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -47,7 +47,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::Label^  label5;
 	private: System::Windows::Forms::ComboBox^  comboBox5;
 	private: imageviewer::ImageGridControl^  imageGrid;
-	private: imageviewer::PagerControl^  pager;
+	private: imageviewer::ImageGridPagerControl^  pager;
 	private: System::Windows::Forms::Button^  downloadButton;
 
 
@@ -80,7 +80,7 @@ namespace imageviewer {
 
 			imageGrid->UpdateImages += gcnew EventHandler<EventArgs ^>(this, &ImageSearchForm::updateImages_Event);
 
-			pager->imageGrid = imageGrid;
+			pager->ImageGrid = imageGrid;
 
 			currentPage = 0;
 
@@ -135,7 +135,7 @@ namespace imageviewer {
 			this->comboBox5 = (gcnew System::Windows::Forms::ComboBox());
 			this->downloadButton = (gcnew System::Windows::Forms::Button());
 			this->imageGrid = (gcnew imageviewer::ImageGridControl());
-			this->pager = (gcnew imageviewer::PagerControl());
+			this->pager = (gcnew imageviewer::ImageGridPagerControl());
 			this->SuspendLayout();
 			// 
 			// textBox1
@@ -273,7 +273,6 @@ namespace imageviewer {
 			// 
 			// pager
 			// 
-			this->pager->imageGrid = nullptr;
 			this->pager->Location = System::Drawing::Point(645, 648);
 			this->pager->Name = L"pager";
 			this->pager->Size = System::Drawing::Size(275, 38);
