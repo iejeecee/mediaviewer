@@ -10,7 +10,7 @@
 #include "ImageRGB24.h"
 
 
-class VideoFramegrabber : protected VideoDecoder {
+class VideoFrameGrabber : protected VideoDecoder {
 
 private:
 
@@ -43,15 +43,6 @@ private:
 		return(ss.str());
 	}
 
-	virtual void close() {
-
-		VideoDecoder::close();
-
-		thumbWidth = 0;
-		thumbHeight = 0;
-
-	}
-
 	int greatestCommonDivisor(int a, int b) const {
 	  return (b == 0) ? a : greatestCommonDivisor(b, a % b);
 	}
@@ -60,27 +51,103 @@ private:
 		return (r > 0.0) ? (int)floor(r + 0.5) : (int)ceil(r - 0.5);
 	}
 
+	void probe_dict(AVDictionary *dict, const char *name)
+	{
+		AVDictionaryEntry *entry = NULL;
+		if (!dict)
+			return;
+		//probe_object_header(name);
+		while ((entry = av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX))) {
+		
+			metaData.push_back(std::string(entry->key) + ": " + std::string(entry->value));
+		
+		}
+		//probe_object_footer(name);
+	}
 
 public:
 
-	VideoFramegrabber() 	
+	int durationSeconds;
+
+	int64_t sizeBytes;
+
+	int width;
+	int height;
+
+	std::string container;
+	std::string videoCodecName;
+	std::vector<std::string> metaData;
+
+	double frameRate;
+
+	VideoFrameGrabber() 	
 	{
 		setDecodedFrameCallback(decodedFrame, this);
 
+		durationSeconds = 0;
+		sizeBytes = 0;
+		width = 0;
+		height = 0;
+		container = "";
+		videoCodecName = "";
+
 	}
 
-	virtual ~VideoFramegrabber() {
+	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+
+		VideoDecoder::open(location, discardMode);
+
+		// get metadata
+		durationSeconds = getDurationSeconds();
+
+		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
+
+		width = getWidth();
+		height = getHeight();
+		
+		container = std::string(formatContext->iformat->long_name);
+		videoCodecName = std::string(videoCodec->name);
+
+		if(videoStream->avg_frame_rate.den != 0 && videoStream->avg_frame_rate.num != 0) {
+
+			frameRate = av_q2d(videoStream->avg_frame_rate);
+			
+		} else {
+
+			frameRate = 1.0 / av_q2d(videoStream->time_base);
+		}
+
+		probe_dict(formatContext->metadata, "");
+	}
+
+	virtual void close() {
+
+		VideoDecoder::close();
+
+		durationSeconds = 0;
+		sizeBytes = 0;
+		width = 0;
+		height = 0;
+		container = "";
+		videoCodecName = "";
+
+		thumbWidth = 0;
+		thumbHeight = 0;
+
+		metaData.clear();
+
+	}
+
+	virtual ~VideoFrameGrabber() {
 
 		clearThumbs();
 	}
 
-	void grab(const std::string &videoLocation, int maxThumbWidth, int maxThumbHeight, 
+	void grab(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs)
 	{
 
 		clearThumbs();
-
-		open(videoLocation, AVDISCARD_NONKEY);
 	
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -151,12 +218,11 @@ public:
 
 		//std::cout << "Completed Output: " << gridFilename << "\n";
 
-		close();
 	}
 
 	static void decodedFrame(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type) {
 
-		VideoFramegrabber *This = (VideoFramegrabber *)data;
+		VideoFrameGrabber *This = (VideoFrameGrabber *)data;
 
 		// calculate presentation time for this frame in seconds
 		double pts = packet->pts;

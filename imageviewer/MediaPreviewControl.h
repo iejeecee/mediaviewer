@@ -47,6 +47,7 @@ namespace imageviewer {
 	protected: 
 	private: System::Windows::Forms::PictureBox^  pictureBox;
 	private: System::Windows::Forms::ToolTip^  toolTip;
+	private: System::Windows::Forms::ImageList^  imageList;
 	private: System::ComponentModel::IContainer^  components;
 
 	protected: 

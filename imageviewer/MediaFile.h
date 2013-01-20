@@ -1,6 +1,7 @@
 #pragma once
 
 #include "FileMetaData.h"
+#include "Util.h"
 
 namespace imageviewer {
 
@@ -42,15 +43,35 @@ protected:
 
 	}
 
-	MediaFile(String ^location) {
+	MediaFile(String ^location, String ^mimeType, Stream ^data) {
 
 		this->location = location;
-		data = nullptr;
+		this->data = data;
+		this->mimeType = mimeType;
+
 		metaData = nullptr;
-		mimeType = nullptr;
 		openError = nullptr;
 		metaDataError = nullptr;
 		userState = nullptr;
+
+		if(String::IsNullOrEmpty(Location) || MediaFormat == MediaType::UNKNOWN) return;
+
+		readMetaData();
+	}
+
+	virtual void readMetaData() {
+
+		try {
+
+			if(Util::isUrl(Location) == false) {
+
+				MetaData = gcnew FileMetaData(Location);	
+			}
+
+		} catch (Exception ^e) {
+
+			MetaDataError = e;
+		}
 	}
 
 public:

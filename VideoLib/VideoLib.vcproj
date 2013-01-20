@@ -258,7 +258,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\VideoFramegrabber.h"
+				RelativePath=".\VideoFrameGrabber.h"
 				>
 			</File>
 			<File

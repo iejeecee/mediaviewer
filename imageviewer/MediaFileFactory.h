@@ -93,7 +93,7 @@ private:
 	DigitallyCreated::Utilities::Concurrency::FifoSemaphore ^stateSemaphore;
 	List<AsyncState ^> ^activeStates;
 
-	static MediaFile ^readWebData(AsyncState ^state) {
+	static MediaFile ^openWebData(AsyncState ^state) {
 
 		HttpWebResponse ^response = nullptr;
 		Stream ^responseStream = nullptr;
@@ -121,9 +121,8 @@ private:
 
 			responseStream = response->GetResponseStream();
 			responseStream->ReadTimeout = HTTP_TIMEOUT_MS;	
-
-			MediaFile ^media = newMediaFromMimeType(state, response->ContentType);
-			media->Data = gcnew MemoryStream();
+			
+			Stream ^data = gcnew MemoryStream();
 
 			int bufSize = HTTP_READ_BUFFER_SIZE_BYTES;
 			int count = 0;
@@ -137,10 +136,12 @@ private:
 					throw gcnew Exception("Aborting reading image");
 				}
 
-				media->Data->Write(buffer, 0, count);
+				data->Write(buffer, 0, count);
 			}
 
-			media->Data->Seek(0, System::IO::SeekOrigin::Begin);
+			data->Seek(0, System::IO::SeekOrigin::Begin);
+
+			MediaFile ^media = newMediaFromMimeType(state, response->ContentType, data);
 
 			return(media);
 
@@ -158,29 +159,15 @@ private:
 		}
 	}
 
-	static MediaFile ^readFileData(AsyncState ^state, int timeoutMs) {
+	static MediaFile ^openFileData(AsyncState ^state, int timeoutMs) {
 
 		Stream ^data = FileUtils::waitForFileAccess(state->Location, FileAccess::Read,
 			timeoutMs, state->IsCancelled);
+
 		String ^mimeType = MediaFormatConvert::fileNameToMimeType(state->Location);
 
-		FileMetaData ^metaData = nullptr;
-		Exception ^metaDataError = nullptr;
-
-		try {
-
-			metaData = gcnew FileMetaData(state->Location);	
-
-		} catch (Exception ^e) {
-
-			metaDataError = e;
-		}
-
-		MediaFile ^media = newMediaFromMimeType(state, mimeType);
-		media->Data = data;
-		media->MetaData = metaData;
-		media->MetaDataError = metaDataError;
-
+		MediaFile ^media = newMediaFromMimeType(state, mimeType, data);
+	
 		return(media);
 	}
 
@@ -189,7 +176,7 @@ private:
 		AsyncState ^state = dynamic_cast<AsyncState ^>(asyncState);
 
 		// initialize media with a dummy in case of exceptions
-		MediaFile ^media = gcnew UnknownFile(state->Location);
+		MediaFile ^media = gcnew UnknownFile(state->Location, nullptr);
 
 		// only allow one thread to open files at once
 		openSemaphore->Acquire();
@@ -202,11 +189,11 @@ private:
 
 			} else if(Util::isUrl(state->Location)) {
 
-				media = readWebData(state);
+				media = openWebData(state);
 
 			} else {
 	
-				media = readFileData(state, FILE_OPEN_ASYNC_TIMEOUT_MS);
+				media = openFileData(state, FILE_OPEN_ASYNC_TIMEOUT_MS);
 			}
 
 		} catch (Exception ^e) {
@@ -225,24 +212,23 @@ private:
 	}
 
 
-	static MediaFile ^newMediaFromMimeType(AsyncState ^state, String ^mimeType) {
+	static MediaFile ^newMediaFromMimeType(AsyncState ^state, String ^mimeType, Stream ^data) {
 
 		MediaFile ^media = nullptr;
 
 		if(mimeType->ToLower()->StartsWith("image")) {
 
-			media = gcnew ImageFile(state->Location);			
+			media = gcnew ImageFile(state->Location, mimeType, data);			
 		
 		} else if(mimeType->ToLower()->StartsWith("video")) {
 
-			media = gcnew VideoFile(state->Location);			
+			media = gcnew VideoFile(state->Location, mimeType, data);			
 		
 		} else {
 
-			media = gcnew UnknownFile(state->Location);
+			media = gcnew UnknownFile(state->Location, data);
 		}
 
-		media->MimeType = mimeType;
 		media->UserState = state->UserState;
 
 		return(media);
@@ -313,7 +299,7 @@ public:
 		AsyncState ^state = gcnew AsyncState(location, nullptr);
 
 		// initialize media with a dummy in case of exceptions
-		MediaFile ^media = gcnew UnknownFile(state->Location);
+		MediaFile ^media = gcnew UnknownFile(state->Location, nullptr);
 
 		try {
 
@@ -323,11 +309,11 @@ public:
 
 			} else if(Util::isUrl(state->Location)) {
 
-				media = readWebData(state);
+				media = openWebData(state);
 
 			} else {
 	
-				media = readFileData(state, FILE_OPEN_SYNC_TIMEOUT_MS);
+				media = openFileData(state, FILE_OPEN_SYNC_TIMEOUT_MS);
 			}
 
 		} catch (Exception ^e) {

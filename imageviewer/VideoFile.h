@@ -18,7 +18,100 @@ public ref class VideoFile : public MediaFile
 private:
 
 	static Image ^defaultVideoThumb;
+
+	VideoPreview ^videoPreview;
+
+	int durationSeconds;
+
+	__int64 sizeBytes;
+
+	int width;
+	int height;
+
+	String ^container;
+	String ^videoCodecName;
+	List<String ^> ^fsMetaData;
+
+	float frameRate;
+
+	bool videoSupportsXMPMetaData() {
+
+		// XMP Metadata does not support matroska
+		if(MimeType->Equals("video/x-matroska")) {
+			
+			return(false);
+
+		// mp4 versions incompatible with XMP metadata
+		} else if(mimeType->Equals("video/mp4")) {
+
+			
+			if(FSMetaData->Contains("major_brand: isom") &&
+				FSMetaData->Contains("minor_version: 1")) 
+			{
+				return(false);
+			}
+
+			if(FSMetaData->Contains("major_brand: mp42") &&
+				FSMetaData->Contains("minor_version: 0"))
+			{
+
+				if(FSMetaData->Contains("compatible_brands: isom")) {
+					return(false);
+				}
+
+				if(FSMetaData->Contains("compatible_brands: 000000964375")) {
+					return(false);
+				}
+			}
+
+		} else if(mimeType->Equals("video/avi")) {
+
+			if(VideoCodecName->Equals("mpeg2video")) {
+
+				return(false);
+			}
+		}
+
+		return(true);
+	}
 	
+protected:
+
+	virtual void readMetaData() override {
+
+		if(videoPreview == nullptr) {
+
+			videoPreview = gcnew VideoPreview();
+		}
+
+		try {
+
+			videoPreview->open(Location);
+
+			VideoMetaData ^videoMetaData = videoPreview->readMetaData();
+
+			durationSeconds = videoMetaData->DurationSeconds;
+			sizeBytes = videoMetaData->SizeBytes;
+
+			width = videoMetaData->Width;
+			height = videoMetaData->Height;
+
+			container = videoMetaData->Container;
+			videoCodecName = videoMetaData->VideoCodecName;
+			fsMetaData = videoMetaData->MetaData;
+
+			frameRate = videoMetaData->FrameRate;
+
+			if(videoSupportsXMPMetaData()) {
+
+				MediaFile::readMetaData();
+			}
+
+		} catch (Exception ^) {
+
+			videoPreview->close();
+		}
+	}
 
 public:
 
@@ -27,8 +120,9 @@ public:
 		defaultVideoThumb = gcnew Bitmap("C:\\game\\icons\\video.png");
 	}
 
-	VideoFile(String ^location) : MediaFile(location) {
+	VideoFile(String ^location, String ^mimeType, Stream ^data) : MediaFile(location, mimeType, data) {
 
+		
 	}
 
 	property MediaType MediaFormat
@@ -39,12 +133,75 @@ public:
 		}
 	}
 
+	property int Width {
+
+		int get() {
+
+			return(width);
+		}
+	}
+
+	property int Height {
+
+		int get() {
+
+			return(height);
+		}
+	}
+
+	property int DurationSeconds {
+
+		int get() {
+
+			return(durationSeconds);
+		}
+	}
+
+	property __int64 SizeBytes {
+
+		__int64 get() {
+
+			return(sizeBytes);
+		}
+	}
+
+	property String ^Container {
+
+		String ^get() {
+
+			return(container);
+		}
+	}
+
+	property String ^VideoCodecName {
+
+		String ^get() {
+
+			return(videoCodecName);
+		}
+	}
+
+	property List<String ^> ^FSMetaData {
+
+		List<String ^> ^get() {
+
+			return(fsMetaData);
+		}
+	}
+
+	property float FrameRate {
+
+		float get() {
+
+			return(frameRate);
+		}
+	}
+
 	virtual List<MetaDataThumb ^> ^generateThumbnails() override {
 
-		VideoPreview ^preview = gcnew VideoPreview();
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
 
-		List<RawImageRGB24 ^> ^rawThumbs = preview->grab(Location, MAX_THUMBNAIL_WIDTH,
+		List<RawImageRGB24 ^> ^rawThumbs = videoPreview->grabThumbnails(MAX_THUMBNAIL_WIDTH,
 			MAX_THUMBNAIL_HEIGHT, -1, 1);
 
 		for each(RawImageRGB24 ^rawThumb in rawThumbs) {
@@ -68,7 +225,33 @@ public:
 
 		sb->AppendLine(Path::GetFileName(Location));
 		sb->AppendLine();
-		
+
+		sb->AppendLine("Resolution:");
+		sb->Append(width);
+		sb->Append("x");
+		sb->Append(height);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Duration:");
+		sb->Append(DurationSeconds / 3600);
+		sb->Append(":");
+		sb->Append((DurationSeconds / 60) % 60);
+		sb->Append(":");
+		sb->Append(DurationSeconds % 60);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Video Codec");
+		sb->AppendLine(VideoCodecName);
+
+		for each(String ^info in FSMetaData) {
+
+			sb->AppendLine(info);
+		}
+
+		sb->AppendLine();
+
 		if(MetaData != nullptr) {
 
 			if(MetaData->Description != nullptr) {
@@ -99,6 +282,12 @@ public:
 		return(sb->ToString());
 	}
 
+	virtual void close() override {
+
+		videoPreview->close();
+
+		MediaFile::close();
+	}
 };
 
 }

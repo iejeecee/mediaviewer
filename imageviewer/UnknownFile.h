@@ -19,7 +19,7 @@ private:
 
 public:
 
-	UnknownFile(String ^location) : MediaFile(location) {
+	UnknownFile(String ^location, Stream ^data) : MediaFile(location, nullptr, data) {
 
 	}
 

@@ -112,7 +112,7 @@ public:
 		return(formatContext->filename);
 	}
 
-	void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
 
 		int errorCode = 0;
 
@@ -402,12 +402,12 @@ public:
 
 	int getWidth() const {
 
-		return(videoCodecContext->width);
+		return(videoCodecContext == NULL ? 0 : videoCodecContext->width);
 	}
 
 	int getHeight() const {
 
-		return(videoCodecContext->height);
+		return(videoCodecContext == NULL ? 0 : videoCodecContext->height);
 	}
 
 	

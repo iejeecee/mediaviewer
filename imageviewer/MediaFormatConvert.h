@@ -143,6 +143,14 @@ public:
 	
 			return("video/avi");
 
+		} else if(ext->Equals(".m4v")) {
+
+			return("video/x-m4v");
+
+		} else if(ext->Equals(".mkv")) {
+
+			return("video/x-matroska");
+
 		} else {
 
 			return(nullptr);
@@ -199,7 +207,15 @@ public:
 		} else if(mimeType->Equals("video/quicktime")) {
 
 			return("mov");
-		
+
+		} else if(mimeType->Equals("video/x-matroska")) {
+
+			return("mkv");
+
+		} else if(mimeType->Equals("video/x-m4v")) {
+
+			return("m4v");
+
 		} else {
 
 			return("jpg");

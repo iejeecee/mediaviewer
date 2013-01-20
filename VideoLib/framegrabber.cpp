@@ -139,7 +139,7 @@ int _tmain(int argc, char** argv)
 
 		try {
 
-			VideoFramegrabber video;// = new VideoFramegrabber();
+			VideoFrameGrabber video;// = new VideoFrameGrabber();
 
 			video.grab(inputLocation.front(), outputPath, frameWidth, nrRows, nrColumns,
 				quality, captureTime, saveFrames, forceOverwrite);
