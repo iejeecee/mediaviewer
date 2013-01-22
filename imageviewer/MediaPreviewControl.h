@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MediaFileFactory.h"
+#include "AnimatedPictureBoxControl.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -29,6 +30,8 @@ namespace imageviewer {
 			media = nullptr;
 
 			caption = "";
+
+			loadingImage = gcnew Bitmap("C:\\game\\icons\\loading.gif");
 			
 		}
 
@@ -45,9 +48,10 @@ namespace imageviewer {
 		}
 	private: System::Windows::Forms::Panel^  panel;
 	protected: 
-	private: System::Windows::Forms::PictureBox^  pictureBox;
+
 	private: System::Windows::Forms::ToolTip^  toolTip;
 	private: System::Windows::Forms::ImageList^  imageList;
+	private: imageviewer::AnimatedPictureBoxControl^  pictureBox;
 	private: System::ComponentModel::IContainer^  components;
 
 	protected: 
@@ -66,12 +70,10 @@ namespace imageviewer {
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(MediaPreviewControl::typeid));
 			this->panel = (gcnew System::Windows::Forms::Panel());
-			this->pictureBox = (gcnew System::Windows::Forms::PictureBox());
 			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
+			this->pictureBox = (gcnew imageviewer::AnimatedPictureBoxControl());
 			this->panel->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// panel
@@ -85,13 +87,18 @@ namespace imageviewer {
 			// 
 			// pictureBox
 			// 
-			this->pictureBox->Location = System::Drawing::Point(16, 22);
+			this->pictureBox->Image = nullptr;
+			this->pictureBox->Location = System::Drawing::Point(23, 33);
+			this->pictureBox->LowerColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(250)), static_cast<System::Int32>(static_cast<System::Byte>(250)), 
+				static_cast<System::Int32>(static_cast<System::Byte>(250)));
 			this->pictureBox->Name = L"pictureBox";
-			this->pictureBox->Size = System::Drawing::Size(305, 299);
+			this->pictureBox->Size = System::Drawing::Size(286, 274);
 			this->pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 			this->pictureBox->TabIndex = 0;
-			this->pictureBox->TabStop = false;
-			this->pictureBox->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &MediaPreviewControl::pictureBox_MouseDown);
+			this->pictureBox->TransparencyEnabled = false;
+			this->pictureBox->UpperColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(255)), static_cast<System::Int32>(static_cast<System::Byte>(255)), 
+				static_cast<System::Int32>(static_cast<System::Byte>(255)));
+			this->pictureBox->MouseDown += gcnew MouseEventHandler(this, &MediaPreviewControl::pictureBox_MouseDown);
 			// 
 			// MediaPreviewControl
 			// 
@@ -101,7 +108,6 @@ namespace imageviewer {
 			this->Name = L"MediaPreviewControl";
 			this->Size = System::Drawing::Size(336, 348);
 			this->panel->ResumeLayout(false);
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox))->EndInit();
 			this->ResumeLayout(false);
 
 		}
@@ -111,6 +117,7 @@ private:
 	
 	MediaFileFactory ^mediaFileFactory;
 	MediaFile ^media;
+	Image ^loadingImage;
 
 	String ^caption;
 
@@ -164,7 +171,7 @@ private:
 
 			if(thumbs->Count > 0) {
 
-				pictureBox->Image = thumbs[0]->ThumbImage;
+				setPictureBoxImage(thumbs[0]->ThumbImage);
 
 			} 
 			
@@ -196,11 +203,36 @@ private:
 		toolTip->SetToolTip(pictureBox, text);
 	}
 
+	void setPictureBoxImage(Image ^image) {
+
+		pictureBox->SizeMode = PictureBoxSizeMode::Zoom;
+		pictureBox->TransparencyEnabled = false;
+		pictureBox->Image = image;
+	}
+
+	void setPictureBoxLoadingImage() {
+
+		if(pictureBox->Image != nullptr) {
+
+			if(pictureBox->Image != loadingImage) {
+				delete pictureBox->Image;
+			}
+			setToolTip("");
+		}	
+
+		pictureBox->SizeMode = PictureBoxSizeMode::CenterImage;
+		pictureBox->TransparencyEnabled = true;
+		pictureBox->Image = loadingImage;
+
+	}
+
 	void clearPictureBox() {
 
 		if(pictureBox->Image != nullptr) {
 
-			delete pictureBox->Image;
+			if(pictureBox->Image != loadingImage) {
+				delete pictureBox->Image;
+			}
 			pictureBox->Image = nullptr;
 			setToolTip("");
 		}		
@@ -266,7 +298,14 @@ public:
 
 	void loadMedia(String ^fileLocation, DisplayMode mode) {
 		
-		clearPictureBox();
+		if(String::IsNullOrEmpty(fileLocation)) {
+
+			clearPictureBox();
+
+		} else {
+
+			setPictureBoxLoadingImage();
+		}
 		//pictureBox->Image = miscImageList->Images[0];
 
 		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, mode);

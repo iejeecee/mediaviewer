@@ -29,8 +29,7 @@ namespace imageviewer {
 			//
 			//TODO: Add the constructor code here
 			//
-			Image ^image = gcnew Bitmap("C:\\game\\icons\\loading2.gif");
-			animatedPictureBoxControl->Image = image;
+		
 		}
 
 	protected:

@@ -128,6 +128,24 @@ private:
         // Force a call to the Paint event handler. 
         this->Invalidate();
     }
+
+	void centerImageOffset(int destWidth, int destHeight, int %destX, int %destY) {
+
+		int tempX = Width;
+		int tempY = Height;
+
+		if(destWidth < Width) {
+
+			destX = (Width - destWidth) / 2;
+		}
+
+		if(destHeight < Height) {
+
+			destY = (Height - destHeight) / 2;
+		}
+
+	}
+
 protected:
 
 	virtual void OnPaint(PaintEventArgs^ e) override
@@ -145,19 +163,11 @@ protected:
 		if(sizeMode == PictureBoxSizeMode::Zoom) {
 
 			ImageUtils::stretchRectangle(currentImage->Width, currentImage->Height, Width, Height, destWidth, destHeight);
+			centerImageOffset(destWidth, destHeight, destX, destY);
 
 		} else if(sizeMode == PictureBoxSizeMode::CenterImage) {
 
-			if(currentImage->Width < Width) {
-
-				destX = (Width - currentImage->Width) / 2;
-			}
-
-			if(currentImage->Height < Height) {
-
-				destY = (Height - currentImage->Height) / 2;
-			}
-
+			centerImageOffset(destWidth, destHeight, destX, destY);
 
 		} else if(sizeMode == PictureBoxSizeMode::StretchImage) {
 
@@ -165,7 +175,7 @@ protected:
 			destHeight = Height;
 		}
 
-		Rectangle destRect = Rectangle(destX,destX,destWidth,destHeight);
+		Rectangle destRect = Rectangle(destX, destY, destWidth, destHeight);
 
 		// Draw the next frame in the animation.
 		if(TransparencyEnabled == true) {
@@ -178,9 +188,12 @@ protected:
 
 		} else {
 
-			
+			//Pen^ blackPen = gcnew Pen( Color::Black,3.0f );
+			//e->Graphics->DrawRectangle( blackPen, Rectangle(0,0,Width, Height));
+
 			e->Graphics->DrawImage( currentImage, destRect, 0, 0,
 				currentImage->Width, currentImage->Height, GraphicsUnit::Pixel);
+			
 		}
 
 		
@@ -197,6 +210,7 @@ public:
 
 			stopAnimateImage();
 			currentImage = image;
+			this->Invalidate();
 		}
 
 		System::Drawing::Image ^get() {
