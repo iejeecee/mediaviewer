@@ -247,16 +247,18 @@ public:
 		activeStates = gcnew List<AsyncState ^>();
 	}
 	
-	// open file/http stream in a non blocking fashion
-	// attempt to cancel any pending opens to speed up it's operation
+	// Open (read only) a file/http stream in a non blocking fashion
+	// When the file is successfully opened a OpenFinished event is generated
+	// The function will attempt to cancel any pending opens to speed up it's operation
 	void openNonBlockingAndCancelPending(String ^location) {
 
 		openNonBlockingAndCancelPending(location, nullptr);
 	}
 
-	// open file/http stream in a non blocking fashion
-	// attempt to cancel any pending opens to speed up it's operation
-	// userstate is set on the returning mediafile
+	// Open (read only) a file/http stream in a non blocking fashion
+	// When the file is successfully opened a OpenFinished event is generated
+	// The function will attempt to cancel any pending opens to speed up it's operation
+	// userstate is attached to the returning mediafile
 	void openNonBlockingAndCancelPending(String ^location, Object ^userState) {
 
 		try {

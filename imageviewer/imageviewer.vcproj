@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4766.334, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4768.36505, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4763.34730, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4768.36508, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 	</References>
@@ -275,6 +275,10 @@
 			</File>
 			<File
 				RelativePath=".\AboutForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\AnimatedPictureBoxControl.cpp"
 				>
 			</File>
 			<File
@@ -417,6 +421,16 @@
 				>
 				<File
 					RelativePath=".\About.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\AnimatedPictureBoxControl.h"
+				FileType="4"
+				>
+				<File
+					RelativePath=".\AnimatedPictureBoxControl.resx"
 					SubType="Designer"
 					>
 				</File>

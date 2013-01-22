@@ -66,6 +66,7 @@ namespace imageviewer {
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
+			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(MediaPreviewControl::typeid));
 			this->panel = (gcnew System::Windows::Forms::Panel());
 			this->pictureBox = (gcnew System::Windows::Forms::PictureBox());
 			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
@@ -127,16 +128,9 @@ private:
 			// grab or generate thumbnail images
 			List<MetaDataThumb ^> ^thumbs = nullptr;
 
-			if(media->MetaData != nullptr) {
+			if(media->MetaData != nullptr && media->MetaData->Thumbnail->Count > 0) {
 
-				if(media->MetaData->Thumbnail->Count > 0) {
-
-					thumbs = media->MetaData->Thumbnail;
-
-				} else {
-
-					thumbs = media->generateThumbnails();
-				}
+				thumbs = media->MetaData->Thumbnail;
 
 			} else {
 
@@ -211,6 +205,8 @@ private:
 			setToolTip("");
 		}		
 	}
+
+
 protected:
 
 	
@@ -271,6 +267,7 @@ public:
 	void loadMedia(String ^fileLocation, DisplayMode mode) {
 		
 		clearPictureBox();
+		//pictureBox->Image = miscImageList->Images[0];
 
 		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, mode);
 

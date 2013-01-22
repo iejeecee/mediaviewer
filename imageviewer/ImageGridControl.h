@@ -480,12 +480,13 @@ public:
 
 			if(imageNr < getNrImages()) {
 
-				if(!panel[panelNr]->Location->Equals(imageData[imageNr]->imageLocation)) {
+				// when changes occur rapidly this check bugs out (fix?)
+				//if(!panel[panelNr]->Location->Equals(imageData[imageNr]->imageLocation)) {
 
 					// only update the image if it is different from the
 					// currently displayed image
 					displayImage(panelNr, imageData[imageNr]);
-				}
+				//}
 
 			} else {
 

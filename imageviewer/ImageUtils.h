@@ -37,6 +37,18 @@ public:
 			scaledHeight = int(height * Math::Min(widthScale, heightScale));
 		}
 
+	static void stretchRectangle(int width, int height, int maxWidth, int maxHeight, int %scaledWidth, int %scaledHeight) {
+			
+			float widthScale = 1;
+			float heightScale = 1;
+
+			widthScale = maxWidth / (float)width;			
+			heightScale = maxHeight / (float)height;
+				
+			scaledWidth = int(width * Math::Min(widthScale, heightScale));
+			scaledHeight = int(height * Math::Min(widthScale, heightScale));
+		}
+
 	static Image ^resizeImage(Image ^source, int width, int height) {
 
 		if(source->Width == width && source->Height == height) {

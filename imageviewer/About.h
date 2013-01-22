@@ -1,4 +1,5 @@
 #pragma once
+#include "AnimatedPictureBoxControl.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -28,6 +29,8 @@ namespace imageviewer {
 			//
 			//TODO: Add the constructor code here
 			//
+			Image ^image = gcnew Bitmap("C:\\game\\icons\\loading2.gif");
+			animatedPictureBoxControl->Image = image;
 		}
 
 	protected:
@@ -44,6 +47,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::Label^  label1;
 	private: System::Windows::Forms::Button^  button1;
 	private: System::Windows::Forms::Label^  label2;
+
 
 
 	protected: 
@@ -70,16 +74,16 @@ namespace imageviewer {
 			// label1
 			// 
 			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(74, 20);
+			this->label1->Location = System::Drawing::Point(66, 20);
 			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(139, 20);
+			this->label1->Size = System::Drawing::Size(137, 20);
 			this->label1->TabIndex = 0;
-			this->label1->Text = L"Image Viewer v1.0";
+			this->label1->Text = L"Media Viewer v1.0";
 			// 
 			// button1
 			// 
 			this->button1->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"button1.Image")));
-			this->button1->Location = System::Drawing::Point(102, 99);
+			this->button1->Location = System::Drawing::Point(91, 94);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(87, 49);
 			this->button1->TabIndex = 1;
@@ -89,17 +93,17 @@ namespace imageviewer {
 			// label2
 			// 
 			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(98, 54);
+			this->label2->Location = System::Drawing::Point(67, 54);
 			this->label2->Name = L"label2";
-			this->label2->Size = System::Drawing::Size(95, 20);
+			this->label2->Size = System::Drawing::Size(135, 20);
 			this->label2->TabIndex = 2;
-			this->label2->Text = L"By IJC 2012";
+			this->label2->Text = L"By IJC 2012/2013";
 			// 
 			// About
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(290, 178);
+			this->ClientSize = System::Drawing::Size(268, 193);
 			this->ControlBox = false;
 			this->Controls->Add(this->label2);
 			this->Controls->Add(this->button1);
