@@ -5,6 +5,7 @@
 #include "VideoFile.h"
 #include "UnknownFile.h"
 #include "MediaFormatConvert.h"
+#include "MediaFileException.h"
 #include "FileUtils.h"
 #include "GEventArgs.h"
 #include <msclr\lock.h>
@@ -111,7 +112,7 @@ private:
 				if(state->IsCancelled->Value == true) {
 
 					request->Abort();
-					throw gcnew Exception("Aborting opening image");
+					throw gcnew MediaFileException("Aborting opening image");
 				}
 
 				Thread::Sleep(100);
@@ -133,7 +134,7 @@ private:
 
 				if(state->IsCancelled->Value == true) {							
 
-					throw gcnew Exception("Aborting reading image");
+					throw gcnew MediaFileException("Aborting reading image");
 				}
 
 				data->Write(buffer, 0, count);

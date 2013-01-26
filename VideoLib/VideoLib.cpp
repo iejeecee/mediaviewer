@@ -63,8 +63,6 @@ List<RawImageRGB24 ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxTh
 
 		}
 
-	} catch(Exception ^) {
-
 	} finally {
 
 		frameGrabber->clearThumbs();

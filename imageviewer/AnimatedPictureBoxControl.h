@@ -35,6 +35,9 @@ namespace imageviewer {
 
 			lowerColor = Color::FromArgb( 255, 255, 255 );
 			upperColor = Color::FromArgb( 255, 255, 255 );
+
+			infoIcon = gcnew array<int>(nrIcons);
+			clearInfoIcons();
 		}
 
 	protected:
@@ -48,6 +51,11 @@ namespace imageviewer {
 				delete components;
 			}
 		}
+	private: System::Windows::Forms::ImageList^  imageList;
+	protected: 
+
+	protected: 
+	private: System::ComponentModel::IContainer^  components;
 
 	protected: 
 
@@ -57,7 +65,7 @@ namespace imageviewer {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -66,7 +74,26 @@ namespace imageviewer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			this->components = (gcnew System::ComponentModel::Container());
+			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(AnimatedPictureBoxControl::typeid));
+			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->SuspendLayout();
+			// 
+			// imageList
+			// 
+			this->imageList->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^  >(resources->GetObject(L"imageList.ImageStream")));
+			this->imageList->TransparentColor = System::Drawing::Color::Transparent;
+			this->imageList->Images->SetKeyName(0, L"264.png");
+			this->imageList->Images->SetKeyName(1, L"AVI.ico");
+			this->imageList->Images->SetKeyName(2, L"MOV.ico");
+			this->imageList->Images->SetKeyName(3, L"MP4.ico");
+			this->imageList->Images->SetKeyName(4, L"WMV.ico");
+			this->imageList->Images->SetKeyName(5, L"ASF.ico");
+			this->imageList->Images->SetKeyName(6, L"BMP.ico");
+			this->imageList->Images->SetKeyName(7, L"GIF.ico");
+			this->imageList->Images->SetKeyName(8, L"JPG.ico");
+			this->imageList->Images->SetKeyName(9, L"PNG.ico");
+			this->imageList->Images->SetKeyName(10, L"TIFF.ico");
 			// 
 			// AnimatedPictureBoxControl
 			// 
@@ -91,6 +118,9 @@ private:
 	Color lowerColor;
 	Color upperColor;
 
+	const static int nrIcons = 6;
+	array<int> ^infoIcon;
+
     void animateImage() 
     {
         // Begin the animation only once. 
@@ -103,9 +133,8 @@ private:
 			ImageAnimator::Animate(currentImage,
                 gcnew EventHandler(this, &AnimatedPictureBoxControl::onFrameChanged));
             currentlyAnimating = true;
-        }
 
-		if(currentlyAnimating == true) {
+        } else if(currentlyAnimating == true) {
 
 			// Get the next frame ready for rendering.
 			ImageAnimator::UpdateFrames();
@@ -125,57 +154,65 @@ private:
 
     void onFrameChanged(Object^ , EventArgs^ ) 
     {
-        // Force a call to the Paint event handler. 
         this->Invalidate();
     }
 
-	void centerImageOffset(int destWidth, int destHeight, int %destX, int %destY) {
+	Rectangle getIconCanvas(int iconNr) {
 
-		int tempX = Width;
-		int tempY = Height;
+		int width = Width / nrIcons;
+		int height = Height / nrIcons;
 
-		if(destWidth < Width) {
+		int xPos = width * iconNr;
+		int yPos = Height - height;
 
-			destX = (Width - destWidth) / 2;
-		}
+		Rectangle dest = Rectangle(xPos, yPos, width, height);
+		Rectangle canvas;
 
-		if(destHeight < Height) {
+		canvas.Width = int(dest.Width  * 0.9);
+		canvas.Height = int(dest.Height * 0.9);
+		
+		canvas = ImageUtils::centerRectangle(dest, canvas);
 
-			destY = (Height - destHeight) / 2;
-		}
-
+		return(canvas);
 	}
 
-protected:
+protected: 
 
 	virtual void OnPaint(PaintEventArgs^ e) override
-	{
-		// Begin the animation.
+	{		
+
+		UserControl::OnPaint(e);
+
 		if(currentImage == nullptr) return;
 
+		e->Graphics->InterpolationMode = InterpolationMode::HighQualityBicubic;
+
+		// Begin the animation.
 		animateImage();
 
-		int destX = 0;
-		int destY = 0;
-		int destWidth = currentImage->Width;
-		int destHeight = currentImage->Height;
+		Rectangle canvasRect, destRect;
+		canvasRect.Width = int(Width  * 0.9);
+		canvasRect.Height = int(Height * 0.9);
+		
+		canvasRect = ImageUtils::centerRectangle(Rectangle(0,0, Width, Height), canvasRect);
 
 		if(sizeMode == PictureBoxSizeMode::Zoom) {
 
-			ImageUtils::stretchRectangle(currentImage->Width, currentImage->Height, Width, Height, destWidth, destHeight);
-			centerImageOffset(destWidth, destHeight, destX, destY);
+			int destWidth, destHeight;
+
+			ImageUtils::stretchRectangle(currentImage->Width, currentImage->Height, 
+				canvasRect.Width, canvasRect.Height, destWidth, destHeight);
+			
+			destRect = ImageUtils::centerRectangle(canvasRect, Rectangle(0,0, destWidth, destHeight));
 
 		} else if(sizeMode == PictureBoxSizeMode::CenterImage) {
 
-			centerImageOffset(destWidth, destHeight, destX, destY);
+			destRect = ImageUtils::centerRectangle(canvasRect, Rectangle(0,0, currentImage->Width, currentImage->Height));
 
 		} else if(sizeMode == PictureBoxSizeMode::StretchImage) {
 
-			destWidth = Width;
-			destHeight = Height;
+			destRect = canvasRect;
 		}
-
-		Rectangle destRect = Rectangle(destX, destY, destWidth, destHeight);
 
 		// Draw the next frame in the animation.
 		if(TransparencyEnabled == true) {
@@ -193,16 +230,45 @@ protected:
 
 			e->Graphics->DrawImage( currentImage, destRect, 0, 0,
 				currentImage->Width, currentImage->Height, GraphicsUnit::Pixel);
-			
+					
 		}
 
+		//System::Drawing::Image ^test = gcnew Bitmap("C:\\game\\icons\\Button-Info-icon24.png");
 		
+		for(int i = 0; i < nrIcons; i++) {
+
+			if(infoIcon[i] == -1) continue;
+
+			System::Drawing::Image ^icon = imageList->Images[infoIcon[i]];
+
+			canvasRect = getIconCanvas(i);
+
+			int scaledWidth, scaledHeight;
+
+			ImageUtils::stretchRectangle(icon->Width, icon->Height, canvasRect.Width,
+				canvasRect.Height, scaledWidth, scaledHeight);
+
+			destRect = ImageUtils::centerRectangle(canvasRect, Rectangle(0,0, scaledWidth, scaledHeight));
+
+			imageAttr->SetColorKey( upperColor, upperColor, ColorAdjustType::Default );
+	
+			e->Graphics->DrawImage( icon, destRect, 0, 0,
+				icon->Width, icon->Height, GraphicsUnit::Pixel);
+
+			//e->Graphics->DrawIcon(, destRect);
+		}
+
+			
+
+		//PaintFinished(this, gcnew EventArgs());
 
 		//e->Graphics->DrawImage( currentImage, Point(0,0));
 	
 
 	}
 public:
+
+	event EventHandler<EventArgs ^> ^PaintFinished;
 
 	property Image ^AnimatedPictureBoxControl::Image {
 
@@ -270,6 +336,27 @@ public:
 		Color get() {
 
 			return(upperColor);
+		}
+	}
+
+	void addInfoIcon(int iconNr) {
+
+		for(int i = nrIcons -1; i >= 0; i--) {
+
+			if(infoIcon[i] == -1) {
+
+				infoIcon[i] = iconNr;
+				break;
+			}
+		}
+
+	}
+
+	void clearInfoIcons() {
+
+		for(int i = 0; i < nrIcons; i++) {
+
+			infoIcon[i] = -1;
 		}
 	}
 

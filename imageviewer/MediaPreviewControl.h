@@ -2,6 +2,7 @@
 
 #include "MediaFileFactory.h"
 #include "AnimatedPictureBoxControl.h"
+#include "TransparentIconPanel.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -9,6 +10,7 @@ using namespace System::Collections;
 using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
+using namespace System::Drawing::Imaging;
 
 
 namespace imageviewer {
@@ -31,7 +33,9 @@ namespace imageviewer {
 
 			caption = "";
 
-			loadingImage = gcnew Bitmap("C:\\game\\icons\\loading.gif");
+			informImage = gcnew List<Image ^>();
+			informImage->Add(gcnew Bitmap("C:\\game\\icons\\loading.gif"));
+			informImage->Add(gcnew Bitmap("c:\\game\\icons\\error.png"));
 			
 		}
 
@@ -51,7 +55,12 @@ namespace imageviewer {
 
 	private: System::Windows::Forms::ToolTip^  toolTip;
 	private: System::Windows::Forms::ImageList^  imageList;
+
 	private: imageviewer::AnimatedPictureBoxControl^  pictureBox;
+
+
+
+
 	private: System::ComponentModel::IContainer^  components;
 
 	protected: 
@@ -87,18 +96,19 @@ namespace imageviewer {
 			// 
 			// pictureBox
 			// 
+			this->pictureBox->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox->Image = nullptr;
-			this->pictureBox->Location = System::Drawing::Point(23, 33);
-			this->pictureBox->LowerColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(250)), static_cast<System::Int32>(static_cast<System::Byte>(250)), 
-				static_cast<System::Int32>(static_cast<System::Byte>(250)));
+			this->pictureBox->Location = System::Drawing::Point(0, 0);
+			this->pictureBox->LowerColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(200)), static_cast<System::Int32>(static_cast<System::Byte>(200)), 
+				static_cast<System::Int32>(static_cast<System::Byte>(200)));
 			this->pictureBox->Name = L"pictureBox";
-			this->pictureBox->Size = System::Drawing::Size(286, 274);
+			this->pictureBox->Size = System::Drawing::Size(336, 348);
 			this->pictureBox->SizeMode = System::Windows::Forms::PictureBoxSizeMode::Zoom;
 			this->pictureBox->TabIndex = 0;
 			this->pictureBox->TransparencyEnabled = false;
 			this->pictureBox->UpperColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(255)), static_cast<System::Int32>(static_cast<System::Byte>(255)), 
 				static_cast<System::Int32>(static_cast<System::Byte>(255)));
-			this->pictureBox->MouseDown += gcnew MouseEventHandler(this, &MediaPreviewControl::pictureBox_MouseDown);
+			this->pictureBox->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &MediaPreviewControl::pictureBox_MouseDown);
 			// 
 			// MediaPreviewControl
 			// 
@@ -114,11 +124,17 @@ namespace imageviewer {
 #pragma endregion
 
 private:
+
+	enum class InformImage {
+
+		LOADING_IMAGE = 0,
+		ERROR_IMAGE = 1,		
+	};
 	
 	MediaFileFactory ^mediaFileFactory;
 	MediaFile ^media;
-	Image ^loadingImage;
-
+	List<Image ^> ^informImage;
+	
 	String ^caption;
 
 	delegate void loadPreviewDelegate(MediaFile ^media, List<MetaDataThumb ^> ^thumbs);
@@ -146,7 +162,9 @@ private:
 
 			args[1] = thumbs;			
 
-		} catch (Exception ^) {
+		} catch (Exception ^e) {
+
+			media->OpenError = e;
 
 		} finally {
 
@@ -163,18 +181,28 @@ private:
 
 			clearPictureBox();
 
-			if(String::IsNullOrEmpty(media->Location) || !media->OpenSuccess ||
-				media->MediaFormat == MediaFile::MediaType::UNKNOWN) 
-			{
-				return;
-			} 
+			if(!media->OpenSuccess) {
+			
+				if(media->OpenError->GetType() != MediaFileException::typeid) {
+					setPictureBoxInformImage(InformImage::ERROR_IMAGE);
+				}
 
-			if(thumbs->Count > 0) {
+			} else if(String::IsNullOrEmpty(media->Location) || media->MediaFormat == MediaFile::MediaType::UNKNOWN) {
+			
+				return;
+				
+			} else if(thumbs->Count > 0) {
 
 				setPictureBoxImage(thumbs[0]->ThumbImage);
 
+				pictureBox->addInfoIcon(mimeTypeInfoIcon(media->MimeType));
+
+				if(media->MetaData == nullptr) {
+
+					pictureBox->addInfoIcon(0);
+				}
 			} 
-			
+
 			if(String::IsNullOrEmpty(caption)) {
 
 				setToolTip(media->getDefaultCaption());
@@ -201,6 +229,7 @@ private:
 	void setToolTip(String ^text) {
 
 		toolTip->SetToolTip(pictureBox, text);
+		//toolTip->SetToolTip(transparentIconPanel, text);
 	}
 
 	void setPictureBoxImage(Image ^image) {
@@ -208,53 +237,103 @@ private:
 		pictureBox->SizeMode = PictureBoxSizeMode::Zoom;
 		pictureBox->TransparencyEnabled = false;
 		pictureBox->Image = image;
+
 	}
 
-	void setPictureBoxLoadingImage() {
+	void setPictureBoxInformImage(InformImage image) {
 
-		if(pictureBox->Image != nullptr) {
-
-			if(pictureBox->Image != loadingImage) {
-				delete pictureBox->Image;
-			}
-			setToolTip("");
-		}	
+		clearPictureBox();
 
 		pictureBox->SizeMode = PictureBoxSizeMode::CenterImage;
 		pictureBox->TransparencyEnabled = true;
-		pictureBox->Image = loadingImage;
+		pictureBox->Image = informImage[(int)image];
 
+		
 	}
 
 	void clearPictureBox() {
 
 		if(pictureBox->Image != nullptr) {
 
-			if(pictureBox->Image != loadingImage) {
+			if(!informImage->Contains(pictureBox->Image)) {
+
 				delete pictureBox->Image;
 			}
 			pictureBox->Image = nullptr;
+			pictureBox->clearInfoIcons();
 			setToolTip("");
+			
 		}		
+	}
+
+	int mimeTypeInfoIcon(String ^mimeType) {
+
+		if(mimeType->Equals("image/tiff")) {
+
+			return(10);
+
+		} else if(mimeType->Equals("image/gif")) {
+
+			return(7);
+
+		} else if(mimeType->Equals("image/png")) {
+
+			return(9);
+
+		} else if(mimeType->Equals("image/jpeg")) {
+
+			return(8);
+
+		} else if(mimeType->Equals("image/bmp")) {
+
+			return(6);
+
+		} else if(mimeType->Equals("video/x-ms-asf")) {
+
+			return(5);
+		
+		} else if(mimeType->Equals("video/x-ms-wmv")) {
+
+			return(4);
+		
+		} else if(mimeType->Equals("video/x-flv")) {
+
+			return(3);
+		
+		} else if(mimeType->Equals("video/avi") || 
+			mimeType->Equals("video/vnd.avi") ||
+			mimeType->Equals("video/msvideo") ||
+			mimeType->Equals("video/x-msvideo")) 
+		{
+		
+			return(1);
+
+		} else if(mimeType->Equals("video/mp4")) {
+
+			return(3);
+		
+		} else if(mimeType->Equals("video/quicktime")) {
+
+			return(2);
+
+		} else if(mimeType->Equals("video/x-matroska")) {
+
+			return(3);
+
+		} else if(mimeType->Equals("video/x-m4v")) {
+
+			return(3);
+
+		} else {
+
+			return(8);
+		}
+
 	}
 
 
 protected:
 
-	
-	 virtual void OnSizeChanged(EventArgs ^e) override {
-
-		 Control::OnSizeChanged(e);
-
-		 pictureBox->Width = int(panel->Width  * 0.9);
-		 pictureBox->Height = int(panel->Height * 0.9);
-
-		 int locationX = (panel->Width - pictureBox->Width) / 2;
-		 int locationY = (panel->Height - pictureBox->Height) / 2;
-
-		 pictureBox->Location =  System::Drawing::Point(locationX, locationY);
-
-	 }
 
 
 public:
@@ -304,7 +383,7 @@ public:
 
 		} else {
 
-			setPictureBoxLoadingImage();
+			setPictureBoxInformImage(InformImage::LOADING_IMAGE);
 		}
 		//pictureBox->Image = miscImageList->Images[0];
 
@@ -320,6 +399,8 @@ private: System::Void pictureBox_MouseDown(System::Object^  sender, System::Wind
 			 
 
 		 }
+
+
 
 };
 }

@@ -72,6 +72,47 @@ public:
 
 	}
 
+	static String ^formatTimeSeconds(int totalSeconds) {
+
+		int seconds = int(totalSeconds % 60);
+		int minutes = int((totalSeconds / 60) % 60);
+		int hours = int(totalSeconds / 3600);
+
+		String ^output = hours.ToString("00") + ":" +
+			minutes.ToString("00") + ":" +
+			seconds.ToString("00");
+
+		return(output);
+
+	}
+
+	static String ^formatSizeBytes(__int64 sizeBytes) {
+
+		__int64 GB = 1073741824;
+		__int64 MB = 1048576;
+		__int64 KB = 1024;
+		String ^output;
+
+		if(sizeBytes > GB) {
+
+			output = (sizeBytes / double(GB)).ToString("0.00") + " GB";
+
+		} else if(sizeBytes > MB) {
+
+			output = (sizeBytes / double(MB)).ToString("0.00") + " MB";
+
+		} else if(sizeBytes > KB) {
+
+			output = (sizeBytes / double(KB)).ToString("0") + " KB";
+
+		} else {
+
+			output = sizeBytes.ToString() + " Bytes";
+		}
+
+		return(output);
+	}
+
 	generic <typename T>
 	static bool listSortAndCompare(List<T> ^a, List<T> ^b) {
 

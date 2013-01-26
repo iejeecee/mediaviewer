@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MediaFile.h"
+#include "Util.h"
 
 namespace imageviewer {
 
@@ -234,22 +235,21 @@ public:
 		sb->AppendLine();
 
 		sb->AppendLine("Duration:");
-		sb->Append(DurationSeconds / 3600);
-		sb->Append(":");
-		sb->Append((DurationSeconds / 60) % 60);
-		sb->Append(":");
-		sb->Append(DurationSeconds % 60);
+		sb->AppendLine(Util::formatTimeSeconds(DurationSeconds));
 		sb->AppendLine();
+
+		sb->AppendLine("Size");
+		sb->AppendLine(Util::formatSizeBytes(SizeBytes));
 		sb->AppendLine();
 
 		sb->AppendLine("Video Codec");
 		sb->AppendLine(VideoCodecName);
-
+/*
 		for each(String ^info in FSMetaData) {
 
 			sb->AppendLine(info);
 		}
-
+*/
 		sb->AppendLine();
 
 		if(MetaData != nullptr) {

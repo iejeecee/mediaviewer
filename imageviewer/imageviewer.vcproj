@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4768.36505, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4771.26952, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4768.36508, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4771.26953, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 	</References>
@@ -403,6 +403,10 @@
 			</File>
 			<File
 				RelativePath=".\TagEditorForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TransparentIconPanel.cpp"
 				>
 			</File>
 			<File
@@ -712,6 +716,16 @@
 				</File>
 			</File>
 			<File
+				RelativePath=".\TransparentIconPanel.h"
+				FileType="4"
+				>
+				<File
+					RelativePath=".\TransparentIconPanel.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
 				RelativePath=".\UploadOutputForm.h"
 				FileType="3"
 				>
@@ -890,6 +904,10 @@
 				</File>
 				<File
 					RelativePath=".\MediaFile.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MediaFileException.h"
 					>
 				</File>
 				<File

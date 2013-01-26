@@ -502,37 +502,37 @@ public:
 
 	
 	void resizeImage(int width, int height) {
+
+		if(sourceImage == nullptr) return;
+
 /*
-			if(sourceBitmap == nullptr) return;
+		if(width == -2 && height == -2) {
 
-			System::Drawing::Size curSize = getImageSize();
+			width = sourceBitmap->Width;
+			height = sourceBitmap->Height;
 
-			if(width == -2 && height == -2) {
+		} else if(width == -1 && height == -1) {
 
-				width = sourceBitmap->Width;
-				height = sourceBitmap->Height;
+			scaleToFitPanel(sourceBitmap->Width, sourceBitmap->Height, 1, width, height);
 
-			} else if(width == -1 && height == -1) {
+		} else if(width == -1) {
 
-				scaleToFitPanel(sourceBitmap->Width, sourceBitmap->Height, 1, width, height);
+			width = getScaledWidth(curSize.Width, curSize.Height, height);
 
-			} else if(width == -1) {
+		} else if(height == -1) {
 
-				width = getScaledWidth(curSize.Width, curSize.Height, height);
-
-			} else if(height == -1) {
-
-				height = getScaledHeight(curSize.Width, curSize.Height, width);
-			}
-
-			if(width != curSize.Width || height != curSize.Height) {
-
-				pictureBox->Image = ImageUtils::resizeImage(sourceBitmap, width, height);
-				isModified = true;
-			}
-
-			centerImage();			
+			height = getScaledHeight(curSize.Width, curSize.Height, width);
+		}
 */
+		if(width != ImageSize.Width || height != ImageSize.Height) {
+
+			Image ^resizedImage = ImageUtils::resizeImage(sourceImage, width, height);
+			isModified = true;
+			displayAndCenterImage(resizedImage);
+		}
+
+		//centerImage();			
+
 	}
 
 	void zoomImage(float scale) {
