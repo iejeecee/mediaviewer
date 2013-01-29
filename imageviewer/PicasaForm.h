@@ -846,16 +846,23 @@ namespace imageviewer {
 				 }
 
 				 ImageGridItem ^item = gcnew ImageGridItem(thumbURL);
-				 item->data = photo;						 
+				 item->Data = photo;						 
 
-				 item->contextMenu = createContextMenu(photo);
+				 item->ContextMenu = createContextMenu(photo);
 
 				 String ^author = !String::IsNullOrEmpty(photo->Author) ? "Author: " + photo->Author + "\n" : "";
 				 String ^summary = !String::IsNullOrEmpty(photo->Summary) ? photo->Summary + "\n" : "";
 
-				 String ^comments = photo->CommentCount > 0 ? "Comments: " + Convert::ToString(photo->CommentCount) + "\n" : "";
+				 if(photo->CommentCount > 0) {
 
-				 item->caption = photo->Title + "\n" + author + comments + summary + Convert::ToString(photo->Width) + " x " + Convert::ToString(photo->Height);
+					 InfoIcon ^infoIcon = gcnew InfoIcon(InfoIcon::IconType::COMMENTS);
+					 infoIcon->Caption = photo->CommentCount.ToString() + " comments";
+
+					 item->InfoIcon->Add(infoIcon);
+
+				 }
+
+				 item->Caption = photo->Title + "\n" + author + summary + Convert::ToString(photo->Width) + " x " + Convert::ToString(photo->Height);
 
 				 return(item);
 			 }
@@ -1042,7 +1049,7 @@ namespace imageviewer {
 			 }
 	private: System::Void openAlbumToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs ^e) {
 
-				 Photo ^photo = dynamic_cast<Photo ^>(e->item->data);
+				 Photo ^photo = dynamic_cast<Photo ^>(e->item->Data);
 
 				 if(photo->PicasaEntry->Authors->Count == 0) return;
 
@@ -1076,7 +1083,7 @@ namespace imageviewer {
 
 					 for(int i = 0; i < selected->Count; i++) {
 
-						 Photo ^photo = dynamic_cast<Photo ^>(selected[i]->data);
+						 Photo ^photo = dynamic_cast<Photo ^>(selected[i]->Data);
 
 						 if(!photo->ReadOnly) {
 
@@ -1121,7 +1128,7 @@ namespace imageviewer {
 	
 	private: System::Void photoInfoToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs ^e) {
 
-				 Photo ^photo = dynamic_cast<Photo ^>(e->item->data);
+				 Photo ^photo = dynamic_cast<Photo ^>(e->item->Data);
 
 				 PicasaPhotoForm ^form = gcnew PicasaPhotoForm();
 				 form->photo = photo;
@@ -1157,7 +1164,7 @@ namespace imageviewer {
 
 	private: System::Void commentsToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs ^e) {
 
-				 Photo ^photo = dynamic_cast<Photo ^>(e->item->data);
+				 Photo ^photo = dynamic_cast<Photo ^>(e->item->Data);
 
 				 PicasaCommentForm ^commentForm = gcnew PicasaCommentForm();
 				 commentForm->photo = photo;
@@ -1215,7 +1222,7 @@ namespace imageviewer {
 			 }
 	private: System::Void deletePhotoToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs ^e) {
 
-				 e->item->contextMenu->Hide();
+				 e->item->ContextMenu->Hide();
 
 				 List<ImageGridItem ^> ^selected = imageGrid->getSelectedImageData();
 

@@ -160,7 +160,6 @@ namespace imageviewer {
 			// _imageGrid
 			// 
 			this->_imageGrid->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->_imageGrid->InfoIconsEnabled = true;
 			this->_imageGrid->Location = System::Drawing::Point(0, 0);
 			this->_imageGrid->Name = L"_imageGrid";
 			this->_imageGrid->Size = System::Drawing::Size(673, 425);
@@ -279,7 +278,8 @@ namespace imageviewer {
 				
 				 ImageGridItem ^item = gcnew ImageGridItem(location);
 
-				 item->contextMenu = createContextMenu();
+				 item->ContextMenu = createContextMenu();
+				 item->InfoIconMode = ImageGridItem::InfoIconModes::DEFAULT_ICONS_ONLY;
 
 				 return(item);
 			 }
@@ -453,7 +453,7 @@ namespace imageviewer {
 
 				 for each(ImageGridItem ^item in selected) {
 
-					 fileNames->Add(item->imageLocation);
+					 fileNames->Add(item->ImageLocation);
 				 }
 
 				 for each(Form ^form in Application::OpenForms) {
@@ -497,7 +497,7 @@ namespace imageviewer {
 
 				 for each(ImageGridItem ^item in selected) {
 
-					 fileNames->Add(item->imageLocation);
+					 fileNames->Add(item->ImageLocation);
 				 }
 
 				 try {
@@ -515,7 +515,7 @@ namespace imageviewer {
 
 	private: System::Void deleteImageToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs ^e) {
 
-				 e->item->contextMenu->Hide();
+				 e->item->ContextMenu->Hide();
 
 				 List<ImageGridItem ^> ^selected = imageGrid->getSelectedImageData();
 
@@ -535,7 +535,7 @@ namespace imageviewer {
 
 						 for(int i = 0; i < selected->Count; i++) {
 
-							 System::IO::File::Delete(selected[i]->imageLocation);
+							 System::IO::File::Delete(selected[i]->ImageLocation);
 						 }
 
 					 } catch(Exception ^e) {
@@ -557,8 +557,8 @@ namespace imageviewer {
 				 if(selected->Count == 0) {
 
 					 selected->Add(e->item);
-					 info = "Rename Image: " + e->item->imageLocation;
-					 dialog->inputText = System::IO::Path::GetFileNameWithoutExtension(e->item->imageLocation);
+					 info = "Rename Image: " + e->item->ImageLocation;
+					 dialog->inputText = System::IO::Path::GetFileNameWithoutExtension(e->item->ImageLocation);
 
 				 } else {
 
@@ -573,15 +573,15 @@ namespace imageviewer {
 
 						 for(int i = 0; i < selected->Count; i++) {
 
-							String ^directory = Path::GetDirectoryName(selected[i]->imageLocation);
+							String ^directory = Path::GetDirectoryName(selected[i]->ImageLocation);
 							String ^counter = selected->Count > 1 ? " (" + Convert::ToString(i + 1) + ")" : "";
 
 							String ^name = Path::GetFileNameWithoutExtension(dialog->inputText);
-							String ^ext = Path::GetExtension(selected[i]->imageLocation);
+							String ^ext = Path::GetExtension(selected[i]->ImageLocation);
 
 							String ^newLocation = directory + "\\" + name + counter + ext;
 
-							File::Move(selected[i]->imageLocation, newLocation);
+							File::Move(selected[i]->ImageLocation, newLocation);
 						 }
 
 					 } catch(Exception ^e) {
@@ -613,7 +613,7 @@ namespace imageviewer {
 
 				 for each(ImageGridItem ^item in selected) {
 
-					 files->Add(item->imageLocation);
+					 files->Add(item->ImageLocation);
 				 }
 
 				 DirectoryBrowserControl::clipboardAction = DirectoryBrowserControl::ClipboardAction::CUT;
@@ -637,7 +637,7 @@ namespace imageviewer {
 
 				 for each(ImageGridItem ^item in selected) {
 
-					 files->Add(item->imageLocation);
+					 files->Add(item->ImageLocation);
 				 }
 
 				 DirectoryBrowserControl::clipboardAction = DirectoryBrowserControl::ClipboardAction::COPY;
@@ -665,7 +665,7 @@ namespace imageviewer {
 
 					 for(int i = 0; i < images->Count; i++) {
 
-						 String ^fileName = Path::GetFileName(images[i]->imageLocation);
+						 String ^fileName = Path::GetFileName(images[i]->ImageLocation);
 						 String ^destFileName = dialog->SelectedPath + "\\" + fileName;
 
 						 if(File::Exists(destFileName)) {
@@ -688,7 +688,7 @@ namespace imageviewer {
 
 						 }
 
-						 File::Move(images[i]->imageLocation, destFileName);
+						 File::Move(images[i]->ImageLocation, destFileName);
 
 					 }
 

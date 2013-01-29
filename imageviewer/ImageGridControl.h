@@ -148,10 +148,10 @@ private:
 
 	void displayImage(int panelNr, ImageGridItem ^imageItem) {
 
-		panel[panelNr]->loadMedia(imageItem->imageLocation, 
-			MediaPreviewControl::DisplayMode::THUMBNAIL);
+		panel[panelNr]->loadMedia(imageItem->ImageLocation, 
+			imageItem);
 
-		if(imageItem->isSelected) {
+		if(imageItem->IsSelected) {
 
 			panel[panelNr]->BackColor = selectedColor;
 
@@ -159,11 +159,7 @@ private:
 
 			panel[panelNr]->BackColor = defaultColor;
 		}
-
-		//toolTip->SetToolTip(panel[panelNr]->getPictureBox(), imageItem->caption);
-		panel[panelNr]->InfoIconsEnabled = InfoIconsEnabled;
-		panel[panelNr]->ToolTip = imageItem->caption;
-		panel[panelNr]->ContextMenuStrip = imageItem->contextMenu;
+	
 	}
 
 	System::Void gridImage_Click(System::Object^  sender, MouseEventArgs^  e) {
@@ -206,19 +202,6 @@ public:
 	event EventHandler<ImageGridMouseEventArgs^> ^ImageGridMouseDown;
 	event EventHandler<ImageGridMouseEventArgs^> ^ImageGridMouseDoubleClick;
 	event EventHandler<EventArgs ^> ^UpdateImages;
-
-	property bool InfoIconsEnabled {
-
-		void set(bool infoIconsEnabled) {
-
-			this->infoIconsEnabled = infoIconsEnabled;
-		}
-
-		bool get() {
-
-			return(infoIconsEnabled);
-		}
-	}
 
 	void setNrImagePanels(int nrImagePanels, bool useThumbnails) {
 
@@ -328,7 +311,7 @@ public:
 
 			for(int i = 0; i < getNrImages(); i++) {
 
-				if(removeData[j]->imageLocation->Equals(imageData[i]->imageLocation)) {
+				if(removeData[j]->ImageLocation->Equals(imageData[i]->ImageLocation)) {
 
 					imageData->RemoveAt(i);
 					break;
@@ -376,7 +359,7 @@ public:
 
 			for(int j = 0; j < updateData->Count; j++) {
 
-				if(imageData[i]->imageLocation->Equals(updateData[j]->imageLocation)) {
+				if(imageData[i]->ImageLocation->Equals(updateData[j]->ImageLocation)) {
 
 					imageData[i] = updateData[j];
 				}
@@ -390,7 +373,7 @@ public:
 
 			for(int j = 0; j < updateData->Count; j++) {
 
-				if(imageData[k]->imageLocation->Equals(updateData[j]->imageLocation)) {
+				if(imageData[k]->ImageLocation->Equals(updateData[j]->ImageLocation)) {
 
 					displayImage(i, updateData[j]);
 				}
@@ -401,7 +384,7 @@ public:
 
 		for(int i = 0; i < getNrImages(); i++) {
 
-			if(imageData[i]->imageLocation->Equals(imageLocation)) {
+			if(imageData[i]->ImageLocation->Equals(imageLocation)) {
 
 				return(imageData[i]);
 			}
@@ -421,7 +404,7 @@ public:
 
 		for(int i = 0; i < getNrImages(); i++) {
 
-			if(imageData[i]->isSelected) {
+			if(imageData[i]->IsSelected) {
 
 				selectedImageData->Add(imageData[i]);
 			}
@@ -497,7 +480,7 @@ public:
 			if(imageNr < getNrImages()) {
 
 				// when changes occur rapidly this check bugs out (fix?)
-				//if(!panel[panelNr]->Location->Equals(imageData[imageNr]->imageLocation)) {
+				//if(!panel[panelNr]->Location->Equals(imageData[imageNr]->ImageLocation)) {
 
 					// only update the image if it is different from the
 					// currently displayed image
@@ -507,7 +490,7 @@ public:
 			} else {
 
 				panel[panelNr]->BackColor = defaultColor;
-				panel[panelNr]->loadMedia("", MediaPreviewControl::DisplayMode::NORMAL);
+				panel[panelNr]->loadMedia("", nullptr);
 				panel[panelNr]->ContextMenuStrip = nullptr;
 				//toolTip->SetToolTip(panel[panelNr]->getPictureBox(), L"");
 			}
@@ -521,7 +504,7 @@ public:
 
 		Debug::Assert(imageNr < getNrImages());
 
-		return(imageData[imageNr]->isSelected);
+		return(imageData[imageNr]->IsSelected);
 	}
 
 	void setImageSelected(int imageNr, bool mode) {
@@ -536,20 +519,20 @@ public:
 
 		Debug::Assert(imageNr < getNrImages());
 
-		if(imageData[imageNr]->isSelected == true) {
+		if(imageData[imageNr]->IsSelected == true) {
 
-			imageData[imageNr]->isSelected = false;
+			imageData[imageNr]->IsSelected = false;
 
 		} else {
 
-			imageData[imageNr]->isSelected = true;
+			imageData[imageNr]->IsSelected = true;
 		}
 
 		int panelNr = imageToPanelNr(imageNr);
 
 		if(panelNr >= 0) {
 
-			if(imageData[imageNr]->isSelected == true) {
+			if(imageData[imageNr]->IsSelected == true) {
 
 				panel[panelNr]->BackColor = selectedColor;
 
@@ -565,7 +548,7 @@ public:
 
 		for(int i = 0; i < getNrImages(); i++) {
 
-			if(imageData[i]->isSelected != isSelected) {
+			if(imageData[i]->IsSelected != isSelected) {
 
 				toggleImageSelected(i);
 			}

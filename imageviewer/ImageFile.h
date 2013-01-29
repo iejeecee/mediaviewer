@@ -203,6 +203,9 @@ public:
 
 		StringBuilder ^sb = gcnew StringBuilder();
 
+		sb->AppendLine(Path::GetFileName(Location));
+		sb->AppendLine();
+	
 		sb->AppendLine("Mime type:");
 		sb->Append(MimeType);
 		sb->AppendLine();

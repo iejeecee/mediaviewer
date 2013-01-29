@@ -22,7 +22,8 @@ public:
 		JPG,
 		PNG,
 		TIFF,
-		GEOTAG
+		GEOTAG,
+		COMMENTS
 	};
 
 private:

@@ -492,7 +492,7 @@ namespace imageviewer {
 			 }
 	private: System::Void imageSearch_ViewImageEvent(System::Object^  sender, ImageGridMouseEventArgs^  e) {
 
-				 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(e->item->data);
+				 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(e->item->Data);
 
 				 this->loadImage(imageInfo->Url);
 
@@ -507,7 +507,7 @@ namespace imageviewer {
 
 				 for(int i = 0; i < items->Count; i++) {
 
-					 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(items[i]->data);
+					 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(items[i]->Data);
 
 					 url->Add(imageInfo->Url);
 				 }
@@ -550,7 +550,7 @@ namespace imageviewer {
 
 				 for(int i = 0; i < items->Count; i++) {
 
-					 Photo ^photo = dynamic_cast<Photo ^>(items[i]->data);
+					 Photo ^photo = dynamic_cast<Photo ^>(items[i]->Data);
 
 					 url->Add(getFullSizePicasaPhotoUrl(photo->PhotoUri->AbsoluteUri));
 				 }
@@ -593,7 +593,7 @@ namespace imageviewer {
 
 	private: System::Void picasaForm_ViewEvent(System::Object^  sender, ImageGridMouseEventArgs^  e) {
 
-				 Photo ^photo = dynamic_cast<Photo ^>(e->item->data);
+				 Photo ^photo = dynamic_cast<Photo ^>(e->item->Data);
 
 				 this->loadImage(getFullSizePicasaPhotoUrl(photo->PhotoUri->AbsoluteUri));
 
@@ -858,7 +858,7 @@ namespace imageviewer {
 
 					 for(int i = 0; i < selected->Count; i++) {
 
-						 String ^path = selected[i]->imageLocation;
+						 String ^path = selected[i]->ImageLocation;
 
 						 Stream ^data = File::OpenRead(path);
 						 String ^mimeType = MediaFormatConvert::fileNameToMimeType(path);
@@ -933,7 +933,7 @@ private: System::Void imageFileBrowser_ChangeBrowseDirectoryEvent(System::Object
 
 private: System::Void imageFileBrowser_ViewEvent(System::Object^  sender, imageviewer::ImageGridMouseEventArgs^  e) {
 
-		 	  loadImage(e->item->imageLocation);
+		 	  loadImage(e->item->ImageLocation);
 
 			  showImagePanel();
 		 }

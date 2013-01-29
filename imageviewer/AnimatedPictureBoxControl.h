@@ -41,9 +41,8 @@ namespace imageviewer {
 			infoIcon = gcnew array<InfoIcon ^>(nrIcons);
 			clearInfoIcons();
 
-			infoIconsEnabled = false;
-
 			activeToolTip = -1;
+
 		}
 
 	protected:
@@ -59,6 +58,9 @@ namespace imageviewer {
 		}
 	private: System::Windows::Forms::ImageList^  imageList;
 	private: System::Windows::Forms::ToolTip^  toolTip;
+	private: System::Windows::Forms::Timer^  toolTipTimer;
+
+
 	protected: 
 
 	protected: 
@@ -85,6 +87,7 @@ namespace imageviewer {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(AnimatedPictureBoxControl::typeid));
 			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
+			this->toolTipTimer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->SuspendLayout();
 			// 
 			// imageList
@@ -103,6 +106,18 @@ namespace imageviewer {
 			this->imageList->Images->SetKeyName(9, L"PNG.ico");
 			this->imageList->Images->SetKeyName(10, L"TIFF.ico");
 			this->imageList->Images->SetKeyName(11, L"geotag.ico");
+			this->imageList->Images->SetKeyName(12, L"Dryicons-Simplistica-Comment.ico");
+			// 
+			// toolTip
+			// 
+			this->toolTip->AutoPopDelay = 7000;
+			this->toolTip->InitialDelay = 500;
+			this->toolTip->ReshowDelay = 100;
+			// 
+			// toolTipTimer
+			// 
+			this->toolTipTimer->Interval = 500;
+			this->toolTipTimer->Tick += gcnew System::EventHandler(this, &AnimatedPictureBoxControl::toolTipTimer_Tick);
 			// 
 			// AnimatedPictureBoxControl
 			// 
@@ -112,6 +127,7 @@ namespace imageviewer {
 			this->Name = L"AnimatedPictureBoxControl";
 			this->Size = System::Drawing::Size(371, 336);
 			this->MouseLeave += gcnew System::EventHandler(this, &AnimatedPictureBoxControl::animatedPictureBoxControl_MouseLeave);
+			this->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &AnimatedPictureBoxControl::animatedPictureBoxControl_MouseMove);
 			this->MouseHover += gcnew System::EventHandler(this, &AnimatedPictureBoxControl::animatedPictureBoxControl_MouseHover);
 			this->ResumeLayout(false);
 
@@ -124,7 +140,6 @@ private:
 	System::Drawing::Image ^currentImage;
 	PictureBoxSizeMode sizeMode;
 	bool transparencyEnabled;
-	bool infoIconsEnabled;
 	ImageAttributes^ imageAttr;
 
 	Color lowerColor;
@@ -228,7 +243,7 @@ protected:
 
 		if(currentImage == nullptr) return;
 
-		e->Graphics->InterpolationMode = InterpolationMode::HighQualityBicubic;
+		//e->Graphics->InterpolationMode = InterpolationMode::HighQualityBicubic;
 
 		// Begin the animation.
 		animateImage();
@@ -277,8 +292,7 @@ protected:
 		}
 
 		//System::Drawing::Image ^test = gcnew Bitmap("C:\\game\\icons\\Button-Info-icon24.png");
-		
-		if(InfoIconsEnabled == false) return;
+	
 
 		for(int i = 0; i < nrIcons; i++) {
 
@@ -391,19 +405,6 @@ public:
 		}
 	}
 
-	property bool InfoIconsEnabled {
-
-		void set(bool infoIconsEnabled) {
-
-			this->infoIconsEnabled = infoIconsEnabled;
-		}
-
-		bool get() {
-
-			return(infoIconsEnabled);
-		}
-	}
-
 	property Color LowerColor {
 
 		void set(Color lowerColor) {
@@ -464,28 +465,11 @@ public:
 
 private: System::Void animatedPictureBoxControl_MouseHover(System::Object^  sender, System::EventArgs^  e) {
 
-			trackMouseEvent();
+			
+			toolTipTimer->Start();
 
 			//Util::DebugOut("trackmouse event" + activeToolTip.ToString());
 
-			Point point = this->PointToClient(MousePosition);
-
-			 for(int i = 0; i < nrIcons; i++) {
-
-				 if(infoIcon[i] == nullptr) continue;
-
-				 Rectangle canvas = getIconCanvas(i);
-
-				 if(canvas.Contains(point)) {
-
-					 showToolTip(i, point);
-					 return;
-				 }
-
-			 }
-
-			 showToolTip(nrIcons, point);
-			
 				 
 		 }
 private: System::Void animatedPictureBoxControl_MouseLeave(System::Object^  sender, System::EventArgs^  e) {
@@ -496,5 +480,41 @@ private: System::Void animatedPictureBoxControl_MouseLeave(System::Object^  send
 			 
 		 }
 
+private: System::Void toolTipTimer_Tick(System::Object^  sender, System::EventArgs^  e) {
+
+			 // mouse has remained still for interval amount of time
+			 // display the tooltip related to the current mouse position
+			 toolTipTimer->Stop();
+
+			 Point point = this->PointToClient(MousePosition);
+			 // place the tooltip under the mousecursor
+			 Point toolTipPos = Point(point.X, point.Y + int(Cursor->Size.Height * 0.9));
+
+			 for(int i = 0; i < nrIcons; i++) {
+
+				 if(infoIcon[i] == nullptr) continue;
+
+				 Rectangle canvas = getIconCanvas(i);
+
+				 if(canvas.Contains(point)) {
+
+					 showToolTip(i, toolTipPos);
+					 return;
+				 }
+
+			 }
+
+			 showToolTip(nrIcons, toolTipPos);
+			 
+
+		 }
+private: System::Void animatedPictureBoxControl_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+			 // mouse hover events are normally only fired once
+			 // use a custom function to check for new mouse hover events
+			 trackMouseEvent();
+			 // stop any current mouse hover timing
+			 toolTipTimer->Stop();
+		 }
 };
 }

@@ -406,13 +406,13 @@ namespace imageviewer {
 						 IImageResult ^imageInfo = searchResult[i];
 
 						 ImageGridItem ^item = gcnew ImageGridItem(imageInfo->TbImage->Url);
-						 item->data = imageInfo;
+						 item->Data = imageInfo;
 
 						 Uri ^uri = gcnew Uri(imageInfo->Url);
 						 String ^name = Path::GetFileName(uri->AbsolutePath);
 
-						 item->caption = name + "\n" + imageInfo->VisibleUrl + "\n" + Convert::ToString(imageInfo->Width) + " x " + Convert::ToString(imageInfo->Height) + " - " + imageInfo->Title;
-						 item->contextMenu = createContextMenu(imageInfo);
+						 item->Caption = name + "\n" + imageInfo->VisibleUrl + "\n" + Convert::ToString(imageInfo->Width) + " x " + Convert::ToString(imageInfo->Height) + " - " + imageInfo->Title;
+						 item->ContextMenu = createContextMenu(imageInfo);
 
 						 imageData->Add(item);
 					 }
@@ -464,7 +464,7 @@ namespace imageviewer {
 			 }
 	private: System::Void searchSimilarToolStripMenuItem_MouseDown(System::Object^  sender, ImageGridMouseEventArgs^  e) {
 
-				 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(e->item->data);
+				 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(e->item->Data);
 
 				 startSearchAsync(imageInfo->VisibleUrl);
 			 }

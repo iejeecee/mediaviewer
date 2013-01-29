@@ -3,6 +3,7 @@
 #include "MediaFileFactory.h"
 #include "AnimatedPictureBoxControl.h"
 #include "TransparentIconPanel.h"
+#include "ImageGridItem.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -30,8 +31,6 @@ namespace imageviewer {
 			mediaFileFactory = gcnew MediaFileFactory();
 			mediaFileFactory->OpenFinished += gcnew EventHandler<MediaFile ^>(this, &MediaPreviewControl::mediaFileFactory_OpenFinished);
 			media = nullptr;
-
-			caption = "";
 
 			informImage = gcnew List<Image ^>();
 			informImage->Add(gcnew Bitmap("C:\\game\\icons\\loading.gif"));
@@ -96,7 +95,6 @@ namespace imageviewer {
 			// 
 			this->pictureBox->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox->Image = nullptr;
-			this->pictureBox->InfoIconsEnabled = false;
 			this->pictureBox->Location = System::Drawing::Point(0, 0);
 			this->pictureBox->LowerColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(200)), static_cast<System::Int32>(static_cast<System::Byte>(200)), 
 				static_cast<System::Int32>(static_cast<System::Byte>(200)));
@@ -133,8 +131,6 @@ private:
 	MediaFileFactory ^mediaFileFactory;
 	MediaFile ^media;
 	List<Image ^> ^informImage;
-	
-	String ^caption;
 
 	delegate void loadPreviewDelegate(MediaFile ^media, List<MetaDataThumb ^> ^thumbs);
 
@@ -188,6 +184,7 @@ private:
 
 			} else if(String::IsNullOrEmpty(media->Location) || media->MediaFormat == MediaFile::MediaType::UNKNOWN) {
 			
+				// empty file
 				return;
 				
 			} else if(thumbs->Count > 0) {
@@ -196,6 +193,29 @@ private:
 				
 			} 
 
+			setPictureBoxFeatures(media);
+
+			
+		} catch(Exception ^) {
+
+			
+		} finally {
+
+			media->close();
+
+			// release the lock on opening of images
+			mediaFileFactory->releaseNonBlockingOpenLock();
+		}
+
+	}
+
+	void setPictureBoxFeatures(MediaFile ^media) {
+
+		ImageGridItem ^item = dynamic_cast<ImageGridItem ^>(media->UserState);
+
+		if(item->InfoIconMode == ImageGridItem::InfoIconModes::DEFAULT_ICONS_ONLY ||
+			item->InfoIconMode == ImageGridItem::InfoIconModes::SHOW_ALL_ICONS)
+		{
 			InfoIcon ^icon = gcnew InfoIcon(media->MimeType);
 			icon->Caption = media->getDefaultFormatCaption();
 			pictureBox->addInfoIcon(icon);
@@ -213,36 +233,32 @@ private:
 				icon->Caption = "Geo Tag";
 				pictureBox->addInfoIcon(icon);
 			}
-
-			if(String::IsNullOrEmpty(caption)) {
-
-				pictureBox->Caption = media->getDefaultCaption();
-
-			} else {
-
-				pictureBox->Caption = caption;			
-			}
-
-			
-		} catch(Exception ^) {
-
-			
-		} finally {
-
-			media->close();
-
-			// release the lock on opening of images
-			mediaFileFactory->releaseNonBlockingOpenLock();
 		}
 
-	}
-/*
-	void setToolTip(String ^text) {
+		if(item->InfoIconMode == ImageGridItem::InfoIconModes::CUSTOM_ICONS_ONLY ||
+			item->InfoIconMode == ImageGridItem::InfoIconModes::SHOW_ALL_ICONS)
+		{
 
-		toolTip->SetToolTip(pictureBox, text);
-		//toolTip->SetToolTip(transparentIconPanel, text);
+			for(int i = 0; i < item->InfoIcon->Count; i++) {
+
+				pictureBox->addInfoIcon(item->InfoIcon[i]);
+			}
+
+		}
+
+		if(String::IsNullOrEmpty(item->Caption)) {
+
+			pictureBox->Caption = media->getDefaultCaption();
+
+		} else {
+
+			pictureBox->Caption = item->Caption;			
+		}
+
+		pictureBox->ContextMenuStrip = item->ContextMenu;
+
 	}
-*/
+
 	void setPictureBoxImage(Image ^image) {
 
 		pictureBox->SizeMode = PictureBoxSizeMode::Zoom;
@@ -273,6 +289,7 @@ private:
 			pictureBox->Image = nullptr;
 			pictureBox->clearInfoIcons();
 			pictureBox->Caption = "";
+			pictureBox->ContextMenuStrip = nullptr;
 			
 		}		
 	}
@@ -289,20 +306,6 @@ public:
 	event EventHandler<MouseEventArgs ^> ^PreviewMouseDown;
 	event EventHandler<MouseEventArgs ^> ^PreviewMouseDoubleClick;
 
-	enum class DisplayMode {
-		NORMAL,
-		THUMBNAIL
-
-	};
-
-	property String ^ToolTip {
-
-		void set(String ^caption) {
-			
-			this->caption = caption;
-		}
-
-	}
 
 	property String ^Location {
 
@@ -323,21 +326,7 @@ public:
 
 	}
 
-	property bool InfoIconsEnabled {
-
-
-		void set(bool infoIconsEnabled) {
-
-			pictureBox->InfoIconsEnabled = infoIconsEnabled;
-		}
-
-		bool get() {
-
-			return(pictureBox->InfoIconsEnabled);
-		}
-	}
-
-	void loadMedia(String ^fileLocation, DisplayMode mode) {
+	void loadMedia(String ^fileLocation, ImageGridItem ^data) {
 		
 		if(String::IsNullOrEmpty(fileLocation)) {
 
@@ -349,7 +338,7 @@ public:
 		}
 		//pictureBox->Image = miscImageList->Images[0];
 
-		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, mode);
+		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, data);
 
 	}
 

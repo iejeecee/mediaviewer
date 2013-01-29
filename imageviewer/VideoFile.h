@@ -234,7 +234,6 @@ public:
 			sb->AppendLine(info);
 		}
 */
-		sb->AppendLine();
 
 		if(MetaData != nullptr) {
 
@@ -269,6 +268,9 @@ public:
 	virtual String ^getDefaultFormatCaption() override {
 
 		StringBuilder ^sb = gcnew StringBuilder();
+
+		sb->AppendLine(Path::GetFileName(Location));
+		sb->AppendLine();
 
 		sb->AppendLine("Mime type:");
 		sb->Append(MimeType);

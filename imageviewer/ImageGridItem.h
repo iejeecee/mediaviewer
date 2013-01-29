@@ -1,96 +1,143 @@
 #pragma once
+#include "InfoIcon.h"
 
 namespace imageviewer {
 
+using namespace System::Collections::Generic;
+
 public ref class ImageGridItem 
 {
+public:
 
-	String ^_imageLocation;
-	Object ^_data;
-	String ^_caption;
-	bool _isSelected;
-	ContextMenuStrip ^_contextMenu;
+	enum class InfoIconModes {
+		SHOW_ALL_ICONS,
+		DEFAULT_ICONS_ONLY,
+		CUSTOM_ICONS_ONLY,
+		DISABLE_ICONS
+	};
+
+private:
+
+	String ^imageLocation;
+	Object ^data;
+	String ^caption;
+	bool isSelected;
+	ContextMenuStrip ^contextMenu;
+	List<InfoIcon ^> ^infoIcon;
+
+	InfoIconModes infoIconMode;
 
 public:
 
 	ImageGridItem(String ^imageLocation) 
 	{
 
-		_imageLocation = imageLocation;
+		this->imageLocation = imageLocation;
 		caption = L"";
 		data = nullptr;
 		contextMenu = nullptr;
+		infoIcon = gcnew List<imageviewer::InfoIcon ^>();
+
+		infoIconMode = InfoIconModes::CUSTOM_ICONS_ONLY;
 	}
 
-	property String ^imageLocation {
+	property String ^ImageLocation {
 
 		String ^get() {
 
-			return(_imageLocation);
+			return(imageLocation);
 		}
 
 		void set(String ^imageLocation) {
 
-			_imageLocation = imageLocation;
+			this->imageLocation = imageLocation;
 		}
 
 	}
 
-	property Object ^data {
+	property Object ^Data {
 
 		Object ^get() {
 
-			return(_data);
+			return(data);
 		}
 
 		void set(Object ^data) {
 
-			_data = data;
+			this->data = data;
 		}
 
 	}
 
-	property String ^caption {
+	property String ^Caption {
 
 		String ^get() {
 
-			return(_caption);
+			return(caption);
 		}
 
 		void set(String ^caption) {
 
-			_caption = caption;
+			this->caption = caption;
 		}
 
 	}
 
-	property bool isSelected {
+	property bool IsSelected {
 
 		bool get() {
 
-			return(_isSelected);
+			return(isSelected);
 		}
 
 		void set(bool isSelected) {
 
-			_isSelected = isSelected;
+			this->isSelected = isSelected;
 		}
 
 	}
 	
-	property ContextMenuStrip ^contextMenu {
+	property ContextMenuStrip ^ContextMenu {
 
 		ContextMenuStrip ^get() {
 
-			return(_contextMenu);
+			return(contextMenu);
 		}
 
 		void set(ContextMenuStrip ^contextMenu) {
 
-			_contextMenu = contextMenu;
+			this->contextMenu = contextMenu;
 		}
 
 		
+	}
+
+	property InfoIconModes InfoIconMode {
+
+		InfoIconModes get() {
+
+			return(infoIconMode);
+		}
+
+		void set(InfoIconModes infoIconMode) {
+
+			this->infoIconMode = infoIconMode;
+		}
+
+	}
+
+	property List<InfoIcon ^> ^InfoIcon {
+
+		List<imageviewer::InfoIcon ^> ^get() {
+
+			return(infoIcon);
+		}
+
+		void set(List<imageviewer::InfoIcon ^> ^infoIcon) {
+
+			this->infoIcon = infoIcon;
+		}
+
 	}
 
 };
