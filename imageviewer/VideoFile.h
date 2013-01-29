@@ -227,23 +227,7 @@ public:
 		sb->AppendLine(Path::GetFileName(Location));
 		sb->AppendLine();
 
-		sb->AppendLine("Resolution:");
-		sb->Append(width);
-		sb->Append("x");
-		sb->Append(height);
-		sb->AppendLine();
-		sb->AppendLine();
-
-		sb->AppendLine("Duration:");
-		sb->AppendLine(Util::formatTimeSeconds(DurationSeconds));
-		sb->AppendLine();
-
-		sb->AppendLine("Size");
-		sb->AppendLine(Util::formatSizeBytes(SizeBytes));
-		sb->AppendLine();
-
-		sb->AppendLine("Video Codec");
-		sb->AppendLine(VideoCodecName);
+		
 /*
 		for each(String ^info in FSMetaData) {
 
@@ -279,6 +263,36 @@ public:
 			}
 		}
 
+		return(sb->ToString());
+	}
+
+	virtual String ^getDefaultFormatCaption() override {
+
+		StringBuilder ^sb = gcnew StringBuilder();
+
+		sb->AppendLine("Mime type:");
+		sb->Append(MimeType);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Resolution:");
+		sb->Append(width);
+		sb->Append("x");
+		sb->Append(height);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Duration:");
+		sb->AppendLine(Util::formatTimeSeconds(DurationSeconds));
+		sb->AppendLine();
+
+		sb->AppendLine("Size");
+		sb->AppendLine(Util::formatSizeBytes(SizeBytes));
+		sb->AppendLine();
+
+		sb->AppendLine("Video Codec");
+		sb->AppendLine(VideoCodecName);
+	
 		return(sb->ToString());
 	}
 

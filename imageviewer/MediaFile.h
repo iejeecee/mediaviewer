@@ -220,6 +220,11 @@ public:
 		return("");
 	}
 
+	virtual String ^getDefaultFormatCaption() {
+
+		return("");
+	}
+
 	virtual void close() {
 
 		if(data != nullptr) {

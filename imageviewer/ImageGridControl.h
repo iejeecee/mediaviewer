@@ -44,6 +44,7 @@ namespace imageviewer {
 			selectedColor = System::Drawing::Color::Gold;
 
 			useThumbnails = false;
+			infoIconsEnabled = false;
 		}
 
 	protected:
@@ -98,6 +99,7 @@ private:
 	Color defaultColor;
 	Color selectedColor;
 	bool useThumbnails;
+	bool infoIconsEnabled;
 
 	void doGridLayout() {
 
@@ -159,6 +161,7 @@ private:
 		}
 
 		//toolTip->SetToolTip(panel[panelNr]->getPictureBox(), imageItem->caption);
+		panel[panelNr]->InfoIconsEnabled = InfoIconsEnabled;
 		panel[panelNr]->ToolTip = imageItem->caption;
 		panel[panelNr]->ContextMenuStrip = imageItem->contextMenu;
 	}
@@ -203,6 +206,19 @@ public:
 	event EventHandler<ImageGridMouseEventArgs^> ^ImageGridMouseDown;
 	event EventHandler<ImageGridMouseEventArgs^> ^ImageGridMouseDoubleClick;
 	event EventHandler<EventArgs ^> ^UpdateImages;
+
+	property bool InfoIconsEnabled {
+
+		void set(bool infoIconsEnabled) {
+
+			this->infoIconsEnabled = infoIconsEnabled;
+		}
+
+		bool get() {
+
+			return(infoIconsEnabled);
+		}
+	}
 
 	void setNrImagePanels(int nrImagePanels, bool useThumbnails) {
 

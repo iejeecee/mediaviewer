@@ -78,7 +78,7 @@ public:
 
 		for each(GeoTagFileData ^image in geoTagData) {
 
-			if(image->hasCoord) {
+			if(image->HasGeoTag) {
 
 				createPlaceMark(image, false);
 			}
@@ -100,8 +100,8 @@ public:
 			String ^lat = latlngStr->Substring(0, latlngStr->IndexOf(' '));
 			String ^lng = latlngStr->Substring(latlngStr->IndexOf(' ') + 1);
 
-			image->coord->latitude->Decimal = Convert::ToDouble(lat, CultureInfo::InvariantCulture);
-			image->coord->longitude->Decimal = Convert::ToDouble(lng, CultureInfo::InvariantCulture);
+			image->GeoTag->latitude->Decimal = Convert::ToDouble(lat, CultureInfo::InvariantCulture);
+			image->GeoTag->longitude->Decimal = Convert::ToDouble(lng, CultureInfo::InvariantCulture);
 
 			image->isModified = true;
 		}
@@ -109,8 +109,8 @@ public:
 		String ^placemarkName = image->fileName;
 		String ^imagePath = image->fileUrl; 
 		String ^imageName = image->fileName;
-		double latitude = image->coord->latitude->Decimal;
-		double longitude = image->coord->longitude->Decimal; 
+		double latitude = image->GeoTag->latitude->Decimal;
+		double longitude = image->GeoTag->longitude->Decimal; 
 
 		cli::array<Object ^> ^args = gcnew cli::array<Object ^>(5);
 
@@ -122,24 +122,24 @@ public:
 
 		image->placeMarkIndex = (int)browser->Document->InvokeScript("createPlaceMark", args);
 
-		image->hasCoord = true;
+		image->HasGeoTag = true;
 	
 	}
 
 	void deletePlaceMark(GeoTagFileData ^image) {
 
-		if(image->hasCoord == false) return;
+		if(image->HasGeoTag == false) return;
 		
 		cli::array<Object ^> ^args = gcnew cli::array<Object ^>(1);
 		args[0] = image->placeMarkIndex;
 
 		browser->Document->InvokeScript("deletePlaceMark", args);
 
-		image->hasCoord = false;
+		image->HasGeoTag = false;
 		image->isModified = true;
 		image->placeMarkIndex = -1;
-		image->coord->latitude->Decimal = 0;
-		image->coord->longitude->Decimal = 0;
+		image->GeoTag->latitude->Decimal = 0;
+		image->GeoTag->longitude->Decimal = 0;
 
 	}
 
@@ -164,8 +164,8 @@ public:
 
 		GeoTagFileData ^movedImage = getGeoTagFileData(index);
 
-		movedImage->coord->latitude->Decimal = latitude;
-		movedImage->coord->longitude->Decimal = longitude;
+		movedImage->GeoTag->latitude->Decimal = latitude;
+		movedImage->GeoTag->longitude->Decimal = longitude;
 
 		PlaceMarkMoved(this, movedImage);
 
@@ -191,7 +191,7 @@ public:
 
 	void reverseGeoCodePlaceMark(GeoTagFileData ^image) {
 
-		if(image->hasCoord == false) {
+		if(image->HasGeoTag == false) {
 			
 			addressUpdate("unknown address");
 			return;

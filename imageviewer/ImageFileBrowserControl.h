@@ -160,6 +160,7 @@ namespace imageviewer {
 			// _imageGrid
 			// 
 			this->_imageGrid->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->_imageGrid->InfoIconsEnabled = true;
 			this->_imageGrid->Location = System::Drawing::Point(0, 0);
 			this->_imageGrid->Name = L"_imageGrid";
 			this->_imageGrid->Size = System::Drawing::Size(673, 425);
@@ -169,10 +170,17 @@ namespace imageviewer {
 			// pager
 			// 
 			this->pager->Anchor = System::Windows::Forms::AnchorStyles::None;
+			this->pager->BeginButtonEnabled = true;
+			this->pager->CurrentPage = 0;
+			this->pager->EndButtonEnabled = true;
+			this->pager->ImageGrid = nullptr;
 			this->pager->Location = System::Drawing::Point(284, 3);
 			this->pager->Name = L"pager";
+			this->pager->NextButtonEnabled = true;
+			this->pager->PrevButtonEnabled = true;
 			this->pager->Size = System::Drawing::Size(284, 37);
 			this->pager->TabIndex = 2;
+			this->pager->TotalPages = 0;
 			// 
 			// ImageFileBrowserControl
 			// 

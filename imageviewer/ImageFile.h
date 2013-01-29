@@ -25,6 +25,8 @@ private:
 	int width;
 	int height;
 
+	__int64 sizeBytes;
+
 	Image ^imageMetaData;
 
 protected:
@@ -82,8 +84,8 @@ public:
 
 	ImageFile(String ^location, String ^mimeType, Stream ^data) : MediaFile(location, mimeType, data) {
 
+		sizeBytes = data->Length;
 	}
-
 
 	virtual List<MetaDataThumb ^> ^generateThumbnails() override {
 
@@ -167,13 +169,6 @@ public:
 		sb->AppendLine(Path::GetFileName(Location));
 		sb->AppendLine();
 
-		sb->AppendLine("Resolution:");
-		sb->Append(width);
-		sb->Append("x");
-		sb->Append(height);
-		sb->AppendLine();
-		sb->AppendLine();
-		
 		if(MetaData != nullptr) {
 
 			if(MetaData->Description != nullptr) {
@@ -201,6 +196,28 @@ public:
 			}
 		}
 
+		return(sb->ToString());
+	}
+
+	virtual String ^getDefaultFormatCaption() override {
+
+		StringBuilder ^sb = gcnew StringBuilder();
+
+		sb->AppendLine("Mime type:");
+		sb->Append(MimeType);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Resolution:");
+		sb->Append(width);
+		sb->Append("x");
+		sb->Append(height);
+		sb->AppendLine();
+		sb->AppendLine();
+
+		sb->AppendLine("Size:");
+		sb->Append(Util::formatSizeBytes(sizeBytes));
+	
 		return(sb->ToString());
 	}
 

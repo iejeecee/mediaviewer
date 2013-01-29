@@ -1,6 +1,8 @@
 #pragma once
-
+//http://www.leghumped.com/blog/2008/05/17/repeated-mousehover-events-in-c/
 #include "ImageUtils.h"
+#include "InfoIcon.h"
+#include "Util.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -36,8 +38,12 @@ namespace imageviewer {
 			lowerColor = Color::FromArgb( 255, 255, 255 );
 			upperColor = Color::FromArgb( 255, 255, 255 );
 
-			infoIcon = gcnew array<int>(nrIcons);
+			infoIcon = gcnew array<InfoIcon ^>(nrIcons);
 			clearInfoIcons();
+
+			infoIconsEnabled = false;
+
+			activeToolTip = -1;
 		}
 
 	protected:
@@ -52,6 +58,7 @@ namespace imageviewer {
 			}
 		}
 	private: System::Windows::Forms::ImageList^  imageList;
+	private: System::Windows::Forms::ToolTip^  toolTip;
 	protected: 
 
 	protected: 
@@ -77,6 +84,7 @@ namespace imageviewer {
 			this->components = (gcnew System::ComponentModel::Container());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(AnimatedPictureBoxControl::typeid));
 			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
+			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
 			this->SuspendLayout();
 			// 
 			// imageList
@@ -94,6 +102,7 @@ namespace imageviewer {
 			this->imageList->Images->SetKeyName(8, L"JPG.ico");
 			this->imageList->Images->SetKeyName(9, L"PNG.ico");
 			this->imageList->Images->SetKeyName(10, L"TIFF.ico");
+			this->imageList->Images->SetKeyName(11, L"geotag.ico");
 			// 
 			// AnimatedPictureBoxControl
 			// 
@@ -102,6 +111,8 @@ namespace imageviewer {
 			this->DoubleBuffered = true;
 			this->Name = L"AnimatedPictureBoxControl";
 			this->Size = System::Drawing::Size(371, 336);
+			this->MouseLeave += gcnew System::EventHandler(this, &AnimatedPictureBoxControl::animatedPictureBoxControl_MouseLeave);
+			this->MouseHover += gcnew System::EventHandler(this, &AnimatedPictureBoxControl::animatedPictureBoxControl_MouseHover);
 			this->ResumeLayout(false);
 
 		}
@@ -113,13 +124,17 @@ private:
 	System::Drawing::Image ^currentImage;
 	PictureBoxSizeMode sizeMode;
 	bool transparencyEnabled;
+	bool infoIconsEnabled;
 	ImageAttributes^ imageAttr;
 
 	Color lowerColor;
 	Color upperColor;
 
-	const static int nrIcons = 6;
-	array<int> ^infoIcon;
+	String ^caption;
+	int activeToolTip;
+
+	const static int nrIcons = 5;
+	cli::array<InfoIcon ^> ^infoIcon;
 
     void animateImage() 
     {
@@ -176,6 +191,34 @@ private:
 		return(canvas);
 	}
 
+	static UInt32 TME_HOVER = 0x00000001;
+	static UInt32 TME_LEAVE = 0x00000002;
+	static UInt32 HOVER_DEFAULT = 0xFFFFFFFF;
+
+	[System::Runtime::InteropServices::StructLayoutAttribute(System::Runtime::InteropServices::LayoutKind::Sequential)]
+	ref struct TRACKMOUSEEVENT {
+		UInt32 cbSize;
+		UInt32 dwFlags;
+		IntPtr hwndTrack;
+		UInt32 dwHoverTime;
+	};
+
+	[DllImport("user32.dll")]
+	static int TrackMouseEvent(TRACKMOUSEEVENT ^lpEventTrack);
+
+	void trackMouseEvent() {
+		
+		TRACKMOUSEEVENT ^trackMouseEvent = gcnew TRACKMOUSEEVENT();
+		trackMouseEvent->hwndTrack = this->Handle;
+		trackMouseEvent->dwFlags = TME_HOVER;
+		trackMouseEvent->dwHoverTime = HOVER_DEFAULT;
+		trackMouseEvent->cbSize = Marshal::SizeOf(trackMouseEvent);
+
+		int result = TrackMouseEvent(trackMouseEvent);
+	
+	}
+	
+	
 protected: 
 
 	virtual void OnPaint(PaintEventArgs^ e) override
@@ -235,11 +278,13 @@ protected:
 
 		//System::Drawing::Image ^test = gcnew Bitmap("C:\\game\\icons\\Button-Info-icon24.png");
 		
+		if(InfoIconsEnabled == false) return;
+
 		for(int i = 0; i < nrIcons; i++) {
 
-			if(infoIcon[i] == -1) continue;
+			if(infoIcon[i] == nullptr) continue;
 
-			System::Drawing::Image ^icon = imageList->Images[infoIcon[i]];
+			System::Drawing::Image ^icon = imageList->Images[(int)infoIcon[i]->IconImageType];
 
 			canvasRect = getIconCanvas(i);
 
@@ -266,6 +311,39 @@ protected:
 	
 
 	}
+
+	virtual void OnMouseLeave(EventArgs ^e) override
+	{
+
+		if(this->ClientRectangle.Contains(PointToClient(MousePosition))) {
+
+			
+		} else {
+
+			UserControl::OnMouseLeave(e);
+		}
+	
+	}
+
+	
+	void showToolTip(int nr, Point point) {
+
+		if(nr == activeToolTip) {
+
+			return;
+
+		} else if(nr == nrIcons) {
+
+			toolTip->Show(caption, this, point, toolTip->AutoPopDelay);
+
+		} else {
+
+			toolTip->Show(infoIcon[nr]->Caption, this, point, toolTip->AutoPopDelay);
+		}
+
+		activeToolTip = nr;
+	}
+
 public:
 
 	event EventHandler<EventArgs ^> ^PaintFinished;
@@ -313,6 +391,19 @@ public:
 		}
 	}
 
+	property bool InfoIconsEnabled {
+
+		void set(bool infoIconsEnabled) {
+
+			this->infoIconsEnabled = infoIconsEnabled;
+		}
+
+		bool get() {
+
+			return(infoIconsEnabled);
+		}
+	}
+
 	property Color LowerColor {
 
 		void set(Color lowerColor) {
@@ -339,13 +430,22 @@ public:
 		}
 	}
 
-	void addInfoIcon(int iconNr) {
+	property String ^Caption {
 
-		for(int i = nrIcons -1; i >= 0; i--) {
+		void set(String ^caption) {
 
-			if(infoIcon[i] == -1) {
+			this->caption = caption;
+		}
 
-				infoIcon[i] = iconNr;
+	}
+
+	void addInfoIcon(InfoIcon ^icon) {
+
+		for(int i = nrIcons - 1; i >= 0; i--) {
+
+			if(infoIcon[i] == nullptr) {
+
+				infoIcon[i] = icon;
 				break;
 			}
 		}
@@ -356,9 +456,45 @@ public:
 
 		for(int i = 0; i < nrIcons; i++) {
 
-			infoIcon[i] = -1;
+			infoIcon[i] = nullptr;			
 		}
+
 	}
 
-	};
+
+private: System::Void animatedPictureBoxControl_MouseHover(System::Object^  sender, System::EventArgs^  e) {
+
+			trackMouseEvent();
+
+			//Util::DebugOut("trackmouse event" + activeToolTip.ToString());
+
+			Point point = this->PointToClient(MousePosition);
+
+			 for(int i = 0; i < nrIcons; i++) {
+
+				 if(infoIcon[i] == nullptr) continue;
+
+				 Rectangle canvas = getIconCanvas(i);
+
+				 if(canvas.Contains(point)) {
+
+					 showToolTip(i, point);
+					 return;
+				 }
+
+			 }
+
+			 showToolTip(nrIcons, point);
+			
+				 
+		 }
+private: System::Void animatedPictureBoxControl_MouseLeave(System::Object^  sender, System::EventArgs^  e) {
+
+			 //Util::DebugOut("mouse leave");
+			 toolTip->Hide(this);
+			 activeToolTip = -1;
+			 
+		 }
+
+};
 }

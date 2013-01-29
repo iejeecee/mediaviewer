@@ -562,6 +562,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\InfoIcon.h"
+				>
+			</File>
+			<File
 				RelativePath=".\InputDialog.h"
 				FileType="3"
 				>
@@ -868,6 +872,10 @@
 				</File>
 				<File
 					RelativePath=".\FormatMetaData.h"
+					>
+				</File>
+				<File
+					RelativePath=".\GeoTagCoordinatePair.h"
 					>
 				</File>
 				<File

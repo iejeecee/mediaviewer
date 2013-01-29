@@ -53,7 +53,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::Panel^  panel;
 	protected: 
 
-	private: System::Windows::Forms::ToolTip^  toolTip;
+
 	private: System::Windows::Forms::ImageList^  imageList;
 
 	private: imageviewer::AnimatedPictureBoxControl^  pictureBox;
@@ -78,9 +78,7 @@ namespace imageviewer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->components = (gcnew System::ComponentModel::Container());
 			this->panel = (gcnew System::Windows::Forms::Panel());
-			this->toolTip = (gcnew System::Windows::Forms::ToolTip(this->components));
 			this->pictureBox = (gcnew imageviewer::AnimatedPictureBoxControl());
 			this->panel->SuspendLayout();
 			this->SuspendLayout();
@@ -98,6 +96,7 @@ namespace imageviewer {
 			// 
 			this->pictureBox->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->pictureBox->Image = nullptr;
+			this->pictureBox->InfoIconsEnabled = false;
 			this->pictureBox->Location = System::Drawing::Point(0, 0);
 			this->pictureBox->LowerColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(200)), static_cast<System::Int32>(static_cast<System::Byte>(200)), 
 				static_cast<System::Int32>(static_cast<System::Byte>(200)));
@@ -194,22 +193,34 @@ private:
 			} else if(thumbs->Count > 0) {
 
 				setPictureBoxImage(thumbs[0]->ThumbImage);
-
-				pictureBox->addInfoIcon(mimeTypeInfoIcon(media->MimeType));
-
-				if(media->MetaData == nullptr) {
-
-					pictureBox->addInfoIcon(0);
-				}
+				
 			} 
+
+			InfoIcon ^icon = gcnew InfoIcon(media->MimeType);
+			icon->Caption = media->getDefaultFormatCaption();
+			pictureBox->addInfoIcon(icon);
+
+			if(media->MetaData == nullptr) {
+
+				icon = gcnew InfoIcon(InfoIcon::IconType::ERROR);
+				icon->Caption = "Cannot read metadata";
+
+				pictureBox->addInfoIcon(icon);
+
+			} else if(media->MetaData->HasGeoTag) {
+
+				icon = gcnew InfoIcon(InfoIcon::IconType::GEOTAG);
+				icon->Caption = "Geo Tag";
+				pictureBox->addInfoIcon(icon);
+			}
 
 			if(String::IsNullOrEmpty(caption)) {
 
-				setToolTip(media->getDefaultCaption());
+				pictureBox->Caption = media->getDefaultCaption();
 
 			} else {
 
-				setToolTip(caption);			
+				pictureBox->Caption = caption;			
 			}
 
 			
@@ -225,13 +236,13 @@ private:
 		}
 
 	}
-
+/*
 	void setToolTip(String ^text) {
 
 		toolTip->SetToolTip(pictureBox, text);
 		//toolTip->SetToolTip(transparentIconPanel, text);
 	}
-
+*/
 	void setPictureBoxImage(Image ^image) {
 
 		pictureBox->SizeMode = PictureBoxSizeMode::Zoom;
@@ -261,75 +272,12 @@ private:
 			}
 			pictureBox->Image = nullptr;
 			pictureBox->clearInfoIcons();
-			setToolTip("");
+			pictureBox->Caption = "";
 			
 		}		
 	}
 
-	int mimeTypeInfoIcon(String ^mimeType) {
-
-		if(mimeType->Equals("image/tiff")) {
-
-			return(10);
-
-		} else if(mimeType->Equals("image/gif")) {
-
-			return(7);
-
-		} else if(mimeType->Equals("image/png")) {
-
-			return(9);
-
-		} else if(mimeType->Equals("image/jpeg")) {
-
-			return(8);
-
-		} else if(mimeType->Equals("image/bmp")) {
-
-			return(6);
-
-		} else if(mimeType->Equals("video/x-ms-asf")) {
-
-			return(5);
-		
-		} else if(mimeType->Equals("video/x-ms-wmv")) {
-
-			return(4);
-		
-		} else if(mimeType->Equals("video/x-flv")) {
-
-			return(3);
-		
-		} else if(mimeType->Equals("video/avi") || 
-			mimeType->Equals("video/vnd.avi") ||
-			mimeType->Equals("video/msvideo") ||
-			mimeType->Equals("video/x-msvideo")) 
-		{
-		
-			return(1);
-
-		} else if(mimeType->Equals("video/mp4")) {
-
-			return(3);
-		
-		} else if(mimeType->Equals("video/quicktime")) {
-
-			return(2);
-
-		} else if(mimeType->Equals("video/x-matroska")) {
-
-			return(3);
-
-		} else if(mimeType->Equals("video/x-m4v")) {
-
-			return(3);
-
-		} else {
-
-			return(8);
-		}
-
-	}
+	
 
 
 protected:
@@ -373,6 +321,20 @@ public:
 			return(pictureBox->Image == nullptr ? true : false);
 		}
 
+	}
+
+	property bool InfoIconsEnabled {
+
+
+		void set(bool infoIconsEnabled) {
+
+			pictureBox->InfoIconsEnabled = infoIconsEnabled;
+		}
+
+		bool get() {
+
+			return(pictureBox->InfoIconsEnabled);
+		}
 	}
 
 	void loadMedia(String ^fileLocation, DisplayMode mode) {

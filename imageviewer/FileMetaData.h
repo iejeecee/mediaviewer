@@ -2,6 +2,7 @@
 
 #include "XMP_Const.h"
 #include "MetaDataTree.h"
+#include "GeoTagCoordinatePair.h"
 
 namespace imageviewer {
 
@@ -105,7 +106,7 @@ public:
 
 };
 
-public ref class FileMetaData
+public ref class FileMetaData : public EventArgs
 {
 private:
 
@@ -120,6 +121,11 @@ private:
 	DateTime creationDate;
 	DateTime modifiedDate;
 	DateTime metaDataDate;
+
+	static String ^latString = "geo:lat=";
+	static String ^lonString = "geo:lon=";
+	GeoTagCoordinatePair ^geoTag;
+	bool hasGeoTag;
 
 	MetaData ^metaData;
 	MetaDataTreeNode ^tree;
@@ -210,6 +216,8 @@ public:
 	
 		String ^temp = "";
 		bool exists = false;
+		hasGeoTag = false;
+		geoTag = gcnew GeoTagCoordinatePair();
 
 		exists = metaData->getLocalizedText(kXMP_NS_DC, "title", "en", "en-US", temp);
 		if(exists) {
@@ -264,17 +272,53 @@ public:
 			ModifiedDate = DateTime::MinValue;
 		}
 
+		if(metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude"))
+		{
+			String ^latitude;
+			String ^longitude;
+
+			metaData->getProperty(kXMP_NS_EXIF, "GPSLatitude", latitude);
+			metaData->getProperty(kXMP_NS_EXIF, "GPSLongitude", longitude);
+
+			geoTag->longitude->Coord = longitude;
+			geoTag->latitude->Coord = latitude;
+
+			hasGeoTag = true;
+
+		} 
+		
+		bool hasLat = false;
+		bool hasLon = false;
+				
 		tags = gcnew List<String ^>();
 
 		int nrTags = metaData->countArrayItems(kXMP_NS_DC, "subject");
+		
 		for(int i = 1; i <= nrTags; i++) {
 
 			String ^tag;
 			exists = metaData->getArrayItem(kXMP_NS_DC, "subject", i, tag);
 
 			if(exists) {
+
 				tags->Add(tag);
+
+				if(tag->StartsWith(latString)) {
+
+					geoTag->latitude->Decimal = Convert::ToDouble(tag->Substring(latString->Length), CultureInfo::InvariantCulture);
+					hasLat = true;
+
+				} else if(tag->StartsWith(lonString)) {
+
+					geoTag->longitude->Decimal = Convert::ToDouble(tag->Substring(lonString->Length), CultureInfo::InvariantCulture);
+					hasLon = true;
+				}
 			}
+		}
+
+		if(hasLat && hasLon) {
+					
+			hasGeoTag = true;
 		}
 
 	}
@@ -294,6 +338,32 @@ public:
 		void set(String ^filePath) {
 
 			this->filePath = filePath;
+		}
+	}
+
+	property GeoTagCoordinatePair ^GeoTag {
+
+		GeoTagCoordinatePair ^get() {
+
+			return(geoTag);
+		}
+
+		void set(GeoTagCoordinatePair ^geoTag) {
+
+			this->geoTag = geoTag;
+		}
+	}
+
+	property bool HasGeoTag {
+
+		bool get() {
+
+			return(hasGeoTag);
+		}
+
+		void set(bool hasGeoTag) {
+
+			this->hasGeoTag = hasGeoTag;
 		}
 	}
 
@@ -515,6 +585,39 @@ public:
 		for each(String ^tag in tags) {
 
 			metaData->appendArrayItem(kXMP_NS_DC, "subject", kXMP_PropArrayIsUnordered, tag, 0);
+		}
+
+		if(HasGeoTag == true)
+		{
+			String ^latitude = geoTag->latitude->Coord;
+			String ^longitude = geoTag->longitude->Coord;
+
+			metaData->setProperty(kXMP_NS_EXIF, "GPSLatitude", latitude, 0);
+			metaData->setProperty(kXMP_NS_EXIF, "GPSLongitude", longitude, 0);
+
+		} else {
+
+			// remove a potentially existing geotag
+			if(metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude")) {
+
+				metaData->deleteProperty(kXMP_NS_EXIF, "GPSLatitude");
+				metaData->deleteProperty(kXMP_NS_EXIF, "GPSLongitude");
+			}
+
+			String ^latString = "geo:lat=";
+			String ^lonString = "geo:lon=";
+
+			for(int i = metaData->countArrayItems(kXMP_NS_DC, "subject"); i > 0 ; i--) {
+
+				String ^value = "";
+
+				metaData->getArrayItem(kXMP_NS_DC, "subject", i, value);
+
+				if(value->StartsWith(latString) || value->StartsWith(lonString)) {
+
+					metaData->deleteArrayItem(kXMP_NS_DC, "subject", i);						
+				} 
+			}
 		}
 
 		if(metaData->canPutXMP()) {

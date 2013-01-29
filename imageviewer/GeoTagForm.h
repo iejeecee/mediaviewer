@@ -61,9 +61,9 @@ namespace imageviewer {
 				imageListBox->Items->Add(data);
 			}
 
-			pictureBox->ImageLocation = script->GeoTagData[0]->filePath;
-			longitudeTextBox->Text = Convert::ToString(script->GeoTagData[0]->coord->longitude->Decimal);
-			latitudeTextBox->Text = Convert::ToString(script->GeoTagData[0]->coord->latitude->Decimal);
+			pictureBox->ImageLocation = script->GeoTagData[0]->FilePath;
+			longitudeTextBox->Text = Convert::ToString(script->GeoTagData[0]->GeoTag->longitude->Decimal);
+			latitudeTextBox->Text = Convert::ToString(script->GeoTagData[0]->GeoTag->latitude->Decimal);
 
 		}
 
@@ -502,15 +502,15 @@ namespace imageviewer {
 				 int i = imageListBox->SelectedIndex;
 				 if(i == -1) return;
 
-				 pictureBox->ImageLocation = script->GeoTagData[i]->filePath;
-				 longitudeTextBox->Text = Convert::ToString(script->GeoTagData[i]->coord->longitude->Decimal);
-				 latitudeTextBox->Text = Convert::ToString(script->GeoTagData[i]->coord->latitude->Decimal);
+				 pictureBox->ImageLocation = script->GeoTagData[i]->FilePath;
+				 longitudeTextBox->Text = Convert::ToString(script->GeoTagData[i]->GeoTag->longitude->Decimal);
+				 latitudeTextBox->Text = Convert::ToString(script->GeoTagData[i]->GeoTag->latitude->Decimal);
 
 				 script->lookAtPlaceMark(script->GeoTagData[i]);
 
 				 script->reverseGeoCodePlaceMark(script->GeoTagData[i]);
 
-				 if(script->GeoTagData[i]->hasCoord == false) {
+				 if(script->GeoTagData[i]->HasGeoTag == false) {
 
 					 createButton->Enabled = true;
 					 deleteButton->Enabled = false;
@@ -540,8 +540,8 @@ namespace imageviewer {
 	private: System::Void script_PlaceMarkMoved(System::Object^  sender, GeoTagFileData ^item) 
 			 {
 
-				 longitudeTextBox->Text = Convert::ToString(item->coord->longitude->Decimal);
-				 latitudeTextBox->Text = Convert::ToString(item->coord->latitude->Decimal);
+				 longitudeTextBox->Text = Convert::ToString(item->GeoTag->longitude->Decimal);
+				 latitudeTextBox->Text = Convert::ToString(item->GeoTag->latitude->Decimal);
 
 			 }
 
