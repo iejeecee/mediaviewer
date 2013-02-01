@@ -254,13 +254,34 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4771.26952, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4779.30148, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4771.26953, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4778.34825, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.dll"
+			AssemblyName="Microsoft.DirectX, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.Direct3D.dll"
+			AssemblyName="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
+		<ActiveXReference
+			ControlGUID="{6bf52a50-394a-11d3-b153-00c04f79faa6}"
+			ControlVersion="1.0"
+			LocaleID="0"
+			WrapperTool="aximp"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.Direct3DX.dll"
+			AssemblyName="Microsoft.DirectX.Direct3DX, Version=1.0.2911.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
 		/>
 	</References>
 	<Files>
@@ -411,6 +432,10 @@
 			</File>
 			<File
 				RelativePath=".\UploadOutputForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoPanelControl.cpp"
 				>
 			</File>
 		</Filter>
@@ -742,6 +767,16 @@
 			<File
 				RelativePath=".\VideoLibTest.h"
 				>
+			</File>
+			<File
+				RelativePath=".\VideoPanelControl.h"
+				FileType="4"
+				>
+				<File
+					RelativePath=".\VideoPanelControl.resx"
+					SubType="Designer"
+					>
+				</File>
 			</File>
 			<Filter
 				Name="HTTP"

@@ -14,6 +14,7 @@
 #include "ImageUtils.h"
 #include "ImageFile.h"
 #include "VideoLibTest.h"
+#include "VideoPanelControl.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -53,6 +54,7 @@ namespace imageviewer {
 	private: PicasaForm ^picasa;
 	private: ImageSearchForm ^imageSearch;
 	private: System::Windows::Forms::ToolStripButton^  autoScaleToolStripButton;
+	private: imageviewer::VideoPanelControl^  videoPanel;
 
 
 
@@ -87,7 +89,7 @@ namespace imageviewer {
 
 			if(args->Length != 0) {
 
-				loadImage(args[0]);
+				loadMedia(args[0]);
 
 			} 
 	
@@ -143,6 +145,7 @@ namespace imageviewer {
 			this->aboutToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->aboutToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripContainer1 = (gcnew System::Windows::Forms::ToolStripContainer());
+			this->videoPanel = (gcnew imageviewer::VideoPanelControl());
 			this->imagePanel = (gcnew imageviewer::ImagePanelControl());
 			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->toolStrip1 = (gcnew System::Windows::Forms::ToolStrip());
@@ -223,6 +226,7 @@ namespace imageviewer {
 			// 
 			// toolStripContainer1.ContentPanel
 			// 
+			this->toolStripContainer1->ContentPanel->Controls->Add(this->videoPanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imagePanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imageFileBrowser);
 			this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(668, 458);
@@ -233,19 +237,27 @@ namespace imageviewer {
 			this->toolStripContainer1->TabIndex = 1;
 			this->toolStripContainer1->Text = L"toolStripContainer1";
 			// 
+			// videoPanel
+			// 
+			this->videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->videoPanel->Location = System::Drawing::Point(0, 0);
+			this->videoPanel->Name = L"videoPanel";
+			this->videoPanel->Size = System::Drawing::Size(668, 458);
+			this->videoPanel->TabIndex = 2;
+			// 
 			// imagePanel
 			// 
 			this->imagePanel->AutoScroll = true;
-			//this->imagePanel->cropStage = imageviewer::ImagePanel::CropStage::DISABLED;
+			this->imagePanel->CropStage = imageviewer::ImagePanelControl::CropStageState::DISABLED;
 			this->imagePanel->Cursor = System::Windows::Forms::Cursors::Cross;
+			this->imagePanel->DisplayMode = imageviewer::ImagePanelControl::DisplayModeState::NORMAL;
 			this->imagePanel->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->imagePanel->Location = System::Drawing::Point(0, 0);
 			this->imagePanel->Name = L"imagePanel";
 			this->imagePanel->Size = System::Drawing::Size(668, 458);
 			this->imagePanel->TabIndex = 0;
 			this->imagePanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::imagePanel_PreviewKeyDown);
-			this->imagePanel->Modified += gcnew EventHandler<GEventArgs<bool> ^>(this, &MainForm::imagePanel_Modified);
-			this->imagePanel->LoadImageFinished += gcnew EventHandler<EventArgs ^>(this, &MainForm::imagePanel_LoadImageFinished);
+			this->imagePanel->LoadImageFinished += gcnew System::EventHandler<System::EventArgs^ >(this, &MainForm::imagePanel_LoadImageFinished);
 			// 
 			// imageFileBrowser
 			// 
@@ -454,7 +466,7 @@ namespace imageviewer {
 
 				 if(openFileDialog->ShowDialog() == ::DialogResult::OK)
 					{
-						loadImage(openFileDialog->FileName);						
+						loadMedia(openFileDialog->FileName);						
 					}
 			 }
 	private: System::Void openURLToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -470,7 +482,7 @@ namespace imageviewer {
 				 urlDialog->Text = "Open URL";
 				 if(urlDialog->ShowDialog() == ::DialogResult::OK) {
 
-					 loadImage(urlDialog->inputText);
+					 loadMedia(urlDialog->inputText);
 				 }
 			 }
 	private: System::Void imageSearchToolStripButton_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -494,7 +506,7 @@ namespace imageviewer {
 
 				 IImageResult ^imageInfo = dynamic_cast<IImageResult ^>(e->item->Data);
 
-				 this->loadImage(imageInfo->Url);
+				 this->loadMedia(imageInfo->Url);
 
 				 showImagePanel();
 
@@ -575,15 +587,26 @@ namespace imageviewer {
 
 			 }
 
-	private: System::Void loadImage(String ^location) {
+
+	private: System::Void loadMedia(String ^location) {
 
 				 try {
 
+					 clearTitle();
+
 					 imagePanelButtonsEnabled(false);
 
-					 imagePanel->loadImage(location);
+					 if(MediaFormatConvert::isImageFile(location)) {
 
-					 setTitle();
+						 showImagePanel();
+						 imagePanel->loadImage(location);
+
+					 } else if(MediaFormatConvert::isVideoFile(location)) {
+
+						 showVideoPanel();
+						 videoPanel->loadVideo(location);
+
+					 }
 
 				 } catch(Exception ^e) {
 
@@ -595,7 +618,7 @@ namespace imageviewer {
 
 				 Photo ^photo = dynamic_cast<Photo ^>(e->item->Data);
 
-				 this->loadImage(getFullSizePicasaPhotoUrl(photo->PhotoUri->AbsoluteUri));
+				 this->loadMedia(getFullSizePicasaPhotoUrl(photo->PhotoUri->AbsoluteUri));
 
 				 showImagePanel();
 
@@ -624,7 +647,7 @@ namespace imageviewer {
 				 
 				 } else {
 
-					loadImage(e->FullPath);
+					loadMedia(e->FullPath);
 				 }
 
 			 }
@@ -664,10 +687,25 @@ namespace imageviewer {
 				 }
 
 			 }
+    private: void showVideoPanel() {
+
+				 imageFileBrowser->Visible = false;
+				 videoPanel->Visible = true;
+				 imagePanel->Visible = false;				 
+				 ActiveControl = videoPanel;
+
+				 imageToolStripButton->Checked = true;
+				 imageFileBrowserToolStripButton->Checked = false;
+				 imagePanelButtonsEnabled(false);
+				 
+				 setTitle();
+
+			 }
 	private: void showImagePanel() {
 
 				 imageFileBrowser->Visible = false;
-				 imagePanel->Visible = true;
+				 videoPanel->Visible = false;
+				 imagePanel->Visible = true;				 
 				 ActiveControl = imagePanel;
 
 				 imageToolStripButton->Checked = true;
@@ -697,6 +735,7 @@ namespace imageviewer {
 	private: void showImageFileBrowser() {
 
 				 imagePanel->Visible = false;
+				 videoPanel->Visible = false;
 				 imageFileBrowser->Visible = true;	
 				 ActiveControl = imageFileBrowser;
 
@@ -706,6 +745,10 @@ namespace imageviewer {
 				 imagePanelButtonsEnabled(false);
 
 				 setTitle();
+			 }
+	private: void clearTitle() {
+
+				 this->Text = "Image Viewer v1.0";
 			 }
 	private: void setTitle() {
 
@@ -762,6 +805,7 @@ namespace imageviewer {
 					 imageFileBrowser->setBrowsePath(imagePanel->ImageLocation);
 				 }
 
+				 setTitle();
 			 }
 	private: System::Void imagePanel_Modified(System::Object^  sender, GEventArgs<bool> ^e) {
 
@@ -819,7 +863,7 @@ namespace imageviewer {
 						try {
 
 							imagePanel->saveImageToDisk(saveFileDialog->FileName);
-							loadImage(saveFileDialog->FileName);
+							loadMedia(saveFileDialog->FileName);
 
 						} catch(Exception ^e) {
 
@@ -933,9 +977,8 @@ private: System::Void imageFileBrowser_ChangeBrowseDirectoryEvent(System::Object
 
 private: System::Void imageFileBrowser_ViewEvent(System::Object^  sender, imageviewer::ImageGridMouseEventArgs^  e) {
 
-		 	  loadImage(e->item->ImageLocation);
+			 loadMedia(e->item->ImageLocation);
 
-			  showImagePanel();
 		 }
 
 private: System::Void autoScaleToolStripButton_Click(System::Object^  sender, System::EventArgs^  e) {

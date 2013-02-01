@@ -10,7 +10,7 @@
 #include "ImageRGB24.h"
 
 
-class VideoFrameGrabber : protected VideoDecoder {
+class VideoFrameGrabber : public VideoDecoder {
 
 private:
 
@@ -21,8 +21,6 @@ private:
 	int thumbHeight;
 
 	int frameNr;
-
-	std::vector<ImageRGB24 *> thumbs;
 
 	std::string formatTime(double timeStamp, int &hours, int &minutes, int &seconds) const {
 
@@ -140,14 +138,11 @@ public:
 
 	virtual ~VideoFrameGrabber() {
 
-		clearThumbs();
 	}
 
 	void grab(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs)
 	{
-
-		clearThumbs();
 	
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -190,8 +185,6 @@ public:
 			}
 		}
 
-		//std::cout << "Grabbing: " << nrFrames << " frames\n";
-
 		double offset = duration * 0.025;
 		double step = (duration - offset) / nrFrames;
 
@@ -199,14 +192,11 @@ public:
 
 			double pos = offset + frameNr * step;
 
-			//std::cout << "search pos: " << formatTime(pos, hours, minutes, seconds) << "\n";
-
 			seek(pos);
 
 			if(decode(DECODE_KEY_FRAMES_ONLY, SKIP_AUDIO, 1) != 1) {
 
 				// retry a non-keyframe
-				//std::cerr << "grabbing non keyframe\n";
 				seek(pos);
 
 				if(decode(DECODE_VIDEO, SKIP_AUDIO, 1) != 1) {
@@ -215,46 +205,16 @@ public:
 				}
 			}
 		}
-
-		//std::cout << "Completed Output: " << gridFilename << "\n";
-
 	}
 
-	static void decodedFrame(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type) {
+	int getThumbWidth() const {
 
-		VideoFrameGrabber *This = (VideoFrameGrabber *)data;
-
-		// calculate presentation time for this frame in seconds
-		double pts = packet->pts;
-		/*
-		if(packet.dts != AV_NOPTS_VALUE) {
-		pts = packet.dts;
-		} else {
-		pts = 0;
-		}
-		*/
-		
-		double timeStampSeconds = pts * av_q2d(This->videoStream->time_base) - This->startTime;
-	
-		ImageRGB24 *frameImage = new ImageRGB24(This->thumbWidth, This->thumbHeight, timeStampSeconds, frame->data[0]);
-
-		This->thumbs.push_back(frameImage);
-
+		return(thumbWidth);
 	}
 
-	const std::vector<ImageRGB24 *> &getThumbs() const {
+	int getThumbHeight() const {
 
-		return(thumbs);
-	}
-	
-	void clearThumbs() {
-
-		for(int i = 0; i < (int)thumbs.size(); i++) {
-
-			delete thumbs[i];
-		}
-
-		thumbs.clear();
+		return(thumbHeight);
 	}
 
 };

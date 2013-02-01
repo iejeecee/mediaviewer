@@ -456,7 +456,11 @@ public:
 		void set(DisplayModeState displayMode) {
 
 			this->displayMode = displayMode;
-			displayAndCenterImage(sourceImage);
+
+			if(!IsEmpty) {
+
+				displayAndCenterImage(sourceImage);
+			}
 		}
 
 	}

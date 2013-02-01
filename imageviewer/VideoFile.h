@@ -202,20 +202,13 @@ public:
 
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
 
-		List<RawImageRGB24 ^> ^rawThumbs = videoPreview->grabThumbnails(MAX_THUMBNAIL_WIDTH,
+		List<Bitmap ^> ^thumbBitmaps = videoPreview->grabThumbnails(MAX_THUMBNAIL_WIDTH,
 			MAX_THUMBNAIL_HEIGHT, -1, 1);
 
-		for each(RawImageRGB24 ^rawThumb in rawThumbs) {
+		for each(Bitmap ^bitmap in thumbBitmaps) {
 
-			Image ^thumbImage = ImageUtils::createImageFromArray(rawThumb->Width, rawThumb->Height,
-				Imaging::PixelFormat::Format24bppRgb, rawThumb->Data);
-
-			delete rawThumb;
-
-			thumbs->Add(gcnew MetaDataThumb(thumbImage));
+			thumbs->Add(gcnew MetaDataThumb(bitmap));
 		}
-
-		//thumbs->Add(gcnew MetaDataThumb(gcnew Bitmap("C:\\game\\icons\\video.png")));
 
 		return(thumbs);
 	}

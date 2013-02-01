@@ -2,6 +2,8 @@
 #include "stdafx.h"
 #include "Video.h"
 
+typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
+
 class VideoDecoder : public Video {
 
 protected:
@@ -19,7 +21,8 @@ protected:
 
 	void *data;
 
-	void (*decodedFrame)(void *data, AVPacket *packet, AVFrame *frame, FrameType type);
+	DECODED_FRAME_CALLBACK decodedFrame;
+	//void (*decodedFrame)(void *data, AVPacket *packet, AVFrame *frame, FrameType type);
 
 public:
 
@@ -68,7 +71,7 @@ public:
 		close();
 	}
 
-	void setDecodedFrameCallback(void (*decodedFrame)(void *data, AVPacket *packet, AVFrame *frame, FrameType type) = NULL,
+	void setDecodedFrameCallback(DECODED_FRAME_CALLBACK decodedFrame = NULL,
 		void *data = NULL) 
 	{
 		this->decodedFrame = decodedFrame;
@@ -130,22 +133,15 @@ public:
 			throw std::runtime_error("Unable to find the stream's info");
 		}
 
-		for(unsigned int i = 0; i < formatContext->nb_streams; ++i)
-		{
-			if(formatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO)
-			{				
-				videoStreamIndex = i;
-				videoStream = formatContext->streams[videoStreamIndex];
-			
-			} else if(formatContext->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+		videoStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO,
+                                -1, -1, NULL, 0);
 
-				audioStreamIndex = i;
-				audioStream = formatContext->streams[audioStreamIndex];
-			}
-		}
+		if(videoStreamIndex >= 0) {
 
-		if(videoStreamIndex == -1)
-		{
+			videoStream = formatContext->streams[videoStreamIndex];
+		
+		} else {
+
 			throw std::runtime_error("Unable to find a video stream");
 		}
 
@@ -163,7 +159,12 @@ public:
 			throw std::runtime_error("Error opening the videoCodec");
 		}
 
-		if(audioStreamIndex != -1) {
+		audioStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
+                                -1, -1, NULL, 0);
+
+		if(audioStreamIndex >= 0) {
+
+			audioStream = formatContext->streams[audioStreamIndex];
 
 			audioCodecContext = formatContext->streams[audioStreamIndex]->codec;
 			audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
@@ -178,7 +179,6 @@ public:
 				throw std::runtime_error("Error opening the audioCodec");
 			}
 		}
-
 		
 		//TODO: if one of these fail, we should release what has succeeded
 		frame = avcodec_alloc_frame();
@@ -252,6 +252,8 @@ public:
 				{		
 
 					AVFrame *finishedFrame = frame;
+
+					
 
 					if(imageConvertContext != NULL) {
 

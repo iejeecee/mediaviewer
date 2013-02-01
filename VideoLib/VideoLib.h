@@ -2,6 +2,7 @@
 
 #pragma once
 #include "VideoFrameGrabber.h"
+#include "VideoPlayer.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -180,6 +181,15 @@ namespace VideoLib {
 	private:
 
 		VideoFrameGrabber *frameGrabber;
+		System::Runtime::InteropServices::GCHandle gch;
+
+		delegate void DecodedFrameDelegate(
+		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
+
+		void decodedFrameCallback(void *data, AVPacket *packet, 
+			AVFrame *frame, Video::FrameType type);
+
+		List<Drawing::Bitmap ^> ^thumbs;
 
 	public:
 
@@ -192,8 +202,60 @@ namespace VideoLib {
 		VideoMetaData ^readMetaData();
 
 		// TODO: Add your methods for this class here.
-		List<RawImageRGB24 ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+		List<Drawing::Bitmap ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs);
+
+		
+	};
+
+	
+	public ref class VideoPlayer
+	{
+
+	private:
+
+		Native::VideoPlayer *videoPlayer;
+		System::Runtime::InteropServices::GCHandle gch;
+
+		delegate void DecodedFrameDelegate(
+		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
+
+		void decodedFrameCallback(void *data, AVPacket *packet, 
+			AVFrame *frame, Video::FrameType type);
+
+		static int nrFramesInBuffer = 10;
+
+		array<Drawing::Bitmap ^> ^frameData;
+
+	public:
+
+		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^> ^freeFrames;
+		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^> ^decodedFrames;
+
+		property int Height {
+
+			int get() {
+
+				return(videoPlayer->getHeight());
+			}
+		}
+
+		property int Width {
+
+			int get() {
+
+				return(videoPlayer->getWidth());
+			}
+		}
+
+		event EventHandler<EventArgs ^> ^FrameDecoded;
+
+		VideoPlayer();
+		~VideoPlayer();
+
+		void open(String ^videoLocation);
+		void play();
+		void close();
 
 		
 	};
