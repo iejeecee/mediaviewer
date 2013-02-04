@@ -251,9 +251,7 @@ public:
 				if(frameFinished)
 				{		
 
-					AVFrame *finishedFrame = frame;
-
-					
+					AVFrame *finishedFrame = frame;					
 
 					if(imageConvertContext != NULL) {
 

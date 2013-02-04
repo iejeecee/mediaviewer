@@ -604,7 +604,7 @@ namespace imageviewer {
 					 } else if(MediaFormatConvert::isVideoFile(location)) {
 
 						 showVideoPanel();
-						 videoPanel->loadVideo(location);
+						 videoPanel->playVideo(location);
 
 					 }
 

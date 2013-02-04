@@ -531,8 +531,11 @@ public:
 		if(width != ImageSize.Width || height != ImageSize.Height) {
 
 			Image ^resizedImage = ImageUtils::resizeImage(sourceImage, width, height);
-			isModified = true;
-			displayAndCenterImage(resizedImage);
+
+			if(resizedImage != nullptr) {
+				isModified = true;
+				displayAndCenterImage(resizedImage);
+			}
 		}
 
 		//centerImage();			

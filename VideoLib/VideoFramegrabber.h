@@ -7,7 +7,6 @@
 #include <vector>
 #include "VideoDecoder.h"
 #include "WindowsFileUtil.h"
-#include "ImageRGB24.h"
 
 
 class VideoFrameGrabber : public VideoDecoder {

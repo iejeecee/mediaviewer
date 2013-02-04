@@ -10,71 +10,57 @@ using namespace System::IO;
 
 namespace VideoLib {
 
-	public ref class RawImageRGB24
+	public ref class VideoFrame
 	{
 	private:
 
-		int width;
-		int height;
-
-		int timeStampSeconds;
-		
-		cli::array<unsigned char> ^data;
+		double pts;
+		Drawing::Bitmap ^bitmap;
 
 	public:
 
-		property int Width {
+		property double Pts {
 
-			int get() {
+			void set(double pts) {
+				this->pts = pts;
+			}
 
-				return(width);
+			double get() {
+				return(pts);
 			}
 		}
 
-		property int Height {
+		property Drawing::Bitmap ^Bitmap {
 
-			int get() {
+			void set(Drawing::Bitmap ^bitmap) {
+				this->bitmap = bitmap;
+			}
 
-				return(height);
+
+			Drawing::Bitmap ^get() {
+				return(bitmap);
 			}
 		}
 
-		property int TimeStampSeconds {
-
-			int get() {
-
-				return(timeStampSeconds);
-			}
-		}
-
-		property cli::array<unsigned char> ^Data {
-
-			cli::array<unsigned char> ^get() {
-
-				return(data);
-			}
-		}
-
-		RawImageRGB24(int width, int height, int timeStampSeconds, cli::array<unsigned char> ^data) {
-
-			this->width = width;
-			this->height = height;
-			this->data = data;
-		}
-
-		~RawImageRGB24() {
-
-			if(data != nullptr) {
-				delete data;
-				data = nullptr;
-			}
-		}
-
+		VideoFrame(int width, int height, Drawing::Imaging::PixelFormat pixelFormat);
+		~VideoFrame();
 	};
 
-	public ref class VideoMetaData
+	public ref class VideoPreview
 	{
+
 	private:
+
+		VideoFrameGrabber *frameGrabber;
+		System::Runtime::InteropServices::GCHandle gch;
+
+		delegate void DecodedFrameDelegate(
+		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
+
+		void decodedFrameCallback(void *data, AVPacket *packet, 
+			AVFrame *frame, Video::FrameType type);
+
+		List<Drawing::Bitmap ^> ^thumbs;
 
 		int durationSeconds;
 
@@ -91,21 +77,8 @@ namespace VideoLib {
 
 	public:
 
-		VideoMetaData(int durationSeconds,
-			__int64 sizeBytes, int width, int height, String ^container,
-			String ^videoCodecName, List<String ^> ^metaData, float frameRate)
-		{
-
-			this->durationSeconds = durationSeconds;
-			this->sizeBytes = sizeBytes;
-			this->width = width;
-			this->height = height;
-			this->container = container;
-			this->videoCodecName = videoCodecName;
-			this->frameRate = frameRate;
-			this->metaData = metaData;
-
-		}
+		VideoPreview();
+		~VideoPreview();
 
 		property int Width {
 
@@ -171,35 +144,8 @@ namespace VideoLib {
 			}
 		}
 
-
-	};
-
-
-	public ref class VideoPreview
-	{
-
-	private:
-
-		VideoFrameGrabber *frameGrabber;
-		System::Runtime::InteropServices::GCHandle gch;
-
-		delegate void DecodedFrameDelegate(
-		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
-
-		void decodedFrameCallback(void *data, AVPacket *packet, 
-			AVFrame *frame, Video::FrameType type);
-
-		List<Drawing::Bitmap ^> ^thumbs;
-
-	public:
-
-		VideoPreview();
-		~VideoPreview();
-
 		void open(String ^videoLocation);
 		void close();
-
-		VideoMetaData ^readMetaData();
 
 		// TODO: Add your methods for this class here.
 		List<Drawing::Bitmap ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
@@ -225,12 +171,16 @@ namespace VideoLib {
 
 		static int nrFramesInBuffer = 10;
 
-		array<Drawing::Bitmap ^> ^frameData;
+		array<VideoFrame ^> ^frameData;
+
+		double videoClock;
+
+		double synchronizeVideo(int repeatFrames, double pts);
 
 	public:
 
-		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^> ^freeFrames;
-		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^> ^decodedFrames;
+		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^> ^freeFrames;
+		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^> ^decodedFrames;
 
 		property int Height {
 
@@ -248,13 +198,30 @@ namespace VideoLib {
 			}
 		}
 
-		event EventHandler<EventArgs ^> ^FrameDecoded;
+		property double TimeNow {
+
+			double get() {
+
+				return(av_gettime() / 1000000.0);
+			}
+
+		}
+
+		property double TimeBase {
+
+			double get() {
+
+				return(av_q2d(videoPlayer->getVideoStream()->time_base));
+			}
+		}
+
+		event EventHandler<EventArgs ^> ^DecodeException;
 
 		VideoPlayer();
 		~VideoPlayer();
 
 		void open(String ^videoLocation);
-		void play();
+		int decodeFrame();
 		void close();
 
 		

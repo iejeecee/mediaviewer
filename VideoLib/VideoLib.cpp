@@ -1,4 +1,5 @@
 // This is the main DLL file.
+// FFMPEG Video Player tutorial http://dranger.com/ffmpeg/tutorial05.html
 
 #include "stdafx.h"
 #include <msclr\marshal_cppstd.h>
@@ -10,6 +11,20 @@ using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
 
 namespace VideoLib {
+
+VideoFrame::VideoFrame(int width, int height, Drawing::Imaging::PixelFormat pixelFormat) {
+
+	bitmap = gcnew Drawing::Bitmap(width, height, pixelFormat);
+	pts = 0;
+}
+
+VideoFrame::~VideoFrame() {
+
+	if(bitmap != nullptr) {
+
+		delete bitmap;
+	}
+}
 
 VideoPreview::VideoPreview() {
 
@@ -44,6 +59,22 @@ void VideoPreview::open(String ^videoLocation) {
 	try {
 
 		frameGrabber->open(marshal_as<std::string>(videoLocation), AVDISCARD_NONKEY);
+
+		metaData = gcnew List<String ^>();
+
+		for(int i = 0; i < (int)frameGrabber->metaData.size(); i++) {
+
+			metaData->Add(marshal_as<String ^>(frameGrabber->metaData[i]));
+
+		}
+
+		durationSeconds = frameGrabber->durationSeconds;
+		sizeBytes = frameGrabber->sizeBytes;
+		width = frameGrabber->width;
+		height = frameGrabber->height;
+		container = marshal_as<String ^>(frameGrabber->container);
+		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
+		frameRate = frameGrabber->frameRate;
 
 	} catch (Exception ^) {
 
@@ -102,29 +133,7 @@ List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int max
 	return(thumbs);
 }
 
-VideoMetaData ^VideoPreview::readMetaData() {
 
-	List<String ^> ^meta = gcnew List<String ^>();
-
-	for(int i = 0; i < (int)frameGrabber->metaData.size(); i++) {
-
-		meta->Add(marshal_as<String ^>(frameGrabber->metaData[i]));
-
-	}
-
-	VideoMetaData ^metaData = gcnew VideoMetaData(
-		frameGrabber->durationSeconds, 
-		frameGrabber->sizeBytes,
-		frameGrabber->width, 
-		frameGrabber->height, 
-		marshal_as<String ^>(frameGrabber->container),
-		marshal_as<String ^>(frameGrabber->videoCodecName),
-		meta,
-		frameGrabber->frameRate);
-
-
-	return(metaData);
-}
 
 VideoPlayer::VideoPlayer() {
 
@@ -143,8 +152,10 @@ VideoPlayer::VideoPlayer() {
 
 	videoPlayer->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
-	frameData = gcnew array<Drawing::Bitmap ^>(nrFramesInBuffer);
-	decodedFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^>();
+	frameData = gcnew array<VideoFrame ^>(nrFramesInBuffer);
+
+	videoClock = 0;
+
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -153,12 +164,38 @@ VideoPlayer::~VideoPlayer() {
 	gch.Free();
 }
 
+// calculate a new pts for a videoframe if it's pts is missing
+double VideoPlayer::synchronizeVideo(int repeatFrame, double pts) {
+
+	double frameDelay;
+
+	if(pts != 0) {
+
+		// if we have pts, set video clock to it 
+		videoClock = pts;
+
+	} else {
+
+		// if we aren't given a pts, set it to the clock 
+		pts = videoClock;
+	}
+
+	// update the video clock
+	frameDelay = av_q2d(videoPlayer->getVideoStream()->time_base);
+	// if we are repeating a frame, adjust clock accordingly 
+	frameDelay += repeatFrame * (frameDelay * 0.5);
+	videoClock += frameDelay;
+
+	return(pts);
+}
+
 void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
 {
 
 	// get a frame from the free frames queue
-	Drawing::Bitmap ^bitmap = freeFrames->Take();		
+	VideoFrame ^videoFrame = freeFrames->Take();
+	Drawing::Bitmap ^bitmap = videoFrame->Bitmap; 		
 
 	Drawing::Rectangle rect = 
 		Drawing::Rectangle(0, 0, bitmap->Width, bitmap->Height);
@@ -175,10 +212,27 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 
 	bitmap->UnlockBits(bmpData);
 
-	// add frame to the rendered frames queue
-	decodedFrames->Put(bitmap);
+	// calculate presentation timestamp (pts)
+	double pts = 0;
 
-	FrameDecoded(this, gcnew EventArgs());
+    if(packet->dts != AV_NOPTS_VALUE) {
+
+      pts = packet->dts;
+
+    } else {
+
+      pts = 0;
+    }
+
+	// convert pts to seconds
+	pts *= av_q2d(videoPlayer->getVideoStream()->time_base);
+
+	// calculate a pts if pts equals 0
+	videoFrame->Pts = synchronizeVideo(frame->repeat_pict, pts);
+
+	// add frame to the rendered frames queue
+	decodedFrames->Put(videoFrame);
+
 }
 
 void VideoPlayer::open(String ^videoLocation) {
@@ -187,11 +241,17 @@ void VideoPlayer::open(String ^videoLocation) {
 
 		videoPlayer->open(marshal_as<std::string>(videoLocation));
 
-		freeFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<System::Drawing::Bitmap ^>();
+		decodedFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^>();
+		freeFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^>();
 
 		for(int i = 0; i < nrFramesInBuffer; i++) {
 
-			frameData[i] = gcnew Drawing::Bitmap(videoPlayer->getWidth(),
+			if(frameData[i] != nullptr) {
+
+				delete frameData[i];
+			}
+
+			frameData[i] = gcnew VideoFrame(videoPlayer->getWidth(),
 				videoPlayer->getHeight(),
 				Drawing::Imaging::PixelFormat::Format24bppRgb);
 		
@@ -204,10 +264,12 @@ void VideoPlayer::open(String ^videoLocation) {
 	}
 
 }
-void VideoPlayer::play() {
+int VideoPlayer::decodeFrame() {
 
-	videoPlayer->play();
+	return(videoPlayer->decode(VideoDecoder::DECODE_VIDEO, 
+		VideoDecoder::SKIP_AUDIO, 1));
 }
+
 void VideoPlayer::close() {
 
 	videoPlayer->close();

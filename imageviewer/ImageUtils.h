@@ -61,21 +61,32 @@ public:
 
 	static Image ^resizeImage(Image ^source, int width, int height) {
 
-		if(source->Width == width && source->Height == height) {
+		Image ^result = nullptr;
 
-			return(gcnew Bitmap(source));
-		}
+		try {
 
-	    Image ^result = gcnew Bitmap(width, height, source->PixelFormat);
-		Graphics^ g = Graphics::FromImage(result);
+			if(source->Width == width && source->Height == height) {
 
-		g->CompositingQuality = CompositingQuality::HighQuality;
-		g->SmoothingMode = SmoothingMode::HighQuality;
-		g->InterpolationMode = InterpolationMode::HighQualityBicubic;
+				return(gcnew Bitmap(source));
+			}
 
-		g->DrawImage(source, Rectangle(0,0,width, height));
+			result = gcnew Bitmap(width, height, source->PixelFormat);
+			Graphics^ g = Graphics::FromImage(result);
+
+			g->CompositingQuality = CompositingQuality::HighQuality;
+			g->SmoothingMode = SmoothingMode::HighQuality;
+			g->InterpolationMode = InterpolationMode::HighQualityBicubic;
+
+			g->DrawImage(source, Rectangle(0,0,width, height));
+
+		} catch (Exception ^e) {
+
+			MessageBox::Show(e->Message, "Error resizing image");
+
+		} 
 
 		return(result);
+
 	}
 
 	static OpenFileDialog ^createOpenImageFileDialog() {

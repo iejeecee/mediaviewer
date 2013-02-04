@@ -89,19 +89,17 @@ protected:
 
 			videoPreview->open(Location);
 
-			VideoMetaData ^videoMetaData = videoPreview->readMetaData();
+			durationSeconds = videoPreview->DurationSeconds;
+			sizeBytes = videoPreview->SizeBytes;
 
-			durationSeconds = videoMetaData->DurationSeconds;
-			sizeBytes = videoMetaData->SizeBytes;
+			width = videoPreview->Width;
+			height = videoPreview->Height;
 
-			width = videoMetaData->Width;
-			height = videoMetaData->Height;
+			container = videoPreview->Container;
+			videoCodecName = videoPreview->VideoCodecName;
+			fsMetaData = videoPreview->MetaData;
 
-			container = videoMetaData->Container;
-			videoCodecName = videoMetaData->VideoCodecName;
-			fsMetaData = videoMetaData->MetaData;
-
-			frameRate = videoMetaData->FrameRate;
+			frameRate = videoPreview->FrameRate;
 
 			if(videoSupportsXMPMetaData()) {
 

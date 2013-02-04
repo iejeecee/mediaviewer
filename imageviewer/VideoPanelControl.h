@@ -1,5 +1,6 @@
 #pragma once
 #include "ImageUtils.h"
+#include "Util.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -30,7 +31,10 @@ namespace imageviewer {
 			//mediaPlayer->Dock = DockStyle::Fill;
 			//mediaPlayer->stretchToFit = true;
 			videoPlayer = gcnew VideoPlayer();
-			videoPlayer->FrameDecoded += gcnew EventHandler<EventArgs ^>(this, &VideoPanelControl::videoPlayer_FrameDecoded);
+			previousPts = 0;
+			previousDelay = 0.04;
+			skipFrame = false;
+		
 		}
 
 	protected:
@@ -44,7 +48,11 @@ namespace imageviewer {
 				delete components;
 			}
 		}
-	private: System::ComponentModel::BackgroundWorker^  backgroundWorker;
+	private: System::ComponentModel::BackgroundWorker^  videoDecoderBW;
+	protected: 
+
+	private: System::Windows::Forms::Timer^  videoRefreshTimer;
+	private: System::ComponentModel::IContainer^  components;
 	protected: 
 
 	protected: 
@@ -57,7 +65,7 @@ namespace imageviewer {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -66,14 +74,21 @@ namespace imageviewer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
-			this->backgroundWorker = (gcnew System::ComponentModel::BackgroundWorker());
+			this->components = (gcnew System::ComponentModel::Container());
+			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
+			this->videoRefreshTimer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->SuspendLayout();
 			// 
-			// backgroundWorker
+			// videoDecoderBW
 			// 
-			this->backgroundWorker->WorkerReportsProgress = true;
-			this->backgroundWorker->WorkerSupportsCancellation = true;
-			this->backgroundWorker->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &VideoPanelControl::backgroundWorker_DoWork);
+			this->videoDecoderBW->WorkerReportsProgress = true;
+			this->videoDecoderBW->WorkerSupportsCancellation = true;
+			this->videoDecoderBW->DoWork += gcnew System::ComponentModel::DoWorkEventHandler(this, &VideoPanelControl::videoDecoderBW_DoWork);
+			// 
+			// videoRefreshTimer
+			// 
+			this->videoRefreshTimer->Interval = 40;
+			this->videoRefreshTimer->Tick += gcnew System::EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
 			// 
 			// VideoPanelControl
 			// 
@@ -88,76 +103,40 @@ namespace imageviewer {
 		}
 #pragma endregion
 	private:
+
 		VideoPlayer ^videoPlayer;
-/*
-		Device ^device;
+		double previousPts;
+		double previousDelay;
+		double frameTimer;
 
-		bool initializeD3D() {
-
-			try
-			{
-				// Now  setup our D3D stuff
-				PresentParameters ^presentParams = gcnew PresentParameters();
-				presentParams->Windowed = true;
-				presentParams->SwapEffect = SwapEffect::Discard;
-				device = gcnew Device(0, DeviceType::Hardware, this, 
-					CreateFlags::SoftwareVertexProcessing, presentParams);
-				return true;
-			}
-			catch (DirectXException ^)
-			{ 
-				return false; 
-			}
-		}
-*/
-
-		void videoPlayer_FrameDecoded(Object ^sender, EventArgs ^e) {
-
-			//videoPlayer->FrameData->Save("c:\\test.jpg");
-			this->Invalidate();
-		}
+		bool skipFrame;
 
 	public:
-		void loadVideo(String ^location) {
 
-			backgroundWorker->RunWorkerAsync(location);
-		
+		void playVideo(String ^location) {
 
-			//mediaPlayer->URL = location;
-/*			
-			if(video == nullptr) {
+			// stop any previously started video from playing
+			videoDecoderBW->CancelAsync();
+			while(videoDecoderBW->IsBusy) {
 
-				video = gcnew Video(location);
-
-			} else {
-
-				video->Open(location);
+				Application::DoEvents();
 			}
-		
-			video->Owner = videoPictureBox;
+			videoPlayer->close();
+						
+			// start decoding video in a seperate thread
+			videoPlayer->open(location);
+			videoDecoderBW->RunWorkerAsync();
 
-			int scaledWidth, scaledHeight;
-
-			ImageUtils::stretchRectangle(video->Size.Width, video->Size.Height,
-				Width,Height,scaledWidth, scaledHeight);
-
-			Rectangle canvas = ImageUtils::centerRectangle(Rectangle(0,0,Width,Height),
-				Rectangle(0,0,scaledWidth,scaledHeight));
-
-			videoPictureBox->Location = Point(canvas.X, canvas.Y);
-			videoPictureBox->Size = System::Drawing::Size(canvas.Width, canvas.Height);
-
-			//video->Size = System::Drawing::Size(scaledWidth, scaledHeight);
-			
-
-			video->Play();
-*/		
-
-
+			videoRefreshTimer->Enabled = true;
+			videoRefreshTimer->Start();
 		}
 	private: System::Void videoPanelControl_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) {
 
-				 while(videoPlayer->Width == 0) {}
+				 if(videoDecoderBW->IsBusy == false) {
+
+					 // paint can be triggered before we actually start decoding
+					 return;
+				 }
 
 				 int width = videoPlayer->Width;
 				 int height = videoPlayer->Height;
@@ -178,20 +157,69 @@ namespace imageviewer {
 				 g->InterpolationMode = InterpolationMode::NearestNeighbor;
 				 g->SmoothingMode = SmoothingMode::None;
 
-				Bitmap ^frameData = videoPlayer->decodedFrames->Take();
+				 VideoFrame ^currentFrame = videoPlayer->decodedFrames->Take();
 
-				g->DrawImage(frameData, canvas);
+				 if(skipFrame == false) {
 
-				videoPlayer->freeFrames->Put(frameData);
+					 g->DrawImage(currentFrame->Bitmap, canvas);
+
+				 } else {
+
+					 Util::DebugOut(videoPlayer->TimeNow.ToString() + ": Skipping frame");
+				 }	 
+
+				// calculate delay to display next frame
+				 double delay = currentFrame->Pts - previousPts;	
+				
+				 if(delay <= 0 || delay >= 1.0) {
+					 // if incorrect delay, use previous one 
+					 delay = previousDelay;
+				 }
+
+				 previousPts = currentFrame->Pts;
+				 previousDelay = delay;
+				
+				 // adjust delay based on the actual current time
+				 frameTimer += delay;
+				 double actualDelay = frameTimer - videoPlayer->TimeNow;
+
+				 if(actualDelay < 0.010) {
+
+					 Util::DebugOut("Delay too small: " + actualDelay.ToString());
+					 actualDelay = 0.010;					
+					 skipFrame = true;
+
+				 } else {
+
+					 skipFrame = false;
+				 }
+
+				 // start timer with delay for next frame
+				 videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
+				 videoRefreshTimer->Start();		
+
+				 // queue current frame in freeFrames to be used again
+				 videoPlayer->freeFrames->Put(currentFrame);
 				 
 			 }
-private: System::Void backgroundWorker_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
+			 			
+				frameTimer = videoPlayer->TimeNow;
 
-				String ^location = dynamic_cast<String ^>(e->Argument);
+				while(videoPlayer->decodeFrame() && !videoDecoderBW->CancellationPending) {
 
-			 	videoPlayer->open(location);
-				videoPlayer->play();
+					int i = 0;
+				}
+				
+				int i = 0;
+		 }
+private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {
 
+			 
+			 videoRefreshTimer->Stop();
+			 
+			 // redraw screen
+			 this->Invalidate();
 		 }
 };
 }
