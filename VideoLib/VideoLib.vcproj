@@ -187,6 +187,21 @@
 			AssemblyName="DigitallyCreated.Utilities.Concurrency, Version=1.0.1.0, PublicKeyToken=79d801fe1e19f7f2, processorArchitecture=MSIL"
 			MinFrameworkVersion="196613"
 		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.dll"
+			AssemblyName="Microsoft.DirectX, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.Direct3D.dll"
+			AssemblyName="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.Direct3DX.dll"
+			AssemblyName="Microsoft.DirectX.Direct3DX, Version=1.0.2911.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
 	</References>
 	<Files>
 		<Filter

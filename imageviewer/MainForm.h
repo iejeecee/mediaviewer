@@ -55,6 +55,7 @@ namespace imageviewer {
 	private: ImageSearchForm ^imageSearch;
 	private: System::Windows::Forms::ToolStripButton^  autoScaleToolStripButton;
 	private: imageviewer::VideoPanelControl^  videoPanel;
+	private: System::Windows::Forms::ToolStripButton^  videoToolStripButton;
 
 
 
@@ -150,6 +151,7 @@ namespace imageviewer {
 			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->toolStrip1 = (gcnew System::Windows::Forms::ToolStrip());
 			this->imageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
+			this->videoToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->imageFileBrowserToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->autoScaleToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->picasaToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
@@ -271,10 +273,11 @@ namespace imageviewer {
 			// 
 			// toolStrip1
 			// 
-			this->toolStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(13) {this->imageToolStripButton, 
-				this->imageFileBrowserToolStripButton, this->autoScaleToolStripButton, this->picasaToolStripButton, this->imageSearchToolStripButton, 
-				this->toolStripSeparator1, this->saveImageToolStripButton, this->resizeImageToolStripButton, this->cropImageToolStripButton, 
-				this->verticalMirrorImageToolStripButton, this->horizontalMirrorImageToolStripButton, this->rotateImageMinToolStripButton, this->rotateImagePlusToolStripButton});
+			this->toolStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(14) {this->imageToolStripButton, 
+				this->videoToolStripButton, this->imageFileBrowserToolStripButton, this->autoScaleToolStripButton, this->picasaToolStripButton, 
+				this->imageSearchToolStripButton, this->toolStripSeparator1, this->saveImageToolStripButton, this->resizeImageToolStripButton, 
+				this->cropImageToolStripButton, this->verticalMirrorImageToolStripButton, this->horizontalMirrorImageToolStripButton, this->rotateImageMinToolStripButton, 
+				this->rotateImagePlusToolStripButton});
 			this->toolStrip1->Location = System::Drawing::Point(0, 29);
 			this->toolStrip1->Name = L"toolStrip1";
 			this->toolStrip1->Size = System::Drawing::Size(668, 25);
@@ -293,7 +296,20 @@ namespace imageviewer {
 			this->imageToolStripButton->Name = L"imageToolStripButton";
 			this->imageToolStripButton->Size = System::Drawing::Size(23, 22);
 			this->imageToolStripButton->Text = L"Image";
+			this->imageToolStripButton->ToolTipText = L"Photo";
 			this->imageToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::imageToolStripButton_Click);
+			// 
+			// videoToolStripButton
+			// 
+			this->videoToolStripButton->CheckOnClick = true;
+			this->videoToolStripButton->DisplayStyle = System::Windows::Forms::ToolStripItemDisplayStyle::Image;
+			this->videoToolStripButton->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"videoToolStripButton.Image")));
+			this->videoToolStripButton->ImageTransparentColor = System::Drawing::Color::Magenta;
+			this->videoToolStripButton->Name = L"videoToolStripButton";
+			this->videoToolStripButton->Size = System::Drawing::Size(23, 22);
+			this->videoToolStripButton->Text = L"view video";
+			this->videoToolStripButton->ToolTipText = L"Video";
+			this->videoToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::videoToolStripButton_Click);
 			// 
 			// imageFileBrowserToolStripButton
 			// 
@@ -694,7 +710,8 @@ namespace imageviewer {
 				 imagePanel->Visible = false;				 
 				 ActiveControl = videoPanel;
 
-				 imageToolStripButton->Checked = true;
+				 imageToolStripButton->Checked = false;
+				 videoToolStripButton->Checked = true;
 				 imageFileBrowserToolStripButton->Checked = false;
 				 imagePanelButtonsEnabled(false);
 				 
@@ -709,6 +726,7 @@ namespace imageviewer {
 				 ActiveControl = imagePanel;
 
 				 imageToolStripButton->Checked = true;
+				 videoToolStripButton->Checked = false;
 				 imageFileBrowserToolStripButton->Checked = false;
 
 				 if(!imagePanel->IsEmpty) {
@@ -740,6 +758,7 @@ namespace imageviewer {
 				 ActiveControl = imageFileBrowser;
 
 				 imageToolStripButton->Checked = false;
+				 videoToolStripButton->Checked = false;
 				 imageFileBrowserToolStripButton->Checked = true;
 
 				 imagePanelButtonsEnabled(false);
@@ -1028,6 +1047,15 @@ private: System::Void imagePanel_PreviewKeyDown(System::Object^  sender, System:
 
 					 //deleteImages();
 			 }
+		 }
+private: System::Void videoToolStripButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			showVideoPanel();
+		 }
+
+public: System::Void application_Idle(System::Object^  sender, System::EventArgs^  e) {
+
+			//Util::DebugOut("idle");
 		 }
 };
 }

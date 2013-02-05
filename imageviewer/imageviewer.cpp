@@ -12,8 +12,11 @@ int main(array<System::String ^> ^args)
 	Application::EnableVisualStyles();
 	Application::SetCompatibleTextRenderingDefault(false); 
 
+	MainForm ^mainForm = gcnew MainForm(args);
+
 	// Create the main window and run it
-	Application::Run(gcnew MainForm(args));
+	Application::Idle += gcnew EventHandler(mainForm, &MainForm::application_Idle);
+	Application::Run(mainForm);
 
 	return 0;
 }

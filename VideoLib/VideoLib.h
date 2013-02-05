@@ -7,6 +7,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::IO;
+using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
 
@@ -15,7 +16,7 @@ namespace VideoLib {
 	private:
 
 		double pts;
-		Drawing::Bitmap ^bitmap;
+		Texture ^frame;
 
 	public:
 
@@ -30,19 +31,18 @@ namespace VideoLib {
 			}
 		}
 
-		property Drawing::Bitmap ^Bitmap {
+		property Texture ^Frame {
 
-			void set(Drawing::Bitmap ^bitmap) {
-				this->bitmap = bitmap;
+			void set(Texture ^frame) {
+				this->frame = frame;
 			}
 
-
-			Drawing::Bitmap ^get() {
-				return(bitmap);
+			Texture ^get() {
+				return(frame);
 			}
 		}
 
-		VideoFrame(int width, int height, Drawing::Imaging::PixelFormat pixelFormat);
+		VideoFrame(Device ^device, int width, int height, Format pixelFormat);
 		~VideoFrame();
 	};
 
@@ -160,6 +160,8 @@ namespace VideoLib {
 
 	private:
 
+		Device ^device;
+
 		Native::VideoPlayer *videoPlayer;
 		System::Runtime::InteropServices::GCHandle gch;
 
@@ -202,7 +204,8 @@ namespace VideoLib {
 
 			double get() {
 
-				return(av_gettime() / 1000000.0);
+				double time = av_gettime() / 1000000.0;
+				return(time);
 			}
 
 		}
@@ -217,7 +220,7 @@ namespace VideoLib {
 
 		event EventHandler<EventArgs ^> ^DecodeException;
 
-		VideoPlayer();
+		VideoPlayer(Device ^device);
 		~VideoPlayer();
 
 		void open(String ^videoLocation);

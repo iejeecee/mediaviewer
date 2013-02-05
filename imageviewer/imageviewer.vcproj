@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4779.30148, processorArchitecture=x86"
+			AssemblyName=""
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4778.34825, processorArchitecture=x86"
+			AssemblyName=""
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference

@@ -36,7 +36,7 @@ public:
 		sizeBytes = 0;
 	}
 
-	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	virtual void open(const std::string &location, PixelFormat format = PIX_FMT_BGR24, AVDiscard discardMode = AVDISCARD_DEFAULT) {
 
 		VideoDecoder::open(location, discardMode);
 
@@ -45,7 +45,7 @@ public:
 			throw std::runtime_error("invalid video stream");
 		}
 
-		initImageConverter(PIX_FMT_BGR24, getWidth(), getHeight(), X);
+		initImageConverter(PIX_FMT_BGRA, getWidth(), getHeight(), X);
 
 		// get metadata
 		durationSeconds = getDurationSeconds();

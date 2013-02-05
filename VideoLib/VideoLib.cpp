@@ -9,20 +9,23 @@
 
 using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
+using namespace Microsoft::DirectX;
+using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
 
-VideoFrame::VideoFrame(int width, int height, Drawing::Imaging::PixelFormat pixelFormat) {
+VideoFrame::VideoFrame(Device ^device, int width, int height, Format pixelFormat) {
 
-	bitmap = gcnew Drawing::Bitmap(width, height, pixelFormat);
+	frame = gcnew Texture(device, width, height, 1, Usage::None, pixelFormat, 
+		Pool::Managed);
 	pts = 0;
 }
 
 VideoFrame::~VideoFrame() {
 
-	if(bitmap != nullptr) {
+	if(frame != nullptr) {
 
-		delete bitmap;
+		delete frame;
 	}
 }
 
@@ -135,7 +138,9 @@ List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int max
 
 
 
-VideoPlayer::VideoPlayer() {
+VideoPlayer::VideoPlayer(Microsoft::DirectX::Direct3D::Device ^device) {
+
+	this->device = device;
 
 	videoPlayer = new Native::VideoPlayer();
 	// marshal a managed delegate to a native function pointer
@@ -195,22 +200,22 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 
 	// get a frame from the free frames queue
 	VideoFrame ^videoFrame = freeFrames->Take();
-	Drawing::Bitmap ^bitmap = videoFrame->Bitmap; 		
+	Texture ^bitmap = videoFrame->Frame; 		
 
 	Drawing::Rectangle rect = 
-		Drawing::Rectangle(0, 0, bitmap->Width, bitmap->Height);
+		Drawing::Rectangle(0, 0, videoPlayer->getWidth(), videoPlayer->getHeight());
 
 	// copy raw frame data to bitmap
-	Drawing::Imaging::BitmapData ^bmpData = bitmap->LockBits(rect, Drawing::Imaging::ImageLockMode::WriteOnly,
-		Drawing::Imaging::PixelFormat::Format24bppRgb);
+	int pitch;
+	GraphicsStream ^stream = bitmap->LockRectangle(0, rect, LockFlags::None, pitch);
 
-	IntPtr dest = bmpData->Scan0;
+	void *dest = stream->InternalDataPointer;
 
-	int sizeBytes = bmpData->Height * bmpData->Stride;
+	int sizeBytes = rect.Height * pitch;
 
-	memcpy(dest.ToPointer(), frame->data[0], sizeBytes);
+	memcpy(dest, frame->data[0], sizeBytes);
 
-	bitmap->UnlockBits(bmpData);
+	bitmap->UnlockRectangle(0);
 
 	// calculate presentation timestamp (pts)
 	double pts = 0;
@@ -251,9 +256,9 @@ void VideoPlayer::open(String ^videoLocation) {
 				delete frameData[i];
 			}
 
-			frameData[i] = gcnew VideoFrame(videoPlayer->getWidth(),
+			frameData[i] = gcnew VideoFrame(device, videoPlayer->getWidth(),
 				videoPlayer->getHeight(),
-				Drawing::Imaging::PixelFormat::Format24bppRgb);
+				Format::A8R8G8B8);
 		
 			freeFrames->Put(frameData[i]);			
 		}
