@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName=""
+			AssemblyName="VideoLib, Version=1.0.4787.27025, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName=""
+			AssemblyName="XMPLib, Version=1.0.4783.42367, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -281,6 +281,11 @@
 		<AssemblyReference
 			RelativePath="Microsoft.DirectX.Direct3DX.dll"
 			AssemblyName="Microsoft.DirectX.Direct3DX, Version=1.0.2911.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
+			MinFrameworkVersion="0"
+		/>
+		<AssemblyReference
+			RelativePath="Microsoft.DirectX.DirectSound.dll"
+			AssemblyName="Microsoft.DirectX.DirectSound, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
 			MinFrameworkVersion="0"
 		/>
 	</References>

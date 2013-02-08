@@ -268,10 +268,13 @@ public:
 		sb->AppendLine();
 		sb->AppendLine();
 
-		sb->AppendLine("Resolution:");
+		sb->Append("Video Codec (");
+		sb->Append(VideoCodecName);
+		sb->AppendLine("):");
 		sb->Append(width);
 		sb->Append("x");
 		sb->Append(height);
+		sb->Append(", " + videoPreview->PixelFormat + ", " + videoPreview->FrameRate.ToString() + " fps");
 		sb->AppendLine();
 		sb->AppendLine();
 
@@ -283,8 +286,7 @@ public:
 		sb->AppendLine(Util::formatSizeBytes(SizeBytes));
 		sb->AppendLine();
 
-		sb->AppendLine("Video Codec");
-		sb->AppendLine(VideoCodecName);
+		
 	
 		return(sb->ToString());
 	}

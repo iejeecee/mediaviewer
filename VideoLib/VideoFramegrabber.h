@@ -73,6 +73,7 @@ public:
 
 	std::string container;
 	std::string videoCodecName;
+	std::string pixelFormat;
 	std::vector<std::string> metaData;
 
 	double frameRate;
@@ -104,6 +105,16 @@ public:
 		
 		container = std::string(formatContext->iformat->long_name);
 		videoCodecName = std::string(videoCodec->name);
+	
+		char buf[64];
+		av_get_pix_fmt_string(buf, 64, videoCodecContext->pix_fmt);
+		pixelFormat = std::string(buf);
+
+		int pos = pixelFormat.find_first_of(' ');
+		if(pos != std::string::npos) {
+
+			pixelFormat = pixelFormat.substr(0, pos);
+		}
 
 		if(videoStream->avg_frame_rate.den != 0 && videoStream->avg_frame_rate.num != 0) {
 

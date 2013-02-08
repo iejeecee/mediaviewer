@@ -24,10 +24,14 @@ private:
 
 public:
 
+	// video
 	int durationSeconds;
-
 	int64_t sizeBytes;
-
+	
+	// audio
+	int bitRate;
+	int bitsPerSample;
+	int nrChannels;
 
 	VideoPlayer() 	
 	{
@@ -45,12 +49,16 @@ public:
 			throw std::runtime_error("invalid video stream");
 		}
 
-		initImageConverter(PIX_FMT_BGRA, getWidth(), getHeight(), X);
+		initImageConverter(format, getWidth(), getHeight(), X);
 
 		// get metadata
 		durationSeconds = getDurationSeconds();
 
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
+
+		bitRate = audioCodecContext->bit_rate;
+		bitsPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt) * 8;
+		nrChannels = audioCodecContext->channels;
 	}
 
 	virtual void close() {

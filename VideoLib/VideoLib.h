@@ -3,6 +3,8 @@
 #pragma once
 #include "VideoFrameGrabber.h"
 #include "VideoPlayer.h"
+#include "VideoFrame.h"
+#include "PacketQueue.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -11,40 +13,6 @@ using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
 
-	public ref class VideoFrame
-	{
-	private:
-
-		double pts;
-		Texture ^frame;
-
-	public:
-
-		property double Pts {
-
-			void set(double pts) {
-				this->pts = pts;
-			}
-
-			double get() {
-				return(pts);
-			}
-		}
-
-		property Texture ^Frame {
-
-			void set(Texture ^frame) {
-				this->frame = frame;
-			}
-
-			Texture ^get() {
-				return(frame);
-			}
-		}
-
-		VideoFrame(Device ^device, int width, int height, Format pixelFormat);
-		~VideoFrame();
-	};
 
 	public ref class VideoPreview
 	{
@@ -71,6 +39,7 @@ namespace VideoLib {
 
 		String ^container;
 		String ^videoCodecName;
+		String ^pixelFormat;
 		List<String ^> ^metaData;
 
 		float frameRate;
@@ -144,6 +113,14 @@ namespace VideoLib {
 			}
 		}
 
+		property String ^PixelFormat {
+
+			String ^get() {
+
+				return(pixelFormat);
+			}
+		}
+
 		void open(String ^videoLocation);
 		void close();
 
@@ -173,16 +150,15 @@ namespace VideoLib {
 
 		static int nrFramesInBuffer = 10;
 
-		array<VideoFrame ^> ^frameData;
-
 		double videoClock;
+		Format pixelFormat;
 
 		double synchronizeVideo(int repeatFrames, double pts);
-
+		void fillBuffer(Surface ^frame, BYTE* pY, BYTE* pV, BYTE* pU);
+		
 	public:
 
-		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^> ^freeFrames;
-		DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^> ^decodedFrames;
+		PacketQueue ^packetQueue;
 
 		property int Height {
 
@@ -197,6 +173,30 @@ namespace VideoLib {
 			int get() {
 
 				return(videoPlayer->getWidth());
+			}
+		}
+
+		property int BitRate {
+
+			int get() {
+
+				return(videoPlayer->bitRate);
+			}
+		}
+
+		property int BitsPerSample {
+
+			int get() {
+
+				return(videoPlayer->bitsPerSample);
+			}
+		}
+
+		property int NrChannels {
+
+			int get() {
+
+				return(videoPlayer->nrChannels);
 			}
 		}
 
@@ -220,7 +220,7 @@ namespace VideoLib {
 
 		event EventHandler<EventArgs ^> ^DecodeException;
 
-		VideoPlayer(Device ^device);
+		VideoPlayer(Device ^device, Format pixelFormat);
 		~VideoPlayer();
 
 		void open(String ^videoLocation);

@@ -14,20 +14,7 @@ using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
 
-VideoFrame::VideoFrame(Device ^device, int width, int height, Format pixelFormat) {
 
-	frame = gcnew Texture(device, width, height, 1, Usage::None, pixelFormat, 
-		Pool::Managed);
-	pts = 0;
-}
-
-VideoFrame::~VideoFrame() {
-
-	if(frame != nullptr) {
-
-		delete frame;
-	}
-}
 
 VideoPreview::VideoPreview() {
 
@@ -78,6 +65,7 @@ void VideoPreview::open(String ^videoLocation) {
 		container = marshal_as<String ^>(frameGrabber->container);
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
 		frameRate = frameGrabber->frameRate;
+		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
 
 	} catch (Exception ^) {
 
@@ -138,9 +126,10 @@ List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int max
 
 
 
-VideoPlayer::VideoPlayer(Microsoft::DirectX::Direct3D::Device ^device) {
+VideoPlayer::VideoPlayer(Device ^device, Format pixelFormat) {
 
 	this->device = device;
+	this->pixelFormat = pixelFormat;
 
 	videoPlayer = new Native::VideoPlayer();
 	// marshal a managed delegate to a native function pointer
@@ -157,9 +146,9 @@ VideoPlayer::VideoPlayer(Microsoft::DirectX::Direct3D::Device ^device) {
 
 	videoPlayer->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
-	frameData = gcnew array<VideoFrame ^>(nrFramesInBuffer);
-
 	videoClock = 0;
+	
+	packetQueue = gcnew PacketQueue(nrFramesInBuffer);
 
 }
 
@@ -194,28 +183,105 @@ double VideoPlayer::synchronizeVideo(int repeatFrame, double pts) {
 	return(pts);
 }
 
+void VideoPlayer::fillBuffer(Surface ^frame, BYTE* pY, BYTE* pV, BYTE* pU)
+{
+	Drawing::Rectangle rect = Drawing::Rectangle(0, 0, Width, Height);
+
+	// copy raw frame data to bitmap
+	int pitch;
+	GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
+
+	BYTE* pict = (BYTE*)stream->InternalDataPointer;
+	BYTE* Y = pY;
+	BYTE* V = pV;
+	BYTE* U = pU;
+/*
+	switch(pixelFormat)
+	{
+	case D3DFMT_YV12:
+*/
+	if(Width == pitch) {
+
+		int ySizeBytes = Width * Height;
+		int vSizeBytes = (Width * Height) / 4;
+		int uSizeBytes = (Width * Height) / 4;
+
+		memcpy(pict, Y, ySizeBytes);
+		memcpy(pict + ySizeBytes, V, vSizeBytes);
+		memcpy(pict + ySizeBytes + vSizeBytes, U, uSizeBytes);
+
+	} else {
+
+		for (int y = 0 ; y < Height ; y++)
+		{
+			memcpy(pict, Y, Width);
+			pict += pitch;
+			Y += Width;
+		}
+		for (int y = 0 ; y < Height / 2 ; y++)
+		{
+			memcpy(pict, V, Width / 2);
+			pict += pitch / 2;
+			V += Width / 2;
+		}
+		for (int y = 0 ; y < Height / 2; y++)
+		{
+			memcpy(pict, U, Width / 2);
+			pict += pitch / 2;
+			U += Width / 2;
+		}
+	}
+/*		
+		break;
+
+	case D3DFMT_NV12:
+
+		for (int y = 0 ; y < newHeight ; y++)
+		{
+			memcpy(pict, Y, Width);
+			pict += pitch;
+			Y += Width;
+		}
+		for (int y = 0 ; y < newHeight / 2 ; y++)
+		{
+			memcpy(pict, V, Width);
+			pict += pitch;
+			V += Width;
+		}
+		break;
+
+	case D3DFMT_YUY2:
+	case D3DFMT_UYVY:
+	case D3DFMT_R5G6B5:
+	case D3DFMT_X1R5G5B5:
+	case D3DFMT_A8R8G8B8:
+	case D3DFMT_X8R8G8B8:
+
+		memcpy(pict, Y, pitch * newHeight);
+
+		break;
+	}
+*/
+	frame->UnlockRectangle();
+
+}
+
 void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
 {
 
 	// get a frame from the free frames queue
-	VideoFrame ^videoFrame = freeFrames->Take();
-	Texture ^bitmap = videoFrame->Frame; 		
+	VideoFrame ^videoFrame; 
+	
+	bool success = packetQueue->getFreeFrame(videoFrame);
+	if(success == false) return;
 
-	Drawing::Rectangle rect = 
-		Drawing::Rectangle(0, 0, videoPlayer->getWidth(), videoPlayer->getHeight());
+	Byte *y = frame->data[0];
+	Byte *u = frame->data[1];
+	Byte *v = frame->data[2];
 
-	// copy raw frame data to bitmap
-	int pitch;
-	GraphicsStream ^stream = bitmap->LockRectangle(0, rect, LockFlags::None, pitch);
-
-	void *dest = stream->InternalDataPointer;
-
-	int sizeBytes = rect.Height * pitch;
-
-	memcpy(dest, frame->data[0], sizeBytes);
-
-	bitmap->UnlockRectangle(0);
+	// convert the unmanaged frame data to managed data
+	fillBuffer(videoFrame->Frame, y, v, u);
 
 	// calculate presentation timestamp (pts)
 	double pts = 0;
@@ -232,36 +298,23 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 	// convert pts to seconds
 	pts *= av_q2d(videoPlayer->getVideoStream()->time_base);
 
-	// calculate a pts if pts equals 0
+	// calculate a pts if no pts is available (pts == 0)
 	videoFrame->Pts = synchronizeVideo(frame->repeat_pict, pts);
 
-	// add frame to the rendered frames queue
-	decodedFrames->Put(videoFrame);
+	// add frame to the decoded frames queue
+	packetQueue->queueDecodedFrame(videoFrame);
 
 }
+
 
 void VideoPlayer::open(String ^videoLocation) {
 
 	try {
 
-		videoPlayer->open(marshal_as<std::string>(videoLocation));
+		videoPlayer->open(marshal_as<std::string>(videoLocation), PIX_FMT_YUV420P);
 
-		decodedFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^>();
-		freeFrames = gcnew DigitallyCreated::Utilities::Concurrency::LinkedListChannel<VideoFrame ^>();
-
-		for(int i = 0; i < nrFramesInBuffer; i++) {
-
-			if(frameData[i] != nullptr) {
-
-				delete frameData[i];
-			}
-
-			frameData[i] = gcnew VideoFrame(device, videoPlayer->getWidth(),
-				videoPlayer->getHeight(),
-				Format::A8R8G8B8);
-		
-			freeFrames->Put(frameData[i]);			
-		}
+		packetQueue->initialize(device, videoPlayer->getWidth(),
+			videoPlayer->getHeight(), pixelFormat);
 
 	} catch (Exception ^) {
 
@@ -278,6 +331,7 @@ int VideoPlayer::decodeFrame() {
 void VideoPlayer::close() {
 
 	videoPlayer->close();
+	packetQueue->dispose();
 }
 
 }

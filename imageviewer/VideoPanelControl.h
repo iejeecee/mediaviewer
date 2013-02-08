@@ -1,5 +1,6 @@
 #pragma once
 // Directx9 tutorial: http://www.drunkenhyena.com/cgi-bin/dx9_net.pl
+// Implementing video in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
 #include "ImageUtils.h"
 #include "Util.h"
 #include <stdio.h>
@@ -12,8 +13,9 @@ using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
 using namespace Microsoft::DirectX;
-using namespace Microsoft::DirectX::Direct3D;
 using namespace VideoLib;
+namespace D3D = Microsoft::DirectX::Direct3D;
+namespace DS = Microsoft::DirectX::DirectSound;
 //using namespace WMPLib;
 
 namespace imageviewer {
@@ -34,10 +36,8 @@ namespace imageviewer {
 			//mediaPlayer->Dock = DockStyle::Fill;
 			//mediaPlayer->stretchToFit = true;
 			initializeD3D();
-			videoPlayer = gcnew VideoPlayer(device);
-			previousPts = 0;
-			previousDelay = 0.04;
-			skipFrame = false;
+			initializeDS();
+			videoPlayer = gcnew VideoPlayer(d3dDevice, makeFourCC('Y', 'V', '1', '2'));	
 		
 		}
 
@@ -56,6 +56,12 @@ namespace imageviewer {
 	protected: 
 
 	private: System::Windows::Forms::Timer^  videoRefreshTimer;
+	private: System::Windows::Forms::SplitContainer^  splitContainer;
+	private: System::Windows::Forms::TrackBar^  timeTrackBar;
+	private: System::Windows::Forms::Button^  stopButton;
+	private: System::Windows::Forms::Button^  playButton;
+
+
 	private: System::ComponentModel::IContainer^  components;
 	protected: 
 
@@ -81,6 +87,13 @@ namespace imageviewer {
 			this->components = (gcnew System::ComponentModel::Container());
 			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
 			this->videoRefreshTimer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
+			this->stopButton = (gcnew System::Windows::Forms::Button());
+			this->playButton = (gcnew System::Windows::Forms::Button());
+			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
+			this->splitContainer->Panel2->SuspendLayout();
+			this->splitContainer->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// videoDecoderBW
@@ -94,13 +107,65 @@ namespace imageviewer {
 			this->videoRefreshTimer->Interval = 40;
 			this->videoRefreshTimer->Tick += gcnew System::EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
 			// 
+			// splitContainer
+			// 
+			this->splitContainer->BorderStyle = System::Windows::Forms::BorderStyle::Fixed3D;
+			this->splitContainer->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->splitContainer->FixedPanel = System::Windows::Forms::FixedPanel::Panel2;
+			this->splitContainer->IsSplitterFixed = true;
+			this->splitContainer->Location = System::Drawing::Point(0, 0);
+			this->splitContainer->Name = L"splitContainer";
+			this->splitContainer->Orientation = System::Windows::Forms::Orientation::Horizontal;
+			// 
+			// splitContainer.Panel2
+			// 
+			this->splitContainer->Panel2->Controls->Add(this->stopButton);
+			this->splitContainer->Panel2->Controls->Add(this->playButton);
+			this->splitContainer->Panel2->Controls->Add(this->timeTrackBar);
+			this->splitContainer->Size = System::Drawing::Size(578, 484);
+			this->splitContainer->SplitterDistance = 388;
+			this->splitContainer->TabIndex = 0;
+			// 
+			// stopButton
+			// 
+			this->stopButton->Location = System::Drawing::Point(60, 49);
+			this->stopButton->Name = L"stopButton";
+			this->stopButton->Size = System::Drawing::Size(51, 36);
+			this->stopButton->TabIndex = 2;
+			this->stopButton->Text = L"Stop";
+			this->stopButton->UseVisualStyleBackColor = true;
+			this->stopButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::stopButton_Click);
+			// 
+			// playButton
+			// 
+			this->playButton->Location = System::Drawing::Point(3, 49);
+			this->playButton->Name = L"playButton";
+			this->playButton->Size = System::Drawing::Size(51, 36);
+			this->playButton->TabIndex = 1;
+			this->playButton->Text = L"Play";
+			this->playButton->UseVisualStyleBackColor = true;
+			this->playButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::playButton_Click);
+			// 
+			// timeTrackBar
+			// 
+			this->timeTrackBar->AutoSize = false;
+			this->timeTrackBar->Dock = System::Windows::Forms::DockStyle::Top;
+			this->timeTrackBar->Location = System::Drawing::Point(0, 0);
+			this->timeTrackBar->Name = L"timeTrackBar";
+			this->timeTrackBar->Size = System::Drawing::Size(574, 43);
+			this->timeTrackBar->TabIndex = 0;
+			// 
 			// VideoPanelControl
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->Controls->Add(this->splitContainer);
 			this->DoubleBuffered = true;
 			this->Name = L"VideoPanelControl";
 			this->Size = System::Drawing::Size(578, 484);
+			this->splitContainer->Panel2->ResumeLayout(false);
+			this->splitContainer->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->EndInit();
 			this->ResumeLayout(false);
 
 		}
@@ -111,12 +176,22 @@ namespace imageviewer {
 		double previousPts;
 		double previousDelay;
 		static double frameTimer;
-		Diagnostics::Stopwatch ^stopwatch;
 
 		bool skipFrame;
 
-		Device ^device;
-		Sprite ^sprite; 
+		D3D::Device ^d3dDevice;
+		D3D::PresentParameters ^presentParams;
+
+		DS::Device ^dsDevice;
+		DS::SecondaryBuffer ^audioBuffer;
+
+		property Control ^VideoPanel {
+
+			Control ^get() {
+
+				return(splitContainer->Panel1);
+			}
+		}
 
 		void initializeD3D() {
 
@@ -125,10 +200,10 @@ namespace imageviewer {
 				bool fullScreen = false;
 
 				//Hard-coded to a common format.  A better method will be shown later in this lesson.
-				Format format = Format::R8G8B8;
+				D3D::Format format = D3D::Format::R8G8B8;
 
 				//Allocate our class
-				PresentParameters ^presentParams = gcnew PresentParameters();
+				presentParams = gcnew D3D::PresentParameters();
 
 				//No Z (Depth) buffer or Stencil buffer
 				presentParams->EnableAutoDepthStencil = false;
@@ -137,13 +212,13 @@ namespace imageviewer {
 				presentParams->BackBufferCount = 1;
 
 				//Set our Window as the Device Window
-				presentParams->DeviceWindow = this;
+				presentParams->DeviceWindow = VideoPanel;
 
 				//Do not wait for VSync
-				presentParams->PresentationInterval = PresentInterval::Immediate;
+				presentParams->PresentationInterval = D3D::PresentInterval::Immediate;
 
 				//Discard old frames for better performance
-				presentParams->SwapEffect = SwapEffect::Discard;
+				presentParams->SwapEffect = D3D::SwapEffect::Discard;
 
 				//Set Windowed vs. Full-screen
 				presentParams->Windowed = !fullScreen;
@@ -161,19 +236,42 @@ namespace imageviewer {
 
 					presentParams->BackBufferHeight = 0;
 					presentParams->BackBufferWidth = 0;
-					presentParams->BackBufferFormat = Format::Unknown;
+					presentParams->BackBufferFormat = D3D::Format::Unknown;
 				}
 
-				device = gcnew Device(0,                       //Adapter
-					DeviceType::Hardware,  //Device Type
+				d3dDevice = gcnew D3D::Device(0,                       //Adapter
+					D3D::DeviceType::Hardware,  //Device Type
 					this,                     //Render Window
-					CreateFlags::SoftwareVertexProcessing, //behaviour flags
+					D3D::CreateFlags::SoftwareVertexProcessing, //behaviour flags
 					presentParams);          //PresentParamters
 
+				d3dDevice->DeviceLost += gcnew EventHandler(this, &VideoPanelControl::device_DeviceLost);
+				d3dDevice->DeviceReset += gcnew EventHandler(this, &VideoPanelControl::device_DeviceReset);
+				d3dDevice->DeviceResizing += gcnew CancelEventHandler(this, &VideoPanelControl::device_DeviceResizing);
 
-				sprite = gcnew Sprite(device);
+			} catch (D3D::GraphicsException ^exception){
 
-			} catch (GraphicsException ^exception){
+				Util::DebugOut("Error Code:" + exception->ErrorCode);
+				Util::DebugOut("Error String:" + exception->ErrorString);
+				Util::DebugOut("Message:" + exception->Message);
+				Util::DebugOut("StackTrace:" + exception->StackTrace);
+			}
+
+		}
+
+		void initializeDS() {
+
+			try {
+				dsDevice = gcnew DS::Device();
+				dsDevice->SetCooperativeLevel(this, DS::CooperativeLevel::Priority);
+
+
+				//DS::SecondaryBuffer ^buffer = gcnew DS::SecondaryBuffer(
+				//DS::BufferDescription ^desc = gcnew DS::BufferDescription();
+				//desc->
+			
+
+			} catch (DS::SoundException ^exception){
 
 				Util::DebugOut("Error Code:" + exception->ErrorCode);
 				Util::DebugOut("Error String:" + exception->ErrorString);
@@ -185,39 +283,56 @@ namespace imageviewer {
 
 		void render() {
 
-			int width = videoPlayer->Width;
-			int height = videoPlayer->Height;
+			int videoWidth = videoPlayer->Width;
+			int videoHeight = videoPlayer->Height;
+			int panelWidth = VideoPanel->Width;
+			// weird bug??
+			int panelHeight = VideoPanel->Height + splitContainer->Panel2->Height + splitContainer->SplitterRectangle.Height;
 			int scaledWidth, scaledHeight;
 
-			ImageUtils::stretchRectangle(width, height,
-				Width,Height,scaledWidth, scaledHeight);
+			ImageUtils::stretchRectangle(videoWidth, videoHeight,
+				panelWidth, panelHeight, scaledWidth, scaledHeight);
 
-			Rectangle canvas = ImageUtils::centerRectangle(Rectangle(0,0,Width,Height),
-				Rectangle(0,0,scaledWidth,scaledHeight));
+			Rectangle panelRec(0,0, panelWidth, panelHeight);
+			Rectangle scaledVideoRec(0,0, scaledWidth, scaledHeight);
 
-			VideoFrame ^currentFrame = videoPlayer->decodedFrames->Take();
-	
+			Rectangle canvas = ImageUtils::centerRectangle(panelRec,
+				scaledVideoRec);
+
+			int a = splitContainer->Height;
+			int b = splitContainer->Panel1->Height;
+			int c = splitContainer->Panel2->Height;
+		
+			//canvas.X += splitContainer->Location.X;
+			//canvas.Y = 0;
+
+			VideoFrame ^currentFrame;
+			
+			bool success = videoPlayer->packetQueue->getDecodedFrame(currentFrame);
+			if(success == false) return;
+
 			if(skipFrame == false) {
 
-				Color color = Color::CadetBlue;
+				Color color = this->BackColor;
+				//Color color = Color::Blue;
 
-				device->Clear(ClearFlags::Target, color, 1.0f, 0);
+				d3dDevice->Clear(D3D::ClearFlags::Target, color, 1.0f, 0);
 
-				device->BeginScene();
+				d3dDevice->BeginScene();				
 
-				//Spiffy rendering goes here
-				sprite->Begin(SpriteFlags::None);
-				sprite->Draw2D(currentFrame->Frame, Rectangle::Empty, 
-					SizeF((float)canvas.Width, (float)canvas.Height), 
-					PointF((float)canvas.X, (float)canvas.Y), 
-					Color::White);
-				sprite->End();
+				if(currentFrame->Frame->Disposed == true) {
 
-				device->EndScene();
+					int wtf = 1;
+				}
 
-				device->Present();
+				D3D::Surface ^backBuffer = d3dDevice->GetBackBuffer(0,0, D3D::BackBufferType::Mono);
+
+				d3dDevice->StretchRectangle(currentFrame->Frame,Rectangle(0,0,videoWidth,videoHeight),
+					backBuffer, canvas, D3D::TextureFilter::Linear);
+
+				d3dDevice->EndScene();
+				d3dDevice->Present();
 			}
-			
 			// calculate delay to display next frame
 			double delay = currentFrame->Pts - previousPts;	
 
@@ -235,21 +350,21 @@ namespace imageviewer {
 
 			if(actualDelay < 0.010) {
 
-				Util::DebugOut("Delay too small: " + actualDelay.ToString());
-				actualDelay = 0.010;					
+				Util::DebugOut("Delay too small: " + actualDelay.ToString());					
 				skipFrame = true;
+				actualDelay = 0.010;
 
 			} else {
 
 				skipFrame = false;
 			}
 
+			// queue current frame in freeFrames to be used again
+			videoPlayer->packetQueue->queueFreeFrame(currentFrame);
+
 			// start timer with delay for next frame
 			videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
-			videoRefreshTimer->Start();		
-
-			// queue current frame in freeFrames to be used again
-			videoPlayer->freeFrames->Put(currentFrame);
+			videoRefreshTimer->Start();				
 
 		}
 
@@ -259,59 +374,170 @@ namespace imageviewer {
 			return(timeNow);
 		}
 
+		D3D::Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
+		{
+			int value = (int)(char)(ch0)|((int)(char)(ch1) << 8)| ((int)(char)(ch2) << 16) | ((int)(char)(ch3) << 24);
+			return((D3D::Format) value);
+		}
+
+		void device_DeviceResizing(Object ^sender, CancelEventArgs ^e) {
+
+			//e->Cancel = true;
+			//stop();
+		
+		}
+
+		void device_DeviceReset(Object ^sender, EventArgs ^e) {
+
+			//videoPlayer->initializeResources();
+		}
+
+		void device_DeviceLost(Object ^sender, EventArgs ^e) {
+			
+			if(d3dDevice->CheckCooperativeLevel() == false) {
+
+				//stop();
+				//videoPlayer->disposeResources();
+			}
+
+		}
+
 	public:
 
-		void playVideo(String ^location) {
+		property bool IsPlaying {
 
-			// stop any previously started video from playing
+			bool get() {
+
+				return(videoDecoderBW->IsBusy);
+			}
+		}
+
+		void open(String ^location) {
+
+			// stop any previously started video from playing	
+			if(IsPlaying) {
+
+				stop();
+				close();
+			}
+			
+			videoPlayer->open(location);
+			
+			DS::WaveFormat format;
+
+            format.SamplesPerSecond = videoPlayer->BitRate;
+            format.BitsPerSample = videoPlayer->BitsPerSample;
+			format.Channels = videoPlayer->NrChannels;
+			format.FormatTag = DS::WaveFormatTag::Pcm;
+			format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
+			format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
+
+			DS::BufferDescription ^desc = gcnew DS::BufferDescription(format);
+			desc->BufferBytes = 1024;
+			desc->DeferLocation = true;
+			desc->GlobalFocus = true;
+
+			audioBuffer = gcnew DS::SecondaryBuffer(desc, dsDevice);
+  
+		}
+
+		void stop() {
+
+			videoPlayer->packetQueue->stop();
+
 			videoDecoderBW->CancelAsync();
-			while(videoDecoderBW->IsBusy) {
+			while(IsPlaying) {
 
 				Application::DoEvents();
 			}
-			videoPlayer->close();
-						
-			// start decoding video in a seperate thread
-			videoPlayer->open(location);
+
+			
+			videoRefreshTimer->Stop();
+			
+		}
+
+		void play() {
+
+			previousPts = 0;
+			previousDelay = 0.04;
+			skipFrame = false;	
+
+			videoPlayer->packetQueue->start();
+
 			videoDecoderBW->RunWorkerAsync();
 
 			videoRefreshTimer->Enabled = true;
 			videoRefreshTimer->Start();
 		}
 
+		void close() {
+
+			videoPlayer->close();
+		}
+
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
-			 
 				//frameTimer = videoPlayer->TimeNow;
 				frameTimer = getTimeNow();
 
 				while(videoPlayer->decodeFrame() && !videoDecoderBW->CancellationPending) {
 
-					int i = 0;
+					
 				}
 				
-				int i = 0;
 		 }
-private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {
-			 
+private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
+
 			 videoRefreshTimer->Stop();
+
+			 //if(isPlaying == false) return;
 			 
 			 // redraw screen
-			 try {
+			 int result;
 
-				 render();
+			 if(d3dDevice->CheckCooperativeLevel(result)) {
 
-			 }catch (GraphicsException ^exception){
+				 try {
 
-				 Util::DebugOut("Error Code:" + exception->ErrorCode);
-				 Util::DebugOut("Error String:" + exception->ErrorString);
-				 Util::DebugOut("Message:" + exception->Message);
-				 Util::DebugOut("StackTrace:" + exception->StackTrace);
+					 render();
+
+				 } catch(D3D::DeviceLostException ^) {
+
+					 d3dDevice->CheckCooperativeLevel(result);
+
+				 } catch(D3D::DeviceNotResetException ^) {
+
+					 d3dDevice->CheckCooperativeLevel(result);
+
+				 } catch (D3D::GraphicsException ^exception) {
+
+					 Util::DebugOut("Error Code:" + exception->ErrorCode);
+					 Util::DebugOut("Error String:" + exception->ErrorString);
+					 Util::DebugOut("Message:" + exception->Message);
+					 Util::DebugOut("StackTrace:" + exception->StackTrace);
+				 }
 			 }
-			 //this->Invalidate();
+
+			 if(result == (int)D3D::ResultCode::DeviceLost) {
+
+				 System::Threading::Thread::Sleep(500);    //Can't Reset yet, wait for a bit
+
+			 }else if (result == (int)D3D::ResultCode::DeviceNotReset) {
+
+				 d3dDevice->Reset(presentParams);
+			 }
+		
 		 }
 
 
+private: System::Void playButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 play();
+		 }
+private: System::Void stopButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 stop();
+		 }
 };
 }
