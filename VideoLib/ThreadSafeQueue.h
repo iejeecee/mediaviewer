@@ -9,7 +9,7 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
-	generic<typename T> public ref class SafeQueue
+	generic<typename T> public ref class ThreadSafeQueue
 	{
 	private:
 
@@ -20,7 +20,7 @@ namespace VideoLib {
 
 	public:
 
-		SafeQueue(int maxQueueSize) {
+		ThreadSafeQueue(int maxQueueSize) {
 
 			this->maxQueueSize = maxQueueSize;
 			queue = gcnew Queue<T>();

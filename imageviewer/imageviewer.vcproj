@@ -254,7 +254,7 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4787.27025, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4791.37760, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -740,6 +740,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\StreamingAudioBuffer.h"
+				>
+			</File>
+			<File
 				RelativePath=".\TagEditorForm.h"
 				FileType="3"
 				>
@@ -748,6 +752,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath=".\TimerQueueTimer.h"
+				>
 			</File>
 			<File
 				RelativePath=".\TransparentIconPanel.h"

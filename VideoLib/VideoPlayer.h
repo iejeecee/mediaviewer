@@ -29,8 +29,8 @@ public:
 	int64_t sizeBytes;
 	
 	// audio
-	int bitRate;
-	int bitsPerSample;
+	int samplesPerSecond;
+	int bytesPerSample;
 	int nrChannels;
 
 	VideoPlayer() 	
@@ -56,9 +56,11 @@ public:
 
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
 
-		bitRate = audioCodecContext->bit_rate;
-		bitsPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt) * 8;
+		samplesPerSecond = audioCodecContext->sample_rate;
+		bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+		
 		nrChannels = audioCodecContext->channels;
+
 	}
 
 	virtual void close() {

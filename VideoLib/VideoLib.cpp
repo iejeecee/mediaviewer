@@ -9,7 +9,6 @@
 
 using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
-using namespace Microsoft::DirectX;
 using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
@@ -66,6 +65,11 @@ void VideoPreview::open(String ^videoLocation) {
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
 		frameRate = frameGrabber->frameRate;
 		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
+
+		audioCodecName = marshal_as<String ^>(frameGrabber->audioCodecName);
+		bytesPerSample = frameGrabber->bytesPerSample;
+		samplesPerSecond = frameGrabber->samplesPerSecond;
+		nrChannels = frameGrabber->nrChannels;
 
 	} catch (Exception ^) {
 
@@ -147,8 +151,9 @@ VideoPlayer::VideoPlayer(Device ^device, Format pixelFormat) {
 	videoPlayer->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
 	videoClock = 0;
+	audioClock = 0;
 	
-	packetQueue = gcnew PacketQueue(nrFramesInBuffer);
+	frameQueue = gcnew FrameQueue(nrFramesInBuffer);
 
 }
 
@@ -159,13 +164,15 @@ VideoPlayer::~VideoPlayer() {
 }
 
 // calculate a new pts for a videoframe if it's pts is missing
-double VideoPlayer::synchronizeVideo(int repeatFrame, double pts) {
+double VideoPlayer::synchronizeVideo(int repeatFrame, __int64 dts) {
 
-	double frameDelay;
+	double pts;
 
-	if(pts != 0) {
+	if(dts != AV_NOPTS_VALUE) {
 
-		// if we have pts, set video clock to it 
+		// convert pts to seconds
+		pts = dts * av_q2d(videoPlayer->getVideoStream()->time_base);
+		// set clock to current pts;
 		videoClock = pts;
 
 	} else {
@@ -174,8 +181,8 @@ double VideoPlayer::synchronizeVideo(int repeatFrame, double pts) {
 		pts = videoClock;
 	}
 
-	// update the video clock
-	frameDelay = av_q2d(videoPlayer->getVideoStream()->time_base);
+	// update the video clock to the pts of the next frame
+	double frameDelay = av_q2d(videoPlayer->getVideoStream()->time_base);
 	// if we are repeating a frame, adjust clock accordingly 
 	frameDelay += repeatFrame * (frameDelay * 0.5);
 	videoClock += frameDelay;
@@ -183,126 +190,61 @@ double VideoPlayer::synchronizeVideo(int repeatFrame, double pts) {
 	return(pts);
 }
 
-void VideoPlayer::fillBuffer(Surface ^frame, BYTE* pY, BYTE* pV, BYTE* pU)
-{
-	Drawing::Rectangle rect = Drawing::Rectangle(0, 0, Width, Height);
+double VideoPlayer::synchronizeAudio(int sizeBytes) {
 
-	// copy raw frame data to bitmap
-	int pitch;
-	GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
+	double pts = audioClock;
+	// calculate next pts in seconds
+	audioClock += sizeBytes / double(SamplesPerSecond * BytesPerSample * NrChannels);
 
-	BYTE* pict = (BYTE*)stream->InternalDataPointer;
-	BYTE* Y = pY;
-	BYTE* V = pV;
-	BYTE* U = pU;
-/*
-	switch(pixelFormat)
-	{
-	case D3DFMT_YV12:
-*/
-	if(Width == pitch) {
-
-		int ySizeBytes = Width * Height;
-		int vSizeBytes = (Width * Height) / 4;
-		int uSizeBytes = (Width * Height) / 4;
-
-		memcpy(pict, Y, ySizeBytes);
-		memcpy(pict + ySizeBytes, V, vSizeBytes);
-		memcpy(pict + ySizeBytes + vSizeBytes, U, uSizeBytes);
-
-	} else {
-
-		for (int y = 0 ; y < Height ; y++)
-		{
-			memcpy(pict, Y, Width);
-			pict += pitch;
-			Y += Width;
-		}
-		for (int y = 0 ; y < Height / 2 ; y++)
-		{
-			memcpy(pict, V, Width / 2);
-			pict += pitch / 2;
-			V += Width / 2;
-		}
-		for (int y = 0 ; y < Height / 2; y++)
-		{
-			memcpy(pict, U, Width / 2);
-			pict += pitch / 2;
-			U += Width / 2;
-		}
-	}
-/*		
-		break;
-
-	case D3DFMT_NV12:
-
-		for (int y = 0 ; y < newHeight ; y++)
-		{
-			memcpy(pict, Y, Width);
-			pict += pitch;
-			Y += Width;
-		}
-		for (int y = 0 ; y < newHeight / 2 ; y++)
-		{
-			memcpy(pict, V, Width);
-			pict += pitch;
-			V += Width;
-		}
-		break;
-
-	case D3DFMT_YUY2:
-	case D3DFMT_UYVY:
-	case D3DFMT_R5G6B5:
-	case D3DFMT_X1R5G5B5:
-	case D3DFMT_A8R8G8B8:
-	case D3DFMT_X8R8G8B8:
-
-		memcpy(pict, Y, pitch * newHeight);
-
-		break;
-	}
-*/
-	frame->UnlockRectangle();
-
+	return(pts);
 }
+
 
 void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
 {
 
-	// get a frame from the free frames queue
-	VideoFrame ^videoFrame; 
-	
-	bool success = packetQueue->getFreeFrame(videoFrame);
-	if(success == false) return;
+	if(type == Video::VIDEO) {
 
-	Byte *y = frame->data[0];
-	Byte *u = frame->data[1];
-	Byte *v = frame->data[2];
+		// get a frame from the free frames queue
+		VideoFrame ^videoFrame; 
 
-	// convert the unmanaged frame data to managed data
-	fillBuffer(videoFrame->Frame, y, v, u);
+		bool success = frameQueue->getFreeVideoFrame(videoFrame);
+		if(success == false) return;
 
-	// calculate presentation timestamp (pts)
-	double pts = 0;
+		Byte *y = frame->data[0];
+		Byte *u = frame->data[1];
+		Byte *v = frame->data[2];
 
-    if(packet->dts != AV_NOPTS_VALUE) {
+		// convert the unmanaged frame data to managed data
+		videoFrame->copyFrameData(y, v, u);
 
-      pts = packet->dts;
+		// calculate presentation timestamp (pts)
+		videoFrame->Pts = synchronizeVideo(frame->repeat_pict, packet->dts);
+		
+		// add frame to the decoded frames queue
+		frameQueue->enqueueDecodedFrame(videoFrame);
 
-    } else {
+	} else {
 
-      pts = 0;
-    }
+		AudioFrame ^audioFrame; 
 
-	// convert pts to seconds
-	pts *= av_q2d(videoPlayer->getVideoStream()->time_base);
+		bool success = frameQueue->getFreeAudioFrame(audioFrame);
+		if(success == false) return;
 
-	// calculate a pts if no pts is available (pts == 0)
-	videoFrame->Pts = synchronizeVideo(frame->repeat_pict, pts);
+		Byte *data = frame->data[0];
 
-	// add frame to the decoded frames queue
-	packetQueue->queueDecodedFrame(videoFrame);
+		int length = av_samples_get_buffer_size(NULL, NrChannels, frame->nb_samples,
+			(AVSampleFormat)frame->format, 1);
+
+		audioFrame->copyFrameData(data, length);
+
+		// calculate presentation timestamp (pts)
+		audioFrame->Pts = synchronizeAudio(length);
+
+		// add frame to the decoded frames queue
+		frameQueue->enqueueDecodedFrame(audioFrame);
+	}
 
 }
 
@@ -313,8 +255,8 @@ void VideoPlayer::open(String ^videoLocation) {
 
 		videoPlayer->open(marshal_as<std::string>(videoLocation), PIX_FMT_YUV420P);
 
-		packetQueue->initialize(device, videoPlayer->getWidth(),
-			videoPlayer->getHeight(), pixelFormat);
+		frameQueue->initialize(device, videoPlayer->getWidth(),
+			videoPlayer->getHeight(), pixelFormat, AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 
 	} catch (Exception ^) {
 
@@ -324,14 +266,14 @@ void VideoPlayer::open(String ^videoLocation) {
 }
 int VideoPlayer::decodeFrame() {
 
-	return(videoPlayer->decode(VideoDecoder::DECODE_VIDEO, 
-		VideoDecoder::SKIP_AUDIO, 1));
+	return(videoPlayer->decode(VideoDecoder::SKIP_VIDEO, 
+		VideoDecoder::DECODE_AUDIO, 1));
 }
 
 void VideoPlayer::close() {
 
 	videoPlayer->close();
-	packetQueue->dispose();
+	frameQueue->dispose();
 }
 
 }

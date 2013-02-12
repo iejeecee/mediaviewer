@@ -3,6 +3,7 @@
 // Implementing video in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
 #include "ImageUtils.h"
 #include "Util.h"
+#include "StreamingAudioBuffer.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -36,9 +37,9 @@ namespace imageviewer {
 			//mediaPlayer->Dock = DockStyle::Fill;
 			//mediaPlayer->stretchToFit = true;
 			initializeD3D();
-			initializeDS();
+
 			videoPlayer = gcnew VideoPlayer(d3dDevice, makeFourCC('Y', 'V', '1', '2'));	
-		
+			audio = gcnew StreamingAudioBuffer(this);
 		}
 
 	protected:
@@ -172,6 +173,14 @@ namespace imageviewer {
 #pragma endregion
 	private:
 
+		delegate void TimerEventHandler(UInt32 id, UInt32 msg, UInt32 userCtx, UInt32 rsv1, UInt32 rsv2);
+
+		[DllImport("winmm.dll", SetLastError = true,EntryPoint="timeSetEvent")]
+		static UInt32 timeSetEvent(UInt32 msDelay, UInt32 msResolution, TimerEventHandler ^handler, UInt32 userCtx, UInt32 eventType);
+
+		[DllImport("winmm.dll", SetLastError = true)]
+		static void timeKillEvent(UInt32 uTimerID );
+
 		VideoPlayer ^videoPlayer;
 		double previousPts;
 		double previousDelay;
@@ -182,8 +191,7 @@ namespace imageviewer {
 		D3D::Device ^d3dDevice;
 		D3D::PresentParameters ^presentParams;
 
-		DS::Device ^dsDevice;
-		DS::SecondaryBuffer ^audioBuffer;
+		StreamingAudioBuffer ^audio;
 
 		property Control ^VideoPanel {
 
@@ -259,28 +267,6 @@ namespace imageviewer {
 
 		}
 
-		void initializeDS() {
-
-			try {
-				dsDevice = gcnew DS::Device();
-				dsDevice->SetCooperativeLevel(this, DS::CooperativeLevel::Priority);
-
-
-				//DS::SecondaryBuffer ^buffer = gcnew DS::SecondaryBuffer(
-				//DS::BufferDescription ^desc = gcnew DS::BufferDescription();
-				//desc->
-			
-
-			} catch (DS::SoundException ^exception){
-
-				Util::DebugOut("Error Code:" + exception->ErrorCode);
-				Util::DebugOut("Error String:" + exception->ErrorString);
-				Util::DebugOut("Message:" + exception->Message);
-				Util::DebugOut("StackTrace:" + exception->StackTrace);
-			}
-
-		}
-
 		void render() {
 
 			int videoWidth = videoPlayer->Width;
@@ -299,19 +285,16 @@ namespace imageviewer {
 			Rectangle canvas = ImageUtils::centerRectangle(panelRec,
 				scaledVideoRec);
 
-			int a = splitContainer->Height;
-			int b = splitContainer->Panel1->Height;
-			int c = splitContainer->Panel2->Height;
-		
-			//canvas.X += splitContainer->Location.X;
-			//canvas.Y = 0;
-
-			VideoFrame ^currentFrame;
+			Frame ^currentFrame;
+			VideoFrame ^videoFrame = nullptr;
+			AudioFrame ^audioFrame = nullptr;
 			
-			bool success = videoPlayer->packetQueue->getDecodedFrame(currentFrame);
+			bool success = videoPlayer->frameQueue->getDecodedFrame(currentFrame);
 			if(success == false) return;
 
-			if(skipFrame == false) {
+			if(skipFrame == false && currentFrame->FrameTypeP == VideoLib::Frame::FrameType::VIDEO) {
+
+				videoFrame = dynamic_cast<VideoFrame ^>(currentFrame);
 
 				Color color = this->BackColor;
 				//Color color = Color::Blue;
@@ -319,20 +302,27 @@ namespace imageviewer {
 				d3dDevice->Clear(D3D::ClearFlags::Target, color, 1.0f, 0);
 
 				d3dDevice->BeginScene();				
-
+/*
 				if(currentFrame->Frame->Disposed == true) {
 
 					int wtf = 1;
 				}
-
+*/
 				D3D::Surface ^backBuffer = d3dDevice->GetBackBuffer(0,0, D3D::BackBufferType::Mono);
 
-				d3dDevice->StretchRectangle(currentFrame->Frame,Rectangle(0,0,videoWidth,videoHeight),
+				d3dDevice->StretchRectangle(videoFrame->Image, Rectangle(0,0,videoWidth,videoHeight),
 					backBuffer, canvas, D3D::TextureFilter::Linear);
 
 				d3dDevice->EndScene();
 				d3dDevice->Present();
+
+			} else if(currentFrame->FrameTypeP == VideoLib::Frame::FrameType::AUDIO) {
+
+				audioFrame = dynamic_cast<AudioFrame ^>(currentFrame);
+
+				audio->write(audioFrame->Stream, audioFrame->Length);
 			}
+
 			// calculate delay to display next frame
 			double delay = currentFrame->Pts - previousPts;	
 
@@ -359,13 +349,22 @@ namespace imageviewer {
 				skipFrame = false;
 			}
 
-			// queue current frame in freeFrames to be used again
-			videoPlayer->packetQueue->queueFreeFrame(currentFrame);
+			if(videoFrame != nullptr) {
+				// queue current frame in freeFrames to be used again
+				videoPlayer->frameQueue->enqueueFreeVideoFrame(videoFrame);
+			}
+
+			if(audioFrame != nullptr) {
+				
+				videoPlayer->frameQueue->enqueueFreeAudioFrame(audioFrame);
+				
+			}
 
 			// start timer with delay for next frame
 			videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
 			videoRefreshTimer->Start();				
 
+			Util::DebugOut(int(actualDelay * 1000 + 0.5).ToString());
 		}
 
 		double getTimeNow() {
@@ -423,27 +422,14 @@ namespace imageviewer {
 			
 			videoPlayer->open(location);
 			
-			DS::WaveFormat format;
-
-            format.SamplesPerSecond = videoPlayer->BitRate;
-            format.BitsPerSample = videoPlayer->BitsPerSample;
-			format.Channels = videoPlayer->NrChannels;
-			format.FormatTag = DS::WaveFormatTag::Pcm;
-			format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
-			format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
-
-			DS::BufferDescription ^desc = gcnew DS::BufferDescription(format);
-			desc->BufferBytes = 1024;
-			desc->DeferLocation = true;
-			desc->GlobalFocus = true;
-
-			audioBuffer = gcnew DS::SecondaryBuffer(desc, dsDevice);
+			audio->initialize(videoPlayer->SamplesPerSecond, videoPlayer->BytesPerSample,
+				videoPlayer->NrChannels, videoPlayer->MaxAudioFrameSize * 2);			
   
 		}
 
 		void stop() {
 
-			videoPlayer->packetQueue->stop();
+			videoPlayer->frameQueue->stop();
 
 			videoDecoderBW->CancelAsync();
 			while(IsPlaying) {
@@ -454,6 +440,8 @@ namespace imageviewer {
 			
 			videoRefreshTimer->Stop();
 			
+			//audioBuffer->SetCurrentPosition(0);
+			//audioBuffer->Play(0,DS::BufferPlayFlags::Default);
 		}
 
 		void play() {
@@ -462,7 +450,7 @@ namespace imageviewer {
 			previousDelay = 0.04;
 			skipFrame = false;	
 
-			videoPlayer->packetQueue->start();
+			videoPlayer->frameQueue->start();
 
 			videoDecoderBW->RunWorkerAsync();
 

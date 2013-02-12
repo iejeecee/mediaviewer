@@ -35,17 +35,22 @@ private:
 
 	float frameRate;
 
+	String ^audioCodecName;
+	int samplesPerSecond;
+	int bytesPerSample;
+	int nrChannels;
+
 	bool videoSupportsXMPMetaData() {
 
 		// XMP Metadata does not support matroska
 		if(MimeType->Equals("video/x-matroska")) {
-			
+
 			return(false);
 
-		// mp4 versions incompatible with XMP metadata
+			// mp4 versions incompatible with XMP metadata
 		} else if(mimeType->Equals("video/mp4")) {
 
-			
+
 			if(FSMetaData->Contains("major_brand: isom") &&
 				FSMetaData->Contains("minor_version: 1")) 
 			{
@@ -75,7 +80,7 @@ private:
 
 		return(true);
 	}
-	
+
 protected:
 
 	virtual void readMetaData() override {
@@ -101,6 +106,11 @@ protected:
 
 			frameRate = videoPreview->FrameRate;
 
+			audioCodecName = videoPreview->AudioCodecName;
+			samplesPerSecond = videoPreview->SamplesPerSecond;
+			bytesPerSample = videoPreview->BytesPerSample;
+			nrChannels = videoPreview->NrChannels;
+
 			if(videoSupportsXMPMetaData()) {
 
 				MediaFile::readMetaData();
@@ -121,7 +131,7 @@ public:
 
 	VideoFile(String ^location, String ^mimeType, Stream ^data) : MediaFile(location, mimeType, data) {
 
-		
+
 	}
 
 	property MediaType MediaFormat
@@ -196,6 +206,39 @@ public:
 		}
 	}
 
+	property String ^AudioCodecName {
+
+		String ^get() {
+
+			return(audioCodecName);
+		}
+	}
+
+	property int SamplesPerSecond {
+
+		int get() {
+
+			return(samplesPerSecond);
+		}
+	}
+
+	property int BytesPerSample {
+
+		int get() {
+
+			return(bytesPerSample);
+		}
+	}
+
+	property int NrChannels {
+
+		int get() {
+
+			return(nrChannels);
+		}
+	}
+
+
 	virtual List<MetaDataThumb ^> ^generateThumbnails() override {
 
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
@@ -218,13 +261,13 @@ public:
 		sb->AppendLine(Path::GetFileName(Location));
 		sb->AppendLine();
 
-		
-/*
+
+		/*
 		for each(String ^info in FSMetaData) {
 
-			sb->AppendLine(info);
+		sb->AppendLine(info);
 		}
-*/
+		*/
 
 		if(MetaData != nullptr) {
 
@@ -278,6 +321,18 @@ public:
 		sb->AppendLine();
 		sb->AppendLine();
 
+		sb->Append("Audio Codec (");
+		sb->Append(AudioCodecName);
+		sb->AppendLine("):");
+		sb->Append(SamplesPerSecond);
+		sb->Append("Hz, ");
+		sb->Append(bytesPerSample * 8);
+		sb->Append("bit, ");
+		sb->Append(NrChannels);
+		sb->Append(" chan");
+		sb->AppendLine();
+		sb->AppendLine();
+
 		sb->AppendLine("Duration:");
 		sb->AppendLine(Util::formatTimeSeconds(DurationSeconds));
 		sb->AppendLine();
@@ -286,8 +341,8 @@ public:
 		sb->AppendLine(Util::formatSizeBytes(SizeBytes));
 		sb->AppendLine();
 
-		
-	
+
+
 		return(sb->ToString());
 	}
 

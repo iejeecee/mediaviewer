@@ -4,7 +4,7 @@
 #include "VideoFrameGrabber.h"
 #include "VideoPlayer.h"
 #include "VideoFrame.h"
-#include "PacketQueue.h"
+#include "FrameQueue.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -43,6 +43,11 @@ namespace VideoLib {
 		List<String ^> ^metaData;
 
 		float frameRate;
+
+		String ^audioCodecName;
+		int samplesPerSecond;
+		int bytesPerSample;
+		int nrChannels;
 
 	public:
 
@@ -121,6 +126,39 @@ namespace VideoLib {
 			}
 		}
 
+		property String ^AudioCodecName {
+
+			String ^get() {
+
+				return(audioCodecName);
+			}
+		}
+
+		property int SamplesPerSecond {
+
+			int get() {
+
+				return(samplesPerSecond);
+			}
+		}
+
+		property int BytesPerSample {
+
+			int get() {
+
+				return(bytesPerSample);
+			}
+		}
+
+		property int NrChannels {
+
+			int get() {
+
+				return(nrChannels);
+			}
+		}
+
+
 		void open(String ^videoLocation);
 		void close();
 
@@ -151,14 +189,15 @@ namespace VideoLib {
 		static int nrFramesInBuffer = 10;
 
 		double videoClock;
+		double audioClock;
 		Format pixelFormat;
 
-		double synchronizeVideo(int repeatFrames, double pts);
-		void fillBuffer(Surface ^frame, BYTE* pY, BYTE* pV, BYTE* pU);
+		double synchronizeVideo(int repeatFrames, __int64 dts);
+		double synchronizeAudio(int size);
 		
 	public:
 
-		PacketQueue ^packetQueue;
+		FrameQueue ^frameQueue;
 
 		property int Height {
 
@@ -176,19 +215,19 @@ namespace VideoLib {
 			}
 		}
 
-		property int BitRate {
+		property int SamplesPerSecond {
 
 			int get() {
 
-				return(videoPlayer->bitRate);
+				return(videoPlayer->samplesPerSecond);
 			}
 		}
 
-		property int BitsPerSample {
+		property int BytesPerSample {
 
 			int get() {
 
-				return(videoPlayer->bitsPerSample);
+				return(videoPlayer->bytesPerSample);
 			}
 		}
 
@@ -197,6 +236,14 @@ namespace VideoLib {
 			int get() {
 
 				return(videoPlayer->nrChannels);
+			}
+		}
+
+		property int MaxAudioFrameSize {
+
+			int get() {
+
+				return(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 		}
 

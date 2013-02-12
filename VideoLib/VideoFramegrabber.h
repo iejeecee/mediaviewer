@@ -78,6 +78,12 @@ public:
 
 	double frameRate;
 
+	std::string audioCodecName;
+
+	int samplesPerSecond;
+	int bytesPerSample;	
+	int nrChannels;
+
 	VideoFrameGrabber() 	
 	{
 		setDecodedFrameCallback(decodedFrame, this);
@@ -89,13 +95,19 @@ public:
 		container = "";
 		videoCodecName = "";
 
+		audioCodecName = "";
+
+		samplesPerSecond = 0;
+		bytesPerSample = 0;	
+		nrChannels = 0;
+
 	}
 
 	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
 
 		VideoDecoder::open(location, discardMode);
 
-		// get metadata
+		// get video metadata
 		durationSeconds = getDurationSeconds();
 
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
@@ -126,6 +138,16 @@ public:
 		}
 
 		probe_dict(formatContext->metadata, "");
+
+		// audio info
+		if(audioCodecContext != NULL) {
+			audioCodecName = std::string(audioCodec->name);
+
+			samplesPerSecond = audioCodecContext->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+		
+			nrChannels = audioCodecContext->channels;
+		}
 	}
 
 	virtual void close() {
