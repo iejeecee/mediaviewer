@@ -15,7 +15,6 @@ namespace VideoLib {
 
 		Queue<T> ^queue;
 		int maxQueueSize;
-
 		bool closing;
 
 	public:
@@ -25,6 +24,22 @@ namespace VideoLib {
 			this->maxQueueSize = maxQueueSize;
 			queue = gcnew Queue<T>();
 			closing = false;
+		}
+
+		property int MaxQueueSize {
+
+			int get() {
+
+				return(maxQueueSize);
+			}
+		}
+
+		property int QueueSize {
+
+			int get() {
+
+				return(queue->Count);
+			}
 		}
 
 		void open() {

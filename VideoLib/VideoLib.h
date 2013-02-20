@@ -197,6 +197,13 @@ namespace VideoLib {
 		
 	public:
 
+		enum class DecodeMode {
+
+			DECODE_VIDEO_AND_AUDIO,
+			DECODE_VIDEO_ONLY,
+			DECODE_AUDIO_ONLY
+		};
+
 		FrameQueue ^frameQueue;
 
 		property int Height {
@@ -271,7 +278,7 @@ namespace VideoLib {
 		~VideoPlayer();
 
 		void open(String ^videoLocation);
-		int decodeFrame();
+		int decodeFrame(DecodeMode mode);
 		void close();
 
 		

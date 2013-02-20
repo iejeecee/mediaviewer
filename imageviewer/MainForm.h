@@ -88,6 +88,8 @@ namespace imageviewer {
 			//VideoLibTest ^test = gcnew VideoLibTest();
 			//test->start();
 
+			System::Diagnostics::Process::GetCurrentProcess()->PriorityClass = System::Diagnostics::ProcessPriorityClass::RealTime;
+
 			if(args->Length != 0) {
 
 				loadMedia(args[0]);

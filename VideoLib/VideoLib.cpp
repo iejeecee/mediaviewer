@@ -153,7 +153,7 @@ VideoPlayer::VideoPlayer(Device ^device, Format pixelFormat) {
 	videoClock = 0;
 	audioClock = 0;
 	
-	frameQueue = gcnew FrameQueue(nrFramesInBuffer);
+	frameQueue = gcnew FrameQueue();
 
 }
 
@@ -223,7 +223,7 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 		videoFrame->Pts = synchronizeVideo(frame->repeat_pict, packet->dts);
 		
 		// add frame to the decoded frames queue
-		frameQueue->enqueueDecodedFrame(videoFrame);
+		frameQueue->enqueueDecodedVideoFrame(videoFrame);
 
 	} else {
 
@@ -243,7 +243,7 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 		audioFrame->Pts = synchronizeAudio(length);
 
 		// add frame to the decoded frames queue
-		frameQueue->enqueueDecodedFrame(audioFrame);
+		frameQueue->enqueueDecodedAudioFrame(audioFrame);
 	}
 
 }
@@ -255,8 +255,8 @@ void VideoPlayer::open(String ^videoLocation) {
 
 		videoPlayer->open(marshal_as<std::string>(videoLocation), PIX_FMT_YUV420P);
 
-		frameQueue->initialize(device, videoPlayer->getWidth(),
-			videoPlayer->getHeight(), pixelFormat, AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+		frameQueue->initialize(device, Width,
+			Height, pixelFormat, SamplesPerSecond, BytesPerSample, AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 
 	} catch (Exception ^) {
 
@@ -264,10 +264,21 @@ void VideoPlayer::open(String ^videoLocation) {
 	}
 
 }
-int VideoPlayer::decodeFrame() {
+int VideoPlayer::decodeFrame(DecodeMode mode) {
 
-	return(videoPlayer->decode(VideoDecoder::SKIP_VIDEO, 
-		VideoDecoder::DECODE_AUDIO, 1));
+	VideoDecoder::VideoDecodeMode videoDecodeMode = VideoDecoder::DECODE_VIDEO;
+	VideoDecoder::AudioDecodeMode audioDecodeMode = VideoDecoder::DECODE_AUDIO;
+
+	if(mode == DecodeMode::DECODE_VIDEO_ONLY) {
+
+		audioDecodeMode = VideoDecoder::SKIP_AUDIO;
+
+	} else if(mode == DecodeMode::DECODE_AUDIO_ONLY) {
+
+		videoDecodeMode = VideoDecoder::SKIP_VIDEO;
+	}
+
+	return(videoPlayer->decode(videoDecodeMode, audioDecodeMode, 1));
 }
 
 void VideoPlayer::close() {

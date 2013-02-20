@@ -59,6 +59,7 @@ namespace VideoLib {
 		{
 			this->length = length;
 			Marshal::Copy(IntPtr(dataPtr), data, 0, length);
+			stream->Position = 0;
 			
 		}
 	};

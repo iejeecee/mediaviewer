@@ -206,6 +206,14 @@ public:
 		}
 	}
 
+	property bool HasAudio {
+
+		bool get() {
+
+			return(!String::IsNullOrEmpty(AudioCodecName));
+		}
+	}
+
 	property String ^AudioCodecName {
 
 		String ^get() {
@@ -321,17 +329,20 @@ public:
 		sb->AppendLine();
 		sb->AppendLine();
 
-		sb->Append("Audio Codec (");
-		sb->Append(AudioCodecName);
-		sb->AppendLine("):");
-		sb->Append(SamplesPerSecond);
-		sb->Append("Hz, ");
-		sb->Append(bytesPerSample * 8);
-		sb->Append("bit, ");
-		sb->Append(NrChannels);
-		sb->Append(" chan");
-		sb->AppendLine();
-		sb->AppendLine();
+		if(HasAudio == true) {
+
+			sb->Append("Audio Codec (");
+			sb->Append(AudioCodecName);
+			sb->AppendLine("):");
+			sb->Append(SamplesPerSecond);
+			sb->Append("Hz, ");
+			sb->Append(bytesPerSample * 8);
+			sb->Append("bit, ");
+			sb->Append(NrChannels);
+			sb->Append(" chan");
+			sb->AppendLine();
+			sb->AppendLine();
+		}
 
 		sb->AppendLine("Duration:");
 		sb->AppendLine(Util::formatTimeSeconds(DurationSeconds));

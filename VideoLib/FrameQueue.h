@@ -15,16 +15,65 @@ namespace VideoLib {
 	private:
 
 		ThreadSafeQueue<VideoFrame ^> ^freeVideoFrames;
-		ThreadSafeQueue<AudioFrame ^> ^freeAudioFrames;
-		ThreadSafeQueue<Frame ^> ^decodedFrames;
+		ThreadSafeQueue<VideoFrame ^> ^decodedVideoFrames;
 
+		ThreadSafeQueue<AudioFrame ^> ^freeAudioFrames;
+		ThreadSafeQueue<AudioFrame ^> ^decodedAudioFrames;
+		
 		array<VideoFrame ^> ^videoFrameData;
 		array<AudioFrame ^> ^audioFrameData;
-		int maxQueueSize;
 
 		bool isStopped;
 
+		void initializeAudioQueue(int samplesPerSecond, int bytesPerSample, int maxAudioFrameBufferSize) {
+
+			int lineSize = 4608;
+
+			int oneSecondAudioBytes = samplesPerSecond * bytesPerSample;
+			int nrFrames = 500;//oneSecondAudioBytes / lineSize;
+
+			audioFrameData = gcnew array<AudioFrame ^>(nrFrames);
+
+			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(nrFrames);
+			decodedAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(nrFrames);
+
+			for(int i = 0; i < nrFrames; i++) {
+
+				audioFrameData[i] = gcnew AudioFrame(maxAudioFrameBufferSize);
+
+				freeAudioFrames->add(audioFrameData[i]);
+			}
+
+		}
+
+		void initializeVideoQueue(Device ^device, int width, int height, Format pixelFormat) {
+
+			int nrFrames = 30;
+
+			videoFrameData = gcnew array<VideoFrame ^>(nrFrames);
+
+			freeVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(nrFrames);
+			decodedVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(nrFrames);
+
+			for(int i = 0; i < nrFrames; i++) {
+
+				videoFrameData[i] = gcnew VideoFrame(device, width, height, pixelFormat);
+
+				freeVideoFrames->add(videoFrameData[i]);
+			}
+
+		}
+
 	public:
+
+		FrameQueue() {
+	
+			isStopped = false;
+			videoFrameData = nullptr;
+			audioFrameData = nullptr;
+
+		}
+
 
 		property bool IsStopped {
 
@@ -34,61 +83,69 @@ namespace VideoLib {
 			}
 		}
 
-		property int MaxQueueSize {
+		property int MaxVideoQueueSize {
 
 			int get() {
 
-				return(maxQueueSize);
+				return(decodedVideoFrames->MaxQueueSize);
 			}
 		}
 
-		FrameQueue(int maxQueueSize) {
+		property int MaxAudioQueueSize {
 
-			this->maxQueueSize = maxQueueSize;
-			videoFrameData = gcnew array<VideoFrame ^>(maxQueueSize);
-			audioFrameData = gcnew array<AudioFrame ^>(maxQueueSize);
-			isStopped = false;
+			int get() {
+
+				return(decodedAudioFrames->MaxQueueSize);
+			}
 		}
 
-		void initialize(Device ^device, int width, int height, Format pixelFormat,
-			int audioFrameBufferSize) {
+		property int VideoQueueSize {
 
-			decodedFrames = gcnew ThreadSafeQueue<Frame ^>(maxQueueSize * 2);
-			freeVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(maxQueueSize);
-			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxQueueSize);
+			int get() {
+
+				return(decodedVideoFrames->QueueSize);
+			}
+		}
+
+		property int AudioQueueSize {
+
+			int get() {
+
+				return(decodedAudioFrames->QueueSize);
+			}
+		}
+	
+		void initialize(Device ^device, int width, int height, Format pixelFormat,
+			int samplesPerSecond, int bytesPerSample, int maxAudioBufferSize) {
 
 			dispose();
 
-			for(int i = 0; i < videoFrameData->Length; i++) {
-
-				videoFrameData[i] = gcnew VideoFrame(device, width, height,
-					pixelFormat);
-
-				audioFrameData[i] = gcnew AudioFrame(audioFrameBufferSize);
-
-				freeVideoFrames->add(videoFrameData[i]);	
-				freeAudioFrames->add(audioFrameData[i]);
-			}
-
+			initializeVideoQueue(device, width, height, pixelFormat);
+			initializeAudioQueue(samplesPerSecond, bytesPerSample, maxAudioBufferSize);
 		}
 
 		void start() {
 
 			freeVideoFrames->open();
 			freeAudioFrames->open();
-			decodedFrames->open();
+			decodedVideoFrames->open();
+			decodedAudioFrames->open();
 			isStopped = false;
 		}
 
 		void stop() {
 
-			decodedFrames->close();
+			decodedVideoFrames->close();
+			decodedAudioFrames->close();
 			freeVideoFrames->close();
 			freeAudioFrames->close();			
 			isStopped = true;
 		}
 
 		void dispose() {
+
+			if(videoFrameData == nullptr) return;
+			if(audioFrameData == nullptr) return;
 
 			for(int i = 0; i < videoFrameData->Length; i++) {
 
@@ -97,6 +154,10 @@ namespace VideoLib {
 					delete videoFrameData[i];
 					videoFrameData[i] = nullptr;
 				}
+
+			}
+
+			for(int i = 0; i < audioFrameData->Length; i++) {
 
 				if(audioFrameData[i] != nullptr) {
 
@@ -115,7 +176,18 @@ namespace VideoLib {
 		void enqueueFreeVideoFrame(VideoFrame ^frame) {
 
 			freeVideoFrames->add(frame);
-			
+
+		}
+
+		bool getDecodedVideoFrame(VideoFrame ^%videoFrame) {
+
+			return(decodedVideoFrames->tryGet(videoFrame));
+		}
+
+		void enqueueDecodedVideoFrame(VideoFrame ^videoFrame) {
+
+			decodedVideoFrames->add(videoFrame);
+
 		}
 
 		bool getFreeAudioFrame(AudioFrame ^%frame) {
@@ -129,14 +201,18 @@ namespace VideoLib {
 			
 		}
 
-		bool getDecodedFrame(Frame ^%frame) {
+		bool getDecodedAudioFrame(AudioFrame ^%audioFrame) {
 
-			return(decodedFrames->tryGet(frame));
+			return(decodedAudioFrames->tryGet(audioFrame));
 		}
 
-		void enqueueDecodedFrame(Frame ^frame) {
+		void enqueueDecodedAudioFrame(AudioFrame ^audioFrame) {
 
-			decodedFrames->add(frame);
+			decodedAudioFrames->add(audioFrame);
+
+	
 		}
+
+	
 	};
 }

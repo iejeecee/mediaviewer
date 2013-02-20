@@ -4,6 +4,7 @@
 
 namespace imageviewer {
 
+using namespace System::Threading;
 namespace DS = Microsoft::DirectX::DirectSound;
 
 public ref class StreamingAudioBuffer
@@ -15,7 +16,14 @@ private:
 	DS::SecondaryBuffer ^audioBuffer;
 	int offsetBytes;
 	int bufferSizeBytes;
-	int oneSecondSizeBytes;
+
+	int bytesPerSample;
+	int samplesPerSecond;
+	int nrChannels;
+
+	int prevPlayPos;
+	int loops;
+	array<AutoResetEvent ^> ^bufferEvents;
 
 public: 
 
@@ -44,36 +52,71 @@ public:
 		int bufferSizeBytes) 
 	{
 	
-		this->bufferSizeBytes = bufferSizeBytes;
+		try {
 
-		DS::WaveFormat format;
+			this->bufferSizeBytes = bufferSizeBytes;
+			this->bytesPerSample = bytesPerSample;
+			this->samplesPerSecond = samplesPerSecond;
+			this->nrChannels = nrChannels;
 
-		format.SamplesPerSecond = samplesPerSecond;
-		format.BitsPerSample = bytesPerSample * 8;
-		format.Channels = nrChannels;
-		format.FormatTag = DS::WaveFormatTag::Pcm;
-		format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
-		format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
+			DS::WaveFormat format;
 
-		DS::BufferDescription ^desc = gcnew DS::BufferDescription(format);
-		desc->BufferBytes = bufferSizeBytes;
-		desc->DeferLocation = true;
-		desc->GlobalFocus = true;
-		desc->ControlVolume = true;
-		desc->CanGetCurrentPosition = true;
+			format.SamplesPerSecond = samplesPerSecond;
+			format.BitsPerSample = bytesPerSample * 8;
+			format.Channels = nrChannels;
+			format.FormatTag = DS::WaveFormatTag::Pcm;
+			format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
+			format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
 
-		audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
-		
-		offsetBytes = 0;
-		oneSecondSizeBytes = samplesPerSecond * bytesPerSample;
+			DS::BufferDescription ^desc = gcnew DS::BufferDescription(format);
+			desc->BufferBytes = bufferSizeBytes;
+			desc->DeferLocation = true;
+			desc->GlobalFocus = true;
+			desc->ControlVolume = true;
+			desc->CanGetCurrentPosition = true;
+			
+			audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
 
+			offsetBytes = 0;
+			loops = 0;
+			prevPlayPos = 0;
+
+		} catch (DS::SoundException ^exception){
+
+			Util::DebugOut("Error Code:" + exception->ErrorCode);
+			Util::DebugOut("Error String:" + exception->ErrorString);
+			Util::DebugOut("Message:" + exception->Message);
+			Util::DebugOut("StackTrace:" + exception->StackTrace);
+
+		} catch (Exception ^e) {
+
+			Util::DebugOut(e->Message);
+		}
+	}
+
+
+	double getAudioClock() {
+
+		int playPos = audioBuffer->PlayPosition;
+
+		if(playPos < prevPlayPos) {
+
+			loops++;
+		}
+
+		__int64 bytesPlayed = bufferSizeBytes * loops + playPos;
+		int bytesPerSecond = samplesPerSecond * bytesPerSample * nrChannels;
+		double time = bytesPlayed / double(bytesPerSecond);
+
+		prevPlayPos = playPos;
+
+		return(time);
 	}
 
 	void write(Stream ^data, int dataSizeBytes) {
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
-		data->Position = 0;
 
 		audioBuffer->Write(offsetBytes, data, dataSizeBytes, DS::LockFlag::None);
 
@@ -84,7 +127,7 @@ public:
 
 		offsetBytes = (offsetBytes + dataSizeBytes) % bufferSizeBytes;
 
-		if(offsetBytes >= oneSecondSizeBytes && audioBuffer->Status.Playing == false) {
+		if(audioBuffer->Status.Playing == false) {
 
 			audioBuffer->Play(0, DS::BufferPlayFlags::Looping);
 		}

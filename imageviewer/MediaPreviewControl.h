@@ -2,7 +2,7 @@
 
 #include "MediaFileFactory.h"
 #include "AnimatedPictureBoxControl.h"
-#include "TransparentIconPanel.h"
+//#include "TransparentIconPanel.h"
 #include "ImageGridItem.h"
 
 using namespace System;
@@ -195,7 +195,6 @@ private:
 
 			setPictureBoxFeatures(media);
 
-			
 		} catch(Exception ^) {
 
 			
@@ -232,6 +231,21 @@ private:
 				icon = gcnew InfoIcon(InfoIcon::IconType::GEOTAG);
 				icon->Caption = "Geo Tag";
 				pictureBox->addInfoIcon(icon);
+			}
+
+			// if media is a video and has no audio add a muted icon
+			if(media->MediaFormat == MediaFile::MediaType::VIDEO) {
+
+				VideoFile ^video = dynamic_cast<VideoFile ^>(media);
+
+				if(video->HasAudio == false) {
+					
+					icon = gcnew InfoIcon(InfoIcon::IconType::MUTE);
+					icon->Caption = "Video contains no audio";
+					pictureBox->addInfoIcon(icon);
+					
+				}
+
 			}
 		}
 

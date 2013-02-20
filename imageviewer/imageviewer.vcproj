@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4791.37760, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4798.24815, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4783.42367, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4793.31094, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -429,10 +429,6 @@
 			</File>
 			<File
 				RelativePath=".\TagEditorForm.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\TransparentIconPanel.cpp"
 				>
 			</File>
 			<File
@@ -754,20 +750,6 @@
 				</File>
 			</File>
 			<File
-				RelativePath=".\TimerQueueTimer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\TransparentIconPanel.h"
-				FileType="4"
-				>
-				<File
-					RelativePath=".\TransparentIconPanel.resx"
-					SubType="Designer"
-					>
-				</File>
-			</File>
-			<File
 				RelativePath=".\UploadOutputForm.h"
 				FileType="3"
 				>
@@ -790,6 +772,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath=".\VideoRender.h"
+				>
 			</File>
 			<Filter
 				Name="HTTP"
@@ -976,6 +962,22 @@
 				</File>
 				<File
 					RelativePath=".\VideoFile.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="HRTimer"
+				>
+				<File
+					RelativePath=".\HRTimer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MultiMediaTimer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\TimerQueueTimer.h"
 					>
 				</File>
 			</Filter>

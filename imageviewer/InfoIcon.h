@@ -23,7 +23,8 @@ public:
 		PNG,
 		TIFF,
 		GEOTAG,
-		COMMENTS
+		COMMENTS,
+		MUTE
 	};
 
 private:
