@@ -969,7 +969,19 @@
 				Name="HRTimer"
 				>
 				<File
+					RelativePath=".\DefaultTimer.h"
+					>
+				</File>
+				<File
 					RelativePath=".\HRTimer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\HRTimerFactory.h"
+					>
+				</File>
+				<File
+					RelativePath=".\HRTimerTest.h"
 					>
 				</File>
 				<File

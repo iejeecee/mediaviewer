@@ -1304,7 +1304,7 @@ namespace imageviewer {
 	private: System::Void uploadPhotoButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
 
-				OnUploadEvent(this, gcnew EventArgs());
+				OnUploadEvent(this, EventArgs::Empty);
 				 
 			 }
 

@@ -184,7 +184,7 @@ namespace imageviewer {
 	private: System::Void cancelButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
 				 abortAsyncAction = true;	
-				 OnCancelEvent(this, gcnew EventArgs());
+				 OnCancelEvent(this, EventArgs::Empty);
 			 }
 
 	private: System::Void okButton_Click(System::Object^  sender, System::EventArgs^  e) {

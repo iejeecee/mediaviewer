@@ -13,7 +13,7 @@
 #include "Tags.h"
 #include "ImageUtils.h"
 #include "ImageFile.h"
-#include "VideoLibTest.h"
+#include "HRTimerTest.h"
 #include "VideoPanelControl.h"
 
 using namespace System;
@@ -89,6 +89,8 @@ namespace imageviewer {
 			//test->start();
 
 			System::Diagnostics::Process::GetCurrentProcess()->PriorityClass = System::Diagnostics::ProcessPriorityClass::RealTime;
+
+			//HRTimerTest::test();
 
 			if(args->Length != 0) {
 

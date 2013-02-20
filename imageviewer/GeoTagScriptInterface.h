@@ -84,7 +84,7 @@ public:
 			}
 		}
 
-		Initialized(this, gcnew EventArgs());
+		Initialized(this, EventArgs::Empty);
     }
 
 	void failure(String ^errorString) {

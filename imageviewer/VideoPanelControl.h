@@ -3,7 +3,7 @@
 // Implementing video in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
 #include "ImageUtils.h"
 #include "Util.h"
-#include "TimerQueueTimer.h"
+#include "HRTimerFactory.h"
 #include "StreamingAudioBuffer.h"
 #include "VideoRender.h"
 #include <stdio.h>
@@ -44,9 +44,10 @@ namespace imageviewer {
 
 			videoPlayer = gcnew VideoPlayer(video->Device, makeFourCC('Y', 'V', '1', '2'));	
 			
-			audioRefreshTimer = gcnew System::Timers::Timer();
-			audioRefreshTimer->Elapsed += gcnew System::Timers::ElapsedEventHandler(this, &VideoPanelControl::audioRefreshTimer_Tick);
-			audioRefreshTimer->SynchronizingObject = nullptr;
+			audioRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::MULTI_MEDIA);
+			audioRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::audioRefreshTimer_Tick);
+			//audioRefreshTimer->AutoReset = false;
+			//audioRefreshTimer->SynchronizingObject = nullptr;
 		}
 
 	protected:
@@ -295,14 +296,13 @@ namespace imageviewer {
 		double previousVideoDelay;
 		static double frameTimer;
 		static double audioFrameTimer;
-		static System::Timers::Timer ^audioRefreshTimer;
+		HRTimer ^audioRefreshTimer;
 
 		double previousAudioPts;
 		double previousAudioDelay;
 
 		double measuredAudioTimeout;
 		double measuredVideoTimeout;
-
 
 		bool skipVideoFrame;
 		bool skipAudioFrame;
@@ -470,7 +470,7 @@ restartaudio:
 			// start timer with delay for next frame
 			audioRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
 			measuredAudioTimeout = getTimeNow();
-			audioRefreshTimer->Start();								
+			audioRefreshTimer->start();								
 			
 		}
 
@@ -546,8 +546,7 @@ restartaudio:
 			videoRefreshTimer->Enabled = true;
 			videoRefreshTimer->Start();
 
-			audioRefreshTimer->Enabled = true;
-			audioRefreshTimer->Start();
+			audioRefreshTimer->start();
 			
 		}
 
@@ -560,8 +559,7 @@ restartaudio:
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
 				//frameTimer = videoPlayer->TimeNow;
-				frameTimer = getTimeNow();
-				audioFrameTimer = getTimeNow();
+				audioFrameTimer = frameTimer = getTimeNow();
 
 				while(videoPlayer->decodeFrame(VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO) && 
 					!videoDecoderBW->CancellationPending) 
@@ -580,9 +578,9 @@ private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::Ev
 
 		 }
 
-private: System::Void audioRefreshTimer_Tick(System::Object^  sender, System::Timers::ElapsedEventArgs ^e) {
+private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
 
-			 audioRefreshTimer->Stop();
+			 audioRefreshTimer->stop();
 			 measuredAudioTimeout = getTimeNow() - measuredAudioTimeout;
 
 			 processAudioFrame();

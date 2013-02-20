@@ -1,37 +1,27 @@
 #pragma once
-
-/* Copyright (c) 2006 Leslie Sanford
-* 
-* Permission is hereby granted, free of charge, to any person obtaining a copy 
-* of this software and associated documentation files (the "Software"), to 
-* deal in the Software without restriction, including without limitation the 
-* rights to use, copy, modify, merge, publish, distribute, sublicense, and/or 
-* sell copies of the Software, and to permit persons to whom the Software is 
-* furnished to do so, subject to the following conditions:
-* 
-* The above copyright notice and this permission notice shall be included in 
-* all copies or substantial portions of the Software. 
-* 
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE 
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN 
-* THE SOFTWARE.
-*/
-
+#include "HRTimer.h"
 
 using namespace System;
-using namespace System.ComponentModel;
-using namespace System.Diagnostics;
-using namespace System.Runtime.InteropServices;
+using namespace System::ComponentModel;
+using namespace System::Diagnostics;
+using namespace System::Runtime::InteropServices;
 
 namespace imageviewer
 {
 
-	//Defines constants for the multimedia Timer's event types.
+	//The exception that is thrown when a timer fails to start.
+	public ref class TimerStartException : ApplicationException
+	{
 
+		//Initializes a gcnew instance of the TimerStartException class.
+	public:
+
+		TimerStartException(String ^message) : ApplicationException(message)
+		{
+		}
+	};
+
+	//Defines constants for the multimedia Timer's event types.
 	enum class TimerMode
 	{
 		//Timer event occurs once.
@@ -42,26 +32,29 @@ namespace imageviewer
 
 
 	//Represents information about the multimedia Timer's capabilities.
-
 	[StructLayout(LayoutKind::Sequential)]
-	public struct TimerCaps
+	public ref struct TimerCaps
 	{
 
-		//Minimum supported period in milliseconds.
+		//Minimum supported interval in milliseconds.
+		int intervalMin;
 
-		public int periodMin;
-
-
-		//Maximum supported period in milliseconds.
-
-		public int periodMax;
-	}
+		//Maximum supported interval in milliseconds.
+		int intervalMax;
+	};
 
 
 	//Represents the Windows multimedia timer.
-
-	public ref class MultiMediaTimer : IComponent
+	public ref class MultiMediaTimer : public HRTimer
 	{
+	public:
+		//Occurs when the Timer has started;
+		event EventHandler ^Started;
+
+		//Occurs when the Timer has stopped;
+		event EventHandler ^Stopped;
+
+		event EventHandler ^Disposed;
 
 	private:
 
@@ -69,25 +62,24 @@ namespace imageviewer
 		delegate void TimeProc(int id, int msg, int user, int param1, int param2);
 
 		// Represents methods that raise events.
-		delegate void EventRaiser(EventArgs e);
+		delegate void EventRaiser(EventArgs ^e);
 
 		// Gets timer capabilities.
 		[DllImport("winmm.dll")]
-		static int timeGetDevCaps(ref TimerCaps caps,
+		static int timeGetDevCaps(TimerCaps ^caps,
 			int sizeOfTimerCaps);
 
 		// Creates and starts the timer.
 		[DllImport("winmm.dll")]
 		static int timeSetEvent(int delay, int resolution,
-			TimeProc proc, int user, int mode);
+			TimeProc ^proc, int user, int mode);
 
 		// Stops and destroys the timer.
 		[DllImport("winmm.dll")]
 		static int timeKillEvent(int id);
 
 		// Indicates that the operation was successful.
-		const int TIMERR_NOERROR = 0;
-
+		static const int TIMERR_NOERROR = 0;
 
 		// Timer identifier.
 		int timerID;
@@ -95,92 +87,124 @@ namespace imageviewer
 		// Timer mode.
 		volatile TimerMode mode;
 
-		// Period between timer events in milliseconds.
-		volatile int period;
+		// Interval between timer events in milliseconds.
+		volatile int interval;
 
 		// Timer resolution in milliseconds.
 		volatile int resolution;        
 
 		// Called by Windows when a timer periodic event occurs.
-		TimeProc timeProcPeriodic;
+		TimeProc ^timeProcPeriodic;
 
 		// Called by Windows when a timer one shot event occurs.
-		TimeProc timeProcOneShot;
+		TimeProc ^timeProcOneShot;
 
 		// Represents the method that raises the Tick event.
-		EventRaiser tickRaiser;
+		EventRaiser ^tickRaiser;
 
 		// Indicates whether or not the timer is running.
-		bool running = false;
+		bool running;
 
 		// Indicates whether or not the timer has been disposed.
-		volatile bool disposed = false;
+		volatile bool disposed;
 
-		// The ISynchronizeInvoke object to use for marshaling events.
-		ISynchronizeInvoke synchronizingObject = null;
+		// The ISynchronizeInvoke ^object to use for marshaling events.
+		ISynchronizeInvoke ^synchronizingObject;
 
 		// For implementing IComponent.
-		ISite site = null;
+		ISite ^site;
 
 		// Multimedia timer capabilities.
-		static TimerCaps caps;
+		static TimerCaps ^caps;
 
+		// Initialize timer with default values.
+		void Initialize()
+		{
+			this->mode = TimerMode::PERIODIC;
+			this->interval = Capabilities->intervalMin;
+			this->resolution = 1;
 
+			running = false;
+			disposed = false;
+			synchronizingObject = nullptr;
+			site = nullptr;
 
+			timeProcPeriodic = gcnew TimeProc(this, &MultiMediaTimer::TimerPeriodicEventCallback);
+			timeProcOneShot = gcnew TimeProc(this, &MultiMediaTimer::TimerOneShotEventCallback);
+			tickRaiser = gcnew EventRaiser(this, &MultiMediaTimer::OnTick);
+		}
 
+		// Callback method called by the Win32 multimedia timer when a timer
+		// periodic event occurs.
+		void TimerPeriodicEventCallback(int id, int msg, int user, int param1, int param2)
+		{
+			if(synchronizingObject != nullptr)
+			{
+				synchronizingObject->BeginInvoke(tickRaiser, gcnew array<Object ^>{ EventArgs::Empty });
+			}
+			else
+			{
+				OnTick(EventArgs::Empty);
+			}
+		}
 
+		// Callback method called by the Win32 multimedia timer when a timer
+		// one shot event occurs.
+		void TimerOneShotEventCallback(int id, int msg, int user, int param1, int param2)
+		{
+			if(synchronizingObject != nullptr)
+			{
+				synchronizingObject->BeginInvoke(tickRaiser, gcnew array<Object ^>{ EventArgs::Empty });
+				stop();
+			}
+			else
+			{
+				OnTick(EventArgs::Empty);
+				stop();
+			}
+		}
 
-		//Occurs when the Timer has started;
+		// Raises the Disposed event.
+		void OnDisposed(EventArgs ^e)
+		{
+			Disposed(this, e);
+		}
 
-		public event EventHandler Started;
+		// Raises the Started event.
+		void OnStarted(EventArgs ^e)
+		{
+			Started(this, e);
+		}
 
+		// Raises the Stopped event.
+		void OnStopped(EventArgs ^e)
+		{
+			Stopped(this, e);
+		}
 
-		//Occurs when the Timer has stopped;
+		// Raises the Tick event.
+		void OnTick(EventArgs ^e)
+		{
+			Tick(this, e);
+		}
 
-		public event EventHandler Stopped;
-
-
-		//Occurs when the time period has elapsed.
-
-		public event EventHandler Tick;
-
-
-
-
+public:
 
 		//Initialize class.
-
-		static Timer()
+		static MultiMediaTimer()
 		{
+			caps = gcnew TimerCaps();
 			// Get multimedia timer capabilities.
-			timeGetDevCaps(ref caps, Marshal.SizeOf(caps));
+			timeGetDevCaps(caps, Marshal::SizeOf(caps));
 		}
 
-
-		//Initializes a new instance of the Timer class with the specified IContainer.
-
-		//<param name="container">
-		//The IContainer to which the Timer will add itself.
-		//</param>
-		public Timer(IContainer container)
-		{
-			///
-			//Required for Windows.Forms Class Composition Designer support
-			///
-			container.Add(this);
-
-			Initialize();
-		}
-
-
-		//Initializes a new instance of the Timer class.
-
-		public Timer()
+		//Initializes a gcnew instance of the Timer class.
+		MultiMediaTimer()
 		{
 			Initialize();
 		}
 
-		~Timer()
+		~MultiMediaTimer()
 		{
 			if(IsRunning)
 			{
@@ -189,64 +213,52 @@ namespace imageviewer
 			}
 		}
 
-		// Initialize timer with default values.
-		void Initialize()
+		//Frees timer resources.
+		!MultiMediaTimer() 
 		{
-			this.mode = TimerMode.PERIODIC;
-			this.period = Capabilities.periodMin;
-			this.resolution = 1;
+			if(disposed) {
+				return;
+			}
 
-			running = false;
+			if(IsRunning) {
 
-			timeProcPeriodic = new TimeProc(TimerPeriodicEventCallback);
-			timeProcOneShot = new TimeProc(TimerOneShotEventCallback);
-			tickRaiser = new EventRaiser(OnTick);
+				stop();
+			}
+
+			disposed = true;
+			OnDisposed(EventArgs::Empty);
 		}
 
-
-
-
-
-
 		//Starts the timer.
-
 		//<exception cref="ObjectDisposedException">
 		//The timer has already been disposed.
 		//</exception>
 		//<exception cref="TimerStartException">
 		//The timer failed to start.
 		//</exception>
-		public void Start()
+		virtual void start() override
 		{
-
-
 			if(disposed)
 			{
-				throw new ObjectDisposedException("Timer");
+				throw gcnew ObjectDisposedException("Timer");
 			}
-
-
-
-
 
 			if(IsRunning)
 			{
 				return;
 			}
 
-
-
 			// If the periodic event callback should be used.
-			if(Mode == TimerMode.PERIODIC)
+			if(mode == TimerMode::PERIODIC)
 			{
 				// Create and start timer.
-				timerID = timeSetEvent(Period, Resolution, timeProcPeriodic, 0, (int)Mode);
+				timerID = timeSetEvent(Interval, Resolution, timeProcPeriodic, 0, (int)mode);
 			}
 			// Else the one shot event callback should be used.
 			else
 			{
 				// Create and start timer.
-				timerID = timeSetEvent(Period, Resolution, timeProcOneShot, 0, (int)Mode);
+				timerID = timeSetEvent(Interval, Resolution, timeProcOneShot, 0, (int)mode);
 			}
 
 			// If the timer was created successfully.
@@ -254,234 +266,122 @@ namespace imageviewer
 			{
 				running = true;
 
-				if(SynchronizingObject != null && SynchronizingObject.InvokeRequired)
+				if(SynchronizingObject != nullptr && SynchronizingObject->InvokeRequired)
 				{
-					SynchronizingObject.BeginInvoke(
-						new EventRaiser(OnStarted), 
-						new object[] { EventArgs.Empty });
+					SynchronizingObject->BeginInvoke(
+						gcnew EventRaiser(this, &MultiMediaTimer::OnStarted), 
+						gcnew array<Object ^>{ EventArgs::Empty });
 				}
 				else
 				{
-					OnStarted(EventArgs.Empty);
+					OnStarted(EventArgs::Empty);
 				}                
 			}
 			else
 			{
-				throw new TimerStartException("Unable to start multimedia Timer.");
+				throw gcnew TimerStartException("Unable to start multimedia Timer.");
 			}
 		}
 
-
 		//Stops timer.
-
 		//<exception cref="ObjectDisposedException">
 		//If the timer has already been disposed.
 		//</exception>
-		public void Stop()
+		virtual void stop() override
 		{
-
-
 			if(disposed)
 			{
-				throw new ObjectDisposedException("Timer");
+				throw gcnew ObjectDisposedException("Timer");
 			}
-
-
-
-
 
 			if(!running)
 			{
 				return;
 			}
 
-
-
 			// Stop and destroy timer.
 			int result = timeKillEvent(timerID);
 
-			Debug.Assert(result == TIMERR_NOERROR);
-
+			Debug::Assert(result == TIMERR_NOERROR);
 			running = false;
 
-			if(SynchronizingObject != null && SynchronizingObject.InvokeRequired)
+			if(SynchronizingObject != nullptr && SynchronizingObject->InvokeRequired)
 			{
-				SynchronizingObject.BeginInvoke(
-					new EventRaiser(OnStopped), 
-					new object[] { EventArgs.Empty });
+				SynchronizingObject->BeginInvoke(
+					gcnew EventRaiser(this, &MultiMediaTimer::OnStopped), 
+					gcnew array<Object ^>{ EventArgs::Empty });
 			}
 			else
 			{
-				OnStopped(EventArgs.Empty);
+				OnStopped(EventArgs::Empty);
 			}
 		}        
 
-
-		// Callback method called by the Win32 multimedia timer when a timer
-		// periodic event occurs.
-		void TimerPeriodicEventCallback(int id, int msg, int user, int param1, int param2)
-		{
-			if(synchronizingObject != null)
-			{
-				synchronizingObject.BeginInvoke(tickRaiser, new object[] { EventArgs.Empty });
-			}
-			else
-			{
-				OnTick(EventArgs.Empty);
-			}
-		}
-
-		// Callback method called by the Win32 multimedia timer when a timer
-		// one shot event occurs.
-		void TimerOneShotEventCallback(int id, int msg, int user, int param1, int param2)
-		{
-			if(synchronizingObject != null)
-			{
-				synchronizingObject.BeginInvoke(tickRaiser, new object[] { EventArgs.Empty });
-				Stop();
-			}
-			else
-			{
-				OnTick(EventArgs.Empty);
-				Stop();
-			}
-		}
-
-
-
-		// Raises the Disposed event.
-		void OnDisposed(EventArgs e)
-		{
-			EventHandler handler = Disposed;
-
-			if(handler != null)
-			{
-				handler(this, e);
-			}
-		}
-
-		// Raises the Started event.
-		void OnStarted(EventArgs e)
-		{
-			EventHandler handler = Started;
-
-			if(handler != null)
-			{
-				handler(this, e);
-			}
-		}
-
-		// Raises the Stopped event.
-		void OnStopped(EventArgs e)
-		{
-			EventHandler handler = Stopped;
-
-			if(handler != null)
-			{
-				handler(this, e);
-			}
-		}
-
-		// Raises the Tick event.
-		void OnTick(EventArgs e)
-		{
-			EventHandler handler = Tick;
-
-			if(handler != null)
-			{
-				handler(this, e);
-			}
-		}
-
-        
-
-
-
-
-
-
+	
 		//Gets or sets the object used to marshal event-handler calls.
-
-		public ISynchronizeInvoke SynchronizingObject
+		property ISynchronizeInvoke ^SynchronizingObject
 		{
-			get
+			virtual ISynchronizeInvoke ^get() override
 			{
-
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
-
-
 
 				return synchronizingObject;
 			}
-			set
+
+			virtual void set(ISynchronizeInvoke ^value) override
 			{
-
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
-
-
 
 				synchronizingObject = value;
 			}
 		}
 
-
 		//Gets or sets the time between Tick events.
-
 		//<exception cref="ObjectDisposedException">
 		//If the timer has already been disposed.
 		//</exception>   
-		public int Period
+		property int Interval
 		{
-			get
+			virtual int get() override
 			{
-
 
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
 
-
-
-				return period;
+				return interval;
 			}
-			set
+
+			virtual void set(int value) override
 			{
-
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
+
+				} else if(value < Capabilities->intervalMin || value > Capabilities->intervalMax) {
+
+					throw gcnew ArgumentOutOfRangeException("Interval", value,
+						"Multimedia Timer interval out of range.");
 				}
-				else if(value < Capabilities.periodMin || value > Capabilities.periodMax)
-				{
-					throw new ArgumentOutOfRangeException("Period", value,
-						"Multimedia Timer period out of range.");
-				}
 
+				interval = value;
 
+				if(IsRunning) {
 
-				period = value;
-
-				if(IsRunning)
-				{
-					Stop();
-					Start();
+					stop();
+					start();
 				}
 			}
 		}
 
-
 		//Gets or sets the timer resolution.
-
 		//<exception cref="ObjectDisposedException">
 		//If the timer has already been disposed.
 		//</exception>        
@@ -492,165 +392,104 @@ namespace imageviewer
 		//overhead, however, you should use the maximum value appropriate 
 		//for your application.
 		//</remarks>
-		public int Resolution
+		property int Resolution
 		{
-			get
+			int get()
 			{
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
-
-
 
 				return resolution;
 			}
-			set
-			{
 
+			void set(int value)
+			{
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
 				else if(value < 0)
 				{
-					throw new ArgumentOutOfRangeException("Resolution", value,
+					throw gcnew ArgumentOutOfRangeException("Resolution", value,
 						"Multimedia timer resolution out of range.");
 				}
-
-
 
 				resolution = value;
 
 				if(IsRunning)
 				{
-					Stop();
-					Start();
+					stop();
+					start();
 				}
 			}
 		}
 
-
-		//Gets the timer mode.
-
-		//<exception cref="ObjectDisposedException">
-		//If the timer has already been disposed.
-		//</exception>
-		public TimerMode Mode
+		property bool AutoReset
 		{
-			get
+			virtual bool get() override
 			{
-
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
 
-
-
-				return mode;
+				return mode == TimerMode::PERIODIC ? true : false;
 			}
-			set
+
+			virtual void set(bool autoReset) override
 			{
-
-
 				if(disposed)
 				{
-					throw new ObjectDisposedException("Timer");
+					throw gcnew ObjectDisposedException("Timer");
 				}
 
-
-
-				mode = value;
+				mode = (autoReset == true) ? TimerMode::PERIODIC : TimerMode::ONE_SHOT;
 
 				if(IsRunning)
 				{
-					Stop();
-					Start();
+					stop();
+					start();
 				}
 			}
-		}
-
+		}	
 
 		//Gets a value indicating whether the Timer is running.
-
-		public bool IsRunning
+		property bool IsRunning
 		{
-			get
-			{
+			bool get() {
+
 				return running;
 			}
 		}
 
-
 		//Gets the timer capabilities.
-
-		public static TimerCaps Capabilities
+		static property TimerCaps ^Capabilities
 		{
-			get
+			TimerCaps ^get()
 			{
 				return caps;
 			}
 		}
 
-
-		public event System.EventHandler Disposed;
-
-		public ISite Site
+		property ISite ^Site
 		{
-			get
+			ISite ^get()
 			{
 				return site;
 			}
-			set
+			void set(ISite ^value)
 			{
 				site = value;
 			}
 		}
 
-
-		//Frees timer resources.
-
-		public void Dispose()
-		{
-
-
-			if(disposed)
-			{
-				return;
-			}
-
-               
-
-			if(IsRunning)
-			{
-				Stop();
-			}
-
-			disposed = true;
-
-			OnDisposed(EventArgs.Empty);
-		}
-
+		
        
 	};
 
 
-	//The exception that is thrown when a timer fails to start.
 
-	public class TimerStartException : ApplicationException
-	{
-
-		//Initializes a new instance of the TimerStartException class.
-
-		//<param name="message">
-		//The error message that explains the reason for the exception. 
-		//</param>
-		public TimerStartException(string message) : base(message)
-		{
-		}
-	}
 
 }

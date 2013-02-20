@@ -637,7 +637,7 @@ namespace imageviewer {
 
 				centerImage();
 
-				OnAsyncLoadImageFinished(this, gcnew EventArgs());
+				OnAsyncLoadImageFinished(this, EventArgs::Empty);
 
 			} else {
 

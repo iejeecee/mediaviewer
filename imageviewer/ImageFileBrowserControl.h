@@ -320,7 +320,7 @@ namespace imageviewer {
 
 				imageGrid->initializeImageData(imageData);
 
-				OnChangeBrowseDirectory(this, gcnew EventArgs());
+				OnChangeBrowseDirectory(this, EventArgs::Empty);
 			}
 
 	public: String ^getBrowsePath() {

@@ -179,7 +179,7 @@ private:
 			sourceImage = gcnew Bitmap(media->Data);
 			
 			displayAndCenterImage(sourceImage);
-			LoadImageFinished(this, gcnew EventArgs());
+			LoadImageFinished(this, EventArgs::Empty);
 
 		} catch(Exception ^e) {
 

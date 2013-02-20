@@ -320,7 +320,7 @@ protected:
 
 			
 
-		//PaintFinished(this, gcnew EventArgs());
+		//PaintFinished(this, EventArgs::Empty);
 
 		//e->Graphics->DrawImage( currentImage, Point(0,0));
 	

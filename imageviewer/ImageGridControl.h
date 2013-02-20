@@ -277,7 +277,7 @@ public:
 				displayImage(panelNr, addData[i]);
 			}
 
-			UpdateImages(this, gcnew EventArgs());
+			UpdateImages(this, EventArgs::Empty);
 		}
 
 
@@ -442,7 +442,7 @@ public:
 		if(currentPage + 1 < getNrPages()) {
 
 			displayPage(currentPage + 1);
-			UpdateImages(this, gcnew EventArgs());
+			UpdateImages(this, EventArgs::Empty);
 			return(true);
 
 		} else {
@@ -460,7 +460,7 @@ public:
 		} else {
 
 			displayPage(currentPage - 1);
-			UpdateImages(this, gcnew EventArgs());
+			UpdateImages(this, EventArgs::Empty);
 			return(true);
 		}
 
@@ -497,7 +497,7 @@ public:
 
 		}
 
-		UpdateImages(this, gcnew EventArgs());
+		UpdateImages(this, EventArgs::Empty);
 	}
 
 	bool isImageSelected(int imageNr) {
