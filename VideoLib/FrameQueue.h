@@ -69,9 +69,14 @@ namespace VideoLib {
 		FrameQueue() {
 	
 			isStopped = false;
+			freeVideoFrames = nullptr;
+			decodedVideoFrames= nullptr;
+
+			freeAudioFrames= nullptr;
+			decodedAudioFrames= nullptr;
+		
 			videoFrameData = nullptr;
 			audioFrameData = nullptr;
-
 		}
 
 
@@ -135,10 +140,23 @@ namespace VideoLib {
 
 		void stop() {
 
-			decodedVideoFrames->close();
-			decodedAudioFrames->close();
-			freeVideoFrames->close();
-			freeAudioFrames->close();			
+			if(decodedVideoFrames != nullptr) {
+
+				decodedVideoFrames->close();
+			}
+			if(decodedAudioFrames != nullptr) {
+
+				decodedAudioFrames->close();
+			}
+			if(freeVideoFrames != nullptr) {
+
+				freeVideoFrames->close();
+			}
+			if(freeAudioFrames != nullptr) {
+
+				freeAudioFrames->close();			
+			}
+
 			isStopped = true;
 		}
 

@@ -193,7 +193,7 @@ namespace VideoLib {
 		Format pixelFormat;
 
 		double synchronizeVideo(int repeatFrames, __int64 dts);
-		double synchronizeAudio(int size);
+		double synchronizeAudio(int size, __int64 dts);
 		
 	public:
 

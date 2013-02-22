@@ -1,27 +1,27 @@
 #pragma once
+#include "HRTimer.h"
 
 namespace imageviewer
 {
-	public ref class QueueTimerException : Exception
+	public ref class TimerQueueTimerException : Exception
     {
 	public:
-        QueueTimerException(String ^message) : Exception(message)
+        TimerQueueTimerException(String ^message) : Exception(message)
         {
         }
 
-        QueueTimerException(String ^message, Exception ^innerException) : Exception(message, innerException)
+        TimerQueueTimerException(String ^message, Exception ^innerException) : Exception(message, innerException)
         {
         }
     };
 
-    public ref class TimerQueueTimer 
+	public ref class TimerQueueTimer : public HRTimer
     {
-
-	public:
-
-		 delegate void WaitOrTimerDelegate(IntPtr lpParameter, bool timerOrWaitFired); 
+		 
 
 	private:
+
+		delegate void WaitOrTimerDelegate(IntPtr lpParameter, bool timerOrWaitFired); 
 
 		enum class Flag {
             WT_EXECUTEDEFAULT = 0x00000000,
@@ -34,12 +34,9 @@ namespace imageviewer
             //WT_TRANSFER_IMPERSONATION    = 0x00000100
         };
 
-        IntPtr phNewTimer; // Handle to the timer.
-
-
         [DllImport("kernel32.dll")]
         static bool CreateTimerQueueTimer(
-            IntPtr phNewTimer,          // phNewTimer - Pointer to a handle; this is an out value
+            IntPtr %timerHandle,          // timerHandle - Pointer to a handle; this is an out value
             IntPtr TimerQueue,              // TimerQueue - timer  queue handle. For the default timer queue, NULL
             WaitOrTimerDelegate ^Callback,   // callback  - Pointer to the callback function
             IntPtr Parameter,               // Parameter - Value passed to the callback function
@@ -71,54 +68,172 @@ namespace imageviewer
         [DllImport("kernel32.dll", SetLastError = true)]
         static bool CloseHandle(IntPtr hObject);
 
-	public:
+		IntPtr timerHandle; 
+		bool running;
+		bool autoReset;
+		int interval;
+		WaitOrTimerDelegate ^callback;
+		ISynchronizeInvoke ^synchronizingObject;
 
-       
+		void timerOrWaitFired(IntPtr lpParameter, bool timerOrWaitFired) {
+
+			if(autoReset == false) {
+
+				running = false;
+			}
+
+			Tick(this, EventArgs::Empty);
+		}
+
+	public:
 
         TimerQueueTimer()
         {
+			running = false;
+			timerHandle = IntPtr::Zero;
+			autoReset = true;
+			synchronizingObject = nullptr;
 
+			callback = gcnew WaitOrTimerDelegate(this, &TimerQueueTimer::timerOrWaitFired);
         }
 
 		~TimerQueueTimer() 
 		{
-			Delete();
+			if(running == true) {
+				stop();
+			}
 		}
 
-        void Create(unsigned int dueTime, unsigned int period, WaitOrTimerDelegate ^callbackDelegate)
+        virtual void start() override
         {
+
+			if(running == true) return;
+
 			IntPtr pParameter = IntPtr::Zero;
+
+			unsigned int executeThread = synchronizingObject == nullptr ? 
+				(unsigned int)Flag::WT_EXECUTEDEFAULT :
+				(unsigned int)Flag::WT_EXECUTEINTIMERTHREAD;
+
+			int period = interval;
+			
+			if(autoReset == false) {
+
+				period = 0;
+				executeThread |= (unsigned int)Flag::WT_EXECUTEONLYONCE;
+			} 
+			
 
             bool success = CreateTimerQueueTimer(
                 // Timer handle
-                phNewTimer,
+                timerHandle,
                 // Default timer queue. IntPtr.Zero is just a constant value that represents a null pointer.
 				IntPtr::Zero,
                 // Timer callback function
-                callbackDelegate,
+                callback,
                 // Callback function parameter
                 pParameter,
                 // Time (milliseconds), before the timer is set to the signaled state for the first time.
-                dueTime,
+                interval,
                 // Period - Timer period (milliseconds). If zero, timer is signaled only once.
                 period,
-				(unsigned int)Flag::WT_EXECUTEINIOTHREAD);
+				executeThread);
 
-            if (!success)
-                throw gcnew QueueTimerException("Error creating QueueTimer");
+			if(!success) {
+                
+				throw gcnew TimerQueueTimerException("Error creating QueueTimer");
+			} else {
+
+				running = true;
+			}
         }
 
-        void Delete()
+        virtual void stop() override
         {
+			if(running == false) return;
+
             //bool success = DeleteTimerQueue(IntPtr.Zero);
             bool success = DeleteTimerQueueTimer(
 				IntPtr::Zero, // TimerQueue - A handle to the (default) timer queue
-                phNewTimer,  // Timer - A handle to the timer
+                timerHandle,  // Timer - A handle to the timer
 				IntPtr::Zero  // CompletionEvent - A handle to an optional event to be signaled when the function is successful and all callback functions have completed. Can be NULL.
                 );
+
+			//if(!success) {
+                
+			//	throw gcnew TimerQueueTimerException("Error deleting QueueTimer");
+				
+			//} else {
+
+				running = false;
+			//}
+			
+           // CloseHandle(timerHandle);
 			int error = Marshal::GetLastWin32Error();
-            //CloseHandle(phNewTimer);
         }
+
+		property ISynchronizeInvoke ^SynchronizingObject
+		{
+			virtual ISynchronizeInvoke ^get() override
+			{
+			
+				return(synchronizingObject);
+			}
+
+			virtual void set(ISynchronizeInvoke ^synchronizingObject) override
+			{
+				this->synchronizingObject = synchronizingObject;
+			}
+		}
+
+		property bool AutoReset
+		{
+			virtual bool get() override
+			{
+				
+				return autoReset;
+			}
+
+			virtual void set(bool autoReset) override
+			{				
+				this->autoReset = autoReset;
+
+				if(IsRunning)
+				{
+					stop();
+					start();
+				}
+			}
+		}	
+
+		property int Interval
+		{
+			virtual int get() override
+			{
+
+				return interval;
+			}
+
+			virtual void set(int interval) override
+			{			
+				this->interval = interval;
+
+				if(IsRunning) {
+
+					stop();
+					start();
+				}
+			}
+		}
+
+		property bool IsRunning
+		{
+			bool get() {
+
+				return running;
+			}
+		}
+
 
 /*
 		virtual void Dispose() override

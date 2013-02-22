@@ -254,7 +254,7 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4798.24815, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4801.29559, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -433,6 +433,10 @@
 			</File>
 			<File
 				RelativePath=".\UploadOutputForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoDebug.cpp"
 				>
 			</File>
 			<File
@@ -755,6 +759,16 @@
 				>
 				<File
 					RelativePath=".\UploadOutputForm.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\VideoDebug.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\VideoDebug.resx"
 					SubType="Designer"
 					>
 				</File>

@@ -23,6 +23,12 @@ public:
 		initialize();
 	}
 
+	static D3D::Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
+	{
+		int value = (int)(char)(ch0)|((int)(char)(ch1) << 8)| ((int)(char)(ch2) << 16) | ((int)(char)(ch3) << 24);
+		return((D3D::Format) value);
+	}
+
 	property D3D::Device ^Device
 	{
 
@@ -47,17 +53,17 @@ public:
 			//No Z (Depth) buffer or Stencil buffer
 			presentParams->EnableAutoDepthStencil = false;
 
-			//1 Back buffer for double-buffering
-			presentParams->BackBufferCount = 1;
+			//multiple backbuffers for a flipchain
+			presentParams->BackBufferCount = 3;
 
 			//Set our Window as the Device Window
 			presentParams->DeviceWindow = window;
 
-			//Do not wait for VSync
-			presentParams->PresentationInterval = D3D::PresentInterval::Immediate;
+			//wait for VSync
+			presentParams->PresentationInterval = D3D::PresentInterval::One;
 
-			//Discard old frames for better performance
-			presentParams->SwapEffect = D3D::SwapEffect::Flip;
+			//flip frames on vsync
+			presentParams->SwapEffect = D3D::SwapEffect::Discard;
 
 			//Set Windowed vs. Full-screen
 			presentParams->Windowed = !fullScreen;
@@ -104,7 +110,7 @@ public:
 
 		device->BeginScene();				
 	
-		D3D::Surface ^backBuffer = device->GetBackBuffer(0,0, D3D::BackBufferType::Mono);
+		D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
 
 		Rectangle videoRect = Rectangle(0, 0, videoFrame->Image->Description.Width, videoFrame->Image->Description.Height);
 

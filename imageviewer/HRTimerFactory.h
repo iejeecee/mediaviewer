@@ -1,6 +1,7 @@
 #pragma once
 #include "DefaultTimer.h"
 #include "MultiMediaTimer.h"
+#include "TimerQueueTimer.h"
 
 namespace imageviewer
 {
@@ -35,7 +36,7 @@ namespace imageviewer
 				}
 			case TimerType::TIMER_QUEUE:
 				{
-
+					timer = gcnew TimerQueueTimer();
 					break;
 				}
 

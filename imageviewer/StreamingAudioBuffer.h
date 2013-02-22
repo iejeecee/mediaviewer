@@ -46,6 +46,7 @@ public:
 				Util::DebugOut("StackTrace:" + exception->StackTrace);
 			}
 
+			audioBuffer = nullptr;
 	}
 
 	void initialize(int samplesPerSecond, int bytesPerSample, int nrChannels, 
@@ -113,6 +114,13 @@ public:
 		return(time);
 	}
 
+	void stop() {
+
+		if(audioBuffer != nullptr) {
+			audioBuffer->Stop();
+		}
+	}
+
 	void write(Stream ^data, int dataSizeBytes) {
 
 		int playPos, writePos;
@@ -120,7 +128,7 @@ public:
 
 		audioBuffer->Write(offsetBytes, data, dataSizeBytes, DS::LockFlag::None);
 
-		if(playPos <= offsetBytes && offsetBytes <= writePos) { 
+		if(playPos <= offsetBytes && offsetBytes < writePos) { 
 
 			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + dataSizeBytes.ToString());
 		}		

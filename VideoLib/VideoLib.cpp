@@ -190,12 +190,25 @@ double VideoPlayer::synchronizeVideo(int repeatFrame, __int64 dts) {
 	return(pts);
 }
 
-double VideoPlayer::synchronizeAudio(int sizeBytes) {
+double VideoPlayer::synchronizeAudio(int sizeBytes, __int64 dts) {
 
-	double pts = audioClock;
-	// calculate next pts in seconds
-	audioClock += sizeBytes / double(SamplesPerSecond * BytesPerSample * NrChannels);
+	double pts;
+/*
+	if(dts != AV_NOPTS_VALUE) {
 
+		// convert pts to seconds
+		pts = dts * av_q2d(videoPlayer->getAudioStream()->time_base);
+		// set clock to current pts;
+		audioClock = pts;
+
+	} else {
+*/
+		// if we aren't given a pts, set it to the clock 
+		pts = audioClock;
+		// calculate next pts in seconds
+		audioClock += sizeBytes / double(SamplesPerSecond * BytesPerSample * NrChannels);
+//	}
+	
 	return(pts);
 }
 
@@ -240,7 +253,7 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 		audioFrame->copyFrameData(data, length);
 
 		// calculate presentation timestamp (pts)
-		audioFrame->Pts = synchronizeAudio(length);
+		audioFrame->Pts = synchronizeAudio(length, packet->dts);
 
 		// add frame to the decoded frames queue
 		frameQueue->enqueueDecodedAudioFrame(audioFrame);

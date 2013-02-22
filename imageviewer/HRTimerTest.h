@@ -66,7 +66,7 @@ namespace imageviewer
 
 			//testTimer(timer);
 
-			timer = HRTimerFactory::create(HRTimerFactory::TimerType::MULTI_MEDIA);
+			timer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 
 			testTimer(timer);
 	
