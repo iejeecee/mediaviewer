@@ -143,6 +143,10 @@ public:
 	
 			return("video/avi");
 
+		} else if(ext->Equals(".mpg") || ext->Equals(".mpeg")) {
+	
+			return("video/mpeg");
+
 		} else if(ext->Equals(".m4v")) {
 
 			return("video/x-m4v");
@@ -200,7 +204,15 @@ public:
 		
 			return("avi");
 
-		} else if(mimeType->Equals("video/mp4")) {
+		} else if(mimeType->Equals("video/mpg") || 
+			mimeType->Equals("video/mpeg") ||
+			mimeType->Equals("video/x-mpg") ||
+			mimeType->Equals("video/mpeg2")) 
+		{
+		
+			return("mpg");
+
+		}else if(mimeType->Equals("video/mp4")) {
 
 			return("mp4");
 		

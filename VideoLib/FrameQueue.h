@@ -25,12 +25,10 @@ namespace VideoLib {
 
 		bool isStopped;
 
-		void initializeAudioQueue(int samplesPerSecond, int bytesPerSample, int maxAudioFrameBufferSize) {
+		void initializeAudioQueue(int maxAudioFrameBufferSize) {
 
-			int lineSize = 4608;
-
-			int oneSecondAudioBytes = samplesPerSecond * bytesPerSample;
-			int nrFrames = 500;//oneSecondAudioBytes / lineSize;
+		
+			int nrFrames = 300;
 
 			audioFrameData = gcnew array<AudioFrame ^>(nrFrames);
 
@@ -46,9 +44,9 @@ namespace VideoLib {
 
 		}
 
-		void initializeVideoQueue(Device ^device, int width, int height, Format pixelFormat) {
+		void initializeVideoQueue(int width, int height, Device ^device) {
 
-			int nrFrames = 30;
+			int nrFrames = 100;
 
 			videoFrameData = gcnew array<VideoFrame ^>(nrFrames);
 
@@ -57,7 +55,7 @@ namespace VideoLib {
 
 			for(int i = 0; i < nrFrames; i++) {
 
-				videoFrameData[i] = gcnew VideoFrame(device, width, height, pixelFormat);
+				videoFrameData[i] = gcnew VideoFrame(width, height, device);
 
 				freeVideoFrames->add(videoFrameData[i]);
 			}
@@ -112,6 +110,14 @@ namespace VideoLib {
 			}
 		}
 
+		property int VideoQueueSizeBytes {
+
+			int get() {
+
+				return(videoFrameData->Length * videoFrameData[0]->SizeBytes);
+			}
+		}
+
 		property int AudioQueueSize {
 
 			int get() {
@@ -119,14 +125,22 @@ namespace VideoLib {
 				return(decodedAudioFrames->QueueSize);
 			}
 		}
+
+		property int AudioQueueSizeBytes {
+
+			int get() {
+
+				return(audioFrameData->Length * audioFrameData[0]->Data->Length);
+			}
+		}
 	
-		void initialize(Device ^device, int width, int height, Format pixelFormat,
-			int samplesPerSecond, int bytesPerSample, int maxAudioBufferSize) {
+		void initialize(Device ^device, int width, int height, 
+			int maxAudioBufferSize) {
 
 			dispose();
 
-			initializeVideoQueue(device, width, height, pixelFormat);
-			initializeAudioQueue(samplesPerSecond, bytesPerSample, maxAudioBufferSize);
+			initializeVideoQueue(width, height, device);
+			initializeAudioQueue(maxAudioBufferSize);
 		}
 
 		void start() {

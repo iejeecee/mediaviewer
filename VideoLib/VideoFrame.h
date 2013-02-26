@@ -5,14 +5,34 @@
 using namespace System;
 using namespace Microsoft::DirectX::Direct3D;
 using namespace Microsoft::DirectX;
+using namespace System::Diagnostics;
 
 namespace VideoLib {
 
 	public ref class VideoFrame : public Frame
 	{
+	public:
+
+		enum class VideoFrameType {
+			D3D_SURFACE,
+			MEMORY
+		};
+
 	private:
 
 		Surface ^frame;
+
+		BYTE *frameData;
+		int width;
+		int height;
+
+		VideoFrameType videoFrameType;
+
+		static Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
+		{
+			int value = (int)(char)(ch0)|((int)(char)(ch1) << 8)| ((int)(char)(ch2) << 16) | ((int)(char)(ch3) << 24);
+			return((Format) value);
+		}
 
 	public:
 
@@ -27,14 +47,62 @@ namespace VideoLib {
 			}
 		}
 
-		VideoFrame(Device ^device, int width, int height, Format pixelFormat) :
+		property int SizeBytes {
+
+			int get() {
+
+				int ySizeBytes = width * height;
+				int vSizeBytes = (width * height) / 4;
+				int uSizeBytes = (width * height) / 4;
+
+				return(ySizeBytes + vSizeBytes + uSizeBytes);
+			}
+		}
+
+		property int Width {
+
+			int get() {
+
+				return(width);
+			}
+		}
+
+		property int Height {
+
+			int get() {
+
+				return(height);
+			}
+		}
+
+		VideoFrame(int width, int height, Device ^device) :
 			Frame(FrameType::VIDEO)
 		{
+			this->width = width;
+			this->height = height;
 
-			frame = device->CreateOffscreenPlainSurface(width, height, pixelFormat, 
-				Pool::Default);
+			if(device != nullptr) {
+				Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
 
-			
+				frame = device->CreateOffscreenPlainSurface(width, height, pixelFormat, 
+					Pool::Default);
+
+				videoFrameType = VideoFrameType::D3D_SURFACE;
+
+
+				frameData = NULL;
+
+			} else {
+
+
+				frame = nullptr;
+
+				videoFrameType = VideoFrameType::MEMORY;
+
+				frameData = new BYTE[SizeBytes];
+
+			}
+
 		}
 
 		~VideoFrame() {
@@ -43,28 +111,35 @@ namespace VideoLib {
 
 				delete frame;
 			}
+
+			if(frameData != NULL) {
+
+				delete frameData;
+			}
 		}
 
 		void copyFrameData(BYTE* Y, BYTE* V, BYTE* U)
 		{
 
-			int width = frame->Description.Width;
-			int height = frame->Description.Height;
-
-			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
-
-
-			// copy raw frame data to bitmap
+			BYTE* pict;
 			int pitch;
-			GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
+	
+			if(videoFrameType == VideoFrameType::D3D_SURFACE) {
 
-			BYTE* pict = (BYTE*)stream->InternalDataPointer;
+				Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
 
-			/*
-			switch(pixelFormat)
-			{
-			case D3DFMT_YV12:
-			*/
+				// copy raw frame data to bitmap
+				
+				GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
+
+				pict = (BYTE*)stream->InternalDataPointer;
+
+			} else {
+
+				pitch = width;
+				pict = frameData;
+			}
+			
 			if(width == pitch) {
 
 				int ySizeBytes = width * height;
@@ -96,39 +171,59 @@ namespace VideoLib {
 					U += width / 2;
 				}
 			}
-			/*		
-			break;
-
-			case D3DFMT_NV12:
-
-			for (int y = 0 ; y < newHeight ; y++)
-			{
-			memcpy(pict, Y, width);
-			pict += pitch;
-			Y += width;
+			
+			if(videoFrameType == VideoFrameType::D3D_SURFACE) {
+				frame->UnlockRectangle();
 			}
-			for (int y = 0 ; y < newHeight / 2 ; y++)
-			{
-			memcpy(pict, V, width);
-			pict += pitch;
-			V += width;
-			}
-			break;
-
-			case D3DFMT_YUY2:
-			case D3DFMT_UYVY:
-			case D3DFMT_R5G6B5:
-			case D3DFMT_X1R5G5B5:
-			case D3DFMT_A8R8G8B8:
-			case D3DFMT_X8R8G8B8:
-
-			memcpy(pict, Y, pitch * newHeight);
-
-			break;
-			}
-			*/
-			frame->UnlockRectangle();
 
 		}
+
+		void copyFrameDataToSurface(Surface ^frame) {
+
+			Debug::Assert(videoFrameType == VideoFrameType::MEMORY);
+			Debug::Assert(frame != nullptr && frame->Description.Width == width &&
+				frame->Description.Height == height);
+
+			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
+
+			// copy raw frame data to bitmap
+			int pitch;
+			GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
+
+			Byte *pict = (BYTE*)stream->InternalDataPointer;
+
+			if(width == pitch) {
+
+				memcpy(pict, frameData, SizeBytes);
+
+			} else {
+
+				BYTE *pos = frameData;
+
+				for (int y = 0 ; y < height ; y++)
+				{
+					memcpy(pict, pos, width);
+					pict += pitch;
+					pos += width;
+				}
+				for (int y = 0 ; y < height / 2 ; y++)
+				{
+					memcpy(pict, pos, width / 2);
+					pict += pitch / 2;
+					pos += width / 2;
+				}
+				for (int y = 0 ; y < height / 2; y++)
+				{
+					memcpy(pict, pos, width / 2);
+					pict += pitch / 2;
+					pos += width / 2;
+				}
+
+			}
+
+			frame->UnlockRectangle();
+		}
+
+		
 	};
 }

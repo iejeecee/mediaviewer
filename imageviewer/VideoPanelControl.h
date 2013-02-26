@@ -1,11 +1,12 @@
 #pragma once
 // Directx9 tutorial: http://www.drunkenhyena.com/cgi-bin/dx9_net.pl
-// Implementing video in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
+// Implementing videoRender in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
 #include "ImageUtils.h"
 #include "Util.h"
 #include "HRTimerFactory.h"
 #include "StreamingAudioBuffer.h"
 #include "VideoRender.h"
+#include "VideoDebugForm.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -35,15 +36,17 @@ namespace imageviewer {
 			//
 			//TODO: Add the constructor code here
 			//
-			//video = nullptr;
+			//videoRender = nullptr;
 			//mediaPlayer->Dock = DockStyle::Fill;
 			//mediaPlayer->stretchToFit = true;
 
-			video = gcnew VideoRender(this, VideoPanel);
-			audio = gcnew StreamingAudioBuffer(this);
+			videoRender = gcnew VideoRender(VideoPanel);
+			audioPlayer = gcnew StreamingAudioBuffer(this);
 
-			videoPlayer = gcnew VideoPlayer(video->Device, 
-				VideoRender::makeFourCC('Y', 'V', '1', '2'));	
+			volumeTrackBar->Value = Util::lerp<int>(audioPlayer->Volume, volumeTrackBar->Minimum, volumeTrackBar->Maximum);
+
+			//videoRender->initialize(0,0);
+			videoDecoder = gcnew VideoPlayer(nullptr);	
 			
 			videoRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 			videoRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
@@ -54,6 +57,9 @@ namespace imageviewer {
 			audioRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::audioRefreshTimer_Tick);
 			audioRefreshTimer->AutoReset = false;
 			audioRefreshTimer->SynchronizingObject = nullptr;
+
+			videoDebug = gcnew VideoDebugForm();
+			
 		}
 
 	protected:
@@ -75,20 +81,30 @@ namespace imageviewer {
 	private: System::Windows::Forms::TrackBar^  timeTrackBar;
 	private: System::Windows::Forms::Button^  stopButton;
 	private: System::Windows::Forms::Button^  playButton;
-	private: System::Windows::Forms::Label^  audioQueueLabel;
+	private: System::Windows::Forms::CheckBox^  debugVideoCheckBox;
+	private: System::Windows::Forms::TrackBar^  volumeTrackBar;
+	private: System::Windows::Forms::CheckBox^  muteCheckBox;
+	private: System::Windows::Forms::ToolTip^  toolTip1;
+	private: System::Windows::Forms::ImageList^  imageList;
+	private: System::Windows::Forms::Label^  videoTimeLabel;
 
-	private: System::Windows::Forms::Label^  videoQueueLabel;
 
-	private: System::Windows::Forms::Label^  label2;
-	private: System::Windows::Forms::Label^  label1;
-	private: System::Windows::Forms::Label^  audioSyncLabel;
-	private: System::Windows::Forms::Label^  videoSyncLabel;
-	private: System::Windows::Forms::Label^  label4;
-	private: System::Windows::Forms::Label^  label3;
-	private: System::Windows::Forms::Label^  label5;
-	private: System::Windows::Forms::Label^  label6;
-	private: System::Windows::Forms::Label^  audioDelayLabel;
-	private: System::Windows::Forms::Label^  videoDelayLabel;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -116,25 +132,22 @@ namespace imageviewer {
 		/// </summary>
 		void InitializeComponent(void)
 		{
+			this->components = (gcnew System::ComponentModel::Container());
+			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(VideoPanelControl::typeid));
 			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
-			this->audioSyncLabel = (gcnew System::Windows::Forms::Label());
-			this->videoSyncLabel = (gcnew System::Windows::Forms::Label());
-			this->label4 = (gcnew System::Windows::Forms::Label());
-			this->label3 = (gcnew System::Windows::Forms::Label());
-			this->audioQueueLabel = (gcnew System::Windows::Forms::Label());
-			this->videoQueueLabel = (gcnew System::Windows::Forms::Label());
-			this->label2 = (gcnew System::Windows::Forms::Label());
-			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->videoTimeLabel = (gcnew System::Windows::Forms::Label());
+			this->muteCheckBox = (gcnew System::Windows::Forms::CheckBox());
+			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
+			this->volumeTrackBar = (gcnew System::Windows::Forms::TrackBar());
+			this->debugVideoCheckBox = (gcnew System::Windows::Forms::CheckBox());
 			this->stopButton = (gcnew System::Windows::Forms::Button());
 			this->playButton = (gcnew System::Windows::Forms::Button());
 			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->audioDelayLabel = (gcnew System::Windows::Forms::Label());
-			this->videoDelayLabel = (gcnew System::Windows::Forms::Label());
+			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->BeginInit();
 			this->SuspendLayout();
 			// 
@@ -156,18 +169,10 @@ namespace imageviewer {
 			// 
 			// splitContainer.Panel2
 			// 
-			this->splitContainer->Panel2->Controls->Add(this->audioDelayLabel);
-			this->splitContainer->Panel2->Controls->Add(this->videoDelayLabel);
-			this->splitContainer->Panel2->Controls->Add(this->label5);
-			this->splitContainer->Panel2->Controls->Add(this->label6);
-			this->splitContainer->Panel2->Controls->Add(this->audioSyncLabel);
-			this->splitContainer->Panel2->Controls->Add(this->videoSyncLabel);
-			this->splitContainer->Panel2->Controls->Add(this->label4);
-			this->splitContainer->Panel2->Controls->Add(this->label3);
-			this->splitContainer->Panel2->Controls->Add(this->audioQueueLabel);
-			this->splitContainer->Panel2->Controls->Add(this->videoQueueLabel);
-			this->splitContainer->Panel2->Controls->Add(this->label2);
-			this->splitContainer->Panel2->Controls->Add(this->label1);
+			this->splitContainer->Panel2->Controls->Add(this->videoTimeLabel);
+			this->splitContainer->Panel2->Controls->Add(this->muteCheckBox);
+			this->splitContainer->Panel2->Controls->Add(this->volumeTrackBar);
+			this->splitContainer->Panel2->Controls->Add(this->debugVideoCheckBox);
 			this->splitContainer->Panel2->Controls->Add(this->stopButton);
 			this->splitContainer->Panel2->Controls->Add(this->playButton);
 			this->splitContainer->Panel2->Controls->Add(this->timeTrackBar);
@@ -175,81 +180,69 @@ namespace imageviewer {
 			this->splitContainer->SplitterDistance = 388;
 			this->splitContainer->TabIndex = 0;
 			// 
-			// audioSyncLabel
+			// videoTimeLabel
 			// 
-			this->audioSyncLabel->AutoSize = true;
-			this->audioSyncLabel->Location = System::Drawing::Point(450, 65);
-			this->audioSyncLabel->Name = L"audioSyncLabel";
-			this->audioSyncLabel->Size = System::Drawing::Size(18, 20);
-			this->audioSyncLabel->TabIndex = 10;
-			this->audioSyncLabel->Text = L"0";
+			this->videoTimeLabel->Dock = System::Windows::Forms::DockStyle::Right;
+			this->videoTimeLabel->Location = System::Drawing::Point(515, 37);
+			this->videoTimeLabel->MaximumSize = System::Drawing::Size(137, 36);
+			this->videoTimeLabel->Name = L"videoTimeLabel";
+			this->videoTimeLabel->Size = System::Drawing::Size(137, 36);
+			this->videoTimeLabel->TabIndex = 7;
+			this->videoTimeLabel->Text = L"00:00:00/00:00:00";
+			this->videoTimeLabel->TextAlign = System::Drawing::ContentAlignment::MiddleRight;
 			// 
-			// videoSyncLabel
+			// muteCheckBox
 			// 
-			this->videoSyncLabel->AutoSize = true;
-			this->videoSyncLabel->Location = System::Drawing::Point(450, 45);
-			this->videoSyncLabel->Name = L"videoSyncLabel";
-			this->videoSyncLabel->Size = System::Drawing::Size(18, 20);
-			this->videoSyncLabel->TabIndex = 9;
-			this->videoSyncLabel->Text = L"0";
+			this->muteCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
+			this->muteCheckBox->Dock = System::Windows::Forms::DockStyle::Right;
+			this->muteCheckBox->ImageIndex = 0;
+			this->muteCheckBox->ImageList = this->imageList;
+			this->muteCheckBox->Location = System::Drawing::Point(652, 37);
+			this->muteCheckBox->MaximumSize = System::Drawing::Size(40, 36);
+			this->muteCheckBox->Name = L"muteCheckBox";
+			this->muteCheckBox->Size = System::Drawing::Size(40, 36);
+			this->muteCheckBox->TabIndex = 6;
+			this->muteCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->toolTip1->SetToolTip(this->muteCheckBox, L"Mute");
+			this->muteCheckBox->UseVisualStyleBackColor = true;
+			this->muteCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::muteCheckBox_CheckedChanged);
 			// 
-			// label4
+			// imageList
 			// 
-			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(361, 65);
-			this->label4->Name = L"label4";
-			this->label4->Size = System::Drawing::Size(93, 20);
-			this->label4->TabIndex = 8;
-			this->label4->Text = L"Audio Sync:";
+			this->imageList->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^  >(resources->GetObject(L"imageList.ImageStream")));
+			this->imageList->TransparentColor = System::Drawing::Color::Transparent;
+			this->imageList->Images->SetKeyName(0, L"1361908321_1777.ico");
+			this->imageList->Images->SetKeyName(1, L"1361908340_1776.ico");
 			// 
-			// label3
+			// volumeTrackBar
 			// 
-			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(361, 45);
-			this->label3->Name = L"label3";
-			this->label3->Size = System::Drawing::Size(93, 20);
-			this->label3->TabIndex = 7;
-			this->label3->Text = L"Video Sync:";
+			this->volumeTrackBar->AutoSize = false;
+			this->volumeTrackBar->Dock = System::Windows::Forms::DockStyle::Right;
+			this->volumeTrackBar->Location = System::Drawing::Point(692, 37);
+			this->volumeTrackBar->Maximum = 100;
+			this->volumeTrackBar->MaximumSize = System::Drawing::Size(104, 36);
+			this->volumeTrackBar->Name = L"volumeTrackBar";
+			this->volumeTrackBar->Size = System::Drawing::Size(104, 36);
+			this->volumeTrackBar->TabIndex = 5;
+			this->volumeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
+			this->toolTip1->SetToolTip(this->volumeTrackBar, L"Volume");
+			this->volumeTrackBar->ValueChanged += gcnew System::EventHandler(this, &VideoPanelControl::volumeTrackBar_ValueChanged);
 			// 
-			// audioQueueLabel
+			// debugVideoCheckBox
 			// 
-			this->audioQueueLabel->AutoSize = true;
-			this->audioQueueLabel->Location = System::Drawing::Point(277, 65);
-			this->audioQueueLabel->Name = L"audioQueueLabel";
-			this->audioQueueLabel->Size = System::Drawing::Size(31, 20);
-			this->audioQueueLabel->TabIndex = 6;
-			this->audioQueueLabel->Text = L"0/0";
-			// 
-			// videoQueueLabel
-			// 
-			this->videoQueueLabel->AutoSize = true;
-			this->videoQueueLabel->Location = System::Drawing::Point(277, 45);
-			this->videoQueueLabel->Name = L"videoQueueLabel";
-			this->videoQueueLabel->Size = System::Drawing::Size(31, 20);
-			this->videoQueueLabel->TabIndex = 5;
-			this->videoQueueLabel->Text = L"0/0";
-			// 
-			// label2
-			// 
-			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(174, 65);
-			this->label2->Name = L"label2";
-			this->label2->Size = System::Drawing::Size(106, 20);
-			this->label2->TabIndex = 4;
-			this->label2->Text = L"Audio Queue:";
-			// 
-			// label1
-			// 
-			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(174, 45);
-			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(106, 20);
-			this->label1->TabIndex = 3;
-			this->label1->Text = L"Video Queue:";
+			this->debugVideoCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
+			this->debugVideoCheckBox->Location = System::Drawing::Point(128, 37);
+			this->debugVideoCheckBox->Name = L"debugVideoCheckBox";
+			this->debugVideoCheckBox->Size = System::Drawing::Size(66, 36);
+			this->debugVideoCheckBox->TabIndex = 4;
+			this->debugVideoCheckBox->Text = L"Debug";
+			this->debugVideoCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->debugVideoCheckBox->UseVisualStyleBackColor = true;
+			this->debugVideoCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::debugVideoCheckBox_CheckedChanged);
 			// 
 			// stopButton
 			// 
-			this->stopButton->Location = System::Drawing::Point(60, 49);
+			this->stopButton->Location = System::Drawing::Point(60, 37);
 			this->stopButton->Name = L"stopButton";
 			this->stopButton->Size = System::Drawing::Size(51, 36);
 			this->stopButton->TabIndex = 2;
@@ -259,7 +252,7 @@ namespace imageviewer {
 			// 
 			// playButton
 			// 
-			this->playButton->Location = System::Drawing::Point(3, 49);
+			this->playButton->Location = System::Drawing::Point(3, 37);
 			this->playButton->Name = L"playButton";
 			this->playButton->Size = System::Drawing::Size(51, 36);
 			this->playButton->TabIndex = 1;
@@ -272,45 +265,11 @@ namespace imageviewer {
 			this->timeTrackBar->AutoSize = false;
 			this->timeTrackBar->Dock = System::Windows::Forms::DockStyle::Top;
 			this->timeTrackBar->Location = System::Drawing::Point(0, 0);
+			this->timeTrackBar->Maximum = 1000;
 			this->timeTrackBar->Name = L"timeTrackBar";
-			this->timeTrackBar->Size = System::Drawing::Size(796, 43);
+			this->timeTrackBar->Size = System::Drawing::Size(796, 37);
 			this->timeTrackBar->TabIndex = 0;
-			// 
-			// label5
-			// 
-			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(578, 65);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(98, 20);
-			this->label5->TabIndex = 12;
-			this->label5->Text = L"Audio Delay:";
-			// 
-			// label6
-			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(578, 45);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(98, 20);
-			this->label6->TabIndex = 11;
-			this->label6->Text = L"Video Delay:";
-			// 
-			// audioDelayLabel
-			// 
-			this->audioDelayLabel->AutoSize = true;
-			this->audioDelayLabel->Location = System::Drawing::Point(673, 65);
-			this->audioDelayLabel->Name = L"audioDelayLabel";
-			this->audioDelayLabel->Size = System::Drawing::Size(18, 20);
-			this->audioDelayLabel->TabIndex = 14;
-			this->audioDelayLabel->Text = L"0";
-			// 
-			// videoDelayLabel
-			// 
-			this->videoDelayLabel->AutoSize = true;
-			this->videoDelayLabel->Location = System::Drawing::Point(673, 45);
-			this->videoDelayLabel->Name = L"videoDelayLabel";
-			this->videoDelayLabel->Size = System::Drawing::Size(18, 20);
-			this->videoDelayLabel->TabIndex = 13;
-			this->videoDelayLabel->Text = L"0";
+			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
 			// 
 			// VideoPanelControl
 			// 
@@ -321,8 +280,8 @@ namespace imageviewer {
 			this->Name = L"VideoPanelControl";
 			this->Size = System::Drawing::Size(800, 484);
 			this->splitContainer->Panel2->ResumeLayout(false);
-			this->splitContainer->Panel2->PerformLayout();
 			this->splitContainer->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->EndInit();
 			this->ResumeLayout(false);
 
@@ -330,9 +289,11 @@ namespace imageviewer {
 #pragma endregion
 	private:
 
-		VideoPlayer ^videoPlayer;
-		VideoRender ^video;
-		StreamingAudioBuffer ^audio;
+		VideoPlayer ^videoDecoder;
+		VideoRender ^videoRender;
+		StreamingAudioBuffer ^audioPlayer;
+
+		VideoDebugForm ^videoDebug;
 
 		// no AV sync correction is done if below the AV sync threshold 
 		static const double AV_SYNC_THRESHOLD = 0.01;
@@ -361,33 +322,26 @@ namespace imageviewer {
 			}
 		}
 
-		void invokeUpdateUI(double audioDelay, double actualAudioDelay, int audioSize) {
+		void invokeUpdateUI() {
 
-			videoQueueLabel->Text = videoPlayer->frameQueue->VideoQueueSize.ToString() + "/" + 
-				videoPlayer->frameQueue->MaxVideoQueueSize.ToString();
+			int curTime = (int)Math::Floor(audioPlayer->getAudioClock());
+			int totalTime = videoDecoder->DurationSeconds;
 
-			audioQueueLabel->Text = videoPlayer->frameQueue->AudioQueueSize.ToString() + "/" + 
-				videoPlayer->frameQueue->MaxAudioQueueSize.ToString();
+			videoTimeLabel->Text = Util::formatTimeSeconds(curTime) + "/" + Util::formatTimeSeconds(totalTime);
 
-			videoSyncLabel->Text = frameTimer.ToString("F4");
-			audioSyncLabel->Text = audio->getAudioClock().ToString("F4");
-
-			audioDelayLabel->Text = audioDelay.ToString("F4") + " " +
-				actualAudioDelay.ToString("F4") + " " +  audioSize.ToString();
-
+			double pos = Util::invlerp<int>(curTime,0,totalTime);
+			timeTrackBar->Value = Util::lerp<int>(pos, timeTrackBar->Minimum, timeTrackBar->Maximum);
 		}
 
-		void updateUI(double audioDelay, double actualAudioDelay, int audioSize) {
+		void updateUI() {
 
 			if(this->InvokeRequired) {
 
-				array<Object ^> ^args = gcnew array<Object ^>{audioDelay, actualAudioDelay, audioSize};
-
-				this->Invoke(gcnew UpdateUIDelegate(this, &VideoPanelControl::invokeUpdateUI), args);
+				this->Invoke(gcnew Action(this, &VideoPanelControl::invokeUpdateUI));
 
 			} else {
 		
-				invokeUpdateUI(audioDelay, actualAudioDelay, audioSize);
+				invokeUpdateUI();
 			}
 		}
 
@@ -396,30 +350,29 @@ namespace imageviewer {
 
 restartvideo:
 
-			int videoWidth = videoPlayer->Width;
-			int videoHeight = videoPlayer->Height;
-			int panelWidth = VideoPanel->Width;
-			// weird bug??
-			int panelHeight = VideoPanel->Height + splitContainer->Panel2->Height + splitContainer->SplitterRectangle.Height;
+			int videoWidth = videoDecoder->Width;
+			int videoHeight = videoDecoder->Height;
+			Rectangle videoCanvasRec = videoRender->Canvas;
+			
 			int scaledWidth, scaledHeight;
 
 			ImageUtils::stretchRectangle(videoWidth, videoHeight,
-				panelWidth, panelHeight, scaledWidth, scaledHeight);
+				videoCanvasRec.Width, videoCanvasRec.Height, scaledWidth, scaledHeight);
 
-			Rectangle panelRec(0,0, panelWidth, panelHeight);
 			Rectangle scaledVideoRec(0,0, scaledWidth, scaledHeight);
-
-			Rectangle canvas = ImageUtils::centerRectangle(panelRec,
+			
+			Rectangle canvas = ImageUtils::centerRectangle(videoCanvasRec,
 				scaledVideoRec);
 
 			VideoFrame ^videoFrame = nullptr;
 			
-			bool success = videoPlayer->frameQueue->getDecodedVideoFrame(videoFrame);
+			bool success = videoDecoder->frameQueue->getDecodedVideoFrame(videoFrame);
 			if(success == false) return;
 
 			if(skipVideoFrame == false) {
 
-				video->display(videoFrame, canvas, Color::Black);
+				videoRender->display(videoFrame, canvas, Color::Black);
+				videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
 			} 
 
 			// calculate delay to display next frame
@@ -433,8 +386,8 @@ restartvideo:
 			previousVideoPts = videoFrame->Pts;
 			previousVideoDelay = delay;
 
-			// update delay to sync to audio 
-			double refClock = audio->getAudioClock();
+			// update delay to sync to audioPlayer 
+			double refClock = audioPlayer->getAudioClock();
 			double diff = videoFrame->Pts - refClock;
 
 			// Skip or repeat the frame. Take delay into account
@@ -452,20 +405,25 @@ restartvideo:
 			frameTimer += delay;
 			double actualDelay = frameTimer - getTimeNow();
 
-			Util::DebugOut("Video D:" + delay.ToString() + " A: " + actualDelay.ToString());		
+			videoDebug->VideoDelay = delay;
+			videoDebug->ActualVideoDelay = actualDelay;
+			videoDebug->AudioSync = refClock;
+			videoDebug->update();
+
+			updateUI();
 
 			if(actualDelay < 0.010) {
 
 				//Util::DebugOut("Video Delay too small: " + actualDelay.ToString());					
 				skipVideoFrame = true;
-
+				videoDebug->VideoDropped = videoDebug->VideoDropped + 1;
 			} else {
 
 				skipVideoFrame = false;
 			}
 
 			// queue current frame in freeFrames to be used again
-			videoPlayer->frameQueue->enqueueFreeVideoFrame(videoFrame);	
+			videoDecoder->frameQueue->enqueueFreeVideoFrame(videoFrame);	
 
 			if(skipVideoFrame == true) {
 			
@@ -483,10 +441,11 @@ restartvideo:
 restartaudio:
 			AudioFrame ^audioFrame = nullptr;
 
-			bool success = videoPlayer->frameQueue->getDecodedAudioFrame(audioFrame);
+			bool success = videoDecoder->frameQueue->getDecodedAudioFrame(audioFrame);
 			if(success == false) return;
 
-			audio->write(audioFrame->Stream, audioFrame->Length);
+			audioPlayer->write(audioFrame->Stream, audioFrame->Length);
+			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			
 			// calculate delay to display next frame
 			double delay = audioFrame->Pts - previousAudioPts;	
@@ -503,16 +462,17 @@ restartaudio:
 			audioFrameTimer += delay;
 			double actualDelay = audioFrameTimer - getTimeNow();
 
-			Util::DebugOut("Audio D:" + delay.ToString() + " A: " + actualDelay.ToString());	
-
-			updateUI(delay, actualDelay, audioFrame->Length);	
+			videoDebug->AudioDelay = delay;
+			videoDebug->ActualAudioDelay = actualDelay;
+			videoDebug->AudioFrameSize = audioFrame->Length;
 
 			// queue current frame in freeFrames to be used again
-			videoPlayer->frameQueue->enqueueFreeAudioFrame(audioFrame);
+			videoDecoder->frameQueue->enqueueFreeAudioFrame(audioFrame);
 
-			if(actualDelay < 0.010) {
+			if(actualDelay <= 0) {// 0.010) {
 
-				// delay too small, play next frame as quickly as possible				
+				// delay too small, play next frame as quickly as possible
+				videoDebug->AudioDropped = videoDebug->AudioDropped + 1;
 				goto restartaudio;
 
 			} 
@@ -529,9 +489,6 @@ restartaudio:
 			return(timeNow);
 		}
 
-	
-
-
 	public:
 
 		property bool IsPlaying {
@@ -544,24 +501,29 @@ restartaudio:
 
 		void open(String ^location) {
 
-			// stop any previously started video from playing	
-			//if(IsPlaying) {
-
-				stop();
-				close();
-			//}
+			stop();
+			close();
+			videoDebug->clear();			
 			
-			videoPlayer->open(location);
+			videoDecoder->open(location);
+			videoRender->initialize(videoDecoder->Width, videoDecoder->Height);
 			
-			audio->initialize(videoPlayer->SamplesPerSecond, videoPlayer->BytesPerSample,
-				videoPlayer->NrChannels, videoPlayer->MaxAudioFrameSize * 2);			
+			audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
+				videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
   
+			videoDebug->VideoQueueSize = videoDecoder->frameQueue->MaxVideoQueueSize;
+			videoDebug->VideoQueueSizeBytes = videoDecoder->frameQueue->VideoQueueSizeBytes;	
+			videoDebug->AudioQueueSize = videoDecoder->frameQueue->MaxAudioQueueSize;
+			videoDebug->AudioQueueSizeBytes = videoDecoder->frameQueue->AudioQueueSizeBytes;
 		}
 
 		void stop() {
 
-			audio->stop();
-			videoPlayer->frameQueue->stop();
+			audioPlayer->stop();
+			videoRefreshTimer->stop();
+			audioRefreshTimer->stop();
+
+			videoDecoder->frameQueue->stop();
 
 			videoDecoderBW->CancelAsync();
 			while(IsPlaying) {
@@ -569,14 +531,12 @@ restartaudio:
 				Application::DoEvents();
 			}
 
-			videoRefreshTimer->stop();
-			audioRefreshTimer->stop();
-		
+
 		}
 
 		void play() {
 
-			videoPlayer->frameQueue->start();
+			videoDecoder->frameQueue->start();
 
 			videoDecoderBW->RunWorkerAsync();
 
@@ -594,34 +554,33 @@ restartaudio:
 
 		void close() {
 
-			videoPlayer->close();
+			videoDecoder->close();
 		}
 
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
-				//frameTimer = videoPlayer->TimeNow;
+				//frameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = frameTimer = getTimeNow();
 
-				while(videoPlayer->decodeFrame(VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO) && 
+				while(videoDecoder->decodeFrame(VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO) && 
 					!videoDecoderBW->CancellationPending) 
 				{
 
+					videoDebug->VideoQueue = videoDecoder->frameQueue->VideoQueueSize;
+					videoDebug->AudioQueue = videoDecoder->frameQueue->AudioQueueSize;
 					
 				}
 				
 		 }
 private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
-
-			 //videoRefreshTimer->stop();	 
+ 
 	
 			 processVideoFrame();
 
 		 }
 
 private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
-
-			 //audioRefreshTimer->stop();
 
 			 processAudioFrame();
 		 }
@@ -635,5 +594,35 @@ private: System::Void stopButton_Click(System::Object^  sender, System::EventArg
 			 stop();
 		 }
 
+private: System::Void debugVideoCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(debugVideoCheckBox->Checked == true) {
+
+				videoDebug->Show();
+
+			 } else {
+
+				videoDebug->Hide();
+			 }
+		 }
+private: System::Void volumeTrackBar_ValueChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 double volume = Util::invlerp<int>(volumeTrackBar->Value,volumeTrackBar->Minimum, volumeTrackBar->Maximum);
+			 audioPlayer->Volume = volume;
+		 }
+private: System::Void muteCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(muteCheckBox->Checked == true) {
+
+				 audioPlayer->Muted = true;
+				 muteCheckBox->ImageIndex = 1;
+
+			 } else {
+
+				 audioPlayer->Muted = false;
+				 muteCheckBox->ImageIndex = 0;
+
+			 }
+		 }
 };
 }

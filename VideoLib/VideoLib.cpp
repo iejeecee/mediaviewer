@@ -130,10 +130,9 @@ List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int max
 
 
 
-VideoPlayer::VideoPlayer(Device ^device, Format pixelFormat) {
+VideoPlayer::VideoPlayer(Device ^device) {
 
 	this->device = device;
-	this->pixelFormat = pixelFormat;
 
 	videoPlayer = new Native::VideoPlayer();
 	// marshal a managed delegate to a native function pointer
@@ -268,8 +267,7 @@ void VideoPlayer::open(String ^videoLocation) {
 
 		videoPlayer->open(marshal_as<std::string>(videoLocation), PIX_FMT_YUV420P);
 
-		frameQueue->initialize(device, Width,
-			Height, pixelFormat, SamplesPerSecond, BytesPerSample, AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+		frameQueue->initialize(device, Width, Height, AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 
 	} catch (Exception ^) {
 

@@ -190,7 +190,6 @@ namespace VideoLib {
 
 		double videoClock;
 		double audioClock;
-		Format pixelFormat;
 
 		double synchronizeVideo(int repeatFrames, __int64 dts);
 		double synchronizeAudio(int size, __int64 dts);
@@ -205,6 +204,14 @@ namespace VideoLib {
 		};
 
 		FrameQueue ^frameQueue;
+
+		property int DurationSeconds {
+
+			int get() {
+
+				return(videoPlayer->durationSeconds);
+			}
+		}
 
 		property int Height {
 
@@ -274,7 +281,7 @@ namespace VideoLib {
 
 		event EventHandler<EventArgs ^> ^DecodeException;
 
-		VideoPlayer(Device ^device, Format pixelFormat);
+		VideoPlayer(Device ^device);
 		~VideoPlayer();
 
 		void open(String ^videoLocation);

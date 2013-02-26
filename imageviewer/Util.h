@@ -78,7 +78,9 @@ public:
 		int minutes = int((totalSeconds / 60) % 60);
 		int hours = int(totalSeconds / 3600);
 
-		String ^output = hours.ToString("00") + ":" +
+		String ^hoursStr = hours.ToString("00")->Equals("00") ? "" : hours.ToString("00") + ":";
+
+		String ^output = hoursStr +
 			minutes.ToString("00") + ":" +
 			seconds.ToString("00");
 
@@ -111,6 +113,31 @@ public:
 		}
 
 		return(output);
+	}
+
+	template<class T>
+	static T clamp(T val, T min, T max) {
+
+		if(val < min) val = min;
+		else if(val > max) val = max;
+
+		return(val);
+	}
+
+	template<class T>
+	static T lerp(double val, T min, T max) {
+
+		val = clamp<double>(val, 0, 1);
+		
+		return(T((1-val) * min + val * max));
+	}
+
+	template<class T>
+	static double invlerp(T val, T min, T max) {
+
+		double result = (val - min) / double(max - min);
+			
+		return(result);
 	}
 
 	generic <typename T>

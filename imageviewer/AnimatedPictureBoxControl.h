@@ -108,6 +108,7 @@ namespace imageviewer {
 			this->imageList->Images->SetKeyName(11, L"geotag.ico");
 			this->imageList->Images->SetKeyName(12, L"Dryicons-Simplistica-Comment.ico");
 			this->imageList->Images->SetKeyName(13, L"mute.ico");
+			this->imageList->Images->SetKeyName(14, L"MPG.ico");
 			// 
 			// toolTip
 			// 

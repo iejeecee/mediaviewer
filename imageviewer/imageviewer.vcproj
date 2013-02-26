@@ -436,7 +436,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\VideoDebug.cpp"
+				RelativePath=".\VideoDebugForm.cpp"
 				>
 			</File>
 			<File
@@ -764,11 +764,11 @@
 				</File>
 			</File>
 			<File
-				RelativePath=".\VideoDebug.h"
+				RelativePath=".\VideoDebugForm.h"
 				FileType="3"
 				>
 				<File
-					RelativePath=".\VideoDebug.resx"
+					RelativePath=".\VideoDebugForm.resx"
 					SubType="Designer"
 					>
 				</File>

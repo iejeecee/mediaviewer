@@ -21,11 +21,54 @@ private:
 	int samplesPerSecond;
 	int nrChannels;
 
+	double volume;
+	bool muted;
+
 	int prevPlayPos;
 	int loops;
 	array<AutoResetEvent ^> ^bufferEvents;
 
 public: 
+
+	property bool Muted {
+
+		void set(bool muted) {
+			
+			this->muted = muted;
+			Volume = volume;
+			
+		}
+
+		bool get() {
+
+			return(muted);
+		}
+	}
+
+	property double Volume {
+
+		void set(double volume) {
+
+			this->volume = volume;
+
+			if(audioBuffer != nullptr && muted == false) {
+
+				int min = int(DS::Volume::Min) - int(DS::Volume::Min) / 3;
+
+				audioBuffer->Volume = Util::lerp<int>(volume, min, (int)DS::Volume::Max);;
+
+			} else if(audioBuffer != nullptr && muted == true) {
+
+				audioBuffer->Volume = int(DS::Volume::Min);
+			}
+		}
+
+		double get() {
+
+			return(volume);
+		}
+
+	}
 
 	StreamingAudioBuffer(Windows::Forms::Control ^owner)
 	{
@@ -47,6 +90,8 @@ public:
 			}
 
 			audioBuffer = nullptr;
+			volume = 1;
+			muted = false;
 	}
 
 	void initialize(int samplesPerSecond, int bytesPerSample, int nrChannels, 
@@ -78,6 +123,7 @@ public:
 			
 			audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
 
+			Volume = volume;
 			offsetBytes = 0;
 			loops = 0;
 			prevPlayPos = 0;
@@ -121,17 +167,23 @@ public:
 		}
 	}
 
+	
+
 	void write(Stream ^data, int dataSizeBytes) {
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
 
-		audioBuffer->Write(offsetBytes, data, dataSizeBytes, DS::LockFlag::None);
-
 		if(playPos <= offsetBytes && offsetBytes < writePos) { 
 
 			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + dataSizeBytes.ToString());
-		}		
+
+		} else {
+
+			//Util::DebugOut("playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + dataSizeBytes.ToString());
+		}
+
+		audioBuffer->Write(offsetBytes, data, dataSizeBytes, DS::LockFlag::None);
 
 		offsetBytes = (offsetBytes + dataSizeBytes) % bufferSizeBytes;
 

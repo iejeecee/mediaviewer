@@ -24,7 +24,8 @@ public:
 		TIFF,
 		GEOTAG,
 		COMMENTS,
-		MUTE
+		MUTE,
+		MPG
 	};
 
 private:
@@ -74,6 +75,14 @@ private:
 		{
 		
 			return(IconType::AVI);
+
+		}  else if(mimeType->Equals("video/mpg") || 
+			mimeType->Equals("video/mpeg") ||
+			mimeType->Equals("video/x-mpeg") ||
+			mimeType->Equals("video/mpeg2")) 
+		{
+		
+			return(IconType::MPG);
 
 		} else if(mimeType->Equals("video/mp4")) {
 

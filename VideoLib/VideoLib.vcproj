@@ -264,18 +264,6 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\AudioFrame.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Frame.h"
-				>
-			</File>
-			<File
-				RelativePath=".\FrameQueue.h"
-				>
-			</File>
-			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
@@ -284,41 +272,65 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ThreadSafeQueue.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Video.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoDecoder.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoFrame.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoFrameGrabber.h"
-				>
-			</File>
-			<File
-				RelativePath=".\VideoInit.h"
-				>
-			</File>
-			<File
 				RelativePath=".\VideoLib.h"
 				>
 			</File>
-			<File
-				RelativePath=".\VideoPlayer.h"
+			<Filter
+				Name="Frame"
 				>
-			</File>
-			<File
-				RelativePath=".\WindowsFileUtil.h"
+				<File
+					RelativePath=".\AudioFrame.h"
+					>
+				</File>
+				<File
+					RelativePath=".\Frame.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VideoFrame.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Queue"
 				>
-			</File>
+				<File
+					RelativePath=".\FrameQueue.h"
+					>
+				</File>
+				<File
+					RelativePath=".\ThreadSafeQueue.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="Decoder"
+				>
+				<File
+					RelativePath=".\Video.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VideoDecoder.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VideoFrameGrabber.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VideoInit.h"
+					>
+				</File>
+				<File
+					RelativePath=".\VideoPlayer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\WindowsFileUtil.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
