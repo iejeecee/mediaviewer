@@ -194,6 +194,8 @@ namespace VideoLib {
 		double synchronizeVideo(int repeatFrames, __int64 dts);
 		double synchronizeAudio(int size, __int64 dts);
 		
+		FrameQueue ^frameQueue;
+
 	public:
 
 		enum class DecodeMode {
@@ -203,7 +205,13 @@ namespace VideoLib {
 			DECODE_AUDIO_ONLY
 		};
 
-		FrameQueue ^frameQueue;
+		property VideoLib::FrameQueue ^FrameQueue {
+
+			VideoLib::FrameQueue ^get() {
+
+				return(frameQueue);
+			}
+		}
 
 		property int DurationSeconds {
 
@@ -285,6 +293,7 @@ namespace VideoLib {
 		~VideoPlayer();
 
 		void open(String ^videoLocation);
+		int seek(double posSeconds);
 		int decodeFrame(DecodeMode mode);
 		void close();
 

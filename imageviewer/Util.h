@@ -18,6 +18,11 @@ public:
 		System::Diagnostics::Debug::Print(string);
 	}
 
+	static void DebugOut(Object ^object) {
+
+		System::Diagnostics::Debug::Print(object->ToString());
+	}
+
 	static bool isUrl(String ^string) 
 	{
 
@@ -78,7 +83,12 @@ public:
 		int minutes = int((totalSeconds / 60) % 60);
 		int hours = int(totalSeconds / 3600);
 
-		String ^hoursStr = hours.ToString("00")->Equals("00") ? "" : hours.ToString("00") + ":";
+		String ^hoursStr = "";
+		
+		if(hours != 0) {
+
+			hoursStr = hours.ToString() + ":";
+		} 
 
 		String ^output = hoursStr +
 			minutes.ToString("00") + ":" +

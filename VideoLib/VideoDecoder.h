@@ -22,7 +22,6 @@ protected:
 	void *data;
 
 	DECODED_FRAME_CALLBACK decodedFrame;
-	//void (*decodedFrame)(void *data, AVPacket *packet, AVFrame *frame, FrameType type);
 
 public:
 
@@ -300,63 +299,28 @@ public:
 	int seek(double posSeconds) {
 
 		// convert timestamp into a videostream timestamp
-		//AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
+		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
 
-		//AVRational timeBase = videoStream->time_base;
-
-		//int64_t seekTarget = av_rescale_q(timeStamp, myAVTIMEBASEQ , timeBase);
-		//int64_t seekTarget = av_rescale(timeStamp, timeBase.num, timeBase.den);
-
-		int64_t seekTarget = posSeconds / av_q2d(videoStream->time_base);
-		//int64_t seekTarget2 = av_rescale(posSeconds, timeBase.num, timeBase.den);
-		//std::cout << "Seek target 2: " <<  double(seekTarget * av_q2d(videoStream->time_base)) / 60 << "\n";
-
+		//int64_t seekTarget = posSeconds / av_q2d(videoStream->time_base);
+		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
+		
 		int ret;
 
 		// first try av_seek_frame 
-		ret = av_seek_frame(formatContext, videoStreamIndex, seekTarget, AVSEEK_FLAG_BACKWARD);
-		//ret = av_seek_frame(formatContext, -1, timeStamp, 0);
+		//ret = av_seek_frame(formatContext, videoStreamIndex, seekTarget, AVSEEK_FLAG_BACKWARD);
+		ret = av_seek_frame(formatContext, -1, seekTarget, 0);
 		if (ret >= 0) { // success
 
 			avcodec_flush_buffers(videoCodecContext);
+
+			if(audioCodecContext != NULL) {
+
+				avcodec_flush_buffers(audioCodecContext);
+			}
 			return ret;
 		}
 
-		// then we try seeking to any (non key) frame AVSEEK_FLAG_ANY 
-		ret = av_seek_frame(formatContext, videoStreamIndex, seekTarget, AVSEEK_FLAG_ANY);
-		if (ret >= 0) { // success
-			
-			avcodec_flush_buffers(videoCodecContext);
-			return ret;			
-		}
-
-		throw std::runtime_error("Unable to seek in stream");
 		return -1;
-/*
-		// and then we try seeking by byte (AVSEEK_FLAG_BYTE) 
-		// here we assume that the whole file has duration seconds.
-		// so we'll interpolate accordingly.
-		AVStream *pStream = formatContext->streams[videoStreamIndex];
-		int64_t duration_tb = duration / av_q2d(pStream->time_base); // in time_base unit
-		double start_time = (double) formatContext->start_time / AV_TIME_BASE; // in seconds
-		// if start_time is negative, we ignore it; FIXME: is this ok?
-		if (start_time < 0) {
-			start_time = 0;
-		}
-
-		// normally when seeking by seekTarget we add start_time to seekTarget 
-		// before seeking, but seeking by byte we need to subtract the added start_time
-		seekTarget -= start_time / av_q2d(pStream->time_base);
-		if (formatContext->file_size <= 0) {
-			return -1;
-		}
-		if (duration > 0) {
-			int64_t byte_pos = av_rescale(seekTarget, formatContext->file_size, duration_tb);
-			av_log(NULL, LOG_INFO, "AVSEEK_FLAG_BYTE: byte_pos: %"PRId64", seekTarget: %"PRId64", file_size: %"PRId64", duration_tb: %"PRId64"\n", byte_pos, seekTarget, formatContext->file_size, duration_tb);
-			return av_seek_frame(formatContext, videoStreamIndex, byte_pos, AVSEEK_FLAG_BYTE);
-		}
-
-*/
 		
 	}
 

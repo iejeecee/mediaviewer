@@ -9,6 +9,14 @@ namespace DS = Microsoft::DirectX::DirectSound;
 
 public ref class StreamingAudioBuffer
 {
+public:
+
+	enum class StatusMode {
+
+		START_PLAY_AFTER_NEXT_WRITE,
+		PLAYING,
+		STOPPED
+	};
 
 private:
 
@@ -23,12 +31,47 @@ private:
 
 	double volume;
 	bool muted;
+	StatusMode status;
+	
 
+	double timeOffset;
+	bool setTimeOffset;
 	int prevPlayPos;
 	int loops;
 	array<AutoResetEvent ^> ^bufferEvents;
 
+	
+
 public: 
+
+	void startPlayAfterNextWrite() {
+
+		status = StatusMode::START_PLAY_AFTER_NEXT_WRITE;
+	}
+
+	void flush() {
+
+		if(audioBuffer != nullptr) {
+			audioBuffer->Stop();
+			audioBuffer->SetCurrentPosition(0);	
+		}
+
+		loops = 0;
+		offsetBytes = 0;
+		prevPlayPos = 0;
+
+		setTimeOffset = true;
+		status = StatusMode::START_PLAY_AFTER_NEXT_WRITE;
+	}
+
+	void stop() {
+
+		status = StatusMode::STOPPED;
+
+		if(audioBuffer != nullptr) {
+			audioBuffer->Stop();
+		}
+	}
 
 	property bool Muted {
 
@@ -73,15 +116,12 @@ public:
 	StreamingAudioBuffer(Windows::Forms::Control ^owner)
 	{
 			try {
-				device = gcnew DS::Device();
-				device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);
 
-				//DS::SecondaryBuffer ^buffer = gcnew DS::SecondaryBuffer(
-				//DS::BufferDescription ^desc = gcnew DS::BufferDescription();
-				//desc->
-			
+				device = gcnew DS::Device();
+				device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
 
 			} catch (DS::SoundException ^exception){
+
 
 				Util::DebugOut("Error Code:" + exception->ErrorCode);
 				Util::DebugOut("Error String:" + exception->ErrorString);
@@ -92,6 +132,8 @@ public:
 			audioBuffer = nullptr;
 			volume = 1;
 			muted = false;
+			timeOffset = 0;
+			setTimeOffset = true;
 	}
 
 	void initialize(int samplesPerSecond, int bytesPerSample, int nrChannels, 
@@ -153,46 +195,40 @@ public:
 
 		__int64 bytesPlayed = bufferSizeBytes * loops + playPos;
 		int bytesPerSecond = samplesPerSecond * bytesPerSample * nrChannels;
-		double time = bytesPlayed / double(bytesPerSecond);
+		double time = timeOffset + bytesPlayed / double(bytesPerSecond);
 
 		prevPlayPos = playPos;
 
 		return(time);
 	}
 
-	void stop() {
-
-		if(audioBuffer != nullptr) {
-			audioBuffer->Stop();
-		}
-	}
-
-	
-
-	void write(Stream ^data, int dataSizeBytes) {
+	void write(VideoLib::AudioFrame ^frame) {//Stream ^data, int dataSizeBytes) {
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
 
 		if(playPos <= offsetBytes && offsetBytes < writePos) { 
 
-			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + dataSizeBytes.ToString());
+			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
 
-		} else {
+		} 
 
-			//Util::DebugOut("playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + dataSizeBytes.ToString());
-		}
+		audioBuffer->Write(offsetBytes, frame->Stream, frame->Length, DS::LockFlag::None);
 
-		audioBuffer->Write(offsetBytes, data, dataSizeBytes, DS::LockFlag::None);
+		offsetBytes = (offsetBytes + frame->Length) % bufferSizeBytes;
 
-		offsetBytes = (offsetBytes + dataSizeBytes) % bufferSizeBytes;
+		if(status == StatusMode::START_PLAY_AFTER_NEXT_WRITE) {
 
-		if(audioBuffer->Status.Playing == false) {
+			if(setTimeOffset == true) {
+
+				timeOffset = frame->Pts;
+				setTimeOffset = false;
+			}
 
 			audioBuffer->Play(0, DS::BufferPlayFlags::Looping);
+			status = StatusMode::PLAYING;
 		}
 
-	
 	}
 
 	

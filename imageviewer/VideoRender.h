@@ -1,6 +1,7 @@
 #pragma once
 //http://www.drunkenhyena.com/cgi-bin/view_net_article.pl?chapter=2;article=10#Lost_Devices
 #include "ImageUtils.h"
+#include "HRTimer.h"
 
 namespace imageviewer {
 
@@ -189,21 +190,21 @@ public:
 
 		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
 
-			device->Reset(gcnew array<D3D::PresentParameters ^>{presentParams});
+			//device->Reset(gcnew array<D3D::PresentParameters ^>{presentParams});
+			device->Reset(presentParams);
 		}
 	}
 
 	void device_DeviceResizing(Object ^sender, System::ComponentModel::CancelEventArgs ^e) {
 
 		e->Cancel = true;
-		//stop();
 
 	}
 
 	void device_DeviceReset(Object ^sender, EventArgs ^e) {
 
 		Util::DebugOut("d3d device reset");
-		
+		// restore the offscreen surface
 		if(videoWidth != 0 && videoHeight != 0) {
 
 			D3D::Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
@@ -216,8 +217,8 @@ public:
 	void device_DeviceLost(Object ^sender, EventArgs ^e) {
 
 		Util::DebugOut("d3d device lost");
+		// delete offscreen surface
 		if(offscreen != nullptr) {
-
 			delete offscreen;
 			offscreen = nullptr;
 		}

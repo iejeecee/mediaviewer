@@ -41,6 +41,8 @@ namespace imageviewer {
 			//
 			createDrivesTreeNodes();
 			ignoreSelectNode = true;
+			expandFinished = gcnew AutoResetEvent(false);
+			initialDirectory = "";
 		}
 
 	protected:
@@ -69,7 +71,7 @@ namespace imageviewer {
 
 	private: List<DriveInfo ^> ^drives;
 	private: delegate void treeNodeExpandDelegate(TreeNode ^node);
-	private: TreeNode ^expandingNode;
+
 	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator1;
 
 	private: System::Windows::Forms::ToolStripMenuItem^  cutToolStripMenuItem;
@@ -123,6 +125,7 @@ namespace imageviewer {
 			this->directoryTreeView->TabIndex = 1;
 			this->directoryTreeView->BeforeExpand += gcnew System::Windows::Forms::TreeViewCancelEventHandler(this, &DirectoryBrowserControl::directoryTreeView_BeforeExpand);
 			this->directoryTreeView->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &DirectoryBrowserControl::directoryTreeView_MouseUp);
+			this->directoryTreeView->VisibleChanged += gcnew System::EventHandler(this, &DirectoryBrowserControl::directoryTreeView_VisibleChanged);
 			this->directoryTreeView->AfterSelect += gcnew System::Windows::Forms::TreeViewEventHandler(this, &DirectoryBrowserControl::directoryTreeView_AfterSelect);
 			this->directoryTreeView->BeforeSelect += gcnew System::Windows::Forms::TreeViewCancelEventHandler(this, &DirectoryBrowserControl::directoryTreeView_BeforeSelect);
 			// 
@@ -222,6 +225,11 @@ namespace imageviewer {
 
 		}
 #pragma endregion
+
+private:
+
+	AutoResetEvent ^expandFinished;
+	String ^initialDirectory;
 
 	public: event System::IO::RenamedEventHandler ^Renamed;
 
@@ -345,6 +353,15 @@ namespace imageviewer {
 			 }
 
 	public: void createDirectoryTreeViewFromPath(String ^path) {
+
+				if(directoryTreeView->Created == false) {
+
+					// Events will not be fired when treeview is not created.
+					// Instead the initial directory will be set once the treeview visible 
+					// state changes to true
+					initialDirectory = path;
+					return;
+				}
 
 				if(!isDriveReady(gcnew DirectoryInfo(path))) return;
 
@@ -497,9 +514,8 @@ namespace imageviewer {
 
 	private: System::Void treeNodeExpandInvoker(TreeNode ^parent) {
 
-				 expandingNode = parent;
 				 parent->Expand();
-
+									 
 			 }
 
 	private: System::Void buildTreeBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
@@ -518,8 +534,9 @@ namespace imageviewer {
 
 				 args[0] = parentNode = result[0];
 
+				 expandFinished->Reset(); 
 				 directoryTreeView->Invoke(expandTreeNode, args);
-				 while(expandingNode);
+				 expandFinished->WaitOne();
 
 				 String ^seperator = L"\\";
 
@@ -536,7 +553,7 @@ namespace imageviewer {
 					 args[0] = parentNode = result[0];
 
 					 directoryTreeView->Invoke(expandTreeNode, args);
-					 while(expandingNode);
+					 expandFinished->WaitOne();
 
 					 curPath += "\\";
 
@@ -591,43 +608,42 @@ namespace imageviewer {
 
 					 System::Diagnostics::Debug::Print(ex->Message);
 
-					 // don't block a running buildtree in case of error
-					 if(state->parent == expandingNode) {
-
-						 expandingNode = nullptr;
-					 }
-
-				 }
+					 // don't block in case of error
+					 expandFinished->Set();
+					 
+				 } 
 
 			 }
 
 	private: System::Void createDirectoryChildNodesBW_RunWorkerComplete(System::Object^  sender, System::ComponentModel::RunWorkerCompletedEventArgs^  e) {
 
-				 DirectoryBrowserAsyncState ^state = dynamic_cast<DirectoryBrowserAsyncState ^>(e->Result);
+				 try {
 
-				 state->parent->Nodes->Clear();
+					 DirectoryBrowserAsyncState ^state = dynamic_cast<DirectoryBrowserAsyncState ^>(e->Result);
 
-				 for(int i = 0; i < state->directories->Count; i++) {
+					 state->parent->Nodes->Clear();
 
-					 DirectoryInfo ^directory = state->directories[i];
-					 bool hasSubDirs = state->hasSubDirs[i];					 
+					 for(int i = 0; i < state->directories->Count; i++) {
 
-					 TreeNode ^directoryNode = createDirectoryNode(directory);
+						 DirectoryInfo ^directory = state->directories[i];
+						 bool hasSubDirs = state->hasSubDirs[i];					 
 
-					 if(hasSubDirs) {
+						 TreeNode ^directoryNode = createDirectoryNode(directory);
 
-						 directoryNode->Nodes->Add(createDummyNode());
+						 if(hasSubDirs) {
+
+							 directoryNode->Nodes->Add(createDummyNode());
+						 }
+
+						 state->parent->Nodes->Add(directoryNode);
+
 					 }
 
-					 state->parent->Nodes->Add(directoryNode);
+				 } finally {
 
+					 expandFinished->Set();
 				 }
-
-				 if(state->parent == expandingNode) {
-
-					 expandingNode = nullptr;
-				 }
-
+				 
 			 }
 
 	private: System::Void renameDirectoryToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -822,6 +838,17 @@ private: System::Void directoryTreeView_MouseUp(System::Object^  sender, System:
 				}
 			}
 
+		 }
+private: System::Void directoryTreeView_VisibleChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(directoryTreeView->Visible == true) {
+
+				 if(!String::IsNullOrEmpty(initialDirectory)) {
+
+					 createDirectoryTreeViewFromPath(initialDirectory);
+					 initialDirectory = "";
+				 }
+			 }
 		 }
 };
 }

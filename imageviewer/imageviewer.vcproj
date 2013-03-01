@@ -254,7 +254,7 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4801.29559, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4808.27994, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -876,6 +876,10 @@
 				</File>
 				<File
 					RelativePath=".\Util.h"
+					>
+				</File>
+				<File
+					RelativePath=".\WindowsUtils.h"
 					>
 				</File>
 			</Filter>

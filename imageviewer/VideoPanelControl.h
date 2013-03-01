@@ -3,6 +3,7 @@
 // Implementing videoRender in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
 #include "ImageUtils.h"
 #include "Util.h"
+#include "WindowsUtils.h"
 #include "HRTimerFactory.h"
 #include "StreamingAudioBuffer.h"
 #include "VideoRender.h"
@@ -80,13 +81,16 @@ namespace imageviewer {
 	private: System::Windows::Forms::SplitContainer^  splitContainer;
 	private: System::Windows::Forms::TrackBar^  timeTrackBar;
 	private: System::Windows::Forms::Button^  stopButton;
-	private: System::Windows::Forms::Button^  playButton;
+
 	private: System::Windows::Forms::CheckBox^  debugVideoCheckBox;
 	private: System::Windows::Forms::TrackBar^  volumeTrackBar;
 	private: System::Windows::Forms::CheckBox^  muteCheckBox;
 	private: System::Windows::Forms::ToolTip^  toolTip1;
 	private: System::Windows::Forms::ImageList^  imageList;
 	private: System::Windows::Forms::Label^  videoTimeLabel;
+	private: System::Windows::Forms::CheckBox^  playCheckBox;
+	private: System::Windows::Forms::Button^  forwardButton;
+
 
 
 
@@ -136,13 +140,14 @@ namespace imageviewer {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(VideoPanelControl::typeid));
 			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
+			this->forwardButton = (gcnew System::Windows::Forms::Button());
+			this->playCheckBox = (gcnew System::Windows::Forms::CheckBox());
+			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->videoTimeLabel = (gcnew System::Windows::Forms::Label());
 			this->muteCheckBox = (gcnew System::Windows::Forms::CheckBox());
-			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
 			this->volumeTrackBar = (gcnew System::Windows::Forms::TrackBar());
 			this->debugVideoCheckBox = (gcnew System::Windows::Forms::CheckBox());
 			this->stopButton = (gcnew System::Windows::Forms::Button());
-			this->playButton = (gcnew System::Windows::Forms::Button());
 			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
 			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
 			this->splitContainer->Panel2->SuspendLayout();
@@ -169,22 +174,63 @@ namespace imageviewer {
 			// 
 			// splitContainer.Panel2
 			// 
+			this->splitContainer->Panel2->Controls->Add(this->forwardButton);
+			this->splitContainer->Panel2->Controls->Add(this->playCheckBox);
 			this->splitContainer->Panel2->Controls->Add(this->videoTimeLabel);
 			this->splitContainer->Panel2->Controls->Add(this->muteCheckBox);
 			this->splitContainer->Panel2->Controls->Add(this->volumeTrackBar);
 			this->splitContainer->Panel2->Controls->Add(this->debugVideoCheckBox);
 			this->splitContainer->Panel2->Controls->Add(this->stopButton);
-			this->splitContainer->Panel2->Controls->Add(this->playButton);
 			this->splitContainer->Panel2->Controls->Add(this->timeTrackBar);
 			this->splitContainer->Size = System::Drawing::Size(800, 484);
 			this->splitContainer->SplitterDistance = 388;
 			this->splitContainer->TabIndex = 0;
 			// 
+			// forwardButton
+			// 
+			this->forwardButton->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"forwardButton.Image")));
+			this->forwardButton->Location = System::Drawing::Point(117, 37);
+			this->forwardButton->MaximumSize = System::Drawing::Size(60, 37);
+			this->forwardButton->Name = L"forwardButton";
+			this->forwardButton->Size = System::Drawing::Size(51, 36);
+			this->forwardButton->TabIndex = 9;
+			this->toolTip1->SetToolTip(this->forwardButton, L"Jump Forward");
+			this->forwardButton->UseVisualStyleBackColor = true;
+			this->forwardButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::forwardButton_Click);
+			// 
+			// playCheckBox
+			// 
+			this->playCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
+			this->playCheckBox->ImageIndex = 3;
+			this->playCheckBox->ImageList = this->imageList;
+			this->playCheckBox->Location = System::Drawing::Point(3, 37);
+			this->playCheckBox->Margin = System::Windows::Forms::Padding(0, 3, 3, 3);
+			this->playCheckBox->MaximumSize = System::Drawing::Size(51, 36);
+			this->playCheckBox->Name = L"playCheckBox";
+			this->playCheckBox->Size = System::Drawing::Size(51, 36);
+			this->playCheckBox->TabIndex = 8;
+			this->playCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->toolTip1->SetToolTip(this->playCheckBox, L"Play / Pause");
+			this->playCheckBox->UseVisualStyleBackColor = true;
+			this->playCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::playCheckBox_CheckedChanged);
+			// 
+			// imageList
+			// 
+			this->imageList->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^  >(resources->GetObject(L"imageList.ImageStream")));
+			this->imageList->TransparentColor = System::Drawing::Color::Transparent;
+			this->imageList->Images->SetKeyName(0, L"1361908321_1777.ico");
+			this->imageList->Images->SetKeyName(1, L"1361908340_1776.ico");
+			this->imageList->Images->SetKeyName(2, L"1361914813_22929.ico");
+			this->imageList->Images->SetKeyName(3, L"1361914794_22964.ico");
+			this->imageList->Images->SetKeyName(4, L"1361914838_22942.ico");
+			// 
 			// videoTimeLabel
 			// 
+			this->videoTimeLabel->AutoSize = true;
 			this->videoTimeLabel->Dock = System::Windows::Forms::DockStyle::Right;
 			this->videoTimeLabel->Location = System::Drawing::Point(515, 37);
 			this->videoTimeLabel->MaximumSize = System::Drawing::Size(137, 36);
+			this->videoTimeLabel->MinimumSize = System::Drawing::Size(0, 36);
 			this->videoTimeLabel->Name = L"videoTimeLabel";
 			this->videoTimeLabel->Size = System::Drawing::Size(137, 36);
 			this->videoTimeLabel->TabIndex = 7;
@@ -207,13 +253,6 @@ namespace imageviewer {
 			this->muteCheckBox->UseVisualStyleBackColor = true;
 			this->muteCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::muteCheckBox_CheckedChanged);
 			// 
-			// imageList
-			// 
-			this->imageList->ImageStream = (cli::safe_cast<System::Windows::Forms::ImageListStreamer^  >(resources->GetObject(L"imageList.ImageStream")));
-			this->imageList->TransparentColor = System::Drawing::Color::Transparent;
-			this->imageList->Images->SetKeyName(0, L"1361908321_1777.ico");
-			this->imageList->Images->SetKeyName(1, L"1361908340_1776.ico");
-			// 
 			// volumeTrackBar
 			// 
 			this->volumeTrackBar->AutoSize = false;
@@ -231,7 +270,7 @@ namespace imageviewer {
 			// debugVideoCheckBox
 			// 
 			this->debugVideoCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
-			this->debugVideoCheckBox->Location = System::Drawing::Point(128, 37);
+			this->debugVideoCheckBox->Location = System::Drawing::Point(216, 37);
 			this->debugVideoCheckBox->Name = L"debugVideoCheckBox";
 			this->debugVideoCheckBox->Size = System::Drawing::Size(66, 36);
 			this->debugVideoCheckBox->TabIndex = 4;
@@ -242,23 +281,16 @@ namespace imageviewer {
 			// 
 			// stopButton
 			// 
+			this->stopButton->ImageIndex = 4;
+			this->stopButton->ImageList = this->imageList;
 			this->stopButton->Location = System::Drawing::Point(60, 37);
+			this->stopButton->MaximumSize = System::Drawing::Size(60, 37);
 			this->stopButton->Name = L"stopButton";
 			this->stopButton->Size = System::Drawing::Size(51, 36);
 			this->stopButton->TabIndex = 2;
-			this->stopButton->Text = L"Stop";
+			this->toolTip1->SetToolTip(this->stopButton, L"Stop");
 			this->stopButton->UseVisualStyleBackColor = true;
 			this->stopButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::stopButton_Click);
-			// 
-			// playButton
-			// 
-			this->playButton->Location = System::Drawing::Point(3, 37);
-			this->playButton->Name = L"playButton";
-			this->playButton->Size = System::Drawing::Size(51, 36);
-			this->playButton->TabIndex = 1;
-			this->playButton->Text = L"Play";
-			this->playButton->UseVisualStyleBackColor = true;
-			this->playButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::playButton_Click);
 			// 
 			// timeTrackBar
 			// 
@@ -270,6 +302,7 @@ namespace imageviewer {
 			this->timeTrackBar->Size = System::Drawing::Size(796, 37);
 			this->timeTrackBar->TabIndex = 0;
 			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
+			this->timeTrackBar->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseDown);
 			// 
 			// VideoPanelControl
 			// 
@@ -280,6 +313,7 @@ namespace imageviewer {
 			this->Name = L"VideoPanelControl";
 			this->Size = System::Drawing::Size(800, 484);
 			this->splitContainer->Panel2->ResumeLayout(false);
+			this->splitContainer->Panel2->PerformLayout();
 			this->splitContainer->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->EndInit();
@@ -310,7 +344,12 @@ namespace imageviewer {
 		double previousAudioPts;
 		double previousAudioDelay;
 
+		double videoPtsDrift;
+
 		bool skipVideoFrame;
+
+		bool seekRequest;
+		double seekPosition;
 
 		delegate void UpdateUIDelegate(double, double, int);
 
@@ -345,6 +384,10 @@ namespace imageviewer {
 			}
 		}
 
+		double getVideoClock() {
+
+			return(videoPtsDrift - HRTimer::getTimestamp());
+		}
 
 		void processVideoFrame() {
 
@@ -366,8 +409,10 @@ restartvideo:
 
 			VideoFrame ^videoFrame = nullptr;
 			
-			bool success = videoDecoder->frameQueue->getDecodedVideoFrame(videoFrame);
+			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
 			if(success == false) return;
+
+			videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
 
 			if(skipVideoFrame == false) {
 
@@ -387,8 +432,7 @@ restartvideo:
 			previousVideoDelay = delay;
 
 			// update delay to sync to audioPlayer 
-			double refClock = audioPlayer->getAudioClock();
-			double diff = videoFrame->Pts - refClock;
+			double diff = getVideoClock() - audioPlayer->getAudioClock();
 
 			// Skip or repeat the frame. Take delay into account
 			// FFPlay still doesn't "know if this is the best guess."
@@ -403,11 +447,14 @@ restartvideo:
 
 			// adjust delay based on the actual current time
 			frameTimer += delay;
-			double actualDelay = frameTimer - getTimeNow();
+			double actualDelay = frameTimer - HRTimer::getTimestamp();
 
 			videoDebug->VideoDelay = delay;
 			videoDebug->ActualVideoDelay = actualDelay;
-			videoDebug->AudioSync = refClock;
+			videoDebug->AudioSync = audioPlayer->getAudioClock();
+			videoDebug->VideoSync = getVideoClock();
+			videoDebug->VideoQueue = videoDecoder->FrameQueue->VideoQueueSize;
+			videoDebug->AudioQueue = videoDecoder->FrameQueue->AudioQueueSize;
 			videoDebug->update();
 
 			updateUI();
@@ -423,7 +470,7 @@ restartvideo:
 			}
 
 			// queue current frame in freeFrames to be used again
-			videoDecoder->frameQueue->enqueueFreeVideoFrame(videoFrame);	
+			videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
 
 			if(skipVideoFrame == true) {
 			
@@ -441,10 +488,10 @@ restartvideo:
 restartaudio:
 			AudioFrame ^audioFrame = nullptr;
 
-			bool success = videoDecoder->frameQueue->getDecodedAudioFrame(audioFrame);
+			bool success = videoDecoder->FrameQueue->getDecodedAudioFrame(audioFrame);
 			if(success == false) return;
 
-			audioPlayer->write(audioFrame->Stream, audioFrame->Length);
+			audioPlayer->write(audioFrame);
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			
 			// calculate delay to display next frame
@@ -460,16 +507,16 @@ restartaudio:
 
 			// adjust delay based on the actual current time
 			audioFrameTimer += delay;
-			double actualDelay = audioFrameTimer - getTimeNow();
+			double actualDelay = audioFrameTimer - HRTimer::getTimestamp();
 
 			videoDebug->AudioDelay = delay;
 			videoDebug->ActualAudioDelay = actualDelay;
 			videoDebug->AudioFrameSize = audioFrame->Length;
 
 			// queue current frame in freeFrames to be used again
-			videoDecoder->frameQueue->enqueueFreeAudioFrame(audioFrame);
+			videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
 
-			if(actualDelay <= 0) {// 0.010) {
+			if(actualDelay <= 0) {
 
 				// delay too small, play next frame as quickly as possible
 				videoDebug->AudioDropped = videoDebug->AudioDropped + 1;
@@ -480,13 +527,71 @@ restartaudio:
 			// start timer with delay for next frame
 			audioRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
 			audioRefreshTimer->start();
+
+		}
+
+		void stopPlay() {
+
+			audioPlayer->stop();
+
+			videoDecoder->FrameQueue->stop();
+
+			videoDecoderBW->CancelAsync();
+	
+			while(IsPlaying) {
+
+				Application::DoEvents();
+			}
+
+
+		}
+
+		void startPlay() {
+
+			audioPlayer->startPlayAfterNextWrite();
+
+			videoDecoder->FrameQueue->start();
+
+			videoDecoderBW->RunWorkerAsync();
+
+			previousVideoPts = 0;
+			previousVideoDelay = 0.04;
+			skipVideoFrame = false;	
+
+			previousAudioPts = 0;
+			previousAudioDelay = 0.04;
+
+			videoRefreshTimer->start();
+			audioRefreshTimer->start();
 			
 		}
 
-		double getTimeNow() {
+		void fillFrameQueue() {
 
-			double timeNow = Diagnostics::Stopwatch::GetTimestamp() / double(Diagnostics::Stopwatch::Frequency);
-			return(timeNow);
+			videoDecoder->FrameQueue->start();
+
+			int nrFramesDecoded;
+
+			do {
+
+				nrFramesDecoded = videoDecoder->decodeFrame(
+							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
+
+				//Util::DebugOut("a: " + videoDecoder->FrameQueue->AudioQueueSize.ToString());
+				//Util::DebugOut("v: " + videoDecoder->FrameQueue->VideoQueueSize.ToString());
+
+			} while(videoDecoder->FrameQueue->AudioQueueSize !=
+				videoDecoder->FrameQueue->MaxAudioQueueSize &&
+				videoDecoder->FrameQueue->VideoQueueSize != 
+				videoDecoder->FrameQueue->MaxVideoQueueSize &&
+				nrFramesDecoded > 0);
+			
+		}
+
+		void seek(double seconds) {
+
+			seekPosition = seconds;
+			seekRequest = true;			
 		}
 
 	public:
@@ -511,66 +616,58 @@ restartaudio:
 			audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
 				videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
   
-			videoDebug->VideoQueueSize = videoDecoder->frameQueue->MaxVideoQueueSize;
-			videoDebug->VideoQueueSizeBytes = videoDecoder->frameQueue->VideoQueueSizeBytes;	
-			videoDebug->AudioQueueSize = videoDecoder->frameQueue->MaxAudioQueueSize;
-			videoDebug->AudioQueueSizeBytes = videoDecoder->frameQueue->AudioQueueSizeBytes;
-		}
-
-		void stop() {
-
-			audioPlayer->stop();
-			videoRefreshTimer->stop();
-			audioRefreshTimer->stop();
-
-			videoDecoder->frameQueue->stop();
-
-			videoDecoderBW->CancelAsync();
-			while(IsPlaying) {
-
-				Application::DoEvents();
-			}
-
-
+			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
+			videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
+			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
+			videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
+			
+			fillFrameQueue();
 		}
 
 		void play() {
 
-			videoDecoder->frameQueue->start();
-
-			videoDecoderBW->RunWorkerAsync();
-
-			previousVideoPts = 0;
-			previousVideoDelay = 0.04;
-			skipVideoFrame = false;	
-
-			previousAudioPts = 0;
-			previousAudioDelay = 0.04;
-
-			videoRefreshTimer->start();
-			audioRefreshTimer->start();
-			
+			playCheckBox->Checked = true;
 		}
+
+		void stop() {
+
+			playCheckBox->Checked = false;
+		}
+	
 
 		void close() {
 
 			videoDecoder->close();
+			audioPlayer->flush();
 		}
 
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
 				//frameTimer = videoDecoder->TimeNow;
-				audioFrameTimer = frameTimer = getTimeNow();
+				audioFrameTimer = frameTimer = HRTimer::getTimestamp();
 
-				while(videoDecoder->decodeFrame(VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO) && 
-					!videoDecoderBW->CancellationPending) 
+				int nrFramesDecoded = true;
+
+				do
 				{
+					if(seekRequest == true) {
 
-					videoDebug->VideoQueue = videoDecoder->frameQueue->VideoQueueSize;
-					videoDebug->AudioQueue = videoDecoder->frameQueue->AudioQueueSize;
-					
-				}
+						if(videoDecoder->seek(seekPosition) == 0) {
+							
+							videoDecoder->FrameQueue->flush();
+							audioPlayer->flush();
+							
+						}
+						seekRequest = false;
+
+					} else {
+
+						nrFramesDecoded = videoDecoder->decodeFrame(
+							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
+					}
+									
+				} while(nrFramesDecoded > 0 && !videoDecoderBW->CancellationPending);
 				
 		 }
 private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
@@ -585,10 +682,6 @@ private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
 			 processAudioFrame();
 		 }
 
-private: System::Void playButton_Click(System::Object^  sender, System::EventArgs^  e) {
-
-			 play();
-		 }
 private: System::Void stopButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
 			 stop();
@@ -623,6 +716,43 @@ private: System::Void muteCheckBox_CheckedChanged(System::Object^  sender, Syste
 				 muteCheckBox->ImageIndex = 0;
 
 			 }
+		 }
+private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(playCheckBox->Checked == true) {
+
+				 startPlay();
+				 playCheckBox->ImageIndex = 3;
+
+			 } else {
+
+				 stopPlay();
+				 playCheckBox->ImageIndex = 2;
+
+			 }
+		 }
+private: System::Void forwardButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 static int i = 0;
+
+			 seek(i * 60);
+			 i++;
+	
+		
+		 }
+private: System::Void timeTrackBar_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+			 int totalTime = videoDecoder->DurationSeconds;
+
+			 Rectangle chanRec = WindowsUtils::getTrackBarChannelRect(timeTrackBar);
+
+			 double value = Util::invlerp<int>(e->X, chanRec.Left, chanRec.Right);
+
+			 timeTrackBar->Value = Util::lerp<int>(value, timeTrackBar->Minimum, timeTrackBar->Maximum);
+
+			 int seconds = Util::lerp<int>(value, 0, totalTime);
+
+			 seek(seconds);
 		 }
 };
 }

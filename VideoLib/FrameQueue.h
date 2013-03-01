@@ -7,12 +7,16 @@
 using namespace Microsoft::DirectX::Direct3D;
 using namespace System::Collections::Generic;
 using namespace System::Threading;
+using namespace System::Diagnostics;
 
 namespace VideoLib {
 
 	public ref class FrameQueue
 	{
 	private:
+
+		static const int maxVideoFrames = 100;
+		static const int maxAudioFrames = 300;
 
 		ThreadSafeQueue<VideoFrame ^> ^freeVideoFrames;
 		ThreadSafeQueue<VideoFrame ^> ^decodedVideoFrames;
@@ -23,19 +27,9 @@ namespace VideoLib {
 		array<VideoFrame ^> ^videoFrameData;
 		array<AudioFrame ^> ^audioFrameData;
 
-		bool isStopped;
+		void initializeAudioQueue(int maxAudioFrameBufferSize) {		
 
-		void initializeAudioQueue(int maxAudioFrameBufferSize) {
-
-		
-			int nrFrames = 300;
-
-			audioFrameData = gcnew array<AudioFrame ^>(nrFrames);
-
-			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(nrFrames);
-			decodedAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(nrFrames);
-
-			for(int i = 0; i < nrFrames; i++) {
+			for(int i = 0; i < maxAudioFrames; i++) {
 
 				audioFrameData[i] = gcnew AudioFrame(maxAudioFrameBufferSize);
 
@@ -46,14 +40,7 @@ namespace VideoLib {
 
 		void initializeVideoQueue(int width, int height, Device ^device) {
 
-			int nrFrames = 100;
-
-			videoFrameData = gcnew array<VideoFrame ^>(nrFrames);
-
-			freeVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(nrFrames);
-			decodedVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(nrFrames);
-
-			for(int i = 0; i < nrFrames; i++) {
+			for(int i = 0; i < maxVideoFrames; i++) {
 
 				videoFrameData[i] = gcnew VideoFrame(width, height, device);
 
@@ -66,23 +53,28 @@ namespace VideoLib {
 
 		FrameQueue() {
 	
-			isStopped = false;
-			freeVideoFrames = nullptr;
-			decodedVideoFrames= nullptr;
+			videoFrameData = gcnew array<VideoFrame ^>(maxVideoFrames);
+			audioFrameData = gcnew array<AudioFrame ^>(maxAudioFrames);
 
-			freeAudioFrames= nullptr;
-			decodedAudioFrames= nullptr;
-		
-			videoFrameData = nullptr;
-			audioFrameData = nullptr;
+			freeVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(maxVideoFrames);
+			decodedVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(maxVideoFrames);
+			
+			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
+			decodedAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
+			
+
 		}
 
+		~FrameQueue() {
+
+			dispose();
+		}
 
 		property bool IsStopped {
 
 			bool get() {
 
-				return(isStopped);
+				return(decodedVideoFrames->Stopped);
 			}
 		}
 
@@ -141,6 +133,7 @@ namespace VideoLib {
 
 			initializeVideoQueue(width, height, device);
 			initializeAudioQueue(maxAudioBufferSize);
+
 		}
 
 		void start() {
@@ -149,35 +142,52 @@ namespace VideoLib {
 			freeAudioFrames->open();
 			decodedVideoFrames->open();
 			decodedAudioFrames->open();
-			isStopped = false;
+		
+		}
+
+		void flush() {
+
+			//stop();
+
+			decodedVideoFrames->flush();
+			decodedAudioFrames->flush();
+		
+			freeVideoFrames->flush();
+			freeAudioFrames->flush();	
+
+			for(int i = 0; i < videoFrameData->Length; i++) {
+
+				freeVideoFrames->add(videoFrameData[i]);
+			}
+		
+			
+			for(int i = 0; i < audioFrameData->Length; i++) {
+
+				freeAudioFrames->add(audioFrameData[i]);
+			}
+
+			//freeVideoFrames->open();
+			//freeAudioFrames->open();
+			//start();
+
 		}
 
 		void stop() {
 
-			if(decodedVideoFrames != nullptr) {
-
-				decodedVideoFrames->close();
-			}
-			if(decodedAudioFrames != nullptr) {
-
-				decodedAudioFrames->close();
-			}
-			if(freeVideoFrames != nullptr) {
-
-				freeVideoFrames->close();
-			}
-			if(freeAudioFrames != nullptr) {
-
-				freeAudioFrames->close();			
-			}
-
-			isStopped = true;
+			decodedVideoFrames->stop();
+			decodedAudioFrames->stop();
+			freeVideoFrames->stop();
+			freeAudioFrames->stop();			
+			
 		}
 
 		void dispose() {
 
-			if(videoFrameData == nullptr) return;
-			if(audioFrameData == nullptr) return;
+			decodedVideoFrames->flush();
+			decodedAudioFrames->flush();
+		
+			freeVideoFrames->flush();
+			freeAudioFrames->flush();	
 
 			for(int i = 0; i < videoFrameData->Length; i++) {
 

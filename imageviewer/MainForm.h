@@ -324,7 +324,7 @@ namespace imageviewer {
 			this->imageFileBrowserToolStripButton->ImageTransparentColor = System::Drawing::Color::Magenta;
 			this->imageFileBrowserToolStripButton->Name = L"imageFileBrowserToolStripButton";
 			this->imageFileBrowserToolStripButton->Size = System::Drawing::Size(23, 22);
-			this->imageFileBrowserToolStripButton->Text = L"Browse Images";
+			this->imageFileBrowserToolStripButton->Text = L"Browse Media";
 			this->imageFileBrowserToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::imageFileBrowserToolStripButton_Click);
 			// 
 			// autoScaleToolStripButton

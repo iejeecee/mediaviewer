@@ -37,6 +37,12 @@ namespace imageviewer
 
 		virtual void start() = 0;
 		virtual void stop() = 0;
+
+		static double getTimestamp() {
+			
+			double timeNow = Diagnostics::Stopwatch::GetTimestamp() / double(Diagnostics::Stopwatch::Frequency);
+			return(timeNow);
+		}
 		
 	};
 }

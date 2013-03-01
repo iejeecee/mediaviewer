@@ -152,7 +152,7 @@ VideoPlayer::VideoPlayer(Device ^device) {
 	videoClock = 0;
 	audioClock = 0;
 	
-	frameQueue = gcnew FrameQueue();
+	frameQueue = gcnew VideoLib::FrameQueue();
 
 }
 
@@ -192,7 +192,7 @@ double VideoPlayer::synchronizeVideo(int repeatFrame, __int64 dts) {
 double VideoPlayer::synchronizeAudio(int sizeBytes, __int64 dts) {
 
 	double pts;
-/*
+
 	if(dts != AV_NOPTS_VALUE) {
 
 		// convert pts to seconds
@@ -201,12 +201,12 @@ double VideoPlayer::synchronizeAudio(int sizeBytes, __int64 dts) {
 		audioClock = pts;
 
 	} else {
-*/
+
 		// if we aren't given a pts, set it to the clock 
 		pts = audioClock;
 		// calculate next pts in seconds
 		audioClock += sizeBytes / double(SamplesPerSecond * BytesPerSample * NrChannels);
-//	}
+	}
 	
 	return(pts);
 }
@@ -290,6 +290,11 @@ int VideoPlayer::decodeFrame(DecodeMode mode) {
 	}
 
 	return(videoPlayer->decode(videoDecodeMode, audioDecodeMode, 1));
+}
+
+int VideoPlayer::seek(double posSeconds) {
+
+	return(videoPlayer->seek(posSeconds));
 }
 
 void VideoPlayer::close() {

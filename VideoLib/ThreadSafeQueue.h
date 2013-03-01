@@ -15,6 +15,7 @@ namespace VideoLib {
 
 		Queue<T> ^queue;
 		int maxQueueSize;
+		bool stopped;
 		bool closing;
 
 	public:
@@ -24,6 +25,7 @@ namespace VideoLib {
 			this->maxQueueSize = maxQueueSize;
 			queue = gcnew Queue<T>();
 			closing = false;
+			stopped = false;
 		}
 
 		property int MaxQueueSize {
@@ -42,15 +44,58 @@ namespace VideoLib {
 			}
 		}
 
+		property bool Closing {
+
+			bool get() {
+
+				return(closing);
+			}
+		}
+
+		property bool Stopped {
+
+			bool get() {
+
+				return(stopped);
+			}
+		}
+
+		// put the queue into ready to start mode
 		void open() {
 
 			Monitor::Enter(queue);
 			
+			stopped = false;
 			closing = false;
+			Monitor::PulseAll(queue);
 
 			Monitor::Exit(queue);
 		}
 
+		// stop the queue immediatly
+		void stop() {
+
+			Monitor::Enter(queue);
+			
+			stopped = true;
+			Monitor::PulseAll(queue);
+
+			Monitor::Exit(queue);
+
+		}
+
+		void flush() {
+
+			Monitor::Enter(queue);
+
+			queue->Clear();
+
+			Monitor::PulseAll(queue);
+
+			Monitor::Exit(queue);
+		}
+
+		// let the queue run until it is empty
 		void close()
 		{
 			Monitor::Enter(queue);
@@ -69,7 +114,7 @@ namespace VideoLib {
 
 				while(queue->Count == 0) {
 
-					if(closing == true) {
+					if(closing == true || stopped == true) {
 
 						return(false);
 					}
@@ -79,6 +124,8 @@ namespace VideoLib {
 					// to wake them up 
 					Monitor::Wait(queue);
 				}
+
+				if(stopped == true) return(false);
 
 				item = queue->Dequeue();
 
@@ -116,7 +163,8 @@ namespace VideoLib {
 					// wake up any thread which was send sleeping
 					// trying to take something from a empty queue
 					Monitor::PulseAll(queue);
-				}
+
+				} 
 
 			} finally {
 				Monitor::Exit(queue);
