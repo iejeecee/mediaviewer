@@ -261,6 +261,14 @@ namespace VideoLib {
 			}
 		}
 
+		property bool HasAudio {
+
+			bool get() {
+
+				return(videoPlayer->hasAudio());
+			}
+		}
+
 		property int MaxAudioFrameSize {
 
 			int get() {

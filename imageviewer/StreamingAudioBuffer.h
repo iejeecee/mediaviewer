@@ -208,9 +208,9 @@ public:
 		audioBuffer->GetCurrentPosition(playPos, writePos);
 
 		if(playPos <= offsetBytes && offsetBytes < writePos) { 
-
+			
 			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
-
+			offsetBytes = writePos;
 		} 
 
 		audioBuffer->Write(offsetBytes, frame->Stream, frame->Length, DS::LockFlag::None);

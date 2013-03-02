@@ -78,6 +78,7 @@ namespace VideoLib {
 			Monitor::Enter(queue);
 			
 			stopped = true;
+			// wakeup waiting threads
 			Monitor::PulseAll(queue);
 
 			Monitor::Exit(queue);
@@ -90,8 +91,6 @@ namespace VideoLib {
 
 			queue->Clear();
 
-			Monitor::PulseAll(queue);
-
 			Monitor::Exit(queue);
 		}
 
@@ -101,6 +100,7 @@ namespace VideoLib {
 			Monitor::Enter(queue);
 			
 			closing = true;
+			// wakeup waiting threads
 			Monitor::PulseAll(queue);
 
 			Monitor::Exit(queue);

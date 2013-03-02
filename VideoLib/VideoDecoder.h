@@ -23,6 +23,8 @@ protected:
 
 	DECODED_FRAME_CALLBACK decodedFrame;
 
+	bool closed;
+
 public:
 
 	enum SamplingMode {
@@ -63,11 +65,22 @@ public:
 
 		startTime = 0;
 			
+		closed = true;
 	}
 
 	virtual ~VideoDecoder() {
 
 		close();
+	}
+
+	bool isClosed() {
+
+		return(closed);
+	}
+
+	bool hasAudio() {
+
+		return(audioStreamIndex >= 0);
 	}
 
 	void setDecodedFrameCallback(DECODED_FRAME_CALLBACK decodedFrame = NULL,
@@ -107,6 +120,7 @@ public:
 
 		startTime = 0;
 	
+		closed = true;
 	}
 
 	std::string getFileName() const {
@@ -197,6 +211,7 @@ public:
 		}
 
 		// int64_t duration_tb = duration / av_q2d(pStream->time_base); 
+		closed = false;
 	}
 
 	double getDurationSeconds() const {
@@ -221,6 +236,8 @@ public:
 		AudioDecodeMode audioMode = DECODE_AUDIO,
 		int nrFrames = -1) 
 	{
+
+		if(isClosed()) return(0);
 
 		int nrDecodedFrames = 0;
 

@@ -35,7 +35,9 @@ public:
 
 	VideoPlayer() 	
 	{
-		
+		samplesPerSecond = 0;
+		bytesPerSample = 0;
+		nrChannels = 0;
 		durationSeconds = 0;
 		sizeBytes = 0;
 	}
@@ -56,10 +58,13 @@ public:
 
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
 
-		samplesPerSecond = audioCodecContext->sample_rate;
-		bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
-		
-		nrChannels = audioCodecContext->channels;
+		if(hasAudio()) {
+
+			samplesPerSecond = audioCodecContext->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+			
+			nrChannels = audioCodecContext->channels;
+		}
 
 	}
 

@@ -144,6 +144,39 @@ public:
 
 	}
 
+	void clearScreen(Color color) {
+
+		int deviceStatus;
+
+		if(device->CheckCooperativeLevel(deviceStatus) == true) {
+
+			try {
+
+				device->Clear(D3D::ClearFlags::Target, color, 1.0f, 0);
+				device->Present();
+
+			} catch(D3D::DeviceLostException ^) {
+
+				device->CheckCooperativeLevel(deviceStatus);
+
+			} catch(D3D::DeviceNotResetException ^) {
+
+				device->CheckCooperativeLevel(deviceStatus);
+			}
+		}
+
+		if(deviceStatus == (int)D3D::ResultCode::DeviceLost) {
+			 //Can't Reset yet, wait for a bit
+			//Thread::Sleep(500);   
+
+		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
+
+			//device->Reset(gcnew array<D3D::PresentParameters ^>{presentParams});
+			device->Reset(presentParams);
+		}
+
+	}
+
 	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor) {
 
 		int deviceStatus;

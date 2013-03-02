@@ -297,7 +297,7 @@ namespace imageviewer {
 			this->timeTrackBar->AutoSize = false;
 			this->timeTrackBar->Dock = System::Windows::Forms::DockStyle::Top;
 			this->timeTrackBar->Location = System::Drawing::Point(0, 0);
-			this->timeTrackBar->Maximum = 1000;
+			this->timeTrackBar->Maximum = 5000;
 			this->timeTrackBar->Name = L"timeTrackBar";
 			this->timeTrackBar->Size = System::Drawing::Size(796, 37);
 			this->timeTrackBar->TabIndex = 0;
@@ -346,8 +346,6 @@ namespace imageviewer {
 
 		double videoPtsDrift;
 
-		bool skipVideoFrame;
-
 		bool seekRequest;
 		double seekPosition;
 
@@ -391,6 +389,8 @@ namespace imageviewer {
 
 		void processVideoFrame() {
 
+			bool skipVideoFrame = false;
+
 restartvideo:
 
 			int videoWidth = videoDecoder->Width;
@@ -420,29 +420,54 @@ restartvideo:
 				videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
 			} 
 
+			updateUI();
+
+			double actualDelay = synchronizeVideo(videoFrame->Pts, skipVideoFrame);
+
+			// queue current frame in freeFrames to be used again
+			videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
+
+			if(skipVideoFrame == true) {
+			
+				goto restartvideo;
+			}
+
+			// start timer with delay for next frame
+			videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
+			videoRefreshTimer->start();		
+
+		}
+
+
+		double synchronizeVideo(double videoPts, bool %skipVideoFrame) {
+
 			// calculate delay to display next frame
-			double delay = videoFrame->Pts - previousVideoPts;	
+			double delay = videoPts - previousVideoPts;	
 
 			if(delay <= 0 || delay >= 1.0) {
 				// if incorrect delay, use previous one 
 				delay = previousVideoDelay;
 			}
 
-			previousVideoPts = videoFrame->Pts;
+			previousVideoPts = videoPts;
 			previousVideoDelay = delay;
 
-			// update delay to sync to audioPlayer 
-			double diff = getVideoClock() - audioPlayer->getAudioClock();
+			if(videoDecoder->HasAudio) {
 
-			// Skip or repeat the frame. Take delay into account
-			// FFPlay still doesn't "know if this is the best guess."
-			double sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
-			if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
-				if(diff <= -sync_threshold) {
-					delay = 0;
-				} else if(diff >= sync_threshold) {
-					delay = 2 * delay;
+				// synchronize video to audio
+				double diff = getVideoClock() - audioPlayer->getAudioClock();
+
+				// Skip or repeat the frame. Take delay into account
+				// FFPlay still doesn't "know if this is the best guess."
+				double sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
+				if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
+					if(diff <= -sync_threshold) {
+						delay = 0;
+					} else if(diff >= sync_threshold) {
+						delay = 2 * delay;
+					}
 				}
+
 			}
 
 			// adjust delay based on the actual current time
@@ -457,30 +482,18 @@ restartvideo:
 			videoDebug->AudioQueue = videoDecoder->FrameQueue->AudioQueueSize;
 			videoDebug->update();
 
-			updateUI();
-
 			if(actualDelay < 0.010) {
 
-				//Util::DebugOut("Video Delay too small: " + actualDelay.ToString());					
+				// delay is too small skip next frame
 				skipVideoFrame = true;
 				videoDebug->VideoDropped = videoDebug->VideoDropped + 1;
+
 			} else {
 
 				skipVideoFrame = false;
 			}
 
-			// queue current frame in freeFrames to be used again
-			videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
-
-			if(skipVideoFrame == true) {
-			
-				goto restartvideo;
-			}
-
-			// start timer with delay for next frame
-			videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
-			videoRefreshTimer->start();		
-
+			return(actualDelay);
 		}
 
 		void processAudioFrame() {
@@ -530,9 +543,7 @@ restartaudio:
 
 		}
 
-		void stopPlay() {
-
-			audioPlayer->stop();
+		void pausePlay() {
 
 			videoDecoder->FrameQueue->stop();
 
@@ -556,7 +567,6 @@ restartaudio:
 
 			previousVideoPts = 0;
 			previousVideoDelay = 0.04;
-			skipVideoFrame = false;	
 
 			previousAudioPts = 0;
 			previousAudioDelay = 0.04;
@@ -606,22 +616,25 @@ restartaudio:
 
 		void open(String ^location) {
 
-			stop();
+			pause();
 			close();
 			videoDebug->clear();			
 			
 			videoDecoder->open(location);
 			videoRender->initialize(videoDecoder->Width, videoDecoder->Height);
 			
-			audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
-				videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
+			if(videoDecoder->HasAudio) {
+
+				audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
+					videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
+			}
   
 			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
 			videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
 			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
 			videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
 			
-			fillFrameQueue();
+			//fillFrameQueue();
 		}
 
 		void play() {
@@ -629,7 +642,7 @@ restartaudio:
 			playCheckBox->Checked = true;
 		}
 
-		void stop() {
+		void pause() {
 
 			playCheckBox->Checked = false;
 		}
@@ -647,14 +660,18 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 				//frameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = frameTimer = HRTimer::getTimestamp();
 
-				int nrFramesDecoded = true;
+				int nrFramesDecoded;
 
+				// decode frames one by one, or handle seek requests
 				do
 				{
 					if(seekRequest == true) {
 
 						if(videoDecoder->seek(seekPosition) == 0) {
 							
+							// flush will only empty, not stop the framequeue
+							// This means the videorender and audioplayer thread will 
+							// wait until the queue gets filled again
 							videoDecoder->FrameQueue->flush();
 							audioPlayer->flush();
 							
@@ -669,6 +686,9 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 									
 				} while(nrFramesDecoded > 0 && !videoDecoderBW->CancellationPending);
 				
+
+				// stop the audio
+				audioPlayer->stop();
 		 }
 private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
  
@@ -684,7 +704,10 @@ private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
 
 private: System::Void stopButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 stop();
+			 pause();			 
+			 close();
+			 videoRender->clearScreen(this->BackColor);
+			 timeTrackBar->Value = timeTrackBar->Minimum;
 		 }
 
 private: System::Void debugVideoCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
@@ -726,7 +749,7 @@ private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, Syste
 
 			 } else {
 
-				 stopPlay();
+				 pausePlay();
 				 playCheckBox->ImageIndex = 2;
 
 			 }

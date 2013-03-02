@@ -147,8 +147,6 @@ namespace VideoLib {
 
 		void flush() {
 
-			//stop();
-
 			decodedVideoFrames->flush();
 			decodedAudioFrames->flush();
 		
@@ -165,10 +163,6 @@ namespace VideoLib {
 
 				freeAudioFrames->add(audioFrameData[i]);
 			}
-
-			//freeVideoFrames->open();
-			//freeAudioFrames->open();
-			//start();
 
 		}
 
