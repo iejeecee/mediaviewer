@@ -53,12 +53,28 @@ namespace VideoLib {
 				return(length);
 			}
 
+			void set(int length) {
+
+				this->length = length;
+			}
+
 		}
 
 		void copyFrameData(BYTE *dataPtr, int length)
 		{
-			this->length = length;
-			Marshal::Copy(IntPtr(dataPtr), data, 0, length);
+			if(length > 0) {
+
+				this->length = length;			
+				Marshal::Copy(IntPtr(dataPtr), data, 0, length);
+
+			} else {
+
+				// incorrect audio, set to silence
+				this->length = 4608;
+				Array::Clear(data,0,data->Length);
+
+			}
+
 			stream->Position = 0;
 			
 		}

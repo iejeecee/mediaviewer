@@ -110,11 +110,13 @@ namespace VideoLib {
 			if(frame != nullptr) {
 
 				delete frame;
+				frame = nullptr;
 			}
 
 			if(frameData != NULL) {
 
 				delete frameData;
+				frameData = NULL;
 			}
 		}
 

@@ -16,8 +16,6 @@ private:
 	D3D::Device ^device;
 	D3D::Surface ^offscreen;
 
-	D3D::PresentParameters ^presentParams;
-
 	Rectangle canvas;
 
 	int videoWidth;
@@ -29,6 +27,59 @@ private:
 	{
 		int value = (int)(char)(ch0)|((int)(char)(ch1) << 8)| ((int)(char)(ch2) << 16) | ((int)(char)(ch3) << 24);
 		return((D3D::Format) value);
+	}
+
+	D3D::PresentParameters ^createPresentParams() {
+
+		//Assume this is pre-initialized to your choice of full-screen or windowed mode.
+		bool fullScreen = false;
+
+		//Hard-coded to a common format.  A better method will be shown later in this lesson.
+		D3D::Format format = D3D::Format::R8G8B8;
+
+		//Allocate our class
+		D3D::PresentParameters ^presentParams = gcnew D3D::PresentParameters();
+
+		//No Z (Depth) buffer or Stencil buffer
+		presentParams->EnableAutoDepthStencil = false;
+
+		//multiple backbuffers for a flipchain
+		presentParams->BackBufferCount = 3;
+
+		//Set our Window as the Device Window
+		presentParams->DeviceWindow = owner;
+
+		//wait for VSync
+		presentParams->PresentationInterval = D3D::PresentInterval::One;
+
+		//flip frames on vsync
+		presentParams->SwapEffect = D3D::SwapEffect::Discard;
+
+		//Set Windowed vs. Full-screen
+		presentParams->Windowed = !fullScreen;
+
+		//We only need to set the Width/Height in full-screen mode
+		if(fullScreen) {
+
+			presentParams->BackBufferHeight = owner->Height;
+			presentParams->BackBufferWidth = owner->Width;
+
+			//Choose a compatible 16-bit mode.
+			presentParams->BackBufferFormat = format;
+
+		} else {
+
+			presentParams->BackBufferHeight = 0;
+			presentParams->BackBufferWidth = 0;
+			presentParams->BackBufferFormat = D3D::Format::Unknown;
+		}
+
+		return(presentParams);
+	}
+
+	void resetDevice() {
+
+		device->Reset(createPresentParams());
 	}
 
 public: 
@@ -62,48 +113,7 @@ public:
 			this->videoHeight = videoHeight;
 			this->videoWidth = videoWidth;
 
-			//Assume this is pre-initialized to your choice of full-screen or windowed mode.
-			bool fullScreen = false;
-
-			//Hard-coded to a common format.  A better method will be shown later in this lesson.
-			D3D::Format format = D3D::Format::R8G8B8;
-
-			//Allocate our class
-			presentParams = gcnew D3D::PresentParameters();
-
-			//No Z (Depth) buffer or Stencil buffer
-			presentParams->EnableAutoDepthStencil = false;
-
-			//multiple backbuffers for a flipchain
-			presentParams->BackBufferCount = 3;
-
-			//Set our Window as the Device Window
-			presentParams->DeviceWindow = owner;
-
-			//wait for VSync
-			presentParams->PresentationInterval = D3D::PresentInterval::One;
-
-			//flip frames on vsync
-			presentParams->SwapEffect = D3D::SwapEffect::Discard;
-
-			//Set Windowed vs. Full-screen
-			presentParams->Windowed = !fullScreen;
-
-			//We only need to set the Width/Height in full-screen mode
-			if(fullScreen) {
-
-				presentParams->BackBufferHeight = owner->Height;
-				presentParams->BackBufferWidth = owner->Width;
-
-				//Choose a compatible 16-bit mode.
-				presentParams->BackBufferFormat = format;
-
-			} else {
-
-				presentParams->BackBufferHeight = 0;
-				presentParams->BackBufferWidth = 0;
-				presentParams->BackBufferFormat = D3D::Format::Unknown;
-			}
+			D3D::PresentParameters ^presentParams = createPresentParams();
 
 			device = gcnew D3D::Device(0,                       //Adapter
 				D3D::DeviceType::Hardware,  //Device Type
@@ -166,13 +176,19 @@ public:
 		}
 
 		if(deviceStatus == (int)D3D::ResultCode::DeviceLost) {
-			 //Can't Reset yet, wait for a bit
-			//Thread::Sleep(500);   
+			 
+			//Can't Reset yet, wait for a bit
 
 		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
 
-			//device->Reset(gcnew array<D3D::PresentParameters ^>{presentParams});
-			device->Reset(presentParams);
+			if(owner->InvokeRequired) {
+
+				owner->Invoke(gcnew Action(this, &VideoRender::resetDevice));
+
+			} else {
+
+				resetDevice();
+			}
 		}
 
 	}
@@ -218,13 +234,19 @@ public:
 		}
 
 		if(deviceStatus == (int)D3D::ResultCode::DeviceLost) {
+
 			 //Can't Reset yet, wait for a bit
-			//Thread::Sleep(500);   
 
 		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
+		
+			if(owner->InvokeRequired) {
 
-			//device->Reset(gcnew array<D3D::PresentParameters ^>{presentParams});
-			device->Reset(presentParams);
+				owner->Invoke(gcnew Action(this, &VideoRender::resetDevice));
+
+			} else {
+
+				resetDevice();
+			}
 		}
 	}
 

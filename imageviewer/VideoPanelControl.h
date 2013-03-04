@@ -60,6 +60,10 @@ namespace imageviewer {
 			audioRefreshTimer->SynchronizingObject = nullptr;
 
 			videoDebug = gcnew VideoDebugForm();
+
+			audioDiffAvgCoef  = Math::Exp(Math::Log(0.01) / AUDIO_DIFF_AVG_NB);
+
+			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
 			
 		}
 
@@ -331,20 +335,37 @@ namespace imageviewer {
 
 		// no AV sync correction is done if below the AV sync threshold 
 		static const double AV_SYNC_THRESHOLD = 0.01;
-		// no AV correction is done if too big error 
+		// no AV sync correction is done if too big error 
 		static const double AV_NOSYNC_THRESHOLD = 10.0;
+
+		static const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 10;
+
+		// we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
+		static const int AUDIO_DIFF_AVG_NB = 20;
+
+		enum class SyncMode {
+
+			AUDIO_SYNCS_TO_VIDEO,
+			VIDEO_SYNCS_TO_AUDIO
+
+		} syncMode;
 
 		double previousVideoPts;
 		double previousVideoDelay;
-		static double frameTimer;
-		HRTimer ^videoRefreshTimer;
-		static double audioFrameTimer;
+
+		double videoFrameTimer;
+		double audioFrameTimer;
+
+		HRTimer ^videoRefreshTimer;		
 		HRTimer ^audioRefreshTimer;
 
-		double previousAudioPts;
-		double previousAudioDelay;
-
 		double videoPtsDrift;
+		double audioPtsDrift;
+
+		double audioDiffCum;
+		double audioDiffAvgCoef;
+		double audioDiffThreshold;
+		int audioDiffAvgCount;
 
 		bool seekRequest;
 		double seekPosition;
@@ -361,7 +382,7 @@ namespace imageviewer {
 
 		void invokeUpdateUI() {
 
-			int curTime = (int)Math::Floor(audioPlayer->getAudioClock());
+			int curTime = (int)Math::Floor(getVideoClock());
 			int totalTime = videoDecoder->DurationSeconds;
 
 			videoTimeLabel->Text = Util::formatTimeSeconds(curTime) + "/" + Util::formatTimeSeconds(totalTime);
@@ -409,6 +430,7 @@ restartvideo:
 
 			VideoFrame ^videoFrame = nullptr;
 			
+			// grab a decoded frame, returns false if the queue is stopped
 			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
 			if(success == false) return;
 
@@ -422,15 +444,19 @@ restartvideo:
 
 			updateUI();
 
-			double actualDelay = synchronizeVideo(videoFrame->Pts, skipVideoFrame);
+			double actualDelay = synchronizeVideo(videoFrame->Pts);
 
 			// queue current frame in freeFrames to be used again
 			videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
 
-			if(skipVideoFrame == true) {
-			
+			if(actualDelay < 0.010) {
+
+				// delay is too small skip next frame
+				skipVideoFrame = true;
+				videoDebug->VideoDropped = videoDebug->VideoDropped + 1;
 				goto restartvideo;
-			}
+
+			} 
 
 			// start timer with delay for next frame
 			videoRefreshTimer->Interval = int(actualDelay * 1000 + 0.5);
@@ -439,9 +465,9 @@ restartvideo:
 		}
 
 
-		double synchronizeVideo(double videoPts, bool %skipVideoFrame) {
+		double synchronizeVideo(double videoPts) {
 
-			// calculate delay to display next frame
+			// assume delay to next frame equals delay between previous frames
 			double delay = videoPts - previousVideoPts;	
 
 			if(delay <= 0 || delay >= 1.0) {
@@ -452,7 +478,7 @@ restartvideo:
 			previousVideoPts = videoPts;
 			previousVideoDelay = delay;
 
-			if(videoDecoder->HasAudio) {
+			if(videoDecoder->HasAudio && syncMode == SyncMode::VIDEO_SYNCS_TO_AUDIO) {
 
 				// synchronize video to audio
 				double diff = getVideoClock() - audioPlayer->getAudioClock();
@@ -460,10 +486,15 @@ restartvideo:
 				// Skip or repeat the frame. Take delay into account
 				// FFPlay still doesn't "know if this is the best guess."
 				double sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
+
 				if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
+
 					if(diff <= -sync_threshold) {
+
 						delay = 0;
+
 					} else if(diff >= sync_threshold) {
+
 						delay = 2 * delay;
 					}
 				}
@@ -471,29 +502,23 @@ restartvideo:
 			}
 
 			// adjust delay based on the actual current time
-			frameTimer += delay;
-			double actualDelay = frameTimer - HRTimer::getTimestamp();
+			videoFrameTimer += delay;
+			double actualDelay = videoFrameTimer - HRTimer::getTimestamp();
 
 			videoDebug->VideoDelay = delay;
 			videoDebug->ActualVideoDelay = actualDelay;
-			videoDebug->AudioSync = audioPlayer->getAudioClock();
 			videoDebug->VideoSync = getVideoClock();
+			videoDebug->AudioSync = audioPlayer->getAudioClock();
 			videoDebug->VideoQueue = videoDecoder->FrameQueue->VideoQueueSize;
 			videoDebug->AudioQueue = videoDecoder->FrameQueue->AudioQueueSize;
 			videoDebug->update();
 
-			if(actualDelay < 0.010) {
-
-				// delay is too small skip next frame
-				skipVideoFrame = true;
-				videoDebug->VideoDropped = videoDebug->VideoDropped + 1;
-
-			} else {
-
-				skipVideoFrame = false;
-			}
-
 			return(actualDelay);
+		}
+
+		double getAudioClock() {
+
+			return(audioPtsDrift - HRTimer::getTimestamp());
 		}
 
 		void processAudioFrame() {
@@ -504,27 +529,16 @@ restartaudio:
 			bool success = videoDecoder->FrameQueue->getDecodedAudioFrame(audioFrame);
 			if(success == false) return;
 
+			audioPtsDrift = audioFrame->Pts + HRTimer::getTimestamp();
+
+			adjustAudioLength(audioFrame);
+
 			audioPlayer->write(audioFrame);
+
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
-			
-			// calculate delay to display next frame
-			double delay = audioFrame->Pts - previousAudioPts;	
-
-			if(delay <= 0 || delay >= 1.0) {
-				// if incorrect delay, use previous one 
-				delay = previousAudioDelay;
-			}
-
-			previousAudioPts = audioFrame->Pts;
-			previousAudioDelay = delay;
-
-			// adjust delay based on the actual current time
-			audioFrameTimer += delay;
-			double actualDelay = audioFrameTimer - HRTimer::getTimestamp();
-
-			videoDebug->AudioDelay = delay;
-			videoDebug->ActualAudioDelay = actualDelay;
 			videoDebug->AudioFrameSize = audioFrame->Length;
+			
+			double actualDelay = synchronizeAudio(audioFrame);
 
 			// queue current frame in freeFrames to be used again
 			videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
@@ -543,6 +557,116 @@ restartaudio:
 
 		}
 
+		double synchronizeAudio(AudioFrame ^frame) {
+
+			// calculate delay to play next frame
+			int bytesPerSecond = videoDecoder->SamplesPerSecond * 
+				videoDecoder->BytesPerSample * videoDecoder->NrChannels;
+
+			double delay = frame->Length / double(bytesPerSecond);
+
+			// adjust delay based on the actual current time
+			audioFrameTimer += delay;
+			double actualDelay = audioFrameTimer - HRTimer::getTimestamp();
+
+			videoDebug->AudioDelay = delay;
+			videoDebug->ActualAudioDelay = actualDelay;			
+
+			return(actualDelay);
+		}
+
+
+		void adjustAudioLength(AudioFrame ^frame) {
+
+			//int n = 2 * videoDecoder->NrChannels;
+
+			if(syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+
+				int n = videoDecoder->NrChannels * videoDecoder->BytesPerSample;
+
+				double diff = audioPlayer->getAudioClock() - getVideoClock();
+
+				if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
+
+					// accumulate the diffs
+					audioDiffCum = diff + audioDiffAvgCoef * audioDiffCum;
+
+					if(audioDiffAvgCount < AUDIO_DIFF_AVG_NB) {
+
+						audioDiffAvgCount++;
+
+					} else {
+
+						double avgDiff = audioDiffCum * (1.0 - audioDiffAvgCoef);
+
+						// Shrinking/expanding buffer code....
+						if(Math::Abs(avgDiff) >= audioDiffThreshold) {
+
+							int wantedSize = frame->Length + 
+								(int(diff * videoDecoder->SamplesPerSecond) * n);
+
+							int minSize = int(frame->Length * ((100 - AUDIO_SAMPLE_CORRECTION_PERCENT_MAX)
+								/ 100));
+
+							int maxSize = int(frame->Length * ((100 + AUDIO_SAMPLE_CORRECTION_PERCENT_MAX) 
+								/ 100));
+
+							if(wantedSize < minSize) {
+
+								wantedSize = minSize;
+
+							} else if(wantedSize > maxSize) {
+
+								wantedSize = maxSize;
+							}
+
+							if(wantedSize < frame->Length) {
+
+								// remove samples 
+								Util::DebugOut("Removing Samples: " + (frame->Length - wantedSize).ToString());
+								frame->Length = wantedSize;
+
+							} else if(wantedSize > frame->Length) {
+														
+								// add samples by copying final samples
+								int nrExtraSamples = wantedSize - frame->Length;
+								Util::DebugOut("Adding Samples: " + nrExtraSamples.ToString());
+						
+								array<unsigned char> ^lastSample = gcnew array<unsigned char>(n);
+
+								for(int i = 0; i < n; i++) {
+
+									lastSample[i] = frame->Data[frame->Length - n + i];
+								}
+
+								frame->Stream->Position = frame->Length;
+
+								while(nrExtraSamples > 0) {
+									
+									frame->Stream->Write(lastSample, 0, n);
+									nrExtraSamples -= n;
+								}
+
+								frame->Stream->Position = 0;
+								frame->Length = wantedSize;
+							}
+
+						}
+
+
+						//audioDiffAvgCount = 0;
+					}
+
+				} else {
+
+					// difference is TOO big; reset diff stuff 
+					audioDiffAvgCount = 0;
+					audioDiffCum = 0;
+				}
+			}
+			
+		}
+
 		void pausePlay() {
 
 			videoDecoder->FrameQueue->stop();
@@ -559,17 +683,18 @@ restartaudio:
 
 		void startPlay() {
 
+			//if(IsPlaying) return;
+
 			audioPlayer->startPlayAfterNextWrite();
 
 			videoDecoder->FrameQueue->start();
-
+			
 			videoDecoderBW->RunWorkerAsync();
 
 			previousVideoPts = 0;
 			previousVideoDelay = 0.04;
 
-			previousAudioPts = 0;
-			previousAudioDelay = 0.04;
+			audioDiffAvgCount = 0;
 
 			videoRefreshTimer->start();
 			audioRefreshTimer->start();
@@ -627,6 +752,16 @@ restartaudio:
 
 				audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
 					videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
+
+				muteCheckBox->Enabled = true;
+				volumeTrackBar->Enabled = true;
+
+				audioDiffThreshold = 2.0 * 1024 / videoDecoder->SamplesPerSecond;
+
+			} else {
+
+				muteCheckBox->Enabled = false;
+				volumeTrackBar->Enabled = false;
 			}
   
 			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
@@ -657,8 +792,8 @@ restartaudio:
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
-				//frameTimer = videoDecoder->TimeNow;
-				audioFrameTimer = frameTimer = HRTimer::getTimestamp();
+				//videoFrameTimer = videoDecoder->TimeNow;
+				audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
 
 				int nrFramesDecoded;
 

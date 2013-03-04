@@ -186,6 +186,8 @@ public:
 
 	double getAudioClock() {
 
+		if(audioBuffer == nullptr) return(0);
+
 		int playPos = audioBuffer->PlayPosition;
 
 		if(playPos < prevPlayPos) {
@@ -203,6 +205,8 @@ public:
 	}
 
 	void write(VideoLib::AudioFrame ^frame) {//Stream ^data, int dataSizeBytes) {
+
+		if(frame->Length == 0) return;
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
