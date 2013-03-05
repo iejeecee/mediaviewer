@@ -64,6 +64,7 @@ namespace imageviewer {
 			audioDiffAvgCoef  = Math::Exp(Math::Log(0.01) / AUDIO_DIFF_AVG_NB);
 
 			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
+			playMode = PlayMode::STOPPED;
 			
 		}
 
@@ -205,7 +206,7 @@ namespace imageviewer {
 			// playCheckBox
 			// 
 			this->playCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
-			this->playCheckBox->ImageIndex = 3;
+			this->playCheckBox->ImageIndex = 2;
 			this->playCheckBox->ImageList = this->imageList;
 			this->playCheckBox->Location = System::Drawing::Point(3, 37);
 			this->playCheckBox->Margin = System::Windows::Forms::Padding(0, 3, 3, 3);
@@ -350,6 +351,14 @@ namespace imageviewer {
 
 		} syncMode;
 
+		enum class PlayMode {
+
+			PLAYING,
+			PAUSED,
+			STOPPED
+
+		} playMode;
+
 		double previousVideoPts;
 		double previousVideoDelay;
 
@@ -432,23 +441,33 @@ restartvideo:
 			
 			// grab a decoded frame, returns false if the queue is stopped
 			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
-			if(success == false) return;
+			if(success == false && playMode == PlayMode::STOPPED) return;
 
-			videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
+			double actualDelay;
 
-			if(skipVideoFrame == false) {
+			if(playMode == PlayMode::PLAYING) {
 
-				videoRender->display(videoFrame, canvas, Color::Black);
-				videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
-			} 
+				videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
 
-			updateUI();
+				if(skipVideoFrame == false) {
 
-			double actualDelay = synchronizeVideo(videoFrame->Pts);
+					videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
+					videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
+				} 
 
-			// queue current frame in freeFrames to be used again
-			videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
+				// queue current frame in freeFrames to be used again
+				videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
 
+				updateUI();
+
+				actualDelay = synchronizeVideo(videoFrame->Pts);
+
+			} else if(playMode == PlayMode::PAUSED) {
+
+				videoRender->display(nullptr, canvas, Color::Black, VideoRender::RenderMode::PAUSED);
+				actualDelay = 0.04;
+			}
+			
 			if(actualDelay < 0.010) {
 
 				// delay is too small skip next frame
@@ -669,6 +688,10 @@ restartaudio:
 
 		void pausePlay() {
 
+			if(IsPlaying == false) return;
+
+			playMode = PlayMode::PAUSED;
+
 			videoDecoder->FrameQueue->stop();
 
 			videoDecoderBW->CancelAsync();
@@ -683,7 +706,9 @@ restartaudio:
 
 		void startPlay() {
 
-			//if(IsPlaying) return;
+			if(IsPlaying == true) return;
+
+			playMode = PlayMode::PLAYING;
 
 			audioPlayer->startPlayAfterNextWrite();
 
@@ -729,7 +754,17 @@ restartaudio:
 			seekRequest = true;			
 		}
 
+
 	public:
+
+		property String ^VideoLocation
+		{
+
+			String ^get() {
+
+				return(videoDecoder->VideoLocation);
+			}
+		}
 
 		property bool IsPlaying {
 
@@ -741,8 +776,7 @@ restartaudio:
 
 		void open(String ^location) {
 
-			pause();
-			close();
+			stop();
 			videoDebug->clear();			
 			
 			videoDecoder->open(location);
@@ -774,7 +808,14 @@ restartaudio:
 
 		void play() {
 
-			playCheckBox->Checked = true;
+			if(playCheckBox->Checked == true && IsPlaying == false) {
+
+				startPlay();
+
+			} else {
+
+				playCheckBox->Checked = true;
+			}
 		}
 
 		void pause() {
@@ -782,20 +823,31 @@ restartaudio:
 			playCheckBox->Checked = false;
 		}
 	
+		void stop() {
 
-		void close() {
+			playMode = PlayMode::STOPPED;
 
+			videoDecoder->FrameQueue->stop();
+
+			videoDecoderBW->CancelAsync();
+	
+			while(IsPlaying) {
+
+				Application::DoEvents();
+			}
+			
 			videoDecoder->close();
 			audioPlayer->flush();
-		}
 
+		}
+	
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
 				//videoFrameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
 
-				int nrFramesDecoded;
+				int nrFramesDecoded = 1;
 
 				// decode frames one by one, or handle seek requests
 				do
@@ -839,10 +891,10 @@ private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
 
 private: System::Void stopButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 pause();			 
-			 close();
-			 videoRender->clearScreen(this->BackColor);
+			 stop();
+			 videoRender->display(nullptr, Rectangle::Empty, this->BackColor, VideoRender::RenderMode::CLEAR_SCREEN);
 			 timeTrackBar->Value = timeTrackBar->Minimum;
+			 playCheckBox->Checked = false;
 		 }
 
 private: System::Void debugVideoCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
@@ -878,6 +930,11 @@ private: System::Void muteCheckBox_CheckedChanged(System::Object^  sender, Syste
 private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
 			 if(playCheckBox->Checked == true) {
+
+				 if(playMode == PlayMode::STOPPED && !String::IsNullOrEmpty(videoDecoder->VideoLocation)) {
+
+					 open(videoDecoder->VideoLocation);					 
+				 }
 
 				 startPlay();
 				 playCheckBox->ImageIndex = 3;

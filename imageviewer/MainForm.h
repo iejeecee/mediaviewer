@@ -458,6 +458,7 @@ namespace imageviewer {
 			this->Name = L"MainForm";
 			this->Text = L"MainForm";
 			this->WindowState = System::Windows::Forms::FormWindowState::Maximized;
+			this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &MainForm::mainForm_FormClosing);
 			this->menuStrip1->ResumeLayout(false);
 			this->menuStrip1->PerformLayout();
 			this->toolStripContainer1->ContentPanel->ResumeLayout(false);
@@ -626,6 +627,7 @@ namespace imageviewer {
 						 showVideoPanel();
 						 videoPanel->open(location);
 						 videoPanel->play();
+						 setTitle();
 
 					 }
 
@@ -778,7 +780,11 @@ namespace imageviewer {
 
 				 String ^title = L"";
 
-				 if(imagePanel->Visible == true) {
+				 if(videoPanel->Visible == true) {
+
+					 title = videoPanel->VideoLocation;
+
+				 } else if(imagePanel->Visible == true) {
 
 					title = imagePanel->ImageLocation;
 					if(imagePanel->IsModified) {
@@ -1061,6 +1067,10 @@ private: System::Void videoToolStripButton_Click(System::Object^  sender, System
 public: System::Void application_Idle(System::Object^  sender, System::EventArgs^  e) {
 
 			//Util::DebugOut("idle");
+		 }
+private: System::Void mainForm_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
+
+			 videoPanel->stop();
 		 }
 };
 }

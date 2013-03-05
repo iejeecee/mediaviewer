@@ -196,6 +196,8 @@ namespace VideoLib {
 		
 		FrameQueue ^frameQueue;
 
+		String ^videoLocation;
+
 	public:
 
 		enum class DecodeMode {
@@ -210,6 +212,14 @@ namespace VideoLib {
 			VideoLib::FrameQueue ^get() {
 
 				return(frameQueue);
+			}
+		}
+
+		property String ^VideoLocation {
+
+			String ^get() {
+
+				return(videoLocation);
 			}
 		}
 

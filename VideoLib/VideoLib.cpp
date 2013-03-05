@@ -153,6 +153,7 @@ VideoPlayer::VideoPlayer(Device ^device) {
 	audioClock = 0;
 	
 	frameQueue = gcnew VideoLib::FrameQueue();
+	videoLocation = "";
 
 }
 
@@ -264,6 +265,8 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 void VideoPlayer::open(String ^videoLocation) {
 
 	try {
+
+		this->videoLocation = videoLocation;
 
 		videoPlayer->open(marshal_as<std::string>(videoLocation), PIX_FMT_YUV420P);
 

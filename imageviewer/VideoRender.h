@@ -84,6 +84,12 @@ private:
 
 public: 
 
+	enum class RenderMode {
+		NORMAL,
+		CLEAR_SCREEN,
+		PAUSED
+	};
+
 	VideoRender(Windows::Forms::Control ^owner)
 	{
 		this->owner = owner;
@@ -154,46 +160,7 @@ public:
 
 	}
 
-	void clearScreen(Color color) {
-
-		int deviceStatus;
-
-		if(device->CheckCooperativeLevel(deviceStatus) == true) {
-
-			try {
-
-				device->Clear(D3D::ClearFlags::Target, color, 1.0f, 0);
-				device->Present();
-
-			} catch(D3D::DeviceLostException ^) {
-
-				device->CheckCooperativeLevel(deviceStatus);
-
-			} catch(D3D::DeviceNotResetException ^) {
-
-				device->CheckCooperativeLevel(deviceStatus);
-			}
-		}
-
-		if(deviceStatus == (int)D3D::ResultCode::DeviceLost) {
-			 
-			//Can't Reset yet, wait for a bit
-
-		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
-
-			if(owner->InvokeRequired) {
-
-				owner->Invoke(gcnew Action(this, &VideoRender::resetDevice));
-
-			} else {
-
-				resetDevice();
-			}
-		}
-
-	}
-
-	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor) {
+	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor, RenderMode mode) {
 
 		int deviceStatus;
 
@@ -203,16 +170,33 @@ public:
 
 				device->Clear(D3D::ClearFlags::Target, backColor, 1.0f, 0);
 
-				device->BeginScene();				
+				if(mode == RenderMode::CLEAR_SCREEN) {
 
-				Rectangle videoRect = Rectangle(0, 0, videoFrame->Width, videoFrame->Height);
+					device->Present();
+					return;
+				}
 
-				D3D::Surface ^frame = videoFrame->Image;
+				device->BeginScene();		
 
-				if(frame == nullptr) {
+				Rectangle videoRect;
+				D3D::Surface ^frame;
+				
+				if(mode == RenderMode::NORMAL) {
 
-					videoFrame->copyFrameDataToSurface(offscreen);
-					frame = offscreen;	
+					videoRect = Rectangle(0, 0, videoFrame->Width, videoFrame->Height);
+				
+					frame = videoFrame->Image;
+
+					if(frame == nullptr) {
+
+						videoFrame->copyFrameDataToSurface(offscreen);
+						frame = offscreen;	
+					}
+
+				} else if(mode == RenderMode::PAUSED) {
+
+					videoRect = Rectangle(0, 0, offscreen->Description.Width,  offscreen->Description.Height);
+					frame = offscreen;
 				}
 
 				D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
