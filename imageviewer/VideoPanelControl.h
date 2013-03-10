@@ -8,6 +8,7 @@
 #include "StreamingAudioBuffer.h"
 #include "VideoRender.h"
 #include "VideoDebugForm.h"
+#include "VideoState.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -64,8 +65,9 @@ namespace imageviewer {
 			audioDiffAvgCoef  = Math::Exp(Math::Log(0.01) / AUDIO_DIFF_AVG_NB);
 
 			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
-			playMode = PlayMode::STOPPED;
-			
+			videoStateLock = gcnew Object();
+			VideoState = imageviewer::VideoState::CLOSED;
+		
 		}
 
 	protected:
@@ -351,13 +353,9 @@ namespace imageviewer {
 
 		} syncMode;
 
-		enum class PlayMode {
+		VideoState videoState;
 
-			PLAYING,
-			PAUSED,
-			STOPPED
-
-		} playMode;
+		Object ^videoStateLock;
 
 		double previousVideoPts;
 		double previousVideoDelay;
@@ -386,6 +384,21 @@ namespace imageviewer {
 			Control ^get() {
 
 				return(splitContainer->Panel1);
+			}
+		}
+
+		property imageviewer::VideoState VideoState {
+
+			void set(imageviewer::VideoState videoState) {
+
+				Monitor::Enter(videoStateLock);
+				this->videoState = videoState;
+				Monitor::Exit(videoStateLock);
+			}
+
+			imageviewer::VideoState get() {
+
+				return(videoState);
 			}
 		}
 
@@ -422,52 +435,57 @@ namespace imageviewer {
 			bool skipVideoFrame = false;
 
 restartvideo:
-
-			int videoWidth = videoDecoder->Width;
-			int videoHeight = videoDecoder->Height;
-			Rectangle videoCanvasRec = videoRender->Canvas;
 			
-			int scaledWidth, scaledHeight;
-
-			ImageUtils::stretchRectangle(videoWidth, videoHeight,
-				videoCanvasRec.Width, videoCanvasRec.Height, scaledWidth, scaledHeight);
-
-			Rectangle scaledVideoRec(0,0, scaledWidth, scaledHeight);
-			
-			Rectangle canvas = ImageUtils::centerRectangle(videoCanvasRec,
-				scaledVideoRec);
-
-			VideoFrame ^videoFrame = nullptr;
-			
-			// grab a decoded frame, returns false if the queue is stopped
-			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
-			if(success == false && playMode == PlayMode::STOPPED) return;
+			Monitor::Enter(videoStateLock);
 
 			double actualDelay;
 
-			if(playMode == PlayMode::PLAYING) {
+			try {
 
-				videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
+				Rectangle scaledVideoRec = ImageUtils::stretchRectangle(
+					Rectangle(0,0,videoDecoder->Width, videoDecoder->Height),
+					videoRender->Canvas);
 
-				if(skipVideoFrame == false) {
+				Rectangle canvas = ImageUtils::centerRectangle(videoRender->Canvas,
+					scaledVideoRec);
 
-					videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
-					videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
-				} 
+				VideoFrame ^videoFrame = nullptr;
 
-				// queue current frame in freeFrames to be used again
-				videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
+				// grab a decoded frame, returns false if the queue is stopped
+				bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
+				if(success == false && VideoState == imageviewer::VideoState::CLOSED) return;
 
-				updateUI();
+				if(VideoState == imageviewer::VideoState::PLAYING) {
 
-				actualDelay = synchronizeVideo(videoFrame->Pts);
+					videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
 
-			} else if(playMode == PlayMode::PAUSED) {
+					if(skipVideoFrame == false) {
 
-				videoRender->display(nullptr, canvas, Color::Black, VideoRender::RenderMode::PAUSED);
-				actualDelay = 0.04;
+						videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
+						videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
+					} 
+
+					// queue current frame in freeFrames to be used again
+					videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
+
+					actualDelay = synchronizeVideo(videoFrame->Pts);
+
+				} else if(VideoState == imageviewer::VideoState::PAUSED) {
+
+					videoRender->display(nullptr, canvas, Color::Black, VideoRender::RenderMode::PAUSED);
+					actualDelay = 0.04;
+				}
+
+			} finally {
+
+				Monitor::Exit(videoStateLock);
 			}
-			
+
+			// do not update ui elements on main thread inside videoStateLock
+			// or we could get a deadlock
+			videoDebug->update();
+			updateUI();
+
 			if(actualDelay < 0.010) {
 
 				// delay is too small skip next frame
@@ -530,7 +548,7 @@ restartvideo:
 			videoDebug->AudioSync = audioPlayer->getAudioClock();
 			videoDebug->VideoQueue = videoDecoder->FrameQueue->VideoQueueSize;
 			videoDebug->AudioQueue = videoDecoder->FrameQueue->AudioQueueSize;
-			videoDebug->update();
+			
 
 			return(actualDelay);
 		}
@@ -557,10 +575,12 @@ restartaudio:
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			videoDebug->AudioFrameSize = audioFrame->Length;
 			
-			double actualDelay = synchronizeAudio(audioFrame);
+			int frameLength = audioFrame->Length;
 
 			// queue current frame in freeFrames to be used again
 			videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
+
+			double actualDelay = synchronizeAudio(frameLength);
 
 			if(actualDelay <= 0) {
 
@@ -576,13 +596,13 @@ restartaudio:
 
 		}
 
-		double synchronizeAudio(AudioFrame ^frame) {
+		double synchronizeAudio(int frameLength) {
 
 			// calculate delay to play next frame
 			int bytesPerSecond = videoDecoder->SamplesPerSecond * 
 				videoDecoder->BytesPerSample * videoDecoder->NrChannels;
 
-			double delay = frame->Length / double(bytesPerSecond);
+			double delay = frameLength / double(bytesPerSecond);
 
 			// adjust delay based on the actual current time
 			audioFrameTimer += delay;
@@ -688,9 +708,13 @@ restartaudio:
 
 		void pausePlay() {
 
-			if(IsPlaying == false) return;
+			if(VideoState == imageviewer::VideoState::PAUSED || 
+				VideoState == imageviewer::VideoState::CLOSED) {
+				
+					return;
+			}
 
-			playMode = PlayMode::PAUSED;
+			VideoState = imageviewer::VideoState::PAUSED;		
 
 			videoDecoder->FrameQueue->stop();
 
@@ -706,9 +730,13 @@ restartaudio:
 
 		void startPlay() {
 
-			if(IsPlaying == true) return;
+			if(VideoState == imageviewer::VideoState::PLAYING || 
+				VideoState == imageviewer::VideoState::CLOSED) {
+					
+				return;
+			}
 
-			playMode = PlayMode::PLAYING;
+			VideoState = imageviewer::VideoState::PLAYING;
 
 			audioPlayer->startPlayAfterNextWrite();
 
@@ -776,34 +804,45 @@ restartaudio:
 
 		void open(String ^location) {
 
-			stop();
-			videoDebug->clear();			
-			
-			videoDecoder->open(location);
-			videoRender->initialize(videoDecoder->Width, videoDecoder->Height);
-			
-			if(videoDecoder->HasAudio) {
+			try {
 
-				audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
-					videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
+				stop();
+				videoDebug->clear();			
 
-				muteCheckBox->Enabled = true;
-				volumeTrackBar->Enabled = true;
+				videoDecoder->open(location);
+				videoRender->initialize(videoDecoder->Width, videoDecoder->Height);
 
-				audioDiffThreshold = 2.0 * 1024 / videoDecoder->SamplesPerSecond;
+				if(videoDecoder->HasAudio) {
 
-			} else {
+					audioPlayer->initialize(videoDecoder->SamplesPerSecond, videoDecoder->BytesPerSample,
+						videoDecoder->NrChannels, videoDecoder->MaxAudioFrameSize * 2);			
 
-				muteCheckBox->Enabled = false;
-				volumeTrackBar->Enabled = false;
+					muteCheckBox->Enabled = true;
+					volumeTrackBar->Enabled = true;
+
+					audioDiffThreshold = 2.0 * 1024 / videoDecoder->SamplesPerSecond;
+
+				} else {
+
+					muteCheckBox->Enabled = false;
+					volumeTrackBar->Enabled = false;
+				}
+
+				videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
+				videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
+				videoDebug->AudioQueueSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
+				videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
+
+				VideoState = imageviewer::VideoState::OPEN;
+
+			} catch (VideoLibException ^e) {
+
+				VideoState = imageviewer::VideoState::CLOSED;
+
+				MessageBox::Show("Cannot open: " + location + "\n\n" + 
+					e->Message, "Video Error");
+
 			}
-  
-			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
-			videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
-			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
-			videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
-			
-			//fillFrameQueue();
 		}
 
 		void play() {
@@ -825,9 +864,9 @@ restartaudio:
 	
 		void stop() {
 
-			playMode = PlayMode::STOPPED;
+			VideoState = imageviewer::VideoState::CLOSED;
 
-			videoDecoder->FrameQueue->stop();
+			videoDecoder->FrameQueue->stop();			
 
 			videoDecoderBW->CancelAsync();
 	
@@ -847,14 +886,14 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 				//videoFrameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
 
-				int nrFramesDecoded = 1;
+				bool frameDecoded = true;
 
 				// decode frames one by one, or handle seek requests
 				do
 				{
 					if(seekRequest == true) {
 
-						if(videoDecoder->seek(seekPosition) == 0) {
+						if(videoDecoder->seek(seekPosition) == true) {
 							
 							// flush will only empty, not stop the framequeue
 							// This means the videorender and audioplayer thread will 
@@ -867,11 +906,11 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 
 					} else {
 
-						nrFramesDecoded = videoDecoder->decodeFrame(
+						frameDecoded = videoDecoder->decodeFrame(
 							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
 					}
 									
-				} while(nrFramesDecoded > 0 && !videoDecoderBW->CancellationPending);
+				} while(frameDecoded == true && !videoDecoderBW->CancellationPending);
 				
 
 				// stop the audio
@@ -931,7 +970,7 @@ private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, Syste
 
 			 if(playCheckBox->Checked == true) {
 
-				 if(playMode == PlayMode::STOPPED && !String::IsNullOrEmpty(videoDecoder->VideoLocation)) {
+				 if(VideoState == imageviewer::VideoState::CLOSED && !String::IsNullOrEmpty(videoDecoder->VideoLocation)) {
 
 					 open(videoDecoder->VideoLocation);					 
 				 }

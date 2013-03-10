@@ -7,7 +7,7 @@
 #include <vector>
 #include "VideoDecoder.h"
 #include "WindowsFileUtil.h"
-
+#include "VideoLibException.h"
 
 namespace Native {
 
@@ -48,7 +48,7 @@ public:
 
 		if(getWidth() == 0 || getHeight() == 0) {
 
-			throw std::runtime_error("invalid video stream");
+			throw gcnew VideoLib::VideoLibException("invalid video stream");
 		}
 
 		initImageConverter(format, getWidth(), getHeight(), X);

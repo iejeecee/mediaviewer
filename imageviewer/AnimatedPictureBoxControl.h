@@ -258,12 +258,11 @@ protected:
 
 		if(sizeMode == PictureBoxSizeMode::Zoom) {
 
-			int destWidth, destHeight;
-
-			ImageUtils::stretchRectangle(currentImage->Width, currentImage->Height, 
-				canvasRect.Width, canvasRect.Height, destWidth, destHeight);
+			Rectangle stretchedRect = ImageUtils::stretchRectangle(
+				Rectangle(0, 0, currentImage->Width, currentImage->Height), 
+				canvasRect);
 			
-			destRect = ImageUtils::centerRectangle(canvasRect, Rectangle(0,0, destWidth, destHeight));
+			destRect = ImageUtils::centerRectangle(canvasRect, stretchedRect);
 
 		} else if(sizeMode == PictureBoxSizeMode::CenterImage) {
 
@@ -304,12 +303,10 @@ protected:
 
 			canvasRect = getIconCanvas(i);
 
-			int scaledWidth, scaledHeight;
+			Rectangle stretchedRec = ImageUtils::stretchRectangle(
+				Rectangle(0, 0, icon->Width, icon->Height), canvasRect);
 
-			ImageUtils::stretchRectangle(icon->Width, icon->Height, canvasRect.Width,
-				canvasRect.Height, scaledWidth, scaledHeight);
-
-			destRect = ImageUtils::centerRectangle(canvasRect, Rectangle(0,0, scaledWidth, scaledHeight));
+			destRect = ImageUtils::centerRectangle(canvasRect, stretchedRec);
 
 			imageAttr->SetColorKey( upperColor, upperColor, ColorAdjustType::Default );
 	

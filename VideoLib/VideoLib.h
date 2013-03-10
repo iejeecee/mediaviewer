@@ -162,9 +162,8 @@ namespace VideoLib {
 		void open(String ^videoLocation);
 		void close();
 
-		// TODO: Add your methods for this class here.
 		List<Drawing::Bitmap ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs);
+			int captureInterval, int nrThumbs, double startOffset);
 
 		
 	};
@@ -311,8 +310,8 @@ namespace VideoLib {
 		~VideoPlayer();
 
 		void open(String ^videoLocation);
-		int seek(double posSeconds);
-		int decodeFrame(DecodeMode mode);
+		bool seek(double posSeconds);
+		bool decodeFrame(DecodeMode mode);
 		void close();
 
 		

@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4808.27994, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4816.25875, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4793.31094, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4815.38511, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -789,6 +789,10 @@
 			</File>
 			<File
 				RelativePath=".\VideoRender.h"
+				>
+			</File>
+			<File
+				RelativePath=".\VideoState.h"
 				>
 			</File>
 			<Filter

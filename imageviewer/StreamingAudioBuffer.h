@@ -88,6 +88,19 @@ public:
 		}
 	}
 
+	property int Frequency {
+
+		void set(int frequency) {
+
+			audioBuffer->Frequency = frequency;
+		}
+
+		int get() {
+
+			return(audioBuffer->Frequency);
+		}
+	}
+
 	property double Volume {
 
 		void set(double volume) {
@@ -162,7 +175,8 @@ public:
 			desc->GlobalFocus = true;
 			desc->ControlVolume = true;
 			desc->CanGetCurrentPosition = true;
-			
+			desc->ControlFrequency = true;
+
 			audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
 
 			Volume = volume;

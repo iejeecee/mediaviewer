@@ -47,16 +47,20 @@ public:
 		scaledHeight = int(Math::Round(height * Math::Min(widthScale, heightScale)));
 	}
 
-	static void stretchRectangle(int width, int height, int maxWidth, int maxHeight, int %scaledWidth, int %scaledHeight) {
+	static Rectangle stretchRectangle(Rectangle rec, Rectangle max) {
 			
 		float widthScale = 1;
 		float heightScale = 1;
 
-		widthScale = maxWidth / (float)width;			
-		heightScale = maxHeight / (float)height;
-			
-		scaledWidth = int(Math::Round(width * Math::Min(widthScale, heightScale)));
-		scaledHeight = int(Math::Round(height * Math::Min(widthScale, heightScale)));
+		widthScale = max.Width / (float)rec.Width;			
+		heightScale = max.Height / (float)rec.Height;
+		
+		Rectangle stretched(rec.X, rec.Y, 0, 0);
+
+		stretched.Width = int(Math::Round(rec.Width * Math::Min(widthScale, heightScale)));
+		stretched.Height = int(Math::Round(rec.Height * Math::Min(widthScale, heightScale)));
+
+		return(stretched);
 	}
 
 	static Image ^resizeImage(Image ^source, int width, int height) {

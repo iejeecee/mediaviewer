@@ -252,7 +252,14 @@ public:
 		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
 
 		List<Bitmap ^> ^thumbBitmaps = videoPreview->grabThumbnails(MAX_THUMBNAIL_WIDTH,
-			MAX_THUMBNAIL_HEIGHT, -1, 1);
+			MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025);
+
+		if(thumbBitmaps->Count == 0) {
+
+			// possibly could not seek in video, try to get the first frame in the video
+			thumbBitmaps = videoPreview->grabThumbnails(MAX_THUMBNAIL_WIDTH,
+				MAX_THUMBNAIL_HEIGHT, -1, 1, 0);
+		}
 
 		for each(Bitmap ^bitmap in thumbBitmaps) {
 

@@ -275,6 +275,10 @@
 				RelativePath=".\VideoLib.h"
 				>
 			</File>
+			<File
+				RelativePath=".\VideoLibException.h"
+				>
+			</File>
 			<Filter
 				Name="Frame"
 				>

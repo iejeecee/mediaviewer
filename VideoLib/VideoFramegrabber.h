@@ -173,12 +173,12 @@ public:
 	}
 
 	void grab(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs)
+			int captureInterval, int nrThumbs, double startOffset)
 	{
 	
 		if(getWidth() == 0 || getHeight() == 0) {
 
-			throw std::runtime_error("invalid video stream");
+			throw gcnew VideoLib::VideoLibException("invalid video stream");
 		}
 
 		float widthScale = 1;
@@ -217,25 +217,31 @@ public:
 			}
 		}
 
-		double offset = duration * 0.025;
+		double offset = duration * startOffset;
 		double step = (duration - offset) / nrFrames;
 
 		for(frameNr = 0; frameNr < nrFrames; frameNr++) {
 
 			double pos = offset + frameNr * step;
 
-			seek(pos);
+			bool seekSuccess = seek(pos);
 
-			if(decode(DECODE_KEY_FRAMES_ONLY, SKIP_AUDIO, 1) != 1) {
+			if(seekSuccess) {
 
-				// retry a non-keyframe
-				seek(pos);
+				bool frameOk = decodeFrame(DECODE_KEY_FRAMES_ONLY, SKIP_AUDIO);
 
-				if(decode(DECODE_VIDEO, SKIP_AUDIO, 1) != 1) {
+				if(!frameOk) {
 
-					throw std::runtime_error("could not decode any frames");
+					// retry a non-keyframe
+					frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO);
+
+					if(!frameOk) {
+
+						throw gcnew VideoLib::VideoLibException("could not decode any frames");
+					}
 				}
-			}
+
+			}		
 		}
 	}
 

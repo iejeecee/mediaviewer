@@ -74,6 +74,7 @@ void VideoPreview::open(String ^videoLocation) {
 	} catch (Exception ^) {
 
 		close();
+		throw;
 	}
 }
 
@@ -109,21 +110,13 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 
 
 List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs) 
+			int captureInterval, int nrThumbs, double startOffset) 
 {
 
 	thumbs->Clear();
 
-	try {
-
-		frameGrabber->grab(maxThumbWidth, maxThumbHeight,
-			captureInterval, nrThumbs);
-
-	} finally {
-
-		
-		
-	}
+	frameGrabber->grab(maxThumbWidth, maxThumbHeight,
+			captureInterval, nrThumbs, startOffset);
 
 	return(thumbs);
 }
@@ -275,10 +268,11 @@ void VideoPlayer::open(String ^videoLocation) {
 	} catch (Exception ^) {
 
 		close();
+		throw;
 	}
 
 }
-int VideoPlayer::decodeFrame(DecodeMode mode) {
+bool VideoPlayer::decodeFrame(DecodeMode mode) {
 
 	VideoDecoder::VideoDecodeMode videoDecodeMode = VideoDecoder::DECODE_VIDEO;
 	VideoDecoder::AudioDecodeMode audioDecodeMode = VideoDecoder::DECODE_AUDIO;
@@ -292,10 +286,10 @@ int VideoPlayer::decodeFrame(DecodeMode mode) {
 		videoDecodeMode = VideoDecoder::SKIP_VIDEO;
 	}
 
-	return(videoPlayer->decode(videoDecodeMode, audioDecodeMode, 1));
+	return(videoPlayer->decodeFrame(videoDecodeMode, audioDecodeMode));
 }
 
-int VideoPlayer::seek(double posSeconds) {
+bool VideoPlayer::seek(double posSeconds) {
 
 	return(videoPlayer->seek(posSeconds));
 }
