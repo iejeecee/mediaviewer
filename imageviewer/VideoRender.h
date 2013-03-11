@@ -82,6 +82,26 @@ private:
 		device->Reset(createPresentParams());
 	}
 
+	void aquireResources() {
+
+		if(videoWidth != 0 && videoHeight != 0) {
+
+			D3D::Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
+
+			offscreen = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, pixelFormat, 
+				D3D::Pool::Default);
+		}
+	}
+
+	void releaseResources() {
+
+		if(offscreen != nullptr) {
+
+			delete offscreen;
+			offscreen = nullptr;
+		}
+	}
+
 public: 
 
 	enum class RenderMode {
@@ -92,7 +112,18 @@ public:
 
 	VideoRender(Windows::Forms::Control ^owner)
 	{
+		device = nullptr;
 		this->owner = owner;
+	}
+
+	~VideoRender() {
+
+		releaseResources();
+
+		if(device != nullptr) {
+
+			delete device;
+		}
 	}
 
 	property D3D::Device ^Device
@@ -121,34 +152,28 @@ public:
 
 			D3D::PresentParameters ^presentParams = createPresentParams();
 
-			device = gcnew D3D::Device(0,                       //Adapter
-				D3D::DeviceType::Hardware,  //Device Type
-				owner,                     //Render Window
-				D3D::CreateFlags::SoftwareVertexProcessing, //behaviour flags
-				presentParams);          //PresentParamters
+			if(device == nullptr) {
 
-			if(videoWidth != 0 && videoHeight != 0) {
+				device = gcnew D3D::Device(0,                      
+					D3D::DeviceType::Hardware,  
+					owner,                  
+					D3D::CreateFlags::SoftwareVertexProcessing,
+					presentParams);         
 
-				D3D::Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
-
-				offscreen = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, pixelFormat, 
-					D3D::Pool::Default);
-
-			} else {
-
-				offscreen = nullptr;
+				device->DeviceLost += gcnew EventHandler(this, &VideoRender::device_DeviceLost);
+				device->DeviceReset += gcnew EventHandler(this, &VideoRender::device_DeviceReset);
+				device->DeviceResizing += gcnew System::ComponentModel::CancelEventHandler(this, &VideoRender::device_DeviceResizing);
 			}
+
+			releaseResources();
+			aquireResources();
 
 			D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
 			
 			canvas = Rectangle(0, 0, backBuffer->Description.Width,
 				backBuffer->Description.Height);
 
-			device->DeviceLost += gcnew EventHandler(this, &VideoRender::device_DeviceLost);
-			device->DeviceReset += gcnew EventHandler(this, &VideoRender::device_DeviceReset);
-			device->DeviceResizing += gcnew System::ComponentModel::CancelEventHandler(this, &VideoRender::device_DeviceResizing);
-
-
+	
 		} catch (D3D::GraphicsException ^exception){
 
 			MessageBox::Show(exception->Message, "Direct3D Initialization error");
@@ -161,6 +186,8 @@ public:
 	}
 
 	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor, RenderMode mode) {
+
+		if(device == nullptr) return;
 
 		int deviceStatus;
 
@@ -243,24 +270,16 @@ public:
 	void device_DeviceReset(Object ^sender, EventArgs ^e) {
 
 		Util::DebugOut("d3d device reset");
-		// restore the offscreen surface
-		if(videoWidth != 0 && videoHeight != 0) {
 
-			D3D::Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
-
-			offscreen = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, pixelFormat, 
-				D3D::Pool::Default);
-		}
+		aquireResources();
+	
 	}
 
 	void device_DeviceLost(Object ^sender, EventArgs ^e) {
 
 		Util::DebugOut("d3d device lost");
-		// delete offscreen surface
-		if(offscreen != nullptr) {
-			delete offscreen;
-			offscreen = nullptr;
-		}
+	
+		releaseResources();
 
 	}
 

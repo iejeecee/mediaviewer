@@ -11,7 +11,7 @@ public ref class StreamingAudioBuffer
 {
 public:
 
-	enum class StatusMode {
+	enum class AudioState {
 
 		START_PLAY_AFTER_NEXT_WRITE,
 		PLAYING,
@@ -31,7 +31,7 @@ private:
 
 	double volume;
 	bool muted;
-	StatusMode status;
+	AudioState audioState;
 	
 
 	double timeOffset;
@@ -40,20 +40,31 @@ private:
 	int loops;
 	array<AutoResetEvent ^> ^bufferEvents;
 
-	
+	array<unsigned char> ^silence;
+
+	void releaseResources() {
+
+		if(audioBuffer != nullptr) {
+
+			delete audioBuffer;
+			audioBuffer = nullptr;
+		}
+	}
 
 public: 
 
 	void startPlayAfterNextWrite() {
 
-		status = StatusMode::START_PLAY_AFTER_NEXT_WRITE;
+		audioState = AudioState::START_PLAY_AFTER_NEXT_WRITE;
 	}
 
 	void flush() {
 
 		if(audioBuffer != nullptr) {
+
 			audioBuffer->Stop();
-			audioBuffer->SetCurrentPosition(0);	
+			audioBuffer->SetCurrentPosition(0);				
+			audioBuffer->Write(0, silence, DS::LockFlag::None);
 		}
 
 		loops = 0;
@@ -61,16 +72,16 @@ public:
 		prevPlayPos = 0;
 
 		setTimeOffset = true;
-		status = StatusMode::START_PLAY_AFTER_NEXT_WRITE;
+		audioState = AudioState::START_PLAY_AFTER_NEXT_WRITE;
 	}
 
 	void stop() {
 
-		status = StatusMode::STOPPED;
-
 		if(audioBuffer != nullptr) {
 			audioBuffer->Stop();
 		}
+
+		audioState = AudioState::STOPPED;
 	}
 
 	property bool Muted {
@@ -128,6 +139,8 @@ public:
 
 	StreamingAudioBuffer(Windows::Forms::Control ^owner)
 	{
+			device = nullptr;
+
 			try {
 
 				device = gcnew DS::Device();
@@ -135,7 +148,7 @@ public:
 
 			} catch (DS::SoundException ^exception){
 
-
+				MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
 				Util::DebugOut("Error Code:" + exception->ErrorCode);
 				Util::DebugOut("Error String:" + exception->ErrorString);
 				Util::DebugOut("Message:" + exception->Message);
@@ -149,11 +162,23 @@ public:
 			setTimeOffset = true;
 	}
 
+	~StreamingAudioBuffer() {
+
+		releaseResources();
+
+		if(device != nullptr) {
+
+			delete device;
+		}
+	}
+
 	void initialize(int samplesPerSecond, int bytesPerSample, int nrChannels, 
 		int bufferSizeBytes) 
 	{
 	
 		try {
+
+			releaseResources();
 
 			this->bufferSizeBytes = bufferSizeBytes;
 			this->bytesPerSample = bytesPerSample;
@@ -177,6 +202,9 @@ public:
 			desc->CanGetCurrentPosition = true;
 			desc->ControlFrequency = true;
 
+			silence = gcnew array<unsigned char>(bufferSizeBytes);
+			cli::array<unsigned char>::Clear(silence, 0, silence->Length);
+
 			audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
 
 			Volume = volume;
@@ -186,6 +214,7 @@ public:
 
 		} catch (DS::SoundException ^exception){
 
+			MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
 			Util::DebugOut("Error Code:" + exception->ErrorCode);
 			Util::DebugOut("Error String:" + exception->ErrorString);
 			Util::DebugOut("Message:" + exception->Message);
@@ -218,9 +247,9 @@ public:
 		return(time);
 	}
 
-	void write(VideoLib::AudioFrame ^frame) {//Stream ^data, int dataSizeBytes) {
+	void write(VideoLib::AudioFrame ^frame) {
 
-		if(frame->Length == 0) return;
+		if(audioBuffer == nullptr || frame->Length == 0) return;
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
@@ -235,7 +264,7 @@ public:
 
 		offsetBytes = (offsetBytes + frame->Length) % bufferSizeBytes;
 
-		if(status == StatusMode::START_PLAY_AFTER_NEXT_WRITE) {
+		if(audioState == AudioState::START_PLAY_AFTER_NEXT_WRITE) {
 
 			if(setTimeOffset == true) {
 
@@ -244,7 +273,7 @@ public:
 			}
 
 			audioBuffer->Play(0, DS::BufferPlayFlags::Looping);
-			status = StatusMode::PLAYING;
+			audioState = AudioState::PLAYING;
 		}
 
 	}

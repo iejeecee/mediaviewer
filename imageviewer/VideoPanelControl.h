@@ -67,6 +67,9 @@ namespace imageviewer {
 			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
 			videoStateLock = gcnew Object();
 			VideoState = imageviewer::VideoState::CLOSED;
+
+			updateTimeTrackBar = true;
+			timeTrackBarDragged = false;
 		
 		}
 
@@ -310,6 +313,8 @@ namespace imageviewer {
 			this->timeTrackBar->TabIndex = 0;
 			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
 			this->timeTrackBar->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseDown);
+			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
+			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
 			// 
 			// VideoPanelControl
 			// 
@@ -377,6 +382,9 @@ namespace imageviewer {
 		bool seekRequest;
 		double seekPosition;
 
+		bool updateTimeTrackBar;
+		bool timeTrackBarDragged;
+
 		delegate void UpdateUIDelegate(double, double, int);
 
 		property Control ^VideoPanel {
@@ -409,8 +417,11 @@ namespace imageviewer {
 
 			videoTimeLabel->Text = Util::formatTimeSeconds(curTime) + "/" + Util::formatTimeSeconds(totalTime);
 
-			double pos = Util::invlerp<int>(curTime,0,totalTime);
-			timeTrackBar->Value = Util::lerp<int>(pos, timeTrackBar->Minimum, timeTrackBar->Maximum);
+			if(updateTimeTrackBar == true) {
+
+				double pos = Util::invlerp<int>(curTime,0,totalTime);
+				timeTrackBar->Value = Util::lerp<int>(pos, timeTrackBar->Minimum, timeTrackBar->Maximum);
+			}
 		}
 
 		void updateUI() {
@@ -436,23 +447,26 @@ namespace imageviewer {
 
 restartvideo:
 			
-			Monitor::Enter(videoStateLock);
-
 			double actualDelay;
+
+			Rectangle scaledVideoRec = ImageUtils::stretchRectangle(
+				Rectangle(0,0,videoDecoder->Width, videoDecoder->Height),
+				videoRender->Canvas);
+
+			Rectangle canvas = ImageUtils::centerRectangle(videoRender->Canvas,
+				scaledVideoRec);
+
+			VideoFrame ^videoFrame = nullptr;
+
+			// grab a decoded frame, returns false if the queue is stopped
+			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
+
+			// make sure no thread modifies the videostate 
+			// during the next block of code
+			Monitor::Enter(videoStateLock);
 
 			try {
 
-				Rectangle scaledVideoRec = ImageUtils::stretchRectangle(
-					Rectangle(0,0,videoDecoder->Width, videoDecoder->Height),
-					videoRender->Canvas);
-
-				Rectangle canvas = ImageUtils::centerRectangle(videoRender->Canvas,
-					scaledVideoRec);
-
-				VideoFrame ^videoFrame = nullptr;
-
-				// grab a decoded frame, returns false if the queue is stopped
-				bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
 				if(success == false && VideoState == imageviewer::VideoState::CLOSED) return;
 
 				if(VideoState == imageviewer::VideoState::PLAYING) {
@@ -482,7 +496,7 @@ restartvideo:
 			}
 
 			// do not update ui elements on main thread inside videoStateLock
-			// or we could get a deadlock
+			// or we can get a deadlock
 			videoDebug->update();
 			updateUI();
 
@@ -994,19 +1008,45 @@ private: System::Void forwardButton_Click(System::Object^  sender, System::Event
 	
 		
 		 }
-private: System::Void timeTrackBar_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+		 void setTimeTrackBarPosition(int mouseX) {
 
 			 int totalTime = videoDecoder->DurationSeconds;
 
 			 Rectangle chanRec = WindowsUtils::getTrackBarChannelRect(timeTrackBar);
 
-			 double value = Util::invlerp<int>(e->X, chanRec.Left, chanRec.Right);
+			 double value = Util::invlerp<int>(mouseX, chanRec.Left, chanRec.Right);
 
 			 timeTrackBar->Value = Util::lerp<int>(value, timeTrackBar->Minimum, timeTrackBar->Maximum);
 
 			 int seconds = Util::lerp<int>(value, 0, totalTime);
 
 			 seek(seconds);
+		 }
+
+private: System::Void timeTrackBar_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+			 updateTimeTrackBar = false;
+			 setTimeTrackBarPosition(e->X);
+			
+		 }
+private: System::Void timeTrackBar_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+			 
+			 if(timeTrackBarDragged == true) {
+
+				setTimeTrackBarPosition(e->X);
+				timeTrackBarDragged = false;
+			 }
+
+			 updateTimeTrackBar = true;
+		
+		 }
+private: System::Void timeTrackBar_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+			 if(updateTimeTrackBar == false) {
+
+				 timeTrackBarDragged = true;
+			 }
 		 }
 };
 }

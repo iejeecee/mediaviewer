@@ -246,88 +246,82 @@ public:
 	{
 
 		if(isClosed()) return(0);
-		
+
 		int frameFinished = 0;
 
-		try {
+		while(!frameFinished) {
 
-			while(!frameFinished) {
+			if(av_read_frame(formatContext, &packet) != 0) {
 
-				if(av_read_frame(formatContext, &packet) != 0) {
+				// cannot read frame or end of file
+				return(false);
+			}
 
-					// cannot read frame or end of file
-					return(false);
+			// only decode video/keyframe or non corrupt packets
+			if((packet.stream_index == videoStreamIndex) &&
+				(videoMode != DECODE_KEY_FRAMES_ONLY || (packet.flags & AV_PKT_FLAG_KEY)) &&
+				!(packet.flags & AV_PKT_FLAG_CORRUPT) &&
+				(videoMode != SKIP_VIDEO))
+			{
+
+				avcodec_get_frame_defaults(frame);
+
+				int ret = avcodec_decode_video2(videoCodecContext, frame, &frameFinished, &packet);
+				if(ret < 0) {
+
+					//Error decoding video frame
+					//return(0);
 				}
 
-				// only decode video/keyframe or non corrupt packets
-				if((packet.stream_index == videoStreamIndex) &&
-					(videoMode != DECODE_KEY_FRAMES_ONLY || (packet.flags & AV_PKT_FLAG_KEY)) &&
-					!(packet.flags & AV_PKT_FLAG_CORRUPT) &&
-					(videoMode != SKIP_VIDEO))
-				{
+				if(frameFinished)
+				{		
+					AVFrame *finishedFrame = frame;					
+
+					if(imageConvertContext != NULL) {
+
+						sws_scale(imageConvertContext,
+							frame->data,
+							frame->linesize,
+							0,
+							frame->height,
+							convertedFrame->data,
+							convertedFrame->linesize);
+
+						finishedFrame = convertedFrame;
+					}
+
+					if(decodedFrame != NULL) {
+						decodedFrame(data, &packet, finishedFrame, VIDEO);
+					}
+
+				}
+
+			} else if((packet.stream_index == audioStreamIndex) &&
+				(audioMode == DECODE_AUDIO)) {
 
 					avcodec_get_frame_defaults(frame);
 
-					int ret = avcodec_decode_video2(videoCodecContext, frame, &frameFinished, &packet);
-					if(ret < 0) {
+					int ret = avcodec_decode_audio4(audioCodecContext, frame, &frameFinished, 
+						&packet);
 
-						//Error decoding video frame
+					if(ret < 0) {
+						//Error decoding audio frame
 						//return(0);
 					}
 
 					if(frameFinished)
 					{		
-
-						AVFrame *finishedFrame = frame;					
-
-						if(imageConvertContext != NULL) {
-
-							sws_scale(imageConvertContext,
-								frame->data,
-								frame->linesize,
-								0,
-								frame->height,
-								convertedFrame->data,
-								convertedFrame->linesize);
-
-							finishedFrame = convertedFrame;
-						}
-
 						if(decodedFrame != NULL) {
-							decodedFrame(data, &packet, finishedFrame, VIDEO);
+							decodedFrame(data, &packet, frame, AUDIO);				
 						}
-
 					}
-
-				} else if((packet.stream_index == audioStreamIndex) &&
-					(audioMode == DECODE_AUDIO)) {
-
-						avcodec_get_frame_defaults(frame);
-
-						int ret = avcodec_decode_audio4(audioCodecContext, frame, &frameFinished, 
-							&packet);
-
-						if(ret < 0) {
-							//Error decoding audio frame
-							//return(0);
-						}
-
-						if(frameFinished)
-						{		
-							if(decodedFrame != NULL) {
-								decodedFrame(data, &packet, frame, AUDIO);				
-							}
-						}
-				}
-
 			}
-
-			return(true);
-
-		} finally {
 
 			av_free_packet(&packet);
 		}
+
+		return(true);
+
 	}
 
 	bool seek(double posSeconds) {
