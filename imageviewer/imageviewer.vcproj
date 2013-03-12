@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4816.25875, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4819.32121, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4815.38511, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4819.32123, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -478,6 +478,10 @@
 					SubType="Designer"
 					>
 				</File>
+			</File>
+			<File
+				RelativePath=".\CustomToolTip.h"
+				>
 			</File>
 			<File
 				RelativePath=".\DirectoryBrowserAsyncState.h"

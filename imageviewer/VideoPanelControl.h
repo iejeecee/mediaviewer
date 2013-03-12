@@ -9,6 +9,7 @@
 #include "VideoRender.h"
 #include "VideoDebugForm.h"
 #include "VideoState.h"
+#include "CustomToolTip.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -64,13 +65,19 @@ namespace imageviewer {
 
 			audioDiffAvgCoef  = Math::Exp(Math::Log(0.01) / AUDIO_DIFF_AVG_NB);
 
-			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
-			//syncMode = SyncMode::AUDIO_SYNCS_TO_VIDEO;
+			//syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
+			syncMode = SyncMode::AUDIO_SYNCS_TO_VIDEO;
 			videoStateLock = gcnew Object();
 			VideoState = imageviewer::VideoState::CLOSED;
 
 			updateTimeTrackBar = true;
-		
+
+			timeTrackBarToolTip = gcnew CustomToolTip();
+			this->Controls->Add(timeTrackBarToolTip);
+
+			timeTrackBarToolTip->Show();
+			timeTrackBarToolTip->Visible = false;			
+			timeTrackBarToolTip->BringToFront();
 		}
 
 	protected:
@@ -101,6 +108,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::CheckBox^  playCheckBox;
 	private: System::Windows::Forms::Button^  nextButton;
 	private: System::Windows::Forms::Button^  prevButton;
+
 
 
 
@@ -341,8 +349,11 @@ namespace imageviewer {
 			this->timeTrackBar->Size = System::Drawing::Size(796, 37);
 			this->timeTrackBar->TabIndex = 0;
 			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
+			this->timeTrackBar->MouseLeave += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseLeave);
 			this->timeTrackBar->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseDown);
 			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
+			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
+			this->timeTrackBar->MouseEnter += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseEnter);
 			// 
 			// VideoPanelControl
 			// 
@@ -374,10 +385,10 @@ namespace imageviewer {
 		// no AV sync correction is done if too big error 
 		static const double AV_NOSYNC_THRESHOLD = 10.0;
 
-		static const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 20;
+		static const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 10;
 
 		// we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
-		static const int AUDIO_DIFF_AVG_NB = 20;
+		static const int AUDIO_DIFF_AVG_NB = 5;//20;
 
 		enum class SyncMode {
 
@@ -410,6 +421,7 @@ namespace imageviewer {
 		double seekPosition;
 
 		bool updateTimeTrackBar;
+		CustomToolTip ^timeTrackBarToolTip;
 
 		delegate void UpdateUIDelegate(double, double, int);
 
@@ -530,7 +542,7 @@ restartvideo:
 
 				// delay is too small skip next frame
 				skipVideoFrame = true;
-				videoDebug->VideoDropped = videoDebug->VideoDropped + 1;
+				videoDebug->NrVideoFramesDropped = videoDebug->NrVideoFramesDropped + 1;
 				goto restartvideo;
 
 			} 
@@ -586,8 +598,8 @@ restartvideo:
 			videoDebug->ActualVideoDelay = actualDelay;
 			videoDebug->VideoSync = getVideoClock();
 			videoDebug->AudioSync = audioPlayer->getAudioClock();
-			videoDebug->VideoQueue = videoDecoder->FrameQueue->VideoQueueSize;
-			videoDebug->AudioQueue = videoDecoder->FrameQueue->AudioQueueSize;
+			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->VideoQueueSize;
+			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->AudioQueueSize;
 			
 
 			return(actualDelay);
@@ -602,13 +614,13 @@ restartaudio:
 			bool success = videoDecoder->FrameQueue->getDecodedAudioFrame(audioFrame);
 			if(success == false) return;
 
+			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
+			videoDebug->AudioFrameLength = audioFrame->Length;
+
 			adjustAudioLength(audioFrame);
 
 			audioPlayer->write(audioFrame);
 
-			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
-			videoDebug->AudioFrameSize = audioFrame->Length;
-			
 			int frameLength = audioFrame->Length;
 
 			// queue current frame in freeFrames to be used again
@@ -619,7 +631,7 @@ restartaudio:
 			if(actualDelay < 0) {
 
 				// delay too small, play next frame as quickly as possible
-				videoDebug->AudioDropped = videoDebug->AudioDropped + 1;
+				videoDebug->NrAudioFramesLaggingBehind = videoDebug->NrAudioFramesLaggingBehind + 1;
 				goto restartaudio;
 
 			} 
@@ -651,7 +663,7 @@ restartaudio:
 
 		void adjustAudioLength(AudioFrame ^frame) {
 
-			//int n = 2 * videoDecoder->NrChannels;
+			videoDebug->AudioFrameLengthAdjust = 0;
 
 			if(syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
 
@@ -698,14 +710,14 @@ restartaudio:
 							if(wantedSize < frame->Length) {
 
 								// remove samples 
-								Util::DebugOut("Removing Samples: " + (frame->Length - wantedSize).ToString());
+								videoDebug->AudioFrameLengthAdjust = wantedSize - frame->Length;
 								frame->Length = wantedSize;
 
 							} else if(wantedSize > frame->Length) {
 														
 								// add samples by copying final samples
 								int nrExtraSamples = wantedSize - frame->Length;
-								Util::DebugOut("Adding Samples: " + nrExtraSamples.ToString());
+								videoDebug->AudioFrameLengthAdjust = nrExtraSamples;
 						
 								array<unsigned char> ^lastSample = gcnew array<unsigned char>(n);
 
@@ -728,8 +740,6 @@ restartaudio:
 
 						}
 
-
-						//audioDiffAvgCount = 0;
 					}
 
 				} else {
@@ -864,10 +874,19 @@ restartaudio:
 					volumeTrackBar->Enabled = false;
 				}
 
-				videoDebug->VideoQueueSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
+				videoDebug->VideoQueueMaxSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
 				videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
-				videoDebug->AudioQueueSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
+				videoDebug->AudioQueueMaxSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
 				videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
+
+				if(syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+
+					videoDebug->IsVideoSyncMaster = true;
+
+				} else {
+
+					videoDebug->IsAudioSyncMaster = true;
+				}
 
 				VideoState = imageviewer::VideoState::OPEN;
 
@@ -1052,6 +1071,47 @@ private: System::Void timeTrackBar_MouseUp(System::Object^  sender, System::Wind
 private: System::Void nextButton_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void prevButton_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+
+
+private: String ^timeTrackBarPosToTime(int mouseX) {
+
+			 Rectangle chanRec = WindowsUtils::getTrackBarChannelRect(timeTrackBar);
+
+			 double value = Util::invlerp<int>(mouseX, chanRec.Left, chanRec.Right);
+
+			 int seconds = Util::lerp<int>(value, 0, videoDecoder->DurationSeconds);
+
+			 return(Util::formatTimeSeconds(seconds));
+
+		 }
+
+private: System::Void timeTrackBar_MouseEnter(System::Object^  sender, System::EventArgs^  e) {
+			 
+			 Point trackBarPos = this->PointToClient(timeTrackBar->PointToScreen(timeTrackBar->Location));
+
+			 timeTrackBarToolTip->Location = Point(MousePosition.X - timeTrackBarToolTip->Width / 2, 
+				 trackBarPos.Y - timeTrackBarToolTip->Height);
+			 timeTrackBarToolTip->Text = timeTrackBarPosToTime(MousePosition.X);
+
+			 timeTrackBarToolTip->Refresh();
+
+			 timeTrackBarToolTip->Visible = true;
+		 }
+
+private: System::Void timeTrackBar_MouseLeave(System::Object^  sender, System::EventArgs^  e) {
+
+			 timeTrackBarToolTip->Visible = false;
+		 }
+private: System::Void timeTrackBar_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
+
+			 Point trackBarPos = this->PointToClient(timeTrackBar->PointToScreen(timeTrackBar->Location));
+
+			 timeTrackBarToolTip->Location = Point(e->X - timeTrackBarToolTip->Width / 2, 
+				 trackBarPos.Y - timeTrackBarToolTip->Height);
+			 timeTrackBarToolTip->Text = timeTrackBarPosToTime(e->X);
+
+			 timeTrackBarToolTip->Refresh();
 		 }
 };
 }

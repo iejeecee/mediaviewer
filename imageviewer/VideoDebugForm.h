@@ -75,6 +75,9 @@ namespace imageviewer {
 	private: System::Windows::Forms::Label^  videoQueueLabel;
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::Label^  label1;
+	private: System::Windows::Forms::Label^  audioLengthAdjustLabel;
+	private: System::Windows::Forms::Label^  videoSyncMasterLabel;
+	private: System::Windows::Forms::Label^  audioSyncMasterLabel;
 
 	private:
 		/// <summary>
@@ -119,6 +122,9 @@ namespace imageviewer {
 			this->videoQueueLabel = (gcnew System::Windows::Forms::Label());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->audioLengthAdjustLabel = (gcnew System::Windows::Forms::Label());
+			this->videoSyncMasterLabel = (gcnew System::Windows::Forms::Label());
+			this->audioSyncMasterLabel = (gcnew System::Windows::Forms::Label());
 			this->SuspendLayout();
 			// 
 			// audioFrameSizeLabel
@@ -391,12 +397,42 @@ namespace imageviewer {
 			this->label1->TabIndex = 45;
 			this->label1->Text = L"Video Queue:";
 			// 
+			// audioLengthAdjustLabel
+			// 
+			this->audioLengthAdjustLabel->AutoSize = true;
+			this->audioLengthAdjustLabel->Location = System::Drawing::Point(575, 196);
+			this->audioLengthAdjustLabel->Name = L"audioLengthAdjustLabel";
+			this->audioLengthAdjustLabel->Size = System::Drawing::Size(18, 20);
+			this->audioLengthAdjustLabel->TabIndex = 75;
+			this->audioLengthAdjustLabel->Text = L"0";
+			// 
+			// videoSyncMasterLabel
+			// 
+			this->videoSyncMasterLabel->AutoSize = true;
+			this->videoSyncMasterLabel->Location = System::Drawing::Point(259, 118);
+			this->videoSyncMasterLabel->Name = L"videoSyncMasterLabel";
+			this->videoSyncMasterLabel->Size = System::Drawing::Size(76, 20);
+			this->videoSyncMasterLabel->TabIndex = 76;
+			this->videoSyncMasterLabel->Text = L"MASTER";
+			// 
+			// audioSyncMasterLabel
+			// 
+			this->audioSyncMasterLabel->AutoSize = true;
+			this->audioSyncMasterLabel->Location = System::Drawing::Point(259, 138);
+			this->audioSyncMasterLabel->Name = L"audioSyncMasterLabel";
+			this->audioSyncMasterLabel->Size = System::Drawing::Size(76, 20);
+			this->audioSyncMasterLabel->TabIndex = 77;
+			this->audioSyncMasterLabel->Text = L"MASTER";
+			// 
 			// VideoDebugForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(629, 232);
 			this->ControlBox = false;
+			this->Controls->Add(this->audioSyncMasterLabel);
+			this->Controls->Add(this->videoSyncMasterLabel);
+			this->Controls->Add(this->audioLengthAdjustLabel);
 			this->Controls->Add(this->audioFrameSizeLabel);
 			this->Controls->Add(this->label15);
 			this->Controls->Add(this->actualAudioDelayLabel);
@@ -436,7 +472,7 @@ namespace imageviewer {
 		}
 #pragma endregion
 
-		private:
+private:
 
 	double audioDelay;
 	double videoDelay;
@@ -444,45 +480,54 @@ namespace imageviewer {
 	double audioSync;
 	double videoSync;
 
-	int audioQueue;
 	int audioQueueSize;
+	int audioQueueMaxSize;
 
-	int videoQueue;
 	int videoQueueSize;
+	int videoQueueMaxSize;
 
 	__int64 videoFrames;
 	__int64 audioFrames;
 
-	__int64 videoDropped;
-	__int64 audioDropped;
+	__int64 nrVideoFramesDropped;
+	__int64 nrAudioFramesLaggingBehind;
 
 	int videoQueueSizeBytes;
 	int audioQueueSizeBytes;
 
 	double actualVideoDelay;
 	double actualAudioDelay;
-	int audioFrameSize;
+	int audioFrameLength;
+	int audioFrameLengthAdjust;
+
+	bool isVideoSyncMaster;
+	bool isAudioSyncMaster;
 
 	void updateInvoke() {
 
 		videoFramesLabel->Text = videoFrames.ToString();
 		audioFramesLabel->Text = audioFrames.ToString();
 
-		videoDroppedLabel->Text = videoDropped.ToString();
-		audioDroppedLabel->Text = audioDropped.ToString();
+		videoDroppedLabel->Text = nrVideoFramesDropped.ToString();
+		audioDroppedLabel->Text = nrAudioFramesLaggingBehind.ToString();
 
-		videoQueueLabel->Text = videoQueue.ToString() + "/" + videoQueueSize.ToString();
-		audioQueueLabel->Text = audioQueue.ToString() + "/" + audioQueueSize.ToString();
+		videoQueueLabel->Text = videoQueueSize.ToString() + "/" + videoQueueMaxSize.ToString();
+		audioQueueLabel->Text = audioQueueSize.ToString() + "/" + audioQueueMaxSize.ToString();
 
 		videoSyncLabel->Text = videoSync.ToString("F4");
+		videoSyncMasterLabel->Visible = IsVideoSyncMaster;
 		audioSyncLabel->Text = audioSync.ToString("F4");
+		audioSyncMasterLabel->Visible = IsAudioSyncMaster;
 
 		videoDelayLabel->Text = videoDelay.ToString("F4");
 		actualVideoDelayLabel->Text = actualVideoDelay.ToString("F4");
 		
 		audioDelayLabel->Text = audioDelay.ToString("F4");
 		actualAudioDelayLabel->Text = actualAudioDelay.ToString("F4");
-		audioFrameSizeLabel->Text = audioFrameSize.ToString();
+		audioFrameSizeLabel->Text = audioFrameLength.ToString();
+		audioLengthAdjustLabel->Text = 
+			audioFrameLengthAdjust > 0 ? "+" + audioFrameLengthAdjust.ToString() :
+			audioFrameLengthAdjust.ToString();
 
 		videoQueueSizeLabel->Text = Util::formatSizeBytes(videoQueueSizeBytes);
 		audioQueueSizeLabel->Text = Util::formatSizeBytes(audioQueueSizeBytes);
@@ -491,6 +536,8 @@ namespace imageviewer {
 public:
 
 	void update() {
+
+		if(this->Visible == false) return;
 
 		if(this->InvokeRequired == true) {
 
@@ -511,24 +558,24 @@ public:
 		audioSync = 0;
 		videoSync = 0;
 
-		audioQueue = 0;
 		audioQueueSize = 0;
+		audioQueueMaxSize = 0;
 
-		videoQueue = 0;
 		videoQueueSize = 0;
+		videoQueueMaxSize = 0;
 
 		videoFrames = 0;
 		audioFrames = 0;
 
-		videoDropped = 0;
-		audioDropped = 0;
+		nrVideoFramesDropped = 0;
+		nrAudioFramesLaggingBehind = 0;
 
-		videoQueueSize = 0;
-		audioQueueSize = 0;
+		videoQueueMaxSize = 0;
+		audioQueueMaxSize = 0;
 
 		actualVideoDelay = 0;
 		actualAudioDelay = 0;
-		audioFrameSize = 0;
+		audioFrameLength = 0;
 	}
 
 	property double AudioDelay {
@@ -583,32 +630,6 @@ public:
 		}
 	}
 
-	property int AudioQueue {
-
-		int get() {
-
-			return(audioQueue);
-		}
-
-		void set(int value) {
-
-			audioQueue = value;
-		}
-	}
-
-	property int VideoQueue {
-
-		int get() {
-
-			return(videoQueue);
-		}
-
-		void set(int value) {
-
-			videoQueue = value;
-		}
-	}
-
 	property int AudioQueueSize {
 
 		int get() {
@@ -631,7 +652,33 @@ public:
 
 		void set(int value) {
 
-			videoQueueSize = value; 
+			videoQueueSize = value;
+		}
+	}
+
+	property int AudioQueueMaxSize {
+
+		int get() {
+
+			return(audioQueueMaxSize);
+		}
+
+		void set(int value) {
+
+			audioQueueMaxSize = value;
+		}
+	}
+
+	property int VideoQueueMaxSize {
+
+		int get() {
+
+			return(videoQueueMaxSize);
+		}
+
+		void set(int value) {
+
+			videoQueueMaxSize = value; 
 		}
 	}
 
@@ -661,29 +708,29 @@ public:
 		}
 	}
 
-	property __int64 VideoDropped {
+	property __int64 NrVideoFramesDropped {
 
 		__int64 get() {
 
-			return(videoDropped);
+			return(nrVideoFramesDropped);
 		}
 
 		void set(__int64 value) {
 
-			videoDropped = value;
+			nrVideoFramesDropped = value;
 		}
 	}
 
-	property __int64 AudioDropped {
+	property __int64 NrAudioFramesLaggingBehind {
 
 		__int64 get() {
 
-			return(audioDropped);
+			return(nrAudioFramesLaggingBehind);
 		}
 
 		void set(__int64 value) {
 
-			audioDropped = value;
+			nrAudioFramesLaggingBehind = value;
 		}
 	}
 
@@ -739,18 +786,68 @@ public:
 		}
 	}
 
-	property int AudioFrameSize {
+	property int AudioFrameLength {
 
 		int get() {
 
-			return(audioFrameSize);
+			return(audioFrameLength);
 		}
 
 		void set(int value) {
 
-			audioFrameSize = value;
+			audioFrameLength = value;
 		}
 	}
+
+	property int AudioFrameLengthAdjust {
+
+		int get() {
+
+			return(audioFrameLengthAdjust);
+		}
+
+		void set(int value) {
+
+			audioFrameLengthAdjust = value;
+		}
+	}
+
+	property bool IsVideoSyncMaster {
+
+		bool get() {
+
+			return(isVideoSyncMaster);
+		}
+
+		void set(bool value) {
+
+			isVideoSyncMaster = value;
+
+			if(value == true) {
+
+				isAudioSyncMaster = false;
+			}
+		}
+	}
+
+	property bool IsAudioSyncMaster {
+
+		bool get() {
+
+			return(isAudioSyncMaster);
+		}
+
+		void set(bool value) {
+
+			isAudioSyncMaster = value;
+
+			if(value == true) {
+
+				isVideoSyncMaster = false;
+			}
+		}
+	}
+
 
 	};
 }
