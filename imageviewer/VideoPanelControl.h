@@ -65,11 +65,11 @@ namespace imageviewer {
 			audioDiffAvgCoef  = Math::Exp(Math::Log(0.01) / AUDIO_DIFF_AVG_NB);
 
 			syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
+			//syncMode = SyncMode::AUDIO_SYNCS_TO_VIDEO;
 			videoStateLock = gcnew Object();
 			VideoState = imageviewer::VideoState::CLOSED;
 
 			updateTimeTrackBar = true;
-			timeTrackBarDragged = false;
 		
 		}
 
@@ -99,7 +99,10 @@ namespace imageviewer {
 	private: System::Windows::Forms::ImageList^  imageList;
 	private: System::Windows::Forms::Label^  videoTimeLabel;
 	private: System::Windows::Forms::CheckBox^  playCheckBox;
-	private: System::Windows::Forms::Button^  forwardButton;
+	private: System::Windows::Forms::Button^  nextButton;
+	private: System::Windows::Forms::Button^  prevButton;
+
+
 
 
 
@@ -150,9 +153,10 @@ namespace imageviewer {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(VideoPanelControl::typeid));
 			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
-			this->forwardButton = (gcnew System::Windows::Forms::Button());
-			this->playCheckBox = (gcnew System::Windows::Forms::CheckBox());
+			this->prevButton = (gcnew System::Windows::Forms::Button());
 			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
+			this->nextButton = (gcnew System::Windows::Forms::Button());
+			this->playCheckBox = (gcnew System::Windows::Forms::CheckBox());
 			this->videoTimeLabel = (gcnew System::Windows::Forms::Label());
 			this->muteCheckBox = (gcnew System::Windows::Forms::CheckBox());
 			this->volumeTrackBar = (gcnew System::Windows::Forms::TrackBar());
@@ -184,7 +188,8 @@ namespace imageviewer {
 			// 
 			// splitContainer.Panel2
 			// 
-			this->splitContainer->Panel2->Controls->Add(this->forwardButton);
+			this->splitContainer->Panel2->Controls->Add(this->prevButton);
+			this->splitContainer->Panel2->Controls->Add(this->nextButton);
 			this->splitContainer->Panel2->Controls->Add(this->playCheckBox);
 			this->splitContainer->Panel2->Controls->Add(this->videoTimeLabel);
 			this->splitContainer->Panel2->Controls->Add(this->muteCheckBox);
@@ -196,33 +201,18 @@ namespace imageviewer {
 			this->splitContainer->SplitterDistance = 388;
 			this->splitContainer->TabIndex = 0;
 			// 
-			// forwardButton
+			// prevButton
 			// 
-			this->forwardButton->Image = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"forwardButton.Image")));
-			this->forwardButton->Location = System::Drawing::Point(117, 37);
-			this->forwardButton->MaximumSize = System::Drawing::Size(60, 37);
-			this->forwardButton->Name = L"forwardButton";
-			this->forwardButton->Size = System::Drawing::Size(51, 36);
-			this->forwardButton->TabIndex = 9;
-			this->toolTip1->SetToolTip(this->forwardButton, L"Jump Forward");
-			this->forwardButton->UseVisualStyleBackColor = true;
-			this->forwardButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::forwardButton_Click);
-			// 
-			// playCheckBox
-			// 
-			this->playCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
-			this->playCheckBox->ImageIndex = 2;
-			this->playCheckBox->ImageList = this->imageList;
-			this->playCheckBox->Location = System::Drawing::Point(3, 37);
-			this->playCheckBox->Margin = System::Windows::Forms::Padding(0, 3, 3, 3);
-			this->playCheckBox->MaximumSize = System::Drawing::Size(51, 36);
-			this->playCheckBox->Name = L"playCheckBox";
-			this->playCheckBox->Size = System::Drawing::Size(51, 36);
-			this->playCheckBox->TabIndex = 8;
-			this->playCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-			this->toolTip1->SetToolTip(this->playCheckBox, L"Play / Pause");
-			this->playCheckBox->UseVisualStyleBackColor = true;
-			this->playCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::playCheckBox_CheckedChanged);
+			this->prevButton->ImageIndex = 6;
+			this->prevButton->ImageList = this->imageList;
+			this->prevButton->Location = System::Drawing::Point(117, 37);
+			this->prevButton->MaximumSize = System::Drawing::Size(60, 51);
+			this->prevButton->Name = L"prevButton";
+			this->prevButton->Size = System::Drawing::Size(51, 40);
+			this->prevButton->TabIndex = 10;
+			this->toolTip1->SetToolTip(this->prevButton, L"Previous Video");
+			this->prevButton->UseVisualStyleBackColor = true;
+			this->prevButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::prevButton_Click);
 			// 
 			// imageList
 			// 
@@ -230,9 +220,48 @@ namespace imageviewer {
 			this->imageList->TransparentColor = System::Drawing::Color::Transparent;
 			this->imageList->Images->SetKeyName(0, L"1361908321_1777.ico");
 			this->imageList->Images->SetKeyName(1, L"1361908340_1776.ico");
-			this->imageList->Images->SetKeyName(2, L"1361914813_22929.ico");
-			this->imageList->Images->SetKeyName(3, L"1361914794_22964.ico");
-			this->imageList->Images->SetKeyName(4, L"1361914838_22942.ico");
+			this->imageList->Images->SetKeyName(2, L"Button Play-01.ico");
+			this->imageList->Images->SetKeyName(3, L"Button Pause-01.ico");
+			this->imageList->Images->SetKeyName(4, L"Button Turn Off-01.ico");
+			this->imageList->Images->SetKeyName(5, L"Button Next-01.ico");
+			this->imageList->Images->SetKeyName(6, L"Button Previous-01.ico");
+			this->imageList->Images->SetKeyName(7, L"NN - Play.png");
+			this->imageList->Images->SetKeyName(8, L"NN - Pause.png");
+			this->imageList->Images->SetKeyName(9, L"NN - Stop.png");
+			this->imageList->Images->SetKeyName(10, L"NN - Next.png");
+			this->imageList->Images->SetKeyName(11, L"NN - Previous.png");
+			this->imageList->Images->SetKeyName(12, L"1361914813_22929.ico");
+			this->imageList->Images->SetKeyName(13, L"1361914794_22964.ico");
+			this->imageList->Images->SetKeyName(14, L"1361914838_22942.ico");
+			// 
+			// nextButton
+			// 
+			this->nextButton->ImageIndex = 5;
+			this->nextButton->ImageList = this->imageList;
+			this->nextButton->Location = System::Drawing::Point(174, 37);
+			this->nextButton->MaximumSize = System::Drawing::Size(60, 51);
+			this->nextButton->Name = L"nextButton";
+			this->nextButton->Size = System::Drawing::Size(51, 40);
+			this->nextButton->TabIndex = 9;
+			this->toolTip1->SetToolTip(this->nextButton, L"Next Video");
+			this->nextButton->UseVisualStyleBackColor = true;
+			this->nextButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::nextButton_Click);
+			// 
+			// playCheckBox
+			// 
+			this->playCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
+			this->playCheckBox->ImageIndex = 2;
+			this->playCheckBox->ImageList = this->imageList;
+			this->playCheckBox->Location = System::Drawing::Point(3, 38);
+			this->playCheckBox->Margin = System::Windows::Forms::Padding(0, 3, 3, 3);
+			this->playCheckBox->MaximumSize = System::Drawing::Size(51, 40);
+			this->playCheckBox->Name = L"playCheckBox";
+			this->playCheckBox->Size = System::Drawing::Size(51, 40);
+			this->playCheckBox->TabIndex = 8;
+			this->playCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
+			this->toolTip1->SetToolTip(this->playCheckBox, L"Play / Pause");
+			this->playCheckBox->UseVisualStyleBackColor = true;
+			this->playCheckBox->CheckedChanged += gcnew System::EventHandler(this, &VideoPanelControl::playCheckBox_CheckedChanged);
 			// 
 			// videoTimeLabel
 			// 
@@ -280,9 +309,9 @@ namespace imageviewer {
 			// debugVideoCheckBox
 			// 
 			this->debugVideoCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
-			this->debugVideoCheckBox->Location = System::Drawing::Point(216, 37);
+			this->debugVideoCheckBox->Location = System::Drawing::Point(231, 37);
 			this->debugVideoCheckBox->Name = L"debugVideoCheckBox";
-			this->debugVideoCheckBox->Size = System::Drawing::Size(66, 36);
+			this->debugVideoCheckBox->Size = System::Drawing::Size(65, 40);
 			this->debugVideoCheckBox->TabIndex = 4;
 			this->debugVideoCheckBox->Text = L"Debug";
 			this->debugVideoCheckBox->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
@@ -294,9 +323,9 @@ namespace imageviewer {
 			this->stopButton->ImageIndex = 4;
 			this->stopButton->ImageList = this->imageList;
 			this->stopButton->Location = System::Drawing::Point(60, 37);
-			this->stopButton->MaximumSize = System::Drawing::Size(60, 37);
+			this->stopButton->MaximumSize = System::Drawing::Size(60, 51);
 			this->stopButton->Name = L"stopButton";
-			this->stopButton->Size = System::Drawing::Size(51, 36);
+			this->stopButton->Size = System::Drawing::Size(51, 40);
 			this->stopButton->TabIndex = 2;
 			this->toolTip1->SetToolTip(this->stopButton, L"Stop");
 			this->stopButton->UseVisualStyleBackColor = true;
@@ -314,7 +343,6 @@ namespace imageviewer {
 			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
 			this->timeTrackBar->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseDown);
 			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
-			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
 			// 
 			// VideoPanelControl
 			// 
@@ -346,7 +374,7 @@ namespace imageviewer {
 		// no AV sync correction is done if too big error 
 		static const double AV_NOSYNC_THRESHOLD = 10.0;
 
-		static const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 10;
+		static const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 20;
 
 		// we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
 		static const int AUDIO_DIFF_AVG_NB = 20;
@@ -372,7 +400,6 @@ namespace imageviewer {
 		HRTimer ^audioRefreshTimer;
 
 		double videoPtsDrift;
-		double audioPtsDrift;
 
 		double audioDiffCum;
 		double audioDiffAvgCoef;
@@ -383,7 +410,6 @@ namespace imageviewer {
 		double seekPosition;
 
 		bool updateTimeTrackBar;
-		bool timeTrackBarDragged;
 
 		delegate void UpdateUIDelegate(double, double, int);
 
@@ -500,7 +526,7 @@ restartvideo:
 			videoDebug->update();
 			updateUI();
 
-			if(actualDelay < 0.010) {
+			if(actualDelay < 0) { //0.010) {
 
 				// delay is too small skip next frame
 				skipVideoFrame = true;
@@ -567,10 +593,6 @@ restartvideo:
 			return(actualDelay);
 		}
 
-		double getAudioClock() {
-
-			return(audioPtsDrift - HRTimer::getTimestamp());
-		}
 
 		void processAudioFrame() {
 
@@ -579,8 +601,6 @@ restartaudio:
 
 			bool success = videoDecoder->FrameQueue->getDecodedAudioFrame(audioFrame);
 			if(success == false) return;
-
-			audioPtsDrift = audioFrame->Pts + HRTimer::getTimestamp();
 
 			adjustAudioLength(audioFrame);
 
@@ -596,7 +616,7 @@ restartaudio:
 
 			double actualDelay = synchronizeAudio(frameLength);
 
-			if(actualDelay <= 0) {
+			if(actualDelay < 0) {
 
 				// delay too small, play next frame as quickly as possible
 				videoDebug->AudioDropped = videoDebug->AudioDropped + 1;
@@ -672,6 +692,8 @@ restartaudio:
 
 								wantedSize = maxSize;
 							}
+
+							wantedSize = (wantedSize / n) * n;
 
 							if(wantedSize < frame->Length) {
 
@@ -999,54 +1021,37 @@ private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, Syste
 
 			 }
 		 }
-private: System::Void forwardButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 static int i = 0;
+private: System::Void timeTrackBar_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 
-			 seek(i * 60);
-			 i++;
-	
-		
+			 updateTimeTrackBar = false;
+
+			 Rectangle chanRec = WindowsUtils::getTrackBarChannelRect(timeTrackBar);
+
+			 double value = Util::invlerp<int>(e->X, chanRec.Left, chanRec.Right);
+
+			 timeTrackBar->Value = Util::lerp<int>(value, timeTrackBar->Minimum, timeTrackBar->Maximum);
+			
 		 }
-
-		 void setTimeTrackBarPosition(int mouseX) {
+private: System::Void timeTrackBar_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 
 			 int totalTime = videoDecoder->DurationSeconds;
 
 			 Rectangle chanRec = WindowsUtils::getTrackBarChannelRect(timeTrackBar);
 
-			 double value = Util::invlerp<int>(mouseX, chanRec.Left, chanRec.Right);
-
-			 timeTrackBar->Value = Util::lerp<int>(value, timeTrackBar->Minimum, timeTrackBar->Maximum);
+			 double value = Util::invlerp<int>(e->X, chanRec.Left, chanRec.Right);
 
 			 int seconds = Util::lerp<int>(value, 0, totalTime);
 
 			 seek(seconds);
-		 }
-
-private: System::Void timeTrackBar_MouseDown(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-
-			 updateTimeTrackBar = false;
-			 setTimeTrackBarPosition(e->X);
-			
-		 }
-private: System::Void timeTrackBar_MouseUp(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
-			 
-			 if(timeTrackBarDragged == true) {
-
-				setTimeTrackBarPosition(e->X);
-				timeTrackBarDragged = false;
-			 }
 
 			 updateTimeTrackBar = true;
 		
 		 }
-private: System::Void timeTrackBar_MouseMove(System::Object^  sender, System::Windows::Forms::MouseEventArgs^  e) {
 
-			 if(updateTimeTrackBar == false) {
-
-				 timeTrackBarDragged = true;
-			 }
+private: System::Void nextButton_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+private: System::Void prevButton_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 };
 }

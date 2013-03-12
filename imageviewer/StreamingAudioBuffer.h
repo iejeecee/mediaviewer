@@ -32,12 +32,7 @@ private:
 	double volume;
 	bool muted;
 	AudioState audioState;
-	
-
-	double timeOffset;
-	bool setTimeOffset;
-	int prevPlayPos;
-	int loops;
+		
 	array<AutoResetEvent ^> ^bufferEvents;
 
 	array<unsigned char> ^silence;
@@ -51,7 +46,54 @@ private:
 		}
 	}
 
+	double pts;
+	int ptsPos;
+	int prevPtsPos;
+	int prevPlayPos;
+	int playLoops;
+	int ptsLoops;
+
 public: 
+
+	StreamingAudioBuffer(Windows::Forms::Control ^owner)
+	{
+		device = nullptr;
+
+		try {
+
+			device = gcnew DS::Device();
+			device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
+
+		} catch (DS::SoundException ^exception){
+
+			MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
+			Util::DebugOut("Error Code:" + exception->ErrorCode);
+			Util::DebugOut("Error String:" + exception->ErrorString);
+			Util::DebugOut("Message:" + exception->Message);
+			Util::DebugOut("StackTrace:" + exception->StackTrace);
+		}
+
+		audioBuffer = nullptr;
+		volume = 1;
+		muted = false;
+
+		pts = 0;
+		offsetBytes = 0;
+		ptsPos = 0;
+		prevPtsPos = 0;
+		playLoops = 0;
+	    ptsLoops = 0;
+	}
+
+	~StreamingAudioBuffer() {
+
+		releaseResources();
+
+		if(device != nullptr) {
+
+			delete device;
+		}
+	}
 
 	void startPlayAfterNextWrite() {
 
@@ -67,11 +109,14 @@ public:
 			audioBuffer->Write(0, silence, DS::LockFlag::None);
 		}
 
-		loops = 0;
 		offsetBytes = 0;
 		prevPlayPos = 0;
 
-		setTimeOffset = true;
+		ptsPos = 0;
+		prevPtsPos = 0;
+		playLoops = 0;
+	    ptsLoops = 0;
+
 		audioState = AudioState::START_PLAY_AFTER_NEXT_WRITE;
 	}
 
@@ -137,41 +182,6 @@ public:
 
 	}
 
-	StreamingAudioBuffer(Windows::Forms::Control ^owner)
-	{
-			device = nullptr;
-
-			try {
-
-				device = gcnew DS::Device();
-				device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
-
-			} catch (DS::SoundException ^exception){
-
-				MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
-				Util::DebugOut("Error Code:" + exception->ErrorCode);
-				Util::DebugOut("Error String:" + exception->ErrorString);
-				Util::DebugOut("Message:" + exception->Message);
-				Util::DebugOut("StackTrace:" + exception->StackTrace);
-			}
-
-			audioBuffer = nullptr;
-			volume = 1;
-			muted = false;
-			timeOffset = 0;
-			setTimeOffset = true;
-	}
-
-	~StreamingAudioBuffer() {
-
-		releaseResources();
-
-		if(device != nullptr) {
-
-			delete device;
-		}
-	}
-
 	void initialize(int samplesPerSecond, int bytesPerSample, int nrChannels, 
 		int bufferSizeBytes) 
 	{
@@ -209,8 +219,11 @@ public:
 
 			Volume = volume;
 			offsetBytes = 0;
-			loops = 0;
 			prevPlayPos = 0;
+			ptsPos = 0;
+			prevPtsPos = 0;
+			playLoops = 0;
+			ptsLoops = 0;
 
 		} catch (DS::SoundException ^exception){
 
@@ -226,30 +239,50 @@ public:
 		}
 	}
 
-
 	double getAudioClock() {
 
+		// audioclock is: pts of last frame plus the
+		// difference between playpos and the write position of the last frame in bytes
+		// divided by bytespersecond.
 		if(audioBuffer == nullptr) return(0);
 
 		int playPos = audioBuffer->PlayPosition;
 
-		if(playPos < prevPlayPos) {
+		if(ptsPos < prevPtsPos) {
 
-			loops++;
+			ptsLoops++;
+			//Util::DebugOut("ptsLoops" + ptsLoops.ToString());
 		}
 
-		__int64 bytesPlayed = bufferSizeBytes * loops + playPos;
+		if(playPos < prevPlayPos) {
+
+			playLoops++;
+			//Util::DebugOut("playLoops" + playLoops.ToString());
+		}
+
+		__int64 totalPlayPos = bufferSizeBytes * playLoops + playPos;
+		__int64 totalPtsPos = bufferSizeBytes * ptsLoops + ptsPos;
+
 		int bytesPerSecond = samplesPerSecond * bytesPerSample * nrChannels;
-		double time = timeOffset + bytesPlayed / double(bytesPerSecond);
+
+		double seconds = (totalPlayPos - totalPtsPos) / double(bytesPerSecond);
+	
+		double time = pts + seconds;
 
 		prevPlayPos = playPos;
-
+		prevPtsPos = ptsPos;
+		
 		return(time);
 	}
 
 	void write(VideoLib::AudioFrame ^frame) {
 
 		if(audioBuffer == nullptr || frame->Length == 0) return;
+
+		// store pts for this frame and the byte offset at which this frame is
+		// written
+		pts = frame->Pts;		
+		ptsPos = offsetBytes;
 
 		int playPos, writePos;
 		audioBuffer->GetCurrentPosition(playPos, writePos);
@@ -266,17 +299,12 @@ public:
 
 		if(audioState == AudioState::START_PLAY_AFTER_NEXT_WRITE) {
 
-			if(setTimeOffset == true) {
-
-				timeOffset = frame->Pts;
-				setTimeOffset = false;
-			}
-
 			audioBuffer->Play(0, DS::BufferPlayFlags::Looping);
 			audioState = AudioState::PLAYING;
 		}
 
 	}
+
 
 	
 
