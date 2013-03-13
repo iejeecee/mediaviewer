@@ -85,9 +85,6 @@ namespace imageviewer {
 
 			System::Net::ServicePointManager::Expect100Continue = false;
 
-			//VideoLibTest ^test = gcnew VideoLibTest();
-			//test->start();
-
 			System::Diagnostics::Process::GetCurrentProcess()->PriorityClass = System::Diagnostics::ProcessPriorityClass::RealTime;
 
 			//HRTimerTest::test();
@@ -100,7 +97,8 @@ namespace imageviewer {
 	
 			ActiveControl = imagePanel;
 
-			//ImageFile ^temp = gcnew ImageFile();
+			
+			
 		}
 
 	protected:

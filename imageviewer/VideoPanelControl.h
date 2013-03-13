@@ -73,11 +73,13 @@ namespace imageviewer {
 			updateTimeTrackBar = true;
 
 			timeTrackBarToolTip = gcnew CustomToolTip();
+			timeTrackBarToolTip->BackColor = SystemColors::Info;
 			this->Controls->Add(timeTrackBarToolTip);
 
 			timeTrackBarToolTip->Show();
-			timeTrackBarToolTip->Visible = false;			
 			timeTrackBarToolTip->BringToFront();
+			timeTrackBarToolTip->Visible = false;			
+			
 		}
 
 	protected:
@@ -108,6 +110,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::CheckBox^  playCheckBox;
 	private: System::Windows::Forms::Button^  nextButton;
 	private: System::Windows::Forms::Button^  prevButton;
+	private: System::Windows::Forms::Button^  screenShotButton;
 
 
 
@@ -172,6 +175,7 @@ namespace imageviewer {
 			this->stopButton = (gcnew System::Windows::Forms::Button());
 			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
 			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
+			this->screenShotButton = (gcnew System::Windows::Forms::Button());
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->BeginInit();
@@ -196,6 +200,7 @@ namespace imageviewer {
 			// 
 			// splitContainer.Panel2
 			// 
+			this->splitContainer->Panel2->Controls->Add(this->screenShotButton);
 			this->splitContainer->Panel2->Controls->Add(this->prevButton);
 			this->splitContainer->Panel2->Controls->Add(this->nextButton);
 			this->splitContainer->Panel2->Controls->Add(this->playCheckBox);
@@ -233,14 +238,7 @@ namespace imageviewer {
 			this->imageList->Images->SetKeyName(4, L"Button Turn Off-01.ico");
 			this->imageList->Images->SetKeyName(5, L"Button Next-01.ico");
 			this->imageList->Images->SetKeyName(6, L"Button Previous-01.ico");
-			this->imageList->Images->SetKeyName(7, L"NN - Play.png");
-			this->imageList->Images->SetKeyName(8, L"NN - Pause.png");
-			this->imageList->Images->SetKeyName(9, L"NN - Stop.png");
-			this->imageList->Images->SetKeyName(10, L"NN - Next.png");
-			this->imageList->Images->SetKeyName(11, L"NN - Previous.png");
-			this->imageList->Images->SetKeyName(12, L"1361914813_22929.ico");
-			this->imageList->Images->SetKeyName(13, L"1361914794_22964.ico");
-			this->imageList->Images->SetKeyName(14, L"1361914838_22942.ico");
+			this->imageList->Images->SetKeyName(7, L"Computer Monitor-01.ico");
 			// 
 			// nextButton
 			// 
@@ -317,7 +315,7 @@ namespace imageviewer {
 			// debugVideoCheckBox
 			// 
 			this->debugVideoCheckBox->Appearance = System::Windows::Forms::Appearance::Button;
-			this->debugVideoCheckBox->Location = System::Drawing::Point(231, 37);
+			this->debugVideoCheckBox->Location = System::Drawing::Point(288, 38);
 			this->debugVideoCheckBox->Name = L"debugVideoCheckBox";
 			this->debugVideoCheckBox->Size = System::Drawing::Size(65, 40);
 			this->debugVideoCheckBox->TabIndex = 4;
@@ -354,6 +352,19 @@ namespace imageviewer {
 			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
 			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
 			this->timeTrackBar->MouseEnter += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseEnter);
+			// 
+			// screenShotButton
+			// 
+			this->screenShotButton->ImageIndex = 7;
+			this->screenShotButton->ImageList = this->imageList;
+			this->screenShotButton->Location = System::Drawing::Point(231, 38);
+			this->screenShotButton->MaximumSize = System::Drawing::Size(60, 51);
+			this->screenShotButton->Name = L"screenShotButton";
+			this->screenShotButton->Size = System::Drawing::Size(51, 40);
+			this->screenShotButton->TabIndex = 11;
+			this->toolTip1->SetToolTip(this->screenShotButton, L"Take A Screenshot");
+			this->screenShotButton->UseVisualStyleBackColor = true;
+			this->screenShotButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::screenShotButton_Click);
 			// 
 			// VideoPanelControl
 			// 
@@ -538,7 +549,7 @@ restartvideo:
 			videoDebug->update();
 			updateUI();
 
-			if(actualDelay < 0) { //0.010) {
+			if(actualDelay < 0.010) {
 
 				// delay is too small skip next frame
 				skipVideoFrame = true;
@@ -1088,6 +1099,8 @@ private: String ^timeTrackBarPosToTime(int mouseX) {
 
 private: System::Void timeTrackBar_MouseEnter(System::Object^  sender, System::EventArgs^  e) {
 			 
+			 if(VideoState == imageviewer::VideoState::CLOSED) return;
+
 			 Point trackBarPos = this->PointToClient(timeTrackBar->PointToScreen(timeTrackBar->Location));
 
 			 timeTrackBarToolTip->Location = Point(MousePosition.X - timeTrackBarToolTip->Width / 2, 
@@ -1112,6 +1125,10 @@ private: System::Void timeTrackBar_MouseMove(System::Object^  sender, System::Wi
 			 timeTrackBarToolTip->Text = timeTrackBarPosToTime(e->X);
 
 			 timeTrackBarToolTip->Refresh();
+		 }
+private: System::Void screenShotButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 videoRender->createScreenShot();
 		 }
 };
 }

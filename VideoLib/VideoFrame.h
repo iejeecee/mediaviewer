@@ -1,51 +1,26 @@
 #pragma once
 
 #include "Frame.h"
+#include "VideoDecoder.h"
 
 using namespace System;
 using namespace Microsoft::DirectX::Direct3D;
 using namespace Microsoft::DirectX;
 using namespace System::Diagnostics;
+using namespace System::Drawing;
 
 namespace VideoLib {
 
 	public ref class VideoFrame : public Frame
 	{
-	public:
-
-		enum class VideoFrameType {
-			D3D_SURFACE,
-			MEMORY
-		};
-
+		
 	private:
-
-		Surface ^frame;
 
 		BYTE *frameData;
 		int width;
 		int height;
 
-		VideoFrameType videoFrameType;
-
-		static Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
-		{
-			int value = (int)(char)(ch0)|((int)(char)(ch1) << 8)| ((int)(char)(ch2) << 16) | ((int)(char)(ch3) << 24);
-			return((Format) value);
-		}
-
 	public:
-
-		property Surface ^Image {
-
-			void set(Surface ^frame) {
-				this->frame = frame;
-			}
-
-			Surface ^get() {
-				return(frame);
-			}
-		}
 
 		property int SizeBytes {
 
@@ -75,114 +50,73 @@ namespace VideoLib {
 			}
 		}
 
-		VideoFrame(int width, int height, Device ^device) :
+		VideoFrame(int width, int height) :
 			Frame(FrameType::VIDEO)
 		{
 			this->width = width;
 			this->height = height;
 
-			if(device != nullptr) {
-				Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
+			//frameData = new BYTE[SizeBytes];
+			frameData = (BYTE *)av_malloc(SizeBytes);
 
-				frame = device->CreateOffscreenPlainSurface(width, height, pixelFormat, 
-					Pool::Default);
+		}
 
-				videoFrameType = VideoFrameType::D3D_SURFACE;
+		VideoFrame(Surface ^frame) :
+			Frame(FrameType::VIDEO)
+		{
 
+			this->width = frame->Description.Width;
+			this->height = frame->Description.Height;
 
-				frameData = NULL;
+			//frameData = new BYTE[SizeBytes];
+			frameData = (BYTE *)av_malloc(SizeBytes);
 
-			} else {
+			int pitch;
+			System::Drawing::Rectangle rect(0,0,Width, Height);
 
+			GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::ReadOnly, pitch);
 
-				frame = nullptr;
+			Byte *dest = frameData;
+			Byte *source = (BYTE*)stream->InternalDataPointer;
 
-				videoFrameType = VideoFrameType::MEMORY;
+			int nrRows = SizeBytes / Width;
 
-				frameData = new BYTE[SizeBytes];
+			for(int i = 0; i < nrRows; i++) {
 
+				memcpy(dest, source, Width);
+				dest += Width;
+				source += pitch;
 			}
 
+			frame->UnlockRectangle();
 		}
 
 		~VideoFrame() {
 
-			if(frame != nullptr) {
-
-				delete frame;
-				frame = nullptr;
-			}
-
 			if(frameData != NULL) {
 
-				delete frameData;
+				av_free(frameData);				
+				//delete frameData;
 				frameData = NULL;
 			}
 		}
 
-		void copyFrameData(BYTE* Y, BYTE* V, BYTE* U)
+		void setFrameData(BYTE* Y, BYTE* V, BYTE* U)
 		{
-
-			BYTE* pict;
-			int pitch;
-	
-			if(videoFrameType == VideoFrameType::D3D_SURFACE) {
-
-				Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
-
-				// copy raw frame data to bitmap
-				
-				GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
-
-				pict = (BYTE*)stream->InternalDataPointer;
-
-			} else {
-
-				pitch = width;
-				pict = frameData;
-			}
+			BYTE* pict = frameData;
 			
-			if(width == pitch) {
+			int ySizeBytes = width * height;
+			int vSizeBytes = (width * height) / 4;
+			int uSizeBytes = (width * height) / 4;
 
-				int ySizeBytes = width * height;
-				int vSizeBytes = (width * height) / 4;
-				int uSizeBytes = (width * height) / 4;
-
-				memcpy(pict, Y, ySizeBytes);
-				memcpy(pict + ySizeBytes, V, vSizeBytes);
-				memcpy(pict + ySizeBytes + vSizeBytes, U, uSizeBytes);
-
-			} else {
-
-				for (int y = 0 ; y < height ; y++)
-				{
-					memcpy(pict, Y, width);
-					pict += pitch;
-					Y += width;
-				}
-				for (int y = 0 ; y < height / 2 ; y++)
-				{
-					memcpy(pict, V, width / 2);
-					pict += pitch / 2;
-					V += width / 2;
-				}
-				for (int y = 0 ; y < height / 2; y++)
-				{
-					memcpy(pict, U, width / 2);
-					pict += pitch / 2;
-					U += width / 2;
-				}
-			}
+			memcpy(pict, Y, ySizeBytes);
+			memcpy(pict + ySizeBytes, V, vSizeBytes);
+			memcpy(pict + ySizeBytes + vSizeBytes, U, uSizeBytes);
 			
-			if(videoFrameType == VideoFrameType::D3D_SURFACE) {
-				frame->UnlockRectangle();
-			}
-
 		}
 
 		void copyFrameDataToSurface(Surface ^frame) {
 
-			Debug::Assert(videoFrameType == VideoFrameType::MEMORY);
 			Debug::Assert(frame != nullptr && frame->Description.Width == width &&
 				frame->Description.Height == height);
 
@@ -224,6 +158,83 @@ namespace VideoLib {
 			}
 
 			frame->UnlockRectangle();
+		}
+
+		void saveToDisk(String ^fileName) {
+
+			AVFrame *source = avcodec_alloc_frame();
+			if(source == NULL) {
+
+				throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
+			}
+
+			avcodec_get_frame_defaults(source);
+
+			avpicture_fill((AVPicture *)source, frameData, PIX_FMT_YUV420P, 
+				Width, Height);
+
+			source->width = Width;
+			source->height = Height;
+			source->format = PIX_FMT_YUV420P;
+			//uint8_t *temp = source->data[1];
+			//source->data[1] = source->data[2];
+			//source->data[2] = temp;
+
+/*
+			int bufSize = avpicture_fill((AVPicture *)source, NULL, PIX_FMT_YUV420P, 
+				Width, Height);
+			uint8_t *sourceBuffer = (uint8_t*)av_malloc(bufSize);
+			avpicture_fill((AVPicture *)source, sourceBuffer , PIX_FMT_YUV420P, 
+				Width, Height);
+			
+			int pitch;
+			BYTE *pos = frameData;
+
+			BYTE *Y = source->data[0];
+			BYTE *U = source->data[1];
+			BYTE *V = source->data[2];
+
+			pitch = source->linesize[0];
+
+			for(int y = 0 ; y < Height ; y++)
+			{
+				memcpy(Y, pos, Width);
+				Y += pitch;
+				pos += Width;
+			}
+
+			//pitch = source->linesize[1];
+
+			for(int y = 0 ; y < height / 2 ; y++)
+			{
+				memcpy(U, pos, Width / 2);
+				U += pitch / 2;
+				pos += Width / 2;
+			}
+
+			//pitch = source->linesize[2];
+
+			for(int y = 0 ; y < height / 2; y++)
+			{
+				memcpy(V, pos, Width / 2);
+				V += pitch / 2;
+				pos += Width / 2;
+			}
+*/
+			AVFrame *dest = VideoDecoder::convertFrame(source, PIX_FMT_RGB24, 
+				Width, Height, VideoDecoder::SPLINE);
+
+			Bitmap ^image = gcnew Bitmap(Width, Height, dest->linesize[0],
+				Imaging::PixelFormat::Format24bppRgb, IntPtr(dest->data[0]));
+
+			image->Save(fileName);
+
+			delete image;
+
+			av_free(source);
+			//av_free(sourceBuffer);
+
+			avpicture_free((AVPicture *)dest);
 		}
 
 		

@@ -6,6 +6,7 @@
 namespace imageviewer {
 
 using namespace VideoLib;
+using namespace Microsoft::DirectX;
 namespace D3D = Microsoft::DirectX::Direct3D;
 
 public ref class VideoRender
@@ -15,6 +16,7 @@ private:
 
 	D3D::Device ^device;
 	D3D::Surface ^offscreen;
+	D3D::Surface ^screenShot;
 
 	Rectangle canvas;
 
@@ -90,6 +92,9 @@ private:
 
 			offscreen = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, pixelFormat, 
 				D3D::Pool::Default);
+
+			screenShot = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, D3D::Format::A8R8G8B8,
+				D3D::Pool::Default);
 		}
 	}
 
@@ -99,6 +104,12 @@ private:
 
 			delete offscreen;
 			offscreen = nullptr;
+		}
+
+		if(screenShot != nullptr) {
+
+			delete screenShot;
+			screenShot = nullptr;
 		}
 	}
 
@@ -185,6 +196,35 @@ public:
 
 	}
 
+	void createScreenShot() {
+
+		if(device == nullptr) return;
+
+		int width = offscreen->Description.Width;
+		int height = offscreen->Description.Height;
+
+		Rectangle videoRect = Rectangle(0, 0, width, height);
+
+		device->StretchRectangle(offscreen, videoRect,
+					screenShot, videoRect, D3D::TextureFilter::Linear);	
+
+		int pitch;
+
+		GraphicsStream ^stream = screenShot->LockRectangle(videoRect, D3D::LockFlags::ReadOnly,
+			pitch);
+
+		Bitmap ^image = gcnew Bitmap(width, height, pitch,
+			Imaging::PixelFormat::Format32bppArgb, IntPtr(stream->InternalDataPointer));
+
+		image->Save("c:\\screenshot.png");
+
+		screenShot->UnlockRectangle();		
+
+		//VideoFrame ^screen = gcnew VideoFrame(offscreen);
+		//screen->saveToDisk("c:\\screenshot.png");
+
+	}
+
 	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor, RenderMode mode) {
 
 		if(device == nullptr) return;
@@ -206,29 +246,22 @@ public:
 				device->BeginScene();		
 
 				Rectangle videoRect;
-				D3D::Surface ^frame;
 				
 				if(mode == RenderMode::NORMAL) {
 
 					videoRect = Rectangle(0, 0, videoFrame->Width, videoFrame->Height);
 				
-					frame = videoFrame->Image;
-
-					if(frame == nullptr) {
-
-						videoFrame->copyFrameDataToSurface(offscreen);
-						frame = offscreen;	
-					}
-
+					videoFrame->copyFrameDataToSurface(offscreen);
+				
 				} else if(mode == RenderMode::PAUSED) {
 
 					videoRect = Rectangle(0, 0, offscreen->Description.Width,  offscreen->Description.Height);
-					frame = offscreen;
+				
 				}
 
 				D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
 
-				device->StretchRectangle(frame, videoRect,
+				device->StretchRectangle(offscreen, videoRect,
 					backBuffer, canvas, D3D::TextureFilter::Linear);
 
 				device->EndScene();

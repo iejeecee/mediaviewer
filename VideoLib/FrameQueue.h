@@ -38,11 +38,11 @@ namespace VideoLib {
 
 		}
 
-		void initializeVideoQueue(int width, int height, Device ^device) {
+		void initializeVideoQueue(int width, int height) {
 
 			for(int i = 0; i < maxVideoFrames; i++) {
 
-				videoFrameData[i] = gcnew VideoFrame(width, height, device);
+				videoFrameData[i] = gcnew VideoFrame(width, height);
 
 				freeVideoFrames->add(videoFrameData[i]);
 			}
@@ -131,7 +131,7 @@ namespace VideoLib {
 
 			dispose();
 
-			initializeVideoQueue(width, height, device);
+			initializeVideoQueue(width, height);
 			initializeAudioQueue(maxAudioBufferSize);
 
 		}

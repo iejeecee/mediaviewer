@@ -223,7 +223,7 @@ void VideoPlayer::decodedFrameCallback(void *data, AVPacket *packet,
 		Byte *v = frame->data[2];
 
 		// convert the unmanaged frame data to managed data
-		videoFrame->copyFrameData(y, v, u);
+		videoFrame->setFrameData(y, v, u);
 
 		// calculate presentation timestamp (pts)
 		videoFrame->Pts = synchronizeVideo(frame->repeat_pict, packet->dts);

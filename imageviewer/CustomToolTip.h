@@ -18,7 +18,7 @@ namespace imageviewer {
 			Graphics ^g = e->Graphics;
 
 			// Draw Background
-			g->FillRectangle(gcnew SolidBrush(Color::Yellow), ClientRectangle);
+			g->FillRectangle(gcnew SolidBrush(this->BackColor), ClientRectangle);
 
 			Control::OnPaint(e);
 

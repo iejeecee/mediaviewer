@@ -397,6 +397,42 @@ public:
 		return(videoCodecContext == NULL ? 0 : videoCodecContext->height);
 	}
 
-	
+
+	static AVFrame *convertFrame(const AVFrame *source, PixelFormat dstFormat, int dstWidth, int dstHeight, 
+		SamplingMode sampling)
+	{
+
+		AVFrame *dest = avcodec_alloc_frame();
+
+		if(avpicture_alloc((AVPicture *)dest, dstFormat, dstWidth, dstHeight) != 0) 
+		{
+			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
+		}
+
+		SwsContext *convertCtx = sws_getContext(
+			source->width,
+			source->height,
+			(PixelFormat)source->format,
+			dstWidth,
+			dstHeight,
+			dstFormat,
+			sampling,
+			NULL,
+			NULL,
+			NULL);
+
+		sws_scale(convertCtx,
+				source->data,
+				source->linesize,
+				0,
+				source->height,
+				dest->data,
+				dest->linesize);
+
+
+		sws_freeContext(convertCtx);
+
+		return(dest);
+	}
 };
 

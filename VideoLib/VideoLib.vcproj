@@ -116,6 +116,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="&quot;H:\libav-win32-20120425\usr\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="2"
@@ -133,8 +134,9 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NoInherit)"
+				AdditionalDependencies="avformat.lib avcodec.lib swscale.lib avutil.lib"
 				LinkIncremental="1"
+				AdditionalLibraryDirectories="&quot;H:\libav-win32-20120425\usr\bin&quot;"
 				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
