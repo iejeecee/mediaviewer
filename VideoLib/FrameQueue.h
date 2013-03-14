@@ -27,6 +27,9 @@ namespace VideoLib {
 		array<VideoFrame ^> ^videoFrameData;
 		array<AudioFrame ^> ^audioFrameData;
 
+		Object ^videoFrameInUseLock;
+		Object ^audioFrameInUseLock;
+
 		void initializeAudioQueue(int maxAudioFrameBufferSize) {		
 
 			for(int i = 0; i < maxAudioFrames; i++) {
@@ -62,7 +65,8 @@ namespace VideoLib {
 			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
 			decodedAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
 			
-
+			videoFrameInUseLock = gcnew Object();
+			audioFrameInUseLock = gcnew Object();
 		}
 
 		~FrameQueue() {
@@ -147,6 +151,9 @@ namespace VideoLib {
 
 		void flush() {
 
+			Monitor::Enter(videoFrameInUseLock);
+			Monitor::Enter(audioFrameInUseLock);
+
 			decodedVideoFrames->flush();
 			decodedAudioFrames->flush();
 		
@@ -157,13 +164,19 @@ namespace VideoLib {
 
 				freeVideoFrames->add(videoFrameData[i]);
 			}
-		
+			// reason for video/audioFrameLock:
+			// freeAudioFrames is empty here
+			// audioThread adds a free frame at this moment
+			// this thread blocks because there are too many frames in the queue
 			
 			for(int i = 0; i < audioFrameData->Length; i++) {
 
 				freeAudioFrames->add(audioFrameData[i]);
 			}
 
+			Monitor::Exit(audioFrameInUseLock);
+			Monitor::Exit(videoFrameInUseLock);
+			
 		}
 
 		void stop() {
@@ -206,18 +219,28 @@ namespace VideoLib {
 
 		bool getFreeVideoFrame(VideoFrame ^%frame) {
 
-			return(freeVideoFrames->tryGet(frame));
+			bool success = freeVideoFrames->tryGet(frame);
+
+			return(success);
 		}
 
 		void enqueueFreeVideoFrame(VideoFrame ^frame) {
 
 			freeVideoFrames->add(frame);
+			Monitor::Exit(videoFrameInUseLock);
 
 		}
 
 		bool getDecodedVideoFrame(VideoFrame ^%videoFrame) {
 
-			return(decodedVideoFrames->tryGet(videoFrame));
+			bool success = decodedVideoFrames->tryGet(videoFrame);
+
+			if(success) {
+		
+				Monitor::Enter(videoFrameInUseLock);
+			}
+
+			return(success);
 		}
 
 		void enqueueDecodedVideoFrame(VideoFrame ^videoFrame) {
@@ -228,18 +251,25 @@ namespace VideoLib {
 
 		bool getFreeAudioFrame(AudioFrame ^%frame) {
 
-			return(freeAudioFrames->tryGet(frame));
+			bool success = freeAudioFrames->tryGet(frame);
+		
+			return(success);
 		}
 
 		void enqueueFreeAudioFrame(AudioFrame ^frame) {
 
 			freeAudioFrames->add(frame);
-			
+			Monitor::Exit(audioFrameInUseLock);
 		}
 
 		bool getDecodedAudioFrame(AudioFrame ^%audioFrame) {
 
-			return(decodedAudioFrames->tryGet(audioFrame));
+			bool success = decodedAudioFrames->tryGet(audioFrame);
+
+			if(success) {
+				Monitor::Enter(audioFrameInUseLock);
+			}
+			return(success);
 		}
 
 		void enqueueDecodedAudioFrame(AudioFrame ^audioFrame) {

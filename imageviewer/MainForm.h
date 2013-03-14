@@ -56,6 +56,9 @@ namespace imageviewer {
 	private: System::Windows::Forms::ToolStripButton^  autoScaleToolStripButton;
 	private: imageviewer::VideoPanelControl^  videoPanel;
 	private: System::Windows::Forms::ToolStripButton^  videoToolStripButton;
+	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator3;
+	private: System::Windows::Forms::ToolStripMenuItem^  settingsToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator2;
 
 
 
@@ -166,6 +169,9 @@ namespace imageviewer {
 			this->horizontalMirrorImageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImageMinToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImagePlusToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
+			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
+			this->settingsToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->toolStripSeparator3 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->menuStrip1->SuspendLayout();
 			this->toolStripContainer1->ContentPanel->SuspendLayout();
 			this->toolStripContainer1->SuspendLayout();
@@ -184,8 +190,8 @@ namespace imageviewer {
 			// 
 			// fileToolStripMenuItem
 			// 
-			this->fileToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {this->openToolStripMenuItem, 
-				this->openURLToolStripMenuItem, this->exitToolStripMenuItem});
+			this->fileToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(6) {this->openToolStripMenuItem, 
+				this->openURLToolStripMenuItem, this->toolStripSeparator3, this->settingsToolStripMenuItem, this->toolStripSeparator2, this->exitToolStripMenuItem});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
 			this->fileToolStripMenuItem->Size = System::Drawing::Size(48, 25);
 			this->fileToolStripMenuItem->Text = L"File";
@@ -442,6 +448,23 @@ namespace imageviewer {
 			this->rotateImagePlusToolStripButton->Size = System::Drawing::Size(23, 22);
 			this->rotateImagePlusToolStripButton->Text = L"Rotate Image 90 Degrees";
 			this->rotateImagePlusToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::rotateImagePlusToolStripButton_Click);
+			// 
+			// toolStripSeparator2
+			// 
+			this->toolStripSeparator2->Name = L"toolStripSeparator2";
+			this->toolStripSeparator2->Size = System::Drawing::Size(151, 6);
+			// 
+			// settingsToolStripMenuItem
+			// 
+			this->settingsToolStripMenuItem->Name = L"settingsToolStripMenuItem";
+			this->settingsToolStripMenuItem->Size = System::Drawing::Size(154, 26);
+			this->settingsToolStripMenuItem->Text = L"Settings";
+			this->settingsToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::settingsToolStripMenuItem_Click);
+			// 
+			// toolStripSeparator3
+			// 
+			this->toolStripSeparator3->Name = L"toolStripSeparator3";
+			this->toolStripSeparator3->Size = System::Drawing::Size(151, 6);
 			// 
 			// MainForm
 			// 
@@ -1069,6 +1092,8 @@ public: System::Void application_Idle(System::Object^  sender, System::EventArgs
 private: System::Void mainForm_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
 
 			 videoPanel->stop();
+		 }
+private: System::Void settingsToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 };
 }

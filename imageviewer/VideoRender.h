@@ -17,6 +17,7 @@ private:
 	D3D::Device ^device;
 	D3D::Surface ^offscreen;
 	D3D::Surface ^screenShot;
+	VideoFrame ^tempOffscreen;
 
 	Rectangle canvas;
 
@@ -84,6 +85,16 @@ private:
 		device->Reset(createPresentParams());
 	}
 
+	void saveResources() {
+
+		tempOffscreen = gcnew VideoFrame(offscreen);
+	}
+
+	void restoreResources() {
+
+		tempOffscreen->copyFrameDataToSurface(offscreen);
+	}
+
 	void aquireResources() {
 
 		if(videoWidth != 0 && videoHeight != 0) {
@@ -125,11 +136,17 @@ public:
 	{
 		device = nullptr;
 		this->owner = owner;
+		tempOffscreen = nullptr;
 	}
 
 	~VideoRender() {
 
 		releaseResources();
+
+		if(tempOffscreen != nullptr) {
+
+			delete tempOffscreen;
+		}
 
 		if(device != nullptr) {
 
@@ -200,26 +217,32 @@ public:
 
 		if(device == nullptr) return;
 
-		int width = offscreen->Description.Width;
-		int height = offscreen->Description.Height;
+		try {
 
-		Rectangle videoRect = Rectangle(0, 0, width, height);
+			int width = offscreen->Description.Width;
+			int height = offscreen->Description.Height;
 
-		device->StretchRectangle(offscreen, videoRect,
-					screenShot, videoRect, D3D::TextureFilter::Linear);	
+			Rectangle videoRect = Rectangle(0, 0, width, height);
 
-		int pitch;
+			device->StretchRectangle(offscreen, videoRect,
+				screenShot, videoRect, D3D::TextureFilter::Linear);	
 
-		GraphicsStream ^stream = screenShot->LockRectangle(videoRect, D3D::LockFlags::ReadOnly,
-			pitch);
+			int pitch;
 
-		Bitmap ^image = gcnew Bitmap(width, height, pitch,
-			Imaging::PixelFormat::Format32bppArgb, IntPtr(stream->InternalDataPointer));
+			GraphicsStream ^stream = screenShot->LockRectangle(videoRect, D3D::LockFlags::ReadOnly,
+				pitch);
 
-		image->Save("c:\\screenshot.png");
+			Bitmap ^image = gcnew Bitmap(width, height, pitch,
+				Imaging::PixelFormat::Format32bppArgb, IntPtr(stream->InternalDataPointer));
 
-		screenShot->UnlockRectangle();		
+			image->Save("c:\\screenshot.png");
 
+			screenShot->UnlockRectangle();		
+
+		} catch (Exception ^e) {
+
+			MessageBox::Show("Screenshot failed: " + e->Message, "Error");
+		}
 		//VideoFrame ^screen = gcnew VideoFrame(offscreen);
 		//screen->saveToDisk("c:\\screenshot.png");
 
@@ -305,6 +328,7 @@ public:
 		Util::DebugOut("d3d device reset");
 
 		aquireResources();
+		restoreResources();
 	
 	}
 
@@ -312,6 +336,7 @@ public:
 
 		Util::DebugOut("d3d device lost");
 	
+		saveResources();
 		releaseResources();
 
 	}

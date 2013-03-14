@@ -421,6 +421,7 @@ namespace imageviewer {
 		HRTimer ^videoRefreshTimer;		
 		HRTimer ^audioRefreshTimer;
 
+		double videoPts;
 		double videoPtsDrift;
 
 		double audioDiffCum;
@@ -487,7 +488,14 @@ namespace imageviewer {
 
 		double getVideoClock() {
 
-			return(videoPtsDrift - HRTimer::getTimestamp());
+			if(VideoState == imageviewer::VideoState::PAUSED) {
+
+				return(videoPts);
+
+			} else {
+
+				return(videoPtsDrift - HRTimer::getTimestamp());
+			}
 		}
 
 		void processVideoFrame() {
@@ -520,18 +528,19 @@ restartvideo:
 
 				if(VideoState == imageviewer::VideoState::PLAYING) {
 
+					videoPts = videoFrame->Pts;
 					videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
 
 					if(skipVideoFrame == false) {
 
 						videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
 						videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
-					} 
+					} 					
 
 					// queue current frame in freeFrames to be used again
 					videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
 
-					actualDelay = synchronizeVideo(videoFrame->Pts);
+					actualDelay = synchronizeVideo(videoPts);					
 
 				} else if(VideoState == imageviewer::VideoState::PAUSED) {
 
@@ -549,7 +558,7 @@ restartvideo:
 			videoDebug->update();
 			updateUI();
 
-			if(actualDelay < 0.010) {
+			if(actualDelay < 0) {
 
 				// delay is too small skip next frame
 				skipVideoFrame = true;
@@ -698,13 +707,19 @@ restartaudio:
 						// Shrinking/expanding buffer code....
 						if(Math::Abs(avgDiff) >= audioDiffThreshold) {
 
-							int wantedSize = frame->Length + 
-								(int(diff * videoDecoder->SamplesPerSecond) * n);
+							int wantedSize = int(frame->Length + diff * videoDecoder->SamplesPerSecond * n);
+								
+							// get a correction percent from 10 to 60 based on the avgDiff
+							double correctionPercent = Util::clamp<double>(10 + (Math::Abs(avgDiff) - audioDiffThreshold) * 15, 10, 60);
 
-							int minSize = int(frame->Length * ((100 - AUDIO_SAMPLE_CORRECTION_PERCENT_MAX)
+							//Util::DebugOut(correctionPercent);
+
+							//AUDIO_SAMPLE_CORRECTION_PERCENT_MAX
+
+							int minSize = int(frame->Length * ((100 - correctionPercent)
 								/ 100));
 
-							int maxSize = int(frame->Length * ((100 + AUDIO_SAMPLE_CORRECTION_PERCENT_MAX) 
+							int maxSize = int(frame->Length * ((100 + correctionPercent) 
 								/ 100));
 
 							if(wantedSize < minSize) {
@@ -716,6 +731,7 @@ restartaudio:
 								wantedSize = maxSize;
 							}
 
+							// make sure the samples stay aligned after resizing the buffer
 							wantedSize = (wantedSize / n) * n;
 
 							if(wantedSize < frame->Length) {
@@ -962,8 +978,8 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 						if(videoDecoder->seek(seekPosition) == true) {
 							
 							// flush will only empty, not stop the framequeue
-							// This means the videorender and audioplayer thread will 
-							// wait until the queue gets filled again
+							// This means the videorender and audioplayer thread will block 
+							// until the queue gets filled again
 							videoDecoder->FrameQueue->flush();
 							audioPlayer->flush();
 							
@@ -1127,6 +1143,8 @@ private: System::Void timeTrackBar_MouseMove(System::Object^  sender, System::Wi
 			 timeTrackBarToolTip->Refresh();
 		 }
 private: System::Void screenShotButton_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 if(VideoState == imageviewer::VideoState::CLOSED) return;
 
 			 videoRender->createScreenShot();
 		 }
