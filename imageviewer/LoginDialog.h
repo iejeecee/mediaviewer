@@ -106,6 +106,8 @@ namespace imageviewer {
 		}
 #pragma endregion
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	public: property AuthInfo ^authInfo {
 
 			void set(AuthInfo ^authInfo) {
@@ -135,6 +137,7 @@ namespace imageviewer {
 												
 					 } catch (Exception ^ex) {
 
+						 log->Error("Authentication Error", ex);
 						 MessageBox::Show(ex->Message, "Authentication Error");
 					 }
 					 

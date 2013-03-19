@@ -13,7 +13,6 @@ using namespace System::Text::RegularExpressions;
 using namespace System::Collections::Generic;
 using namespace System::Xml;
 using namespace System::Xml::Linq;
-using namespace System::Linq;
 
 using namespace Google::GData;
 using namespace Google::Picasa;
@@ -24,6 +23,8 @@ public ref class PicasaService2
 {
 
 private:
+
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
 	AuthInfo ^_authInfo;
 	int timeOutSeconds;
@@ -150,6 +151,7 @@ private:
 
 		} catch (Exception ^e) {
 
+			log->Error("Error Deleting Album", e);
 			MessageBox::Show(e->Message, "Error Deleting Album");
 		}
 	}
@@ -271,7 +273,7 @@ public:
 
 		} catch (Exception ^e) {
 
-			System::Diagnostics::Debug::Print(e->Message);
+			log->Error("Error reading user albums", e);
 
 		}
 

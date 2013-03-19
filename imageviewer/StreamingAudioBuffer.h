@@ -20,6 +20,8 @@ public:
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	DS::Device ^device;
 	DS::SecondaryBuffer ^audioBuffer;
 	int offsetBytes;
@@ -64,13 +66,11 @@ public:
 			device = gcnew DS::Device();
 			device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
 
-		} catch (DS::SoundException ^exception){
-
-			MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
-			Util::DebugOut("Error Code:" + exception->ErrorCode);
-			Util::DebugOut("Error String:" + exception->ErrorString);
-			Util::DebugOut("Message:" + exception->Message);
-			Util::DebugOut("StackTrace:" + exception->StackTrace);
+		} catch (DS::SoundException ^e){
+			
+			log->Error("Error initializing directsound", e);
+			MessageBox::Show("Error initializing Direct Sound: " + e->Message, "Direct Sound Error");
+		
 		}
 
 		audioBuffer = nullptr;
@@ -144,11 +144,11 @@ public:
 		}
 	}
 
-	property int Frequency {
+	property int SamplesPerSecond {
 
-		void set(int frequency) {
+		void set(int samplesPerSecond) {
 
-			audioBuffer->Frequency = frequency;
+			audioBuffer->Frequency = samplesPerSecond;
 		}
 
 		int get() {
@@ -225,17 +225,15 @@ public:
 			playLoops = 0;
 			ptsLoops = 0;
 
-		} catch (DS::SoundException ^exception){
+		} catch (DS::SoundException ^e){
 
-			MessageBox::Show("Error initializing Direct Sound: " + exception->Message, "Direct Sound Error");
-			Util::DebugOut("Error Code:" + exception->ErrorCode);
-			Util::DebugOut("Error String:" + exception->ErrorString);
-			Util::DebugOut("Message:" + exception->Message);
-			Util::DebugOut("StackTrace:" + exception->StackTrace);
+			log->Error("Error initializing Direct Sound", e);
+			MessageBox::Show("Error initializing Direct Sound: " + e->Message, "Direct Sound Error");
+		
 
 		} catch (Exception ^e) {
 
-			Util::DebugOut(e->Message);
+			log->Error("Error initializing Direct Sound", e);
 		}
 	}
 
@@ -289,7 +287,7 @@ public:
 
 		if(playPos <= offsetBytes && offsetBytes < writePos) { 
 			
-			Util::DebugOut("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
+			log->Warn("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
 			offsetBytes = writePos;
 		} 
 

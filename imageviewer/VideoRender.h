@@ -2,6 +2,8 @@
 //http://www.drunkenhyena.com/cgi-bin/view_net_article.pl?chapter=2;article=10#Lost_Devices
 #include "ImageUtils.h"
 #include "HRTimer.h"
+#include "FileUtils.h"
+#include "Settings.h"
 
 namespace imageviewer {
 
@@ -14,16 +16,19 @@ public ref class VideoRender
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	D3D::Device ^device;
 	D3D::Surface ^offscreen;
 	D3D::Surface ^screenShot;
-	VideoFrame ^tempOffscreen;
+	VideoFrame ^saveOffscreen;
 
 	Rectangle canvas;
 
 	int videoWidth;
 	int videoHeight;
 
+	bool windowed;
 	Windows::Forms::Control ^owner;
 
 	static D3D::Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
@@ -32,13 +37,7 @@ private:
 		return((D3D::Format) value);
 	}
 
-	D3D::PresentParameters ^createPresentParams() {
-
-		//Assume this is pre-initialized to your choice of full-screen or windowed mode.
-		bool fullScreen = false;
-
-		//Hard-coded to a common format.  A better method will be shown later in this lesson.
-		D3D::Format format = D3D::Format::R8G8B8;
+	D3D::PresentParameters ^createPresentParams(bool windowed, Windows::Forms::Control ^owner) {
 
 		//Allocate our class
 		D3D::PresentParameters ^presentParams = gcnew D3D::PresentParameters();
@@ -59,13 +58,15 @@ private:
 		presentParams->SwapEffect = D3D::SwapEffect::Discard;
 
 		//Set Windowed vs. Full-screen
-		presentParams->Windowed = !fullScreen;
+		presentParams->Windowed = windowed;
 
 		//We only need to set the Width/Height in full-screen mode
-		if(fullScreen) {
+		if(!windowed) {
 
 			presentParams->BackBufferHeight = owner->Height;
 			presentParams->BackBufferWidth = owner->Width;
+
+			D3D::Format format = D3D::Format::X8R8G8B8;
 
 			//Choose a compatible 16-bit mode.
 			presentParams->BackBufferFormat = format;
@@ -82,17 +83,17 @@ private:
 
 	void resetDevice() {
 
-		device->Reset(createPresentParams());
+		device->Reset(createPresentParams(windowed, owner));
 	}
 
 	void saveResources() {
 
-		tempOffscreen = gcnew VideoFrame(offscreen);
+		saveOffscreen = gcnew VideoFrame(offscreen);
 	}
 
 	void restoreResources() {
 
-		tempOffscreen->copyFrameDataToSurface(offscreen);
+		saveOffscreen->copyFrameDataToSurface(offscreen);
 	}
 
 	void aquireResources() {
@@ -124,6 +125,30 @@ private:
 		}
 	}
 
+	void device_DeviceResizing(Object ^sender, System::ComponentModel::CancelEventArgs ^e) {
+
+		e->Cancel = true;
+
+	}
+
+	void device_DeviceReset(Object ^sender, EventArgs ^e) {
+
+		log->Info("d3d device reset");
+
+		aquireResources();
+		restoreResources();
+	
+	}
+
+	void device_DeviceLost(Object ^sender, EventArgs ^e) {
+
+		log->Info("d3d device lost");
+	
+		saveResources();
+		releaseResources();
+
+	}
+
 public: 
 
 	enum class RenderMode {
@@ -136,16 +161,17 @@ public:
 	{
 		device = nullptr;
 		this->owner = owner;
-		tempOffscreen = nullptr;
+		saveOffscreen = nullptr;
+		windowed = true;
 	}
 
 	~VideoRender() {
 
 		releaseResources();
 
-		if(tempOffscreen != nullptr) {
+		if(saveOffscreen != nullptr) {
 
-			delete tempOffscreen;
+			delete saveOffscreen;
 		}
 
 		if(device != nullptr) {
@@ -171,6 +197,37 @@ public:
 		}
 	}
 
+	void setWindowed() {
+
+		windowed = true;
+
+		D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
+
+		if(device != nullptr) {
+
+			device->Reset(presentParams);
+		}
+	}
+
+
+	void setFullScreen() {
+
+		windowed = false;
+
+		D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
+
+		if(device != nullptr) {
+
+			try {
+				device->Reset(presentParams);
+
+			} catch (Exception ^e) {
+
+				log->Error("Error setting fullscreen", e);
+			}
+		}
+	}
+
 	void initialize(int videoWidth, int videoHeight) 
 	{
 		try {
@@ -178,7 +235,7 @@ public:
 			this->videoHeight = videoHeight;
 			this->videoWidth = videoWidth;
 
-			D3D::PresentParameters ^presentParams = createPresentParams();
+			D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
 
 			if(device == nullptr) {
 
@@ -202,18 +259,16 @@ public:
 				backBuffer->Description.Height);
 
 	
-		} catch (D3D::GraphicsException ^exception){
+		} catch (D3D::GraphicsException ^e){
 
-			MessageBox::Show(exception->Message, "Direct3D Initialization error");
-			Util::DebugOut("Error Code:" + exception->ErrorCode);
-			Util::DebugOut("Error String:" + exception->ErrorString);
-			Util::DebugOut("Message:" + exception->Message);
-			Util::DebugOut("StackTrace:" + exception->StackTrace);
+			log->Error("Direct3D Initialization error", e);
+			MessageBox::Show(e->Message, "Direct3D Initialization error");
+			
 		}
 
 	}
 
-	void createScreenShot() {
+	void createScreenShot(String ^fileName) {
 
 		if(device == nullptr) return;
 
@@ -235,17 +290,22 @@ public:
 			Bitmap ^image = gcnew Bitmap(width, height, pitch,
 				Imaging::PixelFormat::Format32bppArgb, IntPtr(stream->InternalDataPointer));
 
-			image->Save("c:\\screenshot.png");
+			String ^path = Util::getPathWithoutFileName(fileName);
+			fileName = System::IO::Path::GetFileNameWithoutExtension(fileName);
+			fileName += "." + Settings::getVar(Settings::VarName::VIDEO_SCREENSHOT_FILE_TYPE);
+
+			fileName = FileUtils::getUniqueFileName(path + "\\" + fileName);
+
+			image->Save(fileName);
 
 			screenShot->UnlockRectangle();		
 
 		} catch (Exception ^e) {
 
+			log->Error("Screenshot failed", e);
 			MessageBox::Show("Screenshot failed: " + e->Message, "Error");
 		}
-		//VideoFrame ^screen = gcnew VideoFrame(offscreen);
-		//screen->saveToDisk("c:\\screenshot.png");
-
+	
 	}
 
 	void display(VideoFrame ^videoFrame, Rectangle canvas, Color backColor, RenderMode mode) {
@@ -290,12 +350,14 @@ public:
 				device->EndScene();
 				device->Present();
 
-			} catch(D3D::DeviceLostException ^) {
+			} catch(D3D::DeviceLostException ^e) {
 
+				log->Info("lost direct3d device", e);
 				device->CheckCooperativeLevel(deviceStatus);
 
-			} catch(D3D::DeviceNotResetException ^) {
+			} catch(D3D::DeviceNotResetException ^e) {
 
+				log->Info("direct3d device not reset", e);
 				device->CheckCooperativeLevel(deviceStatus);
 			}
 		}
@@ -317,32 +379,6 @@ public:
 		}
 	}
 
-	void device_DeviceResizing(Object ^sender, System::ComponentModel::CancelEventArgs ^e) {
-
-		e->Cancel = true;
-
-	}
-
-	void device_DeviceReset(Object ^sender, EventArgs ^e) {
-
-		Util::DebugOut("d3d device reset");
-
-		aquireResources();
-		restoreResources();
-	
-	}
-
-	void device_DeviceLost(Object ^sender, EventArgs ^e) {
-
-		Util::DebugOut("d3d device lost");
-	
-		saveResources();
-		releaseResources();
-
-	}
-
-
-	
 
 };
 

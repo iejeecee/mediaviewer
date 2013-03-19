@@ -17,6 +17,8 @@ public ref class FileUtils
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	enum class CopyFileCallbackAction
 	{
 		CONTINUE = 0,
@@ -292,6 +294,7 @@ private:
 
 		} catch (Exception ^e) {
 
+			log->Error("Copy Exception", e);
 			MessageBox::Show(e->Message, "Copy Exception");
 		}
 
@@ -439,6 +442,7 @@ private:
 
 		} catch (Exception ^e) {
 
+			log->Error("Move Exception", e);
 			MessageBox::Show(e->Message, "Move Exception");
 		}
 

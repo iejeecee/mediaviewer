@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="Copy misc files to executable directory"
-				CommandLine="copy geotag.* $(OutDir)"
+				CommandLine="copy geotag.* $(OutDir) &amp; copy log4net.config $(OutDir)"
 			/>
 		</Configuration>
 		<Configuration
@@ -228,9 +228,9 @@
 			MinFrameworkVersion="196613"
 		/>
 		<AssemblyReference
-			RelativePath="System.Data.Linq.dll"
-			AssemblyName="System.Data.Linq, Version=3.5.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
-			MinFrameworkVersion="196613"
+			RelativePath="..\..\log4net-1.2.11\bin\net\3.5\release\log4net.dll"
+			AssemblyName="log4net, Version=1.2.11.0, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
+			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
 			RelativePath="System.Data.SqlServerCe.dll"
@@ -254,7 +254,7 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4819.32121, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4822.29744, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -271,12 +271,6 @@
 			RelativePath="Microsoft.DirectX.Direct3D.dll"
 			AssemblyName="Microsoft.DirectX.Direct3D, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
 			MinFrameworkVersion="0"
-		/>
-		<ActiveXReference
-			ControlGUID="{6bf52a50-394a-11d3-b153-00c04f79faa6}"
-			ControlVersion="1.0"
-			LocaleID="0"
-			WrapperTool="aximp"
 		/>
 		<AssemblyReference
 			RelativePath="Microsoft.DirectX.Direct3DX.dll"
@@ -345,6 +339,10 @@
 			</File>
 			<File
 				RelativePath=".\InputDialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\LogForm.cpp"
 				>
 			</File>
 			<File
@@ -441,6 +439,10 @@
 			</File>
 			<File
 				RelativePath=".\VideoPanelControl.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\YoutubeForm.cpp"
 				>
 			</File>
 		</Filter>
@@ -610,6 +612,16 @@
 				</File>
 			</File>
 			<File
+				RelativePath=".\LogForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\LogForm.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
 				RelativePath=".\LoginDialog.h"
 				FileType="3"
 				>
@@ -740,6 +752,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Settings.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stdafx.h"
 				>
 			</File>
@@ -798,6 +814,16 @@
 			<File
 				RelativePath=".\VideoState.h"
 				>
+			</File>
+			<File
+				RelativePath=".\YoutubeForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\YoutubeForm.resx"
+					SubType="Designer"
+					>
+				</File>
 			</File>
 			<Filter
 				Name="HTTP"
@@ -1079,6 +1105,10 @@
 					Outputs="dummy"
 				/>
 			</FileConfiguration>
+		</File>
+		<File
+			RelativePath=".\log4net.config"
+			>
 		</File>
 		<File
 			RelativePath=".\ReadMe.txt"

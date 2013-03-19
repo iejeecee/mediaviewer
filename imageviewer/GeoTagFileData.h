@@ -12,6 +12,10 @@ using namespace XMPLib;
 
 public ref class GeoTagFileData : public FileMetaData {
 
+private:
+
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 public:
 
 	String ^fileUrl;
@@ -80,6 +84,7 @@ public:
 
 		} catch (Exception ^e) {
 
+			log->Error("Error in " + FilePath, e);
 			throw gcnew Exception("Error in " + FilePath + ": " + e->Message);			
 
 		} finally {

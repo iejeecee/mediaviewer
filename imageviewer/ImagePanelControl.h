@@ -130,6 +130,8 @@ public:
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	MediaFileFactory ^mediaFileFactory;
 	MediaFile ^media;
 
@@ -183,6 +185,7 @@ private:
 
 		} catch(Exception ^e) {
 
+			log->Error("Error reading:" + media->Location, e);
 			MessageBox::Show("Error reading:\n\n" + media->Location + "\n\n" + e->Message, "Error");
 			
 		} finally {

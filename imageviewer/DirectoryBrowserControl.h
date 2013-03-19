@@ -228,6 +228,8 @@ namespace imageviewer {
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	AutoResetEvent ^expandFinished;
 	String ^initialDirectory;
 
@@ -481,6 +483,7 @@ private:
 
 					 } catch (Exception ^e) {
 
+						 log->Error("Error Creating Directory", e);
 						 MessageBox::Show(e->Message, "Error Creating Directory");
 					 }
 				 }
@@ -507,6 +510,7 @@ private:
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error Deleting Directory", e);
 					 MessageBox::Show(e->Message, "Error Deleting Directory");
 				 }
 			 }
@@ -606,7 +610,7 @@ private:
 
 				 } catch (Exception ^ex) {
 
-					 System::Diagnostics::Debug::Print(ex->Message);
+					 log->Error("Error expanding directory tree", ex);
 
 					 // don't block in case of error
 					 expandFinished->Set();
@@ -690,6 +694,7 @@ private:
 						
 					 } catch (Exception ^e) {
 
+						 log->Error("Error Renaming Directory", e);
 						 MessageBox::Show(e->Message, "Error Renaming Directory");
 					 }
 				 }
@@ -742,6 +747,7 @@ private: System::Void pasteToolStripMenuItem_Click(System::Object^  sender, Syst
 
 			 } catch (Exception ^e) {
 
+				 log->Error("Error pasting files", e);
 				 MessageBox::Show(e->Message);
 			 }
 

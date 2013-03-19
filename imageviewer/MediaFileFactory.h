@@ -35,7 +35,7 @@ private:
 	ref class AsyncState {
 
 	private:
-
+		
 		String ^location;
 		Object ^userState;
 		ModifiableGEventArgs<bool> ^isCancelled;
@@ -89,7 +89,8 @@ private:
 		}
 	};
 
-	
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	DigitallyCreated::Utilities::Concurrency::FifoSemaphore ^openSemaphore;
 	DigitallyCreated::Utilities::Concurrency::FifoSemaphore ^stateSemaphore;
 	List<AsyncState ^> ^activeStates;
@@ -199,6 +200,7 @@ private:
 
 		} catch (Exception ^e) {
 
+			log->Warn("Cannot open media", e);
 			media->OpenError = e;
 			media->close();		
 
@@ -286,6 +288,7 @@ public:
 			
 		} catch(Exception ^e) {
 
+			log->Error("Cannot open media", e);
 			MessageBox::Show(e->Message);
 		}
 
@@ -321,6 +324,7 @@ public:
 
 		} catch (Exception ^e) {
 
+			log->Error("cannot open media", e);
 			media->OpenError = e;
 
 			if(media->Data != nullptr) {

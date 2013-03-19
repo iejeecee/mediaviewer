@@ -14,6 +14,8 @@ public ref class GeoTagScriptInterface {
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	WebBrowser ^browser;
 	List<GeoTagFileData ^> ^geoTagData;
 
@@ -67,7 +69,7 @@ public:
 
 		} catch(Exception ^e) {
 
-			System::Diagnostics::Debug::Write(e->Message);
+			log->Error("Error reading geotag", e);
 			throw;
 		}
 

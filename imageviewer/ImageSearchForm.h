@@ -309,6 +309,8 @@ namespace imageviewer {
 		}
 #pragma endregion
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	private: System::Void textBox1_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 
 				 if(e->KeyCode != System::Windows::Forms::Keys::Enter) return;
@@ -425,6 +427,7 @@ namespace imageviewer {
 
 				 } catch(Exception ^e) {
 
+					 log->Error("Google Image Search error", e);
 					 MessageBox::Show(e->Message);
 				 }
 

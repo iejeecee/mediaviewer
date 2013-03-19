@@ -961,7 +961,8 @@ private: imageviewer::PagerControl^  pagerControl;
 #pragma endregion
 
 private:
-
+	
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
 	MetaDataThumb ^thumbnail;
 	bool isBatch;
@@ -1477,6 +1478,7 @@ public:
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error while saving metadata", e);
 					 MessageBox::Show(e->Message, "Error");
 
 				 } finally {
@@ -1573,6 +1575,7 @@ private: System::Void defaultThumbRadioButton_CheckedChanged(System::Object^  se
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error generating thumbnails", e);
 					 MessageBox::Show(e->Message);
 				 }
 
@@ -1601,6 +1604,7 @@ private: System::Void browseThumbRadioButton_CheckedChanged(System::Object^  sen
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error generating thumbnail", e);
 					 MessageBox::Show(e->Message);
 				 }
 

@@ -479,6 +479,8 @@ namespace imageviewer {
 		}
 #pragma endregion
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	private: GeoTagScriptInterface ^script;
 
 	private: System::Void script_Initialized(System::Object^  sender, System::EventArgs^  e) {
@@ -602,6 +604,7 @@ private: System::Void okButton_Click(System::Object^  sender, System::EventArgs^
 
 			 } catch (Exception ^e) {
 
+				 log->Error("Error saving Geo Tag", e);
 				 MessageBox::Show(e->Message, "Error saving Geo Tag");
 			 } 
 		 }

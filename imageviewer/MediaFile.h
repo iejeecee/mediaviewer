@@ -14,6 +14,8 @@ public ref class MediaFile abstract : public EventArgs
 
 protected:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	static const int MAX_THUMBNAIL_WIDTH = 160;
 	static const int MAX_THUMBNAIL_HEIGHT = 160;
 
@@ -70,6 +72,7 @@ protected:
 
 		} catch (Exception ^e) {
 
+			log->Warn("Cannot read metadata: " + Location, e);
 			MetaDataError = e;
 		}
 	}

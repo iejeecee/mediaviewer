@@ -349,6 +349,8 @@ namespace imageviewer {
 		}
 #pragma endregion
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	private: void addAuthInfoToEditUri(AtomEntry ^entry) {
 
 				 String ^editUri = entry->EditUri->Content;
@@ -431,6 +433,7 @@ namespace imageviewer {
 
 				 } catch(Exception ^e) {
 
+					 log->Error("Album query error", e);
 					 MessageBox::Show(e->Message);
 				 }
 
@@ -492,6 +495,7 @@ namespace imageviewer {
 
 				 } catch(Exception ^e) {
 
+					 log->Error("Photo query error", e);
 					 MessageBox::Show(e->Message);
 				 }
 
@@ -531,6 +535,7 @@ namespace imageviewer {
 
 				} catch(Exception ^e) {
 
+					log->Error("Upload image error", e);
 					MessageBox::Show(e->Message);
 				}
 			}
@@ -975,6 +980,7 @@ namespace imageviewer {
 
 					 } catch(Exception ^ex) {
 
+						 log->Error("Error updating album info", ex);
 						 MessageBox::Show(ex->Message);
 
 					 }
@@ -1010,6 +1016,7 @@ namespace imageviewer {
 						 
 					 } catch(Exception ^ex) {
 
+						 log->Error("Error creating album", ex);
 						 MessageBox::Show(ex->Message);
 
 					 }
@@ -1039,6 +1046,7 @@ namespace imageviewer {
 
 				 } catch(Exception ^e) {
 
+					 log->Error("Error deleting album", e);
 					 MessageBox::Show(e->Message);
 				 }
 			 }
@@ -1121,6 +1129,7 @@ namespace imageviewer {
 
 				 } catch(Exception ^e) {
 
+					 log->Error("Error deleting photo's", e);
 					 MessageBox::Show(e->Message);
 				 }
 
@@ -1157,6 +1166,7 @@ namespace imageviewer {
 
 					 } catch (Exception ^ex) {
 
+						 log->Error("Error modifying photo", ex);
 						 MessageBox::Show(ex->Message, "Error modifying photo");
 					 }
 				 }
@@ -1370,6 +1380,7 @@ namespace imageviewer {
 
 				}catch(Exception ^e) {
 
+					log->Error("Error logging into picasa", e);
 					MessageBox::Show(e->Message);
 				}
 			 }

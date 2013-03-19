@@ -25,150 +25,154 @@ namespace imageviewer {
 
 	public ref class DownloadProgressForm : public ProgressForm {
 
-		
-		public: DownloadProgressForm() {
+	private:
 
+		static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
-					
+		String ^decodeUrl(String ^url) {
 
-				}
+			while(url->Contains(L"%")) {
 
-		public: void download(List<String ^> ^url, String ^outputDir) {
+				int length = url->Length;
 
-				totalProgressMaximum = url->Count;
+				url = System::Web::HttpUtility::UrlDecode(url);
 
-				WaitCallback ^asyncDownload = gcnew WaitCallback(this, &DownloadProgressForm::asyncAction);
-
-				DownloadArgs ^args = gcnew DownloadArgs(url, outputDir);
-
-				ThreadPool::QueueUserWorkItem(asyncDownload, args);
+				if(length == url->Length) break;
 
 			}
 
-		protected: virtual void asyncAction(Object ^state) override {
+			return(url);
+		}
 
-				 DownloadArgs ^args = dynamic_cast<DownloadArgs ^>(state);
+	protected:
 
-				 List<String ^> ^url = args->url;
-				 String ^outputDir = args->outputDir;
-				 String ^name = L"";
-				
-				 for(int i = 0; i < url->Count; i++) {
+		virtual void asyncAction(Object ^state) override {
 
-					 try {
+			DownloadArgs ^args = dynamic_cast<DownloadArgs ^>(state);
 
-						 totalProgressValue = i;
-						 itemInfo = name;
-						 itemProgressValue = 0;
-						 
-						 HttpWebRequest ^request = (HttpWebRequest^)WebRequest::Create(url[i]);
-						 request->Method = L"GET";
-						 request->Timeout = 60 * 1000;
+			List<String ^> ^url = args->url;
+			String ^outputDir = args->outputDir;
+			String ^name = L"";
 
-						 IAsyncResult ^requestResult = request->BeginGetResponse(nullptr, nullptr);
+			for(int i = 0; i < url->Count; i++) {
 
-						 while(!requestResult->IsCompleted) {
+				try {
 
-							 if(abortAsyncAction == true) {
+					totalProgressValue = i;
+					itemInfo = name;
+					itemProgressValue = 0;
 
-								 request->Abort();
-								 return;
-							 }
+					HttpWebRequest ^request = (HttpWebRequest^)WebRequest::Create(url[i]);
+					request->Method = L"GET";
+					request->Timeout = 60 * 1000;
 
-							 Thread::Sleep(100);
+					IAsyncResult ^requestResult = request->BeginGetResponse(nullptr, nullptr);
 
-						 }
+					while(!requestResult->IsCompleted) {
 
-						 HttpWebResponse ^response = dynamic_cast<HttpWebResponse ^>(request->EndGetResponse(requestResult));
-						 Stream ^onlineData = response->GetResponseStream();
-						 onlineData->ReadTimeout = 60 * 1000;
+						if(abortAsyncAction == true) {
 
-						 name = System::IO::Path::GetFileNameWithoutExtension(request->RequestUri->AbsoluteUri);
+							request->Abort();
+							return;
+						}
 
-						 if(!String::IsNullOrEmpty(name)) {
+						Thread::Sleep(100);
 
-							 name = decodeUrl(name);
-							 name = Util::removeIllegalCharsFromFileName(name);
-						 } 
+					}
 
-						 if(String::IsNullOrEmpty(name) || name->Length > 200) {
+					HttpWebResponse ^response = dynamic_cast<HttpWebResponse ^>(request->EndGetResponse(requestResult));
+					Stream ^onlineData = response->GetResponseStream();
+					onlineData->ReadTimeout = 60 * 1000;
 
-							 name = System::IO::Path::GetRandomFileName();
-						 }
+					name = System::IO::Path::GetFileNameWithoutExtension(request->RequestUri->AbsoluteUri);
 
-						 name = name + L"." + MediaFormatConvert::mimeTypeToExtension(response->ContentType);
+					if(!String::IsNullOrEmpty(name)) {
 
-						 String ^outputFilename = FileUtils::getUniqueFileName(outputDir + "\\" + name);
+						name = decodeUrl(name);
+						name = Util::removeIllegalCharsFromFileName(name);
+					} 
 
-						 Stream ^outStream = File::OpenWrite(outputFilename);
+					if(String::IsNullOrEmpty(name) || name->Length > 200) {
 
-						 int bufSize = 8096;
-						 int count = 0;
+						name = System::IO::Path::GetRandomFileName();
+					}
 
-						 int bytesRead = 0;
-						 int updateSize = 10240;
-						 int nextUpdateSize = updateSize;
+					name = name + L"." + MediaFormatConvert::mimeTypeToExtension(response->ContentType);
 
-						 cli::array<unsigned char> ^buffer = gcnew cli::array<unsigned char>(bufSize);					
+					String ^outputFilename = FileUtils::getUniqueFileName(outputDir + "\\" + name);
 
-						 while((count = onlineData->Read(buffer, 0, bufSize)) > 0) {
+					Stream ^outStream = File::OpenWrite(outputFilename);
 
-							 if(abortAsyncAction == true) {							
+					int bufSize = 8096;
+					int count = 0;
 
-								 response->Close();
-								 return;
-							 }
+					int bytesRead = 0;
+					int updateSize = 10240;
+					int nextUpdateSize = updateSize;
 
-							 outStream->Write(buffer, 0, count);
+					cli::array<unsigned char> ^buffer = gcnew cli::array<unsigned char>(bufSize);					
 
-							 if((bytesRead += count) > nextUpdateSize) {
+					while((count = onlineData->Read(buffer, 0, bufSize)) > 0) {
 
-								 int fileProgress = Math::Max(0, int(100.0 / response->ContentLength * bytesRead));
-								 
-								 totalProgressValue = i;
-								 itemInfo = name;
-								 itemProgressValue = fileProgress;
+						if(abortAsyncAction == true) {							
 
-								 nextUpdateSize += updateSize;
-							 }
+							response->Close();
+							return;
+						}
 
-						 }
+						outStream->Write(buffer, 0, count);
 
-						 response->Close();
-						 outStream->Close();
+						if((bytesRead += count) > nextUpdateSize) {
 
-					 } catch(Exception ^e) {
+							int fileProgress = Math::Max(0, int(100.0 / response->ContentLength * bytesRead));
 
-						 String ^error = "Error downloading: " + url[i] + L"\r\n" + e->Message;			
+							totalProgressValue = i;
+							itemInfo = name;
+							itemProgressValue = fileProgress;
 
-						 addInfoString(error);
-					 }
+							nextUpdateSize += updateSize;
+						}
 
-				 }
+					}
 
-				 totalProgressValue = url->Count;
-				 itemInfo = name;
-				 itemProgressValue = 100;
+					response->Close();
+					outStream->Close();
 
-				 actionFinished();
-			 }
+				} catch(Exception ^e) {
 
-	private: String ^decodeUrl(String ^url) {
+					log->Error("Error downloading: " + url[i], e);
 
-				 while(url->Contains(L"%")) {
+					String ^error = "Error downloading: " + url[i] + L"\r\n" + e->Message;			
+					addInfoString(error);
+				}
 
-					 int length = url->Length;
+			}
 
-					 url = System::Web::HttpUtility::UrlDecode(url);
+			totalProgressValue = url->Count;
+			itemInfo = name;
+			itemProgressValue = 100;
 
-					 if(length == url->Length) break;
+			actionFinished();
+		}
 
-				 }
+	public:
 
-				 return(url);
-			 }
+		DownloadProgressForm() {
+
+		}
+
+		void download(List<String ^> ^url, String ^outputDir) {
+
+			totalProgressMaximum = url->Count;
+
+			WaitCallback ^asyncDownload = gcnew WaitCallback(this, &DownloadProgressForm::asyncAction);
+
+			DownloadArgs ^args = gcnew DownloadArgs(url, outputDir);
+
+			ThreadPool::QueueUserWorkItem(asyncDownload, args);
+
+		}
 
 
-		
 	};
 }

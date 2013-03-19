@@ -18,6 +18,8 @@ public ref class VideoFile : public MediaFile
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	static Image ^defaultVideoThumb;
 
 	VideoPreview ^videoPreview;
@@ -116,8 +118,9 @@ protected:
 				MediaFile::readMetaData();
 			}
 
-		} catch (Exception ^) {
+		} catch (Exception ^e) {
 
+			log->Error("Cannot read video meta data: " + Location, e);
 			videoPreview->close();
 		}
 	}

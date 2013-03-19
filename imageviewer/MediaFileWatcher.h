@@ -56,16 +56,9 @@ namespace imageviewer {
 
 			if(MediaFormatConvert::isMediaFile(e->FullPath)) {
 
-				try {
+				mediaFiles->Add(e->FullPath);
+				MediaCreated(this, e);
 
-					mediaFiles->Add(e->FullPath);
-					MediaCreated(this, e);
-
-				} catch(Exception ^e) {
-
-					System::Diagnostics::Debug::Write(e->Message);
-				}
-				
 			}
 
 		}

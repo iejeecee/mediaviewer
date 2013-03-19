@@ -1,6 +1,12 @@
 #pragma once
+// Tutorial for building a video player from ffmpeg: http://dranger.com/ffmpeg/tutorial05.html
 // Directx9 tutorial: http://www.drunkenhyena.com/cgi-bin/dx9_net.pl
 // Implementing videoRender in directx: http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
+// Note that there are 4 threads in use during video playback
+// 1) The main UI thread
+// 2) The video decoding thread
+// 3) The video render thread
+// 4) The audio playback thread
 #include "ImageUtils.h"
 #include "Util.h"
 #include "WindowsUtils.h"
@@ -10,6 +16,7 @@
 #include "VideoDebugForm.h"
 #include "VideoState.h"
 #include "CustomToolTip.h"
+#include "Settings.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -46,8 +53,6 @@ namespace imageviewer {
 			videoRender = gcnew VideoRender(VideoPanel);
 			audioPlayer = gcnew StreamingAudioBuffer(this);
 
-			volumeTrackBar->Value = Util::lerp<int>(audioPlayer->Volume, volumeTrackBar->Minimum, volumeTrackBar->Maximum);
-
 			//videoRender->initialize(0,0);
 			videoDecoder = gcnew VideoPlayer(nullptr);	
 			
@@ -80,6 +85,8 @@ namespace imageviewer {
 			timeTrackBarToolTip->BringToFront();
 			timeTrackBarToolTip->Visible = false;			
 			
+			muteCheckBox->Checked = bool::Parse(Settings::getVar(Settings::VarName::VIDEO_MUTED));
+			volumeTrackBar->Value = Util::lerp<int>(Double::Parse(Settings::getVar(Settings::VarName::VIDEO_VOLUME)), volumeTrackBar->Minimum, volumeTrackBar->Maximum);
 		}
 
 	protected:
@@ -385,6 +392,8 @@ namespace imageviewer {
 #pragma endregion
 	private:
 
+		static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 		VideoPlayer ^videoDecoder;
 		VideoRender ^videoRender;
 		StreamingAudioBuffer ^audioPlayer;
@@ -558,7 +567,7 @@ restartvideo:
 			videoDebug->update();
 			updateUI();
 
-			if(actualDelay < 0) {
+			if(actualDelay < 0.010) {
 
 				// delay is too small skip next frame
 				skipVideoFrame = true;
@@ -637,7 +646,7 @@ restartaudio:
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			videoDebug->AudioFrameLength = audioFrame->Length;
 
-			adjustAudioLength(audioFrame);
+			adjustAudioSamplesPerSecond(audioFrame);
 
 			audioPlayer->write(audioFrame);
 
@@ -665,7 +674,7 @@ restartaudio:
 		double synchronizeAudio(int frameLength) {
 
 			// calculate delay to play next frame
-			int bytesPerSecond = videoDecoder->SamplesPerSecond * 
+			int bytesPerSecond = audioPlayer->SamplesPerSecond * 
 				videoDecoder->BytesPerSample * videoDecoder->NrChannels;
 
 			double delay = frameLength / double(bytesPerSecond);
@@ -681,6 +690,82 @@ restartaudio:
 		}
 
 
+		void adjustAudioSamplesPerSecond(AudioFrame ^frame) {
+
+			videoDebug->AudioFrameLengthAdjust = 0;
+
+			if(syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+
+				int n = videoDecoder->NrChannels * videoDecoder->BytesPerSample;
+
+				double diff = audioPlayer->getAudioClock() - getVideoClock();
+
+				if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
+
+					// accumulate the diffs
+					audioDiffCum = diff + audioDiffAvgCoef * audioDiffCum;
+
+					if(audioDiffAvgCount < AUDIO_DIFF_AVG_NB) {
+
+						audioDiffAvgCount++;
+
+					} else {
+
+						double avgDiff = audioDiffCum * (1.0 - audioDiffAvgCoef);
+
+						// Shrinking/expanding buffer code....
+						if(Math::Abs(avgDiff) >= audioDiffThreshold) {
+
+							int wantedSize = int(frame->Length + diff * videoDecoder->SamplesPerSecond * n);
+								
+							// get a correction percent from 10 to 60 based on the avgDiff
+							// in order to converge a little faster
+							double correctionPercent = Util::clamp<double>(10 + (Math::Abs(avgDiff) - audioDiffThreshold) * 15, 10, 60);
+
+							//Util::DebugOut(correctionPercent);
+
+							//AUDIO_SAMPLE_CORRECTION_PERCENT_MAX
+
+							int minSize = int(frame->Length * ((100 - correctionPercent)
+								/ 100));
+
+							int maxSize = int(frame->Length * ((100 + correctionPercent) 
+								/ 100));
+
+							if(wantedSize < minSize) {
+
+								wantedSize = minSize;
+
+							} else if(wantedSize > maxSize) {
+
+								wantedSize = maxSize;
+							}
+
+							// make sure the samples stay aligned after resizing the buffer
+							__int64 length = frame->Length;
+							__int64 sps = videoDecoder->SamplesPerSecond;
+							int samplesPerSecond = int((length * sps) / wantedSize);
+							Util::DebugOut(samplesPerSecond);
+							audioPlayer->SamplesPerSecond = samplesPerSecond;
+							
+						} else {
+
+							audioPlayer->SamplesPerSecond = videoDecoder->SamplesPerSecond;
+						}
+
+					}
+
+				} else {
+
+					// difference is TOO big; reset diff stuff 
+					audioDiffAvgCount = 0;
+					audioDiffCum = 0;
+				}
+			}
+			
+		}
+
+/*
 		void adjustAudioLength(AudioFrame ^frame) {
 
 			videoDebug->AudioFrameLengthAdjust = 0;
@@ -710,6 +795,7 @@ restartaudio:
 							int wantedSize = int(frame->Length + diff * videoDecoder->SamplesPerSecond * n);
 								
 							// get a correction percent from 10 to 60 based on the avgDiff
+							// in order to converge a little faster
 							double correctionPercent = Util::clamp<double>(10 + (Math::Abs(avgDiff) - audioDiffThreshold) * 15, 10, 60);
 
 							//Util::DebugOut(correctionPercent);
@@ -778,7 +864,7 @@ restartaudio:
 			}
 			
 		}
-
+*/
 		void pausePlay() {
 
 			if(VideoState == imageviewer::VideoState::PAUSED || 
@@ -831,11 +917,11 @@ restartaudio:
 
 			videoDecoder->FrameQueue->start();
 
-			int nrFramesDecoded;
+			bool frameDecoded;
 
 			do {
 
-				nrFramesDecoded = videoDecoder->decodeFrame(
+				frameDecoded = videoDecoder->decodeFrame(
 							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
 
 				//Util::DebugOut("a: " + videoDecoder->FrameQueue->AudioQueueSize.ToString());
@@ -845,7 +931,7 @@ restartaudio:
 				videoDecoder->FrameQueue->MaxAudioQueueSize &&
 				videoDecoder->FrameQueue->VideoQueueSize != 
 				videoDecoder->FrameQueue->MaxVideoQueueSize &&
-				nrFramesDecoded > 0);
+				frameDecoded == true);
 			
 		}
 
@@ -879,7 +965,7 @@ restartaudio:
 
 			try {
 
-				stop();
+				close();
 				videoDebug->clear();			
 
 				videoDecoder->open(location);
@@ -921,6 +1007,8 @@ restartaudio:
 
 				VideoState = imageviewer::VideoState::CLOSED;
 
+				log->Error("Cannot open: " + location, e);
+			
 				MessageBox::Show("Cannot open: " + location + "\n\n" + 
 					e->Message, "Video Error");
 
@@ -944,7 +1032,7 @@ restartaudio:
 			playCheckBox->Checked = false;
 		}
 	
-		void stop() {
+		void close() {
 
 			VideoState = imageviewer::VideoState::CLOSED;
 
@@ -1012,7 +1100,7 @@ private: System::Void audioRefreshTimer_Tick(Object^  sender, EventArgs ^e) {
 
 private: System::Void stopButton_Click(System::Object^  sender, System::EventArgs^  e) {
 
-			 stop();
+			 close();
 			 videoRender->display(nullptr, Rectangle::Empty, this->BackColor, VideoRender::RenderMode::CLEAR_SCREEN);
 			 timeTrackBar->Value = timeTrackBar->Minimum;
 			 playCheckBox->Checked = false;
@@ -1033,6 +1121,7 @@ private: System::Void volumeTrackBar_ValueChanged(System::Object^  sender, Syste
 
 			 double volume = Util::invlerp<int>(volumeTrackBar->Value,volumeTrackBar->Minimum, volumeTrackBar->Maximum);
 			 audioPlayer->Volume = volume;
+			 Settings::setVar(Settings::VarName::VIDEO_VOLUME, volume);
 		 }
 private: System::Void muteCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
@@ -1047,6 +1136,8 @@ private: System::Void muteCheckBox_CheckedChanged(System::Object^  sender, Syste
 				 muteCheckBox->ImageIndex = 0;
 
 			 }
+
+			 Settings::setVar(Settings::VarName::VIDEO_MUTED, muteCheckBox->Checked);
 		 }
 private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, System::EventArgs^  e) {
 
@@ -1059,6 +1150,7 @@ private: System::Void playCheckBox_CheckedChanged(System::Object^  sender, Syste
 
 				 startPlay();
 				 playCheckBox->ImageIndex = 3;
+				 updateTimeTrackBar = true;
 
 			 } else {
 
@@ -1091,7 +1183,10 @@ private: System::Void timeTrackBar_MouseUp(System::Object^  sender, System::Wind
 
 			 seek(seconds);
 
-			 updateTimeTrackBar = true;
+			 if(VideoState != imageviewer::VideoState::PAUSED) {
+
+				updateTimeTrackBar = true;
+			 }
 		
 		 }
 
@@ -1146,7 +1241,8 @@ private: System::Void screenShotButton_Click(System::Object^  sender, System::Ev
 
 			 if(VideoState == imageviewer::VideoState::CLOSED) return;
 
-			 videoRender->createScreenShot();
+			 //videoRender->setFullScreen();
+			 videoRender->createScreenShot(videoDecoder->VideoLocation);
 		 }
 };
 }

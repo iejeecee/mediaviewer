@@ -199,6 +199,7 @@ namespace imageviewer {
 		}
 #pragma endregion
 	
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 	private: delegate void InvokeCurrentImageChangedDelegate(FileSystemEventArgs ^e);
 	public: event EventHandler<FileSystemEventArgs ^> ^CurrentMediaChanged;
 
@@ -386,9 +387,9 @@ namespace imageviewer {
 
 					 this->Invoke(gcnew imageFileWatcherEventDelegate(this, &ImageFileBrowserControl::ImageFileWatcher_MediaChanged), args);
 
-				 } catch (Exception ^e) {
+				 } catch (Exception ^ex) {
 
-					 System::Diagnostics::Debug::Write(e->Message);
+					 log->Error("Media Changed Error", ex);
 				 }
 
 			 }
@@ -412,9 +413,9 @@ namespace imageviewer {
 
 					 this->Invoke(gcnew imageFileWatcherEventDelegate(this, &ImageFileBrowserControl::ImageFileWatcher_MediaCreated), args);
 
-				 } catch (Exception ^e) {
+				 } catch (Exception ^ex) {
 
-					 System::Diagnostics::Debug::Write(e->Message);
+					 log->Error("Media Created Error", ex);			
 				 }
 
 			 }
@@ -479,6 +480,7 @@ namespace imageviewer {
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error showing media info", e);
 					 MessageBox::Show(e->Message, "Error");
 				 }
 
@@ -508,6 +510,7 @@ namespace imageviewer {
 
 				 } catch (Exception ^e) {
 
+					 log->Error("Error opening geotag window", e);
 					 MessageBox::Show("Error opening geotag window: " + e->Message, "error");
 				 }
 				 
@@ -540,6 +543,7 @@ namespace imageviewer {
 
 					 } catch(Exception ^e) {
 
+						 log->Error("Error deleting file", e);
 						 MessageBox::Show(e->Message);
 					 }
 				 }
@@ -586,6 +590,7 @@ namespace imageviewer {
 
 					 } catch(Exception ^e) {
 
+						 log->Error("Error renaming file", e);
 						 MessageBox::Show(e->Message);
 					 }
 

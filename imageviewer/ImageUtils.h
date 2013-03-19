@@ -14,6 +14,9 @@ using namespace System::Runtime::InteropServices;
 
 public ref class ImageUtils 
 {
+private:
+
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
 public: 
 	
@@ -85,6 +88,7 @@ public:
 
 		} catch (Exception ^e) {
 
+			log->Error("Error resizing image", e);
 			MessageBox::Show(e->Message, "Error resizing image");
 
 		} 

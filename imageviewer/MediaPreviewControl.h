@@ -122,6 +122,8 @@ namespace imageviewer {
 
 private:
 
+	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
+
 	enum class InformImage {
 
 		LOADING_IMAGE = 0,
@@ -159,6 +161,7 @@ private:
 
 		} catch (Exception ^e) {
 
+			log->Error("Error generating thumbnails", e);
 			media->OpenError = e;
 
 		} finally {
@@ -195,8 +198,9 @@ private:
 
 			setPictureBoxFeatures(media);
 
-		} catch(Exception ^) {
+		} catch(Exception ^e) {
 
+			log->Error("Error opening preview", e);
 			
 		} finally {
 
