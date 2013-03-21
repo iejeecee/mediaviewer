@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Frame.h"
+#include "VideoDecoder.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -17,12 +18,13 @@ namespace VideoLib {
 		MemoryStream ^stream;
 		array<unsigned char> ^data;
 		int length;
+
 	public:
 
 
-		AudioFrame(int size) : Frame(FrameType::AUDIO) {
+		AudioFrame() : Frame(FrameType::AUDIO) {
 
-			data = gcnew array<unsigned char>(size);
+			data = gcnew array<unsigned char>(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 			stream = gcnew MemoryStream(data);
 			length = 0;
 			
@@ -60,12 +62,13 @@ namespace VideoLib {
 
 		}
 
-		void copyFrameData(BYTE *dataPtr, int length)
+		void copyAudioDataToManagedMemory()
 		{
+
 			if(length > 0) {
 
 				this->length = length;			
-				Marshal::Copy(IntPtr(dataPtr), data, 0, length);
+				Marshal::Copy(IntPtr(AVLibFrameData->data[0]), data, 0, length);
 
 			} else {
 

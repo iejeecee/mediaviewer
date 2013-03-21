@@ -14,16 +14,32 @@ namespace VideoLib {
 
 	private:
 
+		AVFrame *avFrame;
+
 		double pts;
 		FrameType frameType;
 
 	public:
 
+		property AVFrame *AVLibFrameData
+		{
+			AVFrame *get() {
+
+				return(avFrame);
+			}
+		}
 
 		Frame(FrameType frameType) {
 
+			avFrame = avcodec_alloc_frame();
+
 			this->frameType = frameType;
 			pts = 0;
+		}
+
+		~Frame() {
+
+			av_free(avFrame);
 		}
 
 		property double Pts {

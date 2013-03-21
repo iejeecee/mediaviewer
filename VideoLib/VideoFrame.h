@@ -14,21 +14,15 @@ namespace VideoLib {
 	public ref class VideoFrame : public Frame
 	{
 		
-	private:
-
-		BYTE *frameData;
-		int width;
-		int height;
-
 	public:
 
 		property int SizeBytes {
 
 			int get() {
 
-				int ySizeBytes = width * height;
-				int vSizeBytes = (width * height) / 4;
-				int uSizeBytes = (width * height) / 4;
+				int ySizeBytes = Width * Height;
+				int vSizeBytes = (Width * Height) / 4;
+				int uSizeBytes = (Width * Height) / 4;
 
 				return(ySizeBytes + vSizeBytes + uSizeBytes);
 			}
@@ -38,7 +32,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(width);
+				return(AVLibFrameData->width);
 			}
 		}
 
@@ -46,89 +40,23 @@ namespace VideoLib {
 
 			int get() {
 
-				return(height);
+				return(AVLibFrameData->height);
 			}
 		}
 
-		VideoFrame(int width, int height) :
+		VideoFrame() :
 			Frame(FrameType::VIDEO)
 		{
-			this->width = width;
-			this->height = height;
-
-			// av_malloc instead of new will align the data in memory for some added speed
-			frameData = (BYTE *)av_malloc(SizeBytes);
-
-		}
-
-		VideoFrame(Surface ^frame) :
-			Frame(FrameType::VIDEO) 
-		{
-
-			this->width = frame->Description.Width;
-			this->height = frame->Description.Height;
-
-			frameData = (BYTE *)av_malloc(SizeBytes);
-
-			copySurfaceToFrameData(frame);
-		}
-
-		~VideoFrame() {
-
-			if(frameData != NULL) {
-
-				av_free(frameData);				
-				frameData = NULL;
-			}
-		}
-
-		void setFrameData(BYTE* Y, BYTE* V, BYTE* U)
-		{
-			BYTE* pict = frameData;
 			
-			int ySizeBytes = width * height;
-			int vSizeBytes = (width * height) / 4;
-			int uSizeBytes = (width * height) / 4;
-
-			memcpy(pict, Y, ySizeBytes);
-			memcpy(pict + ySizeBytes, V, vSizeBytes);
-			memcpy(pict + ySizeBytes + vSizeBytes, U, uSizeBytes);
-			
-		}
-
-		void copySurfaceToFrameData(Surface ^frame) {
-
-			Debug::Assert(frame != nullptr && frame->Description.Width == width &&
-				frame->Description.Height == height);
-
-			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
-
-			// copy raw frame data to bitmap
-			int pitch;
-			GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::ReadOnly, pitch);
-
-			Byte *source = (BYTE*)stream->InternalDataPointer;
-			Byte *dest = frameData; 
-
-			int nrRows =  SizeBytes / Width;
-
-			for(int i = 0; i < nrRows; i++) {
-
-				memcpy(dest, source, Width);
-				dest += Width;
-				source += pitch;
-			}
-			
-			frame->UnlockRectangle();
 
 		}
 
 		void copyFrameDataToSurface(Surface ^frame) {
 
-			Debug::Assert(frame != nullptr && frame->Description.Width == width &&
-				frame->Description.Height == height);
+			Debug::Assert(frame != nullptr && frame->Description.Width == Width &&
+				frame->Description.Height == Height);
 
-			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, width, height);
+			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, Width, Height);
 
 			// copy raw frame data to bitmap
 			int pitch;
@@ -136,35 +64,30 @@ namespace VideoLib {
 
 			Byte *pict = (BYTE*)stream->InternalDataPointer;
 
-			if(width == pitch) {
+			Byte *Y = AVLibFrameData->data[0];
+			Byte *U = AVLibFrameData->data[1];
+			Byte *V = AVLibFrameData->data[2];
 
-				memcpy(pict, frameData, SizeBytes);
-
-			} else {
-
-				BYTE *pos = frameData;
-
-				for (int y = 0 ; y < height ; y++)
-				{
-					memcpy(pict, pos, width);
-					pict += pitch;
-					pos += width;
-				}
-				for (int y = 0 ; y < height / 2 ; y++)
-				{
-					memcpy(pict, pos, width / 2);
-					pict += pitch / 2;
-					pos += width / 2;
-				}
-				for (int y = 0 ; y < height / 2; y++)
-				{
-					memcpy(pict, pos, width / 2);
-					pict += pitch / 2;
-					pos += width / 2;
-				}
-
+			for (int y = 0 ; y < Height ; y++)
+			{
+				memcpy(pict, Y, Width);
+				pict += pitch;
+				Y += Width;
+			}
+			for (int y = 0 ; y < Height / 2 ; y++)
+			{
+				memcpy(pict, V, Width / 2);
+				pict += pitch / 2;
+				V += Width / 2;
+			}
+			for (int y = 0 ; y < Height / 2; y++)
+			{
+				memcpy(pict, U, Width / 2);
+				pict += pitch / 2;
+				U += Width / 2;
 			}
 
+			
 			frame->UnlockRectangle();
 		}
 

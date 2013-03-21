@@ -137,7 +137,7 @@ public:
 		return(videoStream);
 	}
 
-	int getvideoStreamIndex() const {
+	int getVideoStreamIndex() const {
 
 		return(videoStreamIndex);
 	}

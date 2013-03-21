@@ -293,6 +293,10 @@
 					>
 				</File>
 				<File
+					RelativePath=".\Packet.h"
+					>
+				</File>
+				<File
 					RelativePath=".\VideoFrame.h"
 					>
 				</File>

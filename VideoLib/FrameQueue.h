@@ -3,6 +3,8 @@
 #include "ThreadSafeQueue.h"
 #include "VideoFrame.h"
 #include "AudioFrame.h"
+#include "Packet.h"
+#include "VideoDecoder.h"
 
 using namespace Microsoft::DirectX::Direct3D;
 using namespace System::Collections::Generic;
@@ -15,58 +17,87 @@ namespace VideoLib {
 	{
 	private:
 
-		static const int maxVideoFrames = 100;
-		static const int maxAudioFrames = 300;
+		VideoDecoder *videoDecoder;
 
-		ThreadSafeQueue<VideoFrame ^> ^freeVideoFrames;
-		ThreadSafeQueue<VideoFrame ^> ^decodedVideoFrames;
+		VideoFrame ^videoFrame, ^tempVideoFrame;
+		AudioFrame ^audioFrame;
 
-		ThreadSafeQueue<AudioFrame ^> ^freeAudioFrames;
-		ThreadSafeQueue<AudioFrame ^> ^decodedAudioFrames;
-		
-		array<VideoFrame ^> ^videoFrameData;
-		array<AudioFrame ^> ^audioFrameData;
+		static const int maxVideoPackets = 100;
+		static const int maxAudioPackets = 300;
 
-		Object ^videoFrameInUseLock;
-		Object ^audioFrameInUseLock;
+		ThreadSafeQueue<Packet ^> ^freePackets;
+		ThreadSafeQueue<Packet ^> ^videoPackets;
+		ThreadSafeQueue<Packet ^> ^audioPackets;
 
-		void initializeAudioQueue(int maxAudioFrameBufferSize) {		
+		array<Packet ^> ^packetData;
 
-			for(int i = 0; i < maxAudioFrames; i++) {
+		double videoClock;
+		double audioClock;
 
-				audioFrameData[i] = gcnew AudioFrame(maxAudioFrameBufferSize);
+		double synchronizeVideo(int repeatFrame, __int64 dts) {
 
-				freeAudioFrames->add(audioFrameData[i]);
+			double pts;
+
+			if(dts != AV_NOPTS_VALUE) {
+
+				// convert pts to seconds
+				pts = dts * av_q2d(videoDecoder->getVideoStream()->time_base);
+				// set clock to current pts;
+				videoClock = pts;
+
+			} else {
+
+				// if we aren't given a pts, set it to the clock 
+				pts = videoClock;
 			}
 
+			// update the video clock to the pts of the next frame
+			double frameDelay = av_q2d(videoDecoder->getVideoStream()->time_base);
+			// if we are repeating a frame, adjust clock accordingly 
+			frameDelay += repeatFrame * (frameDelay * 0.5);
+			videoClock += frameDelay;
+
+			return(pts);
 		}
 
-		void initializeVideoQueue(int width, int height) {
+		double synchronizeAudio(int sizeBytes, __int64 dts) {
 
-			for(int i = 0; i < maxVideoFrames; i++) {
+			double pts;
 
-				videoFrameData[i] = gcnew VideoFrame(width, height);
+			if(dts != AV_NOPTS_VALUE) {
 
-				freeVideoFrames->add(videoFrameData[i]);
+				// convert pts to seconds
+				pts = dts * av_q2d(videoDecoder->getAudioStream()->time_base);
+				// set clock to current pts;
+				audioClock = pts;
+
+			} else {
+
+				// if we aren't given a pts, set it to the clock 
+				pts = audioClock;
+				// calculate next pts in seconds
+				audioClock += sizeBytes / double(videoDecoder->getAudioBytesPerSecond());
 			}
 
+			return(pts);
 		}
-
+	
 	public:
 
-		FrameQueue() {
+		FrameQueue(VideoDecoder *videoDecoder) {
 	
-			videoFrameData = gcnew array<VideoFrame ^>(maxVideoFrames);
-			audioFrameData = gcnew array<AudioFrame ^>(maxAudioFrames);
+			this->videoDecoder = videoDecoder;
 
-			freeVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(maxVideoFrames);
-			decodedVideoFrames = gcnew ThreadSafeQueue<VideoFrame ^>(maxVideoFrames);
+			videoFrame = nullptr;
+			audioFrame = nullptr;
+
+			packetData = gcnew array<Packet ^>(maxVideoPackets + maxAudioPackets);
 			
-			freeAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
-			decodedAudioFrames = gcnew ThreadSafeQueue<AudioFrame ^>(maxAudioFrames);
-			
-			videoFrameInUseLock = gcnew Object();
-			audioFrameInUseLock = gcnew Object();
+			freePackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets + maxAudioPackets);
+
+			videoPackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets);
+			audioPackets = gcnew ThreadSafeQueue<Packet ^>(maxAudioPackets);
+
 		}
 
 		~FrameQueue() {
@@ -74,85 +105,62 @@ namespace VideoLib {
 			dispose();
 		}
 
-		property ThreadSafeQueue<VideoFrame ^>::State QueueState {
 
-			ThreadSafeQueue<VideoFrame ^>::State get() {
-
-				return(decodedVideoFrames->QueueState);
-			}
-		}
-
-		property int MaxVideoQueueSize {
+		property int MaxVideoPackets {
 
 			int get() {
 
-				return(decodedVideoFrames->MaxQueueSize);
+				return(maxVideoPackets);
 			}
 		}
 
-		property int MaxAudioQueueSize {
+		property int MaxAudioPackets {
 
 			int get() {
 
-				return(decodedAudioFrames->MaxQueueSize);
+				return(maxAudioPackets);
 			}
 		}
 
-		property int VideoQueueSize {
+		property int VideoPacketsInQueue {
 
 			int get() {
 
-				return(decodedVideoFrames->QueueSize);
+				return(videoPackets->QueueSize);
 			}
 		}
 
-		property int VideoQueueSizeBytes {
+		property int AudioPacketsInQueue {
 
 			int get() {
 
-				return(videoFrameData->Length * videoFrameData[0]->SizeBytes);
+				return(audioPackets->QueueSize);
 			}
 		}
 
-		property int AudioQueueSize {
-
-			int get() {
-
-				return(decodedAudioFrames->QueueSize);
-			}
-		}
-
-		property int AudioQueueSizeBytes {
-
-			int get() {
-
-				return(audioFrameData->Length * audioFrameData[0]->Data->Length);
-			}
-		}
 	
-		void initialize(Device ^device, int width, int height, 
-			int maxAudioBufferSize) {
+		void initialize() {
 
 			dispose();
 
-			initializeVideoQueue(width, height);
-			initializeAudioQueue(maxAudioBufferSize);
+			videoClock = 0;
+			audioClock = 0;
 
-		}
+			videoFrame = gcnew VideoFrame();
+			tempVideoFrame = gcnew VideoFrame();
+			audioFrame = gcnew AudioFrame();
+			
+			for(int i = 0; i < packetData->Length; i++) {
 
-		void start() {
+				packetData[i] = gcnew Packet();
+				freePackets->add(packetData[i]);
+			}
 
-			freeVideoFrames->open();
-			freeAudioFrames->open();
-			decodedVideoFrames->open();
-			decodedAudioFrames->open();
-		
 		}
 
 		void flush() {
 
-			Monitor::Enter(videoFrameInUseLock);
-			Monitor::Enter(audioFrameInUseLock);
+/*			
 
 			// make video render and audio player wait after flush
 			decodedVideoFrames->flushAndPause();
@@ -175,110 +183,181 @@ namespace VideoLib {
 
 				freeAudioFrames->add(audioFrameData[i]);
 			}
+*/
 
-			Monitor::Exit(audioFrameInUseLock);
-			Monitor::Exit(videoFrameInUseLock);
-			
+		}
+
+		void start() {
+
+			videoPackets->open();
+			audioPackets->open();
+			freePackets->open();
 		}
 
 		void stop() {
 
-			decodedVideoFrames->stop();
-			decodedAudioFrames->stop();
-			freeVideoFrames->stop();
-			freeAudioFrames->stop();			
-			
+			videoPackets->stop();
+			audioPackets->stop();
+			freePackets->stop();
 		}
 
 		void dispose() {
 
-			decodedVideoFrames->flush();
-			decodedAudioFrames->flush();
+			if(videoFrame != nullptr) {
+
+				delete videoFrame;
+				videoFrame = nullptr;
+			}
+
+			if(tempVideoFrame != nullptr) {
+
+				delete tempVideoFrame;
+				tempVideoFrame = nullptr;
+			}
+
+			if(audioFrame != nullptr) {
+
+				delete audioFrame;
+				audioFrame = nullptr;
+			}
+
+			videoPackets->flush();
+			audioPackets->flush();
 		
-			freeVideoFrames->flush();
-			freeAudioFrames->flush();	
+			freePackets->flush();
 
-			for(int i = 0; i < videoFrameData->Length; i++) {
+			for(int i = 0; i < packetData->Length; i++) {
 
-				if(videoFrameData[i] != nullptr) {
+				if(packetData[i] != nullptr) {
 
-					delete videoFrameData[i];
-					videoFrameData[i] = nullptr;
+					delete packetData[i];
+					packetData[i] = nullptr;
 				}
 
 			}
 
-			for(int i = 0; i < audioFrameData->Length; i++) {
+		}
 
-				if(audioFrameData[i] != nullptr) {
+		bool getFreePacket(Packet ^%packet) {
 
-					delete audioFrameData[i];
-					audioFrameData[i] = nullptr;
+			bool result = freePackets->tryGet(packet);
+
+			return(result);
+		}
+
+		void addFreePacket(Packet ^packet) {
+
+			freePackets->add(packet);
+		}
+
+		void addVideoPacket(Packet ^packet) {
+
+			videoPackets->add(packet);
+		}
+
+		void addAudioPacket(Packet ^packet) {
+
+			audioPackets->add(packet);
+		}
+
+		VideoFrame ^getDecodedVideoFrame() {
+
+			int frameFinished = 0;
+
+			while(!frameFinished) {
+
+				Packet ^videoPacket;
+
+				bool success = videoPackets->tryGet(videoPacket);
+				if(success == false) {
+					
+					return(nullptr);
 				}
+
+				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
+
+				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
+					tempVideoFrame->AVLibFrameData, &frameFinished, videoPacket->AVLibPacketData);
+				if(ret < 0) {
+
+					//Error decoding video frame
+					//return(0);
+				}
+
+				if(frameFinished)
+				{
+
+					sws_scale(videoDecoder->getImageConvertContext(),
+						tempVideoFrame->AVLibFrameData->data,
+						tempVideoFrame->AVLibFrameData->linesize,
+						0,
+						tempVideoFrame->AVLibFrameData->height,
+						videoFrame->AVLibFrameData->data,
+						videoFrame->AVLibFrameData->linesize);
+
+
+					videoFrame->Pts = synchronizeVideo(
+						tempVideoFrame->AVLibFrameData->repeat_pict, 
+						videoPacket->AVLibPacketData->dts);
+				}
+
+				av_free_packet(videoPacket->AVLibPacketData);
+				freePackets->add(videoPacket);
 			}
+			
 
+			return(videoFrame);
 		}
 
-		bool getFreeVideoFrame(VideoFrame ^%frame) {
+	
+		AudioFrame ^getDecodedAudioFrame() {
 
-			bool success = freeVideoFrames->tryGet(frame);
+			int frameFinished = 0;
 
-			return(success);
-		}
+			while(!frameFinished) {
 
-		void enqueueFreeVideoFrame(VideoFrame ^frame) {
+				Packet ^audioPacket;
 
-			freeVideoFrames->add(frame);
-			Monitor::Exit(videoFrameInUseLock);
+				bool success = audioPackets->tryGet(audioPacket);
+				if(success == false) {
+					
+					return(nullptr);
+				}
 
-		}
+				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
 
-		bool getDecodedVideoFrame(VideoFrame ^%videoFrame) {
+				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
+					audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);
+				if(ret < 0) {
 
-			bool success = decodedVideoFrames->tryGet(videoFrame);
+					//Error decoding audio frame
+					//return(0);
+				}
 
-			if(success) {
-		
-				Monitor::Enter(videoFrameInUseLock);
+				if(frameFinished)
+				{
+
+					audioFrame->Length = av_samples_get_buffer_size(NULL, 
+						videoDecoder->getAudioNrChannels(), 
+						audioFrame->AVLibFrameData->nb_samples,
+						(AVSampleFormat)audioFrame->AVLibFrameData->format, 
+						1);
+
+					audioFrame->Pts = synchronizeAudio(audioFrame->Length, 
+						audioPacket->AVLibPacketData->dts);
+
+					audioFrame->copyAudioDataToManagedMemory();
+
+				}
+
+				av_free_packet(audioPacket->AVLibPacketData);
+				freePackets->add(audioPacket);
 			}
+			
 
-			return(success);
+			return(audioFrame);
 		}
 
-		void enqueueDecodedVideoFrame(VideoFrame ^videoFrame) {
-
-			decodedVideoFrames->add(videoFrame);
-
-		}
-
-		bool getFreeAudioFrame(AudioFrame ^%frame) {
-
-			bool success = freeAudioFrames->tryGet(frame);
-		
-			return(success);
-		}
-
-		void enqueueFreeAudioFrame(AudioFrame ^frame) {
-
-			freeAudioFrames->add(frame);
-			Monitor::Exit(audioFrameInUseLock);
-		}
-
-		bool getDecodedAudioFrame(AudioFrame ^%audioFrame) {
-
-			bool success = decodedAudioFrames->tryGet(audioFrame);
-
-			if(success) {
-				Monitor::Enter(audioFrameInUseLock);
-			}
-			return(success);
-		}
-
-		void enqueueDecodedAudioFrame(AudioFrame ^audioFrame) {
-
-			decodedAudioFrames->add(audioFrame);
-
-		}
 	
 	};
 }

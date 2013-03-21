@@ -174,24 +174,7 @@ namespace VideoLib {
 
 	private:
 
-		Device ^device;
-
-		Native::VideoPlayer *videoPlayer;
-		System::Runtime::InteropServices::GCHandle gch;
-
-		delegate void DecodedFrameDelegate(
-		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
-
-		void decodedFrameCallback(void *data, AVPacket *packet, 
-			AVFrame *frame, Video::FrameType type);
-
-		static int nrFramesInBuffer = 10;
-
-		double videoClock;
-		double audioClock;
-
-		double synchronizeVideo(int repeatFrames, __int64 dts);
-		double synchronizeAudio(int size, __int64 dts);
+		VideoDecoder *videoDecoder;
 		
 		FrameQueue ^frameQueue;
 
@@ -226,7 +209,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->durationSeconds);
+				return(videoDecoder->getDurationSeconds());
 			}
 		}
 
@@ -234,7 +217,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->getHeight());
+				return(videoDecoder->getHeight());
 			}
 		}
 
@@ -242,7 +225,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->getWidth());
+				return(videoDecoder->getWidth());
 			}
 		}
 
@@ -250,7 +233,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->samplesPerSecond);
+				return(videoDecoder->getAudioSamplesPerSecond());
 			}
 		}
 
@@ -258,7 +241,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->bytesPerSample);
+				return(videoDecoder->getAudioBytesPerSample());
 			}
 		}
 
@@ -266,7 +249,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoPlayer->nrChannels);
+				return(videoDecoder->getAudioNrChannels());
 			}
 		}
 
@@ -274,7 +257,7 @@ namespace VideoLib {
 
 			bool get() {
 
-				return(videoPlayer->hasAudio());
+				return(videoDecoder->hasAudio());
 			}
 		}
 
@@ -300,18 +283,18 @@ namespace VideoLib {
 
 			double get() {
 
-				return(av_q2d(videoPlayer->getVideoStream()->time_base));
+				return(av_q2d(videoDecoder->getVideoStream()->time_base));
 			}
 		}
 
 		event EventHandler<EventArgs ^> ^DecodeException;
 
-		VideoPlayer(Device ^device);
+		VideoPlayer();
 		~VideoPlayer();
 
 		void open(String ^videoLocation);
 		bool seek(double posSeconds);
-		bool decodeFrame(DecodeMode mode);
+		bool demuxPacket();
 		void close();
 
 		

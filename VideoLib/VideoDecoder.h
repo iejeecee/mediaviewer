@@ -28,6 +28,14 @@ protected:
 
 	AVPacket packet;
 
+	// video
+	int64_t sizeBytes;
+	
+	// audio
+	int samplesPerSecond;
+	int bytesPerSample;
+	int nrChannels;
+
 public:
 
 	enum SamplingMode {
@@ -69,6 +77,11 @@ public:
 		startTime = 0;
 			
 		closed = true;
+
+		samplesPerSecond = 0;
+		bytesPerSample = 0;
+		nrChannels = 0;
+		sizeBytes = 0;
 
 	}
 
@@ -221,6 +234,41 @@ public:
 
 		// int64_t duration_tb = duration / av_q2d(pStream->time_base); 
 		closed = false;
+
+		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
+
+		if(hasAudio()) {
+
+			samplesPerSecond = audioCodecContext->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+			
+			nrChannels = audioCodecContext->channels;
+		}
+	}
+
+	int getSizeBytes() {
+
+		return(sizeBytes);
+	}
+
+	int getAudioSamplesPerSecond() {
+
+		return(samplesPerSecond);
+	}
+
+	int getAudioBytesPerSample() {
+
+		return(bytesPerSample);
+	}
+
+	int getAudioNrChannels() {
+
+		return(nrChannels);
+	}
+
+	int getAudioBytesPerSecond() {
+
+		return(samplesPerSecond * bytesPerSample * nrChannels);
 	}
 
 	double getDurationSeconds() const {
@@ -241,11 +289,16 @@ public:
 
 	}
 
+	SwsContext *getImageConvertContext() {
+
+		return(imageConvertContext);
+	}
+
 	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
 		AudioDecodeMode audioMode = DECODE_AUDIO) 
 	{
 
-		if(isClosed()) return(0);
+		if(isClosed()) return(false);
 
 		int frameFinished = 0;
 
@@ -323,6 +376,7 @@ public:
 		return(true);
 
 	}
+
 
 	bool seek(double posSeconds) {
 
