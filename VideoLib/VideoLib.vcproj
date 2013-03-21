@@ -204,11 +204,6 @@
 			AssemblyName="Microsoft.DirectX.Direct3DX, Version=1.0.2911.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
 			MinFrameworkVersion="0"
 		/>
-		<AssemblyReference
-			RelativePath="..\..\log4net-1.2.11\bin\net\3.5\release\log4net.dll"
-			AssemblyName="log4net, Version=1.2.11.0, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL"
-			MinFrameworkVersion="131072"
-		/>
 	</References>
 	<Files>
 		<Filter

@@ -646,7 +646,16 @@ restartaudio:
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			videoDebug->AudioFrameLength = audioFrame->Length;
 
-			adjustAudioSamplesPerSecond(audioFrame);
+			// if the audio is lagging behind too much, skip the buffer completely
+			if(getVideoClock() - audioFrame->Pts > 0.2 && syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+
+				videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
+				log->Warn("dropping audio buffer, lagging behind: " + (getVideoClock() - audioFrame->Pts).ToString() + " seconds");
+				goto restartaudio;
+			}
+
+			//adjustAudioSamplesPerSecond(audioFrame);
+			adjustAudioLength(audioFrame);
 
 			audioPlayer->write(audioFrame);
 
@@ -741,11 +750,11 @@ restartaudio:
 								wantedSize = maxSize;
 							}
 
-							// make sure the samples stay aligned after resizing the buffer
+							// adjust samples per second to speed up or slow down the audio
 							__int64 length = frame->Length;
 							__int64 sps = videoDecoder->SamplesPerSecond;
 							int samplesPerSecond = int((length * sps) / wantedSize);
-							Util::DebugOut(samplesPerSecond);
+							videoDebug->AudioFrameLengthAdjust = samplesPerSecond;
 							audioPlayer->SamplesPerSecond = samplesPerSecond;
 							
 						} else {
@@ -765,7 +774,7 @@ restartaudio:
 			
 		}
 
-/*
+
 		void adjustAudioLength(AudioFrame ^frame) {
 
 			videoDebug->AudioFrameLengthAdjust = 0;
@@ -864,7 +873,7 @@ restartaudio:
 			}
 			
 		}
-*/
+
 		void pausePlay() {
 
 			if(VideoState == imageviewer::VideoState::PAUSED || 
@@ -914,8 +923,6 @@ restartaudio:
 		}
 
 		void fillFrameQueue() {
-
-			videoDecoder->FrameQueue->start();
 
 			bool frameDecoded;
 
@@ -1065,12 +1072,16 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 
 						if(videoDecoder->seek(seekPosition) == true) {
 							
-							// flush will only empty, not stop the framequeue
-							// This means the videorender and audioplayer thread will block 
-							// until the queue gets filled again
+							// flush empty and pause the framequeue
+							// This means the videorender and audioplayer thread will block 						
 							videoDecoder->FrameQueue->flush();
 							audioPlayer->flush();
 							
+							// refill the framequeue from the new position
+							fillFrameQueue();
+					
+							audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
+							videoDecoder->FrameQueue->start();
 						}
 						seekRequest = false;
 

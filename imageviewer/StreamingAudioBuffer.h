@@ -287,7 +287,7 @@ public:
 
 		if(playPos <= offsetBytes && offsetBytes < writePos) { 
 			
-			log->Warn("ERROR playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
+			log->Warn("playpos:" + playPos.ToString() + " offset:" + offsetBytes.ToString() + " writePos:" + writePos.ToString() + " dataSize:" + frame->Length.ToString());
 			offsetBytes = writePos;
 		} 
 

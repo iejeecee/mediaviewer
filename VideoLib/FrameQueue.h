@@ -74,11 +74,11 @@ namespace VideoLib {
 			dispose();
 		}
 
-		property bool IsStopped {
+		property ThreadSafeQueue<VideoFrame ^>::State QueueState {
 
-			bool get() {
+			ThreadSafeQueue<VideoFrame ^>::State get() {
 
-				return(decodedVideoFrames->Stopped);
+				return(decodedVideoFrames->QueueState);
 			}
 		}
 
@@ -154,9 +154,11 @@ namespace VideoLib {
 			Monitor::Enter(videoFrameInUseLock);
 			Monitor::Enter(audioFrameInUseLock);
 
-			decodedVideoFrames->flush();
-			decodedAudioFrames->flush();
+			// make video render and audio player wait after flush
+			decodedVideoFrames->flushAndPause();
+			decodedAudioFrames->flushAndPause();
 		
+			// allow video decoder to continue filling the framequeue
 			freeVideoFrames->flush();
 			freeAudioFrames->flush();	
 
@@ -276,9 +278,7 @@ namespace VideoLib {
 
 			decodedAudioFrames->add(audioFrame);
 
-	
 		}
-
 	
 	};
 }

@@ -11,12 +11,20 @@ namespace VideoLib {
 
 	generic<typename T> public ref class ThreadSafeQueue
 	{
+	public:
+
+		enum class State {
+			OPEN,
+			PAUSED,
+			STOPPED
+		};
+
 	private:
 
 		Queue<T> ^queue;
 		int maxQueueSize;
-		bool stopped;
-		bool closing;
+
+		State queueState;
 
 	public:
 
@@ -24,8 +32,8 @@ namespace VideoLib {
 
 			this->maxQueueSize = maxQueueSize;
 			queue = gcnew Queue<T>();
-			closing = false;
-			stopped = false;
+			queueState = State::OPEN;
+
 		}
 
 		property int MaxQueueSize {
@@ -44,47 +52,41 @@ namespace VideoLib {
 			}
 		}
 
-		property bool Closing {
+		property State QueueState {
 
-			bool get() {
+			State get() {
 
-				return(closing);
+				return(queueState);
 			}
 		}
 
-		property bool Stopped {
-
-			bool get() {
-
-				return(stopped);
-			}
-		}
-
-		// put the queue into ready to start mode
+		// allow threads to remove elements from the queue
 		void open() {
 
 			Monitor::Enter(queue);
 			
-			stopped = false;
-			closing = false;
+			// wakeup paused threads
+			queueState = State::OPEN;
+	
 			Monitor::PulseAll(queue);
-
 			Monitor::Exit(queue);
 		}
 
-		// stop the queue immediatly
+		// threads are not able to remove elements from the queue
+		// the get functions will not block, but instead return false
 		void stop() {
 
 			Monitor::Enter(queue);
 			
-			stopped = true;
-			// wakeup waiting threads
+			queueState = State::STOPPED;
+			// wakeup threads waiting on empty queues
 			Monitor::PulseAll(queue);
 
 			Monitor::Exit(queue);
 
 		}
 
+		// clear the queue
 		void flush() {
 
 			Monitor::Enter(queue);
@@ -94,17 +96,16 @@ namespace VideoLib {
 			Monitor::Exit(queue);
 		}
 
-		// let the queue run until it is empty
-		void close()
-		{
+		void flushAndPause() {
+
 			Monitor::Enter(queue);
-			
-			closing = true;
-			// wakeup waiting threads
-			Monitor::PulseAll(queue);
+
+			queueState = State::PAUSED;
+			queue->Clear();
 
 			Monitor::Exit(queue);
 		}
+
 
 		bool tryGet(T %item) {
 
@@ -112,9 +113,9 @@ namespace VideoLib {
 
 			try {
 
-				while(queue->Count == 0) {
+				while(queue->Count == 0 || QueueState == State::PAUSED) {
 
-					if(closing == true || stopped == true) {
+					if(QueueState == State::STOPPED) {
 
 						return(false);
 					}
@@ -125,7 +126,7 @@ namespace VideoLib {
 					Monitor::Wait(queue);
 				}
 
-				if(stopped == true) return(false);
+				if(QueueState == State::STOPPED) return(false);
 
 				item = queue->Dequeue();
 
@@ -171,6 +172,5 @@ namespace VideoLib {
 			}
 		}
 
-		
 	};
 }
