@@ -96,12 +96,11 @@ namespace VideoLib {
 			Monitor::Exit(queue);
 		}
 
-		void flushAndPause() {
+		void pause() {
 
 			Monitor::Enter(queue);
 
 			queueState = State::PAUSED;
-			queue->Clear();
 
 			Monitor::Exit(queue);
 		}

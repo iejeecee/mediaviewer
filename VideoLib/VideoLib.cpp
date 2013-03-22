@@ -168,11 +168,12 @@ bool VideoPlayer::demuxPacket() {
 	bool success = frameQueue->getFreePacket(packet);
 	if(success == false) {
 
+		frameQueue->DemuxingStopped->Set();
 		return(false);
 	}
 
 	int read = av_read_frame(videoDecoder->getFormatContext(), packet->AVLibPacketData);
-	if(read == 0) {
+	if(read < 0) {
 
 		// end of the video
 		frameQueue->addFreePacket(packet);
@@ -196,8 +197,9 @@ bool VideoPlayer::demuxPacket() {
 		av_free_packet(packet->AVLibPacketData);
 		frameQueue->addFreePacket(packet);
 	}
-	
+
 	return(true);
+
 }
 
 bool VideoPlayer::seek(double posSeconds) {

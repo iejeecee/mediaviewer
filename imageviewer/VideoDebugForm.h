@@ -541,7 +541,7 @@ public:
 
 		if(this->InvokeRequired == true) {
 
-			this->Invoke(gcnew System::Action(this, &VideoDebugForm::updateInvoke));
+			this->BeginInvoke(gcnew System::Action(this, &VideoDebugForm::updateInvoke));
 
 		} else {
 

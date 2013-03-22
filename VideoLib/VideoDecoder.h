@@ -36,6 +36,8 @@ protected:
 	int bytesPerSample;
 	int nrChannels;
 
+	int durationSeconds;
+
 public:
 
 	enum SamplingMode {
@@ -82,6 +84,8 @@ public:
 		bytesPerSample = 0;
 		nrChannels = 0;
 		sizeBytes = 0;
+
+		durationSeconds = 0;
 
 	}
 
@@ -227,6 +231,17 @@ public:
 			startTime = formatContext->start_time / AV_TIME_BASE;
 		}
 
+		durationSeconds  = formatContext->duration / AV_TIME_BASE;
+		
+		if(durationSeconds < 0) {
+
+			durationSeconds  = videoStream->duration * av_q2d(videoStream->time_base);
+		}
+		
+		if(durationSeconds < 0) {
+
+			throw gcnew VideoLib::VideoLibException("can't determine video duration");
+		}
 		
 		av_init_packet(&packet);
 		packet.data = NULL;
@@ -243,7 +258,8 @@ public:
 			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
 			
 			nrChannels = audioCodecContext->channels;
-		}
+		}		
+
 	}
 
 	int getSizeBytes() {
@@ -272,20 +288,8 @@ public:
 	}
 
 	double getDurationSeconds() const {
-
-		double videoDuration  = formatContext->duration / AV_TIME_BASE;
 		
-		if(videoDuration < 0) {
-
-			videoDuration = videoStream->duration * av_q2d(videoStream->time_base);
-		}
-		
-		if(videoDuration < 0) {
-
-			throw gcnew VideoLib::VideoLibException("can't determine video duration");
-		}
-
-		return(videoDuration);
+		return(durationSeconds);
 
 	}
 

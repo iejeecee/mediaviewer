@@ -86,15 +86,6 @@ private:
 		device->Reset(createPresentParams(windowed, owner));
 	}
 
-	void saveResources() {
-
-		saveOffscreen = gcnew VideoFrame(offscreen);
-	}
-
-	void restoreResources() {
-
-		saveOffscreen->copyFrameDataToSurface(offscreen);
-	}
 
 	void aquireResources() {
 
@@ -136,7 +127,6 @@ private:
 		log->Info("d3d device reset");
 
 		aquireResources();
-		restoreResources();
 	
 	}
 
@@ -144,7 +134,6 @@ private:
 
 		log->Info("d3d device lost");
 	
-		saveResources();
 		releaseResources();
 
 	}

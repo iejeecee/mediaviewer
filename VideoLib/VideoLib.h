@@ -2,7 +2,7 @@
 
 #pragma once
 #include "VideoFrameGrabber.h"
-#include "VideoPlayer.h"
+#include "VideoDecoder.h"
 #include "VideoFrame.h"
 #include "FrameQueue.h"
 

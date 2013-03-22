@@ -333,10 +333,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\VideoPlayer.h"
-					>
-				</File>
-				<File
 					RelativePath=".\WindowsFileUtil.h"
 					>
 				</File>

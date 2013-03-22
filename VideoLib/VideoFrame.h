@@ -13,6 +13,9 @@ namespace VideoLib {
 
 	public ref class VideoFrame : public Frame
 	{
+	private:
+
+		bool requiresAVPictureFree;
 		
 	public:
 
@@ -48,7 +51,33 @@ namespace VideoLib {
 			Frame(FrameType::VIDEO)
 		{
 			
+			requiresAVPictureFree = false;
+		}
 
+		VideoFrame(int width, int height, PixelFormat format) :
+			Frame(FrameType::VIDEO)
+		{
+
+			avpicture_alloc((AVPicture*)AVLibFrameData, format, width, height);
+			AVLibFrameData->width = width;
+			AVLibFrameData->height = height;
+			AVLibFrameData->format = format;
+
+			requiresAVPictureFree = true;
+/*
+			int numBytes = avpicture_get_size(format, width, height);
+			uint8_t *data = (uint8_t*)av_malloc(numBytes);
+
+			avpicture_fill((AVPicture*)AVLibFrameData, data, format, width, height);
+*/
+		}
+
+		~VideoFrame() {
+
+			if(requiresAVPictureFree) {
+
+				avpicture_free((AVPicture*)AVLibFrameData);
+			}
 		}
 
 		void copyFrameDataToSurface(Surface ^frame) {

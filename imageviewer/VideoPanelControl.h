@@ -54,7 +54,7 @@ namespace imageviewer {
 			audioPlayer = gcnew StreamingAudioBuffer(this);
 
 			//videoRender->initialize(0,0);
-			videoDecoder = gcnew VideoPlayer(nullptr);	
+			videoDecoder = gcnew VideoPlayer();	
 			
 			videoRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 			videoRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
@@ -72,7 +72,6 @@ namespace imageviewer {
 
 			//syncMode = SyncMode::VIDEO_SYNCS_TO_AUDIO;
 			syncMode = SyncMode::AUDIO_SYNCS_TO_VIDEO;
-			videoStateLock = gcnew Object();
 			VideoState = imageviewer::VideoState::CLOSED;
 
 			updateTimeTrackBar = true;
@@ -419,8 +418,6 @@ namespace imageviewer {
 
 		VideoState videoState;
 
-		Object ^videoStateLock;
-
 		double previousVideoPts;
 		double previousVideoDelay;
 
@@ -458,9 +455,7 @@ namespace imageviewer {
 
 			void set(imageviewer::VideoState videoState) {
 
-				Monitor::Enter(videoStateLock);
 				this->videoState = videoState;
-				Monitor::Exit(videoStateLock);
 			}
 
 			imageviewer::VideoState get() {
@@ -487,7 +482,8 @@ namespace imageviewer {
 
 			if(this->InvokeRequired) {
 
-				this->Invoke(gcnew Action(this, &VideoPanelControl::invokeUpdateUI));
+				// do not block (important!)
+				this->BeginInvoke(gcnew Action(this, &VideoPanelControl::invokeUpdateUI));
 
 			} else {
 		
@@ -513,7 +509,7 @@ namespace imageviewer {
 
 restartvideo:
 			
-			double actualDelay;
+			double actualDelay = 0.04;
 
 			Rectangle scaledVideoRec = ImageUtils::stretchRectangle(
 				Rectangle(0,0,videoDecoder->Width, videoDecoder->Height),
@@ -522,44 +518,29 @@ restartvideo:
 			Rectangle canvas = ImageUtils::centerRectangle(videoRender->Canvas,
 				scaledVideoRec);
 
-			VideoFrame ^videoFrame = nullptr;
-
 			// grab a decoded frame, returns false if the queue is stopped
-			bool success = videoDecoder->FrameQueue->getDecodedVideoFrame(videoFrame);
+			VideoFrame ^videoFrame = videoDecoder->FrameQueue->getDecodedVideoFrame();
 
-			// make sure no thread modifies the videostate 
-			// during the next block of code
-			Monitor::Enter(videoStateLock);
+			if(VideoState == imageviewer::VideoState::CLOSED && videoFrame == nullptr) {
 
-			try {
+				return;
 
-				if(success == false && VideoState == imageviewer::VideoState::CLOSED) return;
+			} else if(VideoState == imageviewer::VideoState::PLAYING) {
 
-				if(VideoState == imageviewer::VideoState::PLAYING) {
+				videoPts = videoFrame->Pts;
+				videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
 
-					videoPts = videoFrame->Pts;
-					videoPtsDrift = videoFrame->Pts + HRTimer::getTimestamp();
+				if(skipVideoFrame == false) {
 
-					if(skipVideoFrame == false) {
+					videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
+					videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
+				} 					
 
-						videoRender->display(videoFrame, canvas, Color::Black, VideoRender::RenderMode::NORMAL);
-						videoDebug->VideoFrames = videoDebug->VideoFrames + 1;
-					} 					
+				actualDelay = synchronizeVideo(videoPts);					
 
-					// queue current frame in freeFrames to be used again
-					videoDecoder->FrameQueue->enqueueFreeVideoFrame(videoFrame);	
+			} else if(VideoState == imageviewer::VideoState::PAUSED) {
 
-					actualDelay = synchronizeVideo(videoPts);					
-
-				} else if(VideoState == imageviewer::VideoState::PAUSED) {
-
-					videoRender->display(nullptr, canvas, Color::Black, VideoRender::RenderMode::PAUSED);
-					actualDelay = 0.04;
-				}
-
-			} finally {
-
-				Monitor::Exit(videoStateLock);
+				videoRender->display(nullptr, canvas, Color::Black, VideoRender::RenderMode::PAUSED);			
 			}
 
 			// do not update ui elements on main thread inside videoStateLock
@@ -627,8 +608,8 @@ restartvideo:
 			videoDebug->ActualVideoDelay = actualDelay;
 			videoDebug->VideoSync = getVideoClock();
 			videoDebug->AudioSync = audioPlayer->getAudioClock();
-			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->VideoQueueSize;
-			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->AudioQueueSize;
+			videoDebug->VideoQueueSize = videoDecoder->FrameQueue->VideoPacketsInQueue;
+			videoDebug->AudioQueueSize = videoDecoder->FrameQueue->AudioPacketsInQueue;
 			
 
 			return(actualDelay);
@@ -638,21 +619,19 @@ restartvideo:
 		void processAudioFrame() {
 
 restartaudio:
-			AudioFrame ^audioFrame = nullptr;
-
-			bool success = videoDecoder->FrameQueue->getDecodedAudioFrame(audioFrame);
-			if(success == false) return;
+			
+			AudioFrame ^audioFrame = videoDecoder->FrameQueue->getDecodedAudioFrame();
+			if(audioFrame == nullptr) return;
 
 			videoDebug->AudioFrames = videoDebug->AudioFrames + 1;
 			videoDebug->AudioFrameLength = audioFrame->Length;
 
 			// if the audio is lagging behind too much, skip the buffer completely
-			if(getVideoClock() - audioFrame->Pts > 0.2 && syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+			/*if(getVideoClock() - audioFrame->Pts > 0.2 && syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
 
-				videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
 				log->Warn("dropping audio buffer, lagging behind: " + (getVideoClock() - audioFrame->Pts).ToString() + " seconds");
 				goto restartaudio;
-			}
+			}*/
 
 			//adjustAudioSamplesPerSecond(audioFrame);
 			adjustAudioLength(audioFrame);
@@ -660,9 +639,6 @@ restartaudio:
 			audioPlayer->write(audioFrame);
 
 			int frameLength = audioFrame->Length;
-
-			// queue current frame in freeFrames to be used again
-			videoDecoder->FrameQueue->enqueueFreeAudioFrame(audioFrame);
 
 			double actualDelay = synchronizeAudio(frameLength);
 
@@ -924,21 +900,20 @@ restartaudio:
 
 		void fillFrameQueue() {
 
-			bool frameDecoded;
+			bool success;
 
 			do {
 
-				frameDecoded = videoDecoder->decodeFrame(
-							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
+				success = videoDecoder->demuxPacket();
 
 				//Util::DebugOut("a: " + videoDecoder->FrameQueue->AudioQueueSize.ToString());
 				//Util::DebugOut("v: " + videoDecoder->FrameQueue->VideoQueueSize.ToString());
 
-			} while(videoDecoder->FrameQueue->AudioQueueSize !=
-				videoDecoder->FrameQueue->MaxAudioQueueSize &&
-				videoDecoder->FrameQueue->VideoQueueSize != 
-				videoDecoder->FrameQueue->MaxVideoQueueSize &&
-				frameDecoded == true);
+			} while(videoDecoder->FrameQueue->AudioPacketsInQueue !=
+				videoDecoder->FrameQueue->MaxAudioPackets &&
+				videoDecoder->FrameQueue->VideoPacketsInQueue != 
+				videoDecoder->FrameQueue->MaxVideoPackets &&
+				success == true);
 			
 		}
 
@@ -994,10 +969,10 @@ restartaudio:
 					volumeTrackBar->Enabled = false;
 				}
 
-				videoDebug->VideoQueueMaxSize = videoDecoder->FrameQueue->MaxVideoQueueSize;
-				videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
-				videoDebug->AudioQueueMaxSize = videoDecoder->FrameQueue->MaxAudioQueueSize;
-				videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
+				videoDebug->VideoQueueMaxSize = videoDecoder->FrameQueue->MaxVideoPackets;
+				//videoDebug->VideoQueueSizeBytes = videoDecoder->FrameQueue->VideoQueueSizeBytes;	
+				videoDebug->AudioQueueMaxSize = videoDecoder->FrameQueue->MaxAudioPackets;
+				//videoDebug->AudioQueueSizeBytes = videoDecoder->FrameQueue->AudioQueueSizeBytes;
 
 				if(syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
 
@@ -1041,6 +1016,11 @@ restartaudio:
 	
 		void close() {
 
+			if(VideoState == imageviewer::VideoState::CLOSED) {
+
+				return;
+			}
+
 			VideoState = imageviewer::VideoState::CLOSED;
 
 			videoDecoder->FrameQueue->stop();			
@@ -1063,7 +1043,7 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 				//videoFrameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
 
-				bool frameDecoded = true;
+				bool success = true;
 
 				// decode frames one by one, or handle seek requests
 				do
@@ -1087,11 +1067,10 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 
 					} else {
 
-						frameDecoded = videoDecoder->decodeFrame(
-							VideoPlayer::DecodeMode::DECODE_VIDEO_AND_AUDIO);
+						success = videoDecoder->demuxPacket();
 					}
 									
-				} while(frameDecoded == true && !videoDecoderBW->CancellationPending);
+				} while(success == true && !videoDecoderBW->CancellationPending);
 				
 
 				// stop the audio
