@@ -14,9 +14,10 @@ namespace VideoLib {
 	public:
 
 		enum class State {
-			OPEN,
-			PAUSED,
-			STOPPED
+			OPEN,       // items can be added and removed from the queue
+			PAUSED,		// queue will block on removing items
+			STOPPED,	// queue will return false on removing items
+			CLOSED		// queue will fire event when empty
 		};
 
 	private:
@@ -26,7 +27,12 @@ namespace VideoLib {
 
 		State queueState;
 
+		AutoResetEvent ^paused;
+		AutoResetEvent ^stopped;
+
 	public:
+
+		event EventHandler ^Closed;
 
 		ThreadSafeQueue(int maxQueueSize) {
 
@@ -34,6 +40,24 @@ namespace VideoLib {
 			queue = gcnew Queue<T>();
 			queueState = State::OPEN;
 
+			paused = gcnew AutoResetEvent(false);
+			stopped = gcnew AutoResetEvent(false);
+		}
+
+		property AutoResetEvent ^Paused {
+
+			AutoResetEvent ^get() {
+
+				return(paused);
+			}
+		}
+
+		property AutoResetEvent ^Stopped {
+
+			AutoResetEvent ^get() {
+
+				return(stopped);
+			}
 		}
 
 		property int MaxQueueSize {
@@ -101,6 +125,20 @@ namespace VideoLib {
 			Monitor::Enter(queue);
 
 			queueState = State::PAUSED;
+			// wakeup threads waiting on empty queues
+			// and put them in paused state
+			Monitor::PulseAll(queue);
+
+			Monitor::Exit(queue);
+		}
+
+		void close() {
+
+			Monitor::Enter(queue);
+
+			queueState = State::CLOSED;
+			// wakeup threads waiting on empty queues
+			Monitor::PulseAll(queue);
 
 			Monitor::Exit(queue);
 		}
@@ -116,7 +154,16 @@ namespace VideoLib {
 
 					if(QueueState == State::STOPPED) {
 
+						stopped->Set();
 						return(false);
+
+					} else if(QueueState == State::PAUSED) {
+
+						paused->Set();
+
+					} else if(QueueState == State::CLOSED) {
+
+						Closed(this, EventArgs::Empty);
 					}
 
 					// queue is empty put thread into wait state
@@ -125,7 +172,11 @@ namespace VideoLib {
 					Monitor::Wait(queue);
 				}
 
-				if(QueueState == State::STOPPED) return(false);
+				if(QueueState == State::STOPPED) {
+					
+					stopped->Set();
+					return(false);
+				}
 
 				item = queue->Dequeue();
 

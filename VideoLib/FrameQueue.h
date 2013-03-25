@@ -28,18 +28,15 @@ namespace VideoLib {
 		ThreadSafeQueue<Packet ^> ^videoPackets;
 		ThreadSafeQueue<Packet ^> ^audioPackets;
 
-		AutoResetEvent ^decodingVideoStopped;
-		AutoResetEvent ^decodingAudioStopped;
-		AutoResetEvent ^demuxingStopped;
-
-		bool pauseDecoding;
 		array<WaitHandle ^> ^decodingPaused;
-		array<WaitHandle ^> ^decodingContinue;
-		
+	
 		array<Packet ^> ^packetData;
 
 		double videoClock;
 		double audioClock;
+
+		bool audioPacketsClosed;
+		bool videoPacketsClosed;
 
 		double synchronizeVideo(int repeatFrame, __int64 dts) {
 
@@ -89,7 +86,35 @@ namespace VideoLib {
 			return(pts);
 		}
 
+		void videoPackets_Closed(Object ^sender, EventArgs ^) {
+
+			videoPacketsClosed = true;
+			if(audioPacketsClosed == true) {
+
+				// send framequeue is closed event once both the
+				// audio and video packet queue is closed
+				Closed(this, EventArgs::Empty);
+				videoPacketsClosed = false;
+				audioPacketsClosed = false;
+			}
+		}
+
+		void audioPackets_Closed(Object ^sender, EventArgs ^) {
+
+			audioPacketsClosed = true;
+			if(videoPacketsClosed == true) {
+
+				// send framequeue is closed event once both the
+				// audio and video packet queue is closed
+				Closed(this, EventArgs::Empty);
+				videoPacketsClosed = false;
+				audioPacketsClosed = false;
+			}
+		}
+
 	public:
+
+		event EventHandler ^Closed;
 
 		FrameQueue(VideoDecoder *videoDecoder) {
 
@@ -100,37 +125,34 @@ namespace VideoLib {
 
 			packetData = gcnew array<Packet ^>(maxVideoPackets + maxAudioPackets);
 
+			for(int i = 0; i < packetData->Length; i++) {
+
+				packetData[i] = gcnew Packet();
+			}
+
 			freePackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets + maxAudioPackets);
 
 			videoPackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets);
 			audioPackets = gcnew ThreadSafeQueue<Packet ^>(maxAudioPackets);
 
-			decodingVideoStopped = gcnew AutoResetEvent(false);
-			decodingAudioStopped = gcnew AutoResetEvent(false);
-			demuxingStopped = gcnew AutoResetEvent(false);
-
-			pauseDecoding = false;
-
 			decodingPaused = gcnew array<WaitHandle^> {
-				gcnew AutoResetEvent(false), gcnew AutoResetEvent(false)}; 
+				audioPackets->Paused, videoPackets->Paused}; 		
 
-			decodingContinue = gcnew array<WaitHandle^> {
-				gcnew AutoResetEvent(false), gcnew AutoResetEvent(false)}; 
+			videoPackets->Closed += gcnew EventHandler(this, &FrameQueue::videoPackets_Closed);
+			audioPackets->Closed += gcnew EventHandler(this, &FrameQueue::audioPackets_Closed);
 
+			audioPacketsClosed = false;
+			videoPacketsClosed = false;
 		}
 
 		~FrameQueue() {
 
 			dispose();
-		}
 
-		property AutoResetEvent ^DemuxingStopped {
-			
-			AutoResetEvent ^get() {
+			for(int i = 0; i < packetData->Length; i++) {
 
-				return(demuxingStopped);
+				delete packetData[i];
 			}
-			
 		}
 
 		property int MaxVideoPackets {
@@ -180,7 +202,6 @@ namespace VideoLib {
 
 			for(int i = 0; i < packetData->Length; i++) {
 
-				packetData[i] = gcnew Packet();
 				freePackets->add(packetData[i]);
 			}
 
@@ -191,7 +212,15 @@ namespace VideoLib {
 			// note that demuxing is not active during this function
 
 			// wait for video and audio decoding to pause
-			pauseDecoding = true;
+			// WEIRD BUG? the paused AutoResetEvent 
+			// stays signalled (is it's memory overwritten?, that would be very bad!) 
+			// after calls to av_free_packet later in the function
+			// temp fixed by resetting it manually 
+			videoPackets->Paused->Reset();
+			audioPackets->Paused->Reset();
+			videoPackets->pause();
+			audioPackets->pause();
+
 			WaitHandle::WaitAll(decodingPaused);
 
 			videoPackets->flush();
@@ -200,14 +229,9 @@ namespace VideoLib {
 
 			for(int i = 0; i < packetData->Length; i++) {
 
-				// free packet data before inserting them back into freepackets
-				av_free_packet(packetData[i]->AVLibPacketData);
-				freePackets->add(packetData[i]);
+				addFreePacket(packetData[i]);
 			}
 		
-			pauseDecoding = false;
-			((AutoResetEvent ^)decodingContinue[0])->Set();
-			((AutoResetEvent ^)decodingContinue[1])->Set();
 		}
 
 		void start() {
@@ -220,13 +244,34 @@ namespace VideoLib {
 
 		void stop() {
 
-			freePackets->stop();
-			demuxingStopped->WaitOne();
-			videoPackets->stop();
-			decodingVideoStopped->WaitOne();
-			audioPackets->stop();
-			decodingAudioStopped->WaitOne();
+			// stop each queue in turn and wait for it to actually be stopped
+			if(freePackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+				freePackets->stop();
+				freePackets->Stopped->WaitOne();
+			}
+			if(videoPackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+				videoPackets->stop();
+				videoPackets->Stopped->WaitOne();
+			}
+			if(audioPackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+				audioPackets->stop();
+				audioPackets->Stopped->WaitOne();
+			}
 
+		}
+
+		// this function should only be called after the final packet has
+		// been read from the video stream to indicate the queue is winding down.
+		// A closed event will be fired once the video and audio queues are empty
+		void close() {
+
+			// set freePackets stopped autoreset event, since no new packets are produced anymore
+			// otherwise calling stop during queue winddown will block.
+			freePackets->Stopped->Set();
+		
+			videoPackets->close();					
+			audioPackets->close();
+		
 		}
 
 		void dispose() {
@@ -258,8 +303,7 @@ namespace VideoLib {
 
 				if(packetData[i] != nullptr) {
 
-					delete packetData[i];
-					packetData[i] = nullptr;
+					packetData[i]->free();
 				}
 
 			}
@@ -275,6 +319,8 @@ namespace VideoLib {
 
 		void addFreePacket(Packet ^packet) {
 
+			// free packet data before inserting them back into freepackets
+			packet->free();
 			freePackets->add(packet);
 		}
 
@@ -290,12 +336,6 @@ namespace VideoLib {
 
 		VideoFrame ^getDecodedVideoFrame() {
 
-			if(pauseDecoding == true) {
-
-				((AutoResetEvent ^)decodingPaused[0])->Set();
-				decodingContinue[0]->WaitOne();
-			}
-
 			int frameFinished = 0;
 
 			VideoFrame ^finalFrame = videoFrame;
@@ -307,11 +347,15 @@ namespace VideoLib {
 				bool success = videoPackets->tryGet(videoPacket);
 				if(success == false) {
 
-					decodingVideoStopped->Set();
 					return(nullptr);
 				}
 
 				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
+
+				if(videoPacket->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
+
+					System::Diagnostics::Debug::Write("corrupt packet");
+				}
 
 				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
 					videoFrame->AVLibFrameData, &frameFinished, videoPacket->AVLibPacketData);
@@ -344,8 +388,7 @@ namespace VideoLib {
 						videoPacket->AVLibPacketData->dts);
 				}
 
-				av_free_packet(videoPacket->AVLibPacketData);
-				freePackets->add(videoPacket);
+				addFreePacket(videoPacket);
 			}
 
 			return(finalFrame);
@@ -356,12 +399,6 @@ namespace VideoLib {
 
 		AudioFrame ^getDecodedAudioFrame() {
 
-			if(pauseDecoding == true) {
-				
-				((AutoResetEvent ^)decodingPaused[1])->Set();
-				decodingContinue[1]->WaitOne();
-			}
-
 			int frameFinished = 0;		
 
 			while(!frameFinished) {
@@ -371,7 +408,6 @@ namespace VideoLib {
 				bool success = audioPackets->tryGet(audioPacket);
 				if(success == false) {
 
-					decodingAudioStopped->Set();
 					return(nullptr);
 				}
 
@@ -401,8 +437,7 @@ namespace VideoLib {
 
 				}
 
-				av_free_packet(audioPacket->AVLibPacketData);
-				freePackets->add(audioPacket);
+				addFreePacket(audioPacket);
 			}
 
 

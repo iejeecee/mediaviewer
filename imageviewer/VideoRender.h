@@ -247,6 +247,7 @@ public:
 			canvas = Rectangle(0, 0, backBuffer->Description.Width,
 				backBuffer->Description.Height);
 
+			log->Info("Direct3D Initialized");
 	
 		} catch (D3D::GraphicsException ^e){
 

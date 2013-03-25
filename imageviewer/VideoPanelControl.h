@@ -55,6 +55,7 @@ namespace imageviewer {
 
 			//videoRender->initialize(0,0);
 			videoDecoder = gcnew VideoPlayer();	
+			videoDecoder->FrameQueue->Closed += gcnew EventHandler(this, &VideoPanelControl::frameQueue_Closed);
 			
 			videoRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 			videoRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
@@ -627,11 +628,12 @@ restartaudio:
 			videoDebug->AudioFrameLength = audioFrame->Length;
 
 			// if the audio is lagging behind too much, skip the buffer completely
-			/*if(getVideoClock() - audioFrame->Pts > 0.2 && syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
+			double diff = getVideoClock() - audioFrame->Pts;
+			if(diff > 0.2 && diff < 3 && syncMode == SyncMode::AUDIO_SYNCS_TO_VIDEO) {
 
 				log->Warn("dropping audio buffer, lagging behind: " + (getVideoClock() - audioFrame->Pts).ToString() + " seconds");
 				goto restartaudio;
-			}*/
+			}
 
 			//adjustAudioSamplesPerSecond(audioFrame);
 			adjustAudioLength(audioFrame);
@@ -869,6 +871,7 @@ restartaudio:
 				Application::DoEvents();
 			}
 
+			audioPlayer->stop();
 
 		}
 
@@ -896,6 +899,17 @@ restartaudio:
 			videoRefreshTimer->start();
 			audioRefreshTimer->start();
 			
+		}
+
+		void invokeStopButtonClick() {
+
+			stopButton->PerformClick();
+		}
+
+		void frameQueue_Closed(Object ^sender, EventArgs ^) {
+
+			log->Info("Video stream end reached");
+			this->BeginInvoke(gcnew Action(this, &VideoPanelControl::invokeStopButtonClick));
 		}
 
 		void fillFrameQueue() {
@@ -1035,6 +1049,9 @@ restartaudio:
 			videoDecoder->close();
 			audioPlayer->flush();
 
+			videoPts = 0;
+			videoPtsDrift = 0;
+
 		}
 	
 
@@ -1052,8 +1069,8 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 
 						if(videoDecoder->seek(seekPosition) == true) {
 							
-							// flush empty and pause the framequeue
-							// This means the videorender and audioplayer thread will block 						
+							// flush and pause the framequeue
+							// This means video and audio decoding will block 						
 							videoDecoder->FrameQueue->flush();
 							audioPlayer->flush();
 							
@@ -1061,6 +1078,7 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 							fillFrameQueue();
 					
 							audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
+							// allow video and audio decoding to continue
 							videoDecoder->FrameQueue->start();
 						}
 						seekRequest = false;
@@ -1072,9 +1090,8 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 									
 				} while(success == true && !videoDecoderBW->CancellationPending);
 				
-
 				// stop the audio
-				audioPlayer->stop();
+				//audioPlayer->stop();
 		 }
 private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
  

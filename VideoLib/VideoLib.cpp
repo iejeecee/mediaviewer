@@ -168,7 +168,6 @@ bool VideoPlayer::demuxPacket() {
 	bool success = frameQueue->getFreePacket(packet);
 	if(success == false) {
 
-		frameQueue->DemuxingStopped->Set();
 		return(false);
 	}
 
@@ -177,6 +176,7 @@ bool VideoPlayer::demuxPacket() {
 
 		// end of the video
 		frameQueue->addFreePacket(packet);
+		frameQueue->close();
 		return(false);
 
 	}
@@ -194,7 +194,6 @@ bool VideoPlayer::demuxPacket() {
 	} else {
 
 		// unknown packet
-		av_free_packet(packet->AVLibPacketData);
 		frameQueue->addFreePacket(packet);
 	}
 

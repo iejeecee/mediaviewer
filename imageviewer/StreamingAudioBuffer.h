@@ -22,6 +22,8 @@ private:
 
 	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
+	Windows::Forms::Control ^owner;
+
 	DS::Device ^device;
 	DS::SecondaryBuffer ^audioBuffer;
 	int offsetBytes;
@@ -60,18 +62,7 @@ public:
 	StreamingAudioBuffer(Windows::Forms::Control ^owner)
 	{
 		device = nullptr;
-
-		try {
-
-			device = gcnew DS::Device();
-			device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
-
-		} catch (DS::SoundException ^e){
-			
-			log->Error("Error initializing directsound", e);
-			MessageBox::Show("Error initializing Direct Sound: " + e->Message, "Direct Sound Error");
-		
-		}
+		this->owner = owner;
 
 		audioBuffer = nullptr;
 		volume = 1;
@@ -188,6 +179,12 @@ public:
 	
 		try {
 
+			if(device == nullptr) {
+
+				device = gcnew DS::Device();
+				device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
+			}
+
 			releaseResources();
 
 			this->bufferSizeBytes = bufferSizeBytes;
@@ -224,6 +221,8 @@ public:
 			prevPtsPos = 0;
 			playLoops = 0;
 			ptsLoops = 0;
+
+			log->Info("Direct Sound Initialized");
 
 		} catch (DS::SoundException ^e){
 

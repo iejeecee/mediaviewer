@@ -21,12 +21,26 @@ namespace VideoLib {
 		Packet() {
 
 			avPacket = new AVPacket();
+			av_init_packet(avPacket);
+			avPacket->data = NULL;
+			avPacket->size = 0;
 		}
 		
 		~Packet() {
 
-			av_free_packet(avPacket);
+			free();
 			delete avPacket;
+		}
+
+		void free() {
+
+			if(avPacket->data != NULL) {
+
+				av_free_packet(avPacket);
+				av_init_packet(avPacket);
+				avPacket->data = NULL;
+				avPacket->size = 0;
+			}
 		}
 
 	};
