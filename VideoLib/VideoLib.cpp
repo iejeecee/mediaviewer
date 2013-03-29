@@ -153,8 +153,41 @@ void VideoPlayer::open(String ^videoLocation) {
 		//
 
 		videoDecoder->open(marshal_as<std::string>(videoLocation));
+
 		videoDecoder->initImageConverter(PIX_FMT_YUV420P,
 			videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
+
+		int channelLayout = videoDecoder->getAudioNrChannels() == 1 ? 
+			AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
+
+		AVSampleFormat format;
+
+		switch(videoDecoder->getAudioBytesPerSample()) {
+
+			case 1:
+				{
+					format = AV_SAMPLE_FMT_U8;
+					break;
+				}
+			case 2:
+				{
+					format = AV_SAMPLE_FMT_S16;
+					break;
+				}
+			case 4:
+				{
+					format = AV_SAMPLE_FMT_S32;
+					break;
+				}
+			default:
+				{
+					format = AV_SAMPLE_FMT_NONE;
+					break;
+				}
+		}
+
+		videoDecoder->initAudioConverter(videoDecoder->getAudioSamplesPerSecond(),
+			channelLayout, format);
 
 		frameQueue->initialize();
 

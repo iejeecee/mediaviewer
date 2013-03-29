@@ -21,6 +21,8 @@ namespace VideoLib {
 		array<unsigned char> ^data;
 		int length;
 
+		bool hasAllocatedOwnBuffers;
+
 	public:
 
 
@@ -29,7 +31,30 @@ namespace VideoLib {
 			data = gcnew array<unsigned char>(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 			stream = gcnew MemoryStream(data);
 			length = 0;
-			
+		
+			hasAllocatedOwnBuffers = false;
+		}
+
+		AudioFrame(AVSampleFormat format) :
+			Frame(FrameType::AUDIO)
+		{
+
+			data = gcnew array<unsigned char>(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+			stream = gcnew MemoryStream(data);
+			length = 0;
+
+			AVLibFrameData->data[0] = (uint8_t *)av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+			AVLibFrameData->format = format;
+		
+			hasAllocatedOwnBuffers = true;
+		}
+
+		~AudioFrame() {
+
+			if(hasAllocatedOwnBuffers == true) {
+
+				av_free(AVLibFrameData->data[0]);
+			}
 		}
 
 		property MemoryStream ^Stream {

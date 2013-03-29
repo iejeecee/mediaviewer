@@ -54,7 +54,7 @@ namespace VideoLib {
 			hasAllocatedOwnBuffers = false;
 		}
 
-		VideoFrame(int width, int height, PixelFormat format) :
+		VideoFrame(int width, int height, AVPixelFormat format) :
 			Frame(FrameType::VIDEO)
 		{
 

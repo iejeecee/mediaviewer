@@ -20,14 +20,15 @@ extern "C" {
 #include "libavutil/mathematics.h"
 #include "libavutil/pixdesc.h"
 
-//#include "libavutil/time.h"
+#include "libavutil/time.h"
 
 #include "libswscale/swscale.h"
-/*
+#include "libswresample/swresample.h"
+
 #ifdef PixelFormat
 #undef PixelFormat
 #endif
-*/
+
 }
 
 typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);

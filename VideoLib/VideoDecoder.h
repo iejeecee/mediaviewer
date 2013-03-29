@@ -11,9 +11,10 @@ protected:
 
 	AVFrame *frame;
 
-	//AVAudioConvert *audioConvert;
-
 	SwsContext *imageConvertContext;
+	SwrContext *audioConvertContext;
+
+	AVSampleFormat audioConvertFormat;
 
 	AVFrame *convertedFrame;
 	uint8_t *convertedFrameBuffer;
@@ -73,6 +74,7 @@ public:
 		frame = NULL;
 
 		imageConvertContext = NULL;
+		audioConvertContext = NULL;
 		convertedFrame = NULL;
 		convertedFrameBuffer = NULL;
 
@@ -86,6 +88,8 @@ public:
 		sizeBytes = 0;
 
 		durationSeconds = 0;
+
+		audioConvertFormat = AV_SAMPLE_FMT_S16;
 
 	}
 
@@ -137,6 +141,12 @@ public:
 
 			sws_freeContext(imageConvertContext);
 			imageConvertContext = NULL;
+		}
+
+		if(audioConvertContext != NULL) {
+
+			swr_free(&audioConvertContext);
+			audioConvertContext = NULL;
 		}
 
 		startTime = 0;
@@ -298,6 +308,16 @@ public:
 		return(imageConvertContext);
 	}
 
+	SwrContext *getAudioConvertContext() {
+
+		return(audioConvertContext);
+	}
+
+	AVSampleFormat getAudioConvertFormat() {
+
+		return(audioConvertFormat);
+	}
+
 	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
 		AudioDecodeMode audioMode = DECODE_AUDIO) 
 	{
@@ -406,7 +426,7 @@ public:
 		
 	}
 
-	void initImageConverter(PixelFormat format, int dstWidth, int dstHeight, 
+	void initImageConverter(AVPixelFormat format, int dstWidth, int dstHeight, 
 		SamplingMode sampling) 
 	{
 
@@ -432,17 +452,48 @@ public:
 			NULL,
 			NULL,
 			NULL);
-	}
 
-	void InitAudioConverter(AVSampleFormat outFormat, int outNrChannels = 2) {
+		if(imageConvertContext == NULL) {
 
-		if(audioCodec == NULL) {
-
-			throw gcnew VideoLib::VideoLibException("Cannot create audio converter without input audio");
+			throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
 		}
 
-		//enum AVSampleFormat out_fmt, int out_channels,
+	}
 
+	bool initAudioConverter(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
+		AVSampleFormat sampleFormat = AV_SAMPLE_FMT_S16) 
+	{
+
+		if(hasAudio() == false) {
+
+			return(false);
+		}
+
+		this->audioConvertFormat = sampleFormat;
+
+		// Note that AVCodecContext::channel_layout may or may not be set by libavcodec. Because of this,
+		// we won't use it, and will instead try to guess the layout from the number of channels.
+		audioConvertContext = swr_alloc_set_opts(NULL,
+			channelLayout,
+			sampleFormat,
+			sampleRate,
+			av_get_default_channel_layout(audioCodecContext->channels),
+			audioCodecContext->sample_fmt,
+			audioCodecContext->sample_rate,
+			0,
+			NULL);
+
+		if(audioConvertContext == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Unable to allocate audio convert context");
+		}
+
+		if(swr_init(audioConvertContext) != 0)
+		{
+			throw gcnew VideoLib::VideoLibException("Unable to initialize audio convert context");
+		}
+
+		return(true);
 	}
 
 	int getWidth() const {
@@ -456,7 +507,7 @@ public:
 	}
 
 
-	static AVFrame *convertFrame(const AVFrame *source, PixelFormat dstFormat, int dstWidth, int dstHeight, 
+	static AVFrame *convertFrame(const AVFrame *source, AVPixelFormat dstFormat, int dstWidth, int dstHeight, 
 		SamplingMode sampling)
 	{
 
@@ -470,7 +521,7 @@ public:
 		SwsContext *convertCtx = sws_getContext(
 			source->width,
 			source->height,
-			(PixelFormat)source->format,
+			(AVPixelFormat)source->format,
 			dstWidth,
 			dstHeight,
 			dstFormat,

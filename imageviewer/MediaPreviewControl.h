@@ -352,6 +352,7 @@ public:
 
 		} else {
 
+			log->Info("Opening media: " + fileLocation);
 			setPictureBoxInformImage(InformImage::LOADING_IMAGE);
 		}
 		//pictureBox->Image = miscImageList->Images[0];

@@ -19,7 +19,7 @@ namespace VideoLib {
 		VideoDecoder *videoDecoder;
 
 		VideoFrame ^videoFrame, ^convertedVideoFrame;
-		AudioFrame ^audioFrame;
+		AudioFrame ^audioFrame, ^convertedAudioFrame;
 
 		static const int maxVideoPackets = 300;
 		static const int maxAudioPackets = 300;
@@ -123,6 +123,9 @@ namespace VideoLib {
 			videoFrame = nullptr;
 			audioFrame = nullptr;
 
+			convertedVideoFrame = nullptr;
+			convertedAudioFrame = nullptr;
+
 			packetData = gcnew array<Packet ^>(maxVideoPackets + maxAudioPackets);
 
 			for(int i = 0; i < packetData->Length; i++) {
@@ -198,7 +201,14 @@ namespace VideoLib {
 			videoFrame = gcnew VideoFrame();
 			convertedVideoFrame = gcnew VideoFrame(videoDecoder->getWidth(), 
 				videoDecoder->getHeight(), PIX_FMT_YUV420P);
-			audioFrame = gcnew AudioFrame();
+			
+			if(videoDecoder->hasAudio()) {
+
+				audioFrame = gcnew AudioFrame();
+
+				convertedAudioFrame = gcnew AudioFrame(
+					videoDecoder->getAudioConvertFormat());
+			}
 
 			for(int i = 0; i < packetData->Length; i++) {
 
@@ -278,6 +288,12 @@ namespace VideoLib {
 				convertedVideoFrame = nullptr;
 			}
 
+			if(convertedAudioFrame != nullptr) {
+
+				delete convertedAudioFrame;
+				convertedAudioFrame = nullptr;
+			}
+
 			if(videoFrame != nullptr) {
 
 				delete videoFrame;
@@ -334,8 +350,6 @@ namespace VideoLib {
 
 			int frameFinished = 0;
 
-			VideoFrame ^finalFrame = videoFrame;
-
 			while(!frameFinished) {
 
 				Packet ^videoPacket;
@@ -358,11 +372,7 @@ namespace VideoLib {
 				if(frameFinished)
 				{
 
-					//if(videoFrame->AVLibFrameData->format != PIX_FMT_YUV420P) {
-
 					// convert frame to the right format
-					finalFrame = convertedVideoFrame;
-
 					sws_scale(videoDecoder->getImageConvertContext(),
 						videoFrame->AVLibFrameData->data,
 						videoFrame->AVLibFrameData->linesize,
@@ -371,9 +381,7 @@ namespace VideoLib {
 						convertedVideoFrame->AVLibFrameData->data,
 						convertedVideoFrame->AVLibFrameData->linesize);
 
-					//}
-
-					finalFrame->Pts = synchronizeVideo(
+					convertedVideoFrame->Pts = synchronizeVideo(
 						videoFrame->AVLibFrameData->repeat_pict, 
 						videoPacket->AVLibPacketData->dts);
 				}
@@ -381,7 +389,7 @@ namespace VideoLib {
 				addFreePacket(videoPacket);
 			}
 
-			return(finalFrame);
+			return(convertedVideoFrame);
 
 
 		}
@@ -413,16 +421,24 @@ namespace VideoLib {
 				if(frameFinished)
 				{
 
-					audioFrame->Length = av_samples_get_buffer_size(NULL, 
-						videoDecoder->getAudioNrChannels(), 
-						audioFrame->AVLibFrameData->nb_samples,
-						(AVSampleFormat)audioFrame->AVLibFrameData->format, 
-						1);
+					SwrContext *acc = videoDecoder->getAudioConvertContext();
 
-					audioFrame->Pts = synchronizeAudio(audioFrame->Length, 
+					int numSamplesOut = swr_convert(acc,
+							convertedAudioFrame->AVLibFrameData->data,
+                            audioFrame->AVLibFrameData->nb_samples,
+                            (const unsigned char**)audioFrame->AVLibFrameData->extended_data,
+                            audioFrame->AVLibFrameData->nb_samples);
+
+					convertedAudioFrame->Length = av_samples_get_buffer_size(NULL, 
+						videoDecoder->getAudioNrChannels(), 
+						numSamplesOut,
+						(AVSampleFormat)convertedAudioFrame->AVLibFrameData->format, 
+						1);
+					
+					convertedAudioFrame->Pts = synchronizeAudio(audioFrame->Length, 
 						audioPacket->AVLibPacketData->dts);
 
-					audioFrame->copyAudioDataToManagedMemory();
+					convertedAudioFrame->copyAudioDataToManagedMemory();
 
 				}
 
@@ -430,7 +446,7 @@ namespace VideoLib {
 			}
 
 
-			return(audioFrame);
+			return(convertedAudioFrame);
 
 
 		}

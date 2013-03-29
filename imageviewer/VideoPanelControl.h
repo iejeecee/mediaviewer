@@ -58,7 +58,7 @@ namespace imageviewer {
 			videoDecoder->FrameQueue->Closed += gcnew EventHandler(this, &VideoPanelControl::frameQueue_Closed);
 
 			videoDecoder->setLogCallback(gcnew VideoPlayer::LogCallbackDelegate(this, &VideoPanelControl::videoDecoderLogCallback),
-				true, false);
+				true, true);
 			
 			videoRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 			videoRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
