@@ -180,6 +180,8 @@ namespace VideoLib {
 
 		String ^videoLocation;
 
+		System::Runtime::InteropServices::GCHandle gch;
+
 	public:
 
 		enum class DecodeMode {
@@ -188,6 +190,9 @@ namespace VideoLib {
 			DECODE_VIDEO_ONLY,
 			DECODE_AUDIO_ONLY
 		};
+
+		delegate void LogCallbackDelegate(
+			int level, String ^message);
 
 		property VideoLib::FrameQueue ^FrameQueue {
 
@@ -297,6 +302,8 @@ namespace VideoLib {
 		bool demuxPacket();
 		void close();
 
+		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,
+			bool onlyLogImportant);
 		
 	};
 }

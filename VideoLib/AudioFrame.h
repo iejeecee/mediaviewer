@@ -3,6 +3,8 @@
 #include "Frame.h"
 #include "VideoDecoder.h"
 
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000 
+
 using namespace System;
 using namespace System::Runtime::InteropServices;
 using namespace Microsoft::DirectX::Direct3D;

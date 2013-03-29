@@ -32,6 +32,10 @@ namespace VideoLib {
 		Frame(FrameType frameType) {
 
 			avFrame = avcodec_alloc_frame();
+			if(avFrame == NULL) {
+
+				throw gcnew VideoLibException("Cannot allocate Frame");
+			}
 
 			this->frameType = frameType;
 			pts = 0;

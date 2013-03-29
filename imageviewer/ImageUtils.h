@@ -97,22 +97,6 @@ public:
 
 	}
 
-	static OpenFileDialog ^createOpenImageFileDialog() {
-
-		OpenFileDialog ^openFileDialog = gcnew OpenFileDialog();
-
-		openFileDialog->Filter = L"Image Files|*.tif;*.jpg;*.jpeg;*.gif;*.png;*.bmp|"
-			L"JPEG Files (*.jpg)|*.jpg;*.jpeg|"
-			L"PNG Files (*.png)|*.png|"	                  
-			L"GIF Files (*.gif)|*.gif|"
-			L"TIFF Files (*.tif)|*.tif|"
-			L"BMP File (*.bmp)|*.bmp";
-
-		openFileDialog->FilterIndex = 1;
-
-		return(openFileDialog);
-	}
-
 	static Image ^createImageFromArray(int width, int height, 
 		Drawing::Imaging::PixelFormat format, cli::array<unsigned char> ^data) 
 	{

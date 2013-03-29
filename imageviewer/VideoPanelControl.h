@@ -56,10 +56,13 @@ namespace imageviewer {
 			//videoRender->initialize(0,0);
 			videoDecoder = gcnew VideoPlayer();	
 			videoDecoder->FrameQueue->Closed += gcnew EventHandler(this, &VideoPanelControl::frameQueue_Closed);
+
+			videoDecoder->setLogCallback(gcnew VideoPlayer::LogCallbackDelegate(this, &VideoPanelControl::videoDecoderLogCallback),
+				true, false);
 			
 			videoRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
 			videoRefreshTimer->Tick += gcnew EventHandler(this, &VideoPanelControl::videoRefreshTimer_Tick);
-			videoRefreshTimer->SynchronizingObject = this;
+			//videoRefreshTimer->SynchronizingObject = this;
 			videoRefreshTimer->AutoReset = false;
 
 			audioRefreshTimer = HRTimerFactory::create(HRTimerFactory::TimerType::TIMER_QUEUE);
@@ -937,6 +940,26 @@ restartaudio:
 			seekRequest = true;			
 		}
 
+		void videoDecoderLogCallback(int level, String ^message) {
+
+			if(level < 16) {
+
+				log->Fatal(message);
+
+			} else if(level == 16) {
+
+				log->Error(message);
+
+			} else if(level == 24) {
+
+				log->Warn(message);
+
+			} else {
+
+				log->Info(message);
+			}
+		}
+
 
 	public:
 
@@ -960,6 +983,8 @@ restartaudio:
 		void open(String ^location) {
 
 			try {
+
+				log->Info("Opening: " + location);
 
 				close();
 				videoDebug->clear();			

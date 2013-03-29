@@ -1,6 +1,8 @@
 #pragma once
 #include "MediaFormatConvert.h"
 
+namespace imageviewer {
+
 using namespace System;
 
 public ref class ImageStream {
@@ -69,3 +71,5 @@ public:
 	}
 
 };
+
+}

@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include <winbase.h>
+#include <msclr\marshal_cppstd.h>
 #define __STDC_CONSTANT_MACROS
 
 extern "C" {
@@ -15,6 +16,7 @@ class VideoInit {
 protected:
 
 	static bool isAVlibInitialized;
+
 
 public:
 
@@ -33,6 +35,8 @@ public:
  
 				return(false);
 			}
+
+			
 		}		
 
 		return(isAVlibInitialized);
@@ -49,6 +53,7 @@ public:
 		} 
 
 	}
+
 /*
 	static int lockmgr(void **mtx, enum AVLockOp op)
 	{
@@ -100,6 +105,8 @@ public:
         }
         return 0; 
 	}
+
+
 };
 
 bool VideoInit::isAVlibInitialized = false;

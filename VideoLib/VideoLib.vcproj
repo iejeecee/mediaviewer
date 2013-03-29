@@ -63,7 +63,7 @@
 				Name="VCLinkerTool"
 				AdditionalDependencies="avformat.lib avcodec.lib swscale.lib avutil.lib"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="&quot;H:\libav-win32-20120425\usr\bin&quot;"
+				AdditionalLibraryDirectories="H:\libav-win32-20120425\usr\bin"
 				GenerateDebugInformation="true"
 				AssemblyDebug="1"
 				TargetMachine="1"

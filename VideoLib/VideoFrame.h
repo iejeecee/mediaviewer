@@ -15,7 +15,7 @@ namespace VideoLib {
 	{
 	private:
 
-		bool requiresAVPictureFree;
+		bool hasAllocatedOwnBuffers;
 		
 	public:
 
@@ -51,7 +51,7 @@ namespace VideoLib {
 			Frame(FrameType::VIDEO)
 		{
 			
-			requiresAVPictureFree = false;
+			hasAllocatedOwnBuffers = false;
 		}
 
 		VideoFrame(int width, int height, PixelFormat format) :
@@ -63,7 +63,7 @@ namespace VideoLib {
 			AVLibFrameData->height = height;
 			AVLibFrameData->format = format;
 
-			requiresAVPictureFree = true;
+			hasAllocatedOwnBuffers = true;
 /*
 			int numBytes = avpicture_get_size(format, width, height);
 			uint8_t *data = (uint8_t*)av_malloc(numBytes);
@@ -74,7 +74,7 @@ namespace VideoLib {
 
 		~VideoFrame() {
 
-			if(requiresAVPictureFree) {
+			if(hasAllocatedOwnBuffers) {
 
 				avpicture_free((AVPicture*)AVLibFrameData);
 			}

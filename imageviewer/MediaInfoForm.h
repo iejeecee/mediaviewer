@@ -6,7 +6,7 @@
 #include "GEventArgs.h"
 #include "PagerControl.h"
 #include "FileMetaData.h"
-#include "ImageUtils.h"
+#include "WindowsUtils.h"
 #include "MediaFileFactory.h"
 
 using namespace System;
@@ -1594,7 +1594,7 @@ private: System::Void browseThumbRadioButton_CheckedChanged(System::Object^  sen
 
 			 if((useBrowsedThumb = browseThumbRadioButton->Checked) == false) return;
 
-			 OpenFileDialog ^openFileDialog = ImageUtils::createOpenImageFileDialog();
+			 OpenFileDialog ^openFileDialog = WindowsUtils::createOpenMediaFileDialog(true);
 
 			 if(openFileDialog->ShowDialog() == ::DialogResult::OK)
 			 {			

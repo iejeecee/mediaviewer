@@ -1,11 +1,58 @@
 #pragma once
 
+namespace imageviewer {
+
 using namespace System;
 using namespace System::Drawing::Imaging;
+using namespace System::Collections::Generic;
+using namespace System::IO;
 
 public ref class MediaFormatConvert {
 
 public:
+
+	static Dictionary<String ^, String ^> ^extToMimeType;
+	static Dictionary<String ^, String ^> ^mimeTypeToExt;
+
+	static MediaFormatConvert() {
+
+		extToMimeType = gcnew Dictionary<String ^, String ^>();
+		mimeTypeToExt = gcnew Dictionary<String ^, String ^>();
+
+		extToMimeType["tif"] = "image/tiff";
+		extToMimeType["tiff"] = "image/tiff";
+		extToMimeType["gif"] = "image/gif";
+		extToMimeType["png"] = "image/png";
+		extToMimeType["jpg"] = "image/jpeg";
+		extToMimeType["jpeg"] = "image/jpeg";
+		extToMimeType["bmp"] = "image/bmp";
+		extToMimeType["asf"] = "video/x-ms-asf";
+		extToMimeType["wmv"] = "video/x-ms-wmv";
+		extToMimeType["flv"] = "video/x-flv";
+		extToMimeType["mov"] = "video/quicktime";
+		extToMimeType["mp4"] = "video/mp4";
+		extToMimeType["avi"] = "video/avi";
+		extToMimeType["mpg"] = "video/mpeg";
+		extToMimeType["mpeg"] = "video/mpeg";
+		extToMimeType["m4v"] = "video/x-m4v";
+		extToMimeType["mkv"] = "video/x-matroska";
+
+		for each(KeyValuePair<String ^, String ^> ^pair in extToMimeType)
+		{
+			if(mimeTypeToExt->ContainsKey(pair->Value) == false) {
+				mimeTypeToExt->Add(pair->Value, pair->Key);
+			}
+   
+		}
+
+		mimeTypeToExt["video/vnd.avi"] = "avi";
+		mimeTypeToExt["video/msvideo"] = "avi";
+		mimeTypeToExt["video/x-msvideo"] = "avi";
+		mimeTypeToExt["video/mpeg"] = "mpg";
+		mimeTypeToExt["video/x-mpg"] = "mpg";
+		mimeTypeToExt["video/mpeg2"] = "mpg";
+
+	}
 
 	static String ^imageFormatToMimeType(ImageFormat ^imageFormat) {
 
@@ -67,7 +114,7 @@ public:
 
 	static ImageFormat ^fileNameToImageFormat(String ^fileName) {
 
-			String ^ext = System::IO::Path::GetExtension(fileName)->ToLower();
+			String ^ext = Path::GetExtension(fileName)->ToLower();
 
 			ImageFormat ^imageFormat;
 
@@ -97,142 +144,30 @@ public:
 
 	static String ^fileNameToMimeType(String ^fileName) {
 
-		String ^ext = System::IO::Path::GetExtension(fileName)->ToLower();
-
-		if(ext->Equals(".tif")) {
-
-			return("image/tiff");
-
-		} else if(ext->Equals(".gif")) {
-
-			return("image/gif");
-
-		} else if(ext->Equals(".png")) {
-
-			return("image/png");
-
-		} else if(ext->Equals(".jpg") || ext->Equals(".jpeg")) {
-
-			return("image/jpeg");
-
-		} else if(ext->Equals(".bmp")) {
-
-			return("image/bmp");
-
-		} else if(ext->Equals(".asf")) {
-
-			return("video/x-ms-asf");
-
-		} else if(ext->Equals(".wmv")) {
-
-			return("video/x-ms-wmv");
-
-		} else if(ext->Equals(".flv")) {
-
-			return("video/x-flv");
-
-		} else if(ext->Equals(".mov")) {
-
-			return("video/quicktime");
-
-		} else if(ext->Equals(".mp4")) {
+		String ^ext = Path::GetExtension(fileName)->ToLower()->Replace(".","");
 		
-			return("video/mp4");
+		if(extToMimeType->ContainsKey(ext) == false) {
 
-		} else if(ext->Equals(".avi")) {
-	
-			return("video/avi");
-
-		} else if(ext->Equals(".mpg") || ext->Equals(".mpeg")) {
-	
-			return("video/mpeg");
-
-		} else if(ext->Equals(".m4v")) {
-
-			return("video/x-m4v");
-
-		} else if(ext->Equals(".mkv")) {
-
-			return("video/x-matroska");
+			return(nullptr);
 
 		} else {
 
-			return(nullptr);
+			return(extToMimeType[ext]);
 		}
-
+	
 	}
 
 	static String ^mimeTypeToExtension(String ^mimeType) {
 
-		if(mimeType->Equals("image/tiff")) {
+		if(mimeTypeToExt->ContainsKey(mimeType) == false) {
 
-			return("tif");
-
-		} else if(mimeType->Equals("image/gif")) {
-
-			return("gif");
-
-		} else if(mimeType->Equals("image/png")) {
-
-			return("png");
-
-		} else if(mimeType->Equals("image/jpeg")) {
-
-			return("jpg");
-
-		} else if(mimeType->Equals("image/bmp")) {
-
-			return("bmp");
-
-		} else if(mimeType->Equals("video/x-ms-asf")) {
-
-			return("asf");
-		
-		} else if(mimeType->Equals("video/x-ms-wmv")) {
-
-			return("wmv");
-		
-		} else if(mimeType->Equals("video/x-flv")) {
-
-			return("flv");
-		
-		} else if(mimeType->Equals("video/avi") || 
-			mimeType->Equals("video/vnd.avi") ||
-			mimeType->Equals("video/msvideo") ||
-			mimeType->Equals("video/x-msvideo")) 
-		{
-		
-			return("avi");
-
-		} else if(mimeType->Equals("video/mpg") || 
-			mimeType->Equals("video/mpeg") ||
-			mimeType->Equals("video/x-mpg") ||
-			mimeType->Equals("video/mpeg2")) 
-		{
-		
-			return("mpg");
-
-		}else if(mimeType->Equals("video/mp4")) {
-
-			return("mp4");
-		
-		} else if(mimeType->Equals("video/quicktime")) {
-
-			return("mov");
-
-		} else if(mimeType->Equals("video/x-matroska")) {
-
-			return("mkv");
-
-		} else if(mimeType->Equals("video/x-m4v")) {
-
-			return("m4v");
+			return(nullptr);
 
 		} else {
 
-			return("jpg");
+			return(mimeTypeToExt[mimeType]);
 		}
-
+	
 	}
 
 	static bool isMediaFile(String ^fileName) {
@@ -261,3 +196,5 @@ public:
 	}
 
 };
+
+}

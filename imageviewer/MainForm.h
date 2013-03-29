@@ -543,7 +543,7 @@ namespace imageviewer {
 			 }
 	private: System::Void openToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
 
-				 OpenFileDialog ^openFileDialog = ImageUtils::createOpenImageFileDialog();
+				 OpenFileDialog ^openFileDialog = WindowsUtils::createOpenMediaFileDialog(false);
 
 				 if(openFileDialog->ShowDialog() == ::DialogResult::OK)
 					{

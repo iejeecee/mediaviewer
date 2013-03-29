@@ -212,12 +212,8 @@ namespace VideoLib {
 			// note that demuxing is not active during this function
 
 			// wait for video and audio decoding to pause
-			// WEIRD BUG? the paused AutoResetEvent 
-			// stays signalled (is it's memory overwritten?, that would be very bad!) 
-			// after calls to av_free_packet later in the function
-			// temp fixed by resetting it manually 
-			videoPackets->Paused->Reset();
-			audioPackets->Paused->Reset();
+			// To make sure no packets are in limbo
+			// before flushing the queues. 
 			videoPackets->pause();
 			audioPackets->pause();
 
@@ -352,17 +348,11 @@ namespace VideoLib {
 
 				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
 
-				if(videoPacket->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
-
-					System::Diagnostics::Debug::Write("corrupt packet");
-				}
-
 				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
 					videoFrame->AVLibFrameData, &frameFinished, videoPacket->AVLibPacketData);
 				if(ret < 0) {
 
-					//Error decoding video frame
-					//return(0);
+					Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
 				}
 
 				if(frameFinished)
@@ -417,8 +407,7 @@ namespace VideoLib {
 					audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);
 				if(ret < 0) {
 
-					//Error decoding audio frame
-					//return(0);
+					Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");
 				}
 
 				if(frameFinished)

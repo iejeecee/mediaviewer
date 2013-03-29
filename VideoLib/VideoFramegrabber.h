@@ -84,7 +84,7 @@ public:
 	int bytesPerSample;	
 	int nrChannels;
 
-	VideoFrameGrabber() 	
+	VideoFrameGrabber() 
 	{
 		setDecodedFrameCallback(decodedFrame, this);
 

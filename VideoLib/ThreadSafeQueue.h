@@ -209,12 +209,14 @@ namespace VideoLib {
 
 				queue->Enqueue(item);
 
-				if(queue->Count == 1) {
+				if(queue->Count == 1 && QueueState != State::PAUSED) {
 
 					// wake up any thread which was send sleeping
-					// trying to take something from a empty queue
+					// trying to take something from a empty queue.
+					// Do not wake up a paused queue because the paused 
+					// autoresetevent should only be set in the tryGet function
 					Monitor::PulseAll(queue);
-
+	
 				} 
 
 			} finally {

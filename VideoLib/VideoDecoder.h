@@ -11,7 +11,7 @@ protected:
 
 	AVFrame *frame;
 
-	AVAudioConvert *audioConvert;
+	//AVAudioConvert *audioConvert;
 
 	SwsContext *imageConvertContext;
 
@@ -65,7 +65,7 @@ public:
 		SKIP_AUDIO
 	};
 
-	VideoDecoder() 
+	VideoDecoder()
 	{
 		decodedFrame = NULL;
 		data = NULL;

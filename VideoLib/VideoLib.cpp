@@ -7,12 +7,12 @@
 #include "VideoLib.h"
 #include "VideoFrameGrabber.h"
 
-using namespace msclr::interop;
-using namespace System::Runtime::InteropServices;
-using namespace Microsoft::DirectX::Direct3D;
 
 namespace VideoLib {
 
+using namespace msclr::interop;
+using namespace System::Runtime::InteropServices;
+using namespace Microsoft::DirectX::Direct3D;
 
 
 VideoPreview::VideoPreview() {
@@ -25,9 +25,9 @@ VideoPreview::VideoPreview() {
 		gcnew DecodedFrameDelegate(this, &VideoPreview::decodedFrameCallback);
 
 	// make sure the delegate doesn't get garbage collected
-	GCHandle gch = GCHandle::Alloc(managedDecodedFrameCallback);
+	gch = GCHandle::Alloc(managedDecodedFrameCallback);
 
-	IntPtr voidPtr =  Marshal::GetFunctionPointerForDelegate(managedDecodedFrameCallback);
+	IntPtr voidPtr = Marshal::GetFunctionPointerForDelegate(managedDecodedFrameCallback);
 		
 	DECODED_FRAME_CALLBACK nativeDecodedFrameCallback = static_cast<DECODED_FRAME_CALLBACK>(voidPtr.ToPointer());
 
@@ -126,7 +126,6 @@ List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int max
 VideoPlayer::VideoPlayer() {
 
 	videoDecoder = new VideoDecoder();
-	
 
 	frameQueue = gcnew VideoLib::FrameQueue(videoDecoder);
 	videoLocation = "";
@@ -136,6 +135,12 @@ VideoPlayer::VideoPlayer() {
 VideoPlayer::~VideoPlayer() {
 
 	delete videoDecoder;
+
+	if(gch.IsAllocated) {
+
+		gch.Free();
+	}
+
 }
 
 
@@ -175,10 +180,16 @@ bool VideoPlayer::demuxPacket() {
 	if(read < 0) {
 
 		// end of the video
+		Video::writeToLog(AV_LOG_INFO, "end of stream reached");
 		frameQueue->addFreePacket(packet);
 		frameQueue->close();
 		return(false);
 
+	}
+
+	if(packet->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
+
+		Video::writeToLog(AV_LOG_WARNING, "corrupt packet");
 	}
 
 	if(packet->AVLibPacketData->stream_index == videoDecoder->getVideoStreamIndex()) {
@@ -212,5 +223,32 @@ void VideoPlayer::close() {
 	frameQueue->dispose();
 }
 
+void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLibAVLogging,
+								 bool onlyLogImportant)
+{
+
+	if(gch.IsAllocated) {
+
+		gch.Free();
+	}
+
+	gch = GCHandle::Alloc(logCallback);
+
+	IntPtr voidPtr = Marshal::GetFunctionPointerForDelegate(logCallback);
+		
+	LOG_CALLBACK nativeLogCallback = static_cast<LOG_CALLBACK>(voidPtr.ToPointer());
+
+	Video::setLogCallback(nativeLogCallback);
+
+	if(enableLibAVLogging = true) {
+
+		Video::enableLibAVLogging(onlyLogImportant);
+
+	} else {
+
+		Video::disableLibAVLogging();
+	}
+
+}
 }
 
