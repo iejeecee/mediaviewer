@@ -217,18 +217,17 @@ namespace VideoLib {
 
 		}
 
-		void flush() {		
+		void pause() {
 
-			// note that demuxing is not active during this function
-
-			// wait for video and audio decoding to pause
-			// To make sure no packets are in limbo
-			// before flushing the queues. 
 			videoPackets->pause();
 			audioPackets->pause();
 
 			WaitHandle::WaitAll(decodingPaused);
+		}
 
+		void flush() {		
+
+			// note that demuxing is not active during this function
 			videoPackets->flush();
 			audioPackets->flush();
 			freePackets->flush();

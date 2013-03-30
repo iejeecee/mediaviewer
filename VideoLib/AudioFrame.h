@@ -35,6 +35,7 @@ namespace VideoLib {
 			hasAllocatedOwnBuffers = false;
 		}
 
+		// only packed audio types should be used as format
 		AudioFrame(AVSampleFormat format) :
 			Frame(FrameType::AUDIO)
 		{
@@ -43,6 +44,8 @@ namespace VideoLib {
 			stream = gcnew MemoryStream(data);
 			length = 0;
 
+			// planar types should allocate more data planes
+			// here
 			AVLibFrameData->data[0] = (uint8_t *)av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
 			AVLibFrameData->format = format;
 		

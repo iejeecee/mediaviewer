@@ -1092,21 +1092,27 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 				{
 					if(seekRequest == true) {
 
+						// wait for video and audio decoding to pause/block
+						// To make sure no packets are in limbo
+						// before flushing any ffmpeg internal or external queues. 
+						videoDecoder->FrameQueue->pause();
+
 						if(videoDecoder->seek(seekPosition) == true) {
 							
-							// flush and pause the framequeue
-							// This means video and audio decoding will block 						
+							// flush the framequeue	and audioplayer buffer				
 							videoDecoder->FrameQueue->flush();
 							audioPlayer->flush();
 							
-							// refill the framequeue from the new position
+							// refill/buffer the framequeue from the new position
 							fillFrameQueue();
 					
 							audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
-							// allow video and audio decoding to continue
-							videoDecoder->FrameQueue->start();
+							
 						}
 						seekRequest = false;
+
+						// allow video and audio decoding to continue
+						videoDecoder->FrameQueue->start();
 
 					} else {
 
