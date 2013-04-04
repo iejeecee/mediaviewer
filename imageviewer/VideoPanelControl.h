@@ -28,9 +28,10 @@ using namespace System::Data;
 using namespace System::Drawing;
 using namespace Microsoft::DirectX;
 using namespace VideoLib;
+using namespace Diagnostics;
 namespace D3D = Microsoft::DirectX::Direct3D;
 namespace DS = Microsoft::DirectX::DirectSound;
-using namespace Diagnostics;
+
 
 namespace imageviewer {
 
@@ -90,6 +91,7 @@ namespace imageviewer {
 			
 			muteCheckBox->Checked = bool::Parse(Settings::getVar(Settings::VarName::VIDEO_MUTED));
 			volumeTrackBar->Value = Util::lerp<int>(Double::Parse(Settings::getVar(Settings::VarName::VIDEO_VOLUME)), volumeTrackBar->Minimum, volumeTrackBar->Maximum);
+
 		}
 
 	protected:
@@ -174,8 +176,9 @@ namespace imageviewer {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(VideoPanelControl::typeid));
 			this->videoDecoderBW = (gcnew System::ComponentModel::BackgroundWorker());
 			this->splitContainer = (gcnew System::Windows::Forms::SplitContainer());
-			this->prevButton = (gcnew System::Windows::Forms::Button());
+			this->screenShotButton = (gcnew System::Windows::Forms::Button());
 			this->imageList = (gcnew System::Windows::Forms::ImageList(this->components));
+			this->prevButton = (gcnew System::Windows::Forms::Button());
 			this->nextButton = (gcnew System::Windows::Forms::Button());
 			this->playCheckBox = (gcnew System::Windows::Forms::CheckBox());
 			this->videoTimeLabel = (gcnew System::Windows::Forms::Label());
@@ -185,7 +188,6 @@ namespace imageviewer {
 			this->stopButton = (gcnew System::Windows::Forms::Button());
 			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
 			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
-			this->screenShotButton = (gcnew System::Windows::Forms::Button());
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->BeginInit();
@@ -224,18 +226,18 @@ namespace imageviewer {
 			this->splitContainer->SplitterDistance = 388;
 			this->splitContainer->TabIndex = 0;
 			// 
-			// prevButton
+			// screenShotButton
 			// 
-			this->prevButton->ImageIndex = 6;
-			this->prevButton->ImageList = this->imageList;
-			this->prevButton->Location = System::Drawing::Point(117, 37);
-			this->prevButton->MaximumSize = System::Drawing::Size(60, 51);
-			this->prevButton->Name = L"prevButton";
-			this->prevButton->Size = System::Drawing::Size(51, 40);
-			this->prevButton->TabIndex = 10;
-			this->toolTip1->SetToolTip(this->prevButton, L"Previous Video");
-			this->prevButton->UseVisualStyleBackColor = true;
-			this->prevButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::prevButton_Click);
+			this->screenShotButton->ImageIndex = 7;
+			this->screenShotButton->ImageList = this->imageList;
+			this->screenShotButton->Location = System::Drawing::Point(231, 38);
+			this->screenShotButton->MaximumSize = System::Drawing::Size(60, 51);
+			this->screenShotButton->Name = L"screenShotButton";
+			this->screenShotButton->Size = System::Drawing::Size(51, 40);
+			this->screenShotButton->TabIndex = 11;
+			this->toolTip1->SetToolTip(this->screenShotButton, L"Take A Screenshot");
+			this->screenShotButton->UseVisualStyleBackColor = true;
+			this->screenShotButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::screenShotButton_Click);
 			// 
 			// imageList
 			// 
@@ -249,6 +251,19 @@ namespace imageviewer {
 			this->imageList->Images->SetKeyName(5, L"Button Next-01.ico");
 			this->imageList->Images->SetKeyName(6, L"Button Previous-01.ico");
 			this->imageList->Images->SetKeyName(7, L"Computer Monitor-01.ico");
+			// 
+			// prevButton
+			// 
+			this->prevButton->ImageIndex = 6;
+			this->prevButton->ImageList = this->imageList;
+			this->prevButton->Location = System::Drawing::Point(117, 37);
+			this->prevButton->MaximumSize = System::Drawing::Size(60, 51);
+			this->prevButton->Name = L"prevButton";
+			this->prevButton->Size = System::Drawing::Size(51, 40);
+			this->prevButton->TabIndex = 10;
+			this->toolTip1->SetToolTip(this->prevButton, L"Previous Video");
+			this->prevButton->UseVisualStyleBackColor = true;
+			this->prevButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::prevButton_Click);
 			// 
 			// nextButton
 			// 
@@ -363,19 +378,6 @@ namespace imageviewer {
 			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
 			this->timeTrackBar->MouseEnter += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseEnter);
 			// 
-			// screenShotButton
-			// 
-			this->screenShotButton->ImageIndex = 7;
-			this->screenShotButton->ImageList = this->imageList;
-			this->screenShotButton->Location = System::Drawing::Point(231, 38);
-			this->screenShotButton->MaximumSize = System::Drawing::Size(60, 51);
-			this->screenShotButton->Name = L"screenShotButton";
-			this->screenShotButton->Size = System::Drawing::Size(51, 40);
-			this->screenShotButton->TabIndex = 11;
-			this->toolTip1->SetToolTip(this->screenShotButton, L"Take A Screenshot");
-			this->screenShotButton->UseVisualStyleBackColor = true;
-			this->screenShotButton->Click += gcnew System::EventHandler(this, &VideoPanelControl::screenShotButton_Click);
-			// 
 			// VideoPanelControl
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
@@ -455,18 +457,7 @@ namespace imageviewer {
 			}
 		}
 
-		property imageviewer::VideoState VideoState {
-
-			void set(imageviewer::VideoState videoState) {
-
-				this->videoState = videoState;
-			}
-
-			imageviewer::VideoState get() {
-
-				return(videoState);
-			}
-		}
+		
 
 		void invokeUpdateUI() {
 
@@ -869,7 +860,7 @@ restartaudio:
 
 			videoDecoderBW->CancelAsync();
 	
-			while(IsPlaying) {
+			while(videoDecoderBW->IsBusy) {
 
 				Application::DoEvents();
 			}
@@ -963,20 +954,27 @@ restartaudio:
 
 	public:
 
+		property imageviewer::VideoState VideoState {
+
+		private: 
+			void set(imageviewer::VideoState videoState) {
+
+				this->videoState = videoState;
+			}
+
+		public:
+			imageviewer::VideoState get() {
+
+				return(videoState);
+			}
+		}
+
 		property String ^VideoLocation
 		{
 
 			String ^get() {
 
 				return(videoDecoder->VideoLocation);
-			}
-		}
-
-		property bool IsPlaying {
-
-			bool get() {
-
-				return(videoDecoderBW->IsBusy);
 			}
 		}
 
@@ -1038,7 +1036,8 @@ restartaudio:
 
 		void play() {
 
-			if(playCheckBox->Checked == true && IsPlaying == false) {
+			if(playCheckBox->Checked == true && VideoState 
+				!= imageviewer::VideoState::PLAYING) {
 
 				startPlay();
 
@@ -1066,7 +1065,7 @@ restartaudio:
 
 			videoDecoderBW->CancelAsync();
 	
-			while(IsPlaying) {
+			while(videoDecoderBW->IsBusy) {
 
 				Application::DoEvents();
 			}
@@ -1082,7 +1081,6 @@ restartaudio:
 
 private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) {
 			 			
-				//videoFrameTimer = videoDecoder->TimeNow;
 				audioFrameTimer = videoFrameTimer = HRTimer::getTimestamp();
 
 				bool success = true;
@@ -1121,8 +1119,6 @@ private: System::Void videoDecoderBW_DoWork(System::Object^  sender, System::Com
 									
 				} while(success == true && !videoDecoderBW->CancellationPending);
 				
-				// stop the audio
-				//audioPlayer->stop();
 		 }
 private: System::Void videoRefreshTimer_Tick(System::Object^  sender, System::EventArgs^  e) {			
  

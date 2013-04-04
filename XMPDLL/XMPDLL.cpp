@@ -79,32 +79,25 @@ namespace XMPDLL {
 			{
 				return(false);
 			}
+			
+			// Options to open the file with - read only and use a file handler
+			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
 
-			try
+			bool ok;							
+
+			// First we try and open the file
+			ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
+			if(!ok)
 			{
-				// Options to open the file with - read only and use a file handler
-				XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
-
-				bool ok;							
-
-				// First we try and open the file
+				// Now try using packet scanning
+				opts = options | kXMPFiles_OpenUsePacketScanning;			
 				ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
-				if(!ok)
-				{
-					// Now try using packet scanning
-					opts = options | kXMPFiles_OpenUsePacketScanning;			
-					ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
-				}
+			}
 
-				if(ok)
-				{			
-					myFile.GetXMP(&meta);
-				    return(true);
-				}
-
-			} catch(XMP_Error & e)
+			if(ok)
 			{			
-				cout << "ERROR: " << e.GetErrMsg() << endl;
+				myFile.GetXMP(&meta);
+			    return(true);
 			}
 
 			myFile.CloseFile();

@@ -231,6 +231,10 @@
 				RelativePath=".\XMPLib.h"
 				>
 			</File>
+			<File
+				RelativePath=".\XMPLibException.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"

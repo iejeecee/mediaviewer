@@ -458,6 +458,8 @@ private:
 
 public:
 
+	delegate void WalkDirectoryTreeDelegate(FileInfo ^info, Object ^state);
+
 	delegate void FileUtilsDelegate(System::Object ^sender, FileUtilsEventArgs ^e);
 	event FileUtilsDelegate ^OnAfterCopy;
 	event FileUtilsDelegate ^OnAfterDelete;
@@ -640,6 +642,56 @@ public:
 
 		return(uniqueName);
 	}
+
+	static void walkDirectoryTree(DirectoryInfo ^root,
+		WalkDirectoryTreeDelegate ^callback, Object ^state)
+	{
+		if(callback == nullptr) return;
+
+		array<FileInfo ^> ^files = nullptr;
+		array<DirectoryInfo ^> ^subDirs = nullptr;
+
+		// First, process all the files directly under this folder 
+		try
+		{
+			files = root->GetFiles("*.*");
+		}
+		// This is thrown if even one of the files requires permissions greater 
+		// than the application provides:: 
+		catch (UnauthorizedAccessException ^e)
+		{
+			// This code just writes out the message and continues to recurse. 
+			// You may decide to do something different here:: For example, you 
+			// can try to elevate your privileges and access the file again.
+			log->Warn(e->Message);
+		}
+		catch (DirectoryNotFoundException ^e)
+		{
+			log->Warn(e->Message);
+		}
+
+		if(files != nullptr)
+		{
+			for each(FileInfo ^info in files)
+			{
+				// In this example, we only access the existing FileInfo object. If we 
+				// want to open, delete or modify the file, then 
+				// a try-catch block is required here to handle the case 
+				// where the file has been deleted since the call to TraverseTree().
+				callback->Invoke(info, state);
+			}
+
+			// Now find all the subdirectories under this directory::
+			subDirs = root->GetDirectories();
+
+			for each(DirectoryInfo ^dirInfo in subDirs)
+			{
+				// Resursive call for each subdirectory::
+				walkDirectoryTree(dirInfo, callback, state);
+			}
+		}            
+	}
+
 };
 
 }

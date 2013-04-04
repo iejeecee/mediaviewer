@@ -90,7 +90,7 @@ protected:
 			module = avc->item_name(ptr);
 		}
 
-		std::string fullMessage = "LibAV";
+		std::string fullMessage = "FFMPEG";
 
 		if(module)
 		{

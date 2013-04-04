@@ -27,13 +27,32 @@ namespace XMPLib {
 	public ref class MetaData
 	{
 
+	public:
+
+		enum class LogLevel 
+		{
+			ERROR,
+			WARNING,
+			INFO
+		};
+
+		delegate void LogCallbackDelegate(LogLevel level, String ^message);
+
 	private:
 
 		XMPDLL::XMPFile *xmpFile;
 
+		static LogCallbackDelegate ^logCallback;
+
+		static void log(LogLevel level, String ^message);
+
 	public:
 
-		// TODO: Add your methods for this class here.
+		static MetaData() {
+
+			logCallback = nullptr;
+		}
+
 		MetaData();
 		~MetaData();
 
@@ -91,5 +110,6 @@ namespace XMPLib {
 		static void decodeFromBase64(String ^encodedStr,
 			String ^%rawStr); 
 
+		static void setLogCallback(LogCallbackDelegate ^callback);
 	};
 }

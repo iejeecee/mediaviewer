@@ -4,6 +4,11 @@
 #include "StdAfx.h"
 #include "XMPLib.h"
 #include <msclr\marshal_cppstd.h>
+#include "XMPLibException.h"
+
+#ifdef ERROR
+#undef ERROR
+#endif
 
 using namespace System;
 using namespace System::IO;
@@ -62,16 +67,58 @@ MetaData::~MetaData() {
 	}
 }
 
+void MetaData::setLogCallback(LogCallbackDelegate ^logCallback) {
+
+	MetaData::logCallback = logCallback;
+}
+
+void MetaData::log(MetaData::LogLevel level, String ^message) {
+
+	if(logCallback != nullptr) {
+
+		logCallback->Invoke(level, message);
+	}
+}
+
 bool MetaData::open(String ^filename, XMP_OptionBits options)
 {
-	bool result = xmpFile->open(marshal_as<std::string>(filename), options);
+	bool result = false;
+
+	try {
+
+		result = xmpFile->open(marshal_as<std::string>(filename), options);
+
+	} catch(XMP_Error &e) {	
+
+		XMPLibException ^managedException = 
+			gcnew XMPLibException("Cannot open " + filename + ": ", e.GetErrMsg());
+		log(MetaData::LogLevel::ERROR, managedException->Message);
+		
+		throw managedException;
+	}
 
 	return(result);
 }
 
 bool MetaData::dumpToDisk(String ^filename) {
 
-	return(xmpFile->dumpToDisk(marshal_as<std::string>(filename)));
+	bool result = false;
+
+	try {
+
+		result = xmpFile->dumpToDisk(marshal_as<std::string>(filename));
+
+	} catch(XMP_Error &e) {	
+
+		XMPLibException ^managedException = 
+			gcnew XMPLibException("Error dumping metadata to disk " + filename + ": ", 
+			e.GetErrMsg());
+		log(MetaData::LogLevel::ERROR, managedException->Message);
+		
+		throw managedException;
+	}
+
+	return(result);
 }
 
 bool MetaData::canPutXMP() 
@@ -83,11 +130,23 @@ void MetaData::putXMP()
 {
 	if(canPutXMP() == false) {
 		
-		throw gcnew Exception("Cannot write Meta Data");
+		throw gcnew XMPLibException("Writing MetaData not supported");
 
 	} else {
 
-		xmpFile->putXMP();
+		try {
+
+			xmpFile->putXMP();
+
+		} catch(XMP_Error &e) {			
+
+			XMPLibException ^managedException = 
+				gcnew XMPLibException("Cannot write Meta Data: ", e.GetErrMsg());
+			log(MetaData::LogLevel::ERROR, managedException->Message);
+			
+			throw managedException;
+			
+		}
 	}
 }
 

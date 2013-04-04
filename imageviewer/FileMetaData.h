@@ -517,14 +517,7 @@ public:
 
 		if(!String::IsNullOrEmpty(Title)) {
 
-			if(metaData->doesArrayItemExist(kXMP_NS_DC, "title", 1)) {
-
-				metaData->setArrayItem(kXMP_NS_DC, "title", 1, Title, 0);
-
-			} else {
-
-				metaData->appendArrayItem(kXMP_NS_DC, "title",  kXMP_PropArrayIsOrdered, Title, 0);
-			}
+			metaData->setLocalizedText(kXMP_NS_DC,"title","en", "en-US",Title);
 
 		}
 

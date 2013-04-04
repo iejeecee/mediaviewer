@@ -166,7 +166,10 @@ private:
 
 		} finally {
 
-			this->Invoke(gcnew loadPreviewDelegate(this, &MediaPreviewControl::loadPreview), args);		
+			if(!this->IsDisposed) {
+
+				this->Invoke(gcnew loadPreviewDelegate(this, &MediaPreviewControl::loadPreview), args);		
+			}
 		}
 
 	}

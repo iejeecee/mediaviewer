@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4832.42492, processorArchitecture=x86"
-			MinFrameworkVersion="131072"
+			AssemblyName="VideoLib, Version=1.0.4842.33663, processorArchitecture=x86"
+			MinFrameworkVersion="0"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4832.42493, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4842.33666, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -1042,6 +1042,18 @@
 				</File>
 				<File
 					RelativePath=".\TimerQueueTimer.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="MediaSearch"
+				>
+				<File
+					RelativePath=".\MediaSearch.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MediaSearchState.h"
 					>
 				</File>
 			</Filter>

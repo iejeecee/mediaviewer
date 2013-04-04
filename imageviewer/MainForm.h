@@ -65,6 +65,19 @@ namespace imageviewer {
 	private: System::Windows::Forms::ToolStripButton^  youtubeToolStripButton;
 	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator4;
 	private: System::Windows::Forms::ToolStripMenuItem^  logToolStripMenuItem;
+	private: System::Windows::Forms::ToolStripTextBox^  searchTextBox;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -100,6 +113,8 @@ namespace imageviewer {
 			System::Net::ServicePointManager::Expect100Continue = false;
 
 			System::Diagnostics::Process::GetCurrentProcess()->PriorityClass = System::Diagnostics::ProcessPriorityClass::RealTime;
+
+			XMPLib::MetaData::setLogCallback(gcnew XMPLib::MetaData::LogCallbackDelegate(this, &MainForm::metaData_logCallback));
 
 			//HRTimerTest::test();
 
@@ -160,19 +175,18 @@ namespace imageviewer {
 			this->openURLToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator3 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->settingsToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->logToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripSeparator2 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->exitToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->aboutToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->aboutToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->toolStripContainer1 = (gcnew System::Windows::Forms::ToolStripContainer());
-			this->videoPanel = (gcnew imageviewer::VideoPanelControl());
-			this->imagePanel = (gcnew imageviewer::ImagePanelControl());
-			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->toolStrip1 = (gcnew System::Windows::Forms::ToolStrip());
 			this->imageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->videoToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->imageFileBrowserToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->autoScaleToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
+			this->toolStripSeparator4 = (gcnew System::Windows::Forms::ToolStripSeparator());
 			this->youtubeToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->picasaToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->imageSearchToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
@@ -184,8 +198,10 @@ namespace imageviewer {
 			this->horizontalMirrorImageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImageMinToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImagePlusToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
-			this->toolStripSeparator4 = (gcnew System::Windows::Forms::ToolStripSeparator());
-			this->logToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->searchTextBox = (gcnew System::Windows::Forms::ToolStripTextBox());
+			this->videoPanel = (gcnew imageviewer::VideoPanelControl());
+			this->imagePanel = (gcnew imageviewer::ImagePanelControl());
+			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->menuStrip1->SuspendLayout();
 			this->toolStripContainer1->ContentPanel->SuspendLayout();
 			this->toolStripContainer1->SuspendLayout();
@@ -194,11 +210,11 @@ namespace imageviewer {
 			// 
 			// menuStrip1
 			// 
-			this->menuStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(2) {this->fileToolStripMenuItem, 
-				this->aboutToolStripMenuItem});
+			this->menuStrip1->Items->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(3) {this->fileToolStripMenuItem, 
+				this->aboutToolStripMenuItem, this->searchTextBox});
 			this->menuStrip1->Location = System::Drawing::Point(0, 0);
 			this->menuStrip1->Name = L"menuStrip1";
-			this->menuStrip1->Size = System::Drawing::Size(668, 29);
+			this->menuStrip1->Size = System::Drawing::Size(668, 32);
 			this->menuStrip1->TabIndex = 0;
 			this->menuStrip1->Text = L"menuStrip1";
 			// 
@@ -208,44 +224,51 @@ namespace imageviewer {
 				this->openURLToolStripMenuItem, this->toolStripSeparator3, this->settingsToolStripMenuItem, this->logToolStripMenuItem, this->toolStripSeparator2, 
 				this->exitToolStripMenuItem});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
-			this->fileToolStripMenuItem->Size = System::Drawing::Size(48, 25);
+			this->fileToolStripMenuItem->Size = System::Drawing::Size(48, 28);
 			this->fileToolStripMenuItem->Text = L"File";
 			// 
 			// openToolStripMenuItem
 			// 
 			this->openToolStripMenuItem->Name = L"openToolStripMenuItem";
-			this->openToolStripMenuItem->Size = System::Drawing::Size(226, 26);
+			this->openToolStripMenuItem->Size = System::Drawing::Size(154, 26);
 			this->openToolStripMenuItem->Text = L"Open";
 			this->openToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::openToolStripMenuItem_Click);
 			// 
 			// openURLToolStripMenuItem
 			// 
 			this->openURLToolStripMenuItem->Name = L"openURLToolStripMenuItem";
-			this->openURLToolStripMenuItem->Size = System::Drawing::Size(226, 26);
+			this->openURLToolStripMenuItem->Size = System::Drawing::Size(154, 26);
 			this->openURLToolStripMenuItem->Text = L"Open URL";
 			this->openURLToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::openURLToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator3
 			// 
 			this->toolStripSeparator3->Name = L"toolStripSeparator3";
-			this->toolStripSeparator3->Size = System::Drawing::Size(223, 6);
+			this->toolStripSeparator3->Size = System::Drawing::Size(151, 6);
 			// 
 			// settingsToolStripMenuItem
 			// 
 			this->settingsToolStripMenuItem->Name = L"settingsToolStripMenuItem";
-			this->settingsToolStripMenuItem->Size = System::Drawing::Size(226, 26);
+			this->settingsToolStripMenuItem->Size = System::Drawing::Size(154, 26);
 			this->settingsToolStripMenuItem->Text = L"Settings";
 			this->settingsToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::settingsToolStripMenuItem_Click);
+			// 
+			// logToolStripMenuItem
+			// 
+			this->logToolStripMenuItem->Name = L"logToolStripMenuItem";
+			this->logToolStripMenuItem->Size = System::Drawing::Size(154, 26);
+			this->logToolStripMenuItem->Text = L"Log";
+			this->logToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::logToolStripMenuItem_Click);
 			// 
 			// toolStripSeparator2
 			// 
 			this->toolStripSeparator2->Name = L"toolStripSeparator2";
-			this->toolStripSeparator2->Size = System::Drawing::Size(223, 6);
+			this->toolStripSeparator2->Size = System::Drawing::Size(151, 6);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this->exitToolStripMenuItem->Name = L"exitToolStripMenuItem";
-			this->exitToolStripMenuItem->Size = System::Drawing::Size(226, 26);
+			this->exitToolStripMenuItem->Size = System::Drawing::Size(154, 26);
 			this->exitToolStripMenuItem->Text = L"Exit";
 			this->exitToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::exitToolStripMenuItem_Click);
 			// 
@@ -253,13 +276,13 @@ namespace imageviewer {
 			// 
 			this->aboutToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) {this->aboutToolStripMenuItem1});
 			this->aboutToolStripMenuItem->Name = L"aboutToolStripMenuItem";
-			this->aboutToolStripMenuItem->Size = System::Drawing::Size(55, 25);
+			this->aboutToolStripMenuItem->Size = System::Drawing::Size(55, 28);
 			this->aboutToolStripMenuItem->Text = L"Help";
 			// 
 			// aboutToolStripMenuItem1
 			// 
 			this->aboutToolStripMenuItem1->Name = L"aboutToolStripMenuItem1";
-			this->aboutToolStripMenuItem1->Size = System::Drawing::Size(152, 26);
+			this->aboutToolStripMenuItem1->Size = System::Drawing::Size(124, 26);
 			this->aboutToolStripMenuItem1->Text = L"About";
 			this->aboutToolStripMenuItem1->Click += gcnew System::EventHandler(this, &MainForm::aboutToolStripMenuItem1_Click);
 			// 
@@ -271,45 +294,13 @@ namespace imageviewer {
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->videoPanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imagePanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imageFileBrowser);
-			this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(668, 458);
+			this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(668, 455);
 			this->toolStripContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->toolStripContainer1->Location = System::Drawing::Point(0, 54);
+			this->toolStripContainer1->Location = System::Drawing::Point(0, 57);
 			this->toolStripContainer1->Name = L"toolStripContainer1";
-			this->toolStripContainer1->Size = System::Drawing::Size(668, 483);
+			this->toolStripContainer1->Size = System::Drawing::Size(668, 480);
 			this->toolStripContainer1->TabIndex = 1;
 			this->toolStripContainer1->Text = L"toolStripContainer1";
-			// 
-			// videoPanel
-			// 
-			this->videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->videoPanel->Location = System::Drawing::Point(0, 0);
-			this->videoPanel->Name = L"videoPanel";
-			this->videoPanel->Size = System::Drawing::Size(668, 458);
-			this->videoPanel->TabIndex = 2;
-			// 
-			// imagePanel
-			// 
-			this->imagePanel->AutoScroll = true;
-			this->imagePanel->CropStage = imageviewer::ImagePanelControl::CropStageState::DISABLED;
-			this->imagePanel->Cursor = System::Windows::Forms::Cursors::Cross;
-			this->imagePanel->DisplayMode = imageviewer::ImagePanelControl::DisplayModeState::NORMAL;
-			this->imagePanel->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->imagePanel->Location = System::Drawing::Point(0, 0);
-			this->imagePanel->Name = L"imagePanel";
-			this->imagePanel->Size = System::Drawing::Size(668, 458);
-			this->imagePanel->TabIndex = 0;
-			this->imagePanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::imagePanel_PreviewKeyDown);
-			this->imagePanel->LoadImageFinished += gcnew System::EventHandler<System::EventArgs^ >(this, &MainForm::imagePanel_LoadImageFinished);
-			// 
-			// imageFileBrowser
-			// 
-			this->imageFileBrowser->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->imageFileBrowser->Location = System::Drawing::Point(0, 0);
-			this->imageFileBrowser->Name = L"imageFileBrowser";
-			this->imageFileBrowser->Size = System::Drawing::Size(668, 458);
-			this->imageFileBrowser->TabIndex = 1;
-			this->imageFileBrowser->OnChangeBrowseDirectory += gcnew imageviewer::ImageFileBrowserControl::ChangeBrowseDirectoryEventHandler(this, &MainForm::imageFileBrowser_ChangeBrowseDirectoryEvent);
-			this->imageFileBrowser->OnViewEvent += gcnew imageviewer::ImageFileBrowserControl::ImageFileBrowserEventHandler(this, &MainForm::imageFileBrowser_ViewEvent);
 			// 
 			// toolStrip1
 			// 
@@ -318,7 +309,7 @@ namespace imageviewer {
 				this->youtubeToolStripButton, this->picasaToolStripButton, this->imageSearchToolStripButton, this->toolStripSeparator1, this->saveImageToolStripButton, 
 				this->resizeImageToolStripButton, this->cropImageToolStripButton, this->verticalMirrorImageToolStripButton, this->horizontalMirrorImageToolStripButton, 
 				this->rotateImageMinToolStripButton, this->rotateImagePlusToolStripButton});
-			this->toolStrip1->Location = System::Drawing::Point(0, 29);
+			this->toolStrip1->Location = System::Drawing::Point(0, 32);
 			this->toolStrip1->Name = L"toolStrip1";
 			this->toolStrip1->Size = System::Drawing::Size(668, 25);
 			this->toolStrip1->TabIndex = 2;
@@ -374,6 +365,11 @@ namespace imageviewer {
 			this->autoScaleToolStripButton->Text = L"toolStripButton1";
 			this->autoScaleToolStripButton->ToolTipText = L"Auto Scale Image";
 			this->autoScaleToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::autoScaleToolStripButton_Click);
+			// 
+			// toolStripSeparator4
+			// 
+			this->toolStripSeparator4->Name = L"toolStripSeparator4";
+			this->toolStripSeparator4->Size = System::Drawing::Size(6, 25);
 			// 
 			// youtubeToolStripButton
 			// 
@@ -491,17 +487,48 @@ namespace imageviewer {
 			this->rotateImagePlusToolStripButton->Text = L"Rotate Image 90 Degrees";
 			this->rotateImagePlusToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::rotateImagePlusToolStripButton_Click);
 			// 
-			// toolStripSeparator4
+			// searchTextBox
 			// 
-			this->toolStripSeparator4->Name = L"toolStripSeparator4";
-			this->toolStripSeparator4->Size = System::Drawing::Size(6, 25);
+			this->searchTextBox->Alignment = System::Windows::Forms::ToolStripItemAlignment::Right;
+			this->searchTextBox->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->searchTextBox->Name = L"searchTextBox";
+			this->searchTextBox->Size = System::Drawing::Size(100, 28);
+			this->searchTextBox->Text = L"Search";
+			this->searchTextBox->ToolTipText = L"Search";
+			this->searchTextBox->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MainForm::searchTextBox_KeyDown);
 			// 
-			// logToolStripMenuItem
+			// videoPanel
 			// 
-			this->logToolStripMenuItem->Name = L"logToolStripMenuItem";
-			this->logToolStripMenuItem->Size = System::Drawing::Size(154, 26);
-			this->logToolStripMenuItem->Text = L"Log";
-			this->logToolStripMenuItem->Click += gcnew System::EventHandler(this, &MainForm::logToolStripMenuItem_Click);
+			this->videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->videoPanel->Location = System::Drawing::Point(0, 0);
+			this->videoPanel->Name = L"videoPanel";
+			this->videoPanel->Size = System::Drawing::Size(668, 455);
+			this->videoPanel->TabIndex = 2;
+			this->videoPanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::videoPanel_PreviewKeyDown);
+			// 
+			// imagePanel
+			// 
+			this->imagePanel->AutoScroll = true;
+			this->imagePanel->CropStage = imageviewer::ImagePanelControl::CropStageState::DISABLED;
+			this->imagePanel->Cursor = System::Windows::Forms::Cursors::Cross;
+			this->imagePanel->DisplayMode = imageviewer::ImagePanelControl::DisplayModeState::NORMAL;
+			this->imagePanel->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->imagePanel->Location = System::Drawing::Point(0, 0);
+			this->imagePanel->Name = L"imagePanel";
+			this->imagePanel->Size = System::Drawing::Size(668, 455);
+			this->imagePanel->TabIndex = 0;
+			this->imagePanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::imagePanel_PreviewKeyDown);
+			this->imagePanel->LoadImageFinished += gcnew System::EventHandler<System::EventArgs^ >(this, &MainForm::imagePanel_LoadImageFinished);
+			// 
+			// imageFileBrowser
+			// 
+			this->imageFileBrowser->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->imageFileBrowser->Location = System::Drawing::Point(0, 0);
+			this->imageFileBrowser->Name = L"imageFileBrowser";
+			this->imageFileBrowser->Size = System::Drawing::Size(668, 455);
+			this->imageFileBrowser->TabIndex = 1;
+			this->imageFileBrowser->OnChangeBrowseDirectory += gcnew imageviewer::ImageFileBrowserControl::ChangeBrowseDirectoryEventHandler(this, &MainForm::imageFileBrowser_ChangeBrowseDirectoryEvent);
+			this->imageFileBrowser->OnViewEvent += gcnew imageviewer::ImageFileBrowserControl::ImageFileBrowserEventHandler(this, &MainForm::imageFileBrowser_ViewEvent);
 			// 
 			// MainForm
 			// 
@@ -1132,7 +1159,50 @@ private: System::Void imagePanel_PreviewKeyDown(System::Object^  sender, System:
 
 			 } else if(e->KeyCode == Keys::Delete) {
 
-					 //deleteImages();
+				 if(imagePanel->IsEmpty || imagePanel->IsWebImage) return;
+
+				 System::Windows::Forms::DialogResult result = MessageBox::Show("Delete:\n\n" + imagePanel->ImageLocation, "Delete Image?",
+					 MessageBoxButtons::YesNoCancel, MessageBoxIcon::Question);
+
+				 if(result == System::Windows::Forms::DialogResult::Yes) {
+
+					 try {
+
+						File::Delete(imagePanel->ImageLocation);
+						imageFileBrowser->setNextImageFile();
+
+					 } catch (Exception ^e) {
+
+						 MessageBox::Show("Error deleting file: " + e->Message);
+					 }
+				 } 
+			 }
+		 }
+
+private: System::Void videoPanel_PreviewKeyDown(System::Object^  sender, System::Windows::Forms::PreviewKeyDownEventArgs^  e) {
+
+			 if(videoPanel->Visible == false) return;
+
+			 if(e->KeyCode == Keys::Delete) {
+
+				 if(String::IsNullOrEmpty(videoPanel->VideoLocation) ||
+					 Util::isUrl(videoPanel->VideoLocation)) return;
+
+				 System::Windows::Forms::DialogResult result = MessageBox::Show("Delete:\n\n" + videoPanel->VideoLocation, "Delete Video?",
+					 MessageBoxButtons::YesNoCancel, MessageBoxIcon::Question);
+
+				 if(result == System::Windows::Forms::DialogResult::Yes) {
+
+					 try {
+
+						videoPanel->close();
+						File::Delete(videoPanel->VideoLocation);
+
+					 } catch (Exception ^e) {
+
+						 MessageBox::Show("Error deleting file: " + e->Message);
+					 }
+				 } 
 			 }
 		 }
 private: System::Void videoToolStripButton_Click(System::Object^  sender, System::EventArgs^  e) {
@@ -1161,6 +1231,37 @@ private: System::Void youtubeToolStripButton_Click(System::Object^  sender, Syst
 			 youtube->Show();
 		 }
 private: System::Void logToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+
+private: void metaData_logCallback(XMPLib::MetaData::LogLevel level, String ^message) {
+
+			 switch(level) {
+
+				 case XMPLib::MetaData::LogLevel::ERROR:
+					 {
+						 log->Error(message);
+						 break;
+					 }
+				 case XMPLib::MetaData::LogLevel::WARNING:
+					 {
+
+						 log->Warn(message);
+						 break;
+					 }
+				 case XMPLib::MetaData::LogLevel::INFO:
+					 {
+
+						 log->Info(message);
+						 break;
+					 }
+				 default:
+					 {
+						 System::Diagnostics::Debug::Assert(false);
+					 }
+			 }
+		 }
+
+private: System::Void searchTextBox_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
 		 }
 };
 }

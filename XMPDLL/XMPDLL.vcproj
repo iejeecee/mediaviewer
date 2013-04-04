@@ -65,6 +65,7 @@
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="&quot;C:\game\XMP-Toolkit-SDK-5.1.2\public\libraries\windows\debug&quot;"
 				GenerateDebugInformation="true"
+				AssemblyDebug="0"
 				SubSystem="1"
 				TargetMachine="1"
 			/>

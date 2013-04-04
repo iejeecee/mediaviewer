@@ -38,6 +38,8 @@ namespace VideoLib {
 		bool audioPacketsClosed;
 		bool videoPacketsClosed;
 
+		AutoResetEvent ^videoFrameDecoded;
+
 		double synchronizeVideo(int repeatFrame, __int64 dts) {
 
 			double pts;
@@ -91,8 +93,8 @@ namespace VideoLib {
 			videoPacketsClosed = true;
 			if(audioPacketsClosed == true) {
 
-				// send framequeue is closed event once both the
-				// audio and video packet queue is closed
+				// send framequeue closed event when and only when both 
+				// audio and video packet queues are closed
 				Closed(this, EventArgs::Empty);
 				videoPacketsClosed = false;
 				audioPacketsClosed = false;
@@ -104,8 +106,8 @@ namespace VideoLib {
 			audioPacketsClosed = true;
 			if(videoPacketsClosed == true) {
 
-				// send framequeue is closed event once both the
-				// audio and video packet queue is closed
+				// send framequeue closed event when and only when both 
+				// audio and video packet queues are closed
 				Closed(this, EventArgs::Empty);
 				videoPacketsClosed = false;
 				audioPacketsClosed = false;
@@ -146,6 +148,8 @@ namespace VideoLib {
 
 			audioPacketsClosed = false;
 			videoPacketsClosed = false;
+
+			videoFrameDecoded = gcnew AutoResetEvent(false);
 		}
 
 		~FrameQueue() {
@@ -249,7 +253,7 @@ namespace VideoLib {
 
 		void stop() {
 
-			// stop each queue in turn and wait for it to actually be stopped
+			// stop each queue in turn and wait for the threads to actually stop
 			if(freePackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
 				freePackets->stop();
 				freePackets->Stopped->WaitOne();
@@ -330,7 +334,7 @@ namespace VideoLib {
 
 		void addFreePacket(Packet ^packet) {
 
-			// free packet data before inserting them back into freepackets
+			// free packet data before inserting it back into freepackets
 			packet->free();
 			freePackets->add(packet);
 		}
@@ -345,6 +349,33 @@ namespace VideoLib {
 			audioPackets->add(packet);
 		}
 
+		// allow one video frame to decode while the queue is in 
+/*		// a blocked state
+		void decodeNextVideoFrame() {
+
+			ThreadSafeQueue<Packet ^>::State videoQueueState = videoPackets->QueueState;
+
+			if(videoQueueState == ThreadSafeQueue<Packet ^>::State::OPEN) {
+
+				return;
+			}
+
+			videoFrameDecoded->Reset();
+			videoQueueState->open();			
+			videoFrameDecoded->WaitOne();
+
+			// ISSUE: cannot guarantee that only one frame passes trough ..
+			if(videoQueueState == ThreadSafeQueue<Packet ^>::State::STOPPED) {
+
+				videoQueue->stop();
+
+			} else {
+
+				videoQueue->pause();
+			}
+
+		}
+*/
 		VideoFrame ^getDecodedVideoFrame() {
 
 			int frameFinished = 0;
@@ -388,6 +419,7 @@ namespace VideoLib {
 				addFreePacket(videoPacket);
 			}
 
+
 			return(convertedVideoFrame);
 
 
@@ -422,12 +454,16 @@ namespace VideoLib {
 
 					SwrContext *acc = videoDecoder->getAudioConvertContext();
 
+					// convert audio to a packed format ready for playback
 					int numSamplesOut = swr_convert(acc,
 							convertedAudioFrame->AVLibFrameData->data,
                             audioFrame->AVLibFrameData->nb_samples,
                             (const unsigned char**)audioFrame->AVLibFrameData->extended_data,
                             audioFrame->AVLibFrameData->nb_samples);
 
+					// audio length does not equal linesize, because some extra 
+					// padding bytes may be added for alignment.
+					// Instead av_samples_get_buffer_size needs to be used
 					convertedAudioFrame->Length = av_samples_get_buffer_size(NULL, 
 						videoDecoder->getAudioNrChannels(), 
 						numSamplesOut,

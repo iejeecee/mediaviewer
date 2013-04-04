@@ -8,11 +8,14 @@ using namespace System::Windows::Forms;
 using namespace System::Collections::Generic;
 using namespace System::Drawing;
 using namespace System::Runtime::InteropServices;
+using namespace System::IO;
 
 
 public ref class WindowsUtils 
 {
 private:
+
+  static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
   static const int TBM_GETCHANNELRECT = 0x400 + 26;
   static const int TBM_GETTHUMBRECT = 0x400 + 25;
@@ -83,6 +86,6 @@ public:
 
 		return(openFileDialog);
 	}
-};
 
+};
 }
