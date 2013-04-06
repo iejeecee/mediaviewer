@@ -116,6 +116,10 @@ protected:
 			if(videoSupportsXMPMetaData()) {
 
 				MediaFile::readMetaData();
+
+			} else {
+
+				metaDataError = gcnew Exception("Metadata not supported for this format");
 			}
 
 		} catch (Exception ^e) {

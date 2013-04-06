@@ -11,6 +11,7 @@ public ref class MediaSearchState
 private:
 
 	List<String ^> ^tags;
+	List<FileInfo ^> ^mediaFiles;
 	List<FileInfo ^> ^matches;
 
 public:
@@ -19,6 +20,7 @@ public:
 
 		tags = gcnew List<String ^>();
 		matches = gcnew List<FileInfo ^>();
+		mediaFiles = gcnew List<FileInfo ^>();
 	}
   
 	property List<String ^> ^Tags {
@@ -26,6 +28,14 @@ public:
 		List<String ^> ^get() {
 
 			return(tags);
+		}
+	}
+
+	property List<FileInfo ^> ^MediaFiles {
+
+		List<FileInfo ^> ^get() {
+
+			return(mediaFiles);
 		}
 	}
 

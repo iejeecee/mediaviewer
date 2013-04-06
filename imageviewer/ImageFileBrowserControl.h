@@ -8,6 +8,7 @@
 #include "MediaInfoForm.h"
 #include "GeoTagForm.h"
 #include "Util.h"
+#include "MediaSearchState.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -322,6 +323,19 @@ namespace imageviewer {
 				imageGrid->initializeImageData(imageData);
 
 				OnChangeBrowseDirectory(this, EventArgs::Empty);
+			}
+
+	public: void displayMediaSearchResult(MediaSearchState ^state) {
+
+				List<ImageGridItem ^> ^mediaData = gcnew List<ImageGridItem ^>();
+
+				for each(FileInfo ^info in state->Matches) {
+
+					ImageGridItem ^item = fileInfoToImageGridItem(info->FullName);				
+					mediaData->Add(item);
+				}	
+
+				imageGrid->initializeImageData(mediaData);
 			}
 
 	public: String ^getBrowsePath() {

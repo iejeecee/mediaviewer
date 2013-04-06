@@ -17,6 +17,7 @@
 #include "VideoPanelControl.h"
 #include "Settings.h"
 #include "YoutubeForm.h"
+#include "MediaSearch.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -1262,6 +1263,19 @@ private: void metaData_logCallback(XMPLib::MetaData::LogLevel level, String ^mes
 		 }
 
 private: System::Void searchTextBox_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+
+			 if(e->KeyCode == Keys::Enter) {
+
+				 MediaSearch ^search = gcnew MediaSearch();
+
+				 String ^query = searchTextBox->Text;
+
+				 MediaSearchState ^result = search->searchDirectory(imageFileBrowser->getBrowsePath(), query);
+
+				 imageFileBrowser->displayMediaSearchResult(result);
+
+
+			 }
 		 }
 };
 }

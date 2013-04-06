@@ -282,6 +282,11 @@
 			AssemblyName="Microsoft.DirectX.DirectSound, Version=1.0.2902.0, PublicKeyToken=31bf3856ad364e35, processorArchitecture=x86"
 			MinFrameworkVersion="0"
 		/>
+		<AssemblyReference
+			RelativePath="MySql.Data.dll"
+			AssemblyName="MySql.Data, Version=6.5.6.0, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"
+			MinFrameworkVersion="0"
+		/>
 	</References>
 	<Files>
 		<Filter
@@ -942,6 +947,10 @@
 				>
 				<File
 					RelativePath=".\Database.h"
+					>
+				</File>
+				<File
+					RelativePath=".\MySQL.h"
 					>
 				</File>
 				<File
