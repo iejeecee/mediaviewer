@@ -12,6 +12,15 @@ using namespace System::Collections::Generic;
 public ref class MediaFile abstract : public EventArgs
 {
 
+public:
+
+	enum class MetaDataMode
+	{
+		AUTO,
+		LOAD_FROM_DISK,
+		LOAD_FROM_DATABASE
+	};
+
 protected:
 
 	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
@@ -33,6 +42,8 @@ protected:
 
 	Object ^userState;
 
+	MetaDataMode mode;
+
 	MediaFile() {
 
 		location = nullptr;
@@ -42,14 +53,15 @@ protected:
 		openError = nullptr;
 		metaDataError = nullptr;
 		userState = nullptr;
-
+		mode = MetaDataMode::AUTO;
 	}
 
-	MediaFile(String ^location, String ^mimeType, Stream ^data) {
+	MediaFile(String ^location, String ^mimeType, Stream ^data, MetaDataMode mode) {
 
 		this->location = location;
 		this->data = data;
 		this->mimeType = mimeType;
+		this->mode = mode;
 
 		metaData = nullptr;
 		openError = nullptr;
@@ -67,7 +79,34 @@ protected:
 
 			if(Util::isUrl(Location) == false) {
 
-				MetaData = gcnew FileMetaData(Location);	
+				MetaData = gcnew FileMetaData();	
+
+				switch(mode) {
+					case MetaDataMode::AUTO:
+						{
+
+							MetaData->load(Location);
+							break;
+						}
+					case MetaDataMode::LOAD_FROM_DATABASE:
+						{
+
+							MetaData->loadFromDataBase(Location);
+							break;
+						}
+					case MetaDataMode::LOAD_FROM_DISK:
+						{
+
+							MetaData->loadFromDisk(Location);
+							break;
+						}
+					default:
+						{
+							System::Diagnostics::Debug::Assert(false);
+							break;
+						}
+
+				}
 			}
 
 		} catch (Exception ^e) {

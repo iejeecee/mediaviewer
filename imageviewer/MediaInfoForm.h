@@ -1004,117 +1004,112 @@ public:
 			media->Clear();
 			openFailure = nullptr;
 
-		
+			for each(String ^fileName in fileNames) {
 
-				for each(String ^fileName in fileNames) {
+				MediaFile ^mediaFile = MediaFileFactory::openBlocking(fileName,
+					MediaFile::MetaDataMode::LOAD_FROM_DISK);				
+				if(mediaFile->OpenSuccess == false) {
 
-					MediaFile ^mediaFile = MediaFileFactory::openBlocking(fileName);				
-					if(mediaFile->OpenSuccess == false) {
+					openFailure = mediaFile->OpenError;
+					return;
 
-						openFailure = mediaFile->OpenError;
-						return;
+				} else if(mediaFile->MetaDataError) {
 
-					} else if(mediaFile->MetaDataError) {
-
-						openFailure = mediaFile->MetaDataError;
-						return;
-					}
-
-					media->Add(mediaFile);
-
+					openFailure = mediaFile->MetaDataError;
+					return;
 				}
 
-				if(media->Count == 1) {
+				media->Add(mediaFile);
 
-					Text = Path::GetFileName(fileNames[0]) + " - Metadata";
-					IsBatch = false;
+			}
 
-					if(media[0]->MetaData->Thumbnail->Count > 0) {
+			if(media->Count == 1) {
 
-						Thumbnail = media[0]->MetaData->Thumbnail[0];
-					}
+				Text = Path::GetFileName(fileNames[0]) + " - Metadata";
+				IsBatch = false;
 
-				} else {
+				if(media[0]->MetaData->Thumbnail->Count > 0) {
 
-					Text = Convert::ToString(media->Count) + " files - Combined Metadata";
-					IsBatch = true;
+					Thumbnail = media[0]->MetaData->Thumbnail[0];
 				}
 
+			} else {
 
-				MetaDataTreeNode ^tree = media[0]->MetaData->Tree;
+				Text = Convert::ToString(media->Count) + " files - Combined Metadata";
+				IsBatch = true;
+			}
 
-				for(int i = 1; i < media->Count; i++) {
 
-					MetaDataTreeNode ^tempTree = media[i]->MetaData->Tree;
+			MetaDataTreeNode ^tree = media[0]->MetaData->Tree;
 
-					tree = tree->intersection(tempTree);
+			for(int i = 1; i < media->Count; i++) {
 
-				}			
+				MetaDataTreeNode ^tempTree = media[i]->MetaData->Tree;
 
-				MetaDataTreeArray ^arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:title"));
-				if(arr != nullptr && arr->Count > 0) {
-					Title = arr[0]->Data;
+				tree = tree->intersection(tempTree);
+
+			}			
+
+			MetaDataTreeArray ^arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:title"));
+			if(arr != nullptr && arr->Count > 0) {
+				Title = arr[0]->Data;
+			}
+
+			arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:description"));
+			if(arr != nullptr && arr->Count > 0) {
+				Description = arr[0]->Data;
+			}
+
+			arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:creator"));
+			if(arr != nullptr && arr->Count > 0) {
+				Author = arr[0]->Data;
+			}
+
+			arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:rights"));
+			if(arr != nullptr && arr->Count > 0) {
+				Copyright = arr[0]->Data;
+			}
+
+			MetaDataTreeProperty ^prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreatorTool"));
+			if(prop != nullptr) {
+				CreatorTool = prop->Value;
+			}
+
+			prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:MetadataDate"));
+			if(prop != nullptr) {
+				MetaDataDate = MetaData::convertToDate(prop->Value);
+			} else {
+				MetaDataDate = DateTime::MinValue;
+			}
+
+			prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreateDate"));
+			if(prop != nullptr) {
+				CreateDate = MetaData::convertToDate(prop->Value);
+			} else {
+				CreateDate = DateTime::MinValue;
+			}
+
+			prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:ModifyDate"));
+			if(prop != nullptr) {
+				ModifyDate = MetaData::convertToDate(prop->Value);
+			} else {
+				ModifyDate = DateTime::MinValue;
+			}
+
+			List<String ^> ^tags = gcnew List<String ^>();
+
+			arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:subject"));
+			if(arr != nullptr) {
+
+				for each(MetaDataTreeNode ^n in arr->Child) {
+
+					tags->Add(n->Data);
 				}
+			}
 
-				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:description"));
-				if(arr != nullptr && arr->Count > 0) {
-					Description = arr[0]->Data;
-				}
+			Misc = tree;				
+			Tags = tags;
 
-				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:creator"));
-				if(arr != nullptr && arr->Count > 0) {
-					Author = arr[0]->Data;
-				}
-
-				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:rights"));
-				if(arr != nullptr && arr->Count > 0) {
-					Copyright = arr[0]->Data;
-				}
-
-				MetaDataTreeProperty ^prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreatorTool"));
-				if(prop != nullptr) {
-					CreatorTool = prop->Value;
-				}
-
-				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:MetadataDate"));
-				if(prop != nullptr) {
-					MetaDataDate = MetaData::convertToDate(prop->Value);
-				} else {
-					MetaDataDate = DateTime::MinValue;
-				}
-
-				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:CreateDate"));
-				if(prop != nullptr) {
-					CreateDate = MetaData::convertToDate(prop->Value);
-				} else {
-					CreateDate = DateTime::MinValue;
-				}
-
-				prop = dynamic_cast<MetaDataTreeProperty ^>(tree->getNode("xmp:ModifyDate"));
-				if(prop != nullptr) {
-					ModifyDate = MetaData::convertToDate(prop->Value);
-				} else {
-					ModifyDate = DateTime::MinValue;
-				}
-
-				List<String ^> ^tags = gcnew List<String ^>();
-
-				arr = dynamic_cast<MetaDataTreeArray ^>(tree->getNode("dc:subject"));
-				if(arr != nullptr) {
-
-					for each(MetaDataTreeNode ^n in arr->Child) {
-
-						tags->Add(n->Data);
-					}
-				}
-
-				Misc = tree;				
-				Tags = tags;
-
-		
-
-				
-			
 		}
 
 		List<String ^> ^get() {

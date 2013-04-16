@@ -10,6 +10,7 @@ using namespace System;
 using namespace System::Drawing;
 using namespace System::IO;
 using namespace XMPLib;
+namespace Data = MediaDatabase;
 
 public ref class MetaDataThumb
 {
@@ -196,16 +197,156 @@ private:
 		}
 	}
 
-public:
-
-	FileMetaData(String ^filePath) {
+	void initialize(String ^filePath) {
 
 		this->filePath = filePath;
+		title = "";
+		description = "";
+		creator = "";
+		creatorTool = "";
+		copyright = "";
 		thumbnail = gcnew List<MetaDataThumb ^>();
+		tags = gcnew List<String ^>();
+		creationDate = DateTime::MinValue;
+		modifiedDate = DateTime::MinValue;
+		metaDataDate = DateTime::MinValue;
+
+		geoTag = gcnew GeoTagCoordinatePair();
+		hasGeoTag = false;
+
 		tree = nullptr;
+		metaData = nullptr;
+
+	}
+
+	void initVarsFromDatabaseItem(Data::Media ^item) {
+
+		FilePath = item->Location;
+
+		if(item->Title != nullptr) {
+
+			Title = item->Title;
+		}
+
+		if(item->Description != nullptr) {
+
+			Description = item->Description;
+		}
+
+		if(item->Author != nullptr) {
+
+			Creator = item->Author;
+		}
+
+		if(item->Copyright != nullptr) {
+
+			Copyright = item->Copyright;
+		}
+
+		if(item->CreatorTool != nullptr) {
+
+			CreatorTool = item->CreatorTool;
+		}
+
+		if(item->MetaDataModified.HasValue) {
+
+			ModifiedDate = item->MetaDataModified.Value;
+		}
+
+		if(item->MetaDataDate.HasValue) {
+
+			MetaDataDate = item->MetaDataDate.Value;
+		}
+		
+		if(item->MetaDataCreated.HasValue) {
+
+			CreationDate = item->MetaDataCreated.Value;
+		}
+
+		if(item->Longitude != nullptr && item->Latitude != nullptr) {
+
+			hasGeoTag = true;
+			GeoTag->longitude->Coord = item->Longitude;
+			GeoTag->latitude->Coord = item->Latitude;
+		}
+
+		for each(Data::MediaTag ^mediaTag in item->MediaTag) {
+
+			Tags->Add(mediaTag->Tag);
+		}
+
+		for each(Data::MediaTag ^mediaTag in item->MediaTag) {
+
+			Tags->Add(mediaTag->Tag);
+		}
+
+		for each(Data::MediaThumb ^mediaThumb in item->MediaThumb) {
+			
+			MemoryStream ^stream = gcnew MemoryStream(mediaThumb->ImageData->ToArray());
+
+			MetaDataThumb ^thumb = gcnew MetaDataThumb(stream);
+
+			Thumbnail->Add(thumb);
+		}
+	}
+
+public:
+
+	FileMetaData() {		
+
+		initialize("");
+	}
+
+	FileMetaData(Data::Media ^media) {		
+
+		initialize("");
+
+		initVarsFromDatabaseItem(media);
+	}
+
+
+	void load(String ^filePath) {
+
+		initialize(filePath);
+
+		Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
+
+		Data::Media ^item = mediaTable->getMediaByLocation(filePath);
+
+		FileInfo ^file = gcnew FileInfo(filePath);
+
+		if(item == nullptr || item->LastWriteTime < file->LastWriteTime.Ticks) {
+
+			loadFromDisk(filePath);
+
+		} else {
+
+			initVarsFromDatabaseItem(item);
+		}
+		
+	}
+
+	bool loadFromDataBase(String ^filePath) {
+
+		initialize(filePath);
+
+		Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
+
+		Data::Media ^item = mediaTable->getMediaByLocation(filePath);
+
+		if(item == nullptr) return(false);
+
+		initVarsFromDatabaseItem(item);
+		
+		return(true);
+	}
+
+	void loadFromDisk(String ^filePath) {
+
+		initialize(filePath);
 
 		metaData = gcnew MetaData();
-
+				
 		if(metaData->open(filePath, kXMPFiles_OpenForRead) == false) {
 
 			throw gcnew Exception("Cannot open metadata for: " + filePath);
@@ -215,11 +356,8 @@ public:
 		readThumbnails();
 	
 		String ^temp = "";
-		bool exists = false;
-		hasGeoTag = false;
-		geoTag = gcnew GeoTagCoordinatePair();
 
-		exists = metaData->getLocalizedText(kXMP_NS_DC, "title", "en", "en-US", temp);
+		bool exists = metaData->getLocalizedText(kXMP_NS_DC, "title", "en", "en-US", temp);
 		if(exists) {
 
 			Title = temp;
@@ -253,24 +391,21 @@ public:
 
 		exists = metaData->getProperty_Date(kXMP_NS_XMP, "MetadataDate", propValue);
 		if(exists) {
+
 			MetaDataDate = propValue;
-		} else {
-			MetaDataDate = DateTime::MinValue;
-		}
+		} 
 
 		exists = metaData->getProperty_Date(kXMP_NS_XMP, "CreateDate", propValue);
 		if(exists) {
+
 			CreationDate = propValue;
-		} else {
-			CreationDate = DateTime::MinValue;
-		}
+		} 
 
 		exists = metaData->getProperty_Date(kXMP_NS_XMP, "ModifyDate", propValue);
 		if(exists) {
+
 			ModifiedDate = propValue;
-		} else {
-			ModifiedDate = DateTime::MinValue;
-		}
+		} 
 
 		if(metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude"))
 		{
@@ -320,7 +455,7 @@ public:
 					
 			hasGeoTag = true;
 		}
-
+		
 	}
 
 	~FileMetaData() {
@@ -502,6 +637,134 @@ public:
 		}
 	}
 
+	void save() {
+
+		saveToDatabase();
+		saveToDisk();
+	}
+
+	virtual void saveToDatabase() {
+
+		bool insert = false;
+
+		Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
+
+		Data::Media ^item = mediaTable->getMediaByLocation(filePath);
+
+		if(item == nullptr) {
+
+			insert = true;
+			item = gcnew Data::Media();
+			item->Location = FilePath;
+			item->CanStoreMetaData = 1;
+
+			FileInfo ^info = gcnew FileInfo(FilePath);
+			item->LastWriteTime = info->LastWriteTime.Ticks;
+		}
+
+
+		if(!String::IsNullOrEmpty(Title)) {
+
+			item->Title = Title;
+
+		} else {
+
+			item->Title = nullptr;
+		}
+
+		if(!String::IsNullOrEmpty(Description)) {
+
+			item->Description = Description;
+
+		} else {
+
+			item->Description = nullptr;
+		}
+
+		if(!String::IsNullOrEmpty(CreatorTool)) {
+
+			item->CreatorTool = CreatorTool;
+
+		} else {
+
+			item->CreatorTool = nullptr;
+		}
+
+		if(!String::IsNullOrEmpty(Creator)) {
+
+			item->Author = Creator;
+
+		} else {
+
+			item->Author = nullptr;
+		}
+
+		if(!String::IsNullOrEmpty(Copyright)) {
+			
+			item->Copyright = Creator;
+
+		} else {
+
+			item->Copyright = nullptr;
+		}
+
+		if(CreationDate != DateTime::MinValue) {
+
+			item->MetaDataCreated = CreationDate;
+
+		} else {
+
+			item->MetaDataCreated = Nullable<DateTime>();
+		}
+
+		if(ModifiedDate != DateTime::MinValue) {
+
+			item->MetaDataModified = ModifiedDate;
+
+		} else {
+
+			item->MetaDataModified = Nullable<DateTime>();
+		}
+
+		if(HasGeoTag == true) {
+		
+			item->Longitude = GeoTag->longitude->Coord;
+			item->Latitude = GeoTag->latitude->Coord;
+		}
+
+		item->MetaDataDate = DateTime::Now;
+	
+		item->MediaTag->Clear();
+
+		for each(String ^tag in Tags) {
+
+			Data::MediaTag ^mediaTag = gcnew Data::MediaTag();
+			mediaTag->Tag = tag;
+
+			item->MediaTag->Add(mediaTag);
+		}
+
+		item->MediaThumb->Clear();
+
+		int i = 0;
+
+		for each(MetaDataThumb ^thumb in Thumbnail) {
+
+			Data::MediaThumb ^mediaThumb = gcnew Data::MediaThumb();
+			mediaThumb->ImageData = thumb->Data->ToArray();
+			mediaThumb->ThumbNr = i;
+	
+			item->MediaThumb->Add(mediaThumb);
+			i++;
+		}
+
+		if(insert == true) {
+
+			mediaTable->insertOnSubmit(item);
+		}
+
+		mediaTable->submitChanges();
+	}
 
 	virtual void saveToDisk() {
 

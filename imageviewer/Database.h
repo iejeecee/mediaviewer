@@ -1,4 +1,5 @@
 #pragma once
+//http://stackoverflow.com/questions/46827/how-do-you-create-a-foreign-key-relationship-in-a-sql-server-ce-compact-edition
 
 namespace imageviewer {
 
@@ -15,7 +16,7 @@ namespace imageviewer {
 
 	public:
 
-		
+/*		
 		static Database() 
 		{
 
@@ -30,7 +31,7 @@ namespace imageviewer {
 			}
 
 		}
-
+*/
 		static DataSet ^query(String ^sql)
 		{
 			DataSet ^ds = nullptr;

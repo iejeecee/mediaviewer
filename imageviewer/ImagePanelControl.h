@@ -473,7 +473,8 @@ public:
 		
 		clearImage();
 
-		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation);
+		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation,
+			MediaFile::MetaDataMode::AUTO);
 
 	}
 

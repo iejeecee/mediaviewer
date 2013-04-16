@@ -644,7 +644,7 @@ public:
 	}
 
 	static void walkDirectoryTree(DirectoryInfo ^root,
-		WalkDirectoryTreeDelegate ^callback, Object ^state)
+		WalkDirectoryTreeDelegate ^callback, Object ^state, bool recurseSubDirs)
 	{
 		if(callback == nullptr) return;
 
@@ -682,12 +682,15 @@ public:
 			}
 
 			// Now find all the subdirectories under this directory::
-			subDirs = root->GetDirectories();
+			if(recurseSubDirs == true) {
 
-			for each(DirectoryInfo ^dirInfo in subDirs)
-			{
-				// Resursive call for each subdirectory::
-				walkDirectoryTree(dirInfo, callback, state);
+				subDirs = root->GetDirectories();
+
+				for each(DirectoryInfo ^dirInfo in subDirs)
+				{
+					// Resursive call for each subdirectory::
+					walkDirectoryTree(dirInfo, callback, state, recurseSubDirs);
+				}
 			}
 		}            
 	}

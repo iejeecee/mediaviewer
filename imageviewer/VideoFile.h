@@ -136,7 +136,9 @@ public:
 		defaultVideoThumb = gcnew Bitmap("C:\\game\\icons\\video.png");
 	}
 
-	VideoFile(String ^location, String ^mimeType, Stream ^data) : MediaFile(location, mimeType, data) {
+	VideoFile(String ^location, String ^mimeType, Stream ^data, MediaFile::MetaDataMode mode) 
+		: MediaFile(location, mimeType, data, mode) 
+	{
 
 
 	}

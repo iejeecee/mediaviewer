@@ -254,12 +254,12 @@
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\VideoLib.dll"
-			AssemblyName="VideoLib, Version=1.0.4842.33663, processorArchitecture=x86"
+			AssemblyName="VideoLib, Version=1.0.4850.24558, processorArchitecture=x86"
 			MinFrameworkVersion="0"
 		/>
 		<AssemblyReference
 			RelativePath="..\Debug\XMPLib.dll"
-			AssemblyName="XMPLib, Version=1.0.4842.33666, processorArchitecture=x86"
+			AssemblyName="XMPLib, Version=1.0.4847.25273, processorArchitecture=x86"
 			MinFrameworkVersion="131072"
 		/>
 		<AssemblyReference
@@ -286,6 +286,15 @@
 			RelativePath="MySql.Data.dll"
 			AssemblyName="MySql.Data, Version=6.5.6.0, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL"
 			MinFrameworkVersion="0"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{1E33135B-D4B0-42F5-B778-DC681CA9D22F}"
+			RelativePathToProject=".\MediaDatabase\MediaDatabase.csproj"
+		/>
+		<AssemblyReference
+			RelativePath="System.Data.Linq.dll"
+			AssemblyName="System.Data.Linq, Version=3.5.0.0, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL"
+			MinFrameworkVersion="196613"
 		/>
 	</References>
 	<Files>
@@ -408,6 +417,14 @@
 			</File>
 			<File
 				RelativePath=".\ResizeUpdateEventArgs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SearchOptionsForm.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SearchTextBoxControl.cpp"
 				>
 			</File>
 			<File
@@ -754,6 +771,30 @@
 			</File>
 			<File
 				RelativePath=".\resource.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SearchOptionsForm.h"
+				FileType="3"
+				>
+				<File
+					RelativePath=".\SearchOptionsForm.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\SearchTextBoxControl.h"
+				FileType="4"
+				>
+				<File
+					RelativePath=".\SearchTextBoxControl.resx"
+					SubType="Designer"
+					>
+				</File>
+			</File>
+			<File
+				RelativePath=".\SearchTextBoxToolStripItem.h"
 				>
 			</File>
 			<File

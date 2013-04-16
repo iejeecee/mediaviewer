@@ -19,7 +19,9 @@ private:
 
 public:
 
-	UnknownFile(String ^location, Stream ^data) : MediaFile(location, nullptr, data) {
+	UnknownFile(String ^location, Stream ^data) 
+		: MediaFile(location, nullptr, data, MediaFile::MetaDataMode::AUTO) 
+	{
 
 	}
 

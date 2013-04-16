@@ -136,6 +136,45 @@ private:
 
 	delegate void loadPreviewDelegate(MediaFile ^media, List<MetaDataThumb ^> ^thumbs);
 
+	List<MetaDataThumb ^> ^getAndStoreThumbNails(MediaFile ^media) {
+
+		List<MetaDataThumb ^> ^thumbs = nullptr;
+
+		Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
+
+		MediaDatabase::Media ^mediaItem = mediaTable->getMediaByLocation(media->Location);
+
+		if(mediaItem != nullptr) {
+
+			FileMetaData ^temp = gcnew FileMetaData(mediaItem);
+
+			thumbs = temp->Thumbnail;
+
+		} else {
+
+			thumbs = media->generateThumbnails();
+
+			if(media->MetaDataError == nullptr) {
+				
+				media->MetaData->Thumbnail = thumbs;
+				media->MetaData->saveToDatabase();
+
+			} else {
+
+				mediaItem = gcnew MediaDatabase::Media();
+				mediaItem->Location = media->Location;
+				mediaItem->CanStoreMetaData = 0;
+
+				FileMetaData ^temp = gcnew FileMetaData(mediaItem);
+				temp->Thumbnail = thumbs;
+
+				temp->saveToDatabase();
+			}
+		}
+
+		return(thumbs);
+	}
+
 	void mediaFileFactory_OpenFinished(System::Object ^sender, MediaFile ^media) {
 
 		array<Object ^> ^args = gcnew array<Object ^>(2);
@@ -146,16 +185,7 @@ private:
 		try {
 
 			// grab or generate thumbnail images
-			List<MetaDataThumb ^> ^thumbs = nullptr;
-
-			if(media->MetaData != nullptr && media->MetaData->Thumbnail->Count > 0) {
-
-				thumbs = media->MetaData->Thumbnail;
-
-			} else {
-
-				thumbs = media->generateThumbnails();
-			}
+			List<MetaDataThumb ^> ^thumbs = getAndStoreThumbNails(media);
 
 			args[1] = thumbs;			
 
@@ -190,7 +220,7 @@ private:
 
 			} else if(String::IsNullOrEmpty(media->Location) || media->MediaFormat == MediaFile::MediaType::UNKNOWN) {
 			
-				// empty file
+				// unknown or empty file
 				return;
 				
 			} else if(thumbs->Count > 0) {
@@ -360,7 +390,8 @@ public:
 		}
 		//pictureBox->Image = miscImageList->Images[0];
 
-		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, data);
+		mediaFileFactory->openNonBlockingAndCancelPending(fileLocation, data,
+			MediaFile::MetaDataMode::AUTO);
 
 	}
 

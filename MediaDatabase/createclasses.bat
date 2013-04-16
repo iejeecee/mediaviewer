@@ -1,0 +1,1 @@
+sqlmetal mediadatabase.sdf /namespace:MediaDatabase /context:MediaDatabaseContext /dbml:MediaDatabase.dbml

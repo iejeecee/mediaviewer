@@ -39,11 +39,13 @@ private:
 		String ^location;
 		Object ^userState;
 		ModifiableGEventArgs<bool> ^isCancelled;
+		MediaFile::MetaDataMode mode;
 
 	public:
 
-		AsyncState(String ^location, Object ^userState) {
+		AsyncState(String ^location, Object ^userState, MediaFile::MetaDataMode mode) {
 
+			this->mode = mode;
 			this->location = location;
 			this->userState = userState;
 			isCancelled = gcnew ModifiableGEventArgs<bool>(false);
@@ -73,6 +75,16 @@ private:
 
 				return(location);
 			}
+		}
+
+		property MediaFile::MetaDataMode MetaDataMode
+		{
+
+			MediaFile::MetaDataMode get() {
+
+				return(mode);
+			}
+			
 		}
 
 		property ModifiableGEventArgs<bool> ^IsCancelled {
@@ -221,11 +233,13 @@ private:
 
 		if(mimeType->ToLower()->StartsWith("image")) {
 
-			media = gcnew ImageFile(state->Location, mimeType, data);			
+			media = gcnew ImageFile(state->Location, mimeType, data, 
+				state->MetaDataMode);			
 		
 		} else if(mimeType->ToLower()->StartsWith("video")) {
 
-			media = gcnew VideoFile(state->Location, mimeType, data);			
+			media = gcnew VideoFile(state->Location, mimeType, data, 
+				state->MetaDataMode);			
 		
 		} else {
 
@@ -253,22 +267,24 @@ public:
 	// Open (read only) a file/http stream in a non blocking fashion
 	// When the file is successfully opened a OpenFinished event is generated
 	// The function will attempt to cancel any pending opens to speed up it's operation
-	void openNonBlockingAndCancelPending(String ^location) {
+	void openNonBlockingAndCancelPending(String ^location, MediaFile::MetaDataMode mode) {
 
-		openNonBlockingAndCancelPending(location, nullptr);
+		openNonBlockingAndCancelPending(location, nullptr, mode);
 	}
 
 	// Open (read only) a file/http stream in a non blocking fashion
 	// When the file is successfully opened a OpenFinished event is generated
 	// The function will attempt to cancel any pending opens to speed up it's operation
 	// userstate is attached to the returning mediafile
-	void openNonBlockingAndCancelPending(String ^location, Object ^userState) {
+	void openNonBlockingAndCancelPending(String ^location, Object ^userState, 
+		MediaFile::MetaDataMode mode) 
+	{
 
 		try {
 
 			WaitCallback ^asyncOpen = gcnew WaitCallback(this, &MediaFileFactory::asyncOpen);
 
-			AsyncState ^state = gcnew AsyncState(location, userState);
+			AsyncState ^state = gcnew AsyncState(location, userState, mode);
 
 			// lock active states
 			stateSemaphore->Acquire();
@@ -300,9 +316,9 @@ public:
 		openSemaphore->Release();
 	}
 
-	static MediaFile ^openBlocking(String ^location) {
+	static MediaFile ^openBlocking(String ^location, MediaFile::MetaDataMode mode) {
 
-		AsyncState ^state = gcnew AsyncState(location, nullptr);
+		AsyncState ^state = gcnew AsyncState(location, nullptr, mode);
 
 		// initialize media with a dummy in case of exceptions
 		MediaFile ^media = gcnew UnknownFile(state->Location, nullptr);

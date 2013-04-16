@@ -24,7 +24,9 @@ public:
 	bool isModified;
 	int placeMarkIndex;
 
-	GeoTagFileData(String ^filePath) : FileMetaData(filePath) {
+	GeoTagFileData(String ^filePath) : FileMetaData() {
+
+		loadFromDisk(filePath);
 
 		this->fileName = System::IO::Path::GetFileName(FilePath);		
 		this->fileUrl = "file:///" + FilePath->Replace('\\','/');

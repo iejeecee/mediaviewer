@@ -82,7 +82,9 @@ protected:
 
 public:
 
-	ImageFile(String ^location, String ^mimeType, Stream ^data) : MediaFile(location, mimeType, data) {
+	ImageFile(String ^location, String ^mimeType, Stream ^data, MediaFile::MetaDataMode mode) 
+		: MediaFile(location, mimeType, data, mode) 
+	{
 
 		sizeBytes = data->Length;
 	}

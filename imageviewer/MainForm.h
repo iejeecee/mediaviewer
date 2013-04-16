@@ -18,6 +18,7 @@
 #include "Settings.h"
 #include "YoutubeForm.h"
 #include "MediaSearch.h"
+#include "SearchTextBoxToolStripItem.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -66,7 +67,10 @@ namespace imageviewer {
 	private: System::Windows::Forms::ToolStripButton^  youtubeToolStripButton;
 	private: System::Windows::Forms::ToolStripSeparator^  toolStripSeparator4;
 	private: System::Windows::Forms::ToolStripMenuItem^  logToolStripMenuItem;
-	private: System::Windows::Forms::ToolStripTextBox^  searchTextBox;
+	private: imageviewer::SearchTextBoxToolStripItem^  searchTextBox;
+
+
+
 
 
 
@@ -181,7 +185,11 @@ namespace imageviewer {
 			this->exitToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->aboutToolStripMenuItem = (gcnew System::Windows::Forms::ToolStripMenuItem());
 			this->aboutToolStripMenuItem1 = (gcnew System::Windows::Forms::ToolStripMenuItem());
+			this->searchTextBox = (gcnew imageviewer::SearchTextBoxToolStripItem());
 			this->toolStripContainer1 = (gcnew System::Windows::Forms::ToolStripContainer());
+			this->videoPanel = (gcnew imageviewer::VideoPanelControl());
+			this->imagePanel = (gcnew imageviewer::ImagePanelControl());
+			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->toolStrip1 = (gcnew System::Windows::Forms::ToolStrip());
 			this->imageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->videoToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
@@ -199,10 +207,6 @@ namespace imageviewer {
 			this->horizontalMirrorImageToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImageMinToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
 			this->rotateImagePlusToolStripButton = (gcnew System::Windows::Forms::ToolStripButton());
-			this->searchTextBox = (gcnew System::Windows::Forms::ToolStripTextBox());
-			this->videoPanel = (gcnew imageviewer::VideoPanelControl());
-			this->imagePanel = (gcnew imageviewer::ImagePanelControl());
-			this->imageFileBrowser = (gcnew imageviewer::ImageFileBrowserControl());
 			this->menuStrip1->SuspendLayout();
 			this->toolStripContainer1->ContentPanel->SuspendLayout();
 			this->toolStripContainer1->SuspendLayout();
@@ -215,7 +219,7 @@ namespace imageviewer {
 				this->aboutToolStripMenuItem, this->searchTextBox});
 			this->menuStrip1->Location = System::Drawing::Point(0, 0);
 			this->menuStrip1->Name = L"menuStrip1";
-			this->menuStrip1->Size = System::Drawing::Size(668, 32);
+			this->menuStrip1->Size = System::Drawing::Size(668, 41);
 			this->menuStrip1->TabIndex = 0;
 			this->menuStrip1->Text = L"menuStrip1";
 			// 
@@ -225,7 +229,7 @@ namespace imageviewer {
 				this->openURLToolStripMenuItem, this->toolStripSeparator3, this->settingsToolStripMenuItem, this->logToolStripMenuItem, this->toolStripSeparator2, 
 				this->exitToolStripMenuItem});
 			this->fileToolStripMenuItem->Name = L"fileToolStripMenuItem";
-			this->fileToolStripMenuItem->Size = System::Drawing::Size(48, 28);
+			this->fileToolStripMenuItem->Size = System::Drawing::Size(48, 37);
 			this->fileToolStripMenuItem->Text = L"File";
 			// 
 			// openToolStripMenuItem
@@ -277,7 +281,7 @@ namespace imageviewer {
 			// 
 			this->aboutToolStripMenuItem->DropDownItems->AddRange(gcnew cli::array< System::Windows::Forms::ToolStripItem^  >(1) {this->aboutToolStripMenuItem1});
 			this->aboutToolStripMenuItem->Name = L"aboutToolStripMenuItem";
-			this->aboutToolStripMenuItem->Size = System::Drawing::Size(55, 28);
+			this->aboutToolStripMenuItem->Size = System::Drawing::Size(55, 37);
 			this->aboutToolStripMenuItem->Text = L"Help";
 			// 
 			// aboutToolStripMenuItem1
@@ -287,6 +291,16 @@ namespace imageviewer {
 			this->aboutToolStripMenuItem1->Text = L"About";
 			this->aboutToolStripMenuItem1->Click += gcnew System::EventHandler(this, &MainForm::aboutToolStripMenuItem1_Click);
 			// 
+			// searchTextBox
+			// 
+			this->searchTextBox->Alignment = System::Windows::Forms::ToolStripItemAlignment::Right;
+			this->searchTextBox->BackColor = System::Drawing::Color::Transparent;
+			this->searchTextBox->Name = L"searchTextBox";
+			this->searchTextBox->Query = L"Search";
+			this->searchTextBox->Size = System::Drawing::Size(253, 34);
+			this->searchTextBox->Text = L"searchTextBoxToolStripItem1";
+			this->searchTextBox->DoSearch += gcnew System::EventHandler<imageviewer::MediaSearchState^ >(this, &MainForm::searchTextBox_DoSearch);
+			// 
 			// toolStripContainer1
 			// 
 			// 
@@ -295,13 +309,46 @@ namespace imageviewer {
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->videoPanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imagePanel);
 			this->toolStripContainer1->ContentPanel->Controls->Add(this->imageFileBrowser);
-			this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(668, 455);
+			this->toolStripContainer1->ContentPanel->Size = System::Drawing::Size(668, 446);
 			this->toolStripContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->toolStripContainer1->Location = System::Drawing::Point(0, 57);
+			this->toolStripContainer1->Location = System::Drawing::Point(0, 66);
 			this->toolStripContainer1->Name = L"toolStripContainer1";
-			this->toolStripContainer1->Size = System::Drawing::Size(668, 480);
+			this->toolStripContainer1->Size = System::Drawing::Size(668, 471);
 			this->toolStripContainer1->TabIndex = 1;
 			this->toolStripContainer1->Text = L"toolStripContainer1";
+			// 
+			// videoPanel
+			// 
+			this->videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->videoPanel->Location = System::Drawing::Point(0, 0);
+			this->videoPanel->Name = L"videoPanel";
+			this->videoPanel->Size = System::Drawing::Size(668, 446);
+			this->videoPanel->TabIndex = 2;
+			this->videoPanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::videoPanel_PreviewKeyDown);
+			// 
+			// imagePanel
+			// 
+			this->imagePanel->AutoScroll = true;
+			this->imagePanel->CropStage = imageviewer::ImagePanelControl::CropStageState::DISABLED;
+			this->imagePanel->Cursor = System::Windows::Forms::Cursors::Cross;
+			this->imagePanel->DisplayMode = imageviewer::ImagePanelControl::DisplayModeState::NORMAL;
+			this->imagePanel->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->imagePanel->Location = System::Drawing::Point(0, 0);
+			this->imagePanel->Name = L"imagePanel";
+			this->imagePanel->Size = System::Drawing::Size(668, 446);
+			this->imagePanel->TabIndex = 0;
+			this->imagePanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::imagePanel_PreviewKeyDown);
+			this->imagePanel->LoadImageFinished += gcnew System::EventHandler<System::EventArgs^ >(this, &MainForm::imagePanel_LoadImageFinished);
+			// 
+			// imageFileBrowser
+			// 
+			this->imageFileBrowser->Dock = System::Windows::Forms::DockStyle::Fill;
+			this->imageFileBrowser->Location = System::Drawing::Point(0, 0);
+			this->imageFileBrowser->Name = L"imageFileBrowser";
+			this->imageFileBrowser->Size = System::Drawing::Size(668, 446);
+			this->imageFileBrowser->TabIndex = 1;
+			this->imageFileBrowser->OnChangeBrowseDirectory += gcnew imageviewer::ImageFileBrowserControl::ChangeBrowseDirectoryEventHandler(this, &MainForm::imageFileBrowser_ChangeBrowseDirectoryEvent);
+			this->imageFileBrowser->OnViewEvent += gcnew imageviewer::ImageFileBrowserControl::ImageFileBrowserEventHandler(this, &MainForm::imageFileBrowser_ViewEvent);
 			// 
 			// toolStrip1
 			// 
@@ -310,7 +357,7 @@ namespace imageviewer {
 				this->youtubeToolStripButton, this->picasaToolStripButton, this->imageSearchToolStripButton, this->toolStripSeparator1, this->saveImageToolStripButton, 
 				this->resizeImageToolStripButton, this->cropImageToolStripButton, this->verticalMirrorImageToolStripButton, this->horizontalMirrorImageToolStripButton, 
 				this->rotateImageMinToolStripButton, this->rotateImagePlusToolStripButton});
-			this->toolStrip1->Location = System::Drawing::Point(0, 32);
+			this->toolStrip1->Location = System::Drawing::Point(0, 41);
 			this->toolStrip1->Name = L"toolStrip1";
 			this->toolStrip1->Size = System::Drawing::Size(668, 25);
 			this->toolStrip1->TabIndex = 2;
@@ -487,49 +534,6 @@ namespace imageviewer {
 			this->rotateImagePlusToolStripButton->Size = System::Drawing::Size(23, 22);
 			this->rotateImagePlusToolStripButton->Text = L"Rotate Image 90 Degrees";
 			this->rotateImagePlusToolStripButton->Click += gcnew System::EventHandler(this, &MainForm::rotateImagePlusToolStripButton_Click);
-			// 
-			// searchTextBox
-			// 
-			this->searchTextBox->Alignment = System::Windows::Forms::ToolStripItemAlignment::Right;
-			this->searchTextBox->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->searchTextBox->Name = L"searchTextBox";
-			this->searchTextBox->Size = System::Drawing::Size(100, 28);
-			this->searchTextBox->Text = L"Search";
-			this->searchTextBox->ToolTipText = L"Search";
-			this->searchTextBox->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &MainForm::searchTextBox_KeyDown);
-			// 
-			// videoPanel
-			// 
-			this->videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->videoPanel->Location = System::Drawing::Point(0, 0);
-			this->videoPanel->Name = L"videoPanel";
-			this->videoPanel->Size = System::Drawing::Size(668, 455);
-			this->videoPanel->TabIndex = 2;
-			this->videoPanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::videoPanel_PreviewKeyDown);
-			// 
-			// imagePanel
-			// 
-			this->imagePanel->AutoScroll = true;
-			this->imagePanel->CropStage = imageviewer::ImagePanelControl::CropStageState::DISABLED;
-			this->imagePanel->Cursor = System::Windows::Forms::Cursors::Cross;
-			this->imagePanel->DisplayMode = imageviewer::ImagePanelControl::DisplayModeState::NORMAL;
-			this->imagePanel->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->imagePanel->Location = System::Drawing::Point(0, 0);
-			this->imagePanel->Name = L"imagePanel";
-			this->imagePanel->Size = System::Drawing::Size(668, 455);
-			this->imagePanel->TabIndex = 0;
-			this->imagePanel->PreviewKeyDown += gcnew System::Windows::Forms::PreviewKeyDownEventHandler(this, &MainForm::imagePanel_PreviewKeyDown);
-			this->imagePanel->LoadImageFinished += gcnew System::EventHandler<System::EventArgs^ >(this, &MainForm::imagePanel_LoadImageFinished);
-			// 
-			// imageFileBrowser
-			// 
-			this->imageFileBrowser->Dock = System::Windows::Forms::DockStyle::Fill;
-			this->imageFileBrowser->Location = System::Drawing::Point(0, 0);
-			this->imageFileBrowser->Name = L"imageFileBrowser";
-			this->imageFileBrowser->Size = System::Drawing::Size(668, 455);
-			this->imageFileBrowser->TabIndex = 1;
-			this->imageFileBrowser->OnChangeBrowseDirectory += gcnew imageviewer::ImageFileBrowserControl::ChangeBrowseDirectoryEventHandler(this, &MainForm::imageFileBrowser_ChangeBrowseDirectoryEvent);
-			this->imageFileBrowser->OnViewEvent += gcnew imageviewer::ImageFileBrowserControl::ImageFileBrowserEventHandler(this, &MainForm::imageFileBrowser_ViewEvent);
 			// 
 			// MainForm
 			// 
@@ -1262,20 +1266,14 @@ private: void metaData_logCallback(XMPLib::MetaData::LogLevel level, String ^mes
 			 }
 		 }
 
-private: System::Void searchTextBox_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) {
+private: System::Void searchTextBox_DoSearch(System::Object^  sender, MediaSearchState ^state) {
 
-			 if(e->KeyCode == Keys::Enter) {
+			 MediaSearch ^search = gcnew MediaSearch();
 
-				 MediaSearch ^search = gcnew MediaSearch();
+			 MediaSearchState ^result = search->searchDirectory(imageFileBrowser->getBrowsePath(), state);
 
-				 String ^query = searchTextBox->Text;
-
-				 MediaSearchState ^result = search->searchDirectory(imageFileBrowser->getBrowsePath(), query);
-
-				 imageFileBrowser->displayMediaSearchResult(result);
-
-
-			 }
+			 imageFileBrowser->displayMediaSearchResult(result);
+			 
 		 }
 };
 }

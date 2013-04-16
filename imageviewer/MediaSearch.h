@@ -3,12 +3,14 @@
 #include "MediaFormatConvert.h"
 #include "MediaFileFactory.h"
 #include "MediaSearchState.h"
+#include "Database.h"
 #include "MySQL.h"
 
 namespace imageviewer {
 
 using namespace System;
 using namespace System::IO;
+namespace Data = MediaDatabase;
 
 public ref class MediaSearch
 {
@@ -18,6 +20,28 @@ private:
 
   FileUtils::WalkDirectoryTreeDelegate ^callback; 
   MediaFileFactory ^mediaFactory;
+  List<String ^> ^query;
+
+  void parseQuery(MediaSearchState ^state) {
+
+	  
+
+  }
+
+  void mediaFileToMediaData(MediaFile ^media, Data::Media ^item) {
+
+	  FileMetaData ^metaData = media->MetaData;
+
+	  if(metaData->CreationDate != DateTime::MinValue) {
+
+		  item->MetaDataCreated = metaData->CreationDate;
+	  }
+
+	  if(metaData->CreationDate != DateTime::MinValue) {
+
+		  item->MetaDataCreated = metaData->CreationDate;
+	  }
+  }
 
   Regex ^wildcardToRegex(String ^pattern) {
 
@@ -29,41 +53,68 @@ private:
 	  return(regex);
   }
 
-  void mediaTagMatch(FileInfo ^file, MediaSearchState ^state) {
+  void mediaFileNameSearch(MediaSearchState ^state) {
 
-	  MediaFile ^media = nullptr;
+	  Regex ^regex = wildcardToRegex(state->Query);
 
-	  try {
+	  for each(FileInfo ^file in state->SearchFiles) {
 
-		  media = MediaFileFactory::openBlocking(file->FullName);
+		  if(regex->IsMatch(file->Name)) {
 
-		  if(media->MetaDataError) {
-
-			  throw media->MetaDataError;
+			  state->Matches->Add(file);
 		  }
+	  }
+  }
 
-		  for each(String ^tag in media->MetaData->Tags) {
+  void mediaTagSearch(MediaSearchState ^state) {
 
-			  if(state->Tags->Contains(tag)) {
+	  List<Data::Media ^> ^updateMedia;
+	  List<Data::Media ^> ^insertMedia;
 
-				  state->Matches->Add(file);
+	  Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
+
+	  mediaTable->needUpdate(state->SearchRoot, state->SearchFiles,
+		  updateMedia, insertMedia);
+/*
+	  for each(Data::Media ^item in updateMedia) {
+
+		  MediaFile ^media = nullptr;
+
+		  try {
+
+			  media = MediaFileFactory::openBlocking(item->Location,
+				  MediaFile::MetaDataMode::LOAD_FROM_DISK);
+
+			  if(media->MetaDataError) {
+
+				  item->CanStoreMetaData = 0;
+				  continue;
+			  }
+
+			  for each(String ^tag in media->MetaData->Tags) {
+
+				  if(state->SearchTags->Contains(tag)) {
+
+					  state->Matches->Add(file);
+				  }
+			  }
+
+			  Debug::Write(media->Location + "\n");
+
+		  } catch (Exception ^e) {
+
+			  log->Warn("Cannot open metadata for " + file->FullName + ": " + e->Message);
+
+		  } finally {
+
+			  if(media != nullptr) {
+
+				  media->close();
 			  }
 		  }
 
-		  Debug::Write(media->Location + "\n");
-
-	  } catch (Exception ^e) {
-
-		  log->Warn("Cannot open metadata for " + file->FullName + ": " + e->Message);
-
-	  } finally {
-
-		  if(media != nullptr) {
-
-			  media->close();
-		  }
 	  }
-
+	  */
   }
 
 
@@ -73,7 +124,7 @@ private:
 
 	  MediaSearchState ^state = dynamic_cast<MediaSearchState ^>(userData);
 
-	  state->MediaFiles->Add(file);
+	  state->SearchFiles->Add(file);
   }
 
   void updateFileMetaData(String ^rootPath) {
@@ -82,17 +133,17 @@ private:
 
 	  DirectoryInfo ^root = gcnew DirectoryInfo(rootPath);
 
-	  FileUtils::walkDirectoryTree(root, callback, state);
+	  FileUtils::walkDirectoryTree(root, callback, state, true);
 
-	  for(int i = 0; i < state->MediaFiles->Count; i++) {
+	  for(int i = 0; i < state->SearchFiles->Count; i++) {
 
-		  FileInfo ^file = state->MediaFiles[i];
+		  FileInfo ^file = state->SearchFiles[i];
 
 		  MediaFile ^media = nullptr;
 
 		  try {
 
-			  Util::DebugOut(i.ToString() + " of " + state->MediaFiles->Count.ToString() + " " + file->FullName);
+			  Util::DebugOut(i.ToString() + " of " + state->SearchFiles->Count.ToString() + " " + file->FullName);
 
 			  Uri ^uri = gcnew Uri(file->FullName, UriKind::Absolute); 
 
@@ -102,7 +153,8 @@ private:
 
 			  if(ds->Tables[0]->Rows->Count == 0) continue;			 
 
-			  media = MediaFileFactory::openBlocking(file->FullName);
+			  media = MediaFileFactory::openBlocking(file->FullName, 
+				  MediaFile::MetaDataMode::LOAD_FROM_DISK);
 
 			  if(media->MetaDataError) {
 
@@ -111,7 +163,7 @@ private:
 
 			  if(DateTime::Compare(media->MetaData->MetaDataDate, DateTime(2013,4,5)) >= 0) {
 
-				  Util::DebugOut(i.ToString() + " of " + state->MediaFiles->Count.ToString() + " SKIPPED " + file->FullName);
+				  Util::DebugOut(i.ToString() + " of " + state->SearchFiles->Count.ToString() + " SKIPPED " + file->FullName);
 				  continue;
 			  }			  
 
@@ -153,30 +205,26 @@ public:
 		mediaFactory = gcnew MediaFileFactory();
 	}
 
-	MediaSearchState ^searchDirectory(String ^path, String ^tag) {
+	MediaSearchState ^searchDirectory(String ^path, MediaSearchState ^state) {
 
-		MediaSearchState ^state = gcnew MediaSearchState();
+		String ^query = state->Query;
 
-		if(String::IsNullOrEmpty(path) || String::IsNullOrEmpty(tag)) return(state);
+		if(String::IsNullOrEmpty(path) || String::IsNullOrEmpty(query)) return(state);
 
 		try {
 
-			DirectoryInfo ^rootInfo = gcnew DirectoryInfo(path);
+			state->SearchRoot = gcnew DirectoryInfo(path);
+			 
+			FileUtils::walkDirectoryTree(state->SearchRoot, callback, state, state->RecurseDirectories);
 			
-			state->Tags->Add(tag);
+			if(state->DoFileNameSearch == true) {
 
-			FileUtils::walkDirectoryTree(rootInfo, callback, state);
+				mediaFileNameSearch(state);
+			}
 
-			Regex ^regex = wildcardToRegex(tag);
+			if(state->DoTagSearch == true) {
 
-			for each(FileInfo ^file in state->MediaFiles) {
-/*
-				if(regex->IsMatch(file->Name)) {
-
-					state->Matches->Add(file);
-				}
-*/
-				mediaTagMatch(file, state);
+				mediaTagSearch(state);
 			}
 
 		} catch (Exception ^e) {
