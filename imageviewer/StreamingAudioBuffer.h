@@ -204,10 +204,14 @@ public:
 		
 			//desc->AlgorithmFor3D = Guid::Empty;
 			
-			WaveFormat ^format = gcnew WaveFormat(samplesPerSecond,
-				bytesPerSample * 8, nrChannels);
+			int blockAlign = nrChannels * bytesPerSample;
+			int averageBytesPerSecond = samplesPerSecond * blockAlign;
+			
+			WaveFormat ^format = WaveFormat::CreateCustomFormat(WaveFormatEncoding::Pcm,
+				samplesPerSecond, nrChannels,averageBytesPerSecond,blockAlign, bytesPerSample * 8);			
 
 			desc->Format = format;
+			//desc->Format->Encoding = WaveFormatEncoding::Pcm;
 /*
 			desc->Format->SampleRate = samplesPerSecond;
 			desc->Format->BitsPerSample = bytesPerSample * 8;
