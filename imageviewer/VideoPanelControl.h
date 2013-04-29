@@ -26,11 +26,10 @@ using namespace System::Collections;
 using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
-using namespace Microsoft::DirectX;
 using namespace VideoLib;
 using namespace Diagnostics;
-namespace D3D = Microsoft::DirectX::Direct3D;
-namespace DS = Microsoft::DirectX::DirectSound;
+namespace D3D = SharpDX::Direct3D9;
+namespace DS = SharpDX::DirectSound;
 
 
 namespace imageviewer {
@@ -50,6 +49,7 @@ namespace imageviewer {
 			//videoRender = nullptr;
 			//mediaPlayer->Dock = DockStyle::Fill;
 			//mediaPlayer->stretchToFit = true;
+
 
 			videoRender = gcnew VideoRender(VideoPanel);
 			audioPlayer = gcnew StreamingAudioBuffer(this);
@@ -908,20 +908,18 @@ restartaudio:
 
 		void fillFrameQueue() {
 
-			bool success;
+			bool success = true;
 
-			do {
-
-				success = videoDecoder->demuxPacket();
-
-				//Util::DebugOut("a: " + videoDecoder->FrameQueue->AudioQueueSize.ToString());
-				//Util::DebugOut("v: " + videoDecoder->FrameQueue->VideoQueueSize.ToString());
-
-			} while(videoDecoder->FrameQueue->AudioPacketsInQueue !=
+			while(videoDecoder->FrameQueue->AudioPacketsInQueue !=
 				videoDecoder->FrameQueue->MaxAudioPackets &&
 				videoDecoder->FrameQueue->VideoPacketsInQueue != 
 				videoDecoder->FrameQueue->MaxVideoPackets &&
-				success == true);
+				success == true)
+			{
+
+				success = videoDecoder->demuxPacket();
+
+			} 
 			
 		}
 

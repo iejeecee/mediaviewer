@@ -8,8 +8,8 @@
 namespace imageviewer {
 
 using namespace VideoLib;
-using namespace Microsoft::DirectX;
-namespace D3D = Microsoft::DirectX::Direct3D;
+
+namespace D3D = SharpDX::Direct3D9;
 
 public ref class VideoRender
 {
@@ -18,6 +18,7 @@ private:
 
 	static log4net::ILog ^log = log4net::LogManager::GetLogger(System::Reflection::MethodBase::GetCurrentMethod()->DeclaringType);
 
+	D3D::Direct3D ^direct3D;
 	D3D::Device ^device;
 	D3D::Surface ^offscreen;
 	D3D::Surface ^screenShot;
@@ -37,45 +38,44 @@ private:
 		return((D3D::Format) value);
 	}
 
-	D3D::PresentParameters ^createPresentParams(bool windowed, Windows::Forms::Control ^owner) {
+	array<D3D::PresentParameters> ^createPresentParams(bool windowed, Windows::Forms::Control ^owner) {
 
-		//Allocate our class
-		D3D::PresentParameters ^presentParams = gcnew D3D::PresentParameters();
+		array<D3D::PresentParameters> ^presentParams = gcnew array<D3D::PresentParameters>(1);
 
 		//No Z (Depth) buffer or Stencil buffer
-		presentParams->EnableAutoDepthStencil = false;
+		presentParams[0].EnableAutoDepthStencil = false;
 
 		//multiple backbuffers for a flipchain
-		presentParams->BackBufferCount = 3;
+		presentParams[0].BackBufferCount = 3;
 
 		//Set our Window as the Device Window
-		presentParams->DeviceWindow = owner;
+		presentParams[0].DeviceWindowHandle = owner->Handle;
 
 		//wait for VSync
-		presentParams->PresentationInterval = D3D::PresentInterval::One;
+		presentParams[0].PresentationInterval = D3D::PresentInterval::One;
 
 		//flip frames on vsync
-		presentParams->SwapEffect = D3D::SwapEffect::Discard;
+		presentParams[0].SwapEffect = D3D::SwapEffect::Discard;
 
 		//Set Windowed vs. Full-screen
-		presentParams->Windowed = windowed;
+		presentParams[0].Windowed = windowed;
 
 		//We only need to set the Width/Height in full-screen mode
 		if(!windowed) {
 
-			presentParams->BackBufferHeight = owner->Height;
-			presentParams->BackBufferWidth = owner->Width;
+			presentParams[0].BackBufferHeight = owner->Height;
+			presentParams[0].BackBufferWidth = owner->Width;
 
 			D3D::Format format = D3D::Format::X8R8G8B8;
 
 			//Choose a compatible 16-bit mode.
-			presentParams->BackBufferFormat = format;
+			presentParams[0].BackBufferFormat = format;
 
 		} else {
 
-			presentParams->BackBufferHeight = 0;
-			presentParams->BackBufferWidth = 0;
-			presentParams->BackBufferFormat = D3D::Format::Unknown;
+			presentParams[0].BackBufferHeight = 0;
+			presentParams[0].BackBufferWidth = 0;
+			presentParams[0].BackBufferFormat = D3D::Format::Unknown;
 		}
 
 		return(presentParams);
@@ -93,10 +93,16 @@ private:
 
 			D3D::Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
 
-			offscreen = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, pixelFormat, 
+			offscreen = D3D::Surface::CreateOffscreenPlain(device, 
+				videoWidth, 
+				videoHeight, 
+				pixelFormat, 
 				D3D::Pool::Default);
 
-			screenShot = device->CreateOffscreenPlainSurface(videoWidth, videoHeight, D3D::Format::A8R8G8B8,
+			screenShot = D3D::Surface::CreateOffscreenPlain(device, 
+				videoWidth, 
+				videoHeight, 
+				D3D::Format::A8R8G8B8,
 				D3D::Pool::Default);
 		}
 	}
@@ -148,6 +154,7 @@ public:
 
 	VideoRender(Windows::Forms::Control ^owner)
 	{
+		direct3D = nullptr;
 		device = nullptr;
 		this->owner = owner;
 		saveOffscreen = nullptr;
@@ -166,6 +173,11 @@ public:
 		if(device != nullptr) {
 
 			delete device;
+		}
+
+		if(direct3D != nullptr) {
+
+			delete direct3D;
 		}
 	}
 
@@ -190,11 +202,9 @@ public:
 
 		windowed = true;
 
-		D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
-
 		if(device != nullptr) {
 
-			device->Reset(presentParams);
+			device->Reset(createPresentParams(windowed, owner));
 		}
 	}
 
@@ -203,12 +213,11 @@ public:
 
 		windowed = false;
 
-		D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
-
 		if(device != nullptr) {
 
 			try {
-				device->Reset(presentParams);
+
+				device->Reset(createPresentParams(windowed, owner));
 
 			} catch (Exception ^e) {
 
@@ -224,32 +233,48 @@ public:
 			this->videoHeight = videoHeight;
 			this->videoWidth = videoWidth;
 
-			D3D::PresentParameters ^presentParams = createPresentParams(windowed, owner);
+			if(direct3D == nullptr) {
 
-			if(device == nullptr) {
+				SharpDX::Result resultCode;
 
-				device = gcnew D3D::Device(0,                      
+				direct3D = gcnew D3D::Direct3D();
+
+				if(direct3D->CheckDeviceFormatConversion(
+					0,
+					D3D::DeviceType::Hardware,
+					makeFourCC('Y', 'V', '1', '2'),
+					D3D::Format::X8R8G8B8, 
+					resultCode) == false) 
+				{
+					throw gcnew SharpDX::SharpDXException("Video Hardware does not support YV12 format conversion");						
+				}
+
+				array<D3D::PresentParameters> ^presentParams = 
+					createPresentParams(windowed, owner);
+
+				device = gcnew D3D::Device(direct3D,
+					0,
 					D3D::DeviceType::Hardware,  
-					owner,                  
+					owner->Handle,                  
 					D3D::CreateFlags::SoftwareVertexProcessing,
-					presentParams);         
+					presentParams);       
 
-				device->DeviceLost += gcnew EventHandler(this, &VideoRender::device_DeviceLost);
-				device->DeviceReset += gcnew EventHandler(this, &VideoRender::device_DeviceReset);
-				device->DeviceResizing += gcnew System::ComponentModel::CancelEventHandler(this, &VideoRender::device_DeviceResizing);
+				//device->DeviceLost += gcnew EventHandler(this, &VideoRender::device_DeviceLost);
+				//device->DeviceReset += gcnew EventHandler(this, &VideoRender::device_DeviceReset);
+				//device->DeviceResizing += gcnew System::ComponentModel::CancelEventHandler(this, &VideoRender::device_DeviceResizing);
 			}
 
 			releaseResources();
 			aquireResources();
 
-			D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
+			D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0);
 			
 			canvas = Rectangle(0, 0, backBuffer->Description.Width,
 				backBuffer->Description.Height);
 
 			log->Info("Direct3D Initialized");
 	
-		} catch (D3D::GraphicsException ^e){
+		} catch (SharpDX::SharpDXException ^e){
 
 			log->Error("Direct3D Initialization error", e);
 			MessageBox::Show(e->Message, "Direct3D Initialization error");
@@ -267,18 +292,15 @@ public:
 			int width = offscreen->Description.Width;
 			int height = offscreen->Description.Height;
 
-			Rectangle videoRect = Rectangle(0, 0, width, height);
+			SharpDX::Rectangle videoRect = SharpDX::Rectangle(0, 0, width, height);
 
 			device->StretchRectangle(offscreen, videoRect,
 				screenShot, videoRect, D3D::TextureFilter::Linear);	
 
-			int pitch;
+			SharpDX::DataRectangle ^stream = screenShot->LockRectangle(videoRect, D3D::LockFlags::ReadOnly);
 
-			GraphicsStream ^stream = screenShot->LockRectangle(videoRect, D3D::LockFlags::ReadOnly,
-				pitch);
-
-			Bitmap ^image = gcnew Bitmap(width, height, pitch,
-				Imaging::PixelFormat::Format32bppArgb, IntPtr(stream->InternalDataPointer));
+			Bitmap ^image = gcnew Bitmap(width, height, stream->Pitch,
+				Imaging::PixelFormat::Format32bppArgb, stream->DataPointer);
 
 			String ^path = Util::getPathWithoutFileName(fileName);
 			fileName = System::IO::Path::GetFileNameWithoutExtension(fileName);
@@ -302,13 +324,16 @@ public:
 
 		if(device == nullptr) return;
 
-		int deviceStatus;
+		SharpDX::Result deviceStatus = device->TestCooperativeLevel();
 
-		if(device->CheckCooperativeLevel(deviceStatus) == true) {
+		if(deviceStatus.Success == true) {
 
 			try {
 
-				device->Clear(D3D::ClearFlags::Target, backColor, 1.0f, 0);
+				SharpDX::ColorBGRA backColorDX = SharpDX::ColorBGRA(backColor.R,
+					backColor.G, backColor.B, backColor.A);
+
+				device->Clear(D3D::ClearFlags::Target, backColorDX, 1.0f, 0);
 
 				if(mode == RenderMode::CLEAR_SCREEN) {
 
@@ -318,45 +343,43 @@ public:
 
 				device->BeginScene();		
 
-				Rectangle videoRect;
+				SharpDX::Rectangle videoRect;
 				
 				if(mode == RenderMode::NORMAL) {
 
-					videoRect = Rectangle(0, 0, videoFrame->Width, videoFrame->Height);
+					videoRect = SharpDX::Rectangle(0, 0, videoFrame->Width, videoFrame->Height);
 				
 					videoFrame->copyFrameDataToSurface(offscreen);
 				
 				} else if(mode == RenderMode::PAUSED) {
 
-					videoRect = Rectangle(0, 0, offscreen->Description.Width,  offscreen->Description.Height);
+					videoRect = SharpDX::Rectangle(0, 0, offscreen->Description.Width,  offscreen->Description.Height);
 				
 				}
 
-				D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0, D3D::BackBufferType::Mono);
+				D3D::Surface ^backBuffer = device->GetBackBuffer(0, 0);
+
+				SharpDX::Rectangle canvasDx = SharpDX::Rectangle(canvas.Left,
+					canvas.Top, canvas.Right, canvas.Bottom);
 
 				device->StretchRectangle(offscreen, videoRect,
-					backBuffer, canvas, D3D::TextureFilter::Linear);
+					backBuffer, canvasDx, D3D::TextureFilter::Linear);
 
 				device->EndScene();
 				device->Present();
 
-			} catch(D3D::DeviceLostException ^e) {
+			} catch(SharpDX::SharpDXException ^e) {
 
 				log->Info("lost direct3d device", e);
-				device->CheckCooperativeLevel(deviceStatus);
-
-			} catch(D3D::DeviceNotResetException ^e) {
-
-				log->Info("direct3d device not reset", e);
-				device->CheckCooperativeLevel(deviceStatus);
-			}
+				deviceStatus = device->TestCooperativeLevel();
+			} 
 		}
 
-		if(deviceStatus == (int)D3D::ResultCode::DeviceLost) {
+		if(deviceStatus.Code == D3D::ResultCode::DeviceLost->Result) {
 
 			 //Can't Reset yet, wait for a bit
 
-		} else if(deviceStatus == (int)D3D::ResultCode::DeviceNotReset) {
+		} else if(deviceStatus.Code == D3D::ResultCode::DeviceNotReset->Result) {
 		
 			if(owner->InvokeRequired) {
 

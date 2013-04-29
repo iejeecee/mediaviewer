@@ -6,14 +6,16 @@
 #include "stdafx.h"
 #include "VideoInit.h"
 
-#define __STDC_CONSTANT_MACROS
 
 extern "C" {
 
-#include "libavformat/avformat.h"
+#ifndef __STDC_CONSTANT_MACROS
+#define __STDC_CONSTANT_MACROS
+#endif
 
 #include "libavcodec/avcodec.h"
-//#include "libavcodec/audioconvert.h"
+
+#include "libavformat/avformat.h"
 
 #include "libavutil/avutil.h"
 #include "libavutil/audioconvert.h"

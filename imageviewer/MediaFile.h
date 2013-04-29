@@ -8,6 +8,7 @@ namespace imageviewer {
 using namespace System;
 using namespace System::IO;
 using namespace System::Collections::Generic;
+namespace DB = MediaDatabase;
 
 public ref class MediaFile abstract : public EventArgs
 {
@@ -115,6 +116,8 @@ protected:
 			MetaDataError = e;
 		}
 	}
+
+	virtual List<MetaDataThumb ^> ^generateThumbnails() = 0;
 
 public:
 
@@ -255,7 +258,67 @@ public:
 		}
 	}
 
-	virtual List<MetaDataThumb ^> ^generateThumbnails() = 0;
+	List<MetaDataThumb ^> ^getThumbnails()
+	{
+		
+		List<MetaDataThumb ^> ^thumbs = gcnew List<MetaDataThumb ^>();
+
+		if(MediaFormat == MediaFile::MediaType::UNKNOWN) {
+
+			return(thumbs);
+
+		} else if(Util::isUrl(Location)) {
+
+			thumbs = generateThumbnails();
+			return(thumbs);
+		}
+
+		DB::Context ^ctx = gcnew DB::Context();
+
+		DB::Media ^mediaItem = ctx->getMediaByLocation(Location);
+
+		if(mediaItem != nullptr) {
+
+			FileMetaData ^temp = gcnew FileMetaData(mediaItem);
+
+			ctx->close();
+			
+			if(temp->Thumbnail->Count == 0) {
+
+				thumbs = generateThumbnails();
+				MetaData->Thumbnail = thumbs;
+				MetaData->saveToDatabase();
+
+			} else {
+
+				thumbs = temp->Thumbnail;
+			}
+
+		} else {
+
+			ctx->close();
+
+			thumbs = generateThumbnails();
+
+			if(MetaDataError == nullptr) {
+				
+				MetaData->Thumbnail = thumbs;
+				MetaData->saveToDatabase();
+
+			} else {
+
+				mediaItem = DB::Context::newMediaItem(gcnew FileInfo(Location));
+				mediaItem->CanStoreMetaData = 0;
+
+				FileMetaData ^temp = gcnew FileMetaData(mediaItem);
+				temp->Thumbnail = thumbs;
+
+				temp->saveToDatabase();
+			}
+		}
+
+		return(thumbs);
+	}
 
 	virtual String ^getDefaultCaption() {
 

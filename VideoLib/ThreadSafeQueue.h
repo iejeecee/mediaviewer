@@ -3,7 +3,6 @@
 
 #include "VideoFrame.h"
 
-using namespace Microsoft::DirectX::Direct3D;
 using namespace System::Collections::Generic;
 using namespace System::Threading;
 

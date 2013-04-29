@@ -10,7 +10,7 @@ namespace imageviewer {
 
 using namespace System;
 using namespace System::IO;
-namespace Data = MediaDatabase;
+namespace DB = MediaDatabase;
 
 public ref class MediaSearch
 {
@@ -24,25 +24,34 @@ private:
 
   void parseQuery(MediaSearchState ^state) {
 
-	  
+	  array<String ^> ^subQueries = state->Query->Split(',');
 
+	  for(int i = 0; i < subQueries->Length; i++) {
+
+		  subQueries[i] = subQueries[i]->Trim();
+	  }
+
+	  if(state->DoTagSearch == true) {
+
+		 state->SearchTags->AddRange(subQueries);
+	  }
   }
-
+/*
   void mediaFileToMediaData(MediaFile ^media, Data::Media ^item) {
 
 	  FileMetaData ^metaData = media->MetaData;
 
 	  if(metaData->CreationDate != DateTime::MinValue) {
 
-		  item->MetaDataCreated = metaData->CreationDate;
+		  item->MetaDataCreationDate = metaData->CreationDate;
 	  }
 
 	  if(metaData->CreationDate != DateTime::MinValue) {
 
-		  item->MetaDataCreated = metaData->CreationDate;
+		  item->MetaDataCreationDate = metaData->CreationDate;
 	  }
   }
-
+*/
   Regex ^wildcardToRegex(String ^pattern) {
 
 	  String ^regexPattern =  "^" + 
@@ -68,6 +77,12 @@ private:
 
   void mediaTagSearch(MediaSearchState ^state) {
 
+	  DB::Context ^ctx = gcnew DB::Context();
+
+	  state->Matches->AddRange(ctx->findMediaByTags(state->SearchTags));
+
+	  ctx->close();
+/*
 	  List<Data::Media ^> ^updateMedia;
 	  List<Data::Media ^> ^insertMedia;
 
@@ -75,13 +90,13 @@ private:
 
 	  mediaTable->needUpdate(state->SearchRoot, state->SearchFiles,
 		  updateMedia, insertMedia);
-/*
+
 	  for each(Data::Media ^item in updateMedia) {
 
 		  MediaFile ^media = nullptr;
 
 		  try {
-
+ 
 			  media = MediaFileFactory::openBlocking(item->Location,
 				  MediaFile::MetaDataMode::LOAD_FROM_DISK);
 
@@ -90,16 +105,6 @@ private:
 				  item->CanStoreMetaData = 0;
 				  continue;
 			  }
-
-			  for each(String ^tag in media->MetaData->Tags) {
-
-				  if(state->SearchTags->Contains(tag)) {
-
-					  state->Matches->Add(file);
-				  }
-			  }
-
-			  Debug::Write(media->Location + "\n");
 
 		  } catch (Exception ^e) {
 
@@ -114,7 +119,7 @@ private:
 		  }
 
 	  }
-	  */
+*/	  
   }
 
 
@@ -212,6 +217,8 @@ public:
 		if(String::IsNullOrEmpty(path) || String::IsNullOrEmpty(query)) return(state);
 
 		try {
+
+			parseQuery(state);
 
 			state->SearchRoot = gcnew DirectoryInfo(path);
 			 

@@ -189,9 +189,14 @@ namespace imageviewer {
 
 				 if(e->KeyCode == Keys::Enter) {
 
-					 searchState->Query = Query;
+					 MediaSearchState ^state = gcnew MediaSearchState();
 
-					 DoSearch(this, searchState);
+					 state->Query = Query;
+					 state->DoFileNameSearch = searchState->DoFileNameSearch;
+					 state->DoTagSearch = searchState->DoTagSearch;
+					 state->RecurseDirectories = searchState->RecurseDirectories;
+
+					 DoSearch(this, state);
 				 }
 			 }
 	private: System::Void queryTextBox_Enter(System::Object^  sender, System::EventArgs^  e) {

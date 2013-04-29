@@ -121,6 +121,16 @@ namespace imageviewer {
 
 			XMPLib::MetaData::setLogCallback(gcnew XMPLib::MetaData::LogCallbackDelegate(this, &MainForm::metaData_logCallback));
 
+			try {
+				MediaDatabase::Context ^ctx = gcnew MediaDatabase::Context();
+				ctx->clearAllData();
+				ctx->saveChanges();
+				ctx->close();
+			}catch (Exception ^e) {
+
+				log->Error("error clearing database",e);
+			}
+
 			//HRTimerTest::test();
 
 			if(args->Length != 0) {

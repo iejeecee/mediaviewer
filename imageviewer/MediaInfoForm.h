@@ -1431,7 +1431,7 @@ public:
 
 						 if(useDefaultThumb) {
 
-							 thumbs = mediaFile->generateThumbnails();
+							 thumbs = mediaFile->getThumbnails();
 
 						 } else if(useBrowsedThumb) {
 
@@ -1468,7 +1468,7 @@ public:
 						 // before saving
 						 mediaFile->close();
 
-						 mediaFile->MetaData->saveToDisk();
+						 mediaFile->MetaData->save();
 					 }					 
 
 				 } catch (Exception ^e) {
@@ -1561,7 +1561,7 @@ private: System::Void defaultThumbRadioButton_CheckedChanged(System::Object^  se
 
 				 try {
 
-					 List<MetaDataThumb ^> ^thumbs = media[0]->generateThumbnails();
+					 List<MetaDataThumb ^> ^thumbs = media[0]->getThumbnails();
 
 					 if(thumbs->Count > 0) {
 

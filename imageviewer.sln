@@ -1,20 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imageviewer", "imageviewer\imageviewer.vcproj", "{64F49906-EE08-4841-BE66-B08EB08E3F83}"
-	ProjectSection(ProjectDependencies) = postProject
-		{8722BEBF-38EE-4B0D-98F1-413C840BAFD7} = {8722BEBF-38EE-4B0D-98F1-413C840BAFD7}
-		{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8} = {5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}
-	EndProjectSection
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imageviewer", "imageviewer\imageviewer.vcxproj", "{64F49906-EE08-4841-BE66-B08EB08E3F83}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoLib", "VideoLib\VideoLib.vcproj", "{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoLib", "VideoLib\VideoLib.vcxproj", "{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPLib", "XMPLib\XMPLib.vcproj", "{8722BEBF-38EE-4B0D-98F1-413C840BAFD7}"
-	ProjectSection(ProjectDependencies) = postProject
-		{3E17E30C-1BE8-4AF6-8AC6-AF89561F66D0} = {3E17E30C-1BE8-4AF6-8AC6-AF89561F66D0}
-	EndProjectSection
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPLib", "XMPLib\XMPLib.vcxproj", "{8722BEBF-38EE-4B0D-98F1-413C840BAFD7}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPDLL", "XMPDLL\XMPDLL.vcproj", "{3E17E30C-1BE8-4AF6-8AC6-AF89561F66D0}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPDLL", "XMPDLL\XMPDLL.vcxproj", "{3E17E30C-1BE8-4AF6-8AC6-AF89561F66D0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaDatabase", "MediaDatabase\MediaDatabase.csproj", "{1E33135B-D4B0-42F5-B778-DC681CA9D22F}"
 EndProject

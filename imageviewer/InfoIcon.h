@@ -25,7 +25,8 @@ public:
 		GEOTAG,
 		COMMENTS,
 		MUTE,
-		MPG
+		MPG,
+		TAGGED
 	};
 
 private:

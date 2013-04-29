@@ -12,7 +12,6 @@ namespace VideoLib {
 
 using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
-using namespace Microsoft::DirectX::Direct3D;
 
 
 VideoPreview::VideoPreview() {

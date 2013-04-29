@@ -7,8 +7,6 @@
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
-using namespace Microsoft::DirectX::Direct3D;
-using namespace Microsoft::DirectX;
 using namespace System::IO;
 
 namespace VideoLib {

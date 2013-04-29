@@ -173,7 +173,7 @@ public:
 
 		if(MetaData != nullptr) {
 
-			if(MetaData->Description != nullptr) {
+			if(!String::IsNullOrEmpty(MetaData->Description)) {
 
 				sb->AppendLine("Description:");
 
@@ -182,7 +182,7 @@ public:
 				sb->AppendLine();
 			}
 
-			if(MetaData->Creator != nullptr) {
+			if(!String::IsNullOrEmpty(MetaData->Creator)) {
 
 				sb->AppendLine("Creator:");
 				sb->AppendLine(MetaData->Creator);

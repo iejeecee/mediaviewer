@@ -75,7 +75,8 @@ namespace XMPDLL {
 			//XMP_OptionBits options = 0;
 
 			// Must initialize SXMPFiles before we use it
-			if (!SXMPFiles::Initialize (0) )
+		
+			if (!SXMPFiles::Initialize (XMP_OptionBits(0)) )
 			{
 				return(false);
 			}

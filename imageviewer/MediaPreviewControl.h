@@ -136,58 +136,19 @@ private:
 
 	delegate void loadPreviewDelegate(MediaFile ^media, List<MetaDataThumb ^> ^thumbs);
 
-	List<MetaDataThumb ^> ^getAndStoreThumbNails(MediaFile ^media) {
-
-		List<MetaDataThumb ^> ^thumbs = nullptr;
-
-		Data::MediaTable ^mediaTable = gcnew Data::MediaTable();
-
-		MediaDatabase::Media ^mediaItem = mediaTable->getMediaByLocation(media->Location);
-
-		if(mediaItem != nullptr) {
-
-			FileMetaData ^temp = gcnew FileMetaData(mediaItem);
-
-			thumbs = temp->Thumbnail;
-
-		} else {
-
-			thumbs = media->generateThumbnails();
-
-			if(media->MetaDataError == nullptr) {
-				
-				media->MetaData->Thumbnail = thumbs;
-				media->MetaData->saveToDatabase();
-
-			} else {
-
-				mediaItem = gcnew MediaDatabase::Media();
-				mediaItem->Location = media->Location;
-				mediaItem->CanStoreMetaData = 0;
-
-				FileMetaData ^temp = gcnew FileMetaData(mediaItem);
-				temp->Thumbnail = thumbs;
-
-				temp->saveToDatabase();
-			}
-		}
-
-		return(thumbs);
-	}
+	
 
 	void mediaFileFactory_OpenFinished(System::Object ^sender, MediaFile ^media) {
 
 		array<Object ^> ^args = gcnew array<Object ^>(2);
 
 		args[0] = media;
-		args[1] = gcnew List<MetaDataThumb ^>();
+		args[1] = nullptr;
 
 		try {
 
 			// grab or generate thumbnail images
-			List<MetaDataThumb ^> ^thumbs = getAndStoreThumbNails(media);
-
-			args[1] = thumbs;			
+			args[1] = media->getThumbnails();			
 
 		} catch (Exception ^e) {
 
@@ -258,16 +219,39 @@ private:
 
 			if(media->MetaData == nullptr) {
 
-				icon = gcnew InfoIcon(InfoIcon::IconType::ERROR);
+				InfoIcon ^icon = gcnew InfoIcon(InfoIcon::IconType::ERROR);
 				icon->Caption = "Cannot read metadata";
 
 				pictureBox->addInfoIcon(icon);
 
-			} else if(media->MetaData->HasGeoTag) {
+			} else {
+				
+				if(media->MetaData->HasGeoTag) {
 
-				icon = gcnew InfoIcon(InfoIcon::IconType::GEOTAG);
-				icon->Caption = "Geo Tag";
-				pictureBox->addInfoIcon(icon);
+					InfoIcon ^icon = gcnew InfoIcon(InfoIcon::IconType::GEOTAG);
+					icon->Caption = "Geo Tag";
+
+					pictureBox->addInfoIcon(icon);
+				}
+
+				int nrTags = media->MetaData->Tags->Count;
+
+				if(nrTags  > 0) {
+
+					InfoIcon ^icon = gcnew InfoIcon(InfoIcon::IconType::TAGGED);
+
+					for(int i = 0; i < nrTags; i++) {
+
+						icon->Caption += media->MetaData->Tags[i];
+						if(i != nrTags - 1) {
+
+							icon->Caption += "\n";
+						}
+
+					}
+
+					pictureBox->addInfoIcon(icon);
+				}
 			}
 
 			// if media is a video and has no audio add a muted icon

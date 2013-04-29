@@ -5,7 +5,11 @@
 namespace imageviewer {
 
 using namespace System::Threading;
-namespace DS = Microsoft::DirectX::DirectSound;
+using namespace SharpDX::DirectSound;
+using namespace SharpDX::Multimedia;
+
+#define DSBVOLUME_MIN               -10000
+#define DSBVOLUME_MAX               0
 
 public ref class StreamingAudioBuffer
 {
@@ -24,8 +28,8 @@ private:
 
 	Windows::Forms::Control ^owner;
 
-	DS::Device ^device;
-	DS::SecondaryBuffer ^audioBuffer;
+	DirectSound ^directSound;
+	SecondarySoundBuffer ^audioBuffer;
 	int offsetBytes;
 	int bufferSizeBytes;
 
@@ -61,7 +65,7 @@ public:
 
 	StreamingAudioBuffer(Windows::Forms::Control ^owner)
 	{
-		device = nullptr;
+		directSound = nullptr;
 		this->owner = owner;
 
 		audioBuffer = nullptr;
@@ -80,9 +84,9 @@ public:
 
 		releaseResources();
 
-		if(device != nullptr) {
+		if(directSound != nullptr) {
 
-			delete device;
+			delete directSound;
 		}
 	}
 
@@ -96,8 +100,8 @@ public:
 		if(audioBuffer != nullptr) {
 
 			audioBuffer->Stop();
-			audioBuffer->SetCurrentPosition(0);				
-			audioBuffer->Write(0, silence, DS::LockFlag::None);
+			audioBuffer->CurrentPosition = 0;			
+			audioBuffer->Write(silence, 0, LockFlags::None);
 		}
 
 		offsetBytes = 0;
@@ -156,13 +160,13 @@ public:
 
 			if(audioBuffer != nullptr && muted == false) {
 
-				int min = int(DS::Volume::Min) - int(DS::Volume::Min) / 3;
+				int min = int(DSBVOLUME_MIN) - int(DSBVOLUME_MIN) / 3;
 
-				audioBuffer->Volume = Util::lerp<int>(volume, min, (int)DS::Volume::Max);;
+				audioBuffer->Volume = Util::lerp<int>(volume, min, (int)DSBVOLUME_MAX);;
 
 			} else if(audioBuffer != nullptr && muted == true) {
 
-				audioBuffer->Volume = int(DS::Volume::Min);
+				audioBuffer->Volume = int(DSBVOLUME_MIN);
 			}
 		}
 
@@ -179,10 +183,10 @@ public:
 	
 		try {
 
-			if(device == nullptr) {
+			if(directSound == nullptr) {
 
-				device = gcnew DS::Device();
-				device->SetCooperativeLevel(owner, DS::CooperativeLevel::Priority);	
+				directSound = gcnew DirectSound();
+				directSound->SetCooperativeLevel(owner->Handle, CooperativeLevel::Priority);	
 			}
 
 			releaseResources();
@@ -192,27 +196,37 @@ public:
 			this->samplesPerSecond = samplesPerSecond;
 			this->nrChannels = nrChannels;
 
-			DS::WaveFormat format;
-
-			format.SamplesPerSecond = samplesPerSecond;
-			format.BitsPerSample = bytesPerSample * 8;
-			format.Channels = nrChannels;
-			format.FormatTag = DS::WaveFormatTag::Pcm;
-			format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
-			format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
-
-			DS::BufferDescription ^desc = gcnew DS::BufferDescription(format);
+			SoundBufferDescription ^desc = gcnew SoundBufferDescription();
 			desc->BufferBytes = bufferSizeBytes;
-			desc->DeferLocation = true;
+			desc->Flags = BufferFlags::Defer | BufferFlags::GlobalFocus |
+				BufferFlags::ControlVolume | BufferFlags::ControlFrequency |
+				BufferFlags::GetCurrentPosition2;
+		
+			//desc->AlgorithmFor3D = Guid::Empty;
+			
+			WaveFormat ^format = gcnew WaveFormat(samplesPerSecond,
+				bytesPerSample * 8, nrChannels);
+
+			desc->Format = format;
+/*
+			desc->Format->SampleRate = samplesPerSecond;
+			desc->Format->BitsPerSample = bytesPerSample * 8;
+			desc->Format->Channels = nrChannels;
+			desc->Format->FormatTag = WaveFormatTag::Pcm;
+			desc->Format->BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
+			desc->Format->AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
+*/
+		
+			/*desc->DeferLocation = true;
 			desc->GlobalFocus = true;
 			desc->ControlVolume = true;
 			desc->CanGetCurrentPosition = true;
-			desc->ControlFrequency = true;
+			desc->ControlFrequency = true;*/
 
 			silence = gcnew array<unsigned char>(bufferSizeBytes);
 			cli::array<unsigned char>::Clear(silence, 0, silence->Length);
 
-			audioBuffer = gcnew DS::SecondaryBuffer(desc, device);
+			audioBuffer = gcnew SecondarySoundBuffer(directSound, desc);
 
 			Volume = volume;
 			offsetBytes = 0;
@@ -224,11 +238,10 @@ public:
 
 			log->Info("Direct Sound Initialized");
 
-		} catch (DS::SoundException ^e){
+		} catch (SharpDX::SharpDXException ^e){
 
 			log->Error("Error initializing Direct Sound", e);
-			MessageBox::Show("Error initializing Direct Sound: " + e->Message, "Direct Sound Error");
-		
+			MessageBox::Show("Error initializing Direct Sound: " + e->Message, "Direct Sound Error");		
 
 		} catch (Exception ^e) {
 
@@ -243,7 +256,9 @@ public:
 		// divided by bytespersecond.
 		if(audioBuffer == nullptr) return(0);
 
-		int playPos = audioBuffer->PlayPosition;
+		int playPos, writePos; 
+		
+		audioBuffer->GetCurrentPosition(playPos, writePos);
 
 		if(ptsPos < prevPtsPos) {
 
@@ -290,13 +305,13 @@ public:
 			offsetBytes = writePos;
 		} 
 
-		audioBuffer->Write(offsetBytes, frame->Stream, frame->Length, DS::LockFlag::None);
+		audioBuffer->Write(frame->Data, 0, frame->Length, offsetBytes, LockFlags::None);
 
 		offsetBytes = (offsetBytes + frame->Length) % bufferSizeBytes;
 
 		if(audioState == AudioState::START_PLAY_AFTER_NEXT_WRITE) {
 
-			audioBuffer->Play(0, DS::BufferPlayFlags::Looping);
+			audioBuffer->Play(0, PlayFlags::Looping);
 			audioState = AudioState::PLAYING;
 		}
 

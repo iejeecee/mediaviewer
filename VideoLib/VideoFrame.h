@@ -4,8 +4,7 @@
 #include "VideoDecoder.h"
 
 using namespace System;
-using namespace Microsoft::DirectX::Direct3D;
-using namespace Microsoft::DirectX;
+using namespace SharpDX::Direct3D9;
 using namespace System::Diagnostics;
 using namespace System::Drawing;
 
@@ -85,13 +84,13 @@ namespace VideoLib {
 			Debug::Assert(frame != nullptr && frame->Description.Width == Width &&
 				frame->Description.Height == Height);
 
-			Drawing::Rectangle rect = Drawing::Rectangle(0, 0, Width, Height);
+			SharpDX::Rectangle rect = SharpDX::Rectangle(0, 0, Width, Height);
 
 			// copy raw frame data to bitmap
-			int pitch;
-			GraphicsStream ^stream = frame->LockRectangle(rect, LockFlags::None, pitch);
 
-			Byte *pict = (BYTE*)stream->InternalDataPointer;
+			SharpDX::DataRectangle ^stream = frame->LockRectangle(rect, LockFlags::None);
+
+			Byte *pict = (BYTE*)stream->DataPointer.ToPointer();
 
 			Byte *Y = AVLibFrameData->data[0];
 			Byte *U = AVLibFrameData->data[1];
@@ -100,19 +99,19 @@ namespace VideoLib {
 			for (int y = 0 ; y < Height ; y++)
 			{
 				memcpy(pict, Y, Width);
-				pict += pitch;
+				pict += stream->Pitch;
 				Y += Width;
 			}
 			for (int y = 0 ; y < Height / 2 ; y++)
 			{
 				memcpy(pict, V, Width / 2);
-				pict += pitch / 2;
+				pict += stream->Pitch / 2;
 				V += Width / 2;
 			}
 			for (int y = 0 ; y < Height / 2; y++)
 			{
 				memcpy(pict, U, Width / 2);
-				pict += pitch / 2;
+				pict += stream->Pitch / 2;
 				U += Width / 2;
 			}
 
