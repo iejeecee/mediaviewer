@@ -19,6 +19,7 @@
 #include "YoutubeForm.h"
 #include "MediaSearch.h"
 #include "SearchTextBoxToolStripItem.h"
+#include "VisualAppender.h"
 
 using namespace System;
 using namespace System::ComponentModel;
@@ -99,7 +100,7 @@ namespace imageviewer {
 		MainForm(array<System::String ^> ^args)
 		{
 
-			log->Info("Starting Application");
+			log->Info("Starting Application");			
 			
 			InitializeComponent();
 			//
@@ -120,7 +121,7 @@ namespace imageviewer {
 			System::Diagnostics::Process::GetCurrentProcess()->PriorityClass = System::Diagnostics::ProcessPriorityClass::RealTime;
 
 			XMPLib::MetaData::setLogCallback(gcnew XMPLib::MetaData::LogCallbackDelegate(this, &MainForm::metaData_logCallback));
-
+/*
 			try {
 				MediaDatabase::Context ^ctx = gcnew MediaDatabase::Context();
 				ctx->clearAllData();
@@ -130,7 +131,7 @@ namespace imageviewer {
 
 				log->Error("error clearing database",e);
 			}
-
+*/
 			//HRTimerTest::test();
 
 			if(args->Length != 0) {
@@ -1246,6 +1247,11 @@ private: System::Void youtubeToolStripButton_Click(System::Object^  sender, Syst
 			 youtube->Show();
 		 }
 private: System::Void logToolStripMenuItem_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			 array<log4net::Appender::IAppender ^> ^appenders = log4net::LogManager::GetRepository()->GetAppenders();
+			 VisualAppender ^appender = dynamic_cast<VisualAppender ^>(appenders[0]);
+			 appender->Form->Show();
+		
 		 }
 
 private: void metaData_logCallback(XMPLib::MetaData::LogLevel level, String ^message) {

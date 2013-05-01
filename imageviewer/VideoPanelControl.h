@@ -1074,6 +1074,9 @@ restartaudio:
 			videoPts = 0;
 			videoPtsDrift = 0;
 
+			seekRequest = false;
+			seekPosition = 0;
+
 		}
 	
 

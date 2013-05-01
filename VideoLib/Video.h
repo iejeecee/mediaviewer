@@ -81,6 +81,9 @@ protected:
 		char message[65536];   
 		const char *module = NULL;
 
+		// if no logging is done, return
+		if(logCallback == NULL) return;
+
 		// Comment back in to filter only "important" messages
 		if(libAVLogOnlyImportant == true && level > AV_LOG_WARNING)
 			return;
@@ -109,11 +112,8 @@ protected:
 		// remove trailing newline
 		fullMessage.erase(std::remove(fullMessage.begin(), fullMessage.end(), '\n'), fullMessage.end());
 
-		if(logCallback != NULL) {
-
-			logCallback(level, fullMessage.c_str());
-		}
-      
+		logCallback(level, fullMessage.c_str());
+	
     }
 
 
