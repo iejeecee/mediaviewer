@@ -210,6 +210,8 @@ private:
 
 		ImageGridItem ^item = dynamic_cast<ImageGridItem ^>(media->UserState);
 
+		if(item == nullptr) return;
+
 		if(item->InfoIconMode == ImageGridItem::InfoIconModes::DEFAULT_ICONS_ONLY ||
 			item->InfoIconMode == ImageGridItem::InfoIconModes::SHOW_ALL_ICONS)
 		{

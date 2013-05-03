@@ -292,7 +292,7 @@ public:
 	}
 
 	void write(VideoLib::AudioFrame ^frame) {
-
+	
 		if(audioBuffer == nullptr || frame->Length == 0) return;
 
 		// store pts for this frame and the byte offset at which this frame is

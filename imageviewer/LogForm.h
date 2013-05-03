@@ -6,6 +6,7 @@ using namespace System::Collections::Generic;
 using namespace System::Windows::Forms;
 using namespace System::Data;
 using namespace System::Drawing;
+using namespace System::Threading;
 
 
 namespace imageviewer {
@@ -28,11 +29,10 @@ namespace imageviewer {
 			//
 			//TODO: Add the constructor code here
 			//
-			logText = gcnew List<Tuple<LogLevel, String ^> ^>();
 			args = gcnew array<Object ^>(2);
 			addTextDelegate = gcnew AddTextDelegate(this, &LogForm::addText);
 
-			filterComboBox->SelectedIndex = 0;
+			filterComboBox->SelectedIndex = 2;
 		}
 
 	protected:
@@ -52,6 +52,7 @@ namespace imageviewer {
 	private: System::Windows::Forms::ComboBox^  filterComboBox;
 	private: System::Windows::Forms::RichTextBox^  logTextBox;
 	private: System::Windows::Forms::Button^  clearButton;
+
 	protected: 
 
 	private:
@@ -151,6 +152,7 @@ namespace imageviewer {
 			this->Icon = (cli::safe_cast<System::Drawing::Icon^  >(resources->GetObject(L"$this.Icon")));
 			this->Name = L"LogForm";
 			this->Text = L"Log";
+			this->FormClosing += gcnew System::Windows::Forms::FormClosingEventHandler(this, &LogForm::LogForm_FormClosing);
 			this->splitContainer1->Panel1->ResumeLayout(false);
 			this->splitContainer1->Panel2->ResumeLayout(false);
 			this->splitContainer1->Panel2->PerformLayout();
@@ -180,8 +182,6 @@ namespace imageviewer {
 		array<Object ^> ^args;
 
 		LogLevel filterLevel;
-
-		List<Tuple<LogLevel, String ^> ^> ^logText;
 		
 		void addText(LogLevel level, String ^text) {
 
@@ -222,7 +222,7 @@ namespace imageviewer {
 				}
 
 			}
-
+		
 			logTextBox->AppendText(text);
 			logTextBox->SelectionColor = logTextBox->ForeColor;
 
@@ -233,20 +233,32 @@ namespace imageviewer {
 
 		void append(LogLevel level, String ^text) {
 
-			logText->Add(Tuple::Create(level, text));
-
-			args[0] = level;
-			args[1] = text;
-
 			if(filterLevel < level) return;
 
-			if(this->InvokeRequired) {
+			Monitor::Enter(args);
 
-				this->BeginInvoke(addTextDelegate, args);
+			try {
 
-			} else {
+				args[0] = level;
+				args[1] = text;
 
-				addText(level, text);
+				if(!this->IsHandleCreated)
+				{
+					this->CreateHandle();
+				}
+
+				if(this->InvokeRequired) {
+
+					this->BeginInvoke(addTextDelegate, args);
+
+				} else {
+
+					addText(level, text);
+				}
+
+			} finally {
+
+				Monitor::Exit(args);
 			}
 
 		}
@@ -271,6 +283,11 @@ private: System::Void filterComboBox_SelectedIndexChanged(System::Object^  sende
 
 				 filterLevel = LogLevel::ERROR;
 			 }
+		 }
+
+private: System::Void LogForm_FormClosing(System::Object^  sender, System::Windows::Forms::FormClosingEventArgs^  e) {
+			 e->Cancel = true;
+			 this->Hide();
 		 }
 };
 }
