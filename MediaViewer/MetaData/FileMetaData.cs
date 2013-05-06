@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using DB = MediaDatabase;
 using XMPLib;
+using MediaViewer.MetaData.MetaDataTree;
+using System.Globalization;
+
 
 namespace MediaViewer.MetaData
 {

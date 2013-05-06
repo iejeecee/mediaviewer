@@ -109,14 +109,14 @@ namespace MediaViewer.Utils
 
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        static bool CopyFileEx(
+        static extern bool CopyFileEx(
             string lpExistingFileName, string lpgcnewFileName,
             CopyProgressDelegate lpProgressRoutine,
             IntPtr lpData, ref int pbCancel, int dwCopyFlags);
 
         [System.Security.SuppressUnmanagedCodeSecurity]
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true, CallingConvention = CallingConvention.Winapi)]
-        static IntPtr CreateFileW(
+        static extern IntPtr CreateFileW(
            string lpFileName,
            uint dwDesiredAccess,
            int dwShareMode,
@@ -166,7 +166,7 @@ namespace MediaViewer.Utils
                     OnAfterCopy(this, new FileUtilsEventArgs(destinationDir, true));
                 }
 
-                CopyProgressDelegate progressCallback = new CopyProgressDelegate(this, &imageviewer.FileUtils.copyProgress);
+                CopyProgressDelegate progressCallback = new CopyProgressDelegate(this, FileUtils.copyProgress);
 
                 int cancel = 0;
 

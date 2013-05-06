@@ -17,15 +17,15 @@ namespace MediaViewer.MediaFile
 
         }
 
-        public override List<MetaDataThumb> generateThumbnails()
+        protected override List<MetaDataThumb> generateThumbnails()
         {
 
             return (new List<MetaDataThumb>());
         }
 
-        public MediaType MediaFormat
+        public override MediaType MediaFormat
         {
-            override get
+            get
             {
 
                 return (MediaType.UNKNOWN);

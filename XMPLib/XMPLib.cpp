@@ -333,11 +333,11 @@ void MetaData::setLocalizedText(String ^nameSpace, String ^textName, String ^gen
 		marshal_as<std::string>(itemValue));
 }
 
-void MetaData::iterate(XMP_OptionBits options, List<MetaDataProperty ^> ^%properties) {
+void MetaData::iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%properties) {
 
 	std::vector<XMPDLL::XMPProperty> propsTemp;
 
-	xmpFile->iterate(options, propsTemp);
+	xmpFile->iterate((XMP_OptionBits) options, propsTemp);
 
 	properties->Clear();
 

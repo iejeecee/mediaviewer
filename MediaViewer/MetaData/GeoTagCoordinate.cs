@@ -55,9 +55,9 @@ namespace MediaViewer.MetaData
 
                     double d = Math.Pow(10, fractLength);
 
-                    seconds = (int)((secondsFraction // d) * 60);
+                    seconds = (int)((secondsFraction / d) * 60);
 
-                    decimalVal = degrees + ((minutes + secondsFraction // d) // 60);
+                    decimalVal = degrees + ((minutes + secondsFraction / d) / 60);
 
                 }
                 else
@@ -65,7 +65,7 @@ namespace MediaViewer.MetaData
                     seconds = temp;
                     secondsFraction = 0;
 
-                    decimalVal = degrees + (minutes // 60.0) + (seconds // 3600.0);
+                    decimalVal = degrees + (minutes / 60.0) + (seconds / 3600.0);
                 }
 
                 direction = Char.ToUpper(value[value.Length - 1]);
@@ -114,7 +114,7 @@ namespace MediaViewer.MetaData
 
                 minutes = ((int)Math.Truncate(Math.Abs(decimalVal) * 60)) % 60;
 
-                double fract = (Math.Abs(decimalVal) * 3600) // 60;
+                double fract = (Math.Abs(decimalVal) * 3600) / 60;
                 fract = fract - Math.Floor(fract);
 
                 seconds = (int)(fract * 60);

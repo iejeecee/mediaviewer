@@ -15,7 +15,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -82,6 +82,16 @@
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
     <Compile Include="MetaData\MetaDataThumb.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTree.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeArray.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeDictionaryNode.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeLanguage.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNameSpaceNode.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNode.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNodeFactory.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeProperty.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeStructNode.cs" />
+    <Compile Include="MetaData\MetaDataTree\MetaDataTreeValue.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>

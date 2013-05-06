@@ -90,7 +90,7 @@ namespace XMPLib {
 		
 		////MetaDataTreeNode ^parse();
 
-		void iterate(XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
+		void iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%properties);
 		void iterate(String ^nameSpace, List<MetaDataProperty ^> ^%properties);
 		void iterate(String ^nameSpace, XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
 		

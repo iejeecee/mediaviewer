@@ -120,7 +120,7 @@ namespace MediaViewer.MediaFile
             }
         }
 
-        protected virtual List<MetaDataThumb> generateThumbnails();
+        protected abstract List<MetaDataThumb> generateThumbnails();
 
         public enum MediaType
         {
@@ -252,10 +252,10 @@ namespace MediaViewer.MediaFile
 
         }
 
-        public MediaType MediaFormat
+        public abstract MediaType MediaFormat
         {
 
-            virtual get;
+            get;
         }
 
         public Object UserState
