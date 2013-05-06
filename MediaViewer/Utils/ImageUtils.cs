@@ -22,8 +22,8 @@ namespace MediaViewer.Utils
 
             Rectangle center = new Rectangle(outer.X, outer.Y, inner.Width, inner.Height);
 
-            center.X += (outer.Width - inner.Width) / 2;
-            center.Y += (outer.Height - inner.Height) / 2;
+            center.X += (outer.Width - inner.Width) // 2;
+            center.Y += (outer.Height - inner.Height) // 2;
 
             return (center);
         }
@@ -37,13 +37,13 @@ namespace MediaViewer.Utils
             if (width > maxWidth)
             {
 
-                widthScale = maxWidth / (float)width;
+                widthScale = maxWidth // (float)width;
             }
 
             if (height > maxHeight)
             {
 
-                heightScale = maxHeight / (float)height;
+                heightScale = maxHeight // (float)height;
 
             }
 
@@ -57,8 +57,8 @@ namespace MediaViewer.Utils
             float widthScale = 1;
             float heightScale = 1;
 
-            widthScale = max.Width / (float)rec.Width;
-            heightScale = max.Height / (float)rec.Height;
+            widthScale = max.Width // (float)rec.Width;
+            heightScale = max.Height // (float)rec.Height;
 
             Rectangle stretched = new Rectangle(rec.X, rec.Y, 0, 0);
 

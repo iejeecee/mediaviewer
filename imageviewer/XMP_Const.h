@@ -259,7 +259,7 @@ enum {
 /// \name XML namespace constants for standard XMP schema.
 /// @{
 ///
-/// \def kXMP_NS_XMP
+/// \def Constants.ckXMP_NS_XMP
 /// \brief The XML namespace for the XMP "basic" schema.
 ///
 /// \def kXMP_NS_XMP_Rights

@@ -43,7 +43,8 @@ public:
 		
 		try {
 
-			if(metaData->open(FilePath, kXMPFiles_OpenForUpdate) == false) {
+			if(metaData->open(FilePath, 
+				Consts::OpenOptions::XMPFiles_OpenForUpdate) == false) {
 
 				throw gcnew Exception("Error opening metadata");
 			}
@@ -53,8 +54,8 @@ public:
 				String ^latitude = GeoTag->latitude->Coord;
 				String ^longitude = GeoTag->longitude->Coord;
 
-				metaData->setProperty(kXMP_NS_EXIF, "GPSLatitude", latitude, 0);
-				metaData->setProperty(kXMP_NS_EXIF, "GPSLongitude", longitude, 0);
+				metaData->setProperty(kXMP_NS_EXIF, "GPSLatitude", latitude, Consts::PropOptions::XMP_NoOptions);
+				metaData->setProperty(kXMP_NS_EXIF, "GPSLongitude", longitude, Consts::PropOptions::XMP_NoOptions);
 
 				metaData->putXMP();
 

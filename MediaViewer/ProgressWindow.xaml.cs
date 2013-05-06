@@ -14,9 +14,9 @@ using System.Windows.Shapes;
 
 namespace MediaViewer
 {
-    /// <summary>
-    /// Interaction logic for ProgressWindow.xaml
-    /// </summary>
+    ////// <summary>
+    ////// Interaction logic for ProgressWindow.xaml
+    ////// <//summary>
     public partial class ProgressWindow : Window
     {
         private Object userState;
@@ -199,7 +199,7 @@ namespace MediaViewer
         }
         private void setTotalProgressValue(double value)
         {
-            progressLabel.Content = "Finished: " + Convert.ToString(value) + " / " + Convert.ToString(totalProgressBar.Maximum);
+            progressLabel.Content = "Finished: " + Convert.ToString(value) + " // " + Convert.ToString(totalProgressBar.Maximum);
             totalProgressBar.Value = value;
         }
 
@@ -231,7 +231,7 @@ namespace MediaViewer
         {
 
             itemLabel.Content = value;
-            //itemLabel.ContentStringFormat = System.Drawing.ContentAlignment.MiddleCenter;
+            ////itemLabel.ContentStringFormat = System.Drawing.ContentAlignment.MiddleCenter;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)

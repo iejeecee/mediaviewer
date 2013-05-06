@@ -68,6 +68,10 @@
     <Compile Include="ImagePanelControl.xaml.cs">
       <DependentUpon>ImagePanelControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Logging\LogWindow.xaml.cs">
+      <DependentUpon>LogWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\VisualAppender.cs" />
     <Compile Include="MediaFile\ImageFile.cs" />
     <Compile Include="MediaFile\MediaFileBase.cs" />
     <Compile Include="MediaFile\MediaFileException.cs" />
@@ -75,6 +79,8 @@
     <Compile Include="MediaFile\UnknownFile.cs" />
     <Compile Include="MediaFile\VideoFile.cs" />
     <Compile Include="MetaData\FileMetaData.cs" />
+    <Compile Include="MetaData\GeoTagCoordinate.cs" />
+    <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
     <Compile Include="MetaData\MetaDataThumb.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
@@ -90,6 +96,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Logging\LogWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -128,6 +138,7 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="log4net.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -137,7 +148,20 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\MediaDatabase\MediaDatabase.csproj">
+      <Project>{1e33135b-d4b0-42f5-b778-dc681ca9d22f}</Project>
+      <Name>MediaDatabase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
+      <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
+      <Name>VideoLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XMPLib\XMPLib.vcxproj">
+      <Project>{8722bebf-38ee-4b0d-98f1-413c840bafd7}</Project>
+      <Name>XMPLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

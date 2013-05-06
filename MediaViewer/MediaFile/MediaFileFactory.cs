@@ -16,12 +16,12 @@ namespace MediaViewer.MediaFile
     class MediaFileFactory
     {
 
-        // 60 seconds
+        //// 60 seconds
         const int HTTP_TIMEOUT_MS = 60 * 1000;
         const int HTTP_READ_BUFFER_SIZE_BYTES = 8096;
-        // 1 hour
+        //// 1 hour
         const int FILE_OPEN_ASYNC_TIMEOUT_MS = 60 * 60 * 1000;
-        // 5 seconds
+        //// 5 seconds
         const int FILE_OPEN_SYNC_TIMEOUT_MS = 5 * 1000;
 
         class AsyncState
@@ -184,10 +184,10 @@ namespace MediaViewer.MediaFile
 
             AsyncState state = (AsyncState)asyncState;
 
-            // initialize media with a dummy in case of exceptions
+            //// initialize media with a dummy in case of exceptions
             MediaFileBase media = new UnknownFile(state.Location, null);
 
-            // only allow one thread to open files at once
+            //// only allow one thread to open files at once
             openSemaphore.Acquire();
 
             try
@@ -268,26 +268,26 @@ namespace MediaViewer.MediaFile
         public MediaFileFactory()
         {
 
-            // it is important to use fifo semaphores to preserve the order in which opening
-            // files are requested
+            //// it is important to use fifo semaphores to preserve the order in which opening
+            //// files are requested
             openSemaphore = new DigitallyCreated.Utilities.Concurrency.FifoSemaphore(1);
             stateSemaphore = new DigitallyCreated.Utilities.Concurrency.FifoSemaphore(1);
             activeStates = new List<AsyncState>();
         }
 
-        // Open (read only) a file/http stream in a non blocking fashion
-        // When the file is successfully opened a OpenFinished event is generated
-        // The function will attempt to cancel any pending opens to speed up it's operation
+        //// Open (read only) a file//http stream in a non blocking fashion
+        //// When the file is successfully opened a OpenFinished event is generated
+        //// The function will attempt to cancel any pending opens to speed up it's operation
         public void openNonBlockingAndCancelPending(string location, MediaFileBase.MetaDataMode mode)
         {
 
             openNonBlockingAndCancelPending(location, null, mode);
         }
 
-        // Open (read only) a file/http stream in a non blocking fashion
-        // When the file is successfully opened a OpenFinished event is generated
-        // The function will attempt to cancel any pending opens to speed up it's operation
-        // userstate is attached to the returning mediafile
+        //// Open (read only) a file//http stream in a non blocking fashion
+        //// When the file is successfully opened a OpenFinished event is generated
+        //// The function will attempt to cancel any pending opens to speed up it's operation
+        //// userstate is attached to the returning mediafile
         public void openNonBlockingAndCancelPending(string location, Object userState,
             MediaFileBase.MetaDataMode mode)
         {
@@ -299,17 +299,17 @@ namespace MediaViewer.MediaFile
 
                 AsyncState state = new AsyncState(location, userState, mode);
 
-                // lock active states
+                //// lock active states
                 stateSemaphore.Acquire();
 
-                // cancel previously started open(s)
+                //// cancel previously started open(s)
                 for (int i = 0; i < activeStates.Count; i++)
                 {
 
                     activeStates[i].IsCancelled.Value = true;
                 }
 
-                // add current state to active states
+                //// add current state to active states
                 activeStates.Add(state);
 
                 stateSemaphore.Release();
@@ -326,7 +326,7 @@ namespace MediaViewer.MediaFile
 
         }
 
-        // needs to be called after the user is done with the file
+        //// needs to be called after the user is done with the file
         public void releaseNonBlockingOpenLock()
         {
 
@@ -338,7 +338,7 @@ namespace MediaViewer.MediaFile
 
             AsyncState state = new AsyncState(location, null, mode);
 
-            // initialize media with a dummy in case of exceptions
+            //// initialize media with a dummy in case of exceptions
             MediaFileBase media = new UnknownFile(state.Location, null);
 
             try

@@ -11,24 +11,24 @@ using namespace System::Threading;
 
 namespace imageviewer {
 
-	/// <summary>
-	/// Summary for LogForm
-	///
-	/// WARNING: If you change the name of this class, you will need to change the
-	///          'Resource File Name' property for the managed resource compiler tool
-	///          associated with all .resx files this class depends on.  Otherwise,
-	///          the designers will not be able to interact properly with localized
-	///          resources associated with this form.
-	/// </summary>
+	////// <summary>
+	////// Summary for LogForm
+	//////
+	////// WARNING: If you change the name of this class, you will need to change the
+	//////          'Resource File Name' property for the managed resource compiler tool
+	//////          associated with all .resx files this class depends on.  Otherwise,
+	//////          the designers will not be able to interact properly with localized
+	//////          resources associated with this form.
+	////// <//summary>
 	public ref class LogForm : public System::Windows::Forms::Form
 	{
 	public:
 		LogForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
+			////
+			////TODO: Add the constructor code here
+			////
 			args = gcnew array<Object ^>(2);
 			addTextDelegate = gcnew AddTextDelegate(this, &LogForm::addText);
 
@@ -36,9 +36,9 @@ namespace imageviewer {
 		}
 
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
+		////// <summary>
+		////// Clean up any resources being used.
+		////// <//summary>
 		~LogForm()
 		{
 			if (components)
@@ -56,16 +56,16 @@ namespace imageviewer {
 	protected: 
 
 	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
+		////// <summary>
+		////// Required designer variable.
+		////// <//summary>
 		System::ComponentModel::Container ^components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
+		////// <summary>
+		////// Required method for Designer support - do not modify
+		////// the contents of this method with the code editor.
+		////// <//summary>
 		void InitializeComponent(void)
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(LogForm::typeid));
@@ -79,31 +79,31 @@ namespace imageviewer {
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
 			this->SuspendLayout();
-			// 
-			// splitContainer1
-			// 
+			//// 
+			//// splitContainer1
+			//// 
 			this->splitContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->splitContainer1->FixedPanel = System::Windows::Forms::FixedPanel::Panel2;
 			this->splitContainer1->IsSplitterFixed = true;
 			this->splitContainer1->Location = System::Drawing::Point(0, 0);
 			this->splitContainer1->Name = L"splitContainer1";
 			this->splitContainer1->Orientation = System::Windows::Forms::Orientation::Horizontal;
-			// 
-			// splitContainer1.Panel1
-			// 
+			//// 
+			//// splitContainer1.Panel1
+			//// 
 			this->splitContainer1->Panel1->Controls->Add(this->logTextBox);
-			// 
-			// splitContainer1.Panel2
-			// 
+			//// 
+			//// splitContainer1.Panel2
+			//// 
 			this->splitContainer1->Panel2->Controls->Add(this->clearButton);
 			this->splitContainer1->Panel2->Controls->Add(this->label1);
 			this->splitContainer1->Panel2->Controls->Add(this->filterComboBox);
 			this->splitContainer1->Size = System::Drawing::Size(906, 448);
 			this->splitContainer1->SplitterDistance = 397;
 			this->splitContainer1->TabIndex = 1;
-			// 
-			// logTextBox
-			// 
+			//// 
+			//// logTextBox
+			//// 
 			this->logTextBox->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->logTextBox->Location = System::Drawing::Point(0, 0);
 			this->logTextBox->Name = L"logTextBox";
@@ -112,9 +112,9 @@ namespace imageviewer {
 			this->logTextBox->TabIndex = 0;
 			this->logTextBox->Text = L"";
 			this->logTextBox->WordWrap = false;
-			// 
-			// clearButton
-			// 
+			//// 
+			//// clearButton
+			//// 
 			this->clearButton->Anchor = System::Windows::Forms::AnchorStyles::Right;
 			this->clearButton->Location = System::Drawing::Point(818, 4);
 			this->clearButton->Name = L"clearButton";
@@ -123,18 +123,18 @@ namespace imageviewer {
 			this->clearButton->Text = L"Clear";
 			this->clearButton->UseVisualStyleBackColor = true;
 			this->clearButton->Click += gcnew System::EventHandler(this, &LogForm::clearButton_Click);
-			// 
-			// label1
-			// 
+			//// 
+			//// label1
+			//// 
 			this->label1->AutoSize = true;
 			this->label1->Location = System::Drawing::Point(12, 12);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(48, 20);
 			this->label1->TabIndex = 1;
 			this->label1->Text = L"Filter:";
-			// 
-			// filterComboBox
-			// 
+			//// 
+			//// filterComboBox
+			//// 
 			this->filterComboBox->FormattingEnabled = true;
 			this->filterComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(3) {L"Info", L"Warnings", L"Errors"});
 			this->filterComboBox->Location = System::Drawing::Point(66, 9);
@@ -142,9 +142,9 @@ namespace imageviewer {
 			this->filterComboBox->Size = System::Drawing::Size(179, 28);
 			this->filterComboBox->TabIndex = 0;
 			this->filterComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &LogForm::filterComboBox_SelectedIndexChanged);
-			// 
-			// LogForm
-			// 
+			//// 
+			//// LogForm
+			//// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(906, 448);

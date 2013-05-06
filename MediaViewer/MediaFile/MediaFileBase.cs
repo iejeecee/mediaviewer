@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
+using DB = MediaDatabase;
 
 namespace MediaViewer.MediaFile
 {
@@ -306,7 +307,7 @@ namespace MediaViewer.MediaFile
                 thumbs = generateThumbnails();
                 return (thumbs);
             }
-            /*
+            
             DB.Context ctx = new DB.Context();
 
             DB.Media mediaItem = ctx.getMediaByLocation(Location);
@@ -350,7 +351,7 @@ namespace MediaViewer.MediaFile
                     temp.saveToDatabase();
                 }
             }
-            */
+            
             return (thumbs);
         }
 

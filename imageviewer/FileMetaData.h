@@ -150,17 +150,17 @@ private:
 
 		thumbnail->Clear();
 
-		int nrThumbs = metaData->countArrayItems(kXMP_NS_XMP, "Thumbnails");
+		int nrThumbs = metaData->countArrayItems(Consts::XMP_NS_XMP, "Thumbnails");
 
 		for(int thumbNr = 1; thumbNr <= nrThumbs; thumbNr++) {
 
 			String ^fullPath;
 
-			MetaData::composeArrayItemPath(kXMP_NS_XMP, "Thumbnails", thumbNr, fullPath);
-			MetaData::composeStructFieldPath(kXMP_NS_XMP, fullPath, kXMP_NS_XMP_Image, "image", fullPath);
+			MetaData::composeArrayItemPath(Consts::XMP_NS_XMP, "Thumbnails", thumbNr, fullPath);
+			MetaData::composeStructFieldPath(Consts::XMP_NS_XMP, fullPath, Consts::XMP_NS_XMP_Image, "image", fullPath);
 
 			String ^encodedData;
-			bool success = metaData->getProperty(kXMP_NS_XMP, fullPath, encodedData);
+			bool success = metaData->getProperty(Consts::XMP_NS_XMP, fullPath, encodedData);
 
 			if(!success) continue;
 				
@@ -176,11 +176,11 @@ private:
 
 	void writeThumbnails() {
 
-		int nrThumbs = metaData->countArrayItems(kXMP_NS_XMP, "Thumbnails");
+		int nrThumbs = metaData->countArrayItems(Consts::XMP_NS_XMP, "Thumbnails");
 
 		for(int i = nrThumbs; i > 0; i--) {
 
-			metaData->deleteArrayItem(kXMP_NS_XMP, "Thumbnails", i);
+			metaData->deleteArrayItem(Consts::XMP_NS_XMP, "Thumbnails", i);
 		}
 
 		for(int i = 0; i < thumbnail->Count; i++) {
@@ -191,13 +191,13 @@ private:
 
 			String ^path;
 
-			metaData->appendArrayItem(kXMP_NS_XMP, "Thumbnails", kXMP_PropValueIsArray, nullptr, kXMP_PropValueIsStruct);
-			MetaData::composeArrayItemPath(kXMP_NS_XMP, "Thumbnails", kXMP_ArrayLastItem, path);
+			metaData->appendArrayItem(Consts::XMP_NS_XMP, "Thumbnails", Consts::PropOptions::XMP_PropValueIsArray, nullptr, Consts::PropOptions::XMP_PropValueIsStruct);
+			MetaData::composeArrayItemPath(Consts::XMP_NS_XMP, "Thumbnails", kXMP_ArrayLastItem, path);
 			
-			metaData->setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "image", encodedData, 0);
-			metaData->setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "format", "JPEG", 0);
-			metaData->setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "width", Convert::ToString(thumbnail[i]->Width), 0);
-			metaData->setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "height", Convert::ToString(thumbnail[i]->Height), 0);
+			metaData->setStructField(Consts::XMP_NS_XMP, path, Consts::XMP_NS_XMP_Image, "image", encodedData, 0);
+			metaData->setStructField(Consts::XMP_NS_XMP, path, Consts::XMP_NS_XMP_Image, "format", "JPEG", 0);
+			metaData->setStructField(Consts::XMP_NS_XMP, path, Consts::XMP_NS_XMP_Image, "width", Convert::ToString(thumbnail[i]->Width), 0);
+			metaData->setStructField(Consts::XMP_NS_XMP, path, Consts::XMP_NS_XMP_Image, "height", Convert::ToString(thumbnail[i]->Height), 0);
 		}
 	}
 
@@ -374,7 +374,7 @@ public:
 
 		metaData = gcnew MetaData();
 				
-		if(metaData->open(filePath, kXMPFiles_OpenForRead) == false) {
+		if(metaData->open(filePath, Consts::OpenOptions::XMPFiles_OpenForRead) == false) {
 
 			throw gcnew Exception("Cannot open metadata for: " + filePath);
 
@@ -384,31 +384,31 @@ public:
 	
 		String ^temp = "";
 
-		bool exists = metaData->getLocalizedText(kXMP_NS_DC, "title", "en", "en-US", temp);
+		bool exists = metaData->getLocalizedText(Consts::XMP_NS_DC, "title", "en", "en-US", temp);
 		if(exists) {
 
 			Title = temp;
 		}
 
-		exists = metaData->getLocalizedText(kXMP_NS_DC, "description", "en", "en-US", temp);
+		exists = metaData->getLocalizedText(Consts::XMP_NS_DC, "description", "en", "en-US", temp);
 		if(exists) {
 
 			Description = temp;
 		}
 
-		exists = metaData->getArrayItem(kXMP_NS_DC, "creator", 1, temp);
+		exists = metaData->getArrayItem(Consts::XMP_NS_DC, "creator", 1, temp);
 		if(exists) {
 
 			Creator = temp;
 		}
 
-		exists = metaData->getArrayItem(kXMP_NS_DC, "rights", 1, temp);
+		exists = metaData->getArrayItem(Consts::XMP_NS_DC, "rights", 1, temp);
 		if(exists) {
 
 			Copyright = temp;
 		}
 
-		exists = metaData->getProperty(kXMP_NS_XMP, "CreatorTool", temp);
+		exists = metaData->getProperty(Consts::XMP_NS_XMP, "CreatorTool", temp);
 		if(exists) {
 
 			CreatorTool = temp;
@@ -416,31 +416,31 @@ public:
 
 		DateTime propValue;
 
-		exists = metaData->getProperty_Date(kXMP_NS_XMP, "MetadataDate", propValue);
+		exists = metaData->getProperty_Date(Consts::XMP_NS_XMP, "MetadataDate", propValue);
 		if(exists) {
 
 			MetaDataDate = propValue;
 		} 
 
-		exists = metaData->getProperty_Date(kXMP_NS_XMP, "CreateDate", propValue);
+		exists = metaData->getProperty_Date(Consts::XMP_NS_XMP, "CreateDate", propValue);
 		if(exists) {
 
 			CreationDate = propValue;
 		} 
 
-		exists = metaData->getProperty_Date(kXMP_NS_XMP, "ModifyDate", propValue);
+		exists = metaData->getProperty_Date(Consts::XMP_NS_XMP, "ModifyDate", propValue);
 		if(exists) {
 
 			ModifiedDate = propValue;
 		} 
 
-		if(metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude"))
+		if(metaData->doesPropertyExists(Consts::XMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(Consts::XMP_NS_EXIF, "GPSLongitude"))
 		{
 			String ^latitude;
 			String ^longitude;
 
-			metaData->getProperty(kXMP_NS_EXIF, "GPSLatitude", latitude);
-			metaData->getProperty(kXMP_NS_EXIF, "GPSLongitude", longitude);
+			metaData->getProperty(Consts::XMP_NS_EXIF, "GPSLatitude", latitude);
+			metaData->getProperty(Consts::XMP_NS_EXIF, "GPSLongitude", longitude);
 
 			geoTag->longitude->Coord = longitude;
 			geoTag->latitude->Coord = latitude;
@@ -454,12 +454,12 @@ public:
 				
 		tags = gcnew List<String ^>();
 
-		int nrTags = metaData->countArrayItems(kXMP_NS_DC, "subject");
+		int nrTags = metaData->countArrayItems(Consts::XMP_NS_DC, "subject");
 		
 		for(int i = 1; i <= nrTags; i++) {
 
 			String ^tag;
-			exists = metaData->getArrayItem(kXMP_NS_DC, "subject", i, tag);
+			exists = metaData->getArrayItem(Consts::XMP_NS_DC, "subject", i, tag);
 
 			if(exists) {
 
@@ -791,7 +791,7 @@ public:
 				i++;
 			}
 
-			//log->Info("saving: " + FilePath + " " + i.ToString() + " thumbs");
+			////log->Info("saving: " + FilePath + " " + i.ToString() + " thumbs");
 			if(exists == false) {
 				ctx->insert(item);
 			}
@@ -809,7 +809,7 @@ public:
 
 		metaData = gcnew MetaData();
 
-		if(metaData->open(filePath, kXMPFiles_OpenForUpdate) == false) {
+		if(metaData->open(filePath, Consts::OpenOptions::XMPFiles_OpenForUpdate) == false) {
 
 			throw gcnew Exception("Cannot open metadata for: " + filePath);
 
@@ -819,67 +819,79 @@ public:
 
 		if(!String::IsNullOrEmpty(Title)) {
 
-			metaData->setLocalizedText(kXMP_NS_DC,"title","en", "en-US",Title);
+			metaData->setLocalizedText(Consts::XMP_NS_DC,"title","en", "en-US",Title);
 
 		}
 
 		if(!String::IsNullOrEmpty(Description)) {
 
-			if(metaData->doesArrayItemExist(kXMP_NS_DC, "description", 1)) {
+			if(metaData->doesArrayItemExist(Consts::XMP_NS_DC, "description", 1)) {
 
-				metaData->setArrayItem(kXMP_NS_DC, "description", 1, Description, 0);
+				metaData->setArrayItem(Consts::XMP_NS_DC, "description", 1, Description, 
+					Consts::PropOptions::XMP_NoOptions);
 
 			} else {
 
-				metaData->appendArrayItem(kXMP_NS_DC, "description",  kXMP_PropArrayIsOrdered, Description, 0);
+				metaData->appendArrayItem(Consts::XMP_NS_DC, "description",  
+					Consts::PropOptions::XMP_PropArrayIsOrdered, Description, 
+					Consts::PropOptions::XMP_NoOptions);
 			}
 
 		}
 
 		if(!String::IsNullOrEmpty(CreatorTool)) {
 
-			metaData->setProperty(kXMP_NS_XMP, "CreatorTool", CreatorTool, kXMP_DeleteExisting);
+			metaData->setProperty(Consts::XMP_NS_XMP, "CreatorTool", CreatorTool, 
+				Consts::PropOptions::XMP_DeleteExisting);
 		}
 
 		if(!String::IsNullOrEmpty(Creator)) {
 
-			if(metaData->doesArrayItemExist(kXMP_NS_DC, "creator", 1)) {
+			if(metaData->doesArrayItemExist(Consts::XMP_NS_DC, "creator", 1)) {
 
-				metaData->setArrayItem(kXMP_NS_DC, "creator", 1, Creator, 0);
+				metaData->setArrayItem(Consts::XMP_NS_DC, "creator", 1, Creator, 
+					Consts::PropOptions::XMP_NoOptions);
 
 			} else {
 
-				metaData->appendArrayItem(kXMP_NS_DC, "creator",  kXMP_PropArrayIsOrdered, Creator, 0);
+				metaData->appendArrayItem(Consts::XMP_NS_DC, "creator",  
+					Consts::PropOptions::XMP_PropArrayIsOrdered, Creator, 
+					Consts::PropOptions::XMP_NoOptions);
 			}
 
 		}
 
 		if(!String::IsNullOrEmpty(Copyright)) {
 
-			if(metaData->doesArrayItemExist(kXMP_NS_DC, "rights", 1)) {
+			if(metaData->doesArrayItemExist(Consts::XMP_NS_DC, "rights", 1)) {
 
-				metaData->setArrayItem(kXMP_NS_DC, "rights", 1, Copyright, 0);
+				metaData->setArrayItem(Consts::XMP_NS_DC, "rights", 1, Copyright, 
+					Consts::PropOptions::XMP_NoOptions);
 
 			} else {
 
-				metaData->appendArrayItem(kXMP_NS_DC, "rights",  kXMP_PropArrayIsOrdered, Copyright, 0);
+				metaData->appendArrayItem(Consts::XMP_NS_DC, "rights",  
+					Consts::PropOptions::XMP_PropArrayIsOrdered, Copyright, 
+					Consts::PropOptions::XMP_NoOptions);
 			}
 
 		}
 
-		metaData->setProperty_Date(kXMP_NS_XMP, "MetadataDate", DateTime::Now);
+		metaData->setProperty_Date(Consts::XMP_NS_XMP, "MetadataDate", DateTime::Now);
 
 		List<String ^> ^tags = Tags;
-		int nrTags = metaData->countArrayItems(kXMP_NS_DC, "subject");
+		int nrTags = metaData->countArrayItems(Consts::XMP_NS_DC, "subject");
 		
 		for(int i = nrTags; i > 0; i--) {
 
-			metaData->deleteArrayItem(kXMP_NS_DC, "subject", i);
+			metaData->deleteArrayItem(Consts::XMP_NS_DC, "subject", i);
 		}
 
 		for each(String ^tag in tags) {
 
-			metaData->appendArrayItem(kXMP_NS_DC, "subject", kXMP_PropArrayIsUnordered, tag, 0);
+			metaData->appendArrayItem(Consts::XMP_NS_DC, "subject", 
+				Consts::PropOptions::XMP_PropArrayIsUnordered, tag, 
+				Consts::PropOptions::XMP_NoOptions);
 		}
 
 		if(HasGeoTag == true)
@@ -887,30 +899,32 @@ public:
 			String ^latitude = geoTag->latitude->Coord;
 			String ^longitude = geoTag->longitude->Coord;
 
-			metaData->setProperty(kXMP_NS_EXIF, "GPSLatitude", latitude, 0);
-			metaData->setProperty(kXMP_NS_EXIF, "GPSLongitude", longitude, 0);
+			metaData->setProperty(Consts::XMP_NS_EXIF, "GPSLatitude", latitude, 
+				Consts::PropOptions::XMP_NoOptions);
+			metaData->setProperty(Consts::XMP_NS_EXIF, "GPSLongitude", longitude, 
+				Consts::PropOptions::XMP_NoOptions);
 
 		} else {
 
-			// remove a potentially existing geotag
-			if(metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude")) {
+			//// remove a potentially existing geotag
+			if(metaData->doesPropertyExists(Consts::XMP_NS_EXIF, "GPSLatitude") && metaData->doesPropertyExists(Consts::XMP_NS_EXIF, "GPSLongitude")) {
 
-				metaData->deleteProperty(kXMP_NS_EXIF, "GPSLatitude");
-				metaData->deleteProperty(kXMP_NS_EXIF, "GPSLongitude");
+				metaData->deleteProperty(Consts::XMP_NS_EXIF, "GPSLatitude");
+				metaData->deleteProperty(Consts::XMP_NS_EXIF, "GPSLongitude");
 			}
 
 			String ^latString = "geo:lat=";
 			String ^lonString = "geo:lon=";
 
-			for(int i = metaData->countArrayItems(kXMP_NS_DC, "subject"); i > 0 ; i--) {
+			for(int i = metaData->countArrayItems(Consts::XMP_NS_DC, "subject"); i > 0 ; i--) {
 
 				String ^value = "";
 
-				metaData->getArrayItem(kXMP_NS_DC, "subject", i, value);
+				metaData->getArrayItem(Consts::XMP_NS_DC, "subject", i, value);
 
 				if(value->StartsWith(latString) || value->StartsWith(lonString)) {
 
-					metaData->deleteArrayItem(kXMP_NS_DC, "subject", i);						
+					metaData->deleteArrayItem(Consts::XMP_NS_DC, "subject", i);						
 				} 
 			}
 		}

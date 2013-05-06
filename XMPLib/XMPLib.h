@@ -1,10 +1,13 @@
 #pragma once
 
 #include "XMPDLL.h"
-//#include "MetaDataProperty.h"
-//#include "MetaDataTree.h"
+
+////#include "MetaDataProperty.h"
+////#include "MetaDataTree.h"
 
 namespace XMPLib {
+
+	#include "Consts.h"
 
 	using namespace System;
 	using namespace System::Collections::Generic;
@@ -56,7 +59,7 @@ namespace XMPLib {
 		MetaData();
 		~MetaData();
 
-		bool open(String ^filename, XMP_OptionBits options); 
+		bool open(String ^filename, Consts::OpenOptions options); 
 
 		bool dumpToDisk(String ^filename);
 
@@ -67,14 +70,14 @@ namespace XMPLib {
 		bool getProperty(String ^nameSpace, String ^propName, String^ %propValue);
 		void deleteProperty(String ^nameSpace, String ^propName);
 		bool getProperty_Date(String ^nameSpace, String ^propName, DateTime %propValue);
-		void setProperty(String ^nameSpace, String ^propName, String ^propValue, XMP_OptionBits options);
+		void setProperty(String ^nameSpace, String ^propName, String ^propValue, Consts::PropOptions options);
 		void setProperty_Date(String ^nameSpace, String ^propName, DateTime propValue);
 		
 		int countArrayItems(String ^nameSpace, String ^arrayName);
 		bool getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue);
 		bool doesArrayItemExist(String ^nameSpace, String ^arrayName, int item);
-		void setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, XMP_OptionBits options);
-		void appendArrayItem(String ^nameSpace, String ^arrayName, XMP_OptionBits arrayOptions, String ^itemValue, XMP_OptionBits options);
+		void setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, Consts::PropOptions options);
+		void appendArrayItem(String ^nameSpace, String ^arrayName, Consts::PropOptions arrayOptions, String ^itemValue, Consts::PropOptions options);
 		void deleteArrayItem(String ^nameSpace, String ^arrayName, int item);
 
 		bool getStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
@@ -85,7 +88,7 @@ namespace XMPLib {
 		bool getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue);
 		void setLocalizedText(String ^nameSpace, String ^textName, String ^genericLang, String ^specificLang, String ^itemValue);
 		
-		//MetaDataTreeNode ^parse();
+		////MetaDataTreeNode ^parse();
 
 		void iterate(XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
 		void iterate(String ^nameSpace, List<MetaDataProperty ^> ^%properties);

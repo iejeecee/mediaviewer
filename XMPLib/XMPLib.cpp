@@ -80,13 +80,13 @@ void MetaData::log(MetaData::LogLevel level, String ^message) {
 	}
 }
 
-bool MetaData::open(String ^filename, XMP_OptionBits options)
+bool MetaData::open(String ^filename, Consts::OpenOptions options)
 {
 	bool result = false;
 
 	try {
 
-		result = xmpFile->open(marshal_as<std::string>(filename), options);
+		result = xmpFile->open(marshal_as<std::string>(filename), (XMP_OptionBits)options);
 
 	} catch(XMP_Error &e) {	
 
@@ -212,12 +212,12 @@ void MetaData::setProperty_Date(String ^nameSpace, String ^propName, DateTime pr
 }
 
 
-void MetaData::setProperty(String ^nameSpace, String ^propName, String ^propValue, XMP_OptionBits options) {
+void MetaData::setProperty(String ^nameSpace, String ^propName, String ^propValue, Consts::PropOptions options) {
 
 	xmpFile->setProperty(marshal_as<std::string>(nameSpace),
 		marshal_as<std::string>(propName), 
 		marshal_as<std::string>(propValue),
-		options);
+		(XMP_OptionBits)options);
 }
 
 bool MetaData::doesPropertyExists(String ^nameSpace, String ^propName) {
@@ -262,19 +262,19 @@ bool MetaData::doesArrayItemExist(String ^nameSpace, String ^arrayName, int item
 	return(result);
 }
 
-void MetaData::setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, XMP_OptionBits options)
+void MetaData::setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, Consts::PropOptions options)
 {
 	xmpFile->setArrayItem(
 		marshal_as<std::string>(nameSpace), 
 		marshal_as<std::string>(arrayName), 
 		item,
 		marshal_as<std::string>(itemValue),
-		options);
+		(XMP_OptionBits)options);
 
 }
 
 
-void MetaData::appendArrayItem(String ^nameSpace, String ^arrayName, XMP_OptionBits arrayOptions, String ^itemValue, XMP_OptionBits options)
+void MetaData::appendArrayItem(String ^nameSpace, String ^arrayName, Consts::PropOptions arrayOptions, String ^itemValue, Consts::PropOptions options)
 {
 
 	const char *temp = NULL;
@@ -288,9 +288,9 @@ void MetaData::appendArrayItem(String ^nameSpace, String ^arrayName, XMP_OptionB
 	xmpFile->appendArrayItem(
 		marshal_as<std::string>(nameSpace), 
 		marshal_as<std::string>(arrayName), 
-		arrayOptions, 
+		(XMP_OptionBits)arrayOptions, 
 		temp,
-		options);
+		(XMP_OptionBits)options);
 
 	
 

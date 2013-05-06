@@ -15,15 +15,15 @@ using namespace System::Drawing;
 
 namespace imageviewer {
 
-	/// <summary>
-	/// Summary for ProgressForm
-	///
-	/// WARNING: If you change the name of this class, you will need to change the
-	///          'Resource File Name' property for the managed resource compiler tool
-	///          associated with all .resx files this class depends on.  Otherwise,
-	///          the designers will not be able to interact properly with localized
-	///          resources associated with this form.
-	/// </summary>
+	////// <summary>
+	////// Summary for ProgressForm
+	//////
+	////// WARNING: If you change the name of this class, you will need to change the
+	//////          'Resource File Name' property for the managed resource compiler tool
+	//////          associated with all .resx files this class depends on.  Otherwise,
+	//////          the designers will not be able to interact properly with localized
+	//////          resources associated with this form.
+	////// <//summary>
 	public ref class ProgressForm : public System::Windows::Forms::Form
 	{
 	public:
@@ -34,17 +34,17 @@ namespace imageviewer {
 		ProgressForm(void)
 		{
 			InitializeComponent();
-			//
-			//TODO: Add the constructor code here
-			//
+			////
+			////TODO: Add the constructor code here
+			////
 			abortAsyncAction = false;
 
 		}
 
 	protected:
-		/// <summary>
-		/// Clean up any resources being used.
-		/// </summary>
+		////// <summary>
+		////// Clean up any resources being used.
+		////// <//summary>
 		~ProgressForm()
 		{
 			if (components)
@@ -71,16 +71,16 @@ namespace imageviewer {
 	private: Object ^_userState;
 
 	private:
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
+		////// <summary>
+		////// Required designer variable.
+		////// <//summary>
 		System::ComponentModel::Container ^components;
 
 #pragma region Windows Form Designer generated code
-		/// <summary>
-		/// Required method for Designer support - do not modify
-		/// the contents of this method with the code editor.
-		/// </summary>
+		////// <summary>
+		////// Required method for Designer support - do not modify
+		////// the contents of this method with the code editor.
+		////// <//summary>
 		void InitializeComponent(void)
 		{
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(ProgressForm::typeid));
@@ -92,16 +92,16 @@ namespace imageviewer {
 			this->progressLabel = (gcnew System::Windows::Forms::Label());
 			this->infoTextBox = (gcnew System::Windows::Forms::TextBox());
 			this->SuspendLayout();
-			// 
-			// totalProgressBar
-			// 
+			//// 
+			//// totalProgressBar
+			//// 
 			this->totalProgressBar->Location = System::Drawing::Point(17, 21);
 			this->totalProgressBar->Name = L"totalProgressBar";
 			this->totalProgressBar->Size = System::Drawing::Size(386, 27);
 			this->totalProgressBar->TabIndex = 0;
-			// 
-			// cancelButton
-			// 
+			//// 
+			//// cancelButton
+			//// 
 			this->cancelButton->Location = System::Drawing::Point(213, 253);
 			this->cancelButton->Name = L"cancelButton";
 			this->cancelButton->Size = System::Drawing::Size(97, 36);
@@ -109,16 +109,16 @@ namespace imageviewer {
 			this->cancelButton->Text = L"Cancel";
 			this->cancelButton->UseVisualStyleBackColor = true;
 			this->cancelButton->Click += gcnew System::EventHandler(this, &ProgressForm::cancelButton_Click);
-			// 
-			// itemProgressBar
-			// 
+			//// 
+			//// itemProgressBar
+			//// 
 			this->itemProgressBar->Location = System::Drawing::Point(17, 85);
 			this->itemProgressBar->Name = L"itemProgressBar";
 			this->itemProgressBar->Size = System::Drawing::Size(386, 27);
 			this->itemProgressBar->TabIndex = 24;
-			// 
-			// okButton
-			// 
+			//// 
+			//// okButton
+			//// 
 			this->okButton->Enabled = false;
 			this->okButton->Location = System::Drawing::Point(110, 253);
 			this->okButton->Name = L"okButton";
@@ -127,35 +127,35 @@ namespace imageviewer {
 			this->okButton->Text = L"Ok";
 			this->okButton->UseVisualStyleBackColor = true;
 			this->okButton->Click += gcnew System::EventHandler(this, &ProgressForm::okButton_Click);
-			// 
-			// itemLabel
-			// 
+			//// 
+			//// itemLabel
+			//// 
 			this->itemLabel->Location = System::Drawing::Point(17, 115);
 			this->itemLabel->Name = L"itemLabel";
 			this->itemLabel->Size = System::Drawing::Size(386, 20);
 			this->itemLabel->TabIndex = 26;
 			this->itemLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-			// 
-			// progressLabel
-			// 
+			//// 
+			//// progressLabel
+			//// 
 			this->progressLabel->Location = System::Drawing::Point(21, 51);
 			this->progressLabel->Name = L"progressLabel";
 			this->progressLabel->Size = System::Drawing::Size(382, 20);
 			this->progressLabel->TabIndex = 27;
-			this->progressLabel->Text = L"Finished: 0 / 0";
+			this->progressLabel->Text = L"Finished: 0 // 0";
 			this->progressLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-			// 
-			// infoTextBox
-			// 
+			//// 
+			//// infoTextBox
+			//// 
 			this->infoTextBox->Location = System::Drawing::Point(15, 149);
 			this->infoTextBox->Multiline = true;
 			this->infoTextBox->Name = L"infoTextBox";
 			this->infoTextBox->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
 			this->infoTextBox->Size = System::Drawing::Size(387, 87);
 			this->infoTextBox->TabIndex = 28;
-			// 
-			// ProgressForm
-			// 
+			//// 
+			//// ProgressForm
+			//// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(9, 20);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(415, 309);
@@ -356,7 +356,7 @@ namespace imageviewer {
 		}
 	private: void setTotalProgressValue(int value) {
 
-				 progressLabel->Text = "Finished: " + Convert::ToString(value) + " / " + Convert::ToString(totalProgressBar->Maximum);
+				 progressLabel->Text = "Finished: " + Convert::ToString(value) + " // " + Convert::ToString(totalProgressBar->Maximum);
 				 totalProgressBar->Value = value;
 			 }
 

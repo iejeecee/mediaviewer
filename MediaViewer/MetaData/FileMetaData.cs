@@ -4,839 +4,1006 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DB = MediaDatabase;
+using XMPLib;
 
 namespace MediaViewer.MetaData
 {
-   class FileMetaData : EventArgs, IDisposable
-{
+    class FileMetaData : EventArgs, IDisposable
+    {
 
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-	private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private string filePath;
+        private string title;
+        private string description;
+        private string creator;
+        private string creatorTool;
+        private string copyright;
+        private List<MetaDataThumb> thumbnail;
+        private List<string> tags;
+        private DateTime creationDate;
+        private DateTime modifiedDate;
+        private DateTime metaDataDate;
 
-	private string filePath;
-	private string title;
-	private string description;
-	private string creator;
-	private string creatorTool;
-	private string copyright;
-	private List<MetaDataThumb> thumbnail;
-	private List<string > tags;
-	private DateTime creationDate;
-	private DateTime modifiedDate;
-	private DateTime metaDataDate;
+        private const string latString = "geo:lat=";
+        private const string lonString = "geo:lon=";
+        private GeoTagCoordinatePair geoTag;
+        private bool hasGeoTag;
 
-	private const string latString = "geo:lat=";
-	private const string lonString = "geo:lon=";
-	private GeoTagCoordinatePair geoTag;
-	private bool hasGeoTag;
+        private XMPLib.MetaData metaData;
+        private MetaDataTreeNode tree;
 
-	private MetaData metaData;
-	private MetaDataTreeNode tree;
+        private void deleteThumbNails()
+        {
 
-	private void deleteThumbNails() {
+            if (thumbnail != null)
+            {
 
-		if(thumbnail != null) {
+                foreach (MetaDataThumb thumb in thumbnail)
+                {
 
-            foreach(MetaDataThumb thumb in thumbnail) {
+                    thumb.Dispose();
+                }
 
-			    thumb.Dispose();
+                thumbnail.Clear();
             }
 
+        }
+
+        private void readThumbnails()
+        {
+
             thumbnail.Clear();
-		}
 
-	}
+            int nrThumbs = metaData.countArrayItems(Consts.XMP_NS_XMP, "Thumbnails");
 
-	private void readThumbnails() {
+            for (int thumbNr = 1; thumbNr <= nrThumbs; thumbNr++)
+            {
 
-		thumbnail.Clear();
+                string fullPath = "";
 
-		int nrThumbs = metaData.countArrayItems(kXMP_NS_XMP, "Thumbnails");
+                XMPLib.MetaData.composeArrayItemPath(Consts.XMP_NS_XMP, "Thumbnails", thumbNr, ref fullPath);
+                XMPLib.MetaData.composeStructFieldPath(Consts.XMP_NS_XMP, fullPath, Consts.XMP_NS_XMP_Image, "image", ref fullPath);
 
-		for(int thumbNr = 1; thumbNr <= nrThumbs; thumbNr++) {
+                string encodedData = "";
 
-			string fullPath;
+                bool success = metaData.getProperty(Consts.XMP_NS_XMP, fullPath, ref encodedData);
 
-			MetaData.composeArrayItemPath(kXMP_NS_XMP, "Thumbnails", thumbNr, fullPath);
-			MetaData.composeStructFieldPath(kXMP_NS_XMP, fullPath, kXMP_NS_XMP_Image, "image", fullPath);
+                if (!success) continue;
 
-			string encodedData;
-			bool success = metaData.getProperty(kXMP_NS_XMP, fullPath, encodedData);
+                byte[] decodedData = Convert.FromBase64String(encodedData);
 
-			if(!success) continue;
-				
-			byte[] decodedData = Convert.FromBase64String(encodedData);
-		
-			MemoryStream stream = new MemoryStream();
-			stream.Write(decodedData, 0, decodedData.Length);
-			stream.Seek(0, SeekOrigin.Begin);
+                MemoryStream stream = new MemoryStream();
+                stream.Write(decodedData, 0, decodedData.Length);
+                stream.Seek(0, SeekOrigin.Begin);
 
-			thumbnail.Add(new MetaDataThumb(stream));
-		}
-	}
+                thumbnail.Add(new MetaDataThumb(stream));
+            }
+        }
 
-	private void writeThumbnails() {
+        private void writeThumbnails()
+        {
 
-		int nrThumbs = metaData.countArrayItems(kXMP_NS_XMP, "Thumbnails");
+            int nrThumbs = metaData.countArrayItems(Consts.XMP_NS_XMP, "Thumbnails");
 
-		for(int i = nrThumbs; i > 0; i--) {
+            for (int i = nrThumbs; i > 0; i--)
+            {
 
-			metaData.deleteArrayItem(kXMP_NS_XMP, "Thumbnails", i);
-		}
+                metaData.deleteArrayItem(Consts.XMP_NS_XMP, "Thumbnails", i);
+            }
 
-		for(int i = 0; i < thumbnail.Count; i++) {
+            for (int i = 0; i < thumbnail.Count; i++)
+            {
 
-			byte[] decodedData = thumbnail[i].Data.ToArray();
+                byte[] decodedData = thumbnail[i].Data.ToArray();
 
-			string encodedData = Convert.ToBase64String(decodedData);
+                string encodedData = Convert.ToBase64String(decodedData);
 
-			string path;
+                string path = "";
 
-			metaData.appendArrayItem(kXMP_NS_XMP, "Thumbnails", kXMP_PropValueIsArray, null, kXMP_PropValueIsStruct);
-			MetaData.composeArrayItemPath(kXMP_NS_XMP, "Thumbnails", kXMP_ArrayLastItem, path);
-			
-			metaData.setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "image", encodedData, 0);
-			metaData.setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "format", "JPEG", 0);
-			metaData.setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "width", Convert.ToString(thumbnail[i].Width), 0);
-			metaData.setStructField(kXMP_NS_XMP, path, kXMP_NS_XMP_Image, "height", Convert.ToString(thumbnail[i].Height), 0);
-		}
-	}
+                metaData.appendArrayItem(Consts.XMP_NS_XMP, "Thumbnails", 
+                    Consts.PropOptions.XMP_PropValueIsArray, null,
+                    Consts.PropOptions.XMP_PropValueIsStruct);
+                XMPLib.MetaData.composeArrayItemPath(Consts.XMP_NS_XMP, "Thumbnails",
+                    Consts.XMP_ArrayLastItem, ref path);
 
-	private void initialize(string filePath) {
+                metaData.setStructField(Consts.XMP_NS_XMP, path, 
+                    Consts.XMP_NS_XMP_Image, "image", encodedData, 0);
+                metaData.setStructField(Consts.XMP_NS_XMP, path,
+                    Consts.XMP_NS_XMP_Image, "format", "JPEG", 0);
+                metaData.setStructField(Consts.XMP_NS_XMP, path, 
+                    Consts.XMP_NS_XMP_Image, "width", Convert.ToString(thumbnail[i].Width), 0);
+                metaData.setStructField(Consts.XMP_NS_XMP, path, 
+                    Consts.XMP_NS_XMP_Image, "height", Convert.ToString(thumbnail[i].Height), 0);
+            }
+        }
 
-		this.filePath = filePath;
-		title = "";
-		description = "";
-		creator = "";
-		creatorTool = "";
-		copyright = "";
-		thumbnail = new List<MetaDataThumb >();
-		tags = new List<string >();
-		creationDate = DateTime.MinValue;
-		modifiedDate = DateTime.MinValue;
-		metaDataDate = DateTime.MinValue;
+        private void initialize(string filePath)
+        {
 
-		geoTag = new GeoTagCoordinatePair();
-		hasGeoTag = false;
+            this.filePath = filePath;
+            title = "";
+            description = "";
+            creator = "";
+            creatorTool = "";
+            copyright = "";
+            thumbnail = new List<MetaDataThumb>();
+            tags = new List<string>();
+            creationDate = DateTime.MinValue;
+            modifiedDate = DateTime.MinValue;
+            metaDataDate = DateTime.MinValue;
 
-		tree = null;
-		metaData = null;
+            geoTag = new GeoTagCoordinatePair();
+            hasGeoTag = false;
 
-	}
+            tree = null;
+            metaData = null;
 
-	private void initVarsFromDatabaseItem(DB.Media item) {
+        }
 
-		FilePath = item.Location;
+        private void initVarsFromDatabaseItem(DB.Media item)
+        {
 
-		if(item.Title != null) {
+            FilePath = item.Location;
 
-			Title = item.Title;
-		}
+            if (item.Title != null)
+            {
 
-		if(item.Description != null) {
+                Title = item.Title;
+            }
 
-			Description = item.Description;
-		}
+            if (item.Description != null)
+            {
 
-		if(item.Author != null) {
+                Description = item.Description;
+            }
 
-			Creator = item.Author;
-		}
+            if (item.Author != null)
+            {
 
-		if(item.Copyright != null) {
+                Creator = item.Author;
+            }
 
-			Copyright = item.Copyright;
-		}
+            if (item.Copyright != null)
+            {
 
-		if(item.CreatorTool != null) {
+                Copyright = item.Copyright;
+            }
 
-			CreatorTool = item.CreatorTool;
-		}
+            if (item.CreatorTool != null)
+            {
 
-		if(item.MetaDataLastModifiedDate.HasValue) {
+                CreatorTool = item.CreatorTool;
+            }
 
-			ModifiedDate = item.MetaDataLastModifiedDate.Value;
-		}
+            if (item.MetaDataLastModifiedDate.HasValue)
+            {
 
-		if(item.MetaDataDate.HasValue) {
+                ModifiedDate = item.MetaDataLastModifiedDate.Value;
+            }
 
-			MetaDataDate = item.MetaDataDate.Value;
-		}
-		
-		if(item.MetaDataCreationDate.HasValue) {
+            if (item.MetaDataDate.HasValue)
+            {
 
-			CreationDate = item.MetaDataCreationDate.Value;
-		}
+                MetaDataDate = item.MetaDataDate.Value;
+            }
 
-		if(item.GeoTagLongitude != null && item.GeoTagLatitude != null) {
+            if (item.MetaDataCreationDate.HasValue)
+            {
 
-			hasGeoTag = true;
-			GeoTag.longitude.Coord = item.GeoTagLongitude;
-			GeoTag.latitude.Coord = item.GeoTagLatitude;
-		}
+                CreationDate = item.MetaDataCreationDate.Value;
+            }
 
-		foreach(DB.MediaTag mediaTag in item.MediaTag) {
+            if (item.GeoTagLongitude != null && item.GeoTagLatitude != null)
+            {
 
-			Tags.Add(mediaTag.Tag);
-		}
+                hasGeoTag = true;
+                GeoTag.Longitude.Coord = item.GeoTagLongitude;
+                GeoTag.Latitude.Coord = item.GeoTagLatitude;
+            }
 
-		foreach(DB.MediaThumb mediaThumb in item.MediaThumb) {
-			
-			MemoryStream stream = new MemoryStream(mediaThumb.ImageData);
+            foreach (DB.MediaTag mediaTag in item.MediaTag)
+            {
 
-			MetaDataThumb thumb = new MetaDataThumb(stream);
+                Tags.Add(mediaTag.Tag);
+            }
 
-			Thumbnail.Add(thumb);
-		}
-	}
-	
+            foreach (DB.MediaThumb mediaThumb in item.MediaThumb)
+            {
 
+                MemoryStream stream = new MemoryStream(mediaThumb.ImageData);
 
-	public FileMetaData() {		
+                MetaDataThumb thumb = new MetaDataThumb(stream);
 
-		initialize("");
-	}
+                Thumbnail.Add(thumb);
+            }
+        }
 
-	public FileMetaData(DB.Media media) {		
 
-		initialize("");
 
-		initVarsFromDatabaseItem(media);
-	}
+        public FileMetaData()
+        {
 
+            initialize("");
+        }
 
-	public void load(string filePath) {
+        public FileMetaData(DB.Media media)
+        {
 
-		initialize(filePath);
+            initialize("");
 
-		DB.Context ctx = null;
+            initVarsFromDatabaseItem(media);
+        }
 
-		try {
 
-			ctx = new DB.Context();
+        public void load(string filePath)
+        {
 
-			DB.Media item = ctx.getMediaByLocation(filePath);
+            initialize(filePath);
 
-			FileInfo file = new FileInfo(filePath);
+            DB.Context ctx = null;
 
-			if(item == null || DB.Context.isMediaItemOutdated(item, file)) {
+            try
+            {
 
-				ctx.close();
+                ctx = new DB.Context();
 
-				loadFromDisk(filePath);
-				saveToDatabase();
+                DB.Media item = ctx.getMediaByLocation(filePath);
 
-			} else {
+                FileInfo file = new FileInfo(filePath);
 
-				initVarsFromDatabaseItem(item);
+                if (item == null || DB.Context.isMediaItemOutdated(item, file))
+                {
 
-			}
+                    ctx.close();
 
-		} finally {
+                    loadFromDisk(filePath);
+                    saveToDatabase();
 
-			if(ctx != null) {
+                }
+                else
+                {
 
-				ctx.close();
-			}
-		}
+                    initVarsFromDatabaseItem(item);
 
-	}
+                }
 
-	public bool loadFromDataBase(string filePath) {
+            }
+            finally
+            {
 
-		DB.Context ctx = null;
+                if (ctx != null)
+                {
 
-		try {
+                    ctx.close();
+                }
+            }
 
-			initialize(filePath);
+        }
 
-			ctx = new DB.Context();
+        public bool loadFromDataBase(string filePath)
+        {
 
-			DB.Media item = ctx.getMediaByLocation(filePath);
+            DB.Context ctx = null;
 
-			if(item == null) return(false);
+            try
+            {
 
-			initVarsFromDatabaseItem(item);
+                initialize(filePath);
 
-			return(true);
+                ctx = new DB.Context();
 
-		} finally {
+                DB.Media item = ctx.getMediaByLocation(filePath);
 
-			if(ctx != null) {
+                if (item == null) return (false);
 
-				ctx.close();
-			}
-		}
-	}
+                initVarsFromDatabaseItem(item);
 
-	public void loadFromDisk(string filePath) {
+                return (true);
 
-		initialize(filePath);
+            }
+            finally
+            {
 
-		metaData = new MetaData();
-				
-		if(metaData.open(filePath, kXMPFiles_OpenForRead) == false) {
+                if (ctx != null)
+                {
 
-			throw new Exception("Cannot open metadata for: " + filePath);
+                    ctx.close();
+                }
+            }
+        }
 
-		} 
-		
-		readThumbnails();
-	
-		string temp = "";
+        public void loadFromDisk(string filePath)
+        {
 
-		bool exists = metaData.getLocalizedText(kXMP_NS_DC, "title", "en", "en-US", temp);
-		if(exists) {
+            initialize(filePath);
 
-			Title = temp;
-		}
+            metaData = new XMPLib.MetaData();
 
-		exists = metaData.getLocalizedText(kXMP_NS_DC, "description", "en", "en-US", temp);
-		if(exists) {
+            if (metaData.open(filePath, Consts.OpenOptions.XMPFiles_OpenForRead) == false)
+            {
 
-			Description = temp;
-		}
+                throw new Exception("Cannot open metadata for: " + filePath);
 
-		exists = metaData.getArrayItem(kXMP_NS_DC, "creator", 1, temp);
-		if(exists) {
+            }
 
-			Creator = temp;
-		}
+            readThumbnails();
 
-		exists = metaData.getArrayItem(kXMP_NS_DC, "rights", 1, temp);
-		if(exists) {
+            string temp = "";
 
-			Copyright = temp;
-		}
+            bool exists = metaData.getLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", ref temp);
+            if (exists)
+            {
 
-		exists = metaData.getProperty(kXMP_NS_XMP, "CreatorTool", temp);
-		if(exists) {
+                Title = temp;
+            }
 
-			CreatorTool = temp;
-		}
+            exists = metaData.getLocalizedText(Consts.XMP_NS_DC, "description", "en", "en-US",ref temp);
+            if (exists)
+            {
 
-		DateTime propValue;
+                Description = temp;
+            }
 
-		exists = metaData.getProperty_Date(kXMP_NS_XMP, "MetadataDate", propValue);
-		if(exists) {
+            exists = metaData.getArrayItem(Consts.XMP_NS_DC, "creator", 1, ref temp);
+            if (exists)
+            {
 
-			MetaDataDate = propValue;
-		} 
+                Creator = temp;
+            }
 
-		exists = metaData.getProperty_Date(kXMP_NS_XMP, "CreateDate", propValue);
-		if(exists) {
+            exists = metaData.getArrayItem(Consts.XMP_NS_DC, "rights", 1, ref temp);
+            if (exists)
+            {
 
-			CreationDate = propValue;
-		} 
+                Copyright = temp;
+            }
 
-		exists = metaData.getProperty_Date(kXMP_NS_XMP, "ModifyDate", propValue);
-		if(exists) {
+            exists = metaData.getProperty(Consts.XMP_NS_XMP, "CreatorTool", ref temp);
+            if (exists)
+            {
 
-			ModifiedDate = propValue;
-		} 
+                CreatorTool = temp;
+            }
 
-		if(metaData.doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData.doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude"))
-		{
-			string latitude;
-			string longitude;
+            DateTime propValue;
 
-			metaData.getProperty(kXMP_NS_EXIF, "GPSLatitude", latitude);
-			metaData.getProperty(kXMP_NS_EXIF, "GPSLongitude", longitude);
+            exists = metaData.getProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", ref propValue);
+            if (exists)
+            {
 
-			geoTag.longitude.Coord = longitude;
-			geoTag.latitude.Coord = latitude;
+                MetaDataDate = propValue;
+            }
 
-			hasGeoTag = true;
+            exists = metaData.getProperty_Date(Consts.XMP_NS_XMP, "CreateDate", ref propValue);
+            if (exists)
+            {
 
-		} 
-		
-		bool hasLat = false;
-		bool hasLon = false;
-				
-		tags = new List<string >();
+                CreationDate = propValue;
+            }
 
-		int nrTags = metaData.countArrayItems(kXMP_NS_DC, "subject");
-		
-		for(int i = 1; i <= nrTags; i++) {
+            exists = metaData.getProperty_Date(Consts.XMP_NS_XMP, "ModifyDate", ref propValue);
+            if (exists)
+            {
 
-			string tag;
-			exists = metaData.getArrayItem(kXMP_NS_DC, "subject", i, tag);
+                ModifiedDate = propValue;
+            }
 
-			if(exists) {
+            if (metaData.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLatitude") && metaData.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLongitude"))
+            {
+                string latitude = "";
+                string longitude = "";
 
-				tags.Add(tag);
+                metaData.getProperty(Consts.XMP_NS_EXIF, "GPSLatitude", ref latitude);
+                metaData.getProperty(Consts.XMP_NS_EXIF, "GPSLongitude", ref longitude);
 
-				if(tag.StartsWith(latString)) {
+                geoTag.Longitude.Coord = longitude;
+                geoTag.Latitude.Coord = latitude;
 
-					geoTag.latitude.Decimal = Convert.ToDouble(tag.Substring(latString.Length), CultureInfo.InvariantCulture);
-					hasLat = true;
+                hasGeoTag = true;
 
-				} else if(tag.StartsWith(lonString)) {
+            }
 
-					geoTag.longitude.Decimal = Convert.ToDouble(tag.Substring(lonString.Length), CultureInfo.InvariantCulture);
-					hasLon = true;
-				}
-			}
-		}
+            bool hasLat = false;
+            bool hasLon = false;
 
-		if(hasLat && hasLon) {
-					
-			hasGeoTag = true;
-		}
-		
-	}
+            tags = new List<string>();
 
- public void Dispose()
-    {
- 	    closeFile();
+            int nrTags = metaData.countArrayItems(Consts.XMP_NS_DC, "subject");
+
+            for (int i = 1; i <= nrTags; i++)
+            {
+
+                string tag = "";
+                exists = metaData.getArrayItem(Consts.XMP_NS_DC, "subject", i, ref tag);
+
+                if (exists)
+                {
+
+                    tags.Add(tag);
+
+                    if (tag.StartsWith(latString))
+                    {
+
+                        geoTag.Latitude.Decimal = Convert.ToDouble(tag.Substring(latString.Length), CultureInfo.InvariantCulture);
+                        hasLat = true;
+
+                    }
+                    else if (tag.StartsWith(lonString))
+                    {
+
+                        geoTag.Longitude.Decimal = Convert.ToDouble(tag.Substring(lonString.Length), CultureInfo.InvariantCulture);
+                        hasLon = true;
+                    }
+                }
+            }
+
+            if (hasLat && hasLon)
+            {
+
+                hasGeoTag = true;
+            }
+
+        }
+
+        public void Dispose()
+        {
+            closeFile();
+        }
+
+        public string FilePath
+        {
+
+            get
+            {
+
+                return (filePath);
+            }
+
+            set
+            {
+
+                this.filePath = value;
+            }
+        }
+
+        public GeoTagCoordinatePair GeoTag
+        {
+
+            get
+            {
+
+                return (geoTag);
+            }
+
+            set
+            {
+
+                this.geoTag = value;
+            }
+        }
+
+        public bool HasGeoTag
+        {
+
+            get
+            {
+
+                return (hasGeoTag);
+            }
+
+            set
+            {
+
+                this.hasGeoTag = value;
+            }
+        }
+
+        public string Title
+        {
+
+            get
+            {
+
+                return (title);
+            }
+
+            set
+            {
+
+                this.title = value;
+            }
+        }
+        public string Description
+        {
+
+            get
+            {
+
+                return (description);
+            }
+
+            set
+            {
+
+                this.description = value;
+            }
+        }
+
+        public string Creator
+        {
+
+            get
+            {
+
+                return (creator);
+            }
+
+            set
+            {
+
+                this.creator = value;
+            }
+        }
+        public string CreatorTool
+        {
+
+            get
+            {
+
+                return (creatorTool);
+            }
+
+            set
+            {
+
+                this.creatorTool = value;
+            }
+        }
+        public string Copyright
+        {
+
+            get
+            {
+
+                return (copyright);
+            }
+
+            set
+            {
+
+                this.copyright = value;
+            }
+        }
+        public List<string> Tags
+        {
+
+            get
+            {
+
+                return (tags);
+            }
+
+            set
+            {
+
+                this.tags = value;
+            }
+        }
+        public DateTime CreationDate
+        {
+
+            get
+            {
+
+                return (creationDate);
+            }
+
+            set
+            {
+
+                this.creationDate = value;
+            }
+        }
+        public DateTime ModifiedDate
+        {
+
+            get
+            {
+
+                return (modifiedDate);
+            }
+
+            set
+            {
+
+                this.modifiedDate = value;
+            }
+        }
+        public DateTime MetaDataDate
+        {
+
+            get
+            {
+
+                return (metaDataDate);
+            }
+
+            set
+            {
+
+                this.metaDataDate = value;
+            }
+        }
+
+        public MetaDataTreeNode Tree
+        {
+
+            get
+            {
+
+                if (tree == null && metaData != null)
+                {
+
+                    tree = MetaDataTree.create(metaData);
+                }
+
+                return (tree);
+            }
+        }
+
+        public List<MetaDataThumb> Thumbnail
+        {
+
+            set
+            {
+
+                this.thumbnail = value;
+            }
+
+            get
+            {
+
+                return (thumbnail);
+            }
+        }
+
+        public void save()
+        {
+
+            saveToDisk();
+            saveToDatabase();
+        }
+
+        public void saveToDatabase()
+        {
+
+            try
+            {
+
+                DB.Context ctx = new DB.Context();
+
+                DB.Media item = ctx.getMediaByLocation(FilePath);
+
+                FileInfo file = new FileInfo(FilePath);
+
+                bool exists = true;
+                if (item == null)
+                {
+
+                    item = DB.Context.newMediaItem(file);
+                    exists = false;
+                }
+
+                item.FileLastWriteTimeTicks = file.LastWriteTime.Ticks;
+                item.FileCreationTimeTicks = file.CreationTime.Ticks;
+
+                if (!string.IsNullOrEmpty(Title))
+                {
+
+                    item.Title = Title;
+
+                }
+                else
+                {
+
+                    item.Title = null;
+                }
+
+                if (!string.IsNullOrEmpty(Description))
+                {
+
+                    item.Description = Description;
+
+                }
+                else
+                {
+
+                    item.Description = null;
+                }
+
+                if (!string.IsNullOrEmpty(CreatorTool))
+                {
+
+                    item.CreatorTool = CreatorTool;
+
+                }
+                else
+                {
+
+                    item.CreatorTool = null;
+                }
+
+                if (!string.IsNullOrEmpty(Creator))
+                {
+
+                    item.Author = Creator;
+
+                }
+                else
+                {
+
+                    item.Author = null;
+                }
+
+                if (!string.IsNullOrEmpty(Copyright))
+                {
+
+                    item.Copyright = Creator;
+
+                }
+                else
+                {
+
+                    item.Copyright = null;
+                }
+
+                if (CreationDate != DateTime.MinValue)
+                {
+
+                    item.MetaDataCreationDate = CreationDate;
+
+                }
+                else
+                {
+
+                    item.MetaDataCreationDate = new Nullable<DateTime>();
+                }
+
+                if (ModifiedDate != DateTime.MinValue)
+                {
+
+                    item.MetaDataLastModifiedDate = ModifiedDate;
+
+                }
+                else
+                {
+
+                    item.MetaDataLastModifiedDate = new Nullable<DateTime>();
+                }
+
+                if (HasGeoTag == true)
+                {
+
+                    item.GeoTagLongitude = GeoTag.Longitude.Coord;
+                    item.GeoTagLatitude = GeoTag.Latitude.Coord;
+                }
+
+                item.MetaDataDate = DateTime.Now;
+
+                item.MediaTag.Clear();
+
+                List<string> temp = new List<string>();
+
+                foreach (string tag in Tags)
+                {
+
+                    if (temp.Contains(tag)) continue;
+                    temp.Add(tag);
+
+                    DB.MediaTag mediaTag = new DB.MediaTag();
+                    mediaTag.Tag = tag;
+
+                    item.MediaTag.Add(mediaTag);
+
+                }
+
+                int i = 0;
+
+                item.MediaThumb.Clear();
+
+                foreach (MetaDataThumb thumb in Thumbnail)
+                {
+
+                    DB.MediaThumb mediaThumb = new DB.MediaThumb();
+                    mediaThumb.ImageData = thumb.Data.ToArray();
+                    mediaThumb.ThumbNr = i;
+
+                    item.MediaThumb.Add(mediaThumb);
+                    i++;
+                }
+
+                ////log.Info("saving: " + FilePath + " " + i.ToString() + " thumbs");
+                if (exists == false)
+                {
+                    ctx.insert(item);
+                }
+                ctx.saveChanges();
+                ctx.close();
+
+            }
+            catch (Exception e)
+            {
+
+                log.Error("DATABASE Failed to store: " + FilePath + " - " + e.Message);
+
+            }
+        }
+
+        public virtual void saveToDisk()
+        {
+
+            metaData = new XMPLib.MetaData();
+
+            if (metaData.open(filePath, Consts.OpenOptions.XMPFiles_OpenForUpdate) == false)
+            {
+
+                throw new Exception("Cannot open metadata for: " + filePath);
+
+            }
+
+            writeThumbnails();
+
+            if (!string.IsNullOrEmpty(Title))
+            {
+
+                metaData.setLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", Title);
+
+            }
+
+            if (!string.IsNullOrEmpty(Description))
+            {
+
+                if (metaData.doesArrayItemExist(Consts.XMP_NS_DC, "description", 1))
+                {
+
+                    metaData.setArrayItem(Consts.XMP_NS_DC, "description", 1, Description, 0);
+
+                }
+                else
+                {
+
+                    metaData.appendArrayItem(Consts.XMP_NS_DC, "description",
+                        Consts.PropOptions.XMP_PropArrayIsOrdered, Description, 0);
+                }
+
+            }
+
+            if (!string.IsNullOrEmpty(CreatorTool))
+            {
+
+                metaData.setProperty(Consts.XMP_NS_XMP, "CreatorTool", CreatorTool, 
+                    Consts.PropOptions.XMP_DeleteExisting);
+            }
+
+            if (!string.IsNullOrEmpty(Creator))
+            {
+
+                if (metaData.doesArrayItemExist(Consts.XMP_NS_DC, "creator", 1))
+                {
+
+                    metaData.setArrayItem(Consts.XMP_NS_DC, "creator", 1, Creator, 0);
+
+                }
+                else
+                {
+
+                    metaData.appendArrayItem(Consts.XMP_NS_DC, "creator", 
+                        Consts.PropOptions.XMP_PropArrayIsOrdered, Creator, 0);
+                }
+
+            }
+
+            if (!string.IsNullOrEmpty(Copyright))
+            {
+
+                if (metaData.doesArrayItemExist(Consts.XMP_NS_DC, "rights", 1))
+                {
+
+                    metaData.setArrayItem(Consts.XMP_NS_DC, "rights", 1, Copyright, 0);
+
+                }
+                else
+                {
+
+                    metaData.appendArrayItem(Consts.XMP_NS_DC, "rights",
+                        Consts.PropOptions.XMP_PropArrayIsOrdered, Copyright, 0);
+                }
+
+            }
+
+            metaData.setProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", DateTime.Now);
+
+            List<string> tags = Tags;
+            int nrTags = metaData.countArrayItems(Consts.XMP_NS_DC, "subject");
+
+            for (int i = nrTags; i > 0; i--)
+            {
+
+                metaData.deleteArrayItem(Consts.XMP_NS_DC, "subject", i);
+            }
+
+            foreach (string tag in tags)
+            {
+
+                metaData.appendArrayItem(Consts.XMP_NS_DC, "subject", 
+                    Consts.PropOptions.XMP_PropArrayIsUnordered, tag, 0);
+            }
+
+            if (HasGeoTag == true)
+            {
+                string latitude = geoTag.Latitude.Coord;
+                string longitude = geoTag.Longitude.Coord;
+
+                metaData.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", latitude, 0);
+                metaData.setProperty(Consts.XMP_NS_EXIF, "GPSLongitude", longitude, 0);
+
+            }
+            else
+            {
+
+                //// remove a potentially existing geotag
+                if (metaData.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLatitude") && metaData.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLongitude"))
+                {
+
+                    metaData.deleteProperty(Consts.XMP_NS_EXIF, "GPSLatitude");
+                    metaData.deleteProperty(Consts.XMP_NS_EXIF, "GPSLongitude");
+                }
+
+                string latString = "geo:lat=";
+                string lonString = "geo:lon=";
+
+                for (int i = metaData.countArrayItems(Consts.XMP_NS_DC, "subject"); i > 0; i--)
+                {
+
+                    string value = "";
+
+                    metaData.getArrayItem(Consts.XMP_NS_DC, "subject", i, ref value);
+
+                    if (value.StartsWith(latString) || value.StartsWith(lonString))
+                    {
+
+                        metaData.deleteArrayItem(Consts.XMP_NS_DC, "subject", i);
+                    }
+                }
+            }
+
+            if (metaData.canPutXMP())
+            {
+
+                metaData.putXMP();
+
+            }
+            else
+            {
+
+                closeFile();
+                throw new Exception("Cannot write metadata for: " + filePath);
+            }
+
+            closeFile();
+        }
+
+        public void closeFile()
+        {
+
+            if (metaData != null)
+            {
+
+                metaData.Dispose();
+                metaData = null;
+            }
+        }
     }
-
-	 public string FilePath {
-
-		get {
-
-			return(filePath);
-		}
-
-		set {
-
-			this.filePath = value;
-		}
-   }
-
-	 public GeoTagCoordinatePair GeoTag {
-
-		get {
-
-			return(geoTag);
-		}
-
-		set {
-
-			this.geoTag = value;
-		}
-	}
-
-	 public bool HasGeoTag {
-
-		get {
-
-			return(hasGeoTag);
-		}
-
-		set {
-
-			this.hasGeoTag = value;
-		}
-	}
-
-	 public string Title {
-
-		get {
-
-			return(title);
-		}
-
-		set {
-
-			this.title = value;
-		}
-	}
-	 public string Description {
-
-		get {
-
-			return(description);
-		}
-
-		set {
-
-			this.description = value;
-		}
-	}
-
-	public  string Creator {
-
-		get {
-
-			return(creator);
-		}
-
-		set {
-
-			this.creator = value;
-		}
-	}
-	 public string CreatorTool {
-
-		get {
-
-			return(creatorTool);
-		}
-
-		set {
-
-			this.creatorTool = value;
-		}
-	}
-	 public string Copyright {
-
-		get {
-
-			return(copyright);
-		}
-
-		set {
-
-			this.copyright = value;
-		}
-	}
-	 public List<string > Tags {
-
-		get {
-
-			return(tags);
-		}
-
-		set {
-
-			this.tags = value;
-		}
-	}
-	 public DateTime CreationDate {
-
-		get {
-
-			return(creationDate);
-		}
-
-		set {
-
-			this.creationDate = value;
-		}
-	}
-	 public DateTime ModifiedDate {
-
-		get {
-
-			return(modifiedDate);
-		}
-
-		set {
-
-			this.modifiedDate = value;
-		}
-	}
-	 public DateTime MetaDataDate {
-
-		get {
-
-			return(metaDataDate);
-		}
-
-		set {
-
-			this.metaDataDate = value;
-		}
-	}
-
-	 public MetaDataTreeNode Tree {
-
-		get {
-
-			if(tree == null && metaData != null) {
-
-				tree = MetaDataTree.create(metaData);
-			}
-
-			return(tree);
-		}
-	}
-
-	 public List<MetaDataThumb > Thumbnail {
-
-		set {
-
-			this.thumbnail = value;
-		}
-
-		get {
-
-			return(thumbnail);
-		}
-	}
-
-	public void save() {
-		
-		saveToDisk();
-		saveToDatabase();
-	}
-
-	public void saveToDatabase() {
-
-		try {
-
-			DB.Context ctx = new DB.Context();
-
-			DB.Media item = ctx.getMediaByLocation(FilePath);
-			
-			FileInfo file = new FileInfo(FilePath);
-
-			bool exists = true;
-			if(item == null) {
-
-				item = DB.Context.newMediaItem(file);
-				exists = false;
-			}			
-
-			item.FileLastWriteTimeTicks = file.LastWriteTime.Ticks;
-			item.FileCreationTimeTicks = file.CreationTime.Ticks;
-
-			if(!string.IsNullOrEmpty(Title)) {
-
-				item.Title = Title;
-
-			} else {
-
-				item.Title = null;
-			}
-
-			if(!string.IsNullOrEmpty(Description)) {
-
-				item.Description = Description;
-
-			} else {
-
-				item.Description = null;
-			}
-
-			if(!string.IsNullOrEmpty(CreatorTool)) {
-
-				item.CreatorTool = CreatorTool;
-
-			} else {
-
-				item.CreatorTool = null;
-			}
-
-			if(!string.IsNullOrEmpty(Creator)) {
-
-				item.Author = Creator;
-
-			} else {
-
-				item.Author = null;
-			}
-
-			if(!string.IsNullOrEmpty(Copyright)) {
-
-				item.Copyright = Creator;
-
-			} else {
-
-				item.Copyright = null;
-			}
-
-			if(CreationDate != DateTime.MinValue) {
-
-				item.MetaDataCreationDate = CreationDate;
-
-			} else {
-
-				item.MetaDataCreationDate = new Nullable<DateTime>();
-			}
-
-			if(ModifiedDate != DateTime.MinValue) {
-
-				item.MetaDataLastModifiedDate = ModifiedDate;
-
-			} else {
-
-				item.MetaDataLastModifiedDate = new Nullable<DateTime>();
-			}
-
-			if(HasGeoTag == true) {
-
-				item.GeoTagLongitude = GeoTag.longitude.Coord;
-				item.GeoTagLatitude = GeoTag.latitude.Coord;
-			}
-
-			item.MetaDataDate = DateTime.Now;
-
-			item.MediaTag.Clear();
-
-			List<string > temp = new List<string >();
-
-			foreach(string tag in Tags) {
-
-				if(temp.Contains(tag)) continue;
-				temp.Add(tag);
-
-				DB.MediaTag mediaTag = new DB.MediaTag();
-				mediaTag.Tag = tag;
-
-				item.MediaTag.Add(mediaTag);
-
-			}
-
-			int i = 0;
-
-			item.MediaThumb.Clear();
-
-			foreach(MetaDataThumb thumb in Thumbnail) {
-
-				DB.MediaThumb mediaThumb = new DB.MediaThumb();
-				mediaThumb.ImageData = thumb.Data.ToArray();
-				mediaThumb.ThumbNr = i;
-
-				item.MediaThumb.Add(mediaThumb);
-				i++;
-			}
-
-			//log.Info("saving: " + FilePath + " " + i.ToString() + " thumbs");
-			if(exists == false) {
-				ctx.insert(item);
-			}
-			ctx.saveChanges();
-			ctx.close();
-
-		} catch (Exception e) { 
-
-			log.Error("DATABASE Failed to store: " + FilePath + " - " + e.Message);
-
-		} 
-	}
-
-	public virtual void saveToDisk() {
-
-		metaData = new MetaData();
-
-		if(metaData.open(filePath, kXMPFiles_OpenForUpdate) == false) {
-
-			throw new Exception("Cannot open metadata for: " + filePath);
-
-		} 
-
-		writeThumbnails();
-
-		if(!string.IsNullOrEmpty(Title)) {
-
-			metaData.setLocalizedText(kXMP_NS_DC,"title","en", "en-US",Title);
-
-		}
-
-		if(!string.IsNullOrEmpty(Description)) {
-
-			if(metaData.doesArrayItemExist(kXMP_NS_DC, "description", 1)) {
-
-				metaData.setArrayItem(kXMP_NS_DC, "description", 1, Description, 0);
-
-			} else {
-
-				metaData.appendArrayItem(kXMP_NS_DC, "description",  kXMP_PropArrayIsOrdered, Description, 0);
-			}
-
-		}
-
-		if(!string.IsNullOrEmpty(CreatorTool)) {
-
-			metaData.setProperty(kXMP_NS_XMP, "CreatorTool", CreatorTool, kXMP_DeleteExisting);
-		}
-
-		if(!string.IsNullOrEmpty(Creator)) {
-
-			if(metaData.doesArrayItemExist(kXMP_NS_DC, "creator", 1)) {
-
-				metaData.setArrayItem(kXMP_NS_DC, "creator", 1, Creator, 0);
-
-			} else {
-
-				metaData.appendArrayItem(kXMP_NS_DC, "creator",  kXMP_PropArrayIsOrdered, Creator, 0);
-			}
-
-		}
-
-		if(!string.IsNullOrEmpty(Copyright)) {
-
-			if(metaData.doesArrayItemExist(kXMP_NS_DC, "rights", 1)) {
-
-				metaData.setArrayItem(kXMP_NS_DC, "rights", 1, Copyright, 0);
-
-			} else {
-
-				metaData.appendArrayItem(kXMP_NS_DC, "rights",  kXMP_PropArrayIsOrdered, Copyright, 0);
-			}
-
-		}
-
-		metaData.setProperty_Date(kXMP_NS_XMP, "MetadataDate", DateTime.Now);
-
-		List<string > tags = Tags;
-		int nrTags = metaData.countArrayItems(kXMP_NS_DC, "subject");
-		
-		for(int i = nrTags; i > 0; i--) {
-
-			metaData.deleteArrayItem(kXMP_NS_DC, "subject", i);
-		}
-
-		foreach(string tag in tags) {
-
-			metaData.appendArrayItem(kXMP_NS_DC, "subject", kXMP_PropArrayIsUnordered, tag, 0);
-		}
-
-		if(HasGeoTag == true)
-		{
-			string latitude = geoTag.latitude.Coord;
-			string longitude = geoTag.longitude.Coord;
-
-			metaData.setProperty(kXMP_NS_EXIF, "GPSLatitude", latitude, 0);
-			metaData.setProperty(kXMP_NS_EXIF, "GPSLongitude", longitude, 0);
-
-		} else {
-
-			// remove a potentially existing geotag
-			if(metaData.doesPropertyExists(kXMP_NS_EXIF, "GPSLatitude") && metaData.doesPropertyExists(kXMP_NS_EXIF, "GPSLongitude")) {
-
-				metaData.deleteProperty(kXMP_NS_EXIF, "GPSLatitude");
-				metaData.deleteProperty(kXMP_NS_EXIF, "GPSLongitude");
-			}
-
-			string latString = "geo:lat=";
-			string lonString = "geo:lon=";
-
-			for(int i = metaData.countArrayItems(kXMP_NS_DC, "subject"); i > 0 ; i--) {
-
-				string value = "";
-
-				metaData.getArrayItem(kXMP_NS_DC, "subject", i, value);
-
-				if(value.StartsWith(latString) || value.StartsWith(lonString)) {
-
-					metaData.deleteArrayItem(kXMP_NS_DC, "subject", i);						
-				} 
-			}
-		}
-
-		if(metaData.canPutXMP()) {
-
-			metaData.putXMP();
-
-		} else {
-
-			closeFile();
-			throw new Exception("Cannot write metadata for: " + filePath);
-		}
-
-		closeFile();
-	}
-
-	public void closeFile() {
-
-		if(metaData != null) {
-
-			metaData.Dispose();
-			metaData = null;
-		}
-	}
-}
 }

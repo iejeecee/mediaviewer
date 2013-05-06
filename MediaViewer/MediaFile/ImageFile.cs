@@ -30,7 +30,7 @@ namespace MediaViewer.MediaFile
 
 		imageMetaData = Image.FromStream(Data, false, false);
 		
-/*
+//*
 		for(int i = 0; i < imageMetaData.PropertyIdList.Length; i++) {
 
 			if(imageMetaData.PropertyIdList[i] == IMAGE_WIDTH)
@@ -42,9 +42,9 @@ namespace MediaViewer.MediaFile
 
 					IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(p.Value, 0);
 					
-					cli.array<int> bla = new cli.array<int>(p.Len / 4);
+					cli.array<int> bla = new cli.array<int>(p.Len // 4);
 
-					Marshal.Copy(ptr, bla, 0, p.Len / 4);
+					Marshal.Copy(ptr, bla, 0, p.Len // 4);
 
 					width = bla[0];
 				}
@@ -58,9 +58,9 @@ namespace MediaViewer.MediaFile
 
 					IntPtr ptr = Marshal.UnsafeAddrOfPinnedArrayElement(p.Value, 0);
 					
-					cli.array<short> bla = new cli.array<short>(p.Len / 2);
+					cli.array<short> bla = new cli.array<short>(p.Len // 2);
 
-					Marshal.Copy(ptr, bla, 0, p.Len / 2);
+					Marshal.Copy(ptr, bla, 0, p.Len // 2);
 
 					height = bla[0];
 				}
@@ -69,7 +69,7 @@ namespace MediaViewer.MediaFile
 
 		}
 
-*/
+*//
 		base.readMetaData();
 		
 	}
@@ -90,9 +90,9 @@ namespace MediaViewer.MediaFile
 
 		try {
 
-			// GDI+ throws an error if we try to read a  when the imageMetaData
-			// doesn't have that . Check to make sure the thumbnail 
-			// item exists.
+			//// GDI+ throws an error if we try to read a  when the imageMetaData
+			//// doesn't have that . Check to make sure the thumbnail 
+			//// item exists.
 			bool propertyFound = false;
 
 			for(int i = 0; i < imageMetaData.PropertyIdList.Length; i++) {
@@ -109,8 +109,8 @@ namespace MediaViewer.MediaFile
 
 				PropertyItem p = imageMetaData.GetPropertyItem(THUMBNAIL_DATA);
 
-				// The imageMetaData data is in the form of a byte array. Write all 
-				// the bytes to a stream and create a new imageMetaData from that stream
+				//// The imageMetaData data is in the form of a byte array. Write all 
+				//// the bytes to a stream and create a new imageMetaData from that stream
 				if(p.Value != null) {
 
 					byte[] imageBytes = p.Value;
@@ -132,7 +132,7 @@ namespace MediaViewer.MediaFile
 			}
 
 
-			// scale thumbnail to the right size
+			//// scale thumbnail to the right size
 			int thumbWidth;
 			int thumbHeight;
 
@@ -171,7 +171,7 @@ namespace MediaViewer.MediaFile
 
 				sb.AppendLine("Description:");
 
-				//string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
+				////string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
 				sb.AppendLine(MetaData.Description);
 				sb.AppendLine();
 			}
