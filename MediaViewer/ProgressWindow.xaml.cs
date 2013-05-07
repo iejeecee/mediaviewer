@@ -49,7 +49,7 @@ namespace MediaViewer
                 Object[] infoArgs = new Object[1];
 
                 infoArgs[0] = info;
-                asyncAddInfoStringDelegate addInfo = new asyncAddInfoStringDelegate(this, &ProgressForm.asyncAddInfoStringInvoke);
+                asyncAddInfoStringDelegate addInfo = new asyncAddInfoStringDelegate(asyncAddInfoStringInvoke);
 
                 Dispatcher.BeginInvoke(addInfo, infoArgs);
             }

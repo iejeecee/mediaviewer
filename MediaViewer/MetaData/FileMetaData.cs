@@ -370,7 +370,7 @@ namespace MediaViewer.MetaData
                 CreatorTool = temp;
             }
 
-            DateTime propValue;
+            DateTime propValue = DateTime.MinValue;
 
             exists = metaData.getProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", ref propValue);
             if (exists)
@@ -649,7 +649,7 @@ namespace MediaViewer.MetaData
                 if (tree == null && metaData != null)
                 {
 
-                    tree = MetaDataTree.create(metaData);
+                    tree = MetaDataTree.MetaDataTree.create(metaData);
                 }
 
                 return (tree);

@@ -19,6 +19,7 @@ namespace MediaViewer.Logging
     /// </summary>
     public partial class LogWindow : Window
     {
+        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public enum LogLevel
         {
@@ -33,6 +34,12 @@ namespace MediaViewer.Logging
         public LogWindow()
         {
             InitializeComponent();
+
+            args = new Object[2];
+			addTextDelegate = new AddTextDelegate(addText);
+
+            logTextBox.Document.PageWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
+			//filterComboBox.SelectedIndex = 2;
         }
 
         private delegate void AddTextDelegate(LogLevel level, string text);
@@ -85,22 +92,38 @@ namespace MediaViewer.Logging
                         brush = Brushes.Yellow;
                         break;
                     }
+                default:
+                    {
+                        brush = Brushes.Black;
+                        break;
+                    }
 
             }
 
-            tr.ApplyPropertyValue(TextElement.ForegroundProperty, Brushes.Red);
+            tr.ApplyPropertyValue(TextElement.ForegroundProperty, brush);
+
+            //logTextBox.AppendText(tr.Text);
+
+            
 
             logTextBox.ScrollToEnd();
+/*
+            Paragraph paragraph = new Paragraph();
+            Run dummy = new Run(text);
+            paragraph.Inlines.Add(dummy);
+
+            logTextBox.Document.Blocks.Add(paragraph);
+  */       
+            
+            
         }
 
         public void append(LogLevel level, string text)
         {
-
             if (filterLevel < level) return;
 
             lock (args)
             {
-
                 args[0] = level;
                 args[1] = text;
 
@@ -108,25 +131,24 @@ namespace MediaViewer.Logging
                 {
                     this.BeginInit();
                 }
-
+               
                 if (Dispatcher.CheckAccess())
                 {
                     addText(level, text);
-
                 }
                 else
                 {
-
                     Dispatcher.BeginInvoke(addTextDelegate, args);
                 }
 
-            }
+           }
 
-        }
+       }
 
         private void clearButton_Click(object sender, RoutedEventArgs e)
         {
             logTextBox.Document.Blocks.Clear();
+        
         }
 
         private void filterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

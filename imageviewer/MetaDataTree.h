@@ -695,7 +695,7 @@ public:
 
 		List<MetaDataProperty ^> ^propsList = gcnew List<MetaDataProperty ^>();
 
-		data->iterate(kXMP_IterJustLeafNodes, propsList);
+		data->iterate(Consts::IterOptions::XMP_IterJustLeafNodes, propsList);
 
 		MetaDataTreeNode ^root = gcnew MetaDataTreeNameSpaceNode("root");
 

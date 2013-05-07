@@ -75,7 +75,8 @@ namespace MediaViewer.MediaFile
     public ImageFile(string location, string mimeType, Stream data, MediaFileBase.MetaDataMode mode) 
 		: base(location, mimeType, data, mode) 
 	{
-
+        width = 0;
+        height = 0;
 		sizeBytes = data.Length;
 	}
 
@@ -120,13 +121,18 @@ namespace MediaViewer.MediaFile
 
 				} else {
 
-					tempImage = Image.FromStream(Data, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                    Image fullImage = Image.FromStream(Data);
+					tempImage = ImageUtils.resizeImage(fullImage, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                    fullImage.Dispose();
+                    
 
 				}
 
 			} else {
 
-				tempImage = Image.FromStream(Data, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                Image fullImage = Image.FromStream(Data);
+                tempImage = ImageUtils.resizeImage(fullImage, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
+                fullImage.Dispose();
 			}
 
 

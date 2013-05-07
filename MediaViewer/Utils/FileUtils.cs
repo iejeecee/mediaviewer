@@ -94,7 +94,7 @@ namespace MediaViewer.Utils
                 this.sourcePaths = sourcePaths;
                 this.destPaths = destPaths;
                 ProgressWindow = new ProgressWindow();
-                ProgressWindow.CancelEvent += new ProgressWindow.CancelEventHandler(this, &AsyncState.progressForm_CancelEvent);
+                ProgressWindow.CancelEvent += new ProgressWindow.CancelEventHandler(progressForm_CancelEvent);
 
                 copyCallbackAction = CopyFileCallbackAction.CONTINUE;
             }
@@ -166,7 +166,7 @@ namespace MediaViewer.Utils
                     OnAfterCopy(this, new FileUtilsEventArgs(destinationDir, true));
                 }
 
-                CopyProgressDelegate progressCallback = new CopyProgressDelegate(this, FileUtils.copyProgress);
+                CopyProgressDelegate progressCallback = new CopyProgressDelegate(copyProgress);
 
                 int cancel = 0;
 

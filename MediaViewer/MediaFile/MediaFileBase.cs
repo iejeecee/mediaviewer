@@ -44,6 +44,7 @@ namespace MediaViewer.MediaFile
         {
 
             location = null;
+            name = null;
             data = null;
             metaData = null;
             mimeType = null;
