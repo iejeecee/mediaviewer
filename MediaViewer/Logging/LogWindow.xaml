@@ -1,7 +1,7 @@
-﻿<Window x:Class="MediaViewer.Logging.LogWindow"
+﻿<Window x:Name="logWindow" x:Class="MediaViewer.Logging.LogWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Log" Height="300" Width="300" MinHeight="300" MinWidth="300" Icon="pack://application:,,,/Icons/log.ico">
+        Title="Log" Height="300" Width="600" MinHeight="300" MinWidth="300" Icon="pack://application:,,,/Icons/log.ico" Closing="logWindow_Closing">
     <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="LightGray">
         <Grid.ColumnDefinitions >
             <ColumnDefinition Width="*" />

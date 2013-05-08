@@ -10,7 +10,7 @@ using System.Windows;
 using MediaViewer.GenericEventArgs;
 using MediaViewer.Utils;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
 
     class MediaFileFactory
@@ -29,9 +29,9 @@ namespace MediaViewer.MediaFile
             private string location;
             private Object userState;
             private ModifiableGEventArgs<bool> isCancelled;
-            private MediaFileBase.MetaDataMode mode;
+            private MediaFile.MetaDataMode mode;
 
-            public AsyncState(string location, Object userState, MediaFileBase.MetaDataMode mode)
+            public AsyncState(string location, Object userState, MediaFile.MetaDataMode mode)
             {
                 this.mode = mode;
                 this.location = location;
@@ -65,7 +65,7 @@ namespace MediaViewer.MediaFile
                 }
             }
 
-            public MediaFileBase.MetaDataMode MetaDataMode
+            public MediaFile.MetaDataMode MetaDataMode
             {
                 get
                 {
@@ -93,7 +93,7 @@ namespace MediaViewer.MediaFile
         DigitallyCreated.Utilities.Concurrency.FifoSemaphore stateSemaphore;
         List<AsyncState> activeStates;
 
-        static MediaFileBase openWebData(AsyncState state)
+        static MediaFile openWebData(AsyncState state)
         {
 
             HttpWebResponse response = null;
@@ -146,7 +146,7 @@ namespace MediaViewer.MediaFile
 
                 data.Seek(0, System.IO.SeekOrigin.Begin);
 
-                MediaFileBase media = newMediaFromMimeType(state, response.ContentType, data);
+                MediaFile media = newMediaFromMimeType(state, response.ContentType, data);
 
                 return (media);
 
@@ -166,7 +166,7 @@ namespace MediaViewer.MediaFile
             }
         }
 
-        static MediaFileBase openFileData(AsyncState state, int timeoutMs)
+        static MediaFile openFileData(AsyncState state, int timeoutMs)
         {
 
             Stream data = FileUtils.waitForFileAccess(state.Location, FileAccess.Read,
@@ -174,7 +174,7 @@ namespace MediaViewer.MediaFile
 
             string mimeType = MediaFormatConvert.fileNameToMimeType(state.Location);
 
-            MediaFileBase media = newMediaFromMimeType(state, mimeType, data);
+            MediaFile media = newMediaFromMimeType(state, mimeType, data);
 
             return (media);
         }
@@ -185,7 +185,7 @@ namespace MediaViewer.MediaFile
             AsyncState state = (AsyncState)asyncState;
 
             //// initialize media with a dummy in case of exceptions
-            MediaFileBase media = new UnknownFile(state.Location, null);
+            MediaFile media = new UnknownFile(state.Location, null);
 
             //// only allow one thread to open files at once
             openSemaphore.Acquire();
@@ -232,10 +232,10 @@ namespace MediaViewer.MediaFile
         }
 
 
-        static MediaFileBase newMediaFromMimeType(AsyncState state, string mimeType, Stream data)
+        static MediaFile newMediaFromMimeType(AsyncState state, string mimeType, Stream data)
         {
 
-            MediaFileBase media = null;
+            MediaFile media = null;
 
             if (mimeType.ToLower().StartsWith("image"))
             {
@@ -263,7 +263,7 @@ namespace MediaViewer.MediaFile
         }
 
 
-        public event EventHandler<MediaFileBase> OpenFinished;
+        public event EventHandler<MediaFile> OpenFinished;
 
         public MediaFileFactory()
         {
@@ -278,7 +278,7 @@ namespace MediaViewer.MediaFile
         //// Open (read only) a file//http stream in a non blocking fashion
         //// When the file is successfully opened a OpenFinished event is generated
         //// The function will attempt to cancel any pending opens to speed up it's operation
-        public void openNonBlockingAndCancelPending(string location, MediaFileBase.MetaDataMode mode)
+        public void openNonBlockingAndCancelPending(string location, MediaFile.MetaDataMode mode)
         {
 
             openNonBlockingAndCancelPending(location, null, mode);
@@ -289,7 +289,7 @@ namespace MediaViewer.MediaFile
         //// The function will attempt to cancel any pending opens to speed up it's operation
         //// userstate is attached to the returning mediafile
         public void openNonBlockingAndCancelPending(string location, Object userState,
-            MediaFileBase.MetaDataMode mode)
+            MediaFile.MetaDataMode mode)
         {
 
             try
@@ -333,13 +333,13 @@ namespace MediaViewer.MediaFile
             openSemaphore.Release();
         }
 
-        public static MediaFileBase openBlocking(string location, MediaFileBase.MetaDataMode mode)
+        public static MediaFile openBlocking(string location, MediaFile.MetaDataMode mode)
         {
 
             AsyncState state = new AsyncState(location, null, mode);
 
             //// initialize media with a dummy in case of exceptions
-            MediaFileBase media = new UnknownFile(state.Location, null);
+            MediaFile media = new UnknownFile(state.Location, null);
 
             try
             {

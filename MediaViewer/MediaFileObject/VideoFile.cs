@@ -9,9 +9,9 @@ using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using VideoLib;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
-    class VideoFile : MediaFileBase
+    class VideoFile : MediaFile
     {
 
         private static Image defaultVideoThumb;
@@ -146,7 +146,7 @@ namespace MediaViewer.MediaFile
             defaultVideoThumb = new Bitmap("C:\\game\\icons\\video.png");
         }
 
-        public VideoFile(string location, string mimeType, Stream data, MediaFileBase.MetaDataMode mode)
+        public VideoFile(string location, string mimeType, Stream data, MediaFile.MetaDataMode mode)
             : base(location, mimeType, data, mode)
         {
 

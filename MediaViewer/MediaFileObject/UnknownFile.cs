@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MetaData;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
-    class UnknownFile : MediaFileBase
+    class UnknownFile : MediaFile
     {
 
         public UnknownFile(String location, Stream data)

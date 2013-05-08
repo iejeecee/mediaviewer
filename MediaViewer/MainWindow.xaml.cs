@@ -31,15 +31,54 @@ namespace MediaViewer
         public MainWindow()
         {
             InitializeComponent();
+       
             Version version = Assembly.GetEntryAssembly().GetName().Version;
             log.Info("Starting MediaViewer v" + version.ToString());
+
+            XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
+        }
+
+        private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
+        {
+
+            switch (level)
+            {
+
+                case XMPLib.MetaData.LogLevel.ERROR:
+                    {
+                        log.Error(message);
+                        break;
+                    }
+                case XMPLib.MetaData.LogLevel.WARNING:
+                    {
+
+                        log.Warn(message);
+                        break;
+                    }
+                case XMPLib.MetaData.LogLevel.INFO:
+                    {
+
+                        log.Info(message);
+                        break;
+                    }
+                default:
+                    {
+                        System.Diagnostics.Debug.Assert(false);
+                        break;
+                    }
+            }
         }
 
         private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
         {
              OpenFileDialog openFileDialog = WindowsUtils.createOpenMediaFileDialog(false);
 
-             openFileDialog.ShowDialog();
+             if (openFileDialog.ShowDialog() == true)
+             {
+
+                 imagePanel.loadImage(openFileDialog.FileName);
+             }
+        
 
         }
 
@@ -51,7 +90,7 @@ namespace MediaViewer
 
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
         {
-
+            this.Close();
         }
 
         private void LogMenuItem_Click(object sender, RoutedEventArgs e)
@@ -59,6 +98,11 @@ namespace MediaViewer
             log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
             VisualAppender appender = (VisualAppender)(appenders[0]);
             appender.LogWindow.Show();
+        }
+
+        private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            Dispatcher.InvokeShutdown();
         }
     }
 }

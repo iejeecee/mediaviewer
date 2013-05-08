@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
     class MediaFileException : Exception
     {

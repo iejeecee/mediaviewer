@@ -38,6 +38,9 @@ namespace MediaViewer.Logging
             args = new Object[2];
 			addTextDelegate = new AddTextDelegate(addText);
 
+            trimChars = new char[1];
+            trimChars[0] = '\n';
+
             logTextBox.Document.PageWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
 			//filterComboBox.SelectedIndex = 2;
         }
@@ -45,12 +48,15 @@ namespace MediaViewer.Logging
         private delegate void AddTextDelegate(LogLevel level, string text);
         private AddTextDelegate addTextDelegate;
         private Object[] args;
+        private char[] trimChars;
 
         private LogLevel filterLevel;
 
         private void addText(LogLevel level, string text)
         {
 
+            text = text.TrimEnd(trimChars);
+            
             TextRange tr = new TextRange(logTextBox.Document.ContentEnd,
             logTextBox.Document.ContentEnd);
 
@@ -101,19 +107,10 @@ namespace MediaViewer.Logging
             }
 
             tr.ApplyPropertyValue(TextElement.ForegroundProperty, brush);
-
-            //logTextBox.AppendText(tr.Text);
-
-            
+  
 
             logTextBox.ScrollToEnd();
-/*
-            Paragraph paragraph = new Paragraph();
-            Run dummy = new Run(text);
-            paragraph.Inlines.Add(dummy);
-
-            logTextBox.Document.Blocks.Add(paragraph);
-  */       
+  
             
             
         }
@@ -171,6 +168,12 @@ namespace MediaViewer.Logging
 
                 filterLevel = LogLevel.ERROR;
             }
+        }
+
+        private void logWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            e.Cancel = true;
+            this.Hide();
         }
 
         /*

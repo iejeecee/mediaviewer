@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
-    class ImageFile : MediaFileBase
+    class ImageFile : MediaFile
 {
 
 	private const int THUMBNAIL_DATA = 0x501B;
@@ -69,10 +69,11 @@ namespace MediaViewer.MediaFile
 
 */
 		base.readMetaData();
+        data.Position = 0;
 		
 	}
 
-    public ImageFile(string location, string mimeType, Stream data, MediaFileBase.MetaDataMode mode) 
+    public ImageFile(string location, string mimeType, Stream data, MediaFile.MetaDataMode mode) 
 		: base(location, mimeType, data, mode) 
 	{
         width = 0;

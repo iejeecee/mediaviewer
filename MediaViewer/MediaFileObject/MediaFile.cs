@@ -8,9 +8,9 @@ using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using DB = MediaDatabase;
 
-namespace MediaViewer.MediaFile
+namespace MediaViewer.MediaFileObject
 {
-    abstract class MediaFileBase : EventArgs
+    abstract class MediaFile : EventArgs
     {
         public enum MetaDataMode
         {
@@ -40,7 +40,7 @@ namespace MediaViewer.MediaFile
 
         protected MetaDataMode mode;
 
-        protected MediaFileBase()
+        protected MediaFile()
         {
 
             location = null;
@@ -54,7 +54,7 @@ namespace MediaViewer.MediaFile
             mode = MetaDataMode.AUTO;
         }
 
-        protected MediaFileBase(string location, string mimeType, Stream data, MetaDataMode mode)
+        protected MediaFile(string location, string mimeType, Stream data, MetaDataMode mode)
         {
 
             this.location = location;
@@ -296,7 +296,7 @@ namespace MediaViewer.MediaFile
 
             List<MetaDataThumb> thumbs = new List<MetaDataThumb>();
 
-            if (MediaFormat == MediaFileBase.MediaType.UNKNOWN)
+            if (MediaFormat == MediaFile.MediaType.UNKNOWN)
             {
 
                 return (thumbs);
