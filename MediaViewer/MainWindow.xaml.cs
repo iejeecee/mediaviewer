@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Logging;
 using MediaViewer.Utils;
+using MediaViewer.MVImage.Panel;
+using MediaViewer.MVImage.Rotate;
 using Microsoft.Win32;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
@@ -27,15 +29,23 @@ namespace MediaViewer
     public partial class MainWindow : Window
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private RotateWindow rotate;
 
         public MainWindow()
         {
+
             InitializeComponent();
-       
+
             Version version = Assembly.GetEntryAssembly().GetName().Version;
             log.Info("Starting MediaViewer v" + version.ToString());
 
+            AppDomain currentDomain = AppDomain.CurrentDomain;
+            PrintLoadedAssemblies(currentDomain);
+            currentDomain.AssemblyLoad += new AssemblyLoadEventHandler(assemblyLoadEventHandler);
+
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
+
+            rotate = null;
         }
 
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
@@ -103,6 +113,68 @@ namespace MediaViewer
         private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             Dispatcher.InvokeShutdown();
+        }
+
+        private void imageToolBarButton_Click(object sender, RoutedEventArgs e)
+        {
+           
+        }
+
+        private void autoScaleImageCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (autoScaleImageCheckBox.IsChecked == true)
+            {
+                imagePanel.Stretch = Stretch.Uniform;
+            }
+            else
+            {
+                imagePanel.Stretch = Stretch.None;
+            }
+        }
+
+
+        static void PrintLoadedAssemblies(AppDomain domain)
+        {          
+            foreach (Assembly a in domain.GetAssemblies())
+            {
+                log.Info("Assembly loaded: " + a.FullName);               
+            }        
+        }
+
+        static void assemblyLoadEventHandler(object sender, AssemblyLoadEventArgs args)
+        {
+            log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);           
+        }
+
+        private void rotateImageCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (rotateImageCheckBox.IsChecked.Value == true)
+            {
+                rotate = new RotateWindow();
+                rotate.RotationChanged += new EventHandler((s, a) => imagePanel.Rotation = rotate.Rotation);
+                rotate.Closed += new EventHandler((s, a) => rotateImageCheckBox.IsChecked = false);
+                rotate.Rotation = imagePanel.Rotation;
+                rotate.Show();
+            }
+            else
+            {
+                rotate.Close();
+            }
+        }
+
+        private void scaleImageCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void flipImageHorizontalCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            imagePanel.FlipX = flipImageHorizontalCheckBox.IsChecked.Value;
+        }
+
+        private void flipImageVerticalCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            imagePanel.FlipY = flipImageVerticalCheckBox.IsChecked.Value;
         }
     }
 }

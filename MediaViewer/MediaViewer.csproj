@@ -80,9 +80,6 @@
     </Compile>
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
-    <Compile Include="ImagePanelControl.xaml.cs">
-      <DependentUpon>ImagePanelControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Logging\LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>
     </Compile>
@@ -107,8 +104,14 @@
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeProperty.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeStructNode.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeValue.cs" />
+    <Compile Include="MVImage\Panel\ImagePanelControl.xaml.cs">
+      <DependentUpon>ImagePanelControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MVImage\Rotate\RotateWindow.xaml.cs">
+      <DependentUpon>RotateWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
@@ -117,10 +120,6 @@
     <Compile Include="Utils\Misc.cs" />
     <Compile Include="Utils\WindowsUtils.cs" />
     <Page Include="AboutWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanelControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -140,7 +139,15 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="MVImage\Panel\ImagePanelControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MVImage\Rotate\RotateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -212,6 +219,28 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\ruler.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\scale.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\rotate.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\video.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\browser.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\FlipHorizontal.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Icons\FlipVertical.ico" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
