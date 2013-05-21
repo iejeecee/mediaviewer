@@ -57,7 +57,9 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -78,18 +80,29 @@
     <Compile Include="AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
+      <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="DirectoryBrowser\DirectoryLister.cs" />
+    <Compile Include="DirectoryBrowser\DirectoryObject.cs" />
+    <Compile Include="DirectoryBrowser\DriveObject.cs" />
+    <Compile Include="DirectoryBrowser\LoadingObject.cs" />
+    <Compile Include="DirectoryBrowser\PathObject.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
     <Compile Include="Logging\LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logging\VisualAppender.cs" />
-    <Compile Include="MediaFileObject\ImageFile.cs" />
-    <Compile Include="MediaFileObject\MediaFile.cs" />
-    <Compile Include="MediaFileObject\MediaFileException.cs" />
-    <Compile Include="MediaFileObject\MediaFileFactory.cs" />
-    <Compile Include="MediaFileObject\UnknownFile.cs" />
-    <Compile Include="MediaFileObject\VideoFile.cs" />
+    <Compile Include="MediaFileBrowser\MediaFileBrowserControl.xaml.cs">
+      <DependentUpon>MediaFileBrowserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MVMediaFile\ImageFile.cs" />
+    <Compile Include="MVMediaFile\MediaFile.cs" />
+    <Compile Include="MVMediaFile\MediaFileException.cs" />
+    <Compile Include="MVMediaFile\MediaFileFactory.cs" />
+    <Compile Include="MVMediaFile\UnknownFile.cs" />
+    <Compile Include="MVMediaFile\VideoFile.cs" />
     <Compile Include="MetaData\FileMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
@@ -104,14 +117,23 @@
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeProperty.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeStructNode.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeValue.cs" />
+    <Compile Include="MVImage\Rotate\DegreesConverter.cs" />
     <Compile Include="MVImage\Panel\ImagePanelControl.xaml.cs">
       <DependentUpon>ImagePanelControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MVImage\Scale\ScaleConverter.cs" />
+    <Compile Include="MVImage\Scale\ScaleWindow.xaml.cs">
+      <DependentUpon>ScaleWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MVMediaFile\Watcher\MediaFileWatcher.cs" />
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MVImage\Rotate\RotateWindow.xaml.cs">
       <DependentUpon>RotateWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
@@ -120,6 +142,22 @@
     <Compile Include="Utils\Misc.cs" />
     <Compile Include="Utils\WindowsUtils.cs" />
     <Page Include="AboutWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DirectoryBrowser\DirectoryBrowserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MediaFileBrowser\MediaFileBrowserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MVImage\Scale\ScaleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Dictionary.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -148,6 +186,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MVImage\Rotate\RotateWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -197,10 +239,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\log.ico" />
+    <Resource Include="Resources\Icons\log.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\Pictures.ico" />
+    <Resource Include="Resources\Icons\Pictures.ico" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
@@ -220,27 +262,53 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\ruler.ico" />
+    <Resource Include="Resources\Icons\ruler.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\scale.ico" />
+    <Resource Include="Resources\Icons\scale.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\rotate.ico" />
+    <Resource Include="Resources\Icons\rotate.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\video.ico" />
+    <Resource Include="Resources\Icons\video.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\browser.ico" />
+    <Resource Include="Resources\Icons\browser.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\FlipHorizontal.ico" />
+    <Resource Include="Resources\Icons\FlipHorizontal.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Icons\FlipVertical.ico" />
+    <Resource Include="Resources\Icons\FlipVertical.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Hard_Drive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Folder_Back.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\folder_open.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Network_Drive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\ram.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\CD_Drive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\UnknownDrive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\EmptyDrive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Removable_Drive.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -10,7 +10,7 @@ using System.Windows;
 using MediaViewer.GenericEventArgs;
 using MediaViewer.Utils;
 
-namespace MediaViewer.MediaFileObject
+namespace MediaViewer.MVMediaFile
 {
 
     class MediaFileFactory

@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.MediaFileObject;
+using MediaViewer.MVMediaFile;
 using MediaViewer.Utils;
 
 namespace MediaViewer.MVImage.Panel
@@ -28,27 +28,18 @@ namespace MediaViewer.MVImage.Panel
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         private Matrix transform;
-        private double scaleX, scaleY;
+        private double scale;
 
-        public double ScaleY
+        public double Scale
         {
-            get { return scaleY; }
+            get { return scale; }
             set
             {
-                scaleY = value;
+                scale = value;
                 Transform = buildTransform();
             }
         }
 
-        public double ScaleX
-        {
-            get { return scaleX; }
-            set
-            {
-                scaleX = value;
-                Transform = buildTransform();
-            }
-        }
         private bool flipX, flipY;
 
         public bool FlipY
@@ -88,22 +79,22 @@ namespace MediaViewer.MVImage.Panel
         private BitmapImage sourceImage;
         private ImageFormat imageFormat;
 
-        private DisplayModeState displayMode;
+        //private DisplayModeState displayMode;
 
         private bool isLeftMouseButtonDown;
-        private bool isModified;
+        //private bool isModified;
 
         private Point mouseStartPosition;
         private Point scrollbarStartPosition;
 
         private delegate void loadImageDelegate(MediaFile media);
 
-        public event EventHandler<EventArgs> LoadImageFinished;
+        //public event EventHandler<EventArgs> LoadImageFinished;
 
         public ImagePanelControl()
         {
             transform = Matrix.Identity;
-            scaleX = scaleY = 1;
+            scale = 1;
             rotation = 0;
             flipX = false;
             flipY = false;
@@ -114,7 +105,7 @@ namespace MediaViewer.MVImage.Panel
             mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);
             media = null;
 
-            displayMode = DisplayModeState.NORMAL;
+           // displayMode = DisplayModeState.NORMAL;
 
         }
 
@@ -144,7 +135,7 @@ namespace MediaViewer.MVImage.Panel
             {
                 transformMatrix.M22 *= -1;
             }
-            transformMatrix.Scale(scaleX, scaleY);
+            transformMatrix.Scale(scale, scale);
             transformMatrix.Rotate(rotation);
 
             return (transformMatrix);
@@ -193,7 +184,7 @@ namespace MediaViewer.MVImage.Panel
                 sourceImage.StreamSource = media.Data;
                 sourceImage.EndInit();
 
-                displayAndCenterImage(sourceImage);
+                displayAndCenterSourceImage();
 
                 log.Info("Loaded image: " + media.Location);
                 //LoadImageFinished(this, EventArgs.Empty);
@@ -215,19 +206,24 @@ namespace MediaViewer.MVImage.Panel
 
         }
 
-        private void displayAndCenterImage(BitmapImage image)
+        public void setDefaultScale()
         {
-
-            pictureBox.Source = image;
-
             var source = PresentationSource.FromVisual(pictureBox);
             Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
             transformToDevice.Invert();
             var actualSize = (Size)transformToDevice.Transform(new Vector(ImageSize.Width, ImageSize.Height));
-            scaleX = actualSize.Width / image.Width;
-            scaleY = actualSize.Height / image.Height;
+            scale = actualSize.Width / sourceImage.Width;
+           
 
             Transform = buildTransform();
+        }
+
+        private void displayAndCenterSourceImage()
+        {
+
+            pictureBox.Source = sourceImage;
+
+            setDefaultScale();
 
             scrollViewer.ScrollToHorizontalOffset(0);
             scrollViewer.ScrollToVerticalOffset(0);

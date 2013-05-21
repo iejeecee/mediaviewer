@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
 
-namespace MediaViewer.MediaFileObject
+namespace MediaViewer.MVMediaFile
 {
     class ImageFile : MediaFile
 {

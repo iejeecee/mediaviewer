@@ -8,7 +8,7 @@ using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using DB = MediaDatabase;
 
-namespace MediaViewer.MediaFileObject
+namespace MediaViewer.MVMediaFile
 {
     abstract class MediaFile : EventArgs
     {

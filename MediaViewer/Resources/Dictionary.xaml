@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"                   
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
+                    xmlns:Rotate="clr-namespace:MediaViewer.MVImage.Rotate"
+                    xmlns:Scale="clr-namespace:MediaViewer.MVImage.Scale" 
+                    >
+    <Rotate:DegreesConverter x:Key="degreesConverter"/>     
+    <Scale:ScaleConverter x:Key="scaleConverter"/>
+</ResourceDictionary>

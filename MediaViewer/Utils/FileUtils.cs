@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using System.Security.Permissions;
+using System.Security.Principal;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -813,5 +816,100 @@ namespace MediaViewer.Utils
             return (r.Replace(fileName, ""));
 
         }
+
+        public static FileSystemRights getRights(string userName, string path)
+        {
+
+            if (string.IsNullOrEmpty(userName))
+            {
+                throw new ArgumentException("userName");
+            }
+
+            if (!Directory.Exists(path) && !File.Exists(path))
+            {
+                throw new ArgumentException(string.Format("path:  {0}", path));
+            }
+
+            return getEffectiveRights(userName, path);
+
+        }
+
+
+
+        private static FileSystemRights getEffectiveRights(string userName, string path)
+        {
+
+            FileSystemAccessRule[] accessRules = getAccessRulesArray(userName, path);
+
+            FileSystemRights denyRights = 0;
+            FileSystemRights allowRights = 0;
+
+            for (int index = 0, total = accessRules.Length; index < total; index++)
+            {
+
+                FileSystemAccessRule rule = accessRules[index];
+
+                if (rule.AccessControlType == AccessControlType.Deny)
+                {
+                    denyRights |= rule.FileSystemRights;
+                }
+
+                else
+                {
+                    allowRights |= rule.FileSystemRights;
+                }
+
+            }
+
+            return (allowRights | denyRights) ^ denyRights;
+
+        }
+
+        private static FileSystemAccessRule[] getAccessRulesArray(string userName, string path)
+        {
+
+            // get all access rules for the path - this works for a directory path as well as a file path
+            AuthorizationRuleCollection authorizationRules = (new FileInfo(path)).GetAccessControl().GetAccessRules(true, true, typeof(SecurityIdentifier));
+
+            // get the user's sids
+            string[] sids = getSecurityIdentifierArray(userName);
+
+            // get the access rules filtered by the user's sids
+            return (from rule in authorizationRules.Cast<FileSystemAccessRule>()
+                    where sids.Contains(rule.IdentityReference.Value)
+                    select rule).ToArray();
+
+        }
+
+        private static string[] getSecurityIdentifierArray(string userName)
+        {
+
+            // connect to the domain
+            PrincipalContext pc = new PrincipalContext(ContextType.Domain);
+
+            // search for the domain user
+            UserPrincipal user = new UserPrincipal(pc) { SamAccountName = userName };
+            PrincipalSearcher searcher = new PrincipalSearcher { QueryFilter = user };
+            user = searcher.FindOne() as UserPrincipal;
+
+            if (user == null)
+            {
+                throw new ApplicationException(string.Format("Invalid User Name:  {0}", userName));
+            }
+
+            // use WindowsIdentity to get the user's groups
+            WindowsIdentity windowsIdentity = new WindowsIdentity(user.UserPrincipalName);
+
+            string[] sids = new string[windowsIdentity.Groups.Count + 1];
+            sids[0] = windowsIdentity.User.Value;
+
+            for (int index = 1, total = windowsIdentity.Groups.Count; index < total; index++)
+            {
+                sids[index] = windowsIdentity.Groups[index].Value;
+            }
+
+            return sids;
+        }
+
     }
 }

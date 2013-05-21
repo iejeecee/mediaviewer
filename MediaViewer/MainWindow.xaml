@@ -1,7 +1,7 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MediaViewer" xmlns:ImagePanel="clr-namespace:MediaViewer.MVImage.Panel" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        xmlns:local="clr-namespace:MediaViewer" xmlns:ImagePanel="clr-namespace:MediaViewer.MVImage.Panel" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
         Title="MediaViewer" Height="350" Width="525" Closing="mainWindow_Closing">
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
@@ -26,33 +26,33 @@
         <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top">
             <ToolBar>
                 <Button x:Name="imageToolBarButton" Height="16" Click="imageToolBarButton_Click">
-                    <Image Source="pack://application:,,,/Icons/Pictures.ico" ToolTip="View Image"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" ToolTip="View Image"/>
                 </Button>
                 <Button x:Name="videoToolBarButton" Height="16">
-                    <Image Source="pack://application:,,,/Icons/video.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/video.ico"/>
                 </Button>
                 <Button x:Name="browserToolBarButton" Height="16">
-                    <Image Source="pack://application:,,,/Icons/browser.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </Button>
-            </ToolBar>           
+            </ToolBar>
             <ToolBar x:Name="imageToolBar">
                 <CheckBox x:Name="autoScaleImageCheckBox" Height="16" Click="autoScaleImageCheckBox_Click" ToolTip="Auto Scale Image">
-                    <Image Source="pack://application:,,,/Icons/ruler.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/ruler.ico"/>
                 </CheckBox>
                 <CheckBox x:Name="scaleImageCheckBox" Height="16" Click="scaleImageCheckBox_Click" ToolTip="Scale Image">
-                    <Image Source="pack://application:,,,/Icons/scale.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/scale.ico"/>
                 </CheckBox>
                 <CheckBox x:Name="rotateImageCheckBox" Height="16" Click="rotateImageCheckBox_Click" ToolTip="Rotate Image">
-                    <Image Source="pack://application:,,,/Icons/rotate.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/rotate.ico"/>
                 </CheckBox>
                 <CheckBox x:Name="flipImageHorizontalCheckBox" Height="16" Click="flipImageHorizontalCheckBox_Click" ToolTip="Flip Image Horizontally">
-                    <Image Source="pack://application:,,,/Icons/FlipHorizontal.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/FlipHorizontal.ico"/>
                 </CheckBox>
                 <CheckBox x:Name="flipImageVerticalCheckBox" Height="16" Click="flipImageVerticalCheckBox_Click" ToolTip="Flip Image Vertically">
-                    <Image Source="pack://application:,,,/Icons/FlipVertical.ico"/>
+                    <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
             </ToolBar>
         </ToolBarTray>
-        <ImagePanel:ImagePanelControl x:Name="imagePanel" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch"/>
+        <ImagePanel:ImagePanelControl x:Name="imagePanel" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch"/>        
     </Grid>
 </Window>

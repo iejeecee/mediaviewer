@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MetaData;
 
-namespace MediaViewer.MediaFileObject
+namespace MediaViewer.MVMediaFile
 {
     class UnknownFile : MediaFile
     {

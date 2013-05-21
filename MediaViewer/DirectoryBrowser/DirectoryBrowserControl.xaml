@@ -1,0 +1,36 @@
+﻿<UserControl x:Class="MediaViewer.DirectoryBrowser.DirectoryBrowserControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:db="clr-namespace:MediaViewer.DirectoryBrowser"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <db:DirectoryLister x:Key="directoryLister"/>
+    </UserControl.Resources>
+    <Grid>
+        <TreeView x:Name="directoryTreeView" ItemsSource="{Binding Source={StaticResource directoryLister},Path=Drives}" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch"
+		TreeViewItem.Expanded="directoryTreeViewItem_Expanded" TreeViewItem.Selected="directoryTreeViewItem_Selected">
+            <TreeView.Resources>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding Path=IsExpanded, Mode=TwoWay}" />
+                    <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=TwoWay}" />
+                </Style>
+            </TreeView.Resources>
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource = "{Binding Directories}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="26"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <Image Grid.Column="0" Margin="2" Source="{Binding ImageUrl}"></Image>
+                        <TextBlock Grid.Column="1" Margin="2"  Text="{Binding Name}"></TextBlock>
+                    </Grid>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </Grid>
+</UserControl>

@@ -18,6 +18,7 @@ using MediaViewer.Utils;
 using MediaViewer.MVImage.Panel;
 using MediaViewer.MVImage.Rotate;
 using Microsoft.Win32;
+using MediaViewer.MVImage.Scale;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -29,7 +30,9 @@ namespace MediaViewer
     public partial class MainWindow : Window
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         private RotateWindow rotate;
+        private ScaleWindow scale;
 
         public MainWindow()
         {
@@ -94,8 +97,11 @@ namespace MediaViewer
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow about = new AboutWindow();
-            about.ShowDialog();
+            //AboutWindow about = new AboutWindow();
+            //about.ShowDialog();
+
+            TestWindow test = new TestWindow();
+            test.Show();
         }
 
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
@@ -164,7 +170,23 @@ namespace MediaViewer
 
         private void scaleImageCheckBox_Click(object sender, RoutedEventArgs e)
         {
-
+            if (scaleImageCheckBox.IsChecked.Value == true)
+            {
+                scale = new ScaleWindow();
+                scale.ScaleChanged += new EventHandler((s, a) => imagePanel.Scale = scale.Scale);
+                scale.ResetScale += new EventHandler((s, a) =>
+                {
+                    imagePanel.setDefaultScale();
+                    scale.Scale = imagePanel.Scale;
+                });
+                scale.Closed += new EventHandler((s, a) => scaleImageCheckBox.IsChecked = false);
+                scale.Scale = imagePanel.Scale;
+                scale.Show();
+            }
+            else
+            {
+                scale.Close();
+            }
         }
 
         private void flipImageHorizontalCheckBox_Click(object sender, RoutedEventArgs e)

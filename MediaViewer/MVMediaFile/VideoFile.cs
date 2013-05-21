@@ -9,7 +9,7 @@ using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using VideoLib;
 
-namespace MediaViewer.MediaFileObject
+namespace MediaViewer.MVMediaFile
 {
     class VideoFile : MediaFile
     {

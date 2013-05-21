@@ -69,6 +69,11 @@ namespace MediaViewer.MVImage.Rotate
             }
         }
 
+        private void resetButton_Click(object sender, RoutedEventArgs e)
+        {
+            Rotation = 0;
+        }
+
  
     }
 }
