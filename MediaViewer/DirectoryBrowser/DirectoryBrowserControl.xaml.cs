@@ -23,7 +23,7 @@ namespace MediaViewer.DirectoryBrowser
     /// </summary>
     public partial class DirectoryBrowserControl : UserControl
     {
-        public event EventHandler<PathObject> PathSelected;
+        public event EventHandler<PathObject> SelectedPathChanged;
 
         private class AsyncState
         {
@@ -53,10 +53,10 @@ namespace MediaViewer.DirectoryBrowser
         public DirectoryBrowserControl()
         {
             InitializeComponent();
-            //TreeViewItem root = (TreeViewItem)directoryTreeView.Items[0];
-            //root.IsExpanded = true;
+    
 
-            setPath("C:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles");
+            setPathAsync("C:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles");
+    
         }
 
         private void directoryTreeViewItem_Expanded(object sender, RoutedEventArgs e)
@@ -68,8 +68,10 @@ namespace MediaViewer.DirectoryBrowser
             {
                 updateSubDirectoriesAsync(this.Dispatcher, (PathObject)item.DataContext);               
 
-            } 
-      
+            }
+
+          
+          
         }
 
         private static Task updateSubDirectoriesAsync(Dispatcher uiDispatcher, PathObject parent)
@@ -92,6 +94,12 @@ namespace MediaViewer.DirectoryBrowser
 
             foreach (DirectoryInfo subDirInfo in subDirsInfo)
             {
+                if ((subDirInfo.Attributes & FileAttributes.System) != 0)
+                {
+                    // skip system directories
+                    continue;
+                }
+
                 DirectoryObject subDir = new DirectoryObject(state.Parent, subDirInfo);
 
                 string subDirPath = fullPath + "\\" + subDir.Name;
@@ -139,17 +147,34 @@ namespace MediaViewer.DirectoryBrowser
 
             TreeViewItem item = (TreeViewItem)e.OriginalSource;
 
-            if (item.DataContext != null)
+            if (item.DataContext != null && SelectedPathChanged != null)
             {
-                PathSelected(this, (PathObject)item.DataContext);
+               
+               SelectedPathChanged(this, (PathObject)item.DataContext);
+               
+            }
 
-            } 
-         
+            item.BringIntoView();
         }
 
-        public void setPath(string path) {
+        public Task setPathAsync(string path)
+        {
 
-            //http://blog.quantumbitdesigns.com/2008/07/22/programmatically-selecting-an-item-in-a-treeview/#respond
+            setPath(path);
+            return (null);
+
+     /*
+            Action<Object> action = new Action<Object>(setPath);
+            Task task = Task.Factory.StartNew(action, path);
+
+            return (task);
+     */
+        }
+
+        private void setPath(Object state) {
+
+            string path = (string)state;
+           
             path = path.Replace('/', '\\');
 
             string root = System.IO.Path.GetPathRoot(path);
@@ -164,6 +189,11 @@ namespace MediaViewer.DirectoryBrowser
                     break;
                 }
 
+            }
+
+            if (parent == null)
+            {
+                return;
             }
 
             string seperator = "\\";
@@ -192,6 +222,8 @@ namespace MediaViewer.DirectoryBrowser
                 }
 
             }
+
+            parent.IsSelected = true;
         }
        
     }

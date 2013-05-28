@@ -5,7 +5,7 @@
         Title="TestWindow" Height="300" Width="300">
     <Grid>
 
-        <MediaFileBrowser:MediaFileBrowserControl HorizontalAlignment="Left" VerticalAlignment="Stretch" Width="200"/>
+        <MediaFileBrowser:MediaFileBrowserControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
 
     </Grid>
 </Window>

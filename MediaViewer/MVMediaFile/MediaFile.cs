@@ -296,64 +296,84 @@ namespace MediaViewer.MVMediaFile
 
             List<MetaDataThumb> thumbs = new List<MetaDataThumb>();
 
-            if (MediaFormat == MediaFile.MediaType.UNKNOWN)
+            try
             {
 
-                return (thumbs);
+                if (MediaFormat == MediaFile.MediaType.UNKNOWN)
+                {
 
-            }
-            else if (FileUtils.isUrl(Location))
-            {
+                    return (thumbs);
 
-                thumbs = generateThumbnails();
-                return (thumbs);
-            }
-            
-            DB.Context ctx = new DB.Context();
-
-            DB.Media mediaItem = ctx.getMediaByLocation(Location);
-
-            if(mediaItem != null) {
-
-                FileMetaData temp = new FileMetaData(mediaItem);
-
-                ctx.close();
-			
-                if(temp.Thumbnail.Count == 0) {
+                }
+                else if (FileUtils.isUrl(Location))
+                {
 
                     thumbs = generateThumbnails();
-                    MetaData.Thumbnail = thumbs;
-                    MetaData.saveToDatabase();
-
-                } else {
-
-                    thumbs = temp.Thumbnail;
+                    return (thumbs);
                 }
 
-            } else {
+                DB.Context ctx = new DB.Context();
 
-                ctx.close();
+                DB.Media mediaItem = ctx.getMediaByLocation(Location);
 
-                thumbs = generateThumbnails();
-
-                if(MetaDataError == null) {
-				
-                    MetaData.Thumbnail = thumbs;
-                    MetaData.saveToDatabase();
-
-                } else {
-
-                    mediaItem = DB.Context.newMediaItem(new FileInfo(Location));
-                    mediaItem.CanStoreMetaData = 0;
+                if (mediaItem != null)
+                {
 
                     FileMetaData temp = new FileMetaData(mediaItem);
-                    temp.Thumbnail = thumbs;
 
-                    temp.saveToDatabase();
+                    ctx.close();
+
+                    if (temp.Thumbnail.Count == 0)
+                    {
+
+                        thumbs = generateThumbnails();
+                        MetaData.Thumbnail = thumbs;
+                        MetaData.saveToDatabase();
+
+                    }
+                    else
+                    {
+
+                        thumbs = temp.Thumbnail;
+                    }
+
+                }
+                else
+                {
+
+                    ctx.close();
+
+                    thumbs = generateThumbnails();
+
+                    if (MetaDataError == null)
+                    {
+
+                        MetaData.Thumbnail = thumbs;
+                        MetaData.saveToDatabase();
+
+                    }
+                    else
+                    {
+
+                        mediaItem = DB.Context.newMediaItem(new FileInfo(Location));
+                        mediaItem.CanStoreMetaData = 0;
+
+                        FileMetaData temp = new FileMetaData(mediaItem);
+                        temp.Thumbnail = thumbs;
+
+                        temp.saveToDatabase();
+                    }
+                }
+
+                return (thumbs);
+            }
+            finally
+            {
+                foreach (MetaDataThumb thumb in thumbs)
+                {
+                    thumb.ThumbImage.Freeze();
                 }
             }
-            
-            return (thumbs);
         }
 
         public virtual string getDefaultCaption()

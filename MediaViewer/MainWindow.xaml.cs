@@ -97,11 +97,9 @@ namespace MediaViewer
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            //AboutWindow about = new AboutWindow();
-            //about.ShowDialog();
+            AboutWindow about = new AboutWindow();
+            about.ShowDialog();
 
-            TestWindow test = new TestWindow();
-            test.Show();
         }
 
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
@@ -197,6 +195,49 @@ namespace MediaViewer
         private void flipImageVerticalCheckBox_Click(object sender, RoutedEventArgs e)
         {
             imagePanel.FlipY = flipImageVerticalCheckBox.IsChecked.Value;
+        }
+
+        private void showMediaFileBrowser()
+        {
+
+            imagePanel.Visibility = Visibility.Hidden;
+            
+            mediaFileBrowser.Visibility = Visibility.Visible;
+         
+            videoToolbarCheckBox.IsChecked = false;
+            imageToolbarCheckBox.IsChecked = false;
+            imageToolBar.Visibility = Visibility.Hidden;
+         
+            //setTitle();
+        }
+
+        private void showImagePanel()
+        {
+
+            imagePanel.Visibility = Visibility.Visible;
+
+            mediaFileBrowser.Visibility = Visibility.Hidden;
+
+            videoToolbarCheckBox.IsChecked = false;
+            mediaFileBrowserToolbarCheckBox.IsChecked = false;
+            imageToolBar.Visibility = Visibility.Visible;
+
+            //setTitle();
+        }
+ 
+        private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void imageToolbarCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            showImagePanel();
+        }
+
+        private void mediaFileBrowserToolbarCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            showMediaFileBrowser();
         }
     }
 }

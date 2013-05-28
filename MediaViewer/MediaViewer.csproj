@@ -90,12 +90,26 @@
     <Compile Include="DirectoryBrowser\PathObject.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
+    <Compile Include="ImageGrid\ImageGridControl.xaml.cs">
+      <DependentUpon>ImageGridControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
+    <Compile Include="ImageGrid\ImageGridPagerControl.cs" />
+    <Compile Include="ImageGrid\ImagePanelItem.cs" />
+    <Compile Include="Input\InputWindow.xaml.cs">
+      <DependentUpon>InputWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Logging\LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logging\VisualAppender.cs" />
     <Compile Include="MediaFileBrowser\MediaFileBrowserControl.xaml.cs">
       <DependentUpon>MediaFileBrowserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaPreview\InfoIcon.cs" />
+    <Compile Include="MediaPreview\MediaPreviewAsyncState.cs" />
+    <Compile Include="MediaPreview\MediaPreviewControl.xaml.cs">
+      <DependentUpon>MediaPreviewControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="MVMediaFile\ImageFile.cs" />
     <Compile Include="MVMediaFile\MediaFile.cs" />
@@ -126,6 +140,9 @@
       <DependentUpon>ScaleWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="MVMediaFile\Watcher\MediaFileWatcher.cs" />
+    <Compile Include="Pager\PagerControl.xaml.cs">
+      <DependentUpon>PagerControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -141,6 +158,7 @@
     <Compile Include="Utils\MediaFormatConvert.cs" />
     <Compile Include="Utils\Misc.cs" />
     <Compile Include="Utils\WindowsUtils.cs" />
+    <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
     <Page Include="AboutWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -149,11 +167,27 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ImageGrid\ImageGridControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Input\InputWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MediaFileBrowser\MediaFileBrowserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MediaPreview\MediaPreviewControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MVImage\Scale\ScaleWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pager\PagerControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -308,6 +342,24 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\Removable_Drive.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Button-Forward.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Button-Rewind.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Button-Next.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\Button-Previous.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\error.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Images\loading1.gif" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -25,15 +25,15 @@
         </Menu>
         <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top">
             <ToolBar>
-                <Button x:Name="imageToolBarButton" Height="16" Click="imageToolBarButton_Click">
-                    <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" ToolTip="View Image"/>
-                </Button>
-                <Button x:Name="videoToolBarButton" Height="16">
+                <CheckBox x:Name="imageToolbarCheckBox" Height="16" Click="imageToolbarCheckBox_Click" ToolTip="View Image">
+                    <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" />
+                </CheckBox>
+                <CheckBox x:Name="videoToolbarCheckBox" Height="16" Click="videoToolbarCheckBox_Click" ToolTip="View Video">
                     <Image Source="pack://application:,,,/Resources/Icons/video.ico"/>
-                </Button>
-                <Button x:Name="browserToolBarButton" Height="16">
+                </CheckBox>
+                <CheckBox x:Name="mediaFileBrowserToolbarCheckBox" Height="16" Click="mediaFileBrowserToolbarCheckBox_Click" ToolTip="Browse Media Files">
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
-                </Button>
+                </CheckBox>
             </ToolBar>
             <ToolBar x:Name="imageToolBar">
                 <CheckBox x:Name="autoScaleImageCheckBox" Height="16" Click="autoScaleImageCheckBox_Click" ToolTip="Auto Scale Image">
@@ -53,6 +53,7 @@
                 </CheckBox>
             </ToolBar>
         </ToolBarTray>
-        <ImagePanel:ImagePanelControl x:Name="imagePanel" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch"/>        
+        <ImagePanel:ImagePanelControl x:Name="imagePanel" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
+        <MediaFileBrowser:MediaFileBrowserControl x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
     </Grid>
 </Window>

@@ -773,7 +773,7 @@ namespace MediaViewer.Utils
             }
         }
 
-        static string getProperDirectoryCapitalization(DirectoryInfo dirInfo)
+        public static string getProperDirectoryCapitalization(DirectoryInfo dirInfo)
         {
             DirectoryInfo parentDirInfo = dirInfo.Parent;
             if (parentDirInfo == null)
@@ -786,7 +786,7 @@ namespace MediaViewer.Utils
                 parentDirInfo.GetDirectories(dirInfo.Name)[0].Name);
         }
 
-        static string getProperFilePathCapitalization(string filename)
+        public static string getProperFilePathCapitalization(string filename)
         {
             FileInfo fileInfo = new FileInfo(filename);
             DirectoryInfo dirInfo = fileInfo.Directory;
@@ -798,7 +798,7 @@ namespace MediaViewer.Utils
         }
 
 
-        static string getPathWithoutFileName(string fullPath)
+        public static string getPathWithoutFileName(string fullPath)
         {
 
             string fileName = System.IO.Path.GetFileName(fullPath);
@@ -808,7 +808,7 @@ namespace MediaViewer.Utils
             return (fullPath.Remove(fullPath.Length - fileName.Length - 1));
         }
 
-        static string removeIllegalCharsFromFileName(string fileName)
+        public static string removeIllegalCharsFromFileName(string fileName)
         {
 
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Security.AccessControl;
@@ -16,7 +17,7 @@ namespace MediaViewer.DirectoryBrowser
         
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public List<DriveObject> Drives
+        public ObservableCollection<DriveObject> Drives
         {
             get { return updateDrives(); }           
         }
@@ -36,10 +37,10 @@ namespace MediaViewer.DirectoryBrowser
             return(drivesInfo);
         }
 
-        private List<DriveObject> updateDrives()
+        private ObservableCollection<DriveObject> updateDrives()
         {
 
-            List<DriveObject> drives = new List<DriveObject>();
+            ObservableCollection<DriveObject> drives = new ObservableCollection<DriveObject>();
 
             DriveInfo[] drivesArray = DriveInfo.GetDrives();
 

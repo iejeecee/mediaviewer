@@ -302,7 +302,7 @@ namespace MediaViewer.MVMediaFile
             foreach (Bitmap bitmap in thumbBitmaps)
             {
 
-                thumbs.Add(new MetaDataThumb(bitmap));
+                //thumbs.Add(new MetaDataThumb(bitmap));
             }
 
             return (thumbs);

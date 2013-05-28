@@ -42,13 +42,7 @@ namespace MediaViewer.MetaData
 
             if (thumbnail != null)
             {
-
-                foreach (MetaDataThumb thumb in thumbnail)
-                {
-
-                    thumb.Dispose();
-                }
-
+             
                 thumbnail.Clear();
             }
 
@@ -242,7 +236,7 @@ namespace MediaViewer.MetaData
 
         public void load(string filePath)
         {
-
+           
             initialize(filePath);
 
             DB.Context ctx = null;

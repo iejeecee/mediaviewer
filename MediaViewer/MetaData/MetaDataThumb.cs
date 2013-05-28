@@ -5,43 +5,52 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
+using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MetaData
 {
 
-    class MetaDataThumb : IDisposable
+    class MetaDataThumb 
     {
 
-        private Image image;
+        private BitmapSource image;
         private MemoryStream data;
         private int width;
         private int height;
         private bool modified;
 
-        public MetaDataThumb(Image image)
+        public MetaDataThumb(BitmapSource image)
         {
             ThumbImage = image;
         }
 
         public MetaDataThumb(MemoryStream data)
         {
-
             this.data = data;
-            image = new Bitmap(data);
-            width = image.Width;
-            height = image.Height;
+
+            BitmapImage tempImage = new BitmapImage();
+
+            tempImage.BeginInit();
+            tempImage.CacheOption = BitmapCacheOption.OnLoad;
+            tempImage.StreamSource = data;
+            tempImage.EndInit();
+
+            image = tempImage;
+
+            width = tempImage.PixelWidth;
+            height = tempImage.PixelHeight;
             modified = false;
         }
 
-        public Image ThumbImage
+        public BitmapSource ThumbImage
         {
 
             set
             {
                 this.image = value;
 
-                width = image.Width;
-                height = image.Height;
+                width = image.PixelWidth;
+                height = image.PixelHeight;
 
                 modified = true;
             }
@@ -95,7 +104,10 @@ namespace MediaViewer.MetaData
 
                     data = new MemoryStream();
 
-                    image.Save(data, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    var encoder = new JpegBitmapEncoder(); 
+                    encoder.Frames.Add(BitmapFrame.Create(image));
+
+                    encoder.Save(data);                
 
                     modified = false;
                 }
@@ -109,16 +121,6 @@ namespace MediaViewer.MetaData
             }
         }
 
-        #region IDisposable Members
-
-        public void Dispose()
-        {
-            if (image != null)
-            {
-                image.Dispose();
-            }
-        }
-
-        #endregion
+ 
     }
 }

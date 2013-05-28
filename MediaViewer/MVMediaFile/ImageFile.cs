@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
 
@@ -21,12 +22,10 @@ namespace MediaViewer.MVMediaFile
 	private int width;
 	private int height;
 
-	Image imageMetaData;
-
 
 	protected override void readMetaData() {
 
-		imageMetaData = Image.FromStream(Data, false, false);
+	
 		
 /*
 		for(int i = 0; i < imageMetaData.PropertyIdList.Length; i++) {
@@ -84,82 +83,34 @@ namespace MediaViewer.MVMediaFile
     protected override List<MetaDataThumb> generateThumbnails()
     {
 
+        BitmapDecoder bitmap = BitmapDecoder.Create(Data,
+            BitmapCreateOptions.DelayCreation,
+            BitmapCacheOption.OnDemand);
+        BitmapFrame frame = bitmap.Frames[0];
+
+        BitmapSource thumb = frame.Thumbnail;
+
+        if (thumb == null)
+        {
+            data.Position = 0;
+
+            var tempImage = new BitmapImage();
+            tempImage.BeginInit();
+            tempImage.CacheOption = BitmapCacheOption.OnLoad;
+            tempImage.StreamSource = Data;
+            tempImage.DecodePixelWidth = MAX_THUMBNAIL_WIDTH;
+            tempImage.EndInit();
+
+            thumb = tempImage;
+        }
+
 		List<MetaDataThumb > thumbs = new List<MetaDataThumb >();
 
-		Image tempImage = null;
+        thumbs.Add(new MetaDataThumb(thumb));
 
-		try {
-
-			// GDI+ throws an error if we try to read a  when the imageMetaData
-			// doesn't have that . Check to make sure the thumbnail 
-			// item exists.
-			bool propertyFound = false;
-
-			for(int i = 0; i < imageMetaData.PropertyIdList.Length; i++) {
-
-				if(imageMetaData.PropertyIdList[i] == THUMBNAIL_DATA)
-				{
-					propertyFound = true;
-					break;
-				}
-
-			}
-
-			if(propertyFound) {
-
-				PropertyItem p = imageMetaData.GetPropertyItem(THUMBNAIL_DATA);
-
-				// The imageMetaData data is in the form of a byte array. Write all 
-				// the bytes to a stream and create a new imageMetaData from that stream
-				if(p.Value != null) {
-
-					byte[] imageBytes = p.Value;
-
-					MemoryStream stream = new MemoryStream(imageBytes.Length);
-					stream.Write(imageBytes, 0, imageBytes.Length);
-
-					tempImage = Image.FromStream(stream);
-
-				} else {
-
-                    Image fullImage = Image.FromStream(Data);
-					tempImage = ImageUtils.resizeImage(fullImage, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                    fullImage.Dispose();
-                    
-
-				}
-
-			} else {
-
-                Image fullImage = Image.FromStream(Data);
-                tempImage = ImageUtils.resizeImage(fullImage, MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT);
-                fullImage.Dispose();
-			}
-
-
-			// scale thumbnail to the right size
-			int thumbWidth;
-			int thumbHeight;
-
-			ImageUtils.resizeRectangle(tempImage.Width, tempImage.Height, 
-				MAX_THUMBNAIL_WIDTH, MAX_THUMBNAIL_HEIGHT, out thumbWidth, out thumbHeight);
-
-			Image thumbImage = null;
-
-			thumbImage = new Bitmap(tempImage, thumbWidth, thumbHeight);
-
-			thumbs.Add(new MetaDataThumb(thumbImage));
-
-			return(thumbs);
-
-		} finally {
-
-			if(tempImage != null) {
-
-				tempImage.Dispose();
-			}
-
-		}
+        return (thumbs);				
+		
+		
 	}
 
     public override string getDefaultCaption()
@@ -255,13 +206,8 @@ namespace MediaViewer.MVMediaFile
     public override void close()
     {
 
-		if(imageMetaData != null) {
 
-			imageMetaData.Dispose();
-			imageMetaData = null;
-		}
-
-		base.close();
+        base.close();
 	}
 }
 
