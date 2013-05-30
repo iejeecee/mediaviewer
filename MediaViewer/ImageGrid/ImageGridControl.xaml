@@ -8,19 +8,23 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
-        <db:DirectoryLister x:Key="directoryLister"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </UserControl.Resources>
     <ItemsControl x:Name="itemsControl" ItemsSource="{Binding ElementName=imageGrid,Path=PanelItems}">
         <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>
+            <ItemsPanelTemplate>               
                 <UniformGrid x:Name="mainGrid" Columns="{Binding ElementName=imageGrid,Path=Columns}" Rows="{Binding ElementName=imageGrid,Path=Rows}" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <Border BorderBrush="Blue" Margin="3" BorderThickness="2">                  
-                        <MediaPreview:MediaPreviewControl AsyncState="{Binding Path=AsyncState, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    <Border BorderBrush="{StaticResource flat3DBorderBrush}" Margin="3" BorderThickness="2">
+                        <MediaPreview:MediaPreviewControl x:Name="mediaPreview" AsyncState="{Binding Path=AsyncState}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseLeftButtonDown="mediaPreview_MouseLeftButtonDown"/>
                     </Border>
                 </Grid>
             </DataTemplate>

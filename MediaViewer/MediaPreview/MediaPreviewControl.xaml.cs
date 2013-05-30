@@ -29,7 +29,14 @@ namespace MediaViewer.MediaPreview
 
         MediaFileFactory mediaFileFactory;
         MediaFile media;
-        List<BitmapImage> informImage;
+
+        enum InformImage
+        {
+            LOADING_IMAGE,
+            ERROR_IMAGE
+        }
+
+        static List<BitmapImage> informImage;        
 
         static Color selectedColor = SystemColors.InfoColor;
         static Color defaultColor = SystemColors.ControlLightLightColor;
@@ -95,21 +102,13 @@ namespace MediaViewer.MediaPreview
             InitializeComponent();
 
             mediaFileFactory = new MediaFileFactory();
-            mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);
+            mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);    
 
-            informImage = new List<BitmapImage>();
-            informImage.Add(new BitmapImage(new Uri("pack://application:,,,/Resources/Images/loading1.gif")));
-            informImage.Add(new BitmapImage(new Uri("pack://application:,,,/Resources/Images/error.png")));
          
             IsSelected = false;
         }
 
-        enum InformImage
-        {
-
-            LOADING_IMAGE = 0,
-            ERROR_IMAGE = 1,
-        };
+     
 
        
         delegate void loadPreviewDelegate(MediaFile media, List<MetaDataThumb> thumbs);
@@ -326,6 +325,13 @@ namespace MediaViewer.MediaPreview
 
             clearPictureBox();
 
+            if (informImage == null)
+            {
+                informImage = new List<BitmapImage>();
+                informImage.Add(new BitmapImage(new Uri("pack://application:,,,/Resources/Images/loading1.gif")));
+                informImage.Add(new BitmapImage(new Uri("pack://application:,,,/Resources/Images/error.png")));
+            }
+
             // pictureBox.SizeMode = PictureBoxSizeMode.CenterImage;
             //pictureBox.TransparencyEnabled = true;
             pictureBox.Source = informImage[(int)image];
@@ -335,6 +341,8 @@ namespace MediaViewer.MediaPreview
 
         void clearPictureBox()
         {
+            pictureBox.Source = null;
+            pictureBox.ToolTip = "";
             /*
                     if(pictureBox.Image != null) {
 

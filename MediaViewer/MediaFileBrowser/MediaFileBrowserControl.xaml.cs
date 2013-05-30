@@ -43,8 +43,7 @@ namespace MediaViewer.MediaFileBrowser
         public MediaFileBrowserControl()
         {
             InitializeComponent();
-            imageGrid.createGrid(5, 5);
-
+         
             mediaFileWatcher = new MediaFileWatcher();
             mediaFileWatcher.MediaDeleted += new FileSystemEventHandler(ImageFileWatcherThread_MediaDeleted);
             mediaFileWatcher.MediaChanged += new FileSystemEventHandler(ImageFileWatcherThread_MediaChanged);

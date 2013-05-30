@@ -55,7 +55,7 @@ namespace MediaViewer.DirectoryBrowser
             InitializeComponent();
     
 
-            setPathAsync("C:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles");
+            setPathAsync("C:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles\\geotag");
     
         }
 

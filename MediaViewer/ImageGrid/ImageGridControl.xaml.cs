@@ -28,7 +28,7 @@ namespace MediaViewer.ImageGrid
 
         public event EventHandler<EventArgs> UpdateImages;
 
-        TrulyObservableCollection<ImagePanelItem> panelItems;
+        ObservableCollection<ImagePanelItem> panelItems;
         List<MediaPreviewAsyncState> imageItems;
         int columns;
 
@@ -67,19 +67,14 @@ namespace MediaViewer.ImageGrid
            
             InitializeComponent();
 
-           
-
             currentPage = 0;
 
-            columns = 0;
-            rows = 0;
-
-            panelItems = null;
+            //PanelItems = null;
             imageItems = null;
-
+            
         }
 
-        public TrulyObservableCollection<ImagePanelItem> PanelItems
+        public ObservableCollection<ImagePanelItem> PanelItems
         {
             get
             {
@@ -133,10 +128,10 @@ namespace MediaViewer.ImageGrid
             Rows = rows;
             Columns = columns;
 
-            panelItems = new TrulyObservableCollection<ImagePanelItem>();
+            PanelItems = new ObservableCollection<ImagePanelItem>();
             for (int i = 0; i < NrPanels; i++)
             {
-                panelItems.Add(new ImagePanelItem());
+                PanelItems.Add(new ImagePanelItem());
             }
 
             this.DataContext = PanelItems;
@@ -237,7 +232,7 @@ namespace MediaViewer.ImageGrid
           
           
 
-            panelItems[panelNr].AsyncState = imageItem;
+            PanelItems[panelNr].AsyncState = imageItem;
 
         }
 
@@ -511,7 +506,7 @@ namespace MediaViewer.ImageGrid
                 }
                 else
                 {                  
-                    panelItems[panelNr].AsyncState = MediaPreviewAsyncState.Empty;                 
+                    PanelItems[panelNr].AsyncState = MediaPreviewAsyncState.Empty;                 
                 }
 
             }
@@ -558,7 +553,7 @@ namespace MediaViewer.ImageGrid
             if (panelNr >= 0)
             {
 
-                panelItems[panelNr].IsSelected = imageItems[imageNr].IsSelected;
+                PanelItems[panelNr].IsSelected = imageItems[imageNr].IsSelected;
 
             }
 
@@ -590,7 +585,7 @@ namespace MediaViewer.ImageGrid
         public bool isEmpty(int panelNr)
         {
 
-            return (panelItems[panelNr].AsyncState.IsEmpty ? true : false);
+            return (PanelItems[panelNr].AsyncState.IsEmpty ? true : false);
         }
 
 
@@ -599,5 +594,11 @@ namespace MediaViewer.ImageGrid
         public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
+
+        private void mediaPreview_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            MediaPreviewControl preview = (MediaPreviewControl)sender;
+            preview.IsSelected = true;
+        }
     }
 }

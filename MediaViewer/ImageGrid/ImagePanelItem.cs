@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MediaPreview;
@@ -25,10 +26,7 @@ namespace MediaViewer.ImageGrid
             {
                 asyncState = value;
 
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("AsyncState"));
-                }
+                NotifyPropertyChanged();
             }
         }
 
@@ -47,12 +45,17 @@ namespace MediaViewer.ImageGrid
 
                 this.isSelected = value;
 
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("IsSelected"));
-                }
+                NotifyPropertyChanged();
             }
 
+        }
+
+        private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         #region INotifyPropertyChanged Members
