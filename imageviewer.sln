@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaDatabase", "MediaDatab
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaViewer", "MediaViewer\MediaViewer.csproj", "{4C27E034-3647-4087-9699-C1562D604C44}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MvvmFoundation.Wpf", "MvvmFoundation\MvvmFoundation.Wpf\MvvmFoundation.Wpf.csproj", "{2E922430-EAAC-4589-A8F4-F35FBB9799B8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,16 @@ Global
 		{4C27E034-3647-4087-9699-C1562D604C44}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{4C27E034-3647-4087-9699-C1562D604C44}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4C27E034-3647-4087-9699-C1562D604C44}.Release|Win32.ActiveCfg = Release|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2E922430-EAAC-4589-A8F4-F35FBB9799B8}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,7 +22,7 @@ namespace MediaViewer.MediaPreview
     /// <summary>
     /// Interaction logic for MediaPreviewControl.xaml
     /// </summary>
-    public partial class MediaPreviewControl : UserControl, INotifyPropertyChanged
+    public partial class MediaPreviewControl : UserControl
     {
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -66,15 +66,27 @@ namespace MediaViewer.MediaPreview
             This.OnAsyncStateChanged(state);
         }
 
-        bool isSelected;
+     
 
         public bool IsSelected
         {
-            get { return isSelected; }
+            get
+            {
+                if (AsyncState == null)
+                {
+                    return (false);
+                }
+                else
+                {
+                    return(AsyncState.IsSelected);
+                }
+            }
             set
             {
-                isSelected = value;
-                if (isSelected == true)
+                if (AsyncState == null) return;
+
+                AsyncState.IsSelected = value;
+                if (AsyncState.IsSelected == true)
                 {
                     BackgroundColor = selectedColor;
                 }
@@ -93,7 +105,7 @@ namespace MediaViewer.MediaPreview
             set
             {
                 backgroundColor = value;
-                PropertyChanged(this, new PropertyChangedEventArgs("BackgroundColor"));
+               
             }
         }
 
@@ -107,9 +119,6 @@ namespace MediaViewer.MediaPreview
          
             IsSelected = false;
         }
-
-     
-
        
         delegate void loadPreviewDelegate(MediaFile media, List<MetaDataThumb> thumbs);
 
@@ -300,6 +309,7 @@ namespace MediaViewer.MediaPreview
                 pictureBox.ToolTip = state.Caption;
             }
 
+            IsSelected = state.IsSelected;
             //pictureBox.ContextMenuStrip = item.ContextMenu;
 
         }
@@ -410,11 +420,7 @@ namespace MediaViewer.MediaPreview
         }
 
 
-        #region INotifyPropertyChanged Members
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
+  
 
     
     }

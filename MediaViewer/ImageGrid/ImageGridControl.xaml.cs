@@ -1,4 +1,6 @@
-﻿using System;
+﻿// intresting stuff:
+// Lazy<T> for lazy initialization
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -36,7 +38,7 @@ namespace MediaViewer.ImageGrid
         {
             get { return columns; }
             set
-            {
+            {            
                 columns = value;
                 if (PropertyChanged != null)
                 {

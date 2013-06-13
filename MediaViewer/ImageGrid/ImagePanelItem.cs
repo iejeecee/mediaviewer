@@ -12,9 +12,8 @@ namespace MediaViewer.ImageGrid
     public class ImagePanelItem : INotifyPropertyChanged
     {
         public ImagePanelItem() {
-
-            asyncState = new MediaPreviewAsyncState();
-            isSelected = false;
+        
+            asyncState = new MediaPreviewAsyncState();            
         }
 
         MediaPreviewAsyncState asyncState;
@@ -30,24 +29,18 @@ namespace MediaViewer.ImageGrid
             }
         }
 
-        bool isSelected;
-
         public bool IsSelected
         {
-
             get
             {
-                return (isSelected);
+                return (AsyncState.IsSelected);
             }
-
             set
             {
-
-                this.isSelected = value;
+                AsyncState.IsSelected = value;
 
                 NotifyPropertyChanged();
             }
-
         }
 
         private void NotifyPropertyChanged([CallerMemberName] String propertyName = "")

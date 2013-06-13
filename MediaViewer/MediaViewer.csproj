@@ -49,8 +49,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DigitallyCreated.Utilities.Concurrency">
-      <HintPath>C:\game\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
+    <Reference Include="DigitallyCreated.Utilities.Concurrency, Version=1.0.1.0, Culture=neutral, PublicKeyToken=79d801fe1e19f7f2, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>C:\game\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
@@ -95,6 +96,7 @@
     </Compile>
     <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridPagerControl.cs" />
+    <Compile Include="ImageGrid\ImageGridViewModel.cs" />
     <Compile Include="ImageGrid\ImagePanelItem.cs" />
     <Compile Include="Input\InputWindow.xaml.cs">
       <DependentUpon>InputWindow.xaml</DependentUpon>
@@ -110,6 +112,16 @@
     <Compile Include="MediaPreview\MediaPreviewAsyncState.cs" />
     <Compile Include="MediaPreview\MediaPreviewControl.xaml.cs">
       <DependentUpon>MediaPreviewControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageModel\ImageView.xaml.cs">
+      <DependentUpon>ImageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageModel\ImageViewModel.cs" />
+    <Compile Include="ImageModel\RotationView.xaml.cs">
+      <DependentUpon>RotationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageModel\ScaleView.xaml.cs">
+      <DependentUpon>ScaleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MVMediaFile\ImageFile.cs" />
     <Compile Include="MVMediaFile\MediaFile.cs" />
@@ -131,23 +143,14 @@
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeProperty.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeStructNode.cs" />
     <Compile Include="MetaData\MetaDataTree\MetaDataTreeValue.cs" />
-    <Compile Include="MVImage\Rotate\DegreesConverter.cs" />
-    <Compile Include="MVImage\Panel\ImagePanelControl.xaml.cs">
-      <DependentUpon>ImagePanelControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MVImage\Scale\ScaleConverter.cs" />
-    <Compile Include="MVImage\Scale\ScaleWindow.xaml.cs">
-      <DependentUpon>ScaleWindow.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="ImageModel\DegreesConverter.cs" />
+    <Compile Include="ImageModel\ScaleConverter.cs" />
     <Compile Include="MVMediaFile\Watcher\MediaFileWatcher.cs" />
     <Compile Include="Pager\PagerControl.xaml.cs">
       <DependentUpon>PagerControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MVImage\Rotate\RotateWindow.xaml.cs">
-      <DependentUpon>RotateWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
@@ -183,7 +186,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MVImage\Scale\ScaleWindow.xaml">
+    <Page Include="ImageModel\ImageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImageModel\RotationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImageModel\ScaleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -211,15 +222,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="MVImage\Panel\ImagePanelControl.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="ProgressWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MVImage\Rotate\RotateWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -262,6 +265,10 @@
     <ProjectReference Include="..\MediaDatabase\MediaDatabase.csproj">
       <Project>{1e33135b-d4b0-42f5-b778-dc681ca9d22f}</Project>
       <Name>MediaDatabase</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MvvmFoundation\MvvmFoundation.Wpf\MvvmFoundation.Wpf.csproj">
+      <Project>{2e922430-eaac-4589-a8f4-f35fbb9799b8}</Project>
+      <Name>MvvmFoundation.Wpf</Name>
     </ProjectReference>
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
@@ -361,6 +368,7 @@
   <ItemGroup>
     <Resource Include="Resources\Images\loading1.gif" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

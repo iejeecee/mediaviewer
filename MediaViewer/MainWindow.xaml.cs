@@ -15,10 +15,9 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Logging;
 using MediaViewer.Utils;
-using MediaViewer.MVImage.Panel;
-using MediaViewer.MVImage.Rotate;
 using Microsoft.Win32;
-using MediaViewer.MVImage.Scale;
+using MediaViewer.ImageModel;
+using System.ComponentModel;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -31,14 +30,16 @@ namespace MediaViewer
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private RotateWindow rotate;
-        private ScaleWindow scale;
+        private RotationView rotationView;
+        private ScaleView scaleView;
+
+        private ImageViewModel imageViewModel;
 
         public MainWindow()
         {
-
+           
             InitializeComponent();
-
+          
             Version version = Assembly.GetEntryAssembly().GetName().Version;
             log.Info("Starting MediaViewer v" + version.ToString());
 
@@ -48,7 +49,24 @@ namespace MediaViewer
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
-            rotate = null;
+            imageViewModel = new ImageViewModel();
+
+            imageView.DataContext = imageViewModel;
+
+            rotationView = new RotationView();
+            rotationView.Closing += new CancelEventHandler(window_Closing);
+            rotationView.DataContext = imageViewModel;
+
+            scaleView = new ScaleView();
+            scaleView.Closing += new CancelEventHandler(window_Closing);
+            scaleView.DataContext = imageViewModel;
+        }
+
+        private void window_Closing(Object sender, CancelEventArgs e)
+        {
+            e.Cancel = true;
+            Window window = (Window)sender;
+            window.Hide();
         }
 
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
@@ -89,7 +107,7 @@ namespace MediaViewer
              if (openFileDialog.ShowDialog() == true)
              {
 
-                 imagePanel.loadImage(openFileDialog.FileName);
+                 imageViewModel.LoadImageAsyncCommand.DoExecute(openFileDialog.FileName);
              }
         
 
@@ -128,11 +146,11 @@ namespace MediaViewer
         {
             if (autoScaleImageCheckBox.IsChecked == true)
             {
-                imagePanel.Stretch = Stretch.Uniform;
+                //imageView.Stretch = Stretch.Uniform;
             }
             else
             {
-                imagePanel.Stretch = Stretch.None;
+                //imageView.Stretch = Stretch.None;
             }
         }
 
@@ -153,16 +171,12 @@ namespace MediaViewer
         private void rotateImageCheckBox_Click(object sender, RoutedEventArgs e)
         {
             if (rotateImageCheckBox.IsChecked.Value == true)
-            {
-                rotate = new RotateWindow();
-                rotate.RotationChanged += new EventHandler((s, a) => imagePanel.Rotation = rotate.Rotation);
-                rotate.Closed += new EventHandler((s, a) => rotateImageCheckBox.IsChecked = false);
-                rotate.Rotation = imagePanel.Rotation;
-                rotate.Show();
+            {                
+                rotationView.Show();
             }
             else
             {
-                rotate.Close();
+                rotationView.Hide();
             }
         }
 
@@ -170,37 +184,29 @@ namespace MediaViewer
         {
             if (scaleImageCheckBox.IsChecked.Value == true)
             {
-                scale = new ScaleWindow();
-                scale.ScaleChanged += new EventHandler((s, a) => imagePanel.Scale = scale.Scale);
-                scale.ResetScale += new EventHandler((s, a) =>
-                {
-                    imagePanel.setDefaultScale();
-                    scale.Scale = imagePanel.Scale;
-                });
-                scale.Closed += new EventHandler((s, a) => scaleImageCheckBox.IsChecked = false);
-                scale.Scale = imagePanel.Scale;
-                scale.Show();
+                scaleView.Show();
+            
             }
             else
             {
-                scale.Close();
+                scaleView.Hide();
             }
         }
 
         private void flipImageHorizontalCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            imagePanel.FlipX = flipImageHorizontalCheckBox.IsChecked.Value;
+            imageViewModel.FlipX = flipImageHorizontalCheckBox.IsChecked.Value;
         }
 
         private void flipImageVerticalCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            imagePanel.FlipY = flipImageVerticalCheckBox.IsChecked.Value;
+            imageViewModel.FlipY = flipImageVerticalCheckBox.IsChecked.Value;
         }
 
         private void showMediaFileBrowser()
         {
 
-            imagePanel.Visibility = Visibility.Hidden;
+            imageView.Visibility = Visibility.Hidden;
             
             mediaFileBrowser.Visibility = Visibility.Visible;
          
@@ -211,10 +217,10 @@ namespace MediaViewer
             //setTitle();
         }
 
-        private void showImagePanel()
+        private void showimageView()
         {
 
-            imagePanel.Visibility = Visibility.Visible;
+            imageView.Visibility = Visibility.Visible;
 
             mediaFileBrowser.Visibility = Visibility.Hidden;
 
@@ -232,7 +238,7 @@ namespace MediaViewer
 
         private void imageToolbarCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            showImagePanel();
+            showimageView();
         }
 
         private void mediaFileBrowserToolbarCheckBox_Click(object sender, RoutedEventArgs e)

@@ -1,7 +1,7 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MediaViewer" xmlns:ImagePanel="clr-namespace:MediaViewer.MVImage.Panel" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImageModel="clr-namespace:MediaViewer.ImageModel" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
         Title="MediaViewer" Height="350" Width="525" Closing="mainWindow_Closing">
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
@@ -52,8 +52,8 @@
                     <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
             </ToolBar>
-        </ToolBarTray>
-        <ImagePanel:ImagePanelControl x:Name="imagePanel" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
+        </ToolBarTray>        
         <MediaFileBrowser:MediaFileBrowserControl x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
+        <ImageModel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
     </Grid>
 </Window>

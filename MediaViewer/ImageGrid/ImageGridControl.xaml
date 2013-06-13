@@ -23,8 +23,9 @@
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                    <Border BorderBrush="{StaticResource flat3DBorderBrush}" Margin="3" BorderThickness="2">
-                        <MediaPreview:MediaPreviewControl x:Name="mediaPreview" AsyncState="{Binding Path=AsyncState}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseLeftButtonDown="mediaPreview_MouseLeftButtonDown"/>
+                    <Border BorderBrush="{StaticResource flat3DBorderBrush}" Margin="2" BorderThickness="1">
+                        <MediaPreview:MediaPreviewControl x:Name="mediaPreview" AsyncState="{Binding Path=AsyncState}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseLeftButtonDown="mediaPreview_MouseLeftButtonDown"
+                                                          />
                     </Border>
                 </Grid>
             </DataTemplate>

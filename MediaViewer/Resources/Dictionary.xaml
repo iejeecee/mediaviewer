@@ -1,11 +1,10 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"                   
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
-                    xmlns:Rotate="clr-namespace:MediaViewer.MVImage.Rotate"
-                    xmlns:Scale="clr-namespace:MediaViewer.MVImage.Scale" 
+                    xmlns:ImageModel="clr-namespace:MediaViewer.ImageModel"                  
                     >
-    <Rotate:DegreesConverter x:Key="degreesConverter"/>     
-    
-    <Scale:ScaleConverter x:Key="scaleConverter"/>
+    <ImageModel:DegreesConverter x:Key="degreesConverter"/>
+
+    <ImageModel:ScaleConverter x:Key="scaleConverter"/>
     
     <LinearGradientBrush x:Key="flat3DBorderBrush"
                          StartPoint="0.499,0" EndPoint="0.501,1">

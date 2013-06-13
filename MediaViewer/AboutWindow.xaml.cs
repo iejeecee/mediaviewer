@@ -20,8 +20,7 @@ namespace MediaViewer
     /// </summary>
     public partial class AboutWindow : Window
     {
-     
-
+       
         public string ProgramInfo
         {
             get {
@@ -50,6 +49,8 @@ namespace MediaViewer
         {
             InitializeComponent();
         }
+
+        
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
