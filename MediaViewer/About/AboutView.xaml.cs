@@ -18,39 +18,12 @@ namespace MediaViewer
     /// <summary>
     /// Interaction logic for AboutWindow.xaml
     /// </summary>
-    public partial class AboutWindow : Window
+    public partial class AboutView : Window
     {
-       
-        public string ProgramInfo
-        {
-            get {
-
-                Version version = Assembly.GetEntryAssembly().GetName().Version;
-                string info = "MediaViewer v" + version.ToString();
-
-                return info; 
-            }
-   
-        }
-
-        public string CopyrightInfo
-        {
-            get
-            {
-                Version version = Assembly.GetEntryAssembly().GetName().Version;
-                string info = "(c) 2013 IJC";
-
-                return info;
-            }
-
-        }
-
-        public AboutWindow()
+        public AboutView()
         {
             InitializeComponent();
         }
-
-        
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {

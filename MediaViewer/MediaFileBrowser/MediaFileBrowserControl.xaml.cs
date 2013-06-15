@@ -18,7 +18,7 @@ using MediaViewer.DirectoryBrowser;
 using MediaViewer.ImageGrid;
 using MediaViewer.Input;
 using MediaViewer.MediaPreview;
-using MediaViewer.MVMediaFile.Watcher;
+using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
 
 namespace MediaViewer.MediaFileBrowser

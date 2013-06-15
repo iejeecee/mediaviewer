@@ -9,8 +9,13 @@ namespace MediaViewer.Logging
 {
     class VisualAppender : log4net.Appender.AppenderSkeleton
 	{
-	
-		private LogWindow logWindow;
+
+        LogViewModel logViewModel;
+
+        public LogViewModel LogViewModel
+        {
+            get { return logViewModel; }
+        }
 
 		private int infoLevel;
 		private int debugLevel;
@@ -21,36 +26,38 @@ namespace MediaViewer.Logging
 		protected override void Append(log4net.Core.LoggingEvent loggingEvent) 
 		{
 
-			LogWindow.LogLevel logLevel;
+			LogMessageModel.LogLevel logLevel;
 
 			if(loggingEvent.Level.Value == infoLevel) {
 
-				logLevel = LogWindow.LogLevel.INFO;
+				logLevel = LogMessageModel.LogLevel.INFO;
 
 			} else if(loggingEvent.Level.Value == debugLevel) {
 
-				logLevel = LogWindow.LogLevel.DEBUG;
+				logLevel = LogMessageModel.LogLevel.DEBUG;
 
 			} else if(loggingEvent.Level.Value == errorLevel) {
 
-				logLevel = LogWindow.LogLevel.ERROR;
+				logLevel = LogMessageModel.LogLevel.ERROR;
 
 			} else if(loggingEvent.Level.Value == warningLevel) {
 
-				logLevel = LogWindow.LogLevel.WARNING;
+				logLevel = LogMessageModel.LogLevel.WARNING;
 
 			} else if(loggingEvent.Level.Value == fatalLevel) {
 
-				logLevel = LogWindow.LogLevel.FATAL;
+				logLevel = LogMessageModel.LogLevel.FATAL;
 			
 			} else {
 
-				logLevel = LogWindow.LogLevel.UNKNOWN;
+				logLevel = LogMessageModel.LogLevel.UNKNOWN;
 			}
 
 			string logString = RenderLoggingEvent(loggingEvent);
 
-			logWindow.append(logLevel, loggingEvent.LocationInformation.ClassName + " - " + logString);
+            LogMessageModel message = new LogMessageModel(logLevel, logString);
+
+            logViewModel.addMessage(message); 
 		}
 
 	
@@ -65,15 +72,15 @@ namespace MediaViewer.Logging
 			errorLevel = repository.LevelMap["ERROR"].Value;
 			fatalLevel = repository.LevelMap["FATAL"].Value;
 
-			logWindow = new LogWindow();
+			logViewModel = new LogViewModel();
 		}
 	
 
-		 public LogWindow LogWindow
+		public LogMessageModel LogMessageModel
 		{
 			get {
 
-				return(logWindow);
+				return(LogMessageModel);
 			}
 		}
 

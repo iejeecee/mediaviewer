@@ -18,6 +18,7 @@ using MediaViewer.Utils;
 using Microsoft.Win32;
 using MediaViewer.ImageModel;
 using System.ComponentModel;
+using MediaViewer.About;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -49,26 +50,36 @@ namespace MediaViewer
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
+            initializeImageView();
+        }
+
+        void initializeImageView()
+        {
             imageViewModel = new ImageViewModel();
 
             imageView.DataContext = imageViewModel;
 
             rotationView = new RotationView();
-            rotationView.Closing += new CancelEventHandler(window_Closing);
+            rotationView.Closing += new CancelEventHandler((sender, e) =>
+            {
+                e.Cancel = true;
+                ((Window)sender).Hide();
+                rotateImageCheckBox.IsChecked = false;
+            });
             rotationView.DataContext = imageViewModel;
 
             scaleView = new ScaleView();
-            scaleView.Closing += new CancelEventHandler(window_Closing);
+            scaleView.Closing += new CancelEventHandler((sender, e) =>
+            {
+                e.Cancel = true;
+                ((Window)sender).Hide();
+                scaleImageCheckBox.IsChecked = false;
+            });
             scaleView.DataContext = imageViewModel;
-        }
 
-        private void window_Closing(Object sender, CancelEventArgs e)
-        {
-            e.Cancel = true;
-            Window window = (Window)sender;
-            window.Hide();
+            imageToolBar.DataContext = imageViewModel;
         }
-
+     
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
         {
 
@@ -115,7 +126,10 @@ namespace MediaViewer
 
         private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            AboutWindow about = new AboutWindow();
+            AboutView about = new AboutView();
+            AboutViewModel aboutViewModel = new AboutViewModel();
+            about.DataContext = aboutViewModel;
+
             about.ShowDialog();
 
         }
@@ -129,7 +143,11 @@ namespace MediaViewer
         {
             log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
             VisualAppender appender = (VisualAppender)(appenders[0]);
-            appender.LogWindow.Show();
+
+            LogView logView = new LogView();
+            logView.DataContext = appender.LogViewModel;
+
+            logView.Show();
         }
 
         private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
@@ -184,23 +202,12 @@ namespace MediaViewer
         {
             if (scaleImageCheckBox.IsChecked.Value == true)
             {
-                scaleView.Show();
-            
+                scaleView.Show();            
             }
             else
             {
                 scaleView.Hide();
             }
-        }
-
-        private void flipImageHorizontalCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            imageViewModel.FlipX = flipImageHorizontalCheckBox.IsChecked.Value;
-        }
-
-        private void flipImageVerticalCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            imageViewModel.FlipY = flipImageVerticalCheckBox.IsChecked.Value;
         }
 
         private void showMediaFileBrowser()

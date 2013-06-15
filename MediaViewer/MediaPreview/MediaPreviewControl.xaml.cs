@@ -15,7 +15,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.ImageGrid;
 using MediaViewer.MetaData;
-using MediaViewer.MVMediaFile;
+using MediaViewer.MediaFileModel;
 
 namespace MediaViewer.MediaPreview
 {

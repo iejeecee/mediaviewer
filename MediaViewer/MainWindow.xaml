@@ -45,10 +45,10 @@
                 <CheckBox x:Name="rotateImageCheckBox" Height="16" Click="rotateImageCheckBox_Click" ToolTip="Rotate Image">
                     <Image Source="pack://application:,,,/Resources/Icons/rotate.ico"/>
                 </CheckBox>
-                <CheckBox x:Name="flipImageHorizontalCheckBox" Height="16" Click="flipImageHorizontalCheckBox_Click" ToolTip="Flip Image Horizontally">
+                <CheckBox x:Name="flipImageHorizontalCheckBox" Height="16" ToolTip="Flip Image Horizontally" IsChecked="{Binding FlipX}">
                     <Image Source="pack://application:,,,/Resources/Icons/FlipHorizontal.ico"/>
                 </CheckBox>
-                <CheckBox x:Name="flipImageVerticalCheckBox" Height="16" Click="flipImageVerticalCheckBox_Click" ToolTip="Flip Image Vertically">
+                <CheckBox x:Name="flipImageVerticalCheckBox" Height="16" ToolTip="Flip Image Vertically" IsChecked="{Binding FlipY}">
                     <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
             </ToolBar>

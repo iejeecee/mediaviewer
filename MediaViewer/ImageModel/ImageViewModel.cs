@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MediaViewer.MVMediaFile;
+using MediaViewer.MediaFileModel;
 using MvvmFoundation.Wpf;
+using System.Windows;
 
 namespace MediaViewer.ImageModel
 {
@@ -14,23 +15,24 @@ namespace MediaViewer.ImageModel
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        ImageFile imageFile;
-        
-        static BitmapImage errorImage = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/error.png"));
+        MediaFileFactory mediaFileFactory;
+        ImageFile imageFile;       
 
         public ImageViewModel()
         {
 
-            loadImageAsyncCommand = new AsyncCommand(new Action<object>(loadImage));
+            mediaFileFactory = new MediaFileFactory();
+            mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);
+
+            loadImageAsyncCommand = new AsyncCommand(new Action<object>((fileName) =>
+            {
+                mediaFileFactory.openNonBlockingAndCancelPending((String)fileName, MediaFile.MetaDataMode.AUTO);
+            }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
             resetScaleCommand = new Command(() => { Scale = 1; });
-        
-            transform = new Matrix();
-            rotationDegrees = 0;
-            scale = 1;
-            flipX = false;
-            flipY = false;
+
+            setIdentityTransform();
 
         }
 
@@ -39,10 +41,12 @@ namespace MediaViewer.ImageModel
         public bool FlipX
         {
             get { return flipX; }
-            set { flipX = value;
-         
-            NotifyPropertyChanged();
-            updateTransform();
+            set
+            {
+                flipX = value;
+
+                NotifyPropertyChanged();
+                updateTransform();
             }
         }
 
@@ -51,10 +55,12 @@ namespace MediaViewer.ImageModel
         public bool FlipY
         {
             get { return flipY; }
-            set { flipY = value;
-           
-            NotifyPropertyChanged();
-            updateTransform();
+            set
+            {
+                flipY = value;
+
+                NotifyPropertyChanged();
+                updateTransform();
             }
         }
 
@@ -99,7 +105,7 @@ namespace MediaViewer.ImageModel
 
         public Command ResetRotationDegreesCommand
         {
-            get { return resetRotationDegreesCommand; }           
+            get { return resetRotationDegreesCommand; }
         }
 
         double scale;
@@ -119,15 +125,25 @@ namespace MediaViewer.ImageModel
 
         public Command ResetScaleCommand
         {
-            get { return resetScaleCommand; }            
+            get { return resetScaleCommand; }
         }
-     
-        AsyncCommand loadImageAsyncCommand;
 
-        public AsyncCommand LoadImageAsyncCommand
+        Command loadImageAsyncCommand;
+
+        public Command LoadImageAsyncCommand
         {
             get { return loadImageAsyncCommand; }
-           
+        }
+
+        void setIdentityTransform()
+        {
+            RotationDegrees = 0;
+            Scale = 1;
+            FlipX = false;
+            FlipY = false;
+
+            updateTransform();
+
         }
 
         void updateTransform()
@@ -148,92 +164,52 @@ namespace MediaViewer.ImageModel
             Transform = transformMatrix;
         }
 
-        void loadImage(Object param)
-        {
-            string fileName = (string)param;
-            MediaFile media = MediaFileFactory.openBlocking(fileName, MediaFile.MetaDataMode.AUTO);
-
-            BitmapImage loadedImage = new BitmapImage();
-
-            loadedImage.BeginInit();
-            loadedImage.CacheOption = BitmapCacheOption.OnLoad;
-            loadedImage.StreamSource = media.Data;
-            loadedImage.EndInit();
-
-            loadedImage.Freeze();
-
-            imageFile = (ImageFile)media;
-
-            LoadImageAsyncCommand.ReportProgress(() => { Image = loadedImage; });
-                       
-        }
-
-        /*
-        private void mediaFileFactory_OpenFinished(System.Object sender, MediaFile media)
+        private void mediaFileFactory_OpenFinished(Object sender, MediaFile media)
         {
 
-            Object[] args = new Object[1];
-            args[0] = media;
-
-            Dispatcher.Invoke(new loadImageDelegate(loadImage), args);
-
-        }
-
-        private void loadImage(MediaFile media)
-        {
+            BitmapImage loadedImage = null;
 
             try
             {
-
-                this.media = media;
-
-                if (string.IsNullOrEmpty(media.Location) ||
-                    media.MediaFormat != MediaFile.MediaType.IMAGE)
+                if (!media.OpenSuccess)
                 {
 
-                    clearImage();
-                    return;
-
-                }
-                else if (!media.OpenSuccess)
-                {
-
-                    MessageBox.Show("Failed to open:\n\n" + media.Location + "\n\n" + media.OpenError.Message, "Error");
                     log.Error("Failed to open image: " + media.Location, media.OpenError);
-                    return;
+
+                }
+                else if (!string.IsNullOrEmpty(media.Location) &&
+                      media.MediaFormat == MediaFile.MediaType.IMAGE)
+                {
+                    loadedImage = new BitmapImage();
+
+                    loadedImage.BeginInit();
+                    loadedImage.CacheOption = BitmapCacheOption.OnLoad;
+                    loadedImage.StreamSource = media.Data;
+                    loadedImage.EndInit();
+
+                    loadedImage.Freeze();
+                  
+                    imageFile = (ImageFile)media;
+
+                    log.Info("Image loaded: " + media.Location);
                 }
 
-                imageFormat = MediaFormatConvert.mimeTypeToImageFormat(media.MimeType);
-
-                sourceImage = new BitmapImage();
-
-                sourceImage.BeginInit();
-                sourceImage.CacheOption = BitmapCacheOption.OnLoad;
-                sourceImage.StreamSource = media.Data;
-                sourceImage.EndInit();
-
-                displayAndCenterSourceImage();
-
-                log.Info("Loaded image: " + media.Location);
-                //LoadImageFinished(this, EventArgs.Empty);
-
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Image = loadedImage;
+                    setIdentityTransform();
+                });
             }
             catch (Exception e)
             {
-
                 log.Error("Error reading:" + media.Location, e);
-                MessageBox.Show("Error reading:\n\n" + media.Location + "\n\n" + e.Message, "Error");
-
             }
             finally
-            {
-
+            {                
                 media.close();
                 mediaFileFactory.releaseNonBlockingOpenLock();
             }
 
-        }
-        */
-
+        }     
     }
 }
