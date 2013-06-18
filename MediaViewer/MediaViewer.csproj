@@ -85,11 +85,11 @@
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
       <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DirectoryBrowser\DirectoryLister.cs" />
-    <Compile Include="DirectoryBrowser\DirectoryObject.cs" />
-    <Compile Include="DirectoryBrowser\DriveObject.cs" />
-    <Compile Include="DirectoryBrowser\LoadingObject.cs" />
-    <Compile Include="DirectoryBrowser\PathObject.cs" />
+    <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
+    <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
+    <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
+    <Compile Include="DirectoryBrowser\DummyPathModel.cs" />
+    <Compile Include="DirectoryBrowser\PathModel.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridControl.xaml.cs">

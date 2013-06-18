@@ -40,6 +40,8 @@ namespace MediaViewer.MediaFileBrowser
 
         public event EventHandler<FileSystemEventArgs> CurrentMediaChanged;
 
+        DirectoryBrowserViewModel directoryBrowserViewModel;
+
         public MediaFileBrowserControl()
         {
             InitializeComponent();
@@ -53,7 +55,9 @@ namespace MediaViewer.MediaFileBrowser
 
             pager.ImageGrid = imageGrid;
 
-            directoryBrowser.SelectedPathChanged += new EventHandler<PathObject>(directoryBrowserControl_SelectedPathChanged);
+            directoryBrowserViewModel = new DirectoryBrowserViewModel();
+            directoryBrowserViewModel.NodeSelected += new EventHandler<PathModel>(directoryBrowserControl_NodeSelected);
+            directoryBrowser.DataContext = directoryBrowserViewModel;
         }
 
         private MediaPreviewAsyncState fileInfoToMediaPreviewAsyncState(string location)
@@ -95,7 +99,7 @@ namespace MediaViewer.MediaFileBrowser
 
             mediaFileWatcher.Path = pathWithoutFileName;
 
-            directoryBrowser.setPathAsync(pathWithoutFileName);
+            directoryBrowserViewModel.selectPath(pathWithoutFileName);
 
             List<MediaPreviewAsyncState> imageData = new List<MediaPreviewAsyncState>();
 
@@ -511,8 +515,10 @@ namespace MediaViewer.MediaFileBrowser
                              }
              */
         }
-        private void directoryBrowserControl_SelectedPathChanged(System.Object sender, PathObject path)
+        private void directoryBrowserControl_NodeSelected(System.Object sender, PathModel path)
         {
+
+            if (path.GetType() == typeof(DummyPathModel)) return;
 
             string fullPath = path.getFullPath();
 
