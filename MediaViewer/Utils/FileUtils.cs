@@ -556,7 +556,7 @@ namespace MediaViewer.Utils
         }
 
         public static Stream waitForFileAccess(string filePath, FileAccess access, int timeoutMs,
-            ModifiableGEventArgs<bool> isCancelled)
+            CancellationToken token)
         {
             IntPtr fHandle;
             int errorCode;
@@ -596,7 +596,7 @@ namespace MediaViewer.Utils
                     break;
                 if (timeoutMs >= 0 && (DateTime.Now - start).TotalMilliseconds > timeoutMs)
                     break;
-                if (isCancelled != null && isCancelled.Value == true)
+                if (token != null && token.IsCancellationRequested == true)
                     break;
                 Thread.Sleep(100);
             }

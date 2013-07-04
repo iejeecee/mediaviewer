@@ -20,6 +20,7 @@ using MediaViewer.Input;
 using MediaViewer.MediaPreview;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
+using MediaViewer.Pager;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -40,7 +41,10 @@ namespace MediaViewer.MediaFileBrowser
 
         public event EventHandler<FileSystemEventArgs> CurrentMediaChanged;
 
+        ImageGridViewModel imageGridViewModel;
+        PartialImageGridViewModel partialImageGridViewModel;
         DirectoryBrowserViewModel directoryBrowserViewModel;
+        PagerViewModel pagerViewModel;
 
         public MediaFileBrowserControl()
         {
@@ -52,12 +56,24 @@ namespace MediaViewer.MediaFileBrowser
             mediaFileWatcher.MediaCreated += new FileSystemEventHandler(ImageFileWatcherThread_MediaCreated);
             mediaFileWatcher.MediaRenamed += new RenamedEventHandler(ImageFileWatcherThread_MediaRenamed);
             mediaFileWatcher.CurrentMediaChanged += new EventHandler<FileSystemEventArgs>(imageFileWatcherThread_CurrentMediaChanged);
-
-            pager.ImageGrid = imageGrid;
-
+            
             directoryBrowserViewModel = new DirectoryBrowserViewModel();
             directoryBrowserViewModel.NodeSelected += new EventHandler<PathModel>(directoryBrowserControl_NodeSelected);
             directoryBrowser.DataContext = directoryBrowserViewModel;
+
+            imageGridViewModel = new ImageGridViewModel();
+            partialImageGridViewModel = new PartialImageGridViewModel(imageGridViewModel);
+            imageGrid.DataContext = partialImageGridViewModel;
+
+            pagerViewModel = new PagerViewModel();
+            pager.DataContext = pagerViewModel;
+
+            pagerViewModel.NextPage += new EventHandler((s,e) => partialImageGridViewModel.NextPage.DoExecute());
+            pagerViewModel.PrevPage += new EventHandler((s, e) => partialImageGridViewModel.PrevPage.DoExecute());
+            pagerViewModel.FirstPage += new EventHandler((s, e) => partialImageGridViewModel.FirstPage.DoExecute());
+            pagerViewModel.LastPage += new EventHandler((s, e) => partialImageGridViewModel.LastPage.DoExecute());
+
+
         }
 
         private MediaPreviewAsyncState fileInfoToMediaPreviewAsyncState(string location)
@@ -101,17 +117,11 @@ namespace MediaViewer.MediaFileBrowser
 
             directoryBrowserViewModel.selectPath(pathWithoutFileName);
 
-            List<MediaPreviewAsyncState> imageData = new List<MediaPreviewAsyncState>();
+            imageGridViewModel.Locations.Clear();
+            imageGridViewModel.Locations.AddRange(mediaFileWatcher.MediaFiles);
 
-            for (int i = 0; i < mediaFileWatcher.MediaFiles.Count; i++)
-            {
-
-                MediaPreviewAsyncState item = fileInfoToMediaPreviewAsyncState(mediaFileWatcher.MediaFiles[i]);
-                imageData.Add(item);
-
-            }
-
-            imageGrid.initializeImageData(imageData);
+            pagerViewModel.TotalPages = (int)Math.Ceiling(imageGridViewModel.Locations.Count / (float)partialImageGridViewModel.MaxItems);
+            pagerViewModel.CurrentPage = 1;
 
             if (BrowseDirectoryChanged != null)
             {
@@ -165,7 +175,7 @@ namespace MediaViewer.MediaFileBrowser
 
             imageData.Add(new MediaPreviewAsyncState(e.FullPath));
 
-            Dispatcher.BeginInvoke(new Action(() => imageGrid.removeImageData(imageData)));
+            //Dispatcher.BeginInvoke(new Action(() => imageGrid.removeImageData(imageData)));
 
         }
 
@@ -179,7 +189,7 @@ namespace MediaViewer.MediaFileBrowser
 
             imageData.Add(new MediaPreviewAsyncState(e.FullPath));
 
-            Dispatcher.BeginInvoke(new Action(() => imageGrid.updateImageData(imageData)));
+            //Dispatcher.BeginInvoke(new Action(() => imageGrid.updateImageData(imageData)));
 
         }
 
@@ -192,7 +202,7 @@ namespace MediaViewer.MediaFileBrowser
 
             imageData.Add(new MediaPreviewAsyncState(e.FullPath));
 
-            Dispatcher.BeginInvoke(new Action(() => imageGrid.addImageData(imageData)));
+           // Dispatcher.BeginInvoke(new Action(() => imageGrid.addImageData(imageData)));
 
         }
 
@@ -203,8 +213,8 @@ namespace MediaViewer.MediaFileBrowser
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                imageGrid.removeImageData(imageGrid.getImageData(e.OldFullPath));
-                imageGrid.addImageData(fileInfoToMediaPreviewAsyncState(e.FullPath));
+               // imageGrid.removeImageData(imageGrid.getImageData(e.OldFullPath));
+                //imageGrid.addImageData(fileInfoToMediaPreviewAsyncState(e.FullPath));
             }));
 
         }
@@ -310,7 +320,7 @@ namespace MediaViewer.MediaFileBrowser
 
             // e.Item.ContextMenu.Hide();
 
-            List<MediaPreviewAsyncState> selected = imageGrid.getSelectedImageData();
+            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
 
             if (selected.Count == 0)
             {
@@ -326,7 +336,7 @@ namespace MediaViewer.MediaFileBrowser
                 try
                 {
 
-                    imageGrid.removeImageData(selected);
+                    //imageGrid.removeImageData(selected);
 
                     for (int i = 0; i < selected.Count; i++)
                     {
@@ -350,7 +360,7 @@ namespace MediaViewer.MediaFileBrowser
 
             InputWindow input = new InputWindow();
 
-            List<MediaPreviewAsyncState> selected = imageGrid.getSelectedImageData();
+            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
 
             string info;
 
@@ -404,17 +414,17 @@ namespace MediaViewer.MediaFileBrowser
         private void selectAllToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            imageGrid.setSelectedForAllImages(true);
+           // imageGrid.setSelectedForAllImages(true);
         }
         private void deselectAllToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            imageGrid.setSelectedForAllImages(false);
+            //imageGrid.setSelectedForAllImages(false);
         }
         private void cutToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            List<MediaPreviewAsyncState> selected = imageGrid.getSelectedImageData();
+            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
 
             if (selected.Count == 0)
             {
@@ -442,7 +452,7 @@ namespace MediaViewer.MediaFileBrowser
         private void copyToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            List<MediaPreviewAsyncState> selected = imageGrid.getSelectedImageData();
+            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
 
             if (selected.Count == 0)
             {

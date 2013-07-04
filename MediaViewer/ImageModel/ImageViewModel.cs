@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using MediaViewer.MediaFileModel;
 using MvvmFoundation.Wpf;
 using System.Windows;
+using System.Threading;
 
 namespace MediaViewer.ImageModel
 {
@@ -15,18 +16,20 @@ namespace MediaViewer.ImageModel
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        MediaFileFactory mediaFileFactory;
+        CancellationTokenSource openMediaTokenSource;
+        Task<MediaFile> openMediaTask;
+     
         ImageFile imageFile;       
 
         public ImageViewModel()
         {
+            openMediaTask = null;
+            openMediaTokenSource = new CancellationTokenSource();
 
-            mediaFileFactory = new MediaFileFactory();
-            mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);
-
-            loadImageAsyncCommand = new AsyncCommand(new Action<object>((fileName) =>
+            loadImageAsyncCommand = new Command(new Action<object>((fileName) =>
             {
-                mediaFileFactory.openNonBlockingAndCancelPending((String)fileName, MediaFile.MetaDataMode.AUTO);
+                loadImageAsync((String)fileName);
+                
             }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
@@ -164,20 +167,25 @@ namespace MediaViewer.ImageModel
             Transform = transformMatrix;
         }
 
-        private void mediaFileFactory_OpenFinished(Object sender, MediaFile media)
+        private async void loadImageAsync(String fileName)
         {
+            // cancel previously running load requests
+            if (openMediaTask != null && openMediaTask.IsCompleted == false)
+            {
+                openMediaTokenSource.Cancel();
+                await openMediaTask;
+            }
+
+            // async load media
+            openMediaTask = MediaFileFactory.openAsync((String)fileName, MediaFile.MetaDataMode.AUTO, openMediaTokenSource.Token);
+            MediaFile media = await openMediaTask;
 
             BitmapImage loadedImage = null;
 
             try
             {
-                if (!media.OpenSuccess)
-                {
-
-                    log.Error("Failed to open image: " + media.Location, media.OpenError);
-
-                }
-                else if (!string.IsNullOrEmpty(media.Location) &&
+               
+                if (media.OpenSuccess &&
                       media.MediaFormat == MediaFile.MediaType.IMAGE)
                 {
                     loadedImage = new BitmapImage();
@@ -188,28 +196,25 @@ namespace MediaViewer.ImageModel
                     loadedImage.EndInit();
 
                     loadedImage.Freeze();
-                  
+
                     imageFile = (ImageFile)media;
 
                     log.Info("Image loaded: " + media.Location);
                 }
-
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    Image = loadedImage;
-                    setIdentityTransform();
-                });
+              
+                Image = loadedImage;
+                setIdentityTransform();
+               
             }
             catch (Exception e)
             {
-                log.Error("Error reading:" + media.Location, e);
+                log.Error("Error decoding image:" + media.Location, e);
             }
             finally
-            {                
-                media.close();
-                mediaFileFactory.releaseNonBlockingOpenLock();
+            {
+                media.close();             
             }
-
-        }     
+          
+        }        
     }
 }

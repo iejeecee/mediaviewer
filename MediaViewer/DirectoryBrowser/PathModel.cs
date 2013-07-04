@@ -123,7 +123,7 @@ namespace MediaViewer.DirectoryBrowser
             return (fullPath);
         }
 
-        public static DirectoryInfo[] getSubDirectories(string fullPath)
+        static DirectoryInfo[] getSubDirectories(string fullPath)
         {
 
             DirectoryInfo dirInfo = new DirectoryInfo(fullPath);
@@ -145,8 +145,8 @@ namespace MediaViewer.DirectoryBrowser
 
             // await for async operation to complete
 
-            List<DirectoryPathModel> subDirs =
-                await Task<List<DirectoryPathModel>>.Run(() => updateSubDirectories(parent));
+            List<PathModel> subDirs =
+                await Task<List<PathModel>>.Run(() => updateSubDirectories(parent));
 
             // everything after await gets executed on the ui thread
             // see: http://blogs.msdn.com/b/pfxteam/archive/2011/01/13/10115163.aspx
@@ -173,13 +173,13 @@ namespace MediaViewer.DirectoryBrowser
 
         }
 
-        private static List<DirectoryPathModel> updateSubDirectories(PathModel parent)
+        static List<PathModel> updateSubDirectories(PathModel parent)
         {
             
             string fullPath = parent.getFullPath();
 
             DirectoryInfo[] subDirsInfo = getSubDirectories(fullPath);
-            List<DirectoryPathModel> subDirs = new List<DirectoryPathModel>();
+            List<PathModel> subDirs = new List<PathModel>();
 
             foreach (DirectoryInfo subDirInfo in subDirsInfo)
             {

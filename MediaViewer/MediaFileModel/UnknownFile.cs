@@ -16,11 +16,13 @@ namespace MediaViewer.MediaFileModel
         {
 
         }
-
-        protected override List<MetaDataThumb> generateThumbnails()
+        
+        public override void generateThumbnails(int nrThumbnails)
         {
 
-            return (new List<MetaDataThumb>());
+            Thumbnail = null;
+
+            base.generateThumbnails();
         }
 
         public override MediaType MediaFormat

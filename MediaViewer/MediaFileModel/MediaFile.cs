@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using DB = MediaDatabase;
+using System.Threading;
+using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaFileModel
 {
@@ -30,15 +32,15 @@ namespace MediaViewer.MediaFileModel
         protected string mimeType;
         protected FileMetaData metaData;
 
+        BitmapSource thumbnail;
+
         protected Stream data;
         protected long sizeBytes;
 
         protected Exception openError;
-        protected Exception metaDataError;
 
         protected Object userState;
 
-        protected MetaDataMode mode;
 
         protected MediaFile()
         {
@@ -49,9 +51,11 @@ namespace MediaViewer.MediaFileModel
             metaData = null;
             mimeType = null;
             openError = null;
-            metaDataError = null;
+       
             userState = null;
-            mode = MetaDataMode.AUTO;
+
+            thumbnail = null;
+
         }
 
         protected MediaFile(string location, string mimeType, Stream data, MetaDataMode mode)
@@ -60,69 +64,53 @@ namespace MediaViewer.MediaFileModel
             this.location = location;
             this.data = data;
             this.mimeType = mimeType;
-            this.mode = mode;
 
             metaData = null;
             openError = null;
-            metaDataError = null;
             userState = null;
 
+            thumbnail = null;
+
             if (string.IsNullOrEmpty(Location) || MediaFormat == MediaType.UNKNOWN) return;
-
-            readMetaData();
+            
         }
+     
+        /*
+         *   
+         */
 
-        protected virtual void readMetaData()
+        public virtual void readMetaData()
         {
-
-            try
+            if (!Utils.FileUtils.isUrl(Location))
             {
+                MetaData = FileMetaDataFactory.read(Location, CancellationToken.None);
 
-                if (FileUtils.isUrl(Location) == false)
+                if (MetaData != null && MetaData.Thumbnail.Count > 0)
                 {
-
-                    MetaData = new FileMetaData();
-
-                    switch (mode)
-                    {
-                        case MetaDataMode.AUTO:
-                            {
-
-                                MetaData.load(Location);
-                                break;
-                            }
-                        case MetaDataMode.LOAD_FROM_DATABASE:
-                            {
-
-                                MetaData.loadFromDataBase(Location);
-                                break;
-                            }
-                        case MetaDataMode.LOAD_FROM_DISK:
-                            {
-
-                                MetaData.loadFromDisk(Location);
-                                break;
-                            }
-                        default:
-                            {
-                                System.Diagnostics.Debug.Assert(false);
-                                break;
-                            }
-
-                    }
+                    Thumbnail = MetaData.Thumbnail[0].ThumbImage;
+                    Thumbnail.Freeze();
                 }
-
             }
-            catch (Exception e)
-            {
 
-                log.Warn("Cannot read metadata: " + Location, e);
-                MetaDataError = e;
+            if (Data != null)
+            {
+                Data.Position = 0;
             }
         }
 
-        protected abstract List<MetaDataThumb> generateThumbnails();
+        public virtual void generateThumbnails(int nrThumbnails = 1)
+        {
+            if (Thumbnail != null)
+            {
+                Thumbnail.Freeze();
+            }
 
+            if (Data != null)
+            {
+                Data.Position = 0;
+            }
+        }
+     
         public enum MediaType
         {
             UNKNOWN,
@@ -226,28 +214,11 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        public Exception MetaDataError
-        {
-
-            get
-            {
-
-                return (metaDataError);
-            }
-
-            set
-            {
-
-                this.metaDataError = value;
-            }
-        }
-
         public bool OpenSuccess
         {
 
             get
             {
-
                 return (OpenError != null ? false : true);
             }
 
@@ -280,7 +251,6 @@ namespace MediaViewer.MediaFileModel
 
             get
             {
-
                 return (sizeBytes);
             }
 
@@ -291,101 +261,21 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        public List<MetaDataThumb> getThumbnails()
+        public BitmapSource Thumbnail
         {
+            get { return thumbnail; }
+            set { thumbnail = value; }
+        }                               
 
-            List<MetaDataThumb> thumbs = new List<MetaDataThumb>();
-
-            try
-            {
-
-                if (MediaFormat == MediaFile.MediaType.UNKNOWN)
-                {
-
-                    return (thumbs);
-
-                }
-                else if (FileUtils.isUrl(Location))
-                {
-
-                    thumbs = generateThumbnails();
-                    return (thumbs);
-                }
-
-                DB.Context ctx = new DB.Context();
-
-                DB.Media mediaItem = ctx.getMediaByLocation(Location);
-
-                if (mediaItem != null)
-                {
-
-                    FileMetaData temp = new FileMetaData(mediaItem);
-
-                    ctx.close();
-
-                    if (temp.Thumbnail.Count == 0)
-                    {
-
-                        thumbs = generateThumbnails();
-                        MetaData.Thumbnail = thumbs;
-                        MetaData.saveToDatabase();
-
-                    }
-                    else
-                    {
-
-                        thumbs = temp.Thumbnail;
-                    }
-
-                }
-                else
-                {
-
-                    ctx.close();
-
-                    thumbs = generateThumbnails();
-
-                    if (MetaDataError == null)
-                    {
-
-                        MetaData.Thumbnail = thumbs;
-                        MetaData.saveToDatabase();
-
-                    }
-                    else
-                    {
-
-                        mediaItem = DB.Context.newMediaItem(new FileInfo(Location));
-                        mediaItem.CanStoreMetaData = 0;
-
-                        FileMetaData temp = new FileMetaData(mediaItem);
-                        temp.Thumbnail = thumbs;
-
-                        temp.saveToDatabase();
-                    }
-                }
-
-                return (thumbs);
-            }
-            finally
-            {
-                foreach (MetaDataThumb thumb in thumbs)
-                {
-                    thumb.ThumbImage.Freeze();
-                }
-            }
+        public virtual string DefaultCaption
+        {
+            get { return (""); }
         }
 
-        public virtual string getDefaultCaption()
+        public virtual string DefaultFormatCaption
         {
 
-            return ("");
-        }
-
-        public virtual string getDefaultFormatCaption()
-        {
-
-            return ("");
+            get { return (""); }
         }
 
         public virtual void close()

@@ -27,7 +27,6 @@ namespace MediaViewer.MediaPreview
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        MediaFileFactory mediaFileFactory;
         MediaFile media;
 
         enum InformImage
@@ -113,8 +112,7 @@ namespace MediaViewer.MediaPreview
         {
             InitializeComponent();
 
-            mediaFileFactory = new MediaFileFactory();
-            mediaFileFactory.OpenFinished += new EventHandler<MediaFile>(mediaFileFactory_OpenFinished);    
+           
 
          
             IsSelected = false;
@@ -134,7 +132,7 @@ namespace MediaViewer.MediaPreview
             {
 
                 // grab or generate thumbnail images
-                args[1] = media.getThumbnails();
+               // args[1] = media.getThumbnails();
 
             }
             catch (Exception e)
@@ -204,7 +202,7 @@ namespace MediaViewer.MediaPreview
                 media.close();
 
                 // release the lock on opening of images
-                mediaFileFactory.releaseNonBlockingOpenLock();
+             
             }
 
         }
@@ -220,7 +218,7 @@ namespace MediaViewer.MediaPreview
                 state.InfoIconMode == MediaPreviewAsyncState.InfoIconModes.SHOW_ALL_ICONS)
             {
                 InfoIcon icon = new InfoIcon(media.MimeType);
-                icon.Caption = media.getDefaultFormatCaption();
+                icon.Caption = media.DefaultFormatCaption;
                 addInfoIcon(icon);
 
                 if (media.MetaData == null)
@@ -300,7 +298,7 @@ namespace MediaViewer.MediaPreview
             if (string.IsNullOrEmpty(state.Caption))
             {
 
-                pictureBox.ToolTip = media.getDefaultCaption();
+                pictureBox.ToolTip = media.DefaultCaption;
 
             }
             else
@@ -414,8 +412,7 @@ namespace MediaViewer.MediaPreview
             }
          
 
-            mediaFileFactory.openNonBlockingAndCancelPending(state.MediaLocation, state,
-                MediaFile.MetaDataMode.LOAD_FROM_DISK);
+         
 
         }
 

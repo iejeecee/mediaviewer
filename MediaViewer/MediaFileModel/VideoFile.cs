@@ -86,7 +86,7 @@ namespace MediaViewer.MediaFileModel
 
 
 
-        protected override void readMetaData()
+        public override void readMetaData()
         {
 
             if (videoPreview == null)
@@ -125,8 +125,7 @@ namespace MediaViewer.MediaFileModel
                 }
                 else
                 {
-
-                    metaDataError = new Exception("Metadata not supported for this format");
+                    throw new Exception("XMP Metadata not supported for this video format");
                 }
 
             }
@@ -283,11 +282,10 @@ namespace MediaViewer.MediaFileModel
         }
 
 
-        protected override List<MetaDataThumb> generateThumbnails()
+        public override void generateThumbnails(int nrThumbnails)
         {
 
-            List<MetaDataThumb> thumbs = new List<MetaDataThumb>();
-
+           
             List<Bitmap> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
                 MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025);
 
@@ -302,110 +300,114 @@ namespace MediaViewer.MediaFileModel
             foreach (Bitmap bitmap in thumbBitmaps)
             {
 
-                //thumbs.Add(new MetaDataThumb(bitmap));
+                //Thumbnails.Add(new MetaDataThumb(bitmap));
             }
 
-            return (thumbs);
+            base.generateThumbnails(nrThumbnails);
         }
 
-        public override string getDefaultCaption()
+        public override string DefaultCaption
         {
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(Path.GetFileName(Location));
-            sb.AppendLine();
-
-
-            /*
-            foreach(string info in FSMetaData) {
-
-            sb.AppendLine(info);
-            }
-            */
-
-            if (MetaData != null)
+            get
             {
+                StringBuilder sb = new StringBuilder();
 
-                if (!string.IsNullOrEmpty(MetaData.Description))
+                sb.AppendLine(Path.GetFileName(Location));
+                sb.AppendLine();
+
+
+                /*
+                foreach(string info in FSMetaData) {
+
+                sb.AppendLine(info);
+                }
+                */
+
+                if (MetaData != null)
                 {
 
-                    sb.AppendLine("Description:");
+                    if (!string.IsNullOrEmpty(MetaData.Description))
+                    {
 
-                    //string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
-                    sb.AppendLine(MetaData.Description);
-                    sb.AppendLine();
+                        sb.AppendLine("Description:");
+
+                        //string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
+                        sb.AppendLine(MetaData.Description);
+                        sb.AppendLine();
+                    }
+
+                    if (!string.IsNullOrEmpty(MetaData.Creator))
+                    {
+
+                        sb.AppendLine("Creator:");
+                        sb.AppendLine(MetaData.Creator);
+                        sb.AppendLine();
+
+                    }
+
+                    if (MetaData.CreationDate != DateTime.MinValue)
+                    {
+
+                        sb.AppendLine("Creation date:");
+                        sb.Append(MetaData.CreationDate);
+                        sb.AppendLine();
+                    }
                 }
 
-                if (!string.IsNullOrEmpty(MetaData.Creator))
-                {
-
-                    sb.AppendLine("Creator:");
-                    sb.AppendLine(MetaData.Creator);
-                    sb.AppendLine();
-
-                }
-
-                if (MetaData.CreationDate != DateTime.MinValue)
-                {
-
-                    sb.AppendLine("Creation date:");
-                    sb.Append(MetaData.CreationDate);
-                    sb.AppendLine();
-                }
+                return (sb.ToString());
             }
-
-            return (sb.ToString());
         }
 
-        public override string getDefaultFormatCaption()
+        public override string DefaultFormatCaption
         {
-
-            StringBuilder sb = new StringBuilder();
-
-            sb.AppendLine(Path.GetFileName(Location));
-            sb.AppendLine();
-
-            sb.AppendLine("Mime type:");
-            sb.Append(MimeType);
-            sb.AppendLine();
-            sb.AppendLine();
-
-            sb.Append("Video Codec (");
-            sb.Append(VideoCodecName);
-            sb.AppendLine("):");
-            sb.Append(width);
-            sb.Append("x");
-            sb.Append(height);
-            sb.Append(", " + videoPreview.PixelFormat + ", " + videoPreview.FrameRate.ToString() + " fps");
-            sb.AppendLine();
-            sb.AppendLine();
-
-            if (HasAudio == true)
+            get
             {
+                StringBuilder sb = new StringBuilder();
 
-                sb.Append("Audio Codec (");
-                sb.Append(AudioCodecName);
+                sb.AppendLine(Path.GetFileName(Location));
+                sb.AppendLine();
+
+                sb.AppendLine("Mime type:");
+                sb.Append(MimeType.Replace("//", "/"));
+                sb.AppendLine();
+                sb.AppendLine();
+
+                sb.Append("Video Codec (");
+                sb.Append(VideoCodecName);
                 sb.AppendLine("):");
-                sb.Append(SamplesPerSecond);
-                sb.Append("Hz, ");
-                sb.Append(bytesPerSample * 8);
-                sb.Append("bit, ");
-                sb.Append(NrChannels);
-                sb.Append(" chan");
+                sb.Append(width);
+                sb.Append("x");
+                sb.Append(height);
+                sb.Append(", " + videoPreview.PixelFormat + ", " + videoPreview.FrameRate.ToString() + " fps");
                 sb.AppendLine();
                 sb.AppendLine();
+
+                if (HasAudio == true)
+                {
+
+                    sb.Append("Audio Codec (");
+                    sb.Append(AudioCodecName);
+                    sb.AppendLine("):");
+                    sb.Append(SamplesPerSecond);
+                    sb.Append("Hz, ");
+                    sb.Append(bytesPerSample * 8);
+                    sb.Append("bit, ");
+                    sb.Append(NrChannels);
+                    sb.Append(" chan");
+                    sb.AppendLine();
+                    sb.AppendLine();
+                }
+
+                sb.AppendLine("Duration:");
+                sb.AppendLine(Misc.formatTimeSeconds(DurationSeconds));
+                sb.AppendLine();
+
+                sb.AppendLine("Size");
+                sb.AppendLine(Misc.formatSizeBytes(SizeBytes));
+                sb.AppendLine();
+
+                return (sb.ToString());
             }
-
-            sb.AppendLine("Duration:");
-            sb.AppendLine(Misc.formatTimeSeconds(DurationSeconds));
-            sb.AppendLine();
-
-            sb.AppendLine("Size");
-            sb.AppendLine(Misc.formatSizeBytes(SizeBytes));
-            sb.AppendLine();
-
-            return (sb.ToString());
         }
 
         public override void close()

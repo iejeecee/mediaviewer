@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediaViewer.MetaData;
+using MediaViewer.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -6,94 +8,22 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
-using MediaViewer.GenericEventArgs;
-using MediaViewer.Utils;
 
 namespace MediaViewer.MediaFileModel
 {
-
     class MediaFileFactory
     {
-
-        //// 60 seconds
+        // 60 seconds
         const int HTTP_TIMEOUT_MS = 60 * 1000;
         const int HTTP_READ_BUFFER_SIZE_BYTES = 8096;
-        //// 1 hour
+        // 1 hour
         const int FILE_OPEN_ASYNC_TIMEOUT_MS = 60 * 60 * 1000;
-        //// 5 seconds
+        // 5 seconds
         const int FILE_OPEN_SYNC_TIMEOUT_MS = 5 * 1000;
-
-        class AsyncState
-        {
-            private string location;
-            private Object userState;
-            private ModifiableGEventArgs<bool> isCancelled;
-            private MediaFile.MetaDataMode mode;
-
-            public AsyncState(string location, Object userState, MediaFile.MetaDataMode mode)
-            {
-                this.mode = mode;
-                this.location = location;
-                this.userState = userState;
-                isCancelled = new ModifiableGEventArgs<bool>(false);
-            }
-
-            public Object UserState
-            {
-                get
-                {
-                    return (userState);
-                }
-
-                set
-                {
-                    this.userState = value;
-                }
-            }
-
-            public string Location
-            {
-                set
-                {
-                    this.location = value;
-                }
-
-                get
-                {
-                    return (location);
-                }
-            }
-
-            public MediaFile.MetaDataMode MetaDataMode
-            {
-                get
-                {
-                    return (mode);
-                }
-            }
-
-            public ModifiableGEventArgs<bool> IsCancelled
-            {
-                set
-                {
-                    this.isCancelled = value;
-                }
-
-                get
-                {
-                    return (isCancelled);
-                }
-            }
-        };
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        DigitallyCreated.Utilities.Concurrency.FifoSemaphore openSemaphore;
-        DigitallyCreated.Utilities.Concurrency.FifoSemaphore stateSemaphore;
-        List<AsyncState> activeStates;
-
-        static MediaFile openWebData(AsyncState state)
+        static MediaFile openWebData(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState)
         {
 
             HttpWebResponse response = null;
@@ -101,7 +31,7 @@ namespace MediaViewer.MediaFileModel
 
             try
             {
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(state.Location);
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(location);
                 request.Method = "GET";
                 request.Timeout = HTTP_TIMEOUT_MS;
 
@@ -110,7 +40,7 @@ namespace MediaViewer.MediaFileModel
                 while (!requestResult.IsCompleted)
                 {
 
-                    if (state.IsCancelled.Value == true)
+                    if (token.IsCancellationRequested)
                     {
 
                         request.Abort();
@@ -135,7 +65,7 @@ namespace MediaViewer.MediaFileModel
                 while ((count = responseStream.Read(buffer, 0, bufSize)) > 0)
                 {
 
-                    if (state.IsCancelled.Value == true)
+                    if (token.IsCancellationRequested)
                     {
 
                         throw new MediaFileException("Aborting reading image");
@@ -146,7 +76,7 @@ namespace MediaViewer.MediaFileModel
 
                 data.Seek(0, System.IO.SeekOrigin.Begin);
 
-                MediaFile media = newMediaFromMimeType(state, response.ContentType, data);
+                MediaFile media = newMediaFromMimeType(location, mode, userState, response.ContentType, data);
 
                 return (media);
 
@@ -166,49 +96,73 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        static MediaFile openFileData(AsyncState state, int timeoutMs)
+        static MediaFile openFileData(String location, MediaFile.MetaDataMode mode,
+            Object userState, CancellationToken token, int timeoutMs)
         {
 
-            Stream data = FileUtils.waitForFileAccess(state.Location, FileAccess.Read,
-                timeoutMs, state.IsCancelled);
+            Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
+                timeoutMs, token);
 
-            string mimeType = MediaFormatConvert.fileNameToMimeType(state.Location);
+            string mimeType = MediaFormatConvert.fileNameToMimeType(location);
 
-            MediaFile media = newMediaFromMimeType(state, mimeType, data);
+            MediaFile media = newMediaFromMimeType(location, mode, userState, mimeType, data);
 
             return (media);
         }
 
-        void asyncOpen(Object asyncState)
+        static MediaFile newMediaFromMimeType(String location, MediaFile.MetaDataMode mode,
+            Object userState, string mimeType, Stream data)
         {
 
-            AsyncState state = (AsyncState)asyncState;
+            MediaFile media = null;
 
-            //// initialize media with a dummy in case of exceptions
-            MediaFile media = new UnknownFile(state.Location, null);
+            if (mimeType.ToLower().StartsWith("image"))
+            {
+                media = new ImageFile(location, mimeType, data, mode);
+            }
+            else if (mimeType.ToLower().StartsWith("video"))
+            {
+                media = new VideoFile(location, mimeType, data, mode);
+            }
+            else
+            {
+                media = new UnknownFile(location, data);
+            }
 
-            //// only allow one thread to open files at once
-            openSemaphore.Acquire();
+            media.UserState = userState;
 
+            return (media);
+        }
+
+
+        public static MediaFile open(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState = null)
+        {
+            // initialize media with a dummy in case of exceptions
+            MediaFile media = new UnknownFile(location, null);
+           
             try
             {
 
-                if (string.IsNullOrEmpty(state.Location) || state.IsCancelled.Value == true)
+                if (string.IsNullOrEmpty(location) || token.IsCancellationRequested == true)
                 {
-
-                    return;
-
+                    return(media);
                 }
-                else if (FileUtils.isUrl(state.Location))
+                else if (FileUtils.isUrl(location))
                 {
-
-                    media = openWebData(state);
-
+                    media = openWebData(location, mode, token, userState);
                 }
                 else
                 {
+                    media = openFileData(location, mode, userState, 
+                        token, FILE_OPEN_ASYNC_TIMEOUT_MS);
 
-                    media = openFileData(state, FILE_OPEN_ASYNC_TIMEOUT_MS);
+                    media.readMetaData();
+
+                    if (media.Thumbnail == null)
+                    {
+                        media.generateThumbnails();
+                    }
+                                        
                 }
 
             }
@@ -220,163 +174,17 @@ namespace MediaViewer.MediaFileModel
                 media.close();
 
             }
-            finally
-            {
-
-                stateSemaphore.Acquire();
-                activeStates.Remove(state);
-                stateSemaphore.Release();
-
-                OpenFinished(this, media);
-            }
-        }
-
-
-        static MediaFile newMediaFromMimeType(AsyncState state, string mimeType, Stream data)
-        {
-
-            MediaFile media = null;
-
-            if (mimeType.ToLower().StartsWith("image"))
-            {
-
-                media = new ImageFile(state.Location, mimeType, data,
-                    state.MetaDataMode);
-
-            }
-            else if (mimeType.ToLower().StartsWith("video"))
-            {
-
-                media = new VideoFile(state.Location, mimeType, data,
-                    state.MetaDataMode);
-
-            }
-            else
-            {
-
-                media = new UnknownFile(state.Location, data);
-            }
-
-            media.UserState = state.UserState;
-
+            
             return (media);
         }
+       
 
-
-        public event EventHandler<MediaFile> OpenFinished;
-
-        public MediaFileFactory()
+        public static async Task<MediaFile> openAsync(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState = null)
         {
-
-            //// it is important to use fifo semaphores to preserve the order in which opening
-            //// files are requested
-            openSemaphore = new DigitallyCreated.Utilities.Concurrency.FifoSemaphore(1);
-            stateSemaphore = new DigitallyCreated.Utilities.Concurrency.FifoSemaphore(1);
-            activeStates = new List<AsyncState>();
-        }
-
-        //// Open (read only) a file//http stream in a non blocking fashion
-        //// When the file is successfully opened a OpenFinished event is generated
-        //// The function will attempt to cancel any pending opens to speed up it's operation
-        public void openNonBlockingAndCancelPending(string location, MediaFile.MetaDataMode mode)
-        {
-
-            openNonBlockingAndCancelPending(location, null, mode);
-        }
-
-        //// Open (read only) a file//http stream in a non blocking fashion
-        //// When the file is successfully opened a OpenFinished event is generated
-        //// The function will attempt to cancel any pending opens to speed up it's operation
-        //// userstate is attached to the returning mediafile
-        public void openNonBlockingAndCancelPending(string location, Object userState,
-            MediaFile.MetaDataMode mode)
-        {
-
-            try
-            {
-
-                WaitCallback callback = new WaitCallback(asyncOpen);
-
-                AsyncState state = new AsyncState(location, userState, mode);
-
-                //// lock active states
-                stateSemaphore.Acquire();
-
-                //// cancel previously started open(s)
-                for (int i = 0; i < activeStates.Count; i++)
-                {
-
-                    activeStates[i].IsCancelled.Value = true;
-                }
-
-                //// add current state to active states
-                activeStates.Add(state);
-
-                stateSemaphore.Release();
-
-                ThreadPool.QueueUserWorkItem(callback, state);
-
-            }
-            catch (Exception e)
-            {
-
-                log.Error("Cannot open media", e);
-                MessageBox.Show(e.Message);
-            }
+          
+            return await Task<MediaFile>.Run(() => open(location, mode, token, userState), token);         
 
         }
 
-        //// needs to be called after the user is done with the file
-        public void releaseNonBlockingOpenLock()
-        {
-
-            openSemaphore.Release();
-        }
-
-        public static MediaFile openBlocking(string location, MediaFile.MetaDataMode mode)
-        {
-
-            AsyncState state = new AsyncState(location, null, mode);
-
-            //// initialize media with a dummy in case of exceptions
-            MediaFile media = new UnknownFile(state.Location, null);
-
-            try
-            {
-                if (string.IsNullOrEmpty(state.Location))
-                {
-
-                    return (media);
-
-                }
-                else if (FileUtils.isUrl(state.Location))
-                {
-
-                    media = openWebData(state);
-
-                }
-                else
-                {
-
-                    media = openFileData(state, FILE_OPEN_SYNC_TIMEOUT_MS);
-                }
-
-            }
-            catch (Exception e)
-            {
-
-                log.Error("cannot open media", e);
-                media.OpenError = e;
-
-                if (media.Data != null)
-                {
-
-                    media.close();
-                    media.Data = null;
-                }
-            }
-
-            return (media);
-        }
     }
 }

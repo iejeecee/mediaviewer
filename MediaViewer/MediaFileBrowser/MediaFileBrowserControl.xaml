@@ -20,8 +20,8 @@
         </Grid.ColumnDefinitions>
         <DirectoryBrowser:DirectoryBrowserControl x:Name="directoryBrowser" Grid.Column="0"/>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
-        <ImageGrid:ImageGridControl x:Name="imageGrid" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0"/>
-        <ImageGrid:ImageGridPagerControl x:Name="pager" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        <ImageGrid:ImageGridView x:Name="imageGrid" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0"/>
+        <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
         <Grid/>
 
     </Grid>

@@ -23,7 +23,7 @@ namespace MediaViewer.MediaFileModel
 	private int height;
 
 
-	protected override void readMetaData() {
+	public override void readMetaData() {
 
 	
 		
@@ -67,8 +67,9 @@ namespace MediaViewer.MediaFileModel
 		}
 
 */
-		base.readMetaData();
-        data.Position = 0;
+
+
+        base.readMetaData();
 		
 	}
 
@@ -80,7 +81,7 @@ namespace MediaViewer.MediaFileModel
 		sizeBytes = data.Length;
 	}
 
-    protected override List<MetaDataThumb> generateThumbnails()
+    public override void generateThumbnails(int nrThumbnails)
     {
 
         BitmapDecoder bitmap = BitmapDecoder.Create(Data,
@@ -104,77 +105,82 @@ namespace MediaViewer.MediaFileModel
             thumb = tempImage;
         }
 
-		List<MetaDataThumb > thumbs = new List<MetaDataThumb >();
+        Thumbnail = thumb;
 
-        thumbs.Add(new MetaDataThumb(thumb));
-
-        return (thumbs);				
-		
+        base.generateThumbnails(nrThumbnails);
 		
 	}
 
-    public override string getDefaultCaption()
+    public override string DefaultCaption
     {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
 
-		StringBuilder sb = new StringBuilder();
+            sb.AppendLine(Path.GetFileName(Location));
+            sb.AppendLine();
 
-		sb.AppendLine(Path.GetFileName(Location));
-		sb.AppendLine();
+            if (MetaData != null)
+            {
 
-		if(MetaData != null) {
+                if (!string.IsNullOrEmpty(MetaData.Description))
+                {
 
-			if(!string.IsNullOrEmpty(MetaData.Description)) {
+                    sb.AppendLine("Description:");
 
-				sb.AppendLine("Description:");
+                    //string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
+                    sb.AppendLine(MetaData.Description);
+                    sb.AppendLine();
+                }
 
-				//string temp = System.Text.RegularExpressions.Regex.Replace(MetaData.Description,"(.{50}\\s)","$1`n");
-				sb.AppendLine(MetaData.Description);
-				sb.AppendLine();
-			}
+                if (!string.IsNullOrEmpty(MetaData.Creator))
+                {
 
-			if(!string.IsNullOrEmpty(MetaData.Creator)) {
+                    sb.AppendLine("Creator:");
+                    sb.AppendLine(MetaData.Creator);
+                    sb.AppendLine();
 
-				sb.AppendLine("Creator:");
-				sb.AppendLine(MetaData.Creator);
-				sb.AppendLine();
+                }
 
-			}
+                if (MetaData.CreationDate != DateTime.MinValue)
+                {
 
-			if(MetaData.CreationDate != DateTime.MinValue) {
+                    sb.AppendLine("Creation date:");
+                    sb.Append(MetaData.CreationDate);
+                    sb.AppendLine();
+                }
+            }
 
-				sb.AppendLine("Creation date:");
-				sb.Append(MetaData.CreationDate);
-				sb.AppendLine();
-			}
-		}
-
-		return(sb.ToString());
+            return (sb.ToString());
+        }
 	}
 
-    public override string getDefaultFormatCaption()
+    public override string DefaultFormatCaption
     {
+        get
+        {
+            StringBuilder sb = new StringBuilder();
 
-		StringBuilder sb = new StringBuilder();
+            sb.AppendLine(Path.GetFileName(Location));
+            sb.AppendLine();
 
-		sb.AppendLine(Path.GetFileName(Location));
-		sb.AppendLine();
-	
-		sb.AppendLine("Mime type:");
-		sb.Append(MimeType);
-		sb.AppendLine();
-		sb.AppendLine();
+            sb.AppendLine("Mime type:");
+            sb.Append(MimeType.Replace("//","/"));
+            sb.AppendLine();
+            sb.AppendLine();
 
-		sb.AppendLine("Resolution:");
-		sb.Append(width);
-		sb.Append("x");
-		sb.Append(height);
-		sb.AppendLine();
-		sb.AppendLine();
+            sb.AppendLine("Resolution:");
+            sb.Append(width);
+            sb.Append("x");
+            sb.Append(height);
+            sb.AppendLine();
+            sb.AppendLine();
 
-		sb.AppendLine("Size:");
-		sb.Append(Misc.formatSizeBytes(sizeBytes));
-	
-		return(sb.ToString());
+            sb.AppendLine("Size:");
+            sb.Append(Misc.formatSizeBytes(sizeBytes));
+
+            return (sb.ToString());
+        }
 	}
 
     public override MediaType MediaFormat
