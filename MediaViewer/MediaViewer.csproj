@@ -82,6 +82,7 @@
       <DependentUpon>AboutView.xaml</DependentUpon>
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
+    <Compile Include="App.cs" />
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
       <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
     </Compile>
@@ -98,7 +99,7 @@
     </Compile>
     <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridViewModel.cs" />
-    <Compile Include="ImageGrid\ImagePanelItem.cs" />
+    <Compile Include="ImageGrid\ImageGridItem.cs" />
     <Compile Include="ImageGrid\PartialImageGridViewModel.cs" />
     <Compile Include="Input\InputWindow.xaml.cs">
       <DependentUpon>InputWindow.xaml</DependentUpon>
@@ -109,6 +110,7 @@
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logging\VisualAppender.cs" />
+    <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="MediaFileBrowser\MediaFileBrowserControl.xaml.cs">
       <DependentUpon>MediaFileBrowserControl.xaml</DependentUpon>
     </Compile>

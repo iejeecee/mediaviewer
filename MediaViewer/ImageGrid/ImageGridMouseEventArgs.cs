@@ -47,9 +47,9 @@ namespace MediaViewer.ImageGrid
             get { return column; }
             set { column = value; }
         }
-        ImagePanelItem item;
+        ImageGridItem item;
 
-        public ImagePanelItem Item
+        public ImageGridItem Item
         {
             get { return item; }
             set { item = value; }
@@ -57,7 +57,7 @@ namespace MediaViewer.ImageGrid
 
 
     public ImageGridMouseEventArgs(MouseEventArgs mouseEvent, int panelNr, int imageNr, int row,
-        int column, ImagePanelItem item) 	
+        int column, ImageGridItem item) 	
 	{
         MouseEvent = mouseEvent;
 		PanelNr = panelNr;

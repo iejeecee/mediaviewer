@@ -41,7 +41,6 @@ namespace MediaViewer.MediaFileBrowser
 
         public event EventHandler<FileSystemEventArgs> CurrentMediaChanged;
 
-        ImageGridViewModel imageGridViewModel;
         PartialImageGridViewModel partialImageGridViewModel;
         DirectoryBrowserViewModel directoryBrowserViewModel;
         PagerViewModel pagerViewModel;
@@ -61,19 +60,19 @@ namespace MediaViewer.MediaFileBrowser
             directoryBrowserViewModel.NodeSelected += new EventHandler<PathModel>(directoryBrowserControl_NodeSelected);
             directoryBrowser.DataContext = directoryBrowserViewModel;
 
-            imageGridViewModel = new ImageGridViewModel();
-            partialImageGridViewModel = new PartialImageGridViewModel(imageGridViewModel);
+            partialImageGridViewModel = new PartialImageGridViewModel();
             imageGrid.DataContext = partialImageGridViewModel;
 
             pagerViewModel = new PagerViewModel();
             pager.DataContext = pagerViewModel;
+         
+            pagerViewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s,e) => {
 
-            pagerViewModel.NextPage += new EventHandler((s,e) => partialImageGridViewModel.NextPage.DoExecute());
-            pagerViewModel.PrevPage += new EventHandler((s, e) => partialImageGridViewModel.PrevPage.DoExecute());
-            pagerViewModel.FirstPage += new EventHandler((s, e) => partialImageGridViewModel.FirstPage.DoExecute());
-            pagerViewModel.LastPage += new EventHandler((s, e) => partialImageGridViewModel.LastPage.DoExecute());
-
-
+                if (e.PropertyName.Equals("CurrentPage"))
+                {
+                    partialImageGridViewModel.SetPageCommand.DoExecute(pagerViewModel.CurrentPage);
+                }
+            });
         }
 
         private MediaPreviewAsyncState fileInfoToMediaPreviewAsyncState(string location)
@@ -117,10 +116,17 @@ namespace MediaViewer.MediaFileBrowser
 
             directoryBrowserViewModel.selectPath(pathWithoutFileName);
 
-            imageGridViewModel.Locations.Clear();
-            imageGridViewModel.Locations.AddRange(mediaFileWatcher.MediaFiles);
+            List<ImageGridItem> items = new List<ImageGridItem>();
 
-            pagerViewModel.TotalPages = (int)Math.Ceiling(imageGridViewModel.Locations.Count / (float)partialImageGridViewModel.MaxItems);
+            foreach (String location in mediaFileWatcher.MediaFiles)
+            {
+                items.Add(new ImageGridItem(location));
+            }
+
+            partialImageGridViewModel.Items.Clear();
+            partialImageGridViewModel.Items.AddRange(items);
+
+            pagerViewModel.TotalPages = (int)Math.Ceiling(partialImageGridViewModel.Items.Count / (float)partialImageGridViewModel.MaxItems);
             pagerViewModel.CurrentPage = 1;
 
             if (BrowseDirectoryChanged != null)
@@ -325,7 +331,7 @@ namespace MediaViewer.MediaFileBrowser
             if (selected.Count == 0)
             {
 
-                selected.Add(e.Item.AsyncState);
+                //selected.Add(e.Item.AsyncState);
             }
 
             if (MessageBox.Show("Are you sure you want to permanently delete " + selected.Count.ToString() + " file(s)?",
@@ -367,9 +373,9 @@ namespace MediaViewer.MediaFileBrowser
             if (selected.Count == 0)
             {
 
-                selected.Add(e.Item.AsyncState);
-                info = "Rename Image: " + e.Item.AsyncState.MediaLocation;
-                input.InputText = System.IO.Path.GetFileNameWithoutExtension(e.Item.AsyncState.MediaLocation);
+                //selected.Add(e.Item.AsyncState);
+                //info = "Rename Image: " + e.Item.AsyncState.MediaLocation;
+                //input.InputText = System.IO.Path.GetFileNameWithoutExtension(e.Item.AsyncState.MediaLocation);
 
             }
             else
@@ -378,7 +384,7 @@ namespace MediaViewer.MediaFileBrowser
                 info = "Rename " + Convert.ToString(selected.Count) + " images";
             }
 
-            input.Title = info;
+            //input.Title = info;
 
             if (input.ShowDialog() == true)
             {
@@ -429,7 +435,7 @@ namespace MediaViewer.MediaFileBrowser
             if (selected.Count == 0)
             {
 
-                selected.Add(e.Item.AsyncState);
+                //selected.Add(e.Item.AsyncState);
             }
 
             StringCollection files = new StringCollection();
@@ -457,7 +463,7 @@ namespace MediaViewer.MediaFileBrowser
             if (selected.Count == 0)
             {
 
-                selected.Add(e.Item.AsyncState);
+                //selected.Add(e.Item.AsyncState);
             }
 
             StringCollection files = new StringCollection();

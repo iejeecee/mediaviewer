@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.ImageGrid
 {
-    class PartialImageGridViewModel : ObservableObject
+    class PartialImageGridViewModel : ImageGridViewModel
     {
 
         int startItem;
@@ -23,15 +23,13 @@ namespace MediaViewer.ImageGrid
             set { maxItems = value; }
         }
 
-        ImageGridViewModel imageGridViewModel;
-
-        public PartialImageGridViewModel(ImageGridViewModel imageGridViewModel)
+        public PartialImageGridViewModel()
         {
-            this.imageGridViewModel = imageGridViewModel;
+       
             startItem = 0;
             maxItems = 25;
 
-            media = new ObservableCollection<MediaFile>();
+            media = new ObservableCollection<ImageGridItem>();
 
             for (int i = 0; i < maxItems; i++)
             {
@@ -39,60 +37,35 @@ namespace MediaViewer.ImageGrid
 
             }
 
-            imageGridViewModel.Locations.CollectionChanged += new NotifyCollectionChangedEventHandler(imageGridViewModel_CollectionChanged);
+            Items.CollectionChanged += new NotifyCollectionChangedEventHandler(imageGridViewModel_CollectionChanged);
 
-            FirstPage = new Command(new Action(() =>
-            {
-                startItem = 0;
-                loadItemsAsync();
-            }));
 
-            NextPage = new Command(new Action(() =>
-            {
-                startItem = startItem + maxItems;
-                loadItemsAsync();
-            }));
+            SetPageCommand = new Command(new Action<object>((param) =>
+                {
+                    int pageNr = (int)param;
 
-            PrevPage = new Command(new Action(() =>
-            {
-                startItem = startItem - maxItems;
-                loadItemsAsync();
-            }));
+                    int newStartItem = maxItems * (pageNr - 1);
+
+                    if (newStartItem != startItem)
+                    {
+                        startItem = newStartItem;
+                        loadItemsAsync();
+                    }
+                }));
            
         }
 
-        Command nextPage;
+        Command setPageCommand;
 
-        public Command NextPage
+        public Command SetPageCommand
         {
-            get { return nextPage; }
-            set { nextPage = value; }
-        }
-        Command prevPage;
-
-        public Command PrevPage
-        {
-            get { return prevPage; }
-            set { prevPage = value; }
-        }
-        Command firstPage;
-
-        public Command FirstPage
-        {
-            get { return firstPage; }
-            set { firstPage = value; }
-        }
-        Command lastPage;
-
-        public Command LastPage
-        {
-            get { return lastPage; }
-            set { lastPage = value; }
+            get { return setPageCommand; }
+            set { setPageCommand = value; }
         }
 
-        ObservableCollection<MediaFile> media;
+        ObservableCollection<ImageGridItem> media;
 
-        public ObservableCollection<MediaFile> Media
+        public ObservableCollection<ImageGridItem> Media
         {
             get { return media; }
             set { media = value; }
@@ -120,7 +93,7 @@ namespace MediaViewer.ImageGrid
                     }
                 case NotifyCollectionChangedAction.Remove:
                     {
-                        FirstPage.DoExecute();
+                        
                         break;
                     }
             }
@@ -129,32 +102,21 @@ namespace MediaViewer.ImageGrid
         void loadItemsAsync()
         {
 
-            int startIndex = startItem;
-            int endIndex = Math.Min(startIndex + maxItems, imageGridViewModel.Locations.Count);
+            int nrItems = startItem + maxItems > Items.Count ? Items.Count - startItem : maxItems;
 
-            for(int i = startIndex, j = 0; j < maxItems; i++, j++) {
-
-                if (i < endIndex)
+            for (int i = 0; i < maxItems; i++)
+            {
+                if (i < nrItems)
                 {
-
-                    Task<MediaFile> task = MediaFileFactory.openAsync(imageGridViewModel.Locations[i], MediaFile.MetaDataMode.LOAD_FROM_DISK, CancellationToken.None, j);
-                                     
-
-                    task.ContinueWith(child =>
-                    {
-
-                        int index = (int)child.Result.UserState;
-
-                        Media[index] = child.Result;
-
-                    }, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.NotOnCanceled);
+                    Media[i] = Items[startItem + i];
                 }
                 else
                 {
-                    Media[j] = null;
+                    Media[i] = null;
                 }
-               
             }
+
+            this.loadItemRangeAsync(startItem, nrItems);
             
         }
         

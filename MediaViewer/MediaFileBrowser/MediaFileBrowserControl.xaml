@@ -6,17 +6,21 @@
              xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" xmlns:Pager="clr-namespace:MediaViewer.Pager" x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserControl" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="403.333">
-    <Grid>
-        <Grid.Background>
-            <SolidColorBrush Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
-        </Grid.Background>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource imageGridBackgroundColorBrush}">       
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
-            <ColumnDefinition />
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="6*"/>
         </Grid.ColumnDefinitions>
         <DirectoryBrowser:DirectoryBrowserControl x:Name="directoryBrowser" Grid.Column="0"/>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>

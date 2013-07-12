@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaFileModel
 {
-    abstract class MediaFile : EventArgs
+    public abstract class MediaFile : EventArgs
     {
         public enum MetaDataMode
         {

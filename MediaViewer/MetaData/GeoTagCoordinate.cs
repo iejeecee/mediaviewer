@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MetaData
 {
-    class GeoTagCoordinate
+    public class GeoTagCoordinate
     {
         private int degrees;
         private int minutes;

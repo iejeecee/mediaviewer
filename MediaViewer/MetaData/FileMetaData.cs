@@ -12,7 +12,7 @@ using System.Globalization;
 
 namespace MediaViewer.MetaData
 {
-    class FileMetaData : EventArgs, IDisposable
+    public class FileMetaData : EventArgs, IDisposable
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);

@@ -7,30 +7,87 @@ using System.Threading.Tasks;
 using MediaViewer.MediaFileModel;
 using MvvmFoundation.Wpf;
 using System.Windows.Data;
+using System.Windows;
+using System.Threading;
+using System.Windows.Threading;
 
 namespace MediaViewer.ImageGrid
 {
     class ImageGridViewModel : ObservableObject
     {
+       
+        CancellationTokenSource loadItemsCTS;
+
+        // maximum concurrently loading items
+        int maxLoadingItems;
+        // current concurrently loading items
+        int nrLoadingItems;
+        Object nrLoadingItemsLock;
 
         public ImageGridViewModel()
         {
-            locations = new ObservableRangeCollection<string>();
+            items = new ObservableRangeCollection<ImageGridItem>();
+
+            nrLoadingItems = 0;
+            maxLoadingItems = 25;
+
+            nrLoadingItemsLock = new Object();
+            loadItemsCTS = new CancellationTokenSource();
         }
 
-        ObservableRangeCollection<String> locations;
+        ObservableRangeCollection<ImageGridItem> items;
 
-        public ObservableRangeCollection<String> Locations
+        public ObservableRangeCollection<ImageGridItem> Items
         {
-            get { return locations; }
-            set { locations = value; }
+            get { return items; }
+            set { items = value; }
         }
-
-     
 
        
+        void loadItemCompleted()
+        {
 
+            lock (nrLoadingItemsLock)
+            {
+               
+                nrLoadingItems = nrLoadingItems - 1;               
 
+                Monitor.PulseAll(nrLoadingItemsLock);
+            }
+        }
+
+        public void loadItemRangeAsync(int start, int nrItems)
+        {
+            // cancel any previously loading items           
+            loadItemsCTS.Cancel();
+            // create new cts for the items that need to be loaded
+            loadItemsCTS = new CancellationTokenSource();
+
+            for (int i = 0; i < nrItems; i++)
+            {
+                // don't reload already loaded items
+                if (items[start + i].IsLoaded) continue;
+
+                lock (nrLoadingItemsLock)
+                {
+                    while (nrLoadingItems == maxLoadingItems)
+                    {
+                        Monitor.Wait(nrLoadingItemsLock);
+                    }
+
+                    nrLoadingItems = nrLoadingItems + 1;
+                }
+
+                items[start + i].loadMediaFileAsync(loadItemsCTS.Token).ContinueWith(oldtask =>
+                {
+                    loadItemCompleted();
+                });
+                
+                            
+            }
+            
+
+        }
       
     }
 }

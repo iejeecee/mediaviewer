@@ -13,4 +13,8 @@
         <GradientStop Color="#AAA" Offset="0.99" />
         <GradientStop Color="#888" Offset="1" />
     </LinearGradientBrush>
+
+    <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
+    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="DarkRed"/>
+    <BitmapImage x:Key="loadingImage" UriSource="pack://application:,,,/Resources/Images/loading1.gif"/>
 </ResourceDictionary>

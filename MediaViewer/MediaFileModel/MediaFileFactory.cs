@@ -181,8 +181,9 @@ namespace MediaViewer.MediaFileModel
 
         public static async Task<MediaFile> openAsync(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState = null)
         {
-          
-            return await Task<MediaFile>.Run(() => open(location, mode, token, userState), token);         
+
+            return await Task<MediaFile>.Run(() => open(location, mode, token, userState), token).ConfigureAwait(false);
+           
 
         }
 

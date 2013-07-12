@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MetaData
 {
-    class GeoTagCoordinatePair
+    public class GeoTagCoordinatePair
     {
 
         private GeoTagCoordinate latitude;

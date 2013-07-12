@@ -37,6 +37,7 @@ namespace MediaViewer.ImageModel
 
             setIdentityTransform();
 
+
         }
 
         bool flipX;

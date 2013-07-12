@@ -27,5 +27,15 @@ namespace MediaViewer.Pager
           
         }
 
+        private void currentPageTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                BindingExpression be = currentPageTextBox.GetBindingExpression(TextBox.TextProperty);
+             
+                be.UpdateSource();
+            }
+        }
+
     }
 }

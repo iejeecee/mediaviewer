@@ -35,6 +35,7 @@ namespace MediaViewer
         private ScaleView scaleView;
 
         private ImageViewModel imageViewModel;
+        private MainWindowViewModel mainWindowViewModel;
 
         public MainWindow()
         {
@@ -51,6 +52,12 @@ namespace MediaViewer
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
             initializeImageView();
+
+            mainWindowViewModel = new MainWindowViewModel();
+            DataContext = mainWindowViewModel;
+
+            mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
+
         }
 
         void initializeImageView()
@@ -78,6 +85,28 @@ namespace MediaViewer
             scaleView.DataContext = imageViewModel;
 
             imageToolBar.DataContext = imageViewModel;
+        }
+
+        void mainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("CurrentImageLocation"))
+            {
+                if (mainWindowViewModel.CurrentImageLocation != null)
+                {
+                    loadAndDisplayImage(mainWindowViewModel.CurrentImageLocation);
+                }
+            }
+            else if (e.PropertyName.Equals("CurrentVideoLocation"))
+            {
+
+            }
+
+        }
+
+        private void loadAndDisplayImage(string location)
+        {
+            showimageView();
+            imageViewModel.LoadImageAsyncCommand.DoExecute(location);
         }
      
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)

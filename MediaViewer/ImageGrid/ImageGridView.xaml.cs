@@ -28,32 +28,31 @@ namespace MediaViewer.ImageGrid
     public partial class ImageGridView : UserControl
     {
 
-        int currentPage;
 
         public ImageGridView()
         {
            
             InitializeComponent();
-
-            currentPage = 0;
+         
                       
         }
         
-        public int CurrentPage
+
+        private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            get
-            {
-                return (currentPage);
-            }
+            MenuItem item = (MenuItem)e.OriginalSource;
+
+            App app = (App)Application.Current;
+
+            app.Messenger.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
+           
         }
 
-        private void button_Click(object sender, RoutedEventArgs e)
+        private void imageGridView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            ImageGridViewModel imageGridViewModel = (ImageGridViewModel)DataContext;
-
-            CollectionView cv = (CollectionView)CollectionViewSource.GetDefaultView(imageGridViewModel.Locations);
-
-            cv.MoveCurrentToPosition(5);
+            Grid grid = (Grid)sender;
+            ImageGridItem item = (ImageGridItem)grid.Tag;
+            item.toggleSelected();
         }
     }
 }

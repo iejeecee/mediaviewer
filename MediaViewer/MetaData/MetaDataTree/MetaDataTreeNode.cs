@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MetaData.MetaDataTree
 {
-    abstract class MetaDataTreeNode
+    public abstract class MetaDataTreeNode
     {
 
         public enum Type

@@ -10,7 +10,7 @@ using System.Windows.Media.Imaging;
 namespace MediaViewer.MetaData
 {
 
-    class MetaDataThumb 
+    public class MetaDataThumb 
     {
 
         private BitmapSource image;

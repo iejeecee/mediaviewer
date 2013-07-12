@@ -9,10 +9,7 @@ namespace MediaViewer.Pager
 {
     class PagerViewModel : ObservableObject
     {
-        public event EventHandler NextPage;
-        public event EventHandler PrevPage;
-        public event EventHandler FirstPage;
-        public event EventHandler LastPage;
+      
 
         public PagerViewModel()
         {
@@ -20,40 +17,28 @@ namespace MediaViewer.Pager
             {
                 CurrentPage += 1;
 
-                if (NextPage != null)
-                {
-                    NextPage(this, EventArgs.Empty);
-                }
+               
             }));
 
             prevPageCommand = new Command(new Action(() =>
             {
                 CurrentPage -= 1;
 
-                if (PrevPage != null)
-                {
-                    PrevPage(this, EventArgs.Empty);
-                }
+             
             }));
 
             firstPageCommand = new Command(new Action(() =>
             {
                 CurrentPage = 0;
 
-                if (FirstPage != null)
-                {
-                    FirstPage(this, EventArgs.Empty);
-                }
+              
             }));
 
             lastPageCommand = new Command(new Action(() =>
             {
                 CurrentPage = TotalPages;
 
-                if (LastPage != null)
-                {
-                    LastPage(this, EventArgs.Empty);
-                }
+             
             }));
 
             TotalPages = 1;
@@ -170,6 +155,6 @@ namespace MediaViewer.Pager
             set { lastPageCommand = value; }
         }
 
-
+      
     }
 }

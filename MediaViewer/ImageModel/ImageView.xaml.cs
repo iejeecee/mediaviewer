@@ -68,7 +68,7 @@ namespace MediaViewer.ImageModel
                 });
 
             // everytime the transform matrix is updated in the imageviewmodel
-            // make sure we apply unscale the dpi as well
+            // make sure we unscale the dpi as well
             imageViewModelObserver.RegisterHandler(m => m.Transform,
                m =>
                {
@@ -98,7 +98,7 @@ namespace MediaViewer.ImageModel
 
         void loadImage_Executing(object sender, CancelCommandEventArgs e)
         {
-            
+           
             pictureBox.SetCurrentValue(Image.SourceProperty, loadingImage); 
         }
 
