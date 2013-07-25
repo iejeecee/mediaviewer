@@ -32,7 +32,7 @@ VideoPreview::VideoPreview() {
 
 	frameGrabber->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
-	thumbs = gcnew List<Drawing::Bitmap ^>();
+	thumbs = gcnew List<BitmapSource ^>();
 	
 }
 
@@ -85,8 +85,23 @@ void VideoPreview::close() {
 void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
 {
-	Drawing::Bitmap ^bitmap = gcnew Drawing::Bitmap(frameGrabber->getThumbWidth(),
-		frameGrabber->getThumbHeight(), Drawing::Imaging::PixelFormat::Format24bppRgb);
+	
+
+	int sizeBytes = frameGrabber->getThumbHeight() * frame->linesize[0];
+
+	BitmapSource ^bitmap = BitmapSource::Create(
+		frameGrabber->getThumbWidth(), frameGrabber->getThumbHeight(),
+		1 / 72.0,  1 / 72.0,
+		System::Windows::Media::PixelFormats::Bgr24,
+		nullptr,
+		IntPtr(frame->data[0]),
+		sizeBytes,
+		frame->linesize[0]);
+		
+/*	
+
+	BitmapFrame(frameGrabber->getThumbWidth(),
+	frameGrabber->getThumbHeight(), Drawing::Imaging::PixelFormat::Format24bppRgb);
 
 	Drawing::Rectangle rect = 
 		Drawing::Rectangle(0, 0, bitmap->Width, bitmap->Height);
@@ -102,13 +117,13 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 	memcpy(dest.ToPointer(), frame->data[0], sizeBytes);
 
 	bitmap->UnlockBits(bmpData);
-
+*/
 	thumbs->Add(bitmap);
 
 }
 
 
-List<Drawing::Bitmap ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+List<BitmapSource ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset) 
 {
 

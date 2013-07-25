@@ -1,7 +1,8 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImageModel="clr-namespace:MediaViewer.ImageModel" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
         Title="MediaViewer" Height="350" Width="525" Closing="mainWindow_Closing">
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
@@ -54,6 +55,7 @@
             </ToolBar>
         </ToolBarTray>        
         <MediaFileBrowser:MediaFileBrowserControl x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
-        <ImageModel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
+        <ImagePanel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
+        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>        
     </Grid>
 </Window>

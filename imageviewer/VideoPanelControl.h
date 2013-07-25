@@ -188,6 +188,7 @@ namespace imageviewer {
 			this->stopButton = (gcnew System::Windows::Forms::Button());
 			this->timeTrackBar = (gcnew System::Windows::Forms::TrackBar());
 			this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer))->BeginInit();
 			this->splitContainer->Panel2->SuspendLayout();
 			this->splitContainer->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->BeginInit();
@@ -372,11 +373,11 @@ namespace imageviewer {
 			this->timeTrackBar->Size = System::Drawing::Size(796, 37);
 			this->timeTrackBar->TabIndex = 0;
 			this->timeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
-			this->timeTrackBar->MouseLeave += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseLeave);
 			this->timeTrackBar->MouseDown += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseDown);
-			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
-			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
 			this->timeTrackBar->MouseEnter += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseEnter);
+			this->timeTrackBar->MouseLeave += gcnew System::EventHandler(this, &VideoPanelControl::timeTrackBar_MouseLeave);
+			this->timeTrackBar->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseMove);
+			this->timeTrackBar->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &VideoPanelControl::timeTrackBar_MouseUp);
 			// 
 			// VideoPanelControl
 			// 
@@ -388,6 +389,7 @@ namespace imageviewer {
 			this->Size = System::Drawing::Size(800, 484);
 			this->splitContainer->Panel2->ResumeLayout(false);
 			this->splitContainer->Panel2->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer))->EndInit();
 			this->splitContainer->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->volumeTrackBar))->EndInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->timeTrackBar))->EndInit();

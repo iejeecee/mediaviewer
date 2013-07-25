@@ -57,8 +57,10 @@ namespace MediaViewer.MediaFileBrowser
             mediaFileWatcher.CurrentMediaChanged += new EventHandler<FileSystemEventArgs>(imageFileWatcherThread_CurrentMediaChanged);
             
             directoryBrowserViewModel = new DirectoryBrowserViewModel();
-            directoryBrowserViewModel.NodeSelected += new EventHandler<PathModel>(directoryBrowserControl_NodeSelected);
             directoryBrowser.DataContext = directoryBrowserViewModel;
+
+            // recieve message when a path node is selected          
+            GlobalMessenger.Instance.Register<PathModel>("PathModel_IsSelected", new Action<PathModel>(browsePath_IsSelected));
 
             partialImageGridViewModel = new PartialImageGridViewModel();
             imageGrid.DataContext = partialImageGridViewModel;
@@ -126,7 +128,12 @@ namespace MediaViewer.MediaFileBrowser
             partialImageGridViewModel.Items.Clear();
             partialImageGridViewModel.Items.AddRange(items);
 
-            pagerViewModel.TotalPages = (int)Math.Ceiling(partialImageGridViewModel.Items.Count / (float)partialImageGridViewModel.MaxItems);
+            int totalPages = (int)Math.Ceiling(partialImageGridViewModel.Items.Count / (float)partialImageGridViewModel.MaxItems);
+            if (totalPages == 0)
+            {
+                totalPages = 1;
+            }
+            pagerViewModel.TotalPages = totalPages;
             pagerViewModel.CurrentPage = 1;
 
             if (BrowseDirectoryChanged != null)
@@ -531,7 +538,7 @@ namespace MediaViewer.MediaFileBrowser
                              }
              */
         }
-        private void directoryBrowserControl_NodeSelected(System.Object sender, PathModel path)
+        private void browsePath_IsSelected(PathModel path)
         {
 
             if (path.GetType() == typeof(DummyPathModel)) return;

@@ -159,13 +159,20 @@ namespace MediaViewer.MediaFileModel
     {
         get
         {
+
+            if (OpenError != null)
+            {
+                return OpenError.Message;
+
+            }
+                      
             StringBuilder sb = new StringBuilder();
 
             sb.AppendLine(Path.GetFileName(Location));
             sb.AppendLine();
 
             sb.AppendLine("Mime type:");
-            sb.Append(MimeType.Replace("//","/"));
+            sb.Append(MimeType);
             sb.AppendLine();
             sb.AppendLine();
 

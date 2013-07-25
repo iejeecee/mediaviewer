@@ -6,15 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaViewer.DirectoryBrowser
 {
     class DirectoryBrowserViewModel : ObservableObject
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public event EventHandler<PathModel> NodeSelected;
-
+ 
         public DirectoryBrowserViewModel()
         {
             drives = null;
@@ -60,8 +59,7 @@ namespace MediaViewer.DirectoryBrowser
 
             foreach (DriveInfo driveInfo in drivesArray)
             {
-                DrivePathModel drive = new DrivePathModel(driveInfo);
-                drive.Selected += new EventHandler<PathModel>(pathModel_Selected);
+                DrivePathModel drive = new DrivePathModel(driveInfo);               
              
                 drives.Add(drive);
             }
@@ -114,14 +112,7 @@ namespace MediaViewer.DirectoryBrowser
             node.IsExpanded = true;
             node.IsSelected = true;
         }
-
-        void pathModel_Selected(object sender, PathModel node)
-        {
-            if (NodeSelected != null)
-            {
-                NodeSelected(this, node);
-            }
-        }
+     
     }
 
 }

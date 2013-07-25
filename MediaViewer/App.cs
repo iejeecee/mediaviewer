@@ -10,19 +10,11 @@ namespace MediaViewer
 {
     public partial class App : Application
     {
-        Messenger messenger;
-
-        public Messenger Messenger
-        {
-            get { return messenger; }           
-        }
-
+    
         public App()
         {
             Startup += Application_Startup;
-            Exit += Application_Exit;
-
-            messenger = new Messenger();
+            Exit += Application_Exit;        
 
             InitializeComponent();
         }

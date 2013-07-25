@@ -45,11 +45,15 @@
                             <Image.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsOpening}" Value="true">
+                                        <DataTrigger Binding="{Binding ItemState}" Value="LOADING">
                                             <Setter Property="Image.Stretch" Value="None"/>
                                             <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding IsOpening}" Value="false">
+                                        <DataTrigger Binding="{Binding ItemState}" Value="ERROR">
+                                            <Setter Property="Image.Stretch" Value="None"/>
+                                            <Setter Property="Image.Source" Value="{StaticResource errorImage}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
                                             <Setter Property="Image.Stretch" Value="Uniform"/>
                                             <Setter Property="Image.Source" Value="{Binding Media.Thumbnail}" />
                                         </DataTrigger>

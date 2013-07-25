@@ -15,15 +15,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.ImageModel
+namespace MediaViewer.ImagePanel
 {
     /// <summary>
     /// Interaction logic for ImageView.xaml
     /// </summary>
     public partial class ImageView : UserControl
     {
-        static BitmapImage errorImage = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/error.png"));
-        static BitmapImage loadingImage = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/loading1.gif"));
+        
 
         private bool isLeftMouseButtonDown;
         //private bool isModified;
@@ -46,11 +45,7 @@ namespace MediaViewer.ImageModel
             if (e.OldValue != null) return;
             
             ImageViewModel imageViewModel = (ImageViewModel)e.NewValue;
-
-            // notify when a loadimage command is executed
-            // so a temporary loading image can be shown
-            imageViewModel.LoadImageAsyncCommand.Executing += new MvvmFoundation.Wpf.Delegates.CancelCommandEventHandler(loadImage_Executing);
-
+         
             // Due to the device independent nature of WPF, images are 
             // scaled according to the dpi value stored in the image file.
             // But since nobody ever bothers to set this correctly we
@@ -94,13 +89,6 @@ namespace MediaViewer.ImageModel
             return (new MatrixTransform(scaleMatrix));
         }
 
-
-
-        void loadImage_Executing(object sender, CancelCommandEventArgs e)
-        {
-           
-            pictureBox.SetCurrentValue(Image.SourceProperty, loadingImage); 
-        }
 
         private void gridContainer_PreviewMouseMove(object sender, MouseEventArgs e)
         {

@@ -80,32 +80,34 @@ namespace MediaViewer.Utils
 
             return (output);
         }
-        /*
-            template<class T>
-            static T clamp(T val, T min, T max) {
 
-                if(val < min) val = min;
-                else if(val > max) val = max;
 
-                return(val);
-            }
+        public static T clamp<T>(T val, T min, T max) where T : IComparable
+        {
 
-            template<class T>
-            static T lerp(double val, T min, T max) {
+            if (val.CompareTo(min) < 0) val = min;
+            else if (val.CompareTo(max) > 0) val = max;
 
-                val = clamp<double>(val, 0, 1);
-		
-                return(T((1-val) * min + val * max));
-            }
+            return (val);
+        }
 
-            template<class T>
-            static double invlerp(T val, T min, T max) {
 
-                double result = (val - min) / double(max - min);
+        public static double lerp(double val, double min, double max)
+        {
+
+            val = clamp<double>(val, 0, 1);
+
+            return ((1 - val) * min + val * max);
+        }
+
+
+        public static double invlerp(double val, double min, double max) {
+
+            double result = (val - min) / (max - min);
 			
-                return(result);
-            }
-        */
+            return(result);
+        }
+
 
         public static bool listSortAndCompare<T>(List<T> a, List<T> b)
         {

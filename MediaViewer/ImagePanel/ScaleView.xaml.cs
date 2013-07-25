@@ -12,38 +12,38 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MediaViewer.ImageModel
+namespace MediaViewer.ImagePanel
 {
     /// <summary>
-    /// Interaction logic for RotationView.xaml
+    /// Interaction logic for ScaleView.xaml
     /// </summary>
-    public partial class RotationView : Window
+    public partial class ScaleView : Window
     {
-        public RotationView()
+        public ScaleView()
         {
             InitializeComponent();
         }
 
-        private void clampAngleCheckBox_Click(object sender, RoutedEventArgs e)
+        private void clampScaleCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            if (clampAngleCheckBox.IsChecked.Value == true)
+            if (clampScaleCheckBox.IsChecked.Value == true)
             {
 
-                degreesSlider.IsSnapToTickEnabled = true;
+                scaleSlider.IsSnapToTickEnabled = true;
 
             }
             else
             {
 
-                degreesSlider.IsSnapToTickEnabled = false;
+                scaleSlider.IsSnapToTickEnabled = false;
             }
         }
 
-        private void degreesTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void scaleTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                BindingExpression be = degreesTextBox.GetBindingExpression(TextBox.TextProperty);
+                BindingExpression be = scaleTextBox.GetBindingExpression(TextBox.TextProperty);                
                 be.UpdateSource();
             }
         }

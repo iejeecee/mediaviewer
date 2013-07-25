@@ -42,9 +42,9 @@ namespace MediaViewer.ImageGrid
         {
             MenuItem item = (MenuItem)e.OriginalSource;
 
-            App app = (App)Application.Current;
+           
 
-            app.Messenger.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
+            GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
            
         }
 

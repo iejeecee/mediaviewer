@@ -16,9 +16,11 @@ using System.Windows.Shapes;
 using MediaViewer.Logging;
 using MediaViewer.Utils;
 using Microsoft.Win32;
-using MediaViewer.ImageModel;
+using MediaViewer.ImagePanel;
 using System.ComponentModel;
 using MediaViewer.About;
+using MediaViewer.DirectoryBrowser;
+using MediaViewer.VideoPanel;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -37,6 +39,10 @@ namespace MediaViewer
         private ImageViewModel imageViewModel;
         private MainWindowViewModel mainWindowViewModel;
 
+        private VideoViewModel videoViewModel;
+
+        private string currentBrowsingDirectory;
+
         public MainWindow()
         {
            
@@ -52,18 +58,30 @@ namespace MediaViewer
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
             initializeImageView();
+            initializeVideoView();
 
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
 
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
 
+            currentBrowsingDirectory = "";
+       
+            GlobalMessenger.Instance.Register<PathModel>("PathModel_IsSelected", new Action<PathModel>(browsingDirectory_IsSelected));
+        }
+
+        void browsingDirectory_IsSelected(PathModel node)
+        {
+            if (node.GetType() == typeof(DummyPathModel)) return;
+
+            currentBrowsingDirectory = node.getFullPath();
+
+            setTitle(currentBrowsingDirectory);
         }
 
         void initializeImageView()
         {
             imageViewModel = new ImageViewModel();
-
             imageView.DataContext = imageViewModel;
 
             rotationView = new RotationView();
@@ -87,6 +105,12 @@ namespace MediaViewer
             imageToolBar.DataContext = imageViewModel;
         }
 
+        void initializeVideoView()
+        {
+            videoViewModel = new VideoViewModel();
+            videoView.DataContext = videoViewModel;
+        }
+
         void mainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals("CurrentImageLocation"))
@@ -98,15 +122,36 @@ namespace MediaViewer
             }
             else if (e.PropertyName.Equals("CurrentVideoLocation"))
             {
-
+                if (mainWindowViewModel.CurrentVideoLocation != null)
+                {
+                    loadAndDisplayVideo(mainWindowViewModel.CurrentVideoLocation);
+                }
             }
 
         }
 
+        void setTitle(string info = "")
+        {
+            if (string.IsNullOrEmpty(info))
+            {
+                mainWindow.Title = "MediaViewer";
+            }
+            else
+            {
+                mainWindow.Title = info + " - MediaViewer";
+            }
+        }
+
         private void loadAndDisplayImage(string location)
         {
-            showimageView();
+            showImageView(location);
             imageViewModel.LoadImageAsyncCommand.DoExecute(location);
+        }
+
+        private void loadAndDisplayVideo(string location)
+        {
+            showVideoView(location);
+            videoViewModel.VideoLocation = location;
         }
      
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
@@ -243,38 +288,52 @@ namespace MediaViewer
         {
 
             imageView.Visibility = Visibility.Hidden;
-            
+            videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Visible;
          
             videoToolbarCheckBox.IsChecked = false;
             imageToolbarCheckBox.IsChecked = false;
             imageToolBar.Visibility = Visibility.Hidden;
          
-            //setTitle();
+            setTitle(currentBrowsingDirectory);
         }
 
-        private void showimageView()
+        private void showImageView(string location)
         {
 
             imageView.Visibility = Visibility.Visible;
-
+            videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Hidden;
 
             videoToolbarCheckBox.IsChecked = false;
             mediaFileBrowserToolbarCheckBox.IsChecked = false;
             imageToolBar.Visibility = Visibility.Visible;
 
-            //setTitle();
+            setTitle(location);
         }
- 
-        private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)
+
+        private void showVideoView(string location)
         {
 
+            imageView.Visibility = Visibility.Hidden;
+            videoView.Visibility = Visibility.Visible;
+            mediaFileBrowser.Visibility = Visibility.Hidden;
+
+            imageToolbarCheckBox.IsChecked = false;
+            mediaFileBrowserToolbarCheckBox.IsChecked = false;
+            imageToolBar.Visibility = Visibility.Visible;
+
+            setTitle(location);
+        }
+
+        private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            showVideoView(mainWindowViewModel.CurrentVideoLocation);
         }
 
         private void imageToolbarCheckBox_Click(object sender, RoutedEventArgs e)
         {
-            showimageView();
+            showImageView(mainWindowViewModel.CurrentImageLocation);
         }
 
         private void mediaFileBrowserToolbarCheckBox_Click(object sender, RoutedEventArgs e)

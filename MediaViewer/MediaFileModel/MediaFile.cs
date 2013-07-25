@@ -269,7 +269,13 @@ namespace MediaViewer.MediaFileModel
 
         public virtual string DefaultCaption
         {
-            get { return (""); }
+            get {
+
+              
+              return ("");
+                
+            
+            }
         }
 
         public virtual string DefaultFormatCaption

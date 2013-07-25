@@ -40,9 +40,8 @@ namespace MediaViewer
         {
 
             // recieve messages requesting the display of media items
-            App app = (App)Application.Current;
-
-            app.Messenger.Register<string>("MainWindowViewModel.ViewMediaCommand", new Action<string>((fileName) =>
+          
+            GlobalMessenger.Instance.Register<string>("MainWindowViewModel.ViewMediaCommand", new Action<string>((fileName) =>
             {
                 ViewMediaCommand.DoExecute(fileName);
             }));

@@ -9,6 +9,7 @@
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::IO;
+using namespace System::Windows::Media::Imaging;
 
 namespace VideoLib {
 
@@ -27,7 +28,7 @@ namespace VideoLib {
 		void decodedFrameCallback(void *data, AVPacket *packet, 
 			AVFrame *frame, Video::FrameType type);
 
-		List<Drawing::Bitmap ^> ^thumbs;
+		List<BitmapSource ^> ^thumbs;
 
 		int durationSeconds;
 
@@ -161,7 +162,7 @@ namespace VideoLib {
 		void open(String ^videoLocation);
 		void close();
 
-		List<Drawing::Bitmap ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+		List<BitmapSource ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset);
 
 		

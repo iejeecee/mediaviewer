@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace MediaViewer.ImageModel
+namespace MediaViewer.ImagePanel
 {
     [ValueConversion(typeof(double), typeof(string))]
     public class DegreesConverter : IValueConverter

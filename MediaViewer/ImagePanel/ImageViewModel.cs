@@ -10,21 +10,21 @@ using MvvmFoundation.Wpf;
 using System.Windows;
 using System.Threading;
 
-namespace MediaViewer.ImageModel
+namespace MediaViewer.ImagePanel
 {
     class ImageViewModel : ObservableObject
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        CancellationTokenSource openMediaTokenSource;
-        Task<MediaFile> openMediaTask;
-     
+        CancellationTokenSource loadImageCTS;
+      
         ImageFile imageFile;       
 
         public ImageViewModel()
         {
-            openMediaTask = null;
-            openMediaTokenSource = new CancellationTokenSource();
+          
+            loadImageCTS = new CancellationTokenSource();
+            isLoading = false;
 
             loadImageAsyncCommand = new Command(new Action<object>((fileName) =>
             {
@@ -65,6 +65,18 @@ namespace MediaViewer.ImageModel
 
                 NotifyPropertyChanged();
                 updateTransform();
+            }
+        }
+
+        bool isLoading;
+
+        public bool IsLoading
+        {
+            get { return isLoading; }
+            set
+            {
+                isLoading = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -170,22 +182,24 @@ namespace MediaViewer.ImageModel
 
         private async void loadImageAsync(String fileName)
         {
-            // cancel previously running load requests
-            if (openMediaTask != null && openMediaTask.IsCompleted == false)
-            {
-                openMediaTokenSource.Cancel();
-                await openMediaTask;
-            }
-
+            // cancel previously running load requests          
+            loadImageCTS.Cancel();
+            loadImageCTS = new CancellationTokenSource();
+            
             // async load media
-            openMediaTask = MediaFileFactory.openAsync((String)fileName, MediaFile.MetaDataMode.AUTO, openMediaTokenSource.Token);
-            MediaFile media = await openMediaTask;
 
-            BitmapImage loadedImage = null;
+            MediaFile media = null;
 
             try
             {
-               
+                IsLoading = true;
+
+                media = await MediaFileFactory.openAsync((String)fileName, MediaFile.MetaDataMode.AUTO, loadImageCTS.Token);
+
+                IsLoading = false;
+
+                BitmapImage loadedImage = null;
+
                 if (media.OpenSuccess &&
                       media.MediaFormat == MediaFile.MediaType.IMAGE)
                 {
@@ -202,20 +216,28 @@ namespace MediaViewer.ImageModel
 
                     log.Info("Image loaded: " + media.Location);
                 }
-              
+
                 Image = loadedImage;
                 setIdentityTransform();
-               
+
+            }
+            catch (TaskCanceledException)
+            {
+                log.Info("Cancelled loading image:" + (String)fileName);
             }
             catch (Exception e)
             {
-                log.Error("Error decoding image:" + media.Location, e);
+                log.Error("Error decoding image:" + (String)fileName, e);
+                Image = null;
             }
             finally
             {
-                media.close();             
+                if (media != null)
+                {
+                    media.close();
+                }
             }
-          
+
         }        
     }
 }

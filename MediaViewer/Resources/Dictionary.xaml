@@ -1,11 +1,14 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"                   
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
-                    xmlns:ImageModel="clr-namespace:MediaViewer.ImageModel"                  
+                    xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" 
+                    xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
                     >
-    <ImageModel:DegreesConverter x:Key="degreesConverter"/>
+    <ImagePanel:DegreesConverter x:Key="degreesConverter"/>
 
-    <ImageModel:ScaleConverter x:Key="scaleConverter"/>
-    
+    <ImagePanel:ScaleConverter x:Key="scaleConverter"/>
+
+    <VideoPanel:TimeConverter x:Key="timeConverter"/>
+
     <LinearGradientBrush x:Key="flat3DBorderBrush"
                          StartPoint="0.499,0" EndPoint="0.501,1">
         <GradientStop Color="#FFF" Offset="0" />
@@ -16,5 +19,6 @@
 
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
     <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="DarkRed"/>
-    <BitmapImage x:Key="loadingImage" UriSource="pack://application:,,,/Resources/Images/loading1.gif"/>
+    <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
+    <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>
 </ResourceDictionary>

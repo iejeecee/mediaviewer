@@ -15,7 +15,6 @@ namespace MediaViewer.DirectoryBrowser
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public event EventHandler<PathModel> Selected;
 
         private ObservableCollection<PathModel> directories;
         public ObservableCollection<PathModel> Directories
@@ -69,9 +68,7 @@ namespace MediaViewer.DirectoryBrowser
                 
             }
         }
-
       
-
         private bool isSelected;
 
         public bool IsSelected
@@ -82,23 +79,13 @@ namespace MediaViewer.DirectoryBrowser
                 isSelected = value;
 
                 if (isSelected == true)
-                {
-                    bubbleSelected(this);
+                {                  
+                    GlobalMessenger.Instance.NotifyColleagues("PathModel_IsSelected", this);
                 }
             }
         }
 
-        void bubbleSelected(PathModel selected)
-        {
-            if (parent == null)
-            {
-                Selected(this, selected);
-            }
-            else
-            {
-                parent.bubbleSelected(selected);
-            }
-        }
+     
 
         public PathModel()
         {
@@ -117,6 +104,7 @@ namespace MediaViewer.DirectoryBrowser
             while (parent != null)
             {
                 fullPath = parent.Name + "\\" + fullPath;
+                fullPath = fullPath.Replace("\\\\", "\\");
                 parent = parent.Parent;
             }
 

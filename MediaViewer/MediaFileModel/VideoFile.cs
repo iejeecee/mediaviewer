@@ -8,14 +8,13 @@ using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using VideoLib;
+using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaFileModel
 {
     class VideoFile : MediaFile
     {
-
-        private static Image defaultVideoThumb;
-
+      
         private VideoPreview videoPreview;
 
         private int durationSeconds;
@@ -125,7 +124,7 @@ namespace MediaViewer.MediaFileModel
                 }
                 else
                 {
-                    throw new Exception("XMP Metadata not supported for this video format");
+                    log.Error("XMP Metadata not supported for this video format: " + Location);
                 }
 
             }
@@ -138,18 +137,19 @@ namespace MediaViewer.MediaFileModel
         }
 
 
-
-        static VideoFile()
-        {
-
-            defaultVideoThumb = new Bitmap("C:\\game\\icons\\video.png");
-        }
-
         public VideoFile(string location, string mimeType, Stream data, MediaFile.MetaDataMode mode)
             : base(location, mimeType, data, mode)
         {
 
 
+        }
+
+        ~VideoFile()
+        {
+            if (videoPreview != null)
+            {
+                videoPreview.Dispose();
+            }
         }
 
         public override MediaType MediaFormat
@@ -286,7 +286,7 @@ namespace MediaViewer.MediaFileModel
         {
 
            
-            List<Bitmap> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
+            List<BitmapSource> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
                 MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025);
 
             if (thumbBitmaps.Count == 0)
@@ -297,11 +297,15 @@ namespace MediaViewer.MediaFileModel
                     MAX_THUMBNAIL_HEIGHT, -1, 1, 0);
             }
 
-            foreach (Bitmap bitmap in thumbBitmaps)
+            if (thumbBitmaps.Count > 0)
             {
-
-                //Thumbnails.Add(new MetaDataThumb(bitmap));
+                Thumbnail = thumbBitmaps[0];
             }
+            else
+            {
+                Thumbnail = null;
+            }
+         
 
             base.generateThumbnails(nrThumbnails);
         }
@@ -362,13 +366,19 @@ namespace MediaViewer.MediaFileModel
         {
             get
             {
+
+                if (OpenError != null)
+                {
+                    return OpenError.Message;
+                }
+
                 StringBuilder sb = new StringBuilder();
 
                 sb.AppendLine(Path.GetFileName(Location));
                 sb.AppendLine();
 
                 sb.AppendLine("Mime type:");
-                sb.Append(MimeType.Replace("//", "/"));
+                sb.Append(MimeType);
                 sb.AppendLine();
                 sb.AppendLine();
 

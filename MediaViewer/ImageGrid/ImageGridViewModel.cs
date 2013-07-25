@@ -66,7 +66,7 @@ namespace MediaViewer.ImageGrid
             for (int i = 0; i < nrItems; i++)
             {
                 // don't reload already loaded items
-                if (items[start + i].IsLoaded) continue;
+                if (items[start + i].ItemState == ImageGridItem.State.LOADED) continue;
 
                 lock (nrLoadingItemsLock)
                 {
@@ -78,7 +78,7 @@ namespace MediaViewer.ImageGrid
                     nrLoadingItems = nrLoadingItems + 1;
                 }
 
-                items[start + i].loadMediaFileAsync(loadItemsCTS.Token).ContinueWith(oldtask =>
+                items[start + i].loadMediaFileAsync(loadItemsCTS.Token).ContinueWith(finishedTask =>
                 {
                     loadItemCompleted();
                 });

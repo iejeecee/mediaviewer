@@ -29,7 +29,7 @@ public:
 
 			avformat_network_init();
 
-			isAVlibInitialized = true;
+			isAVlibInitialized = true;	
 
 			if(av_lockmgr_register(lockmgr)) {
  
@@ -101,6 +101,7 @@ public:
         case AV_LOCK_DESTROY:
                 DeleteCriticalSection(*critSec);
                 delete *critSec;
+				*critSec = NULL;
                 break;
         }
         return 0; 

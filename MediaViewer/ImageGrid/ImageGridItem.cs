@@ -16,9 +16,27 @@ namespace MediaViewer.ImageGrid
 {
     public class ImageGridItem : ObservableObject
     {
+       
 
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public delegate void CompletedCallback(ImageGridItem item);
+        public enum State
+        {
+            EMPTY,
+            LOADING,
+            LOADED,
+            ERROR
+        }
+
+        State state;
+
+        public State ItemState
+        {
+            get { return state; }
+            set { state = value;
+            NotifyPropertyChanged();
+            }
+        }
 
         public ImageGridItem(String location)
         {
@@ -26,7 +44,7 @@ namespace MediaViewer.ImageGrid
             Location = location;
             IsSelected = false;
             Media = null;
-            IsOpening = false;
+            ItemState = State.EMPTY;
 
         }
 
@@ -82,77 +100,14 @@ namespace MediaViewer.ImageGrid
             }
         }
 
-        bool isOpening;
-
-        public bool IsOpening
-        {
-            get { return isOpening; }
-            set
-            {
-                isOpening = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public bool IsLoaded
-        {
-            get
-            {
-                return (Media == null ? false : true);
-            }
-        }
-
-
+    
         public async Task loadMediaFileAsync(CancellationToken token)
         {
-            /*
-                        if (openMediaAsyncTask != null && !openMediaAsyncTask.IsCompleted)
-                        {
-                            openMediaAsyncTask.Wait();
-                        }
-
-                        IsOpening = true;
-                        openMediaAsyncTask = MediaFileFactory.openAsync(Location, MediaFile.MetaDataMode.LOAD_FROM_DISK, token);
- 
-                        openMediaAsyncTask.ContinueWith(completedTask =>
-                        {
-                            // assign the results on the UI thread
-                            Dispatcher dispatcher = Application.Current.Dispatcher;
-
-                            MediaFile media = completedTask.Result;
-                            if (media != null)
-                            {
-                                media.close();
-                            }
-
-                            // run the completed callback on the worker thread
-                            if (completedCallback != null)
-                            {
-                                completedCallback(this);
-                            }
-                
-                            dispatcher.BeginInvoke(new Action(() =>
-                            {
-                  
-                                IsOpening = false;
-
-                                if (completedTask.IsCanceled)
-                                {
-                                    Media = null;
-                                }
-                                else
-                                {
-                                    Media = completedTask.Result;
-                                }
-
-                            }));               
-                
-                        });
-             */
-
-            IsOpening = true;
+        
+            ItemState = State.LOADING;
 
             MediaFile media = null;
+            State result = State.LOADED;
 
             try
             {
@@ -160,10 +115,19 @@ namespace MediaViewer.ImageGrid
 
                 media.close();
 
+                if (media.OpenError != null)
+                {
+                    result = State.ERROR;
+                }
             }
-            catch (Exception)
+            catch (TaskCanceledException)
             {
-
+                
+            }
+            catch (Exception e)
+            {
+                log.Info("Error loading image grid item:" + Location, e);
+                
             }
 
             // assign the results on the UI thread   
@@ -171,7 +135,7 @@ namespace MediaViewer.ImageGrid
 
             DispatcherOperation task = dispatcher.BeginInvoke(new Action(() =>
             {
-                IsOpening = false;
+                ItemState = result;
                 Media = media;
             }));
 
