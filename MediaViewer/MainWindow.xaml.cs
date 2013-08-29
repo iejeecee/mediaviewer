@@ -21,6 +21,7 @@ using System.ComponentModel;
 using MediaViewer.About;
 using MediaViewer.DirectoryBrowser;
 using MediaViewer.VideoPanel;
+using MediaViewer.MediaFileBrowser;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -38,6 +39,7 @@ namespace MediaViewer
 
         private ImageViewModel imageViewModel;
         private MainWindowViewModel mainWindowViewModel;
+        private MediaFileBrowserViewModel mediaFileBrowserViewModel;
 
         private VideoViewModel videoViewModel;
 
@@ -59,6 +61,7 @@ namespace MediaViewer
 
             initializeImageView();
             initializeVideoView();
+            initializeMediaFileBrowser();
 
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
@@ -68,6 +71,19 @@ namespace MediaViewer
             currentBrowsingDirectory = "";
        
             GlobalMessenger.Instance.Register<PathModel>("PathModel_IsSelected", new Action<PathModel>(browsingDirectory_IsSelected));
+
+            mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
+
+            
+        }
+
+        void mediaFileBrowser_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (App.Args.Length != 0)
+            {               
+                loadAndDisplayMedia(App.Args[0]);
+                mediaFileBrowserViewModel.BrowsePath = App.Args[0];
+            } 
         }
 
         void browsingDirectory_IsSelected(PathModel node)
@@ -111,6 +127,14 @@ namespace MediaViewer
             videoView.DataContext = videoViewModel;
         }
 
+        void initializeMediaFileBrowser()
+        {
+            mediaFileBrowserViewModel = new MediaFileBrowserViewModel();
+            mediaFileBrowser.DataContext = mediaFileBrowserViewModel;
+
+            mediaFileBrowserToolBar.DataContext = mediaFileBrowserViewModel;
+        }
+
         void mainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             if (e.PropertyName.Equals("CurrentImageLocation"))
@@ -140,6 +164,20 @@ namespace MediaViewer
             {
                 mainWindow.Title = info + " - MediaViewer";
             }
+        }
+
+        private void loadAndDisplayMedia(string media)
+        {
+            if (Utils.MediaFormatConvert.isImageFile(media))
+            {
+                loadAndDisplayImage(media);
+
+            }
+            else if (Utils.MediaFormatConvert.isVideoFile(media))
+            {
+                loadAndDisplayVideo(media);
+            }
+
         }
 
         private void loadAndDisplayImage(string location)
@@ -293,7 +331,9 @@ namespace MediaViewer
          
             videoToolbarCheckBox.IsChecked = false;
             imageToolbarCheckBox.IsChecked = false;
+
             imageToolBar.Visibility = Visibility.Hidden;
+            mediaFileBrowserToolBar.Visibility = Visibility.Visible;
          
             setTitle(currentBrowsingDirectory);
         }
@@ -307,7 +347,9 @@ namespace MediaViewer
 
             videoToolbarCheckBox.IsChecked = false;
             mediaFileBrowserToolbarCheckBox.IsChecked = false;
+
             imageToolBar.Visibility = Visibility.Visible;
+            mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
 
             setTitle(location);
         }
@@ -321,7 +363,9 @@ namespace MediaViewer
 
             imageToolbarCheckBox.IsChecked = false;
             mediaFileBrowserToolbarCheckBox.IsChecked = false;
-            imageToolBar.Visibility = Visibility.Visible;
+
+            imageToolBar.Visibility = Visibility.Hidden;
+            mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
 
             setTitle(location);
         }

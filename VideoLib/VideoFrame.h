@@ -16,6 +16,11 @@ namespace VideoLib {
 
 		bool hasAllocatedOwnBuffers;
 		
+		static int D3D10CalcSubresource(int MipSlice, int ArraySlice, int MipLevels) 
+		{
+			return(MipSlice + (ArraySlice * MipLevels));
+		}
+		
 	public:
 
 		property int SizeBytes {
@@ -114,11 +119,46 @@ namespace VideoLib {
 				pict += stream->Pitch / 2;
 				U += Width / 2;
 			}
-
 			
 			frame->UnlockRectangle();
 		}
 
+	
+
+		void copyFrameDataTexture(SharpDX::Direct3D10::Texture2D ^texture) {
+
+			Debug::Assert(texture != nullptr && texture->Description.Width == Width &&
+				texture->Description.Height == Height);
+			
+			SharpDX::DataRectangle data = texture->Map(0,SharpDX::Direct3D10::MapMode::Write,SharpDX::Direct3D10::MapFlags::None);
+
+			Byte *pict = (BYTE*)data.DataPointer.ToPointer();
+
+			Byte *Y = AVLibFrameData->data[0];
+			Byte *U = AVLibFrameData->data[1];
+			Byte *V = AVLibFrameData->data[2];
+
+			for (int y = 0 ; y < Height ; y++)
+			{
+				memcpy(pict, Y, Width);
+				pict += data.Pitch;
+				Y += Width;
+			}
+			for (int y = 0 ; y < Height / 2 ; y++)
+			{
+				memcpy(pict, V, Width / 2);
+				pict += data.Pitch / 2;
+				V += Width / 2;
+			}
+			for (int y = 0 ; y < Height / 2; y++)
+			{
+				memcpy(pict, U, Width / 2);
+				pict += data.Pitch / 2;
+				U += Width / 2;
+			}
+
+			texture->Unmap(D3D10CalcSubresource(0,0,1));
+		}
 		
 	};
 }

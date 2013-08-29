@@ -90,7 +90,7 @@ namespace MediaViewer.DirectoryBrowser
             {
                 return;
             }
-
+          
             string seperator = "\\";
 
             string[] splitDirs = path.Split(seperator.ToCharArray());

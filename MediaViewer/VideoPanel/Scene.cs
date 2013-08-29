@@ -1,4 +1,6 @@
-﻿// Copyright (c) 2010-2012 SharpDX - Alexandre Mutel
+﻿//http://www.codeproject.com/Articles/207642/Video-Shadering-with-Direct3D
+//https://github.com/RobyDX/SharpDX_Demo/tree/master/SharpDXTutorial
+// Copyright (c) 2010-2012 SharpDX - Alexandre Mutel
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,15 +53,68 @@ namespace MediaViewer.VideoPanel
     using SharpDX.DXGI;
     using Buffer = SharpDX.Direct3D10.Buffer;
     using Device = SharpDX.Direct3D10.Device;
+    using System.Windows.Media.Imaging;
+    using System.Runtime.InteropServices;
 
     public class Scene : IScene
     {
         private ISceneHost Host;
+        int nrVertices;
+        int nrIndices;
         private InputLayout VertexLayout;
         private DataStream VertexStream;
         private Buffer Vertices;
+
+        private DataStream IndexStream;
+        private Buffer Indices;
+
         private Effect SimpleEffect;
         private Color4 OverlayColor = new Color4(1.0f);
+        private Texture2D texture;
+        
+        GCHandle pinnedArray;
+        ShaderResourceView textureView;
+
+        Texture2D createTextureFromFile(string filename)
+        {
+            BitmapImage loadedImage = new BitmapImage();
+
+            loadedImage.BeginInit();
+            loadedImage.CacheOption = BitmapCacheOption.OnLoad;
+            loadedImage.UriSource = new Uri(filename);
+            loadedImage.EndInit();
+
+            loadedImage.Freeze();
+
+            int stride = loadedImage.PixelWidth * (loadedImage.Format.BitsPerPixel / 8);
+
+            byte[] pixels = new byte[loadedImage.PixelHeight * stride];
+
+            loadedImage.CopyPixels(pixels, stride, 0);
+
+            pinnedArray = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+            IntPtr pixelPtr = pinnedArray.AddrOfPinnedObject();
+
+            DataRectangle data = new DataRectangle(pixelPtr, stride);           
+
+            var texDesc = new Texture2DDescription
+            {
+                ArraySize = 1,
+                BindFlags = BindFlags.ShaderResource,
+                CpuAccessFlags = CpuAccessFlags.None,
+                Format = Format.B8G8R8A8_UNorm,
+                Height = loadedImage.PixelHeight,
+                MipLevels = 1,
+                OptionFlags = ResourceOptionFlags.None,
+                SampleDescription = new SampleDescription(1, 0),
+                Usage = ResourceUsage.Default,
+                Width = loadedImage.PixelWidth
+            };
+
+            Texture2D texture = new Texture2D(Host.Device, texDesc, data);
+                               
+            return (texture);            
+        }
 
         void IScene.Attach(ISceneHost host)
         {
@@ -69,23 +124,52 @@ namespace MediaViewer.VideoPanel
             if (device == null)
                 throw new Exception("Scene host device is null");
 
-            ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile("Simple.fx", "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);
-            this.SimpleEffect = new Effect(device, shaderBytes);
+            try
+            {
 
-            EffectTechnique technique = this.SimpleEffect.GetTechniqueByIndex(0); ;
+                Uri executablePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+                String shaderPath = System.IO.Path.GetDirectoryName(executablePath.LocalPath) + "\\Shaders\\";
+
+                ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath + "Simple.fx", "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);
+                this.SimpleEffect = new Effect(device, shaderBytes);
+
+            }
+            catch (Exception e)
+            {              
+                System.Diagnostics.Debug.Print(e.Message);
+                throw new Exception("Cannot compile shader code");
+            }
+
+            EffectTechnique technique = this.SimpleEffect.GetTechniqueByIndex(0); 
             EffectPass pass = technique.GetPassByIndex(0);
 
             this.VertexLayout = new InputLayout(device, pass.Description.Signature, new[] {
-                new InputElement("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),
-                new InputElement("COLOR", 0, Format.R32G32B32A32_Float, 16, 0) 
+                new InputElement("POSITION", 0, Format.R32G32B32A32_Float, 0, 0),  
+                new InputElement("TEXCOORD", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0)
+                //new InputElement("COLOR", 0, Format.R32G32B32A32_Float, InputElement.AppendAligned, 0)  
+               
             });
 
-            this.VertexStream = new DataStream(3 * 32, true, true);
-            this.VertexStream.WriteRange(new[] {
-                new Vector4(0.0f, 0.5f, 0.5f, 1.0f), new Vector4(1.0f, 0.0f, 0.0f, 1.0f),
-                new Vector4(0.5f, -0.5f, 0.5f, 1.0f), new Vector4(0.0f, 1.0f, 0.0f, 1.0f),
-                new Vector4(-0.5f, -0.5f, 0.5f, 1.0f), new Vector4(0.0f, 0.0f, 1.0f, 1.0f)
-            });
+            int bytesPerVertexInfo = 4 * 8;          
+            nrVertices = 4;
+
+            this.VertexStream = new DataStream(bytesPerVertexInfo * nrVertices, true, true);
+            this.VertexStream.WriteRange(new[] 
+                {
+                    new Vector4(-1.0f, 1.0f, 0.5f, 1.0f),
+                    new Vector4(0.0f, 0.0f, 0.0f, 0.0f),
+
+                    new Vector4(1.0f, -1.0f, 0.5f, 1.0f),
+                    new Vector4(1.0f, 1.0f, 0.0f, 0.0f),
+
+                    new Vector4(-1.0f, -1.0f, 0.5f, 1.0f),
+                    new Vector4(0.0f, 1.0f, 0.0f, 0.0f),
+
+                    new Vector4(1.0f, 1.0f, 0.5f, 1.0f),
+                    new Vector4(1.0f, 0.0f, 0.0f, 0.0f)
+                }
+            );
+            
             this.VertexStream.Position = 0;
 
             this.Vertices = new Buffer(device, this.VertexStream, new BufferDescription()
@@ -93,10 +177,56 @@ namespace MediaViewer.VideoPanel
                     BindFlags = BindFlags.VertexBuffer,
                     CpuAccessFlags = CpuAccessFlags.None,
                     OptionFlags = ResourceOptionFlags.None,
-                    SizeInBytes = 3 * 32,
+                    SizeInBytes = bytesPerVertexInfo * nrVertices,
                     Usage = ResourceUsage.Default
                 }
             );
+
+            nrIndices = 4;
+            int indicesSizeBytes = nrIndices * sizeof(Int32);
+
+            IndexStream = new DataStream(indicesSizeBytes, true, true);
+            IndexStream.WriteRange<int>(new[] 
+                {
+                    3,1,0,2
+                }
+            );
+
+            this.IndexStream.Position = 0;
+
+            this.Indices = new Buffer(device, this.IndexStream, new BufferDescription()
+                {
+                    BindFlags = BindFlags.IndexBuffer,
+                    CpuAccessFlags = CpuAccessFlags.None,
+                    OptionFlags = ResourceOptionFlags.None,
+                    SizeInBytes = indicesSizeBytes,
+                    Usage = ResourceUsage.Default
+                }
+            );
+
+           texture = createTextureFromFile("d:\\dani.jpg");
+            
+            //texture.Description.
+
+           ShaderResourceViewDescription desc = new ShaderResourceViewDescription();
+           desc.Format = texture.Description.Format;
+           desc.Dimension = SharpDX.Direct3D.ShaderResourceViewDimension.Texture2D;
+           desc.Texture2D.MipLevels = texture.Description.MipLevels;
+           desc.Texture2D.MostDetailedMip = texture.Description.MipLevels - 1;
+     
+           textureView = new ShaderResourceView(device, texture, desc);
+
+          // mvpMatrix = Matrix.PerspectiveFovLH(3.14F / 3.0F, ratio, 1, 1000);
+
+          
+
+           //Buffer11 buffer = device.PixelShader.SetConstantBuffer
+
+            // texture = new Texture2D();
+
+           // DataRectangle data = new DataRectangle(
+    
+            //hr = d3dDevice->CreateTexture2D(&desc, &initData, &tex);
 
             device.Flush();
         }
@@ -107,6 +237,13 @@ namespace MediaViewer.VideoPanel
             Disposer.RemoveAndDispose(ref this.VertexLayout);
             Disposer.RemoveAndDispose(ref this.SimpleEffect);
             Disposer.RemoveAndDispose(ref this.VertexStream);
+
+            Disposer.RemoveAndDispose(ref this.Indices);
+            Disposer.RemoveAndDispose(ref this.IndexStream);
+
+            Disposer.RemoveAndDispose(ref this.texture);
+            Disposer.RemoveAndDispose(ref this.textureView);
+            pinnedArray.Free();
         }
 
         void IScene.Update(TimeSpan sceneTime)
@@ -119,23 +256,28 @@ namespace MediaViewer.VideoPanel
         {
             Device device = this.Host.Device;
             if (device == null)
-                return;
+                return;          
 
             device.InputAssembler.InputLayout = this.VertexLayout;
-            device.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleList;
+            device.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleStrip;
             device.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this.Vertices, 32, 0));
-
+            device.InputAssembler.SetIndexBuffer(Indices, Format.R32_UInt, 0);
+                       
             EffectTechnique technique = this.SimpleEffect.GetTechniqueByIndex(0);
             EffectPass pass = technique.GetPassByIndex(0);
-
+          
             EffectVectorVariable overlayColor = this.SimpleEffect.GetVariableBySemantic("OverlayColor").AsVector();
-
             overlayColor.Set(this.OverlayColor);
 
+          
+            
             for (int i = 0; i < technique.Description.PassCount; ++i)
             {
                 pass.Apply();
-                device.Draw(3, 0);
+
+                device.PixelShader.SetShaderResource(0, textureView);  
+
+                device.DrawIndexed(nrIndices, 0, 0);
             }
         }
     }

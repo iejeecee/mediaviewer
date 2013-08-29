@@ -66,7 +66,7 @@ namespace MediaViewer.ImageGrid
             for (int i = 0; i < nrItems; i++)
             {
                 // don't reload already loaded items
-                if (items[start + i].ItemState == ImageGridItem.State.LOADED) continue;
+                if (items[start + i].ItemState == ImageGridItemState.LOADED) continue;
 
                 lock (nrLoadingItemsLock)
                 {
@@ -87,6 +87,37 @@ namespace MediaViewer.ImageGrid
             }
             
 
+        }
+
+        public void selectAll()
+        {
+            foreach (ImageGridItem item in Items)
+            {
+                item.IsSelected = true;
+            }
+        }
+
+        public void deselectAll()
+        {
+            foreach (ImageGridItem item in Items)
+            {
+                item.IsSelected = false;
+            }
+        }
+
+        public List<ImageGridItem> getSelectedItems()
+        {
+            List<ImageGridItem> selected = new List<ImageGridItem>();
+
+            foreach (ImageGridItem item in Items)
+            {
+                if (item.IsSelected)
+                {
+                    selected.Add(item);
+                }
+            }
+
+            return (selected);
         }
       
     }

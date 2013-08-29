@@ -11,27 +11,27 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.ImageGrid
 {
-    class PartialImageGridViewModel : ImageGridViewModel
+    class PagedImageGridViewModel : ImageGridViewModel
     {
 
         int startItem;
-        int maxItems;
+        int maxItemsPerPage;
 
         public int MaxItems
         {
-            get { return maxItems; }
-            set { maxItems = value; }
+            get { return maxItemsPerPage; }
+            set { maxItemsPerPage = value; }
         }
 
-        public PartialImageGridViewModel()
+        public PagedImageGridViewModel()
         {
        
             startItem = 0;
-            maxItems = 25;
+            maxItemsPerPage = 25;
 
             media = new ObservableCollection<ImageGridItem>();
 
-            for (int i = 0; i < maxItems; i++)
+            for (int i = 0; i < maxItemsPerPage; i++)
             {
                 media.Add(null);
 
@@ -44,7 +44,7 @@ namespace MediaViewer.ImageGrid
                 {
                     int pageNr = (int)param;
 
-                    int newStartItem = maxItems * (pageNr - 1);
+                    int newStartItem = maxItemsPerPage * (pageNr - 1);
 
                     if (newStartItem != startItem)
                     {
@@ -74,7 +74,7 @@ namespace MediaViewer.ImageGrid
         void imageGridViewModel_CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e) {
              
             int startIndex = startItem;
-            int endIndex = startIndex + maxItems;
+            int endIndex = startIndex + maxItemsPerPage;
 
             switch (e.Action)
             {
@@ -93,7 +93,12 @@ namespace MediaViewer.ImageGrid
                     }
                 case NotifyCollectionChangedAction.Remove:
                     {
-                        
+                        if (startItem >= Items.Count)
+                        {
+                            startItem = Math.Max(Items.Count - 1, 0);
+                        }
+
+                        loadItemsAsync();
                         break;
                     }
             }
@@ -102,9 +107,9 @@ namespace MediaViewer.ImageGrid
         void loadItemsAsync()
         {
 
-            int nrItems = startItem + maxItems > Items.Count ? Items.Count - startItem : maxItems;
+            int nrItems = startItem + maxItemsPerPage > Items.Count ? Items.Count - startItem : maxItemsPerPage;
 
-            for (int i = 0; i < maxItems; i++)
+            for (int i = 0; i < maxItemsPerPage; i++)
             {
                 if (i < nrItems)
                 {

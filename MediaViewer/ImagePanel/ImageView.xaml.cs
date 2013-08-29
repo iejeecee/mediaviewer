@@ -37,7 +37,8 @@ namespace MediaViewer.ImagePanel
             InitializeComponent();
 
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
-                     
+
+           
         }
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -48,7 +49,7 @@ namespace MediaViewer.ImagePanel
          
             // Due to the device independent nature of WPF, images are 
             // scaled according to the dpi value stored in the image file.
-            // But since nobody ever bothers to set this correctly we
+            // But since nobody ever bothers to set this correctly 
             // undo the scaling and display the image at it's pixel by pixel size
             imageViewModelObserver = new PropertyObserver<ImageViewModel>(imageViewModel);
             imageViewModelObserver.RegisterHandler(m => m.Image,
@@ -63,7 +64,7 @@ namespace MediaViewer.ImagePanel
                 });
 
             // everytime the transform matrix is updated in the imageviewmodel
-            // make sure we unscale the dpi as well
+            // make sure to unscale the dpi as well
             imageViewModelObserver.RegisterHandler(m => m.Transform,
                m =>
                {
@@ -117,16 +118,19 @@ namespace MediaViewer.ImagePanel
             mouseStartPosition = e.GetPosition(scrollViewer);
             scrollbarStartPosition.X = scrollViewer.HorizontalOffset;
             scrollbarStartPosition.Y = scrollViewer.VerticalOffset;
+            Mouse.OverrideCursor = Cursors.Hand;
         }
 
         private void gridContainer_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             isLeftMouseButtonDown = false;
+            Mouse.OverrideCursor = null;
         }
 
         private void gridContainer_MouseLeave(object sender, MouseEventArgs e)
         {
             isLeftMouseButtonDown = false;
+            Mouse.OverrideCursor = null;
         }
 
       

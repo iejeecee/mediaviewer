@@ -25,13 +25,9 @@ namespace MediaViewer.VideoPanel
 
         public VideoView()
         {
-            InitializeComponent();        
+            InitializeComponent();
 
-            this.Loaded += new RoutedEventHandler((s, e) =>
-            {
-                VideoViewModel videoViewModel = (VideoViewModel)DataContext;
-                videoViewModel.VideoPlayer = videoPlayer;
-            });
+            Canvas1.Scene = new Scene();
 
             timeLineSlider.AddHandler(Slider.MouseLeftButtonDownEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonDownEvent),
                 true);

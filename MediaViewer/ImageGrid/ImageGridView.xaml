@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:MediaPreview="clr-namespace:MediaViewer.MediaPreview" x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView" 
              xmlns:db="clr-namespace:MediaViewer.DirectoryBrowser"
+             xmlns:local="clr-namespace:MediaViewer.ImageGrid"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -13,34 +14,35 @@
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
-    </UserControl.Resources>   
+    </UserControl.Resources>
     <ItemsControl x:Name="itemsControl" ItemsSource="{Binding Media}">
         <ItemsControl.ItemsPanel>
-            <ItemsPanelTemplate>               
+            <ItemsPanelTemplate>
                 <UniformGrid x:Name="mainGrid" Columns="5" Rows="5" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <Border BorderBrush="{StaticResource flat3DBorderBrush}" Margin="2" BorderThickness="1">
+                <ToggleButton IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="2" 
+                              IsEnabled="{Binding Path=ItemState, Converter={StaticResource negatedEnumToBooleanConverter}, ConverterParameter={x:Static local:ImageGridItemState.LOADING}}">
+                    <ToggleButton.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                    <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridSelectedColorBrush}" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsSelected}" Value="false">
+                                    <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridBackgroundColorBrush}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="{Binding Media.DefaultFormatCaption}" 
-                          MouseLeftButtonDown="imageGridView_MouseLeftButtonDown" Tag="{Binding}">
+                          Tag="{Binding}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*" />
                             <RowDefinition Height="25"/>
-                        </Grid.RowDefinitions>
-                        <Grid.Style>
-                            <Style>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding IsSelected}" Value="true">
-                                        <Setter Property="Grid.Background" Value="{StaticResource imageGridSelectedColorBrush}" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsSelected}" Value="false">
-                                        <Setter Property="Grid.Background" Value="{StaticResource imageGridBackgroundColorBrush}" />
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Grid.Style>
+                        </Grid.RowDefinitions>                      
                         <Image HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0">
                             <Image.Style>
                                 <Style>
@@ -68,8 +70,8 @@
                             </ContextMenu>
                         </Grid.ContextMenu>
                     </Grid>
-                </Border>
+                </ToggleButton>
             </DataTemplate>
-        </ItemsControl.ItemTemplate>       
+        </ItemsControl.ItemTemplate>
     </ItemsControl>
 </UserControl>

@@ -13,8 +13,24 @@ namespace MediaViewer.MediaFileModel.Watcher
     {
 
         private FileSystemWatcher watcher;
+
         private List<string> mediaFiles;
-        private string currentMediaFile;
+   
+        public List<string> MediaFiles
+        {
+
+            get
+            {
+                return (mediaFiles);
+            }
+
+            private set
+            {
+
+                this.mediaFiles = value;
+            }
+        }
+
 
         private void findMediaFiles(string path)
         {
@@ -40,15 +56,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             if (MediaFormatConvert.isMediaFile(e.FullPath))
             {
-
-                if (currentMediaFile.Equals(e.FullPath))
-                {
-
-                    FileSystemEventArgs args = newFileSystemEventArgs(System.IO.WatcherChangeTypes.Changed, currentMediaFile);
-
-                    CurrentMediaChanged(this, args);
-                }
-
+            
                 MediaChanged(this, e);
             }
 
@@ -80,17 +88,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                     mediaFiles.RemoveAt(removeIndex);
                 }
-
-                if (currentMediaFile.Equals(e.FullPath))
-                {
-
-                    currentMediaFile = "";
-
-                    FileSystemEventArgs args = newFileSystemEventArgs(System.IO.WatcherChangeTypes.Deleted, e.FullPath);
-
-                    CurrentMediaChanged(this, args);
-                }
-
+               
                 MediaDeleted(this, e);
             }
         }
@@ -110,15 +108,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 mediaFiles.Add(e.FullPath);
-
-                if (currentMediaFile.Equals(e.OldFullPath))
-                {
-
-                    FileSystemEventArgs args = newFileSystemEventArgs(System.IO.WatcherChangeTypes.Renamed, e.FullPath);
-
-                    CurrentMediaChanged(this, args);
-                }
-
+            
                 MediaRenamed(this, e);
             }
 
@@ -158,8 +148,6 @@ namespace MediaViewer.MediaFileModel.Watcher
         public event System.IO.FileSystemEventHandler MediaDeleted;
         public event System.IO.RenamedEventHandler MediaRenamed;
 
-        public event EventHandler<FileSystemEventArgs> CurrentMediaChanged;
-
         public string Path
         {
 
@@ -181,41 +169,12 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         }
 
-        public string CurrentMediaFile
-        {
+       
 
-            set
-            {
-
-                this.currentMediaFile = value;
-            }
-
-            private get
-            {
-
-                return (currentMediaFile);
-            }
-
-        }
-
-        public List<string> MediaFiles
-        {
-
-            get
-            {
-
-                return (mediaFiles);
-            }
-
-            private set
-            {
-
-                this.mediaFiles = value;
-            }
-        }
+        static MediaFileWatcher instance = null;
 
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        public MediaFileWatcher()
+        protected MediaFileWatcher()
         {
 
             watcher = new FileSystemWatcher();
@@ -235,42 +194,87 @@ namespace MediaViewer.MediaFileModel.Watcher
             watcher.Deleted += new FileSystemEventHandler(FileDeleted);
             watcher.Renamed += new System.IO.RenamedEventHandler(FileRenamed);
 
-            currentMediaFile = "";
         }
 
-        public void setNextMediaFile()
-        {
+        public static MediaFileWatcher Instance {
 
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new MediaFileWatcher();
+                }
+
+                return (instance);
+            }
+        }
+
+        private string getNewMediaFile(string currentMediaFile, int step)
+        {
             int index = getIndexOf(currentMediaFile);
 
-            if (index == -1 || mediaFiles.Count == 1) return;
+            if (index == -1)
+            {
+                if (mediaFiles.Count == 0)
+                {
+                    return ("");
+                }
 
-            index = (index + 1) % mediaFiles.Count;
+                index = 0;
+            }
 
-            currentMediaFile = mediaFiles[index];
+            index = (index + step) < 0 ? mediaFiles.Count + step : (index + step) % mediaFiles.Count;
 
-            FileSystemEventArgs e = newFileSystemEventArgs(System.IO.WatcherChangeTypes.Changed, currentMediaFile);
-
-            CurrentMediaChanged(this, e);
-
+            return(mediaFiles[index]);
         }
 
-        public void setPrevMediaFile()
+        public enum MediaType
         {
-
-            int index = getIndexOf(currentMediaFile);
-
-            if (index == -1 || mediaFiles.Count == 1) return;
-
-            index = (index - 1) < 0 ? mediaFiles.Count - 1 : index - 1;
-
-            currentMediaFile = mediaFiles[index];
-
-            FileSystemEventArgs e = newFileSystemEventArgs(System.IO.WatcherChangeTypes.Changed, currentMediaFile);
-
-            CurrentMediaChanged(this, e);
-
+            IMAGE,
+            VIDEO
         }
+
+        public enum Direction
+        {
+            NEXT = 1,
+            PREVIOUS = -1
+        }
+
+        public string getNewMediaFile(String currentMedia, MediaType newType, Direction direction)
+        {
+           
+            string newMedia = currentMedia;
+
+            int i = 0;
+
+            do
+            {
+                newMedia = getNewMediaFile(newMedia, (int)direction);
+
+                if(newType == MediaType.IMAGE && MediaFormatConvert.isImageFile(newMedia)) {
+
+                    break;
+
+                }
+                else if (newType == MediaType.VIDEO && MediaFormatConvert.isVideoFile(newMedia))
+                {
+                    break;
+                }
+                else if (i >= mediaFiles.Count)
+                {
+                    newMedia = "";
+                    break;
+                }
+
+                i++;
+
+            } while (!newMedia.Equals(currentMedia));
+           
+
+            return (newMedia);
+        }
+
+       
 
     }
 }

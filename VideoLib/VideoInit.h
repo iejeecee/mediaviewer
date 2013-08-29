@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include <winbase.h>
 #include <msclr\marshal_cppstd.h>
+#include "ThreadSafeList.h"
 #define __STDC_CONSTANT_MACROS
 
 extern "C" {
@@ -16,6 +17,7 @@ class VideoInit {
 protected:
 
 	static bool isAVlibInitialized;
+	static ThreadSafeList<CRITICAL_SECTION **> *criticalSections;
 
 
 public:
@@ -84,30 +86,64 @@ public:
 		return 1;
 	}
 */
+
+
 	static int lockmgr(void **mutex, enum AVLockOp op)
 	{
+		// Avoid using unintialized criticalSections by keeping track of which
+		// criticalSections actually exist
+
 		CRITICAL_SECTION **critSec = (CRITICAL_SECTION **)mutex;
-        switch (op) {
-        case AV_LOCK_CREATE:
-                *critSec = new CRITICAL_SECTION();
-                InitializeCriticalSection(*critSec);
-                break;
-        case AV_LOCK_OBTAIN:
-                EnterCriticalSection(*critSec);
-                break;
-        case AV_LOCK_RELEASE:
-                LeaveCriticalSection(*critSec);
-                break;
-        case AV_LOCK_DESTROY:
-                DeleteCriticalSection(*critSec);
-                delete *critSec;
-				*critSec = NULL;
-                break;
-        }
-        return 0; 
+		switch (op) {
+		case AV_LOCK_CREATE:
+			{
+				*critSec = new CRITICAL_SECTION();			
+				InitializeCriticalSection(*critSec);		
+				criticalSections->add(critSec);
+				break;
+			}
+		case AV_LOCK_OBTAIN:	
+			{
+
+				if(criticalSections->contains(critSec) == false) {
+
+					*critSec = new CRITICAL_SECTION();			
+					InitializeCriticalSection(*critSec);		
+					criticalSections->add(critSec);
+
+				}
+				EnterCriticalSection(*critSec);
+				break;
+			}
+		case AV_LOCK_RELEASE:
+			{
+				if(criticalSections->contains(critSec) == false) {
+					return 0;
+				}
+				LeaveCriticalSection(*critSec);
+				break;
+			}
+		case AV_LOCK_DESTROY:
+			{
+				if(criticalSections->contains(critSec) == false) {
+					return 0;
+				}
+				DeleteCriticalSection(*critSec);
+				criticalSections->remove(critSec);
+
+				delete *critSec;
+				*critSec = NULL;				
+
+				break;
+			}
+		}
+
+		return 0; 
 	}
 
 
 };
 
 bool VideoInit::isAVlibInitialized = false;
+ThreadSafeList<CRITICAL_SECTION **> *VideoInit::criticalSections = new ThreadSafeList<CRITICAL_SECTION **>();
+

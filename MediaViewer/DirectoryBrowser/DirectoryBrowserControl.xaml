@@ -8,12 +8,12 @@
              d:DesignHeight="300" d:DesignWidth="300">   
     <Grid>
         <TreeView x:Name="directoryTreeView" ItemsSource="{Binding Drives}" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch">
-            <TreeView.Resources>
+            <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding Path=IsExpanded, Mode=TwoWay}" />
                     <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=TwoWay}" />
                 </Style>
-            </TreeView.Resources>
+            </TreeView.ItemContainerStyle>
             <TreeView.ItemTemplate>
                 <HierarchicalDataTemplate ItemsSource = "{Binding Directories}">
                     <Grid>
@@ -23,10 +23,10 @@
                         </Grid.ColumnDefinitions>
 
                         <Image Grid.Column="0" Margin="2" Source="{Binding ImageUrl}"></Image>
-                        <TextBlock Grid.Column="1" Margin="2"  Text="{Binding Name}"></TextBlock>
+                        <TextBlock Grid.Column="1" Margin="2" Text="{Binding Name}"></TextBlock>
                     </Grid>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
-        </TreeView>
+        </TreeView>      
     </Grid>
 </UserControl>

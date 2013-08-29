@@ -444,9 +444,7 @@ namespace VideoLib {
 
 				int ret = avcodec_decode_audio4(videoDecoder->getAudioCodecContext(), 
 					audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);
-
-				
-		
+						
 				if(ret < 0) {
 
 					Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");

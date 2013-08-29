@@ -38,6 +38,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -60,7 +61,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.D3DCompiler">
+    <Reference Include="SharpDX.D3DCompiler, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D10">
@@ -106,6 +108,9 @@
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="App.cs" />
+    <Compile Include="Converters\BooleanNegatorConverter.cs" />
+    <Compile Include="Converters\EnumToBooleanConverter.cs" />
+    <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
       <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
     </Compile>
@@ -123,7 +128,7 @@
     <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridViewModel.cs" />
     <Compile Include="ImageGrid\ImageGridItem.cs" />
-    <Compile Include="ImageGrid\PartialImageGridViewModel.cs" />
+    <Compile Include="ImageGrid\PagedImageGridViewModel.cs" />
     <Compile Include="Input\InputWindow.xaml.cs">
       <DependentUpon>InputWindow.xaml</DependentUpon>
     </Compile>
@@ -134,9 +139,10 @@
     </Compile>
     <Compile Include="Logging\VisualAppender.cs" />
     <Compile Include="MainWindowViewModel.cs" />
-    <Compile Include="MediaFileBrowser\MediaFileBrowserControl.xaml.cs">
-      <DependentUpon>MediaFileBrowserControl.xaml</DependentUpon>
+    <Compile Include="MediaFileBrowser\MediaFileBrowserView.xaml.cs">
+      <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
     <Compile Include="MediaFileModel\MediaFileFactory.cs" />
     <Compile Include="MediaPreview\InfoIcon.cs" />
     <Compile Include="MediaPreview\MediaPreviewAsyncState.cs" />
@@ -202,6 +208,7 @@
     <Compile Include="VideoPanel\IScene.cs" />
     <Compile Include="VideoPanel\Scene.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
+    <None Include="VideoPanel\VideoPanelViewModelTemp.cs" />
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -222,7 +229,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaFileBrowser\MediaFileBrowserControl.xaml">
+    <Page Include="MediaFileBrowser\MediaFileBrowserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -303,7 +310,9 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MediaDatabase\MediaDatabase.csproj">
@@ -413,16 +422,21 @@
     <Resource Include="Resources\Images\loading1.gif" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons\Button Close.ico" />
-    <Resource Include="Resources\Icons\Button Pause.ico" />
-    <Resource Include="Resources\Icons\Button Play.ico" />
+    <Resource Include="Resources\Icons\ButtonClose.ico" />
+    <Resource Include="Resources\Icons\ButtonPause.ico" />
+    <Resource Include="Resources\Icons\ButtonPlay.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\Mute.ico" />
     <Resource Include="Resources\Icons\Muted.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="VideoPanel\Simple.fx" />
+    <None Include="Shaders\Simple.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\delete.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

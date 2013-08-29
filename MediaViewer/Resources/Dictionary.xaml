@@ -2,7 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
                     xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" 
                     xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
+                    xmlns:Converters="clr-namespace:MediaViewer.Converters"
                     >
+    <Converters:BooleanNegatorConverter x:Key="booleanNegatorConverter"/>
+    <Converters:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
+    <Converters:NegatedEnumToBooleanConverter x:Key="negatedEnumToBooleanConverter"/>
+    
     <ImagePanel:DegreesConverter x:Key="degreesConverter"/>
 
     <ImagePanel:ScaleConverter x:Key="scaleConverter"/>
@@ -18,7 +23,7 @@
     </LinearGradientBrush>
 
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
-    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="DarkRed"/>
+    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>
 </ResourceDictionary>

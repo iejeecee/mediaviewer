@@ -25,10 +25,10 @@
                     <Style>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsPlaying}" Value="false">
-                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Button Play.ico"/>
+                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/ButtonPlay.ico"/>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsPlaying}" Value="true">
-                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Button Pause.ico"/>
+                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/ButtonPause.ico"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -36,7 +36,7 @@
             </Image>            
         </ToggleButton>
         <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="43,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding StopCommand}" ToolTip="Stop">
-            <Image Source="pack://application:,,,/Resources/Icons/Button Close.ico" />
+            <Image Source="pack://application:,,,/Resources/Icons/ButtonClose.ico" />
         </Button>
         <Slider x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,3.667,92,0" Grid.Row="1" VerticalAlignment="Top" Height="22"
                      Maximum="{Binding TotalMilliseconds}" Value="{Binding PositionMilliseconds}" />

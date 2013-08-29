@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvvmFoundation.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,7 +12,7 @@ using System.Windows.Threading;
 
 namespace MediaViewer.DirectoryBrowser
 {
-    public class PathModel 
+    public class PathModel : ObservableObject
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -65,7 +66,7 @@ namespace MediaViewer.DirectoryBrowser
                     Task updating = updateSubDirectoriesAsync(this);
                 }
 
-                
+                NotifyPropertyChanged();
             }
         }
       
@@ -78,10 +79,13 @@ namespace MediaViewer.DirectoryBrowser
             {
                 isSelected = value;
 
+                NotifyPropertyChanged();
+
                 if (isSelected == true)
                 {                  
                     GlobalMessenger.Instance.NotifyColleagues("PathModel_IsSelected", this);
                 }
+
             }
         }
 

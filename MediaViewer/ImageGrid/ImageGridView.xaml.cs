@@ -48,11 +48,6 @@ namespace MediaViewer.ImageGrid
            
         }
 
-        private void imageGridView_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-        {
-            Grid grid = (Grid)sender;
-            ImageGridItem item = (ImageGridItem)grid.Tag;
-            item.toggleSelected();
-        }
+       
     }
 }

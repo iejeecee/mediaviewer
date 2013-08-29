@@ -9,6 +9,7 @@ using MediaViewer.MediaFileModel;
 using MvvmFoundation.Wpf;
 using System.Windows;
 using System.Threading;
+using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer.ImagePanel
 {
@@ -30,6 +31,38 @@ namespace MediaViewer.ImagePanel
             {
                 loadImageAsync((String)fileName);
                 
+            }));
+
+            loadNextImageCommand = new Command(new Action(() =>
+            {
+
+                String currentImage = imageFile == null ? "" : imageFile.Location;
+
+                string nextImage = MediaFileWatcher.Instance.getNewMediaFile(currentImage,
+                    MediaFileWatcher.MediaType.IMAGE, MediaFileWatcher.Direction.NEXT);
+
+                if (!nextImage.Equals(currentImage))
+                {
+
+                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", nextImage);
+                }
+
+            }));
+
+            loadPrevImageCommand = new Command(new Action(() =>
+            {
+
+                String currentImage = imageFile == null ? "" : imageFile.Location;
+
+                string prevImage = MediaFileWatcher.Instance.getNewMediaFile(currentImage,
+                    MediaFileWatcher.MediaType.IMAGE, MediaFileWatcher.Direction.PREVIOUS);
+
+                if (!prevImage.Equals(currentImage))
+                {
+
+                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", prevImage);
+                }
+
             }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
@@ -149,6 +182,20 @@ namespace MediaViewer.ImagePanel
         public Command LoadImageAsyncCommand
         {
             get { return loadImageAsyncCommand; }
+        }
+
+        Command loadNextImageCommand;
+
+        public Command LoadNextImageCommand
+        {
+            get { return loadNextImageCommand; }
+        }
+
+        Command loadPrevImageCommand;
+
+        public Command LoadPrevImageCommand
+        {
+            get { return loadPrevImageCommand; }
         }
 
         void setIdentityTransform()

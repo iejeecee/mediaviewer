@@ -14,27 +14,26 @@ using System.Windows.Threading;
 
 namespace MediaViewer.ImageGrid
 {
+    public enum ImageGridItemState
+    {
+        EMPTY,
+        LOADING,
+        LOADED,
+        ERROR
+    }
+
     public class ImageGridItem : ObservableObject
     {
        
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);      
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        ImageGridItemState state;
 
-        public enum State
-        {
-            EMPTY,
-            LOADING,
-            LOADED,
-            ERROR
-        }
-
-        State state;
-
-        public State ItemState
+        public ImageGridItemState ItemState
         {
             get { return state; }
             set { state = value;
-            NotifyPropertyChanged();
+            NotifyPropertyChanged();           
             }
         }
 
@@ -44,7 +43,7 @@ namespace MediaViewer.ImageGrid
             Location = location;
             IsSelected = false;
             Media = null;
-            ItemState = State.EMPTY;
+            ItemState = ImageGridItemState.EMPTY;
 
         }
 
@@ -104,10 +103,10 @@ namespace MediaViewer.ImageGrid
         public async Task loadMediaFileAsync(CancellationToken token)
         {
         
-            ItemState = State.LOADING;
+            ItemState = ImageGridItemState.LOADING;
 
             MediaFile media = null;
-            State result = State.LOADED;
+            ImageGridItemState result = ImageGridItemState.LOADED;
 
             try
             {
@@ -117,7 +116,7 @@ namespace MediaViewer.ImageGrid
 
                 if (media.OpenError != null)
                 {
-                    result = State.ERROR;
+                    result = ImageGridItemState.ERROR;
                 }
             }
             catch (TaskCanceledException)
