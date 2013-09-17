@@ -23,11 +23,15 @@ namespace MediaViewer.DirectoryBrowser
     /// </summary>
     public partial class DirectoryBrowserControl : UserControl
     {
-        public event EventHandler<PathModel> SelectedPathChanged;
-       
+
+        DirectoryBrowserViewModel directoryBrowserViewModel;
+
         public DirectoryBrowserControl()
         {
             InitializeComponent();
+
+            directoryBrowserViewModel = new DirectoryBrowserViewModel();
+            DataContext = directoryBrowserViewModel;
 
             directoryTreeView.SelectedItemChanged += new RoutedPropertyChangedEventHandler<object>((o, t) =>
             {
@@ -35,12 +39,10 @@ namespace MediaViewer.DirectoryBrowser
                 if (item != null)
                 {
                     item.BringIntoView();
-                }                
+                }
             });
 
-           // setPathAsync("C:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles\\geotag");
-            
-     
+
         }
 
         public static TreeViewItem ContainerFromItem(TreeView treeView, object item)
@@ -134,25 +136,6 @@ namespace MediaViewer.DirectoryBrowser
         }
 
 
-
-        /*
-             
-        private void directoryTreeViewItem_Selected(object sender, RoutedEventArgs e)
-        {
-
-            TreeViewItem item = (TreeViewItem)e.OriginalSource;
-
-            if (item.DataContext != null && SelectedPathChanged != null)
-            {
-               
-               SelectedPathChanged(this, (PathModel)item.DataContext);
-               
-            }
-
-            item.BringIntoView();
-        }
-
-       
-       */
     }
 }
+

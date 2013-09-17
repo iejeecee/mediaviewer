@@ -32,59 +32,31 @@ namespace MediaViewer.MediaFileBrowser
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        PagedImageGridViewModel partialImageGridViewModel;
-        DirectoryBrowserViewModel directoryBrowserViewModel;
-        PagerViewModel pagerViewModel;
-
+        PagedImageGridViewModel pagedImageGridViewModel;       
+     
         public MediaFileBrowserView()
         {
             InitializeComponent();
-       
-            directoryBrowserViewModel = new DirectoryBrowserViewModel();
-            directoryBrowser.DataContext = directoryBrowserViewModel;
+           
+            DataContext = new MediaFileBrowserViewModel();
+            directoryBrowser.DataContext = DataContext;
 
-            // recieve message when a path node is selected          
-            GlobalMessenger.Instance.Register<PathModel>("PathModel_IsSelected", new Action<PathModel>(browsePath_IsSelected));
+            pagedImageGridViewModel = new PagedImageGridViewModel();
+            imageGrid.DataContext = pagedImageGridViewModel;
 
-            partialImageGridViewModel = new PagedImageGridViewModel();
-            imageGrid.DataContext = partialImageGridViewModel;
-
-            pagerViewModel = new PagerViewModel();
-            pager.DataContext = pagerViewModel;
-
-            pagerViewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s, e) =>
-            {
-
-                if (e.PropertyName.Equals("CurrentPage"))
-                {
-                    partialImageGridViewModel.SetPageCommand.DoExecute(pagerViewModel.CurrentPage);
-                }
-            });
+            pager.DataContext = pagedImageGridViewModel;
            
             // this is not the way it "should" be done, but fuck it
             // There is not going to be a directorybrowser without these viewmodels
             Loaded += new RoutedEventHandler((o,e) => {
 
                 MediaFileBrowserViewModel mediaFileBrowserViewModel = (MediaFileBrowserViewModel)DataContext;
-                if (mediaFileBrowserViewModel == null) return;
-                mediaFileBrowserViewModel.PagerViewModel = pagerViewModel;
-                mediaFileBrowserViewModel.PartialImageGridViewModel = partialImageGridViewModel;
-                mediaFileBrowserViewModel.DirectoryBrowserViewModel = directoryBrowserViewModel;
+                if (mediaFileBrowserViewModel == null) return;             
+                mediaFileBrowserViewModel.PartialImageGridViewModel = pagedImageGridViewModel;             
             });
           
         }
-
-        private void browsePath_IsSelected(PathModel path)
-        {
-
-            if (path.GetType() == typeof(DummyPathModel)) return;
-
-            string fullPath = path.getFullPath();
-
-            MediaFileBrowserViewModel mediaFileBrowserViewModel = (MediaFileBrowserViewModel)DataContext;
-
-            mediaFileBrowserViewModel.BrowsePath = fullPath;
-        }
+       
     }
         
 }

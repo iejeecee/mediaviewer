@@ -6,6 +6,7 @@ using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.Utils;
+using System.Collections.ObjectModel;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
@@ -14,9 +15,9 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         private FileSystemWatcher watcher;
 
-        private List<string> mediaFiles;
-   
-        public List<string> MediaFiles
+        private ObservableCollection<string> mediaFiles;
+
+        public ObservableCollection<string> MediaFiles
         {
 
             get
@@ -81,9 +82,9 @@ namespace MediaViewer.MediaFileModel.Watcher
             if (MediaFormatConvert.isMediaFile(e.FullPath))
             {
 
-                int removeIndex = getIndexOf(e.FullPath);
+                int removeIndex = getMediaFileIndex(e.FullPath,MediaType.ANY);
 
-                if (removeIndex != -1)
+                if (removeIndex >= 0)
                 {
 
                     mediaFiles.RemoveAt(removeIndex);
@@ -99,36 +100,20 @@ namespace MediaViewer.MediaFileModel.Watcher
             if (MediaFormatConvert.isMediaFile(e.FullPath))
             {
 
-                int removeIndex = getIndexOf(e.OldFullPath);
+                int index = getMediaFileIndex(e.OldFullPath, MediaType.ANY);
 
-                if (removeIndex != -1)
+                if (index >= 0)
                 {
 
-                    mediaFiles.RemoveAt(removeIndex);
-                }
-
-                mediaFiles.Add(e.FullPath);
+                    mediaFiles[index] = e.FullPath;
+                }              
             
                 MediaRenamed(this, e);
             }
 
         }
 
-        private int getIndexOf(string imageFile)
-        {
-
-            for (int i = 0; i < mediaFiles.Count; i++)
-            {
-
-                if (mediaFiles[i].Equals(imageFile))
-                {
-
-                    return (i);
-                }
-            }
-
-            return (-1);
-        }
+      
 
         private FileSystemEventArgs newFileSystemEventArgs(System.IO.WatcherChangeTypes changeType, string location)
         {
@@ -178,7 +163,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         {
 
             watcher = new FileSystemWatcher();
-            mediaFiles = new List<string>();
+            mediaFiles = new ObservableCollection<string>();
 
             /* Watch for changes in LastAccess and LastWrite times, and 
             the renaming of files or directories. */
@@ -208,28 +193,9 @@ namespace MediaViewer.MediaFileModel.Watcher
                 return (instance);
             }
         }
-
-        private string getNewMediaFile(string currentMediaFile, int step)
-        {
-            int index = getIndexOf(currentMediaFile);
-
-            if (index == -1)
-            {
-                if (mediaFiles.Count == 0)
-                {
-                    return ("");
-                }
-
-                index = 0;
-            }
-
-            index = (index + step) < 0 ? mediaFiles.Count + step : (index + step) % mediaFiles.Count;
-
-            return(mediaFiles[index]);
-        }
-
         public enum MediaType
         {
+            ANY,
             IMAGE,
             VIDEO
         }
@@ -240,41 +206,119 @@ namespace MediaViewer.MediaFileModel.Watcher
             PREVIOUS = -1
         }
 
-        public string getNewMediaFile(String currentMedia, MediaType newType, Direction direction)
+        public int getMediaFileIndex(String mediaFileName, MediaType type)
         {
-           
-            string newMedia = currentMedia;
+            if (String.IsNullOrEmpty(mediaFileName)) return (-1);
 
             int i = 0;
-
-            do
+            int j = 0;
+          
+            foreach (string name in MediaFiles)
             {
-                newMedia = getNewMediaFile(newMedia, (int)direction);
-
-                if(newType == MediaType.IMAGE && MediaFormatConvert.isImageFile(newMedia)) {
-
-                    break;
-
-                }
-                else if (newType == MediaType.VIDEO && MediaFormatConvert.isVideoFile(newMedia))
+                
+                if (type == MediaType.VIDEO && MediaFormatConvert.isVideoFile(name))
                 {
-                    break;
+                    if (mediaFiles[j].Equals(mediaFileName))
+                    {
+                        return (i);
+                    }
+
+                    i++;
+
                 }
-                else if (i >= mediaFiles.Count)
+                else if (type == MediaType.IMAGE && MediaFormatConvert.isImageFile(name))
                 {
-                    newMedia = "";
-                    break;
+                    if (mediaFiles[j].Equals(mediaFileName))
+                    {
+                        return (i);
+                    }
+
+                    i++;
+                }
+                else if(type == MediaType.ANY)
+                {
+                    if (mediaFiles[j].Equals(mediaFileName))
+                    {
+                        return (i);
+                    }
+
+                    i++;
                 }
 
-                i++;
-
-            } while (!newMedia.Equals(currentMedia));
-           
-
-            return (newMedia);
+                j++;
+            }
+          
+            return (-1);
         }
 
-       
+        public string getMediaFileByIndex(MediaType type, int index)
+        {
+
+            int i = 0;
+            int j = 0;
+          
+            foreach (string name in MediaFiles)
+            {
+               
+                if (type == MediaType.VIDEO && MediaFormatConvert.isVideoFile(name))
+                {
+                    if (i == index)
+                    {
+                        return (MediaFiles[j]);
+                    }
+
+                    i++;
+                }
+                else if (type == MediaType.IMAGE && MediaFormatConvert.isImageFile(name))
+                {
+                    if (i == index)
+                    {
+                        return (MediaFiles[j]);
+                    }
+
+                    i++;
+                }
+                else if (type == MediaType.ANY)
+                {
+                    if (i == index)
+                    {
+                        return (MediaFiles[j]);
+                    }
+
+                    i++;
+                }
+
+                j++;
+            }
+           
+            return (null);
+        }
+
+        public int getNrMediaFiles(MediaType type) {
+
+            int count = 0;
+
+            foreach (string name in MediaFiles)
+            {
+                if (type == MediaType.VIDEO && MediaFormatConvert.isVideoFile(name))
+                {
+                    count++;
+
+                }
+                else if (type == MediaType.IMAGE && MediaFormatConvert.isImageFile(name))
+                {
+
+                    count++;
+                }
+                else if (type == MediaType.ANY)
+                {
+                    count++;
+                }
+                
+            }
+
+            return (count);
+        }
 
     }
 }

@@ -10,59 +10,80 @@ using MvvmFoundation.Wpf;
 using System.Windows;
 using System.Threading;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Pager;
 
 namespace MediaViewer.ImagePanel
 {
-    class ImageViewModel : ObservableObject
+    class ImageViewModel : ObservableObject, IPageable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         CancellationTokenSource loadImageCTS;
-      
-        ImageFile imageFile;       
+
+        ImageFile imageFile;
 
         public ImageViewModel()
         {
-          
+
             loadImageCTS = new CancellationTokenSource();
             isLoading = false;
 
             loadImageAsyncCommand = new Command(new Action<object>((fileName) =>
             {
                 loadImageAsync((String)fileName);
-                
-            }));
-
-            loadNextImageCommand = new Command(new Action(() =>
-            {
-
-                String currentImage = imageFile == null ? "" : imageFile.Location;
-
-                string nextImage = MediaFileWatcher.Instance.getNewMediaFile(currentImage,
-                    MediaFileWatcher.MediaType.IMAGE, MediaFileWatcher.Direction.NEXT);
-
-                if (!nextImage.Equals(currentImage))
-                {
-
-                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", nextImage);
-                }
 
             }));
 
-            loadPrevImageCommand = new Command(new Action(() =>
+
+            MediaFileWatcher.Instance.MediaFiles.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s, e) =>
             {
-
-                String currentImage = imageFile == null ? "" : imageFile.Location;
-
-                string prevImage = MediaFileWatcher.Instance.getNewMediaFile(currentImage,
-                    MediaFileWatcher.MediaType.IMAGE, MediaFileWatcher.Direction.PREVIOUS);
-
-                if (!prevImage.Equals(currentImage))
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", prevImage);
-                }
+                    if (imageFile == null)
+                    {
+                        IsPagingEnabled = false;
+                        return;
+                    }
 
+                    int index = MediaFileWatcher.Instance.getMediaFileIndex(imageFile.Location, MediaFileWatcher.MediaType.IMAGE);                                                                             
+
+                    if (index == -1)
+                    {
+                        IsPagingEnabled = false;                     
+                    }
+                    else
+                    {
+                        IsPagingEnabled = true;
+                        NrPages = MediaFileWatcher.Instance.getNrMediaFiles(MediaFileWatcher.MediaType.IMAGE);
+                        CurrentPage = index + 1;                       
+                    }                    
+                     
+                }));
+            });
+
+            nextPageCommand = new Command(new Action(() =>
+            {
+
+                CurrentPage += 1;
+
+            }));
+
+            prevPageCommand = new Command(new Action(() =>
+            {
+
+                CurrentPage -= 1;
+
+            }));
+
+            firstPageCommand = new Command(new Action(() =>
+            {
+                CurrentPage = 1;
+            }));
+
+            lastPageCommand = new Command(new Action(() =>
+            {
+                CurrentPage = NrPages;
             }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
@@ -184,20 +205,6 @@ namespace MediaViewer.ImagePanel
             get { return loadImageAsyncCommand; }
         }
 
-        Command loadNextImageCommand;
-
-        public Command LoadNextImageCommand
-        {
-            get { return loadNextImageCommand; }
-        }
-
-        Command loadPrevImageCommand;
-
-        public Command LoadPrevImageCommand
-        {
-            get { return loadPrevImageCommand; }
-        }
-
         void setIdentityTransform()
         {
             RotationDegrees = 0;
@@ -232,7 +239,7 @@ namespace MediaViewer.ImagePanel
             // cancel previously running load requests          
             loadImageCTS.Cancel();
             loadImageCTS = new CancellationTokenSource();
-            
+
             // async load media
 
             MediaFile media = null;
@@ -261,6 +268,19 @@ namespace MediaViewer.ImagePanel
 
                     imageFile = (ImageFile)media;
 
+                    int index = MediaFileWatcher.Instance.getMediaFileIndex(imageFile.Location, MediaFileWatcher.MediaType.IMAGE);
+
+                    if (index == -1)
+                    {
+                        IsPagingEnabled = false;                     
+                    }
+                    else
+                    {
+                        IsPagingEnabled = true;
+                        NrPages = MediaFileWatcher.Instance.getNrMediaFiles(MediaFileWatcher.MediaType.IMAGE);
+                        CurrentPage = index + 1;
+                    }
+
                     log.Info("Image loaded: " + media.Location);
                 }
 
@@ -285,6 +305,146 @@ namespace MediaViewer.ImagePanel
                 }
             }
 
-        }        
+        }
+
+        bool isPagingEnabled;
+
+        public bool IsPagingEnabled
+        {
+            get { return isPagingEnabled; }
+            set
+            {
+                isPagingEnabled = value;
+                if (value == false)
+                {
+                    NextPageCommand.CanExecute = false;
+                    PrevPageCommand.CanExecute = false;
+                    FirstPageCommand.CanExecute = false;
+                    LastPageCommand.CanExecute = false;
+
+                }
+                NotifyPropertyChanged();
+            }
+        }
+
+
+        int nrPages;
+
+        public int NrPages
+        {
+            get
+            {
+                return nrPages;
+            }
+            set
+            {
+                nrPages = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        int currentPage;
+
+        public int CurrentPage
+        {
+            get
+            {
+                return (currentPage);
+            }
+            set
+            {
+                if (value <= 0 || value > NrPages || IsPagingEnabled == false) return;
+              
+                String newImage = MediaFileWatcher.Instance.getMediaFileByIndex(MediaFileWatcher.MediaType.IMAGE, value - 1);
+
+                if (!String.IsNullOrEmpty(newImage) && imageFile != null && !newImage.Equals(imageFile.Location))
+                {
+                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", newImage);
+                }
+
+                currentPage = value;
+
+                if (CurrentPage + 1 <= NrPages)
+                {
+                    nextPageCommand.CanExecute = true;
+                    lastPageCommand.CanExecute = true;
+                }
+                else
+                {
+                    nextPageCommand.CanExecute = false;
+                    lastPageCommand.CanExecute = false;
+                }
+
+                if (CurrentPage - 1 > 0)
+                {
+                    prevPageCommand.CanExecute = true;
+                    firstPageCommand.CanExecute = true;
+                }
+                else
+                {
+                    prevPageCommand.CanExecute = false;
+                    firstPageCommand.CanExecute = false;
+                }
+
+
+                NotifyPropertyChanged();
+            }
+        }
+
+        Command nextPageCommand;
+
+        public Command NextPageCommand
+        {
+            get
+            {
+                return nextPageCommand;
+            }
+            set
+            {
+                nextPageCommand = value;
+            }
+        }
+
+        Command prevPageCommand;
+
+        public Command PrevPageCommand
+        {
+            get
+            {
+                return prevPageCommand;
+            }
+            set
+            {
+                prevPageCommand = value;
+            }
+        }
+
+        Command firstPageCommand;
+
+        public Command FirstPageCommand
+        {
+            get
+            {
+                return firstPageCommand;
+            }
+            set
+            {
+                firstPageCommand = value;
+            }
+        }
+
+        Command lastPageCommand;
+
+        public Command LastPageCommand
+        {
+            get
+            {
+                return lastPageCommand;
+            }
+            set
+            {
+                lastPageCommand = value;
+            }
+        }
     }
 }

@@ -70,7 +70,7 @@ namespace MediaViewer
 
             currentBrowsingDirectory = "";
        
-            GlobalMessenger.Instance.Register<PathModel>("PathModel_IsSelected", new Action<PathModel>(browsingDirectory_IsSelected));
+            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_PathSelected", new Action<String>(browsingDirectory_IsSelected));
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
@@ -86,13 +86,9 @@ namespace MediaViewer
             } 
         }
 
-        void browsingDirectory_IsSelected(PathModel node)
+        void browsingDirectory_IsSelected(String path)
         {
-            if (node.GetType() == typeof(DummyPathModel)) return;
-
-            currentBrowsingDirectory = node.getFullPath();
-
-            setTitle(currentBrowsingDirectory);
+            setTitle(path);
         }
 
         void initializeImageView()
@@ -129,8 +125,7 @@ namespace MediaViewer
 
         void initializeMediaFileBrowser()
         {
-            mediaFileBrowserViewModel = new MediaFileBrowserViewModel();
-            mediaFileBrowser.DataContext = mediaFileBrowserViewModel;
+            mediaFileBrowserViewModel = (MediaFileBrowserViewModel)mediaFileBrowser.DataContext;
 
             mediaFileBrowserToolBar.DataContext = mediaFileBrowserViewModel;
         }

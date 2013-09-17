@@ -3,6 +3,7 @@ using MediaViewer.ImageGrid;
 using MediaViewer.Input;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.MediaPreview;
+using MediaViewer.MoveRename;
 using MediaViewer.Pager;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
@@ -40,13 +41,6 @@ namespace MediaViewer.MediaFileBrowser
             get { return directoryBrowserViewModel; }
             set { directoryBrowserViewModel = value; }
         }
-        PagerViewModel pagerViewModel;
-
-        public PagerViewModel PagerViewModel
-        {
-            get { return pagerViewModel; }
-            set { pagerViewModel = value; }
-        }
       
         public MediaFileBrowserViewModel() {
 
@@ -56,7 +50,22 @@ namespace MediaViewer.MediaFileBrowser
             mediaFileWatcher.MediaCreated += new FileSystemEventHandler(ImageFileWatcherThread_MediaCreated);
             mediaFileWatcher.MediaRenamed += new RenamedEventHandler(ImageFileWatcherThread_MediaRenamed);
 
-            DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));          
+            DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));        
+  
+            MoveRenameSelectedItemsCommand = new Command(new Action(() => {
+
+                List<ImageGridItem> selected = PartialImageGridViewModel.getSelectedItems();
+                if (selected.Count == 0) return;
+
+                MoveRenameView moveRenameView = new MoveRenameView();
+                MoveRenameViewModel moveRenameViewModel = (MoveRenameViewModel)moveRenameView.DataContext;
+
+                moveRenameViewModel.SelectedItems = selected;
+                moveRenameViewModel.MovePath = BrowsePath;
+             
+                moveRenameView.ShowDialog();
+
+            }));
         }
 
         public string BrowsePath
@@ -89,8 +98,6 @@ namespace MediaViewer.MediaFileBrowser
 
                 mediaFileWatcher.Path = pathWithoutFileName;
 
-                directoryBrowserViewModel.selectPath(pathWithoutFileName);
-
                 List<ImageGridItem> items = new List<ImageGridItem>();
 
                 foreach (String location in mediaFileWatcher.MediaFiles)
@@ -101,13 +108,7 @@ namespace MediaViewer.MediaFileBrowser
                 partialImageGridViewModel.Items.Clear();
                 partialImageGridViewModel.Items.AddRange(items);
 
-                int totalPages = (int)Math.Ceiling(partialImageGridViewModel.Items.Count / (float)partialImageGridViewModel.MaxItems);
-                if (totalPages == 0)
-                {
-                    totalPages = 1;
-                }
-                pagerViewModel.TotalPages = totalPages;
-                pagerViewModel.CurrentPage = 1;
+                GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_PathSelected", value);
 
                 NotifyPropertyChanged();
             }
@@ -204,6 +205,14 @@ namespace MediaViewer.MediaFileBrowser
                 }
             }
 
+        }
+
+        Command moveRenameSelectedItemsCommand;
+
+        public Command MoveRenameSelectedItemsCommand
+        {
+            get { return moveRenameSelectedItemsCommand; }
+            set { moveRenameSelectedItemsCommand = value; }
         }
 
         private void renameImageToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)

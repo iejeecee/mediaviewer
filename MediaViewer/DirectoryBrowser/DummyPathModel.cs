@@ -8,7 +8,8 @@ namespace MediaViewer.DirectoryBrowser
 {
     class DummyPathModel : PathModel
     {
-        public DummyPathModel(PathModel parent) 
+        public DummyPathModel(PathModel parent, DirectoryBrowserViewModel directoryBrowserViewModel) 
+            : base(directoryBrowserViewModel)
         {
             Parent = parent;
             Name = "Loading...";

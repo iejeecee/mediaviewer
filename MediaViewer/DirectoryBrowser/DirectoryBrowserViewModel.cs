@@ -10,10 +10,21 @@ using System.Windows;
 
 namespace MediaViewer.DirectoryBrowser
 {
-    class DirectoryBrowserViewModel : ObservableObject
+    public class DirectoryBrowserViewModel : ObservableObject
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
- 
+
+        public delegate void PathSelectedDelegate(PathModel item);
+       
+        PathSelectedDelegate pathSelectedCallback;
+
+        // callback function will be called whenever a path node is selected
+        public PathSelectedDelegate PathSelectedCallback
+        {
+            get { return pathSelectedCallback; }
+            set { pathSelectedCallback = value; }
+        }
+
         public DirectoryBrowserViewModel()
         {
             drives = null;
@@ -59,7 +70,7 @@ namespace MediaViewer.DirectoryBrowser
 
             foreach (DriveInfo driveInfo in drivesArray)
             {
-                DrivePathModel drive = new DrivePathModel(driveInfo);               
+                DrivePathModel drive = new DrivePathModel(driveInfo, this);               
              
                 drives.Add(drive);
             }
@@ -72,7 +83,7 @@ namespace MediaViewer.DirectoryBrowser
            
             path = path.Replace('/', '\\');
 
-            string root = System.IO.Path.GetPathRoot(path);
+            string root = System.IO.Path.GetPathRoot(path).ToUpper();
             PathModel node = null;
 
             foreach (PathModel drive in Drives)
@@ -109,7 +120,10 @@ namespace MediaViewer.DirectoryBrowser
                 }
             }
 
-            node.IsExpanded = true;
+            if (node.Parent != null)
+            {
+                node.Parent.IsExpanded = true;
+            }
             node.IsSelected = true;
         }
      

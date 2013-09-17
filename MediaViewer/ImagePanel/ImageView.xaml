@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:Pager="clr-namespace:MediaViewer.Pager"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -10,9 +11,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        </ResourceDictionary>        
     </UserControl.Resources>
-    <Grid>
+    <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
         <ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both">
             <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave"
                   Background="{StaticResource imageGridBackgroundColorBrush}">              
@@ -39,5 +44,6 @@
                 </Image>
             </Grid>
         </ScrollViewer>
+        <Pager:PagerView x:Name="pager" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"/>
     </Grid>
 </UserControl>

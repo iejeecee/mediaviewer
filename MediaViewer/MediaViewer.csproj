@@ -97,6 +97,10 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="Xceed.Wpf.Toolkit, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\ExtendedWPFToolkit_Binaries\Xceed.Wpf.Toolkit.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -114,11 +118,15 @@
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
       <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
+      <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
     <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
     <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
     <Compile Include="DirectoryBrowser\DummyPathModel.cs" />
     <Compile Include="DirectoryBrowser\PathModel.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
     <Compile Include="ImageGrid\ObservableRangeCollection.cs" />
@@ -183,10 +191,14 @@
     <Compile Include="ImagePanel\DegreesConverter.cs" />
     <Compile Include="ImagePanel\ScaleConverter.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileWatcher.cs" />
+    <Compile Include="MoveRename\MoveRenameView.xaml.cs">
+      <DependentUpon>MoveRenameView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MoveRename\MoveRenameViewModel.cs" />
+    <Compile Include="Pager\IPageable.cs" />
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Pager\PagerViewModel.cs" />
     <Compile Include="Progress\ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -221,6 +233,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="DirectoryBrowser\DirectoryBrowserControl2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ImageGrid\ImageGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -246,6 +262,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ScaleView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MoveRename\MoveRenameView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -437,6 +457,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\delete.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\File Move.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -46,6 +46,7 @@ namespace MediaViewer.ImagePanel
             if (e.OldValue != null) return;
             
             ImageViewModel imageViewModel = (ImageViewModel)e.NewValue;
+            pager.DataContext = imageViewModel;
          
             // Due to the device independent nature of WPF, images are 
             // scaled according to the dpi value stored in the image file.

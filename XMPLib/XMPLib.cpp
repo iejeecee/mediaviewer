@@ -177,18 +177,25 @@ bool MetaData::getProperty_Date(String ^nameSpace, String ^propName, DateTime %p
 		marshal_as<std::string>(propName),
 		xmpDate);
 
-	if(xmpDate.hasDate && xmpDate.hasTime) {
+	propValue = DateTime::MinValue;
 
-		propValue = DateTime(xmpDate.year, xmpDate.month, xmpDate.day, xmpDate.hour, xmpDate.minute, xmpDate.second);
+	try {
 
-	} else if(xmpDate.hasDate) {
+		if(xmpDate.hasDate && xmpDate.hasTime) {
 
-		propValue = DateTime(xmpDate.year, xmpDate.month, xmpDate.day);
+			propValue = DateTime(xmpDate.year, xmpDate.month, xmpDate.day, xmpDate.hour, xmpDate.minute, xmpDate.second);
 
-	} else {
+		} else if(xmpDate.hasDate) {
+
+			propValue = DateTime(xmpDate.year, xmpDate.month, xmpDate.day);
+
+		} 
+
+	} catch(Exception ^) {
 
 		propValue = DateTime::MinValue;
 	}
+
 
 	return(result);
 }

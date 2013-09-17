@@ -9,7 +9,8 @@ namespace MediaViewer.DirectoryBrowser
 {
     class DrivePathModel : PathModel
     {          
-        public DrivePathModel(DriveInfo info)
+        public DrivePathModel(DriveInfo info, DirectoryBrowserViewModel directoryBrowserViewModel)
+            : base(directoryBrowserViewModel)
         {
             Parent = null;
             Name = info.Name;
@@ -52,7 +53,7 @@ namespace MediaViewer.DirectoryBrowser
               
             }
 
-            DummyPathModel dummy = new DummyPathModel(this);
+            DummyPathModel dummy = new DummyPathModel(this, directoryBrowserViewModel);
             Directories.Add(dummy);
         }
     }

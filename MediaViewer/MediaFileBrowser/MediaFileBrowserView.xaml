@@ -22,7 +22,7 @@
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="6*"/>
         </Grid.ColumnDefinitions>
-        <DirectoryBrowser:DirectoryBrowserControl x:Name="directoryBrowser" Grid.Column="0"/>
+        <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Column="0" SelectedPath="{Binding BrowsePath, Mode=TwoWay}"/>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <ImageGrid:ImageGridView x:Name="imageGrid" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0"/>
         <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.ColumnSpan="2" VerticalAlignment="Center" HorizontalAlignment="Center"/>

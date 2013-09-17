@@ -16,6 +16,12 @@ namespace MediaViewer.DirectoryBrowser
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        DirectoryBrowserViewModel directoryBrowserViewModel;
+
+        public DirectoryBrowserViewModel DirectoryBrowserViewModel
+        {
+            get { return directoryBrowserViewModel; }       
+        }
 
         private ObservableCollection<PathModel> directories;
         public ObservableCollection<PathModel> Directories
@@ -81,19 +87,18 @@ namespace MediaViewer.DirectoryBrowser
 
                 NotifyPropertyChanged();
 
-                if (isSelected == true)
-                {                  
-                    GlobalMessenger.Instance.NotifyColleagues("PathModel_IsSelected", this);
+                if (isSelected == true && directoryBrowserViewModel.PathSelectedCallback != null)
+                {                    
+                    directoryBrowserViewModel.PathSelectedCallback(this);                   
                 }
 
             }
         }
 
-     
-
-        public PathModel()
+        public PathModel(DirectoryBrowserViewModel directoryBrowserViewModel)
         {
             directories = new ObservableCollection<PathModel>();
+            this.directoryBrowserViewModel = directoryBrowserViewModel;
 
             parent = null;
             IsExpanded = false;
@@ -181,14 +186,14 @@ namespace MediaViewer.DirectoryBrowser
                     continue;
                 }
 
-                DirectoryPathModel subDir = new DirectoryPathModel(parent, subDirInfo);
+                DirectoryPathModel subDir = new DirectoryPathModel(parent, subDirInfo, parent.DirectoryBrowserViewModel);
 
                 string subDirPath = fullPath + "\\" + subDir.Name;
 
                 subDirsInfo = getSubDirectories(subDirPath);
                 if (subDirsInfo.Length > 0)
                 {
-                    subDir.Directories.Add(new DummyPathModel(subDir));
+                    subDir.Directories.Add(new DummyPathModel(subDir, parent.DirectoryBrowserViewModel));
                 }
 
                 subDirs.Add(subDir);
