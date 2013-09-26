@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.MoveRename
@@ -59,6 +60,13 @@ namespace MediaViewer.MoveRename
 
                 moveRenameFiles();
             }));
+
+            ModeList = new ObservableCollection<string>();
+            ModeList.Add("Copy");
+            ModeList.Add("Move");
+            ModeList.Add("Rename Only");
+
+            SelectedMode = "Move";
         }
 
         List<ImageGridItem> selectedItems;
@@ -147,7 +155,26 @@ namespace MediaViewer.MoveRename
             set { moveRenameFilesCommand = value; }
         }
 
-        void moveRenameFiles()
+        ObservableCollection<String> modeList;
+
+        public ObservableCollection<String> ModeList
+        {
+            get { return modeList; }
+            set { modeList = value;
+            NotifyPropertyChanged();
+            }
+        }
+        String selectedMode;
+
+        public String SelectedMode
+        {
+            get { return selectedMode; }
+            set { selectedMode = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        async void moveRenameFiles()
         {
             FileUtils fileUtils = new FileUtils();
 
@@ -164,11 +191,30 @@ namespace MediaViewer.MoveRename
                 String destFileNameWithoutExtension = parseNewFilename(RenameFileName, sourceFilenameWithoutExtension, counters);
                 String destExtension = parseNewExtension(RenameExtension, sourceExtension);
 
-                destPaths.Add(MovePath + "\\" + destFileNameWithoutExtension + "." + renameExtension);
+                destPaths.Add(MovePath + "\\" + destFileNameWithoutExtension + destExtension);
+            }
+            
+            MoveRenameProgressWindow progressWindow = new MoveRenameProgressWindow();
+            progressWindow.Show();
+                      
+            FileUtilsProgress progress = (FileUtilsProgress)progressWindow.DataContext;
+
+            if (SelectedMode.Equals("Copy"))
+            {
+
+                Action method = () => fileUtils.copy(sourcePaths, destPaths, progress);
+
+                await Task.Run(method, progress.CancellationToken);
+                
+            }
+            else
+            {
+                Action method = () => fileUtils.move(sourcePaths, destPaths, progress);
+
+                await Task.Run(method, progress.CancellationToken);
             }
 
-            fileUtils.move(sourcePaths, destPaths);
-
+           
         }
 
         string parseNewFilename(string newFilename, string oldFilename, List<int> counters)

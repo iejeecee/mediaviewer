@@ -10,10 +10,11 @@ class VideoDecoder : public Video {
 protected:
 
 	AVFrame *frame;
-
+	
 	SwsContext *imageConvertContext;
 	SwrContext *audioConvertContext;
 
+	AVPixelFormat imageConvertFormat;
 	AVSampleFormat audioConvertFormat;
 
 	AVFrame *convertedFrame;
@@ -89,6 +90,7 @@ public:
 
 		durationSeconds = 0;
 
+		imageConvertFormat = AV_PIX_FMT_YUV420P;
 		audioConvertFormat = AV_SAMPLE_FMT_S16;
 
 	}
@@ -308,6 +310,11 @@ public:
 		return(imageConvertContext);
 	}
 
+	AVPixelFormat getImageConvertFormat() {
+
+		return(imageConvertFormat);
+	}
+
 	SwrContext *getAudioConvertContext() {
 
 		return(audioConvertContext);
@@ -456,8 +463,13 @@ public:
 		if(imageConvertContext == NULL) {
 
 			throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
+
+		} else {
+
+			imageConvertFormat = format;
 		}
 
+		
 	}
 
 	bool initAudioConverter(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 

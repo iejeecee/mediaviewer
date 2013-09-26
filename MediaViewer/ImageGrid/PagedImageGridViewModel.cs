@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.ImageGrid
 {
-    class PagedImageGridViewModel : ImageGridViewModel, IPageable
+    class PagedImageGridViewModel : ImageGridViewModel
     {
 
         public PagedImageGridViewModel()

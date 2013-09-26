@@ -63,7 +63,7 @@ namespace MediaViewer.Timers
 
         // Gets timer capabilities.
         [DllImport("winmm.dll")]
-        static extern int timeGetDevCaps(TimerCaps caps,
+        static extern int timeGetDevCaps(ref TimerCaps caps,
             int sizeOfTimerCaps);
 
         // Creates and starts the timer.
@@ -164,19 +164,28 @@ namespace MediaViewer.Timers
         // Raises the Disposed event.
         void OnDisposed(EventArgs e)
         {
-            Disposed(this, e);
+            if (Disposed != null)
+            {
+                Disposed(this, e);
+            }
         }
 
         // Raises the Started event.
         void OnStarted(EventArgs e)
         {
-            Started(this, e);
+            if (Started != null)
+            {
+                Started(this, e);
+            }
         }
 
         // Raises the Stopped event.
         void OnStopped(EventArgs e)
         {
-            Stopped(this, e);
+            if (Stopped != null)
+            {
+                Stopped(this, e);
+            }
         }
 
 
@@ -185,7 +194,7 @@ namespace MediaViewer.Timers
         {
             caps = new TimerCaps();
             // Get multimedia timer capabilities.
-            timeGetDevCaps(caps, Marshal.SizeOf(caps));
+            timeGetDevCaps(ref caps, Marshal.SizeOf(caps));
         }
 
         //Initializes a new instance of the Timer class.

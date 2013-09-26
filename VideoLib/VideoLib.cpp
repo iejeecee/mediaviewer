@@ -158,7 +158,7 @@ VideoPlayer::~VideoPlayer() {
 }
 
 
-void VideoPlayer::open(String ^videoLocation) {
+void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 
 	try {
 
@@ -168,7 +168,38 @@ void VideoPlayer::open(String ^videoLocation) {
 
 		videoDecoder->open(marshal_as<std::string>(videoLocation));
 
-		videoDecoder->initImageConverter(PIX_FMT_YUV420P,
+		AVPixelFormat convertToFormat = PIX_FMT_YUV420P;
+
+		switch(videoFormat) {
+
+		case DecodedVideoFormat::YUV420P:
+			{
+				convertToFormat = PIX_FMT_YUV420P;
+				break;
+			}
+		case DecodedVideoFormat::ARGB:
+			{
+				convertToFormat = PIX_FMT_ARGB;
+				break;
+			}
+		case DecodedVideoFormat::RGBA:
+			{
+				convertToFormat = PIX_FMT_RGBA;
+				break;
+			}
+		case DecodedVideoFormat::ABGR:
+			{
+				convertToFormat = PIX_FMT_ABGR;
+				break;
+			}
+		case DecodedVideoFormat::BGRA:
+			{
+				convertToFormat = PIX_FMT_BGRA;
+				break;
+			}
+		}
+
+		videoDecoder->initImageConverter(convertToFormat,
 			videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
 
 		int channelLayout = videoDecoder->getAudioNrChannels() == 1 ? 

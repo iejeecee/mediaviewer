@@ -184,6 +184,14 @@ namespace VideoLib {
 
 	public:
 
+		enum class DecodedVideoFormat {
+			YUV420P,
+			ARGB,     
+			RGBA,      
+			ABGR,     
+			BGRA
+		};
+
 		enum class DecodeMode {
 
 			DECODE_VIDEO_AND_AUDIO,
@@ -297,7 +305,7 @@ namespace VideoLib {
 		VideoPlayer();
 		~VideoPlayer();
 
-		void open(String ^videoLocation);
+		void open(String ^videoLocation, DecodedVideoFormat format);
 		bool seek(double posSeconds);
 		bool demuxPacket();
 		void close();

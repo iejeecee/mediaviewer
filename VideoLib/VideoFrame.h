@@ -130,31 +130,45 @@ namespace VideoLib {
 			Debug::Assert(texture != nullptr && texture->Description.Width == Width &&
 				texture->Description.Height == Height);
 			
-			SharpDX::DataRectangle data = texture->Map(0,SharpDX::Direct3D10::MapMode::Write,SharpDX::Direct3D10::MapFlags::None);
+			SharpDX::DataRectangle data = texture->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
 
 			Byte *pict = (BYTE*)data.DataPointer.ToPointer();
 
-			Byte *Y = AVLibFrameData->data[0];
-			Byte *U = AVLibFrameData->data[1];
-			Byte *V = AVLibFrameData->data[2];
+			if(AVLibFrameData->format == PIX_FMT_YUV420P) {				
 
-			for (int y = 0 ; y < Height ; y++)
-			{
-				memcpy(pict, Y, Width);
-				pict += data.Pitch;
-				Y += Width;
-			}
-			for (int y = 0 ; y < Height / 2 ; y++)
-			{
-				memcpy(pict, V, Width / 2);
-				pict += data.Pitch / 2;
-				V += Width / 2;
-			}
-			for (int y = 0 ; y < Height / 2; y++)
-			{
-				memcpy(pict, U, Width / 2);
-				pict += data.Pitch / 2;
-				U += Width / 2;
+				Byte *Y = AVLibFrameData->data[0];
+				Byte *U = AVLibFrameData->data[1];
+				Byte *V = AVLibFrameData->data[2];
+
+				for (int y = 0 ; y < Height ; y++)
+				{
+					memcpy(pict, Y, Width);
+					pict += data.Pitch;
+					Y += Width;
+				}
+				for (int y = 0 ; y < Height / 2 ; y++)
+				{
+					memcpy(pict, V, Width / 2);
+					pict += data.Pitch / 2;
+					V += Width / 2;
+				}
+				for (int y = 0 ; y < Height / 2; y++)
+				{
+					memcpy(pict, U, Width / 2);
+					pict += data.Pitch / 2;
+					U += Width / 2;
+				}
+
+			} else {
+
+				Byte *source = AVLibFrameData->data[0];
+						
+				for (int y = 0 ; y < Height ; y++)
+				{
+					memcpy(pict, source, AVLibFrameData->linesize[0]);
+					pict += data.Pitch;
+					source += AVLibFrameData->linesize[0];
+				}
 			}
 
 			texture->Unmap(D3D10CalcSubresource(0,0,1));

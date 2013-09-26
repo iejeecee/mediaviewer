@@ -67,7 +67,7 @@ namespace MediaViewer.VideoPanel
 		bool updateTimeTrackBar;
 		CustomToolTip timeTrackBarToolTip;
 
-		delegate void UpdateUIDelegate(double, double, int);
+		delegate void UpdateUIDelegate(double a, double b , int c);
 
 		Control VideoPanel {
 
@@ -342,7 +342,7 @@ restartaudio:
 			int bytesPerSecond = audioPlayer.SamplesPerSecond * 
 				videoDecoder.BytesPerSample * videoDecoder.NrChannels;
 
-			double delay = frameLength / double(bytesPerSecond);
+			double delay = frameLength / (double)bytesPerSecond;
 
 			// adjust delay based on the actual current time
 			audioFrameTimer += delay;
@@ -584,7 +584,7 @@ restartaudio:
 			stopButton.PerformClick();
 		}
 
-		void frameQueue_Closed(Object sender, EventArgs ) {
+		void frameQueue_Closed(Object sender, EventArgs e) {
 
 			log.Info("Video stream end reached");
 			this.BeginInvoke(new Action(invokeStopButtonClick));

@@ -38,7 +38,7 @@ namespace MediaViewer.Timers
                     }
                 case TimerType.TIMER_QUEUE:
                     {
-                        timer = null;// new TimerQueueTimer();
+                        timer = new TimerQueueTimer();
                         break;
                     }
 

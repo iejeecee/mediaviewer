@@ -141,22 +141,66 @@ namespace MediaViewer.MediaFileBrowser
 
         private void ImageFileWatcherThread_MediaChanged(Object sender, System.IO.FileSystemEventArgs e)
         {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
+                for (int i = PartialImageGridViewModel.Items.Count - 1; i >= 0; i--)
+                {
+                    if (PartialImageGridViewModel.Items[i].Location.Equals(e.FullPath))
+                    {
+
+                        PartialImageGridViewModel.Items.RemoveAt(i);
+                    }
+                }
+
+                List<ImageGridItem> items = new List<ImageGridItem>();
+
+                items.Add(new ImageGridItem(e.FullPath));
+
+                PartialImageGridViewModel.Items.AddRange(items);
+
+            }));
          
 
         }
 
         private void ImageFileWatcherThread_MediaCreated(Object sender, System.IO.FileSystemEventArgs e)
         {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {              
+                List<ImageGridItem> items = new List<ImageGridItem>();
 
+                items.Add(new ImageGridItem(e.FullPath));
+
+                PartialImageGridViewModel.Items.AddRange(items);
+
+            }));
           
-
         }
 
 
         private void ImageFileWatcherThread_MediaRenamed(Object sender, System.IO.RenamedEventArgs e)
         {
-           
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+
+                for (int i = PartialImageGridViewModel.Items.Count - 1; i >= 0; i--)
+                {
+                    if (PartialImageGridViewModel.Items[i].Location.Equals(e.OldFullPath))
+                    {
+
+                        PartialImageGridViewModel.Items.RemoveAt(i);
+                    }
+                }
+
+                List<ImageGridItem> items = new List<ImageGridItem>();
+
+                items.Add(new ImageGridItem(e.FullPath));
+
+                PartialImageGridViewModel.Items.AddRange(items);
+
+            }));
 
         }
 

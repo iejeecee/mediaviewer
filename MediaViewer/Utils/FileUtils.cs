@@ -77,34 +77,6 @@ namespace MediaViewer.Utils
             MOVE
         }
 
-        private class AsyncState
-        {
-
-            private void progressForm_CancelEvent(Object sender, EventArgs e)
-            {
-                copyCallbackAction = CopyFileCallbackAction.CANCEL;
-            }
-
-            public StringCollection sourcePaths;
-            public StringCollection destPaths;
-            public ProgressWindow ProgressWindow;
-
-            public CopyFileCallbackAction copyCallbackAction;
-
-            public AsyncState(StringCollection sourcePaths, StringCollection destPaths)
-            {
-
-                this.sourcePaths = sourcePaths;
-                this.destPaths = destPaths;
-                ProgressWindow = new ProgressWindow();
-                ProgressWindow.CancelEvent += new ProgressWindow.CancelEventHandler(progressForm_CancelEvent);
-
-                copyCallbackAction = CopyFileCallbackAction.CONTINUE;
-            }
-
-
-        };
-
         delegate int CopyProgressDelegate(
             long totalFileSize, long totalBytesTransferred, long streamSize,
             long streamBytesTransferred, int streamNumber, CopyProgressCallbackReason callbackReason,
@@ -136,19 +108,21 @@ namespace MediaViewer.Utils
             int fileProgress = (int)((100 * totalBytesTransferred) / totalFileSize);
 
             GCHandle h = GCHandle.FromIntPtr(data);
-            AsyncState state = (AsyncState)h.Target;
+            FileUtilsProgress progress = (FileUtilsProgress)h.Target;
 
-            state.ProgressWindow.ItemProgressValue = fileProgress;
+            progress.CurrentFileProgress = fileProgress;
 
-            return ((int)state.copyCallbackAction);
+            CopyFileCallbackAction action = progress.CancellationToken.IsCancellationRequested ? CopyFileCallbackAction.CANCEL : CopyFileCallbackAction.CONTINUE;
+
+            return ((int)action);
 
         }
 
-        bool copyFile(string source, string destination, CopyFileOptions options, AsyncState state)
+        bool copyFile(string source, string destination, CopyFileOptions options, FileUtilsProgress progress)
         {
 
-            GCHandle handle = GCHandle.Alloc(state);
-            IntPtr statePtr = GCHandle.ToIntPtr(handle);
+            GCHandle handle = GCHandle.Alloc(progress);
+            IntPtr progressPtr = GCHandle.ToIntPtr(handle);
 
             try
             {
@@ -165,8 +139,7 @@ namespace MediaViewer.Utils
                 if (!Directory.Exists(destinationDir))
                 {
 
-                    Directory.CreateDirectory(destinationDir);
-                    OnAfterCopy(this, new FileUtilsEventArgs(destinationDir, true));
+                    Directory.CreateDirectory(destinationDir);                  
                 }
 
                 CopyProgressDelegate progressCallback = new CopyProgressDelegate(copyProgress);
@@ -174,7 +147,7 @@ namespace MediaViewer.Utils
                 int cancel = 0;
 
                 if (!CopyFileEx(source, destination, progressCallback,
-                    statePtr, ref cancel, (int)options))
+                    progressPtr, ref cancel, (int)options))
                 {
 
                     Win32Exception win32exception = new Win32Exception();
@@ -243,16 +216,16 @@ namespace MediaViewer.Utils
         }
 
 
-        void asyncCopy(Object args)
+        public void copy(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgress progress)
         {
+            if (sourcePaths.Count != destPaths.Count)
+            {
 
-            AsyncState state = (AsyncState)args;
+                throw new System.ArgumentException();
+            }
 
             try
             {
-
-                StringCollection sourcePaths = state.sourcePaths;
-                StringCollection destPaths = state.destPaths;
 
                 StringCollection movePaths = new StringCollection();
                 StringCollection moveDestPaths = new StringCollection();
@@ -264,59 +237,49 @@ namespace MediaViewer.Utils
 
                 getPaths(sourcePaths, destPaths, movePaths, moveDestPaths, copyPaths, copyDestPaths, removePaths, Action.COPY);
 
-                state.ProgressWindow.TotalProgressMaximum = movePaths.Count + copyPaths.Count;
+                progress.TotalFiles = movePaths.Count + copyPaths.Count;              
 
                 bool success = true;
 
                 for (int i = 0; i < movePaths.Count; i++)
                 {
 
-                    state.ProgressWindow.TotalProgressValue = i;
-                    state.ProgressWindow.ItemInfo = movePaths[i];
+                    progress.CurrentFile = i;
+                    progress.Messages = "Copying: " + movePaths[i] + "->" + moveDestPaths[i];
 
-                    success = copyFile(movePaths[i], moveDestPaths[i], CopyFileOptions.ALL, state);
+                    success = copyFile(movePaths[i], moveDestPaths[i], CopyFileOptions.ALL, progress);               
 
                     if (success == false) break;
 
-                    bool isDirectory = Directory.Exists(moveDestPaths[i]);
-
-                    OnAfterCopy(this, new FileUtilsEventArgs(moveDestPaths[i], isDirectory));
-
-                    //state.ProgressWindow.addInfoString(movePaths[i] + " . " + moveDestPaths[i]);
+                    bool isDirectory = Directory.Exists(moveDestPaths[i]);                    
+                    
                 }
 
 
                 for (int i = 0; (i < copyPaths.Count) && (success == true); i++)
                 {
 
-                    state.ProgressWindow.TotalProgressValue = movePaths.Count + i;
-                    state.ProgressWindow.ItemInfo = copyPaths[i];
+                    progress.CurrentFile = movePaths.Count + i;
+                    progress.Messages = "Copying: " + copyPaths[i] + "->" + copyDestPaths[i];
 
-                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, state);
+                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);                
 
-                    if (success == false) break;
-
-                    OnAfterCopy(this, new FileUtilsEventArgs(copyDestPaths[i], false));
-
-                    //state.ProgressWindow.addInfoString(copyPaths[i] + " . " + copyDestPaths[i]);
+                    if (success == false) break;                  
+                   
 
                 }
 
                 if (success == true)
                 {
-
-                    state.ProgressWindow.TotalProgressValue = state.ProgressWindow.TotalProgressMaximum;
+                    progress.CurrentFile = progress.TotalFiles;
                 }
 
             }
             catch (Exception e)
             {
-
                 log.Error("Copy Exception", e);
-                MessageBox.Show(e.Message, "Copy Exception");
-            }
-
-            state.ProgressWindow.actionFinished();
+                progress.Messages = "Copy Exception: " + e.Message;
+            }            
 
         }
 
@@ -403,17 +366,19 @@ namespace MediaViewer.Utils
             }
         }
 
-        void asyncMove(Object args)
+        public void move(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgress progress)
         {
 
-            AsyncState state = (AsyncState)args;
+            if (progress.CancellationToken.IsCancellationRequested) return;
+
+            if (sourcePaths.Count != destPaths.Count)
+            {
+                throw new System.ArgumentException();
+            }
 
             try
             {
-
-                StringCollection sourcePaths = state.sourcePaths;
-                StringCollection destPaths = state.destPaths;
-
+              
                 StringCollection movePaths = new StringCollection();
                 StringCollection moveDestPaths = new StringCollection();
 
@@ -424,22 +389,21 @@ namespace MediaViewer.Utils
 
                 getPaths(sourcePaths, destPaths, movePaths, moveDestPaths, copyPaths, copyDestPaths, removePaths, Action.MOVE);
 
-                state.ProgressWindow.TotalProgressMaximum = movePaths.Count + copyPaths.Count;
+                progress.TotalFiles = movePaths.Count + copyPaths.Count;
 
                 for (int i = 0; i < movePaths.Count; i++)
                 {
+                    progress.CurrentFile = i;
+                    progress.Messages = "Moving: " + movePaths[i] + "->" + moveDestPaths[i];
 
-                    state.ProgressWindow.TotalProgressValue = i;
-                    state.ProgressWindow.ItemInfo = movePaths[i];
+                    if (progress.CancellationToken.IsCancellationRequested) return;
 
                     System.IO.Directory.Move(movePaths[i], moveDestPaths[i]);
 
+                    //Thread.Sleep(100);
+
                     bool isDirectory = Directory.Exists(moveDestPaths[i]);
-
-                    OnAfterCopy(this, new FileUtilsEventArgs(moveDestPaths[i], isDirectory));
-                    OnAfterDelete(this, new FileUtilsEventArgs(movePaths[i], isDirectory));
-
-                    //state.ProgressWindow.addInfoString(movePaths[i] + " . " + moveDestPaths[i]);
+                                     
                 }
 
                 bool success = true;
@@ -447,36 +411,30 @@ namespace MediaViewer.Utils
                 for (int i = 0; i < copyPaths.Count; i++)
                 {
 
-                    state.ProgressWindow.TotalProgressValue = movePaths.Count + i;
-                    state.ProgressWindow.ItemInfo = copyPaths[i];
+                    if (progress.CancellationToken.IsCancellationRequested) return;
 
-                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, state);
-
+                    progress.CurrentFile = movePaths.Count + i;
+                    progress.Messages = "Moving: " + copyPaths[i] + "->" + copyDestPaths[i];
+                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);
+                
                     if (success == false) break;
-
-                    OnAfterCopy(this, new FileUtilsEventArgs(copyDestPaths[i], false));
-
-                    //state.ProgressWindow.addInfoString(copyPaths[i] + " . " + copyDestPaths[i]);
+                                
 
                 }
 
                 if (success == true)
                 {
 
-                    state.ProgressWindow.TotalProgressValue = state.ProgressWindow.TotalProgressMaximum;
+                    progress.CurrentFile = progress.TotalFiles;
 
                     foreach (string copySource in copyPaths)
                     {
-
-                        System.IO.File.Delete(copySource);
-                        OnAfterDelete(this, new FileUtilsEventArgs(copySource, false));
+                        System.IO.File.Delete(copySource);                      
                     }
 
                     foreach (string directorySource in removePaths)
                     {
-
-                        System.IO.Directory.Delete(directorySource, true);
-                        OnAfterDelete(this, new FileUtilsEventArgs(directorySource, true));
+                        System.IO.Directory.Delete(directorySource, true);                       
                     }
                 }
 
@@ -485,10 +443,9 @@ namespace MediaViewer.Utils
             {
 
                 log.Error("Move Exception", e);
-                MessageBox.Show(e.Message, "Move Exception");
+                progress.Messages = "Move Exception: " + e.Message;
             }
-
-            state.ProgressWindow.actionFinished();
+         
 
         }
 
@@ -503,8 +460,6 @@ namespace MediaViewer.Utils
         public delegate void WalkDirectoryTreeDelegate(FileInfo info, Object state);
 
         public delegate void FileUtilsDelegate(System.Object sender, FileUtilsEventArgs e);
-        public event FileUtilsDelegate OnAfterCopy;
-        public event FileUtilsDelegate OnAfterDelete;
 
         public FileUtils()
         {
@@ -512,44 +467,7 @@ namespace MediaViewer.Utils
 
         }
 
-        public void copy(StringCollection sourcePaths, StringCollection destPaths)
-        {
-
-            if (sourcePaths.Count != destPaths.Count)
-            {
-
-                throw new System.ArgumentException();
-            }
-
-            WaitCallback callback = new WaitCallback(asyncCopy);
-
-            AsyncState args = new AsyncState(sourcePaths, destPaths);
-            args.ProgressWindow.Title = "Copy Files";
-            args.ProgressWindow.Show();
-
-            ThreadPool.QueueUserWorkItem(callback, args);
-
-        }
-
-        public void move(StringCollection sourcePaths, StringCollection destPaths)
-        {
-
-            if (sourcePaths.Count != destPaths.Count)
-            {
-
-                throw new System.ArgumentException();
-            }
-
-            WaitCallback callback = new WaitCallback(asyncMove);
-
-            AsyncState args = new AsyncState(sourcePaths, destPaths);
-            args.ProgressWindow.Title = "Moving Files";
-            args.ProgressWindow.Show();
-
-            ThreadPool.QueueUserWorkItem(callback, args);
-
-        }
-
+        
         public void remove(StringCollection sourcePaths)
         {
 

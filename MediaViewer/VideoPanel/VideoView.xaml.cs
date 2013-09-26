@@ -27,7 +27,7 @@ namespace MediaViewer.VideoPanel
         {
             InitializeComponent();
 
-            Canvas1.Scene = new Scene();
+            //Canvas1.Scene = new Scene();
 
             timeLineSlider.AddHandler(Slider.MouseLeftButtonDownEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonDownEvent),
                 true);

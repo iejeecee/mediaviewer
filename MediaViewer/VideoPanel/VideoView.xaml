@@ -18,7 +18,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="55"/>
         </Grid.RowDefinitions>
-        <dpf:DPFCanvas x:Name="Canvas1" Stretch="Fill" Margin="38,34,56,36" />
+        <dpf:DPFCanvas x:Name="Canvas1" Stretch="Fill" Margin="38,34,56,36"/>
         <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" IsChecked="{Binding IsPlaying}">
             <Image>
                 <Image.Style>

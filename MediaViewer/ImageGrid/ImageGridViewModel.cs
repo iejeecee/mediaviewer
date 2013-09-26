@@ -19,7 +19,7 @@ namespace MediaViewer.ImageGrid
         CancellationTokenSource loadItemsCTS;
 
         // maximum concurrently loading items
-        int maxLoadingItems;
+        const int maxLoadingItems = 25;
         // current concurrently loading items
         int nrLoadingItems;
         Object nrLoadingItemsLock;
@@ -28,8 +28,7 @@ namespace MediaViewer.ImageGrid
         {
             items = new ObservableRangeCollection<ImageGridItem>();
 
-            nrLoadingItems = 0;
-            maxLoadingItems = 25;
+            nrLoadingItems = 0;           
 
             nrLoadingItemsLock = new Object();
             loadItemsCTS = new CancellationTokenSource();

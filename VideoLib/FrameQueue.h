@@ -203,8 +203,9 @@ namespace VideoLib {
 			audioClock = 0;
 
 			videoFrame = gcnew VideoFrame();
+
 			convertedVideoFrame = gcnew VideoFrame(videoDecoder->getWidth(), 
-				videoDecoder->getHeight(), PIX_FMT_YUV420P);
+				videoDecoder->getHeight(), videoDecoder->getImageConvertFormat());
 			
 			if(videoDecoder->hasAudio()) {
 

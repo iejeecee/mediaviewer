@@ -74,6 +74,10 @@ namespace MediaViewer
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
+            VideoTestWindow test = new VideoTestWindow();
+                       
+            test.Show();
+            test.Activate();
             
         }
 

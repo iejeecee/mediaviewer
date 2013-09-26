@@ -42,7 +42,7 @@ namespace MediaViewer.MoveRename
 
             });
 */
-            moveRenameViewModel.MoveRenameFilesCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler((s, e) =>
+            moveRenameViewModel.MoveRenameFilesCommand.Executing += new MvvmFoundation.Wpf.Delegates.CancelCommandEventHandler((s, e) =>
             {
                 this.Close();
             });

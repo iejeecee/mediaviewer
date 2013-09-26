@@ -191,24 +191,28 @@
     <Compile Include="ImagePanel\DegreesConverter.cs" />
     <Compile Include="ImagePanel\ScaleConverter.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileWatcher.cs" />
+    <Compile Include="MoveRename\MoveRenameProgressWindow.xaml.cs">
+      <DependentUpon>MoveRenameProgressWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MoveRename\MoveRenameView.xaml.cs">
       <DependentUpon>MoveRenameView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MoveRename\MoveRenameViewModel.cs" />
-    <Compile Include="Pager\IPageable.cs" />
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Progress\ProgressWindow.xaml.cs">
-      <DependentUpon>ProgressWindow.xaml</DependentUpon>
+    <Compile Include="Progress\ProgressControl.xaml.cs">
+      <DependentUpon>ProgressControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Timers\DefaultTimer.cs" />
     <Compile Include="Timers\HRTimer.cs" />
     <Compile Include="Timers\HRTimerTest.cs" />
     <Compile Include="Timers\MultiMediaTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />
+    <Compile Include="Timers\TimerQueueTimer.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
+    <Compile Include="Utils\FileUtilsProgress.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MediaFormatConvert.cs" />
     <Compile Include="Utils\Misc.cs" />
@@ -221,6 +225,9 @@
     <Compile Include="VideoPanel\Scene.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
     <None Include="VideoPanel\VideoPanelViewModelTemp.cs" />
+    <Compile Include="VideoPanel\VideoTestWindow.xaml.cs">
+      <DependentUpon>VideoTestWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -265,11 +272,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MoveRename\MoveRenameProgressWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MoveRename\MoveRenameView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pager\PagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Progress\ProgressControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -293,7 +308,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="Progress\ProgressWindow.xaml">
+    <Page Include="VideoPanel\VideoTestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

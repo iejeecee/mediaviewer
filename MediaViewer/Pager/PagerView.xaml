@@ -4,25 +4,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" Height="25.333" Width="237.334">
-    <Grid IsEnabled="{Binding IsPagingEnabled}">
-        <Button x:Name="beginButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Command="{Binding FirstPageCommand}" IsEnabled="{Binding FirstPageCommand.CanExecute}" ToolTip="First Page">
-            <Image Source="pack://application:,,,/Resources/Icons/Button-Rewind.ico" ToolTip="First Page"/>
-        </Button>
-        <TextBox x:Name="currentPageTextBox" HorizontalAlignment="Left" Height="23" Margin="83,1,0,0" VerticalAlignment="Top" Width="32" TextAlignment="Center" KeyDown="currentPageTextBox_KeyDown" ToolTip="Current Page">
-            <Binding Path="CurrentPage" UpdateSourceTrigger="Explicit">
+    <Grid Name="mainGrid" IsEnabled="False">        
+        <TextBox x:Name="currentPageTextBox" HorizontalAlignment="Left" Height="23" Margin="83,1,0,0" VerticalAlignment="Top" Width="32" TextAlignment="Center" KeyDown="currentPageTextBox_KeyDown" ToolTip="Current Page" Text="0">
+            <!--<Binding Path="CurrentPage" UpdateSourceTrigger="Explicit">
                 <Binding.ValidationRules>
                     <ExceptionValidationRule></ExceptionValidationRule>
                 </Binding.ValidationRules>
-            </Binding>
+            </Binding>-->
         </TextBox>
-        <TextBox x:Name="totalPagesTextBox" HorizontalAlignment="Left" Height="23" Margin="122,1,0,0" Text="{Binding NrPages, Mode=OneWay}" VerticalAlignment="Top" Width="32" TextAlignment="Center" IsReadOnly="True" ToolTip="Total Pages"/>
-        <Button x:Name="prevButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="39,0,0,0" Command="{Binding PrevPageCommand}" IsEnabled="{Binding PrevPageCommand.CanExecute}" ToolTip="Previous Page">
+        <TextBox x:Name="totalPagesTextBox" HorizontalAlignment="Left" Height="23" Margin="122,1,0,0" VerticalAlignment="Top" Width="32" TextAlignment="Center" IsReadOnly="True" ToolTip="Total Pages" Text="0"/>
+        <Button x:Name="beginButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" ToolTip="First Page">
+            <Image Source="pack://application:,,,/Resources/Icons/Button-Rewind.ico" ToolTip="First Page"/>
+        </Button>
+        <Button x:Name="prevButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="39,0,0,0" ToolTip="Previous Page">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Previous.ico" ToolTip="Previous Page"/>
         </Button>
-        <Button x:Name="nextButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="159,1,0,0" Command="{Binding NextPageCommand}" IsEnabled="{Binding NextPageCommand.CanExecute}" ToolTip="Next Page">
+        <Button x:Name="nextButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="159,1,0,0" ToolTip="Next Page">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Next.ico" ToolTip="Next Page"/>
         </Button>
-        <Button x:Name="endButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="198,1,0,0" Command="{Binding LastPageCommand}" IsEnabled="{Binding LastPageCommand.CanExecute}" ToolTip="Last Page">
+        <Button x:Name="endButton" HorizontalAlignment="Left" VerticalAlignment="Top" Width="39" Height="23" Margin="198,1,0,0" ToolTip="Last Page">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Forward.ico" ToolTip="Last Page"/>
         </Button>
 

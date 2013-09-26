@@ -19,6 +19,7 @@ namespace MediaViewer.ImageGrid
         EMPTY,
         LOADING,
         LOADED,
+        CANCELLED,
         ERROR
     }
 
@@ -121,10 +122,11 @@ namespace MediaViewer.ImageGrid
             }
             catch (TaskCanceledException)
             {
-                
+                result = ImageGridItemState.CANCELLED;
             }
             catch (Exception e)
             {
+                result = ImageGridItemState.ERROR;
                 log.Info("Error loading image grid item:" + Location, e);
                 
             }
