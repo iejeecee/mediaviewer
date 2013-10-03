@@ -57,54 +57,12 @@ namespace MediaViewer.VideoPanel
     using System.Runtime.InteropServices;
     using System.Threading.Tasks;
     using MediaViewer.Timers;
-using VideoLib;
+    using System.Windows;
 
-    public class Scene : IScene
+
+    public class VideoRender : IScene
     {
-
-        // no AV sync correction is done if below the AV sync threshold 
-        const double AV_SYNC_THRESHOLD = 0.01;
-        // no AV sync correction is done if too big error 
-        const double AV_NOSYNC_THRESHOLD = 10.0;
-
-        const double AUDIO_SAMPLE_CORRECTION_PERCENT_MAX = 10;
-
-        // we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
-        const int AUDIO_DIFF_AVG_NB = 5;//20;
-
-        VideoLib.VideoPlayer videoDecoder;
-   
-        enum SyncMode {
-
-			AUDIO_SYNCS_TO_VIDEO,
-			VIDEO_SYNCS_TO_AUDIO
-
-		};
-
-        SyncMode syncMode;
-
-		double previousVideoPts;
-		double previousVideoDelay;
-
-		double videoFrameTimer;
-		double audioFrameTimer;
-
-		HRTimer videoRefreshTimer;		
-		HRTimer audioRefreshTimer;
-
-		double videoPts;
-		double videoPtsDrift;
-
-		double audioDiffCum;
-		double audioDiffAvgCoef;
-		double audioDiffThreshold;
-		int audioDiffAvgCount;
-
-		bool seekRequest;
-		double seekPosition;
-
-        // direct3D stuff
-
+    
         private ISceneHost Host;
         int nrVertices;
         int nrIndices;
@@ -116,11 +74,32 @@ using VideoLib;
         private Buffer Indices;
 
         private Effect SimpleEffect;
-        private Color4 OverlayColor = new Color4(1.0f);
-        private Texture2D texture;
+
+        private int nrTextures;
+        private Texture2D[] yuvTexture;
+  
+        Viewport viewport;
         
         GCHandle pinnedArray;
-        ShaderResourceView textureView;
+        ShaderResourceView[] textureView;
+
+        VideoPlayerViewModel videoPlayerViewModel;
+
+        public VideoPlayerViewModel VideoPlayerViewModel
+        {
+            get { return videoPlayerViewModel; }          
+        }
+
+        public VideoRender()
+        {
+            //videoPlayerViewModel = new VideoPlayerViewModel(displayVideoFrame, VideoLib.VideoPlayer.DecodedVideoFormat.BGRA);
+            videoPlayerViewModel = new VideoPlayerViewModel(displayVideoFrame, VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
+            videoPlayerViewModel.VideoOpened += new EventHandler(videoPanelViewModel_VideoOpened);
+
+            yuvTexture = new Texture2D[3] { null, null, null };
+            textureView = new ShaderResourceView[3] { null, null, null };
+            nrTextures = 0;
+        }
 
         Texture2D createTextureFromFile(string filename)
         {
@@ -163,14 +142,14 @@ using VideoLib;
             return (texture);            
         }
 
-        Texture2D createTexture(int width, int height)
+        Texture2D createTexture(int width, int height, Format format)
         {
             var texDesc = new Texture2DDescription
             {
                 ArraySize = 1,
                 BindFlags = BindFlags.ShaderResource,
                 CpuAccessFlags = CpuAccessFlags.Write,
-                Format = Format.B8G8R8A8_UNorm,
+                Format = format,
                 Height = height,
                 MipLevels = 1,
                 OptionFlags = ResourceOptionFlags.None,
@@ -193,20 +172,27 @@ using VideoLib;
             if (device == null)
                 throw new Exception("Scene host device is null");
 
-            try
+            Uri executablePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
+            String shaderPath = System.IO.Path.GetDirectoryName(executablePath.LocalPath) + "\\Shaders\\";
+
+            if (videoPlayerViewModel.DecodedVideoFormat == VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
             {
+                shaderPath += "YUVtoRGB.fx";
+            }
+            else
+            {
+                shaderPath += "Simple.fx";
+            }
 
-                Uri executablePath = new Uri(System.Reflection.Assembly.GetExecutingAssembly().GetName().CodeBase);
-                String shaderPath = System.IO.Path.GetDirectoryName(executablePath.LocalPath) + "\\Shaders\\";
-
-                ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath + "Simple.fx", "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);
+            try
+            {            
+                ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath, "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);
                 this.SimpleEffect = new Effect(device, shaderBytes);
-
             }
             catch (Exception e)
             {              
                 System.Diagnostics.Debug.Print(e.Message);
-                throw new Exception("Cannot compile shader code");
+                throw new Exception("Error compiling: " + shaderPath);
             }
 
             EffectTechnique technique = this.SimpleEffect.GetTechniqueByIndex(0); 
@@ -272,180 +258,88 @@ using VideoLib;
                     Usage = ResourceUsage.Default
                 }
             );
+  
+            device.Flush();         
+        }
 
-           initVideo();
+        void videoPanelViewModel_VideoOpened(Object sender, EventArgs e)
+        {
 
-            texture = createTexture(videoDecoder.Width, videoDecoder.Height);
-           //texture = createTextureFromFile("d:\\dani.jpg");           
-            
-           ShaderResourceViewDescription desc = new ShaderResourceViewDescription();
-           desc.Format = texture.Description.Format;
-           desc.Dimension = SharpDX.Direct3D.ShaderResourceViewDimension.Texture2D;
-           desc.Texture2D.MipLevels = texture.Description.MipLevels;
-           desc.Texture2D.MostDetailedMip = texture.Description.MipLevels - 1;
-     
-           textureView = new ShaderResourceView(device, texture, desc);
-      
-           device.Flush();
+            for (int i = 0; i < nrTextures; i++)
+            {
+                Disposer.RemoveAndDispose(ref this.yuvTexture[i]);
+                Disposer.RemoveAndDispose(ref this.textureView[i]);
+            }
+                                
+            if (videoPlayerViewModel.DecodedVideoFormat == VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
+            {               
+                int width = videoPlayerViewModel.Width;
+                int height = videoPlayerViewModel.Height;
 
+                yuvTexture[0] = createTexture(width, height, Format.R8_UNorm);
+                yuvTexture[1] = createTexture(width / 2, height / 2, Format.R8_UNorm);
+                yuvTexture[2] = createTexture(width / 2, height / 2, Format.R8_UNorm);
+
+                nrTextures = 3;
+            }
+            else
+            {                
+                yuvTexture[0] = createTexture(videoPlayerViewModel.Width, videoPlayerViewModel.Height, Format.B8G8R8A8_UNorm);
+
+                nrTextures = 1;
+            }
+
+            Device device = Host.Device;
+
+            for (int i = 0; i < nrTextures; i++)
+            {
+                ShaderResourceViewDescription desc = new ShaderResourceViewDescription();
+                desc.Format = yuvTexture[i].Description.Format;
+                desc.Dimension = SharpDX.Direct3D.ShaderResourceViewDimension.Texture2D;
+                desc.Texture2D.MipLevels = yuvTexture[i].Description.MipLevels;
+                desc.Texture2D.MostDetailedMip = yuvTexture[i].Description.MipLevels - 1;
+
+                textureView[i] = new ShaderResourceView(device, yuvTexture[i], desc);
+
+            }
+  
+            viewport = setupViewport(videoPlayerViewModel.Width, videoPlayerViewModel.Height);
            
+            device.Flush();
+
+            DPFCanvas canvas = (DPFCanvas)Host;
+            canvas.StartRendering();
+             
         }
 
-        void initVideo()
+        Viewport setupViewport(int videoWidth, int videoHeight)
         {
-            videoDecoder = new VideoLib.VideoPlayer();
-            videoDecoder.open("K:\\michelle jenneke\\barcelona.mp4", VideoLib.VideoPlayer.DecodedVideoFormat.BGRA);
+            DPFCanvas canvas = (DPFCanvas)Host;
+            double screenWidth = canvas.ActualWidth;
+            double screenHeight = canvas.ActualHeight;
 
-            syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
+            System.Drawing.Rectangle screenRect = new System.Drawing.Rectangle(0,0,(int)screenWidth, (int)screenHeight);
 
-            previousVideoPts = 0;
-            previousVideoDelay = 0.04;
+            System.Drawing.Rectangle videoRect = Utils.ImageUtils.stretchRectangle(new System.Drawing.Rectangle(0,0,videoWidth,videoHeight),
+                screenRect);
 
-            audioDiffAvgCount = 0;
+            videoRect = Utils.ImageUtils.centerRectangle(screenRect, videoRect);
 
-            videoRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
-            videoRefreshTimer.Tick += new EventHandler(videoRefreshTimer_Tick);
-            //videoRefreshTimer.SynchronizingObject = this;
-            videoRefreshTimer.AutoReset = false;
+            Viewport viewport = new Viewport(new DrawingRectangle(videoRect.X, videoRect.Y, videoRect.Width, videoRect.Height));
 
-            Task demuxPacketsTask = new Task(new Action(demuxPackets), TaskCreationOptions.LongRunning);
-            demuxPacketsTask.Start();       
-
-            Task updateAudioTask = new Task(new Action(updateAudio), TaskCreationOptions.LongRunning);
-            updateAudioTask.Start();
-
-            videoRefreshTimer.start();
+            return (viewport);
         }
 
-        void demuxPackets()
+        void IScene.RenderSizeChanged(SizeChangedInfo sizeChange)
         {
-            audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
+            viewport = setupViewport(videoPlayerViewModel.Width, videoPlayerViewModel.Height);
+        }
 
-            bool success = true;
-
-            do {
-
-            } while(success = videoDecoder.demuxPacket());
+        void displayVideoFrame(VideoLib.VideoFrame videoFrame)
+        {
+            videoFrame.copyFrameDataTexture(yuvTexture);
+        }
         
-        }
-
-        void videoRefreshTimer_Tick(Object sender, EventArgs e)
-        {
-
-            bool skipVideoFrame = false;
-
-restartvideo:
-			
-			double actualDelay = 0.04;
-
-
-			// grab a decoded frame, returns false if the queue is stopped
-			VideoFrame videoFrame = videoDecoder.FrameQueue.getDecodedVideoFrame();
-/*
-			if(VideoState == VideoState.CLOSED && videoFrame == null) {
-
-				return;
-
-			} else if(VideoState == VideoState.PLAYING) {
-*/
-				videoPts = videoFrame.Pts;
-				videoPtsDrift = videoFrame.Pts + HRTimer.getTimestamp();
-
-				if(skipVideoFrame == false) {
-
-					videoFrame.copyFrameDataTexture(texture);
-				} 					
-
-				actualDelay = synchronizeVideo(videoPts);					
-/*
-			} else if(VideoState == VideoState.PAUSED) {
-
-				videoRender.display(null, canvas, Color.Black, VideoRender.RenderMode.PAUSED);			
-			}
-*/
-			// do not update ui elements on main thread inside videoStateLock
-			// or we can get a deadlock
-			//videoDebug.update();
-			//updateUI();
-
-			if(actualDelay < 0.010) {
-
-				// delay is too small skip next frame
-				skipVideoFrame = true;
-				//videoDebug.NrVideoFramesDropped = videoDebug.NrVideoFramesDropped + 1;
-				goto restartvideo;
-
-			} 
-
-			// start timer with delay for next frame
-			videoRefreshTimer.Interval = (int)(actualDelay * 1000 + 0.5);
-			videoRefreshTimer.start();		
-            
-        }
-
-        double synchronizeVideo(double videoPts)
-        {
-
-            // assume delay to next frame equals delay between previous frames
-            double delay = videoPts - previousVideoPts;
-
-            if (delay <= 0 || delay >= 1.0)
-            {
-                // if incorrect delay, use previous one 
-                delay = previousVideoDelay;
-            }
-
-            previousVideoPts = videoPts;
-            previousVideoDelay = delay;
-
-            if (videoDecoder.HasAudio && syncMode == SyncMode.VIDEO_SYNCS_TO_AUDIO)
-            {
-                /*
-                    // synchronize video to audio
-                    double diff = getVideoClock() - audioPlayer.getAudioClock();
-
-                    // Skip or repeat the frame. Take delay into account
-                    // FFPlay still doesn't "know if this is the best guess."
-                    double sync_threshold = (delay > AV_SYNC_THRESHOLD) ? delay : AV_SYNC_THRESHOLD;
-
-                    if(Math::Abs(diff) < AV_NOSYNC_THRESHOLD) {
-
-                        if(diff <= -sync_threshold) {
-
-                            delay = 0;
-
-                        } else if(diff >= sync_threshold) {
-
-                            delay = 2 * delay;
-                        }
-                    }
-                */
-            }
-            // adjust delay based on the actual current time
-            videoFrameTimer += delay;
-            double actualDelay = videoFrameTimer - HRTimer.getTimestamp();
-/*
-            videoDebug.VideoDelay = delay;
-            videoDebug.ActualVideoDelay = actualDelay;
-            videoDebug.VideoSync = getVideoClock();
-            videoDebug.AudioSync = audioPlayer.getAudioClock();
-            videoDebug.VideoQueueSize = videoDecoder.FrameQueue.VideoPacketsInQueue;
-            videoDebug.AudioQueueSize = videoDecoder.FrameQueue.AudioPacketsInQueue;
-*/
-
-            return (actualDelay);
-        }
-
-        void updateAudio()
-        {
-             while (true)
-            {
-             VideoLib.AudioFrame audioFrame = videoDecoder.FrameQueue.getDecodedAudioFrame();
-            }
-
-        }
-
-
         void IScene.Detach()
         {
             Disposer.RemoveAndDispose(ref this.Vertices);
@@ -456,9 +350,16 @@ restartvideo:
             Disposer.RemoveAndDispose(ref this.Indices);
             Disposer.RemoveAndDispose(ref this.IndexStream);
 
-            Disposer.RemoveAndDispose(ref this.texture);
-            Disposer.RemoveAndDispose(ref this.textureView);
-            pinnedArray.Free();
+            for (int i = 0; i < nrTextures; i++)
+            {
+                Disposer.RemoveAndDispose(ref this.yuvTexture[i]);
+                Disposer.RemoveAndDispose(ref this.textureView[i]);
+            }
+
+            if (pinnedArray.IsAllocated)
+            {
+                pinnedArray.Free();
+            }
         }
 
         void IScene.Update(TimeSpan sceneTime)
@@ -477,7 +378,9 @@ restartvideo:
             device.InputAssembler.PrimitiveTopology = SharpDX.Direct3D.PrimitiveTopology.TriangleStrip;
             device.InputAssembler.SetVertexBuffers(0, new VertexBufferBinding(this.Vertices, 32, 0));
             device.InputAssembler.SetIndexBuffer(Indices, Format.R32_UInt, 0);
-                       
+
+            device.Rasterizer.SetViewports(viewport);
+
             EffectTechnique technique = this.SimpleEffect.GetTechniqueByIndex(0);
             EffectPass pass = technique.GetPassByIndex(0);
           
@@ -488,7 +391,10 @@ restartvideo:
             {
                 pass.Apply();
 
-                device.PixelShader.SetShaderResource(0, textureView);  
+                for (int j = 0; j < nrTextures; j++)
+                {
+                    device.PixelShader.SetShaderResource(j, textureView[j]);
+                }
 
                 device.DrawIndexed(nrIndices, 0, 0);
             }

@@ -22,6 +22,7 @@ using MediaViewer.About;
 using MediaViewer.DirectoryBrowser;
 using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileBrowser;
+using MediaViewer.Timers;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -39,9 +40,7 @@ namespace MediaViewer
 
         private ImageViewModel imageViewModel;
         private MainWindowViewModel mainWindowViewModel;
-        private MediaFileBrowserViewModel mediaFileBrowserViewModel;
-
-        private VideoViewModel videoViewModel;
+        private MediaFileBrowserViewModel mediaFileBrowserViewModel;    
 
         private string currentBrowsingDirectory;
 
@@ -59,8 +58,7 @@ namespace MediaViewer
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
-            initializeImageView();
-            initializeVideoView();
+            initializeImageView();      
             initializeMediaFileBrowser();
 
             mainWindowViewModel = new MainWindowViewModel();
@@ -74,20 +72,23 @@ namespace MediaViewer
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
-            VideoTestWindow test = new VideoTestWindow();
-                       
-            test.Show();
-            test.Activate();
+            //HRTimerTest.test();
             
         }
 
+    
         void mediaFileBrowser_Loaded(object sender, RoutedEventArgs e)
         {
             if (App.Args.Length != 0)
             {               
                 loadAndDisplayMedia(App.Args[0]);
                 mediaFileBrowserViewModel.BrowsePath = App.Args[0];
-            } 
+            }
+
+           // VideoTestWindow test = new VideoTestWindow();
+
+            //test.Show();
+            //test.Activate();
         }
 
         void browsingDirectory_IsSelected(String path)
@@ -119,13 +120,7 @@ namespace MediaViewer
             scaleView.DataContext = imageViewModel;
 
             imageToolBar.DataContext = imageViewModel;
-        }
-
-        void initializeVideoView()
-        {
-            videoViewModel = new VideoViewModel();
-            videoView.DataContext = videoViewModel;
-        }
+        }   
 
         void initializeMediaFileBrowser()
         {
@@ -188,7 +183,9 @@ namespace MediaViewer
         private void loadAndDisplayVideo(string location)
         {
             showVideoView(location);
-            videoViewModel.VideoLocation = location;
+            VideoPlayerViewModel videoPlayerViewModel = (VideoPlayerViewModel)videoView.DataContext;
+            videoPlayerViewModel.open(location);
+            videoPlayerViewModel.PlayCommand.DoExecute();
         }
      
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)

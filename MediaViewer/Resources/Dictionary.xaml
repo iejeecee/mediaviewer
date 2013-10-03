@@ -29,5 +29,4 @@
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>
 
-   
 </ResourceDictionary>

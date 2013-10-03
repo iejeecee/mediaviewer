@@ -22,8 +22,7 @@ namespace MediaViewer.VideoPanel
         public VideoTestWindow()
         {
             InitializeComponent();
-
-            Canvas1.Scene = new Scene();
+           
         }
     }
 }

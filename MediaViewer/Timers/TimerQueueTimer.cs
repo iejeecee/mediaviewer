@@ -92,6 +92,7 @@ namespace MediaViewer.Timers
 
         public TimerQueueTimer()
         {
+     
 			running = false;
 			timerHandle = IntPtr.Zero;
 			autoReset = true;
@@ -126,7 +127,6 @@ namespace MediaViewer.Timers
 				executeThread |= (int)Flag.WT_EXECUTEONLYONCE;
 			} 
 			
-
             bool success = CreateTimerQueueTimer(
                 // Timer handle
                 out timerHandle,
@@ -199,7 +199,7 @@ namespace MediaViewer.Timers
 
 			set
 			{				
-				value = autoReset;
+				autoReset = value;
 
 				if(IsRunning)
 				{

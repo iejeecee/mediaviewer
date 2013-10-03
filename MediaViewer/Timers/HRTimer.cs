@@ -35,20 +35,29 @@ namespace MediaViewer.Timers
             get;
             set;
         }
-
+        /// <summary>
+        /// Interval after which the timer elapses in milliseconds
+        /// </summary>
         public abstract int Interval
         {
             get;
             set;
         }
-
+        /// <summary>
+        /// Automatically restart the timer after it elapses
+        /// </summary>
         public abstract bool AutoReset
         {
             get;
             set;
         }
-
+        /// <summary>
+        /// Start the timer
+        /// </summary>
         public abstract void start();
+        /// <summary>
+        /// Stop the timer
+        /// </summary>
         public abstract void stop();
 
         public static double getTimestamp()

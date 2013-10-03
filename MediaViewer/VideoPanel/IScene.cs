@@ -21,6 +21,7 @@ namespace MediaViewer.VideoPanel
 {
     using System;
     using SharpDX.Direct3D10;
+    using System.Windows;
 
     public interface ISceneHost
     {
@@ -33,5 +34,6 @@ namespace MediaViewer.VideoPanel
         void Detach();
         void Update(TimeSpan timeSpan);
         void Render();
+        void RenderSizeChanged(SizeChangedInfo sizeInfo);
     }
 }

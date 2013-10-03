@@ -14,10 +14,10 @@ namespace MediaViewer.VideoPanel
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            double temp = (double)value;
-            int ms = (int)temp;
-      
-            TimeSpan timeSpan = new TimeSpan(0, 0, 0, 0, ms);
+            int temp = (int)value;
+            int s = (int)temp;
+                 
+            TimeSpan timeSpan = new TimeSpan(0, 0, 0, s);
 
             String timeString = "";
 

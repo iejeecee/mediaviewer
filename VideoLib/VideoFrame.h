@@ -122,19 +122,17 @@ namespace VideoLib {
 			
 			frame->UnlockRectangle();
 		}
-
-	
-
-		void copyFrameDataTexture(SharpDX::Direct3D10::Texture2D ^texture) {
-
-			Debug::Assert(texture != nullptr && texture->Description.Width == Width &&
-				texture->Description.Height == Height);
+		
+		void copyFrameDataTexture(cli::array<SharpDX::Direct3D10::Texture2D ^> ^texture) {
 			
-			SharpDX::DataRectangle data = texture->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
-
-			Byte *pict = (BYTE*)data.DataPointer.ToPointer();
+			Debug::Assert(texture[0] != nullptr && texture[0]->Description.Width == Width &&
+					texture[0]->Description.Height == Height);			
 
 			if(AVLibFrameData->format == PIX_FMT_YUV420P) {				
+
+				SharpDX::DataRectangle data = texture[0]->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
+
+				Byte *pict = (BYTE*)data.DataPointer.ToPointer();
 
 				Byte *Y = AVLibFrameData->data[0];
 				Byte *U = AVLibFrameData->data[1];
@@ -146,20 +144,40 @@ namespace VideoLib {
 					pict += data.Pitch;
 					Y += Width;
 				}
+
+				texture[0]->Unmap(D3D10CalcSubresource(0,0,1));
+
+				data = texture[1]->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
+
+				pict = (BYTE*)data.DataPointer.ToPointer();
+
 				for (int y = 0 ; y < Height / 2 ; y++)
 				{
 					memcpy(pict, V, Width / 2);
-					pict += data.Pitch / 2;
+					pict += data.Pitch;
 					V += Width / 2;
 				}
+
+				texture[1]->Unmap(D3D10CalcSubresource(0,0,1));
+
+				data = texture[2]->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
+
+				pict = (BYTE*)data.DataPointer.ToPointer();
+
 				for (int y = 0 ; y < Height / 2; y++)
 				{
 					memcpy(pict, U, Width / 2);
-					pict += data.Pitch / 2;
+					pict += data.Pitch;
 					U += Width / 2;
 				}
 
+				texture[2]->Unmap(D3D10CalcSubresource(0,0,1));
+
 			} else {
+				
+				SharpDX::DataRectangle data = texture[0]->Map(0, SharpDX::Direct3D10::MapMode::WriteDiscard, SharpDX::Direct3D10::MapFlags::None);
+
+				Byte *pict = (BYTE*)data.DataPointer.ToPointer();
 
 				Byte *source = AVLibFrameData->data[0];
 						
@@ -169,9 +187,11 @@ namespace VideoLib {
 					pict += data.Pitch;
 					source += AVLibFrameData->linesize[0];
 				}
+
+				texture[0]->Unmap(D3D10CalcSubresource(0,0,1));
 			}
 
-			texture->Unmap(D3D10CalcSubresource(0,0,1));
+			
 		}
 		
 	};

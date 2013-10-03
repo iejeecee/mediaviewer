@@ -6,42 +6,34 @@
              xmlns:dpf="clr-namespace:MediaViewer.VideoPanel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
+    <UserControl.Resources>                          
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        </ResourceDictionary>       
     </UserControl.Resources>
     <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource imageGridBackgroundColorBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="55"/>
         </Grid.RowDefinitions>
-        <dpf:DPFCanvas x:Name="Canvas1" Stretch="Fill" Margin="38,34,56,36"/>
-        <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" IsChecked="{Binding IsPlaying}">
-            <Image>
-                <Image.Style>
-                    <Style>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsPlaying}" Value="false">
-                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/ButtonPlay.ico"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding IsPlaying}" Value="true">
-                                <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/ButtonPause.ico"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Image.Style>
-            </Image>            
-        </ToggleButton>
-        <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="43,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding StopCommand}" ToolTip="Stop">
+        <dpf:DPFCanvas x:Name="VideoCanvas" Stretch="Fill" Margin="0,0,0,0"/>
+        <Button x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding PlayCommand}">
+            <Image Source="pack://application:,,,/Resources/Icons/ButtonPlay.ico"/>
+        </Button>
+        <Button x:Name="pauseButton" HorizontalAlignment="Left" Margin="43,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding PauseCommand}">
+            <Image Source="pack://application:,,,/Resources/Icons/ButtonPause.ico"/>
+        </Button>
+        <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="81,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
             <Image Source="pack://application:,,,/Resources/Icons/ButtonClose.ico" />
         </Button>
         <Slider x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,3.667,92,0" Grid.Row="1" VerticalAlignment="Top" Height="22"
-                     Maximum="{Binding TotalMilliseconds}" Value="{Binding PositionMilliseconds}" />
-        <Slider x:Name="volumeSlider" HorizontalAlignment="Right" Margin="0,30.667,5,0" Grid.Row="1" VerticalAlignment="Top" Width="60" Value="{Binding Volume}" ToolTip="Volume"/>
-        <ToggleButton HorizontalAlignment="Right" Margin="0,30.667,70,0" Grid.Row="1" VerticalAlignment="Top" Height="21" Width="25" IsChecked="{Binding IsMuted}" ToolTip="Mute">
+                     Maximum="{Binding DurationSeconds}"/>
+        <Slider x:Name="volumeSlider" HorizontalAlignment="Right" Margin="0,30.667,5,0" Grid.Row="1" VerticalAlignment="Top" Width="60" ToolTip="Volume"
+                Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />
+        <ToggleButton HorizontalAlignment="Right" Margin="0,30.667,70,0" Grid.Row="1" VerticalAlignment="Top" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
+                      IsEnabled="{Binding HasAudio}" ToolTip="Mute">
             <Image>
                 <Image.Style>
                     <Style>
@@ -60,9 +52,9 @@
         <TextBlock HorizontalAlignment="Right" Margin="0,4.667,5,0" Grid.Row="1" VerticalAlignment="Top" Height="21" FontSize="11"  Width="82" TextAlignment="Center">
             <TextBlock.Text>
                 <MultiBinding UpdateSourceTrigger="Explicit" StringFormat="{}{0}/{1}">
-                    <Binding Path="PositionMilliseconds" 
+                    <Binding Path="PositionSeconds" 
                          Converter="{StaticResource timeConverter}"/>
-                    <Binding Path="TotalMilliseconds" 
+                    <Binding Path="DurationSeconds" 
                          Converter="{StaticResource timeConverter}"/>
                 </MultiBinding>
             </TextBlock.Text>

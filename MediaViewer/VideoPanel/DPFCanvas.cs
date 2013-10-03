@@ -57,7 +57,13 @@ namespace MediaViewer.VideoPanel
                 return;
 
             this.StartD3D();
-            this.StartRendering();
+
+            if (!this.SceneAttached)
+            {
+                this.SceneAttached = true;
+                this.RenderScene.Attach(this);
+            }
+            //this.StartRendering();
         }
 
         private void Window_Closing(object sender, RoutedEventArgs e)
@@ -148,7 +154,7 @@ namespace MediaViewer.VideoPanel
             this.D3DSurface.SetRenderTargetDX10(this.RenderTarget);
         }
 
-        private void StartRendering()
+        public void StartRendering()
         {
             if (this.RenderTimer.IsRunning)
                 return;
@@ -179,6 +185,7 @@ namespace MediaViewer.VideoPanel
         {
             this.CreateAndBindTargets();
             base.OnRenderSizeChanged(sizeInfo);
+            Scene.RenderSizeChanged(sizeInfo);
         }
 
         void Render(TimeSpan sceneTime)
@@ -201,12 +208,7 @@ namespace MediaViewer.VideoPanel
             device.ClearDepthStencilView(this.DepthStencilView, DepthStencilClearFlags.Depth | DepthStencilClearFlags.Stencil, 1.0f, 0);
 
             if (this.Scene != null)
-            {
-                if (!this.SceneAttached)
-                {
-                    this.SceneAttached = true;
-                    this.RenderScene.Attach(this);
-                }
+            {              
 
                 this.Scene.Update(this.RenderTimer.Elapsed);
                 this.Scene.Render();

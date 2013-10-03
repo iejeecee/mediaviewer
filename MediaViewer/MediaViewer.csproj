@@ -218,20 +218,23 @@
     <Compile Include="Utils\Misc.cs" />
     <Compile Include="Utils\WindowsUtils.cs" />
     <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
+    <Compile Include="VideoPanel\AudioPlayer.cs" />
     <Compile Include="VideoPanel\Disposer.cs" />
     <Compile Include="VideoPanel\DPFCanvas.cs" />
     <Compile Include="VideoPanel\DX10ImageSource.cs" />
     <Compile Include="VideoPanel\IScene.cs" />
-    <Compile Include="VideoPanel\Scene.cs" />
+    <None Include="VideoPanel\StreamingAudioBuffer.cs" />
+    <Compile Include="VideoPanel\VideoRender.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
     <None Include="VideoPanel\VideoPanelViewModelTemp.cs" />
+    <Compile Include="VideoPanel\VideoPlayerViewModel.cs" />
+    <Compile Include="VideoPanel\VideoState.cs" />
     <Compile Include="VideoPanel\VideoTestWindow.xaml.cs">
       <DependentUpon>VideoTestWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VideoPanel\VideoViewModel.cs" />
     <Page Include="About\AboutView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -475,6 +478,11 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\File Move.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\YUVtoRGB.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

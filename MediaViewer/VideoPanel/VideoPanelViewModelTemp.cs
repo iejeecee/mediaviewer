@@ -131,7 +131,6 @@ namespace MediaViewer.VideoPanel
 
 		}
 
-
 		~VideoPanelViewModel()
 		{
 			if (components)
@@ -139,9 +138,6 @@ namespace MediaViewer.VideoPanel
 				delete components;
 			}
 		}
-	
-
-		
 
 		void invokeUpdateUI() {
 

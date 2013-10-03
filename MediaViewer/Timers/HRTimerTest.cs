@@ -17,7 +17,7 @@ namespace MediaViewer.Timers
 		static int counter;
 		static AutoResetEvent autoEvent;
 
-		static void tick(Object sender, EventArgs e) {
+		static void tick1(Object sender, EventArgs e) {
 
 			if(counter++ == 100) {
 
@@ -27,9 +27,9 @@ namespace MediaViewer.Timers
 			}
 		}
 
-		static void testTimer(HRTimer timer) {
+		static void testAverageTimerAccuracy(HRTimer timer) {
 
-			timer.Tick += new EventHandler(tick);
+			timer.Tick += new EventHandler(tick1);
 			
 			for(int interval = 100; interval > 0; interval-=5) {
 
@@ -44,12 +44,42 @@ namespace MediaViewer.Timers
 
 				double avgTime = (double)(stopWatch.ElapsedMilliseconds) / counter;
 
-				Debug.WriteLine(interval.ToString() + ": " + avgTime.ToString());
+				Debug.WriteLine("Test period: " + interval.ToString() + " (ms) : " + avgTime.ToString() + " avg period (ms)");
 
 				counter = 0;
 			}
 			
 		}
+
+        static void tick2(Object sender, EventArgs e)
+        {
+
+            counter++;
+            autoEvent.Set();            
+        }
+
+        static void testTimerAutoResetFunctionality(HRTimer timer)
+        {
+
+            timer.Tick += new EventHandler(tick2);
+            timer.AutoReset = false;
+
+            for (int interval = 100; interval > 0; interval -= 5)
+            {
+                counter = 0;
+                autoEvent = new AutoResetEvent(false);
+
+                timer.Interval = interval;
+                timer.start();
+
+                autoEvent.WaitOne();
+                Thread.Sleep(interval * 3);
+
+                Debug.WriteLine(interval.ToString() + ": " + counter.ToString());
+               
+            }
+
+        }
 
 	
 		static HRTimerTest() {
@@ -59,13 +89,18 @@ namespace MediaViewer.Timers
 
 		public static void test() {
 
+            timer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
 			//timer = HRTimerFactory.create(HRTimerFactory.TimerType.DEFAULT);
+            //timer = HRTimerFactory.create(HRTimerFactory.TimerType.MULTI_MEDIA);
 
-			//testTimer(timer);
+          
 
-			timer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
+			//testTimerAccuracy(timer);
+            testTimerAutoResetFunctionality(timer);
 
-			testTimer(timer);
+			
+
+        
 	
 		}
 

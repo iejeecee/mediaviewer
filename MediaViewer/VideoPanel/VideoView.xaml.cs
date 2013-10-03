@@ -22,69 +22,67 @@ namespace MediaViewer.VideoPanel
     public partial class VideoView : UserControl
     {
 
+        bool updateTimeLineSlider;
 
         public VideoView()
         {
             InitializeComponent();
 
-            //Canvas1.Scene = new Scene();
-
             timeLineSlider.AddHandler(Slider.MouseLeftButtonDownEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonDownEvent),
-                true);
+                 true);
+            timeLineSlider.AddHandler(Slider.MouseLeftButtonUpEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonUpEvent),
+              true);
+
+            VideoRender videoRender = new VideoRender();
+
+            updateTimeLineSlider = true;
+
+            VideoCanvas.Scene = videoRender;
+            VideoPlayerViewModel viewModel = videoRender.VideoPlayerViewModel;
+            DataContext = viewModel;
+
+            viewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s, e) =>
+            {
+
+                if (e.PropertyName.Equals("PositionSeconds") && updateTimeLineSlider == true)
+                {
+                    Application.Current.Dispatcher.BeginInvoke(new Action(updateTimeLine));
+                }               
+
+            });
+            
         }
 
+        void updateTimeLine()
+        {
+            VideoPlayerViewModel viewModel = (VideoPlayerViewModel)DataContext;
+            timeLineSlider.Value = viewModel.PositionSeconds;
+        }
 
 
         private void timeLineSlider_MouseLeftButtonDownEvent(object sender, MouseButtonEventArgs e)
         {
+            updateTimeLineSlider = false;
+
+        }
+
+        private void timeLineSlider_MouseLeftButtonUpEvent(object sender, MouseButtonEventArgs e)
+        {
+           
             var slider = (Slider)sender;
             Point position = e.GetPosition(slider);
             double d = 1.0d / slider.ActualWidth * position.X;
             var p = slider.Maximum * d;
-           
+
             int sliderValue = (int)p;
 
-            VideoViewModel videoViewModel = (VideoViewModel)DataContext;
+            VideoPlayerViewModel videoPlayerViewModel = (VideoPlayerViewModel)DataContext;
 
-            videoViewModel.SetPositionMillisecondsCommand.DoExecute(sliderValue);
+            videoPlayerViewModel.seek(sliderValue);
 
+            updateTimeLineSlider = true;    
         }
 
-        /*
-             private void videoPlayer_MediaOpened(object sender, RoutedEventArgs e)
-             {
-            
-                 timeLineSlider.Maximum = videoPlayer.NaturalDuration.TimeSpan.TotalMilliseconds;               
-           
-             }
-
-     
-
-             private void timeLineSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
-             {
-                 int SliderValue = (int)timeLineSlider.Value;
-
-                 // Overloaded constructor takes the arguments days, hours, minutes, seconds, miniseconds. 
-                 // Create a TimeSpan with miliseconds equal to the slider value.
-                 TimeSpan ts = new TimeSpan(0, 0, 0, 0, SliderValue);
-                 videoPlayer.Position = ts;
-             }
-
-        
-             private void timeLineSlider_DragCompleted(object sender, DragCompletedEventArgs e)
-             {
-                 int SliderValue = (int)timeLineSlider.Value;
-
-                 // Overloaded constructor takes the arguments days, hours, minutes, seconds, miniseconds. 
-                 // Create a TimeSpan with miliseconds equal to the slider value.
-                 TimeSpan ts = new TimeSpan(0, 0, 0, 0, SliderValue);
-                 videoPlayer.Position = ts;
-          
-             }
-             private void timeLineSlider_DragStarted(object sender, DragStartedEventArgs e)
-             {
-     
-             }
-         */
+             
     }
 }

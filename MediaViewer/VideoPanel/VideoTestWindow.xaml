@@ -4,6 +4,6 @@
         xmlns:dpf="clr-namespace:MediaViewer.VideoPanel"
         Title="VideoTestWindow" Height="300" Width="300">
     <Grid>
-        <dpf:DPFCanvas x:Name="Canvas1" Stretch="Fill" Margin="38,34,56,36"/>
+        <dpf:VideoView/>
     </Grid>
 </Window>

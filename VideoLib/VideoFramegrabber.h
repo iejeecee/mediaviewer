@@ -243,6 +243,7 @@ public:
 
 			}		
 		}
+
 	}
 
 	int getThumbWidth() const {
