@@ -49,7 +49,8 @@ Texture2D<float> vTexture;
 
 SamplerState textureSampler
 {
-    Filter = MIN_MAG_MIP_LINEAR;
+    //Filter = MIN_MAG_MIP_LINEAR;
+	Filter = MIN_MAG_MIP_POINT;
     AddressU = Wrap;
     AddressV = Wrap;
 };
@@ -77,23 +78,40 @@ PS_IN VS( VS_IN input )
 }
 
 
-float3 YUV444toRGB888(float3 yuv) {
+float4 YUV444toRGB888(float3 yuv) {
 
-	float3 temp;
-	
-    temp.r = yuv[0] - (16.0  / 256.0);
-    temp.g = yuv[1] - (128.0 / 256.0);
-    temp.b = yuv[2] - (128.0 / 256.0);
+	float3 pre;
 
-	float3x3 mat = {
-		1.1640625, 0, 1.59765625,
-		1.1640625, -0.390625, -0.8125,
-		1.1640625, 0, 2.015625
-	};
+	pre.r = yuv[0] - (16.0  / 255.0);
+    pre.g = yuv[1] - (128.0 / 255.0);
+    pre.b = yuv[2] - (128.0 / 255.0);
 
-	float3 rgb = mul(mat, temp);
+	const float3 red   = float3 (1.164, 0.0, 2.018);
+    const float3 green = float3 (1.164, -0.813, -0.391);
+    const float3 blue  = float3 (1.164, 1.596, 0.0);
 
-	return(rgb);
+	float4 output;
+
+    output.r = dot(blue, pre);
+    output.g = dot(green, pre);
+    output.b = dot(red, pre);
+    output.a = 1.0;
+
+	return(output);
+}
+
+float4 YCrCbtoRGB(float3 yuv) {
+
+	float y = 1.1643 * (yuv[0] - 0.0625);
+	float u = yuv[1] - 0.5;
+	float v = yuv[2] - 0.5;
+
+	float r = y + 1.5958 * v;
+	float g = y - 0.39173 * u - 0.81290 * v;
+	float b = y + 2.017 * u;
+
+	return(float4(b,g,r,1.0));
+
 }
 
 float4 PS( PS_IN input ) : SV_Target
@@ -110,22 +128,13 @@ float4 PS( PS_IN input ) : SV_Target
 	return float4(rgb.gbr, 1);
 */
 
-	 float3 pre;
-
-    pre.r = yTexture.Sample(textureSampler, input.uv).r - (16.0  / 256.0);
-    pre.g = uTexture.Sample(textureSampler, input.uv).r - (128.0 / 256.0);
-    pre.b = vTexture.Sample(textureSampler, input.uv).r - (128.0 / 256.0);
-
-    const float3 red   = float3 (0.00456621, 0.0, 0.00625893) * 255.0;
-    const float3 green = float3 (0.00456621, -0.00153632, -0.00318811) * 255.0;
-    const float3 blue  = float3 (0.00456621, 0.00791071, 0.0) * 255.0;
-
-	float4 output;
-
-    output.r = dot(blue, pre);
-    output.g = dot(green, pre);
-    output.b = dot(red, pre);
-    output.a = 1.0;
+	float3 yuv;
+	yuv[0] = yTexture.Sample(textureSampler, input.uv).r;
+    yuv[1] = uTexture.Sample(textureSampler, input.uv).r;
+    yuv[2] = vTexture.Sample(textureSampler, input.uv).r;
+   
+	float4 output = YUV444toRGB888(yuv);
+	//float4 output =	YCrCbtoRGB(yuv);
 
 	return(output);
 

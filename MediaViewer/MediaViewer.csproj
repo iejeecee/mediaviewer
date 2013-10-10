@@ -50,6 +50,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Aga.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1d788d229eb5990, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\wpftreelistview_src_original\Aga.Controls\bin\Debug\Aga.Controls.dll</HintPath>
+    </Reference>
     <Reference Include="DigitallyCreated.Utilities.Concurrency, Version=1.0.1.0, Culture=neutral, PublicKeyToken=79d801fe1e19f7f2, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
@@ -114,6 +118,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
+    <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
       <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
@@ -121,10 +126,13 @@
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
       <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
     </Compile>
+    <Compile Include="DirectoryBrowser\DirectoryBrowserControl3.xaml.cs">
+      <DependentUpon>DirectoryBrowserControl3.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
+    <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel2.cs" />
     <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
     <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
-    <Compile Include="DirectoryBrowser\DummyPathModel.cs" />
     <Compile Include="DirectoryBrowser\PathModel.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
@@ -204,6 +212,9 @@
     <Compile Include="Progress\ProgressControl.xaml.cs">
       <DependentUpon>ProgressControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Timers\DefaultTimer.cs" />
     <Compile Include="Timers\HRTimer.cs" />
     <Compile Include="Timers\HRTimerTest.cs" />
@@ -216,17 +227,17 @@
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MediaFormatConvert.cs" />
     <Compile Include="Utils\Misc.cs" />
-    <Compile Include="Utils\WindowsUtils.cs" />
+    <Compile Include="Utils\Windows\DriveIdleMonitor.cs" />
+    <Compile Include="Utils\Windows\FileDialog.cs" />
+    <Compile Include="Utils\Windows\PerformanceCounters.cs" />
     <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
     <Compile Include="VideoPanel\AudioPlayer.cs" />
     <Compile Include="VideoPanel\Disposer.cs" />
     <Compile Include="VideoPanel\DPFCanvas.cs" />
     <Compile Include="VideoPanel\DX10ImageSource.cs" />
     <Compile Include="VideoPanel\IScene.cs" />
-    <None Include="VideoPanel\StreamingAudioBuffer.cs" />
     <Compile Include="VideoPanel\VideoRender.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
-    <None Include="VideoPanel\VideoPanelViewModelTemp.cs" />
     <Compile Include="VideoPanel\VideoPlayerViewModel.cs" />
     <Compile Include="VideoPanel\VideoState.cs" />
     <Compile Include="VideoPanel\VideoTestWindow.xaml.cs">
@@ -244,6 +255,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="DirectoryBrowser\DirectoryBrowserControl2.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DirectoryBrowser\DirectoryBrowserControl3.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -311,6 +326,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="VideoPanel\VideoTestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

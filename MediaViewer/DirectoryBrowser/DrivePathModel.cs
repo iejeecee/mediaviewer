@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Utils.Windows;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,10 +9,21 @@ using System.Threading.Tasks;
 namespace MediaViewer.DirectoryBrowser
 {
     class DrivePathModel : PathModel
-    {          
+    {
+
+        static DriveIdleMonitor driveIdleMonitor = new DriveIdleMonitor();
+
+        DriveInfo info;
+
+        public DriveInfo DriveInfo
+        {
+            get { return info; }           
+        }
+
         public DrivePathModel(DriveInfo info, DirectoryBrowserViewModel directoryBrowserViewModel)
             : base(directoryBrowserViewModel)
         {
+            this.info = info;
             Parent = null;
             Name = info.Name;
             switch (info.DriveType)
@@ -52,9 +64,35 @@ namespace MediaViewer.DirectoryBrowser
                     }
               
             }
-
-            DummyPathModel dummy = new DummyPathModel(this, directoryBrowserViewModel);
-            Directories.Add(dummy);
+        
+            if (driveIdleMonitor.DrivesMonitored.Contains(Name.Replace("\\","")))
+            {
+                FreeSpaceBytes = info.TotalFreeSpace;
+                driveIdleMonitor.DriveInUse += new EventHandler<string>(driveIdleMonitor_driveInUse);
+            }
+            else
+            {
+                FreeSpaceBytes = 0;
+            }
+            
         }
+
+        long freeSpaceBytes;
+
+        override public long FreeSpaceBytes 
+        {
+            get { return freeSpaceBytes; }
+            set
+            {
+                freeSpaceBytes = value;          
+                NotifyPropertyChanged();
+            }
+        }
+
+        private void driveIdleMonitor_driveInUse(object sender, string e)
+        {
+            FreeSpaceBytes = info.TotalFreeSpace;
+        }
+               
     }
 }

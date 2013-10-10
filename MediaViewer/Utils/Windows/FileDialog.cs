@@ -5,9 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Win32;
 
-namespace MediaViewer.Utils
+namespace MediaViewer.Utils.Windows
 {
-    class WindowsUtils
+    class FileDialog
     {
         public static OpenFileDialog createOpenMediaFileDialog(bool imageOnly)
         {

@@ -24,7 +24,7 @@ namespace MediaViewer
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Args = e.Args;
-      
+                  
         }
 
         private void Application_Exit(object sender, EventArgs e)

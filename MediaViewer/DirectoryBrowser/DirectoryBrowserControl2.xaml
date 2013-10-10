@@ -7,6 +7,6 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <local:DirectoryBrowserControl x:Name="internalDirectoryBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch"/>
+        <local:DirectoryBrowserControl3 x:Name="internalDirectoryBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch"/>
     </Grid>
 </UserControl>

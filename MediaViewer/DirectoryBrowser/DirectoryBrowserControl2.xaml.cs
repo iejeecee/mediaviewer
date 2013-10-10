@@ -20,15 +20,15 @@ namespace MediaViewer.DirectoryBrowser
     /// </summary>
     public partial class DirectoryBrowserControl2 : UserControl
     {
-        DirectoryBrowserViewModel directoryBrowserViewModel;
+        DirectoryBrowserViewModel2 directoryBrowserViewModel;
 
         public DirectoryBrowserControl2()
         {
             InitializeComponent();
 
-            directoryBrowserViewModel = (DirectoryBrowserViewModel)internalDirectoryBrowser.DataContext;
+            directoryBrowserViewModel = (DirectoryBrowserViewModel2)internalDirectoryBrowser.DataContext;
 
-            directoryBrowserViewModel.PathSelectedCallback = new DirectoryBrowserViewModel.PathSelectedDelegate((pathModel) =>
+            directoryBrowserViewModel.PathSelectedCallback = new DirectoryBrowserViewModel2.PathSelectedDelegate((pathModel) =>
             {            
                 SelectedPath = pathModel.getFullPath();
             });

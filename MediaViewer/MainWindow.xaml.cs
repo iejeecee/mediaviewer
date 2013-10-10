@@ -23,6 +23,7 @@ using MediaViewer.DirectoryBrowser;
 using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Timers;
+using MediaViewer.Utils.Windows;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -72,7 +73,8 @@ namespace MediaViewer
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
-            //HRTimerTest.test();
+            //TestWindow test = new TestWindow();
+            //test.Show();          
             
         }
 
@@ -221,7 +223,7 @@ namespace MediaViewer
 
         private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
         {
-             OpenFileDialog openFileDialog = WindowsUtils.createOpenMediaFileDialog(false);
+             OpenFileDialog openFileDialog = Utils.Windows.FileDialog.createOpenMediaFileDialog(false);
 
              if (openFileDialog.ShowDialog() == true)
              {

@@ -33,6 +33,9 @@ namespace MediaViewer.VideoPanel
             timeLineSlider.AddHandler(Slider.MouseLeftButtonUpEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonUpEvent),
               true);
 
+            timeLineSlider.AddHandler(Slider.MouseMoveEvent, new MouseEventHandler(timeLineSlider_MouseMoveEvent));
+            timeLineSlider.AddHandler(Slider.MouseLeaveEvent, new MouseEventHandler(timeLineSlider_MouseLeaveEvent));
+
             VideoRender videoRender = new VideoRender();
 
             updateTimeLineSlider = true;
@@ -59,6 +62,29 @@ namespace MediaViewer.VideoPanel
             timeLineSlider.Value = viewModel.PositionSeconds;
         }
 
+        private void timeLineSlider_MouseMoveEvent(object sender, MouseEventArgs e)
+        {
+            if (!timeLineSliderPopup.IsOpen) { timeLineSliderPopup.IsOpen = true; }
+
+            Point currentPos = e.GetPosition(timeLineSlider);
+
+            // The + 20 part is so your mouse pointer doesn't overlap.
+            timeLineSliderPopup.HorizontalOffset = currentPos.X + 20;
+            timeLineSliderPopup.VerticalOffset = currentPos.Y;
+
+            double d = 1.0d / timeLineSlider.ActualWidth * currentPos.X;
+            var p = timeLineSlider.Maximum * d;
+
+            int seconds = (int)p;
+
+            timeLineSliderPopupText.Text = Utils.Misc.formatTimeSeconds(seconds);
+
+        }
+
+        private void timeLineSlider_MouseLeaveEvent(object sender, MouseEventArgs e)
+        {
+            timeLineSliderPopup.IsOpen = false;
+        }
 
         private void timeLineSlider_MouseLeftButtonDownEvent(object sender, MouseButtonEventArgs e)
         {

@@ -20,7 +20,7 @@ namespace MediaViewer.DirectoryBrowser
 
         public DirectoryBrowserViewModel DirectoryBrowserViewModel
         {
-            get { return directoryBrowserViewModel; }       
+            get { return directoryBrowserViewModel; }
         }
 
         private ObservableCollection<PathModel> directories;
@@ -34,8 +34,19 @@ namespace MediaViewer.DirectoryBrowser
         public string Name
         {
             get { return name; }
-            set { name = value; }
+            set
+            {
+                name = value;
+                NotifyPropertyChanged();
+            }
         }
+
+        virtual public long FreeSpaceBytes
+        {
+            get { return (0); }
+            set {}
+        }
+
 
         private PathModel parent;
         public PathModel Parent
@@ -49,7 +60,11 @@ namespace MediaViewer.DirectoryBrowser
         public string ImageUrl
         {
             get { return imageUrl; }
-            set { imageUrl = value; }
+            set
+            {
+                imageUrl = value;
+                NotifyPropertyChanged();
+            }
         }
 
         private bool isExpanded;
@@ -66,8 +81,7 @@ namespace MediaViewer.DirectoryBrowser
                     parent.IsExpanded = true;
                 }
 
-                if (Directories.Count == 1 &&
-                    Directories[0].GetType() == typeof(DummyPathModel))
+                if (Directories.Count == 1)
                 {
                     Task updating = updateSubDirectoriesAsync(this);
                 }
@@ -75,7 +89,7 @@ namespace MediaViewer.DirectoryBrowser
                 NotifyPropertyChanged();
             }
         }
-      
+
         private bool isSelected;
 
         public bool IsSelected
@@ -88,8 +102,8 @@ namespace MediaViewer.DirectoryBrowser
                 NotifyPropertyChanged();
 
                 if (isSelected == true && directoryBrowserViewModel.PathSelectedCallback != null)
-                {                    
-                    directoryBrowserViewModel.PathSelectedCallback(this);                   
+                {
+                    directoryBrowserViewModel.PathSelectedCallback(this);
                 }
 
             }
@@ -103,9 +117,10 @@ namespace MediaViewer.DirectoryBrowser
             parent = null;
             IsExpanded = false;
             IsSelected = false;
-        }        
+        }
 
-        public string getFullPath() {
+        public string getFullPath()
+        {
 
             string fullPath = Name;
             PathModel parent = Parent;
@@ -138,7 +153,8 @@ namespace MediaViewer.DirectoryBrowser
             return (subDirsInfo);
         }
 
-        public static async Task updateSubDirectoriesAsync(PathModel parent) {
+        public static async Task updateSubDirectoriesAsync(PathModel parent)
+        {
 
             // await for async operation to complete
 
@@ -166,13 +182,13 @@ namespace MediaViewer.DirectoryBrowser
                     parent.Directories.Add(subDir);
                 }
             }
-                                  
+
 
         }
 
         static List<PathModel> updateSubDirectories(PathModel parent)
         {
-            
+
             string fullPath = parent.getFullPath();
 
             DirectoryInfo[] subDirsInfo = getSubDirectories(fullPath);
@@ -187,24 +203,16 @@ namespace MediaViewer.DirectoryBrowser
                 }
 
                 DirectoryPathModel subDir = new DirectoryPathModel(parent, subDirInfo, parent.DirectoryBrowserViewModel);
-
-                string subDirPath = fullPath + "\\" + subDir.Name;
-
-                subDirsInfo = getSubDirectories(subDirPath);
-                if (subDirsInfo.Length > 0)
-                {
-                    subDir.Directories.Add(new DummyPathModel(subDir, parent.DirectoryBrowserViewModel));
-                }
-
+              
                 subDirs.Add(subDir);
 
             }
 
             return (subDirs);
-          
-         
+
+
         }
 
-    
+
     }
 }

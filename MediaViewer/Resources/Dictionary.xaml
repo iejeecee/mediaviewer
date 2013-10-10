@@ -7,6 +7,7 @@
     <Converters:BooleanNegatorConverter x:Key="booleanNegatorConverter"/>
     <Converters:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
     <Converters:NegatedEnumToBooleanConverter x:Key="negatedEnumToBooleanConverter"/>
+    <Converters:FormatSizeBytesConverter x:Key="formatSizeBytesConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
