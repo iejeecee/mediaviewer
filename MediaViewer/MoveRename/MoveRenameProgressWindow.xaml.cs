@@ -20,13 +20,13 @@ namespace MediaViewer.MoveRename
     /// </summary>
     public partial class MoveRenameProgressWindow : Window
     {
-        FileUtilsProgress progress;
+        FileUtilsProgressViewModel progress;
 
         public MoveRenameProgressWindow()
         {
             InitializeComponent();
 
-            progress = new FileUtilsProgress();
+            progress = new FileUtilsProgressViewModel();
             DataContext = progress;
 
             progress.ClosingRequest += new EventHandler((o, e) => this.Close());

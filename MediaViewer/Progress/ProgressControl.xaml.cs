@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,7 @@ namespace MediaViewer.Progress
         {
             InitializeComponent();
             okButton.IsEnabled = false;
+       
         }
 
         public int TotalProgress
@@ -77,8 +80,7 @@ namespace MediaViewer.Progress
         // Using a DependencyProperty as the backing store for ItemInfo.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemInfoProperty =
             DependencyProperty.Register("ItemInfo", typeof(string), typeof(ProgressControl), new PropertyMetadata(String.Empty, new PropertyChangedCallback(itemInfoChangedCallback)));
-
-
+       
         static void itemInfoChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             ProgressControl control = (ProgressControl)o;
@@ -86,16 +88,72 @@ namespace MediaViewer.Progress
             String infoText = (String)e.NewValue;
 
             control.itemLabel.Content = infoText;
+            control.itemLabel.ToolTip = infoText;
 
-            if (!String.IsNullOrEmpty(infoText))
+        }
+
+        public ObservableCollection<String> InfoMessages
+        {
+            get { return (ObservableCollection<String>)GetValue(ItemInfoProperty); }
+            set { SetValue(ItemInfoProperty, value); }
+        }
+
+        public static readonly DependencyProperty InfoMessagesProperty =
+            DependencyProperty.Register("InfoMessages", typeof(ObservableCollection<String>), typeof(ProgressControl), new PropertyMetadata(null, new PropertyChangedCallback(infoMessagesChangedCallback)));
+
+        static void infoMessagesChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
+        {
+            ProgressControl control = (ProgressControl)o;
+
+            if (e.OldValue != null)
             {
-                if (!String.IsNullOrEmpty(control.infoTextBox.Text))
-                {
-                    control.infoTextBox.Text += "\n";
-                }
-
-                control.infoTextBox.Text += (String)e.NewValue;
+                var coll = (ObservableCollection<String>)e.OldValue;
+                // Unsubscribe from CollectionChanged on the old collection
+                coll.CollectionChanged -= control.infoMessages_CollectionChanged;
             }
+
+            if (e.NewValue != null)
+            {
+                var coll = (ObservableCollection<String>)e.NewValue;              
+                // Subscribe to CollectionChanged on the new collection
+                coll.CollectionChanged += control.infoMessages_CollectionChanged;
+            }
+
+        }
+
+        private void infoMessages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+
+                switch (e.Action)
+                {
+                    case NotifyCollectionChangedAction.Add:
+                        {
+                            foreach (String message in e.NewItems)
+                            {
+
+                                infoTextBox.Text += message + "\n";
+                            }
+
+                            break;
+                        }
+                    case NotifyCollectionChangedAction.Reset:
+                        {
+                            infoTextBox.Text = "";
+                            foreach (String message in e.NewItems)
+                            {
+
+                                infoTextBox.Text += message + "\n";
+                            }
+                            break;
+                        }
+                    default:
+                        {
+                            break;
+                        }
+                }
+            }));
         }
 
         static void totalProgressChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)

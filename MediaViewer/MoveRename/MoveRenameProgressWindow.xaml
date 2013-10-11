@@ -4,7 +4,8 @@
         Title="Move/Rename Progress" Height="350" Width="420">
     <Grid>
         <Progress:ProgressControl TotalProgress="{Binding CurrentFile}" TotalProgressMax="{Binding TotalFiles}"
-                                  ItemProgress="{Binding CurrentFileProgress}" ItemProgressMax="100" ItemInfo="{Binding Messages}"
+                                  ItemProgress="{Binding CurrentFileProgress}" ItemProgressMax="100" ItemInfo="{Binding ItemInfo}"
+                                  InfoMessages="{Binding InfoMessages}"
                                   CancelCommand="{Binding CancelCommand}" OkCommand="{Binding OkCommand}"/>
     </Grid>
 </Window>

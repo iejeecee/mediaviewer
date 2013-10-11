@@ -10,8 +10,7 @@ namespace MediaViewer.DirectoryBrowser
     class DirectoryPathModel : PathModel
     {
        
-        public DirectoryPathModel(PathModel parent, DirectoryInfo info, DirectoryBrowserViewModel directoryBrowserViewModel)
-            : base(directoryBrowserViewModel)
+        public DirectoryPathModel(PathModel parent, DirectoryInfo info)          
         {
             Parent = parent;
             Name = info.Name;

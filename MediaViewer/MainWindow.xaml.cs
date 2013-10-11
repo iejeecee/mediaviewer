@@ -24,6 +24,7 @@ using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Timers;
 using MediaViewer.Utils.Windows;
+using System.Windows.Threading;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -70,7 +71,31 @@ namespace MediaViewer
             currentBrowsingDirectory = "";
        
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_PathSelected", new Action<String>(browsingDirectory_IsSelected));
+/*
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = new TimeSpan(0,0,10);
+            timer.Tick += new EventHandler((o,e) => {
+                 if (App.Args.Length != 0)
+                {
+                    loadAndDisplayMedia(App.Args[0]);
+                    mediaFileBrowserViewModel.BrowsePath = App.Args[0];
 
+                }
+
+            });
+            timer.Start();
+
+/*
+            Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
+            {
+                if (App.Args.Length != 0)
+                {
+                    loadAndDisplayMedia(App.Args[0]);
+                    mediaFileBrowserViewModel.BrowsePath = App.Args[0];
+
+                }
+            }));
+*/
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //TestWindow test = new TestWindow();
@@ -83,8 +108,9 @@ namespace MediaViewer
         {
             if (App.Args.Length != 0)
             {               
-                loadAndDisplayMedia(App.Args[0]);
-                mediaFileBrowserViewModel.BrowsePath = App.Args[0];
+                loadAndDisplayMedia(App.Args[0]);               
+                mediaFileBrowserViewModel.BrowsePath = App.Args[0];          
+               
             }
 
            // VideoTestWindow test = new VideoTestWindow();

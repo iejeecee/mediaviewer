@@ -22,7 +22,7 @@ namespace MediaViewer.MoveRename
     public partial class MoveRenameView : Window
     {
        
-        MoveRenameViewModel moveRenameViewModel;
+        MoveRenameViewModel moveRenameViewModel;    
 
         public MoveRenameView()
         {

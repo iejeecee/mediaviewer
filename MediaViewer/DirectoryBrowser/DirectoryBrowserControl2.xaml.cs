@@ -20,15 +20,15 @@ namespace MediaViewer.DirectoryBrowser
     /// </summary>
     public partial class DirectoryBrowserControl2 : UserControl
     {
-        DirectoryBrowserViewModel2 directoryBrowserViewModel;
+        DirectoryBrowserViewModel internalDirectoryBrowserViewModel;
 
         public DirectoryBrowserControl2()
         {
             InitializeComponent();
 
-            directoryBrowserViewModel = (DirectoryBrowserViewModel2)internalDirectoryBrowser.DataContext;
+            internalDirectoryBrowserViewModel = (DirectoryBrowserViewModel)internalDirectoryBrowser.DataContext;
 
-            directoryBrowserViewModel.PathSelectedCallback = new DirectoryBrowserViewModel2.PathSelectedDelegate((pathModel) =>
+            internalDirectoryBrowserViewModel.PathSelectedCallback = new DirectoryBrowserViewModel.PathSelectedDelegate((pathModel) =>
             {            
                 SelectedPath = pathModel.getFullPath();
             });
@@ -49,8 +49,9 @@ namespace MediaViewer.DirectoryBrowser
         {
 
             DirectoryBrowserControl2 control = (DirectoryBrowserControl2)o;
-            control.directoryBrowserViewModel.selectPath((String)e.NewValue);
+            control.internalDirectoryBrowserViewModel.selectPath((String)e.NewValue);
 
+          
         }
       
     }

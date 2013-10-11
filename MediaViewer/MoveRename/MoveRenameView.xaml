@@ -4,7 +4,7 @@
         xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         x:Class="MediaViewer.MoveRename.MoveRenameView"
-        Title="Copy/Move/Rename - " Height="418.667" Width="500" Icon="/MediaViewer;component/Resources/Icons/File Move.ico">
+        Title="{Binding InfoString}" Height="418.667" Width="500" Icon="/MediaViewer;component/Resources/Icons/File Move.ico">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -20,7 +20,14 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <GroupBox Header="Mode" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Grid.Row="0">
-            <ComboBox x:Name="modeComboBox" ItemsSource="{Binding ModeList}" SelectedItem="{Binding SelectedMode}" HorizontalAlignment="Stretch"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox x:Name="moveBox" IsChecked="{Binding IsMove}" Content="Move" Grid.Column="0" Margin="3,3,3,3"/>
+                <CheckBox x:Name="copyBox" IsChecked="{Binding IsCopy}" Content="Copy" Grid.Column="1" Margin="3,3,3,3"/>
+            </Grid>
         </GroupBox>
         <GroupBox Header="Destination Path" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Grid.Row="1">
             <Grid>

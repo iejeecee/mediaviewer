@@ -108,7 +108,7 @@ namespace MediaViewer.Utils
             int fileProgress = (int)((100 * totalBytesTransferred) / totalFileSize);
 
             GCHandle h = GCHandle.FromIntPtr(data);
-            FileUtilsProgress progress = (FileUtilsProgress)h.Target;
+            FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)h.Target;
 
             progress.CurrentFileProgress = fileProgress;
 
@@ -118,7 +118,7 @@ namespace MediaViewer.Utils
 
         }
 
-        bool copyFile(string source, string destination, CopyFileOptions options, FileUtilsProgress progress)
+        bool copyFile(string source, string destination, CopyFileOptions options, FileUtilsProgressViewModel progress)
         {
 
             GCHandle handle = GCHandle.Alloc(progress);
@@ -216,7 +216,7 @@ namespace MediaViewer.Utils
         }
 
 
-        public void copy(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgress progress)
+        public void copy(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgressViewModel progress)
         {
             if (sourcePaths.Count != destPaths.Count)
             {
@@ -245,14 +245,15 @@ namespace MediaViewer.Utils
                 {
 
                     progress.CurrentFile = i;
-                    progress.Messages = "Copying: " + movePaths[i] + "->" + moveDestPaths[i];
+                    progress.ItemInfo = "Copying: " + movePaths[i] + " -> " + moveDestPaths[i];
 
                     success = copyFile(movePaths[i], moveDestPaths[i], CopyFileOptions.ALL, progress);               
 
                     if (success == false) break;
 
-                    bool isDirectory = Directory.Exists(moveDestPaths[i]);                    
-                    
+                    bool isDirectory = Directory.Exists(moveDestPaths[i]);
+
+                    progress.InfoMessages.Add("Copied: " + movePaths[i] + " -> " + moveDestPaths[i]);
                 }
 
 
@@ -260,13 +261,13 @@ namespace MediaViewer.Utils
                 {
 
                     progress.CurrentFile = movePaths.Count + i;
-                    progress.Messages = "Copying: " + copyPaths[i] + "->" + copyDestPaths[i];
+                    progress.ItemInfo = "Copying: " + copyPaths[i] + " -> " + copyDestPaths[i];
 
                     success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);                
 
-                    if (success == false) break;                  
-                   
+                    if (success == false) break;
 
+                    progress.InfoMessages.Add("Copied: " + copyPaths[i] + " -> " + copyDestPaths[i]);
                 }
 
                 if (success == true)
@@ -278,7 +279,7 @@ namespace MediaViewer.Utils
             catch (Exception e)
             {
                 log.Error("Copy Exception", e);
-                progress.Messages = "Copy Exception: " + e.Message;
+                progress.ItemInfo = "Copy Exception: " + e.Message;
             }            
 
         }
@@ -366,7 +367,7 @@ namespace MediaViewer.Utils
             }
         }
 
-        public void move(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgress progress)
+        public void move(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgressViewModel progress)
         {
 
             if (progress.CancellationToken.IsCancellationRequested) return;
@@ -394,7 +395,7 @@ namespace MediaViewer.Utils
                 for (int i = 0; i < movePaths.Count; i++)
                 {
                     progress.CurrentFile = i;
-                    progress.Messages = "Moving: " + movePaths[i] + "->" + moveDestPaths[i];
+                    progress.ItemInfo = "Moving: " + movePaths[i] + " -> " + moveDestPaths[i];
 
                     if (progress.CancellationToken.IsCancellationRequested) return;
 
@@ -403,7 +404,8 @@ namespace MediaViewer.Utils
                     //Thread.Sleep(100);
 
                     bool isDirectory = Directory.Exists(moveDestPaths[i]);
-                                     
+
+                    progress.InfoMessages.Add("Moved: " + movePaths[i] + " -> " + moveDestPaths[i]);
                 }
 
                 bool success = true;
@@ -414,12 +416,12 @@ namespace MediaViewer.Utils
                     if (progress.CancellationToken.IsCancellationRequested) return;
 
                     progress.CurrentFile = movePaths.Count + i;
-                    progress.Messages = "Moving: " + copyPaths[i] + "->" + copyDestPaths[i];
+                    progress.ItemInfo = "Moving: " + copyPaths[i] + "->" + copyDestPaths[i];
                     success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);
                 
                     if (success == false) break;
-                                
 
+                    progress.InfoMessages.Add("Moved: " + copyPaths[i] + " -> " + copyDestPaths[i]);
                 }
 
                 if (success == true)
@@ -443,7 +445,7 @@ namespace MediaViewer.Utils
             {
 
                 log.Error("Move Exception", e);
-                progress.Messages = "Move Exception: " + e.Message;
+                progress.ItemInfo = "Move Exception: " + e.Message;
             }
          
 

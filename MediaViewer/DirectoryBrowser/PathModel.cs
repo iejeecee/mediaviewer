@@ -16,13 +16,6 @@ namespace MediaViewer.DirectoryBrowser
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        DirectoryBrowserViewModel directoryBrowserViewModel;
-
-        public DirectoryBrowserViewModel DirectoryBrowserViewModel
-        {
-            get { return directoryBrowserViewModel; }
-        }
-
         private ObservableCollection<PathModel> directories;
         public ObservableCollection<PathModel> Directories
         {
@@ -47,6 +40,12 @@ namespace MediaViewer.DirectoryBrowser
             set {}
         }
 
+        virtual public string VolumeLabel
+        {
+            get { return (""); }
+            set { }
+        }
+
 
         private PathModel parent;
         public PathModel Parent
@@ -66,59 +65,7 @@ namespace MediaViewer.DirectoryBrowser
                 NotifyPropertyChanged();
             }
         }
-
-        private bool isExpanded;
-
-        public bool IsExpanded
-        {
-            get { return isExpanded; }
-            set
-            {
-                isExpanded = value;
-
-                if (parent != null && isExpanded == true)
-                {
-                    parent.IsExpanded = true;
-                }
-
-                if (Directories.Count == 1)
-                {
-                    Task updating = updateSubDirectoriesAsync(this);
-                }
-
-                NotifyPropertyChanged();
-            }
-        }
-
-        private bool isSelected;
-
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set
-            {
-                isSelected = value;
-
-                NotifyPropertyChanged();
-
-                if (isSelected == true && directoryBrowserViewModel.PathSelectedCallback != null)
-                {
-                    directoryBrowserViewModel.PathSelectedCallback(this);
-                }
-
-            }
-        }
-
-        public PathModel(DirectoryBrowserViewModel directoryBrowserViewModel)
-        {
-            directories = new ObservableCollection<PathModel>();
-            this.directoryBrowserViewModel = directoryBrowserViewModel;
-
-            parent = null;
-            IsExpanded = false;
-            IsSelected = false;
-        }
-
+       
         public string getFullPath()
         {
 
@@ -135,8 +82,40 @@ namespace MediaViewer.DirectoryBrowser
             return (fullPath);
         }
 
-        static DirectoryInfo[] getSubDirectories(string fullPath)
+    
+        public void updateSubDirectories()
         {
+            if (Directories == null)
+            {
+                Directories = new ObservableCollection<PathModel>();
+            }
+                           
+            List<PathModel> subDirs = updateSubDirectories(this);
+
+            for (int i = Directories.Count - 1; i >= 0; i--)
+            {
+                if (!subDirs.Any(q => q.Name.Equals(Directories[i].Name)))
+                {
+                    Directories.RemoveAt(i);
+                }
+
+            }
+
+            foreach (DirectoryPathModel subDir in subDirs)
+            {
+
+                if (!Directories.Any(q => q.Name.Equals(subDir.Name)))
+                {
+                    Directories.Add(subDir);
+                }
+            }
+
+        }
+
+        List<PathModel> updateSubDirectories(PathModel parent)
+        {
+
+            string fullPath = parent.getFullPath();
 
             DirectoryInfo dirInfo = new DirectoryInfo(fullPath);
 
@@ -149,49 +128,7 @@ namespace MediaViewer.DirectoryBrowser
             {
                 log.Warn("Cannot access directory: " + dirInfo.FullName, e);
             }
-
-            return (subDirsInfo);
-        }
-
-        public static async Task updateSubDirectoriesAsync(PathModel parent)
-        {
-
-            // await for async operation to complete
-
-            List<PathModel> subDirs =
-                await Task<List<PathModel>>.Run(() => updateSubDirectories(parent));
-
-            // everything after await gets executed on the ui thread
-            // see: http://blogs.msdn.com/b/pfxteam/archive/2011/01/13/10115163.aspx
-
-            for (int i = parent.Directories.Count - 1; i >= 0; i--)
-            {
-                if (!subDirs.Any(q => q.Name.Equals(parent.Directories[i].Name)))
-                {
-
-                    parent.Directories.RemoveAt(i);
-                }
-
-            }
-
-            foreach (DirectoryPathModel subDir in subDirs)
-            {
-
-                if (!parent.Directories.Any(q => q.Name.Equals(subDir.Name)))
-                {
-                    parent.Directories.Add(subDir);
-                }
-            }
-
-
-        }
-
-        static List<PathModel> updateSubDirectories(PathModel parent)
-        {
-
-            string fullPath = parent.getFullPath();
-
-            DirectoryInfo[] subDirsInfo = getSubDirectories(fullPath);
+            
             List<PathModel> subDirs = new List<PathModel>();
 
             foreach (DirectoryInfo subDirInfo in subDirsInfo)
@@ -202,7 +139,7 @@ namespace MediaViewer.DirectoryBrowser
                     continue;
                 }
 
-                DirectoryPathModel subDir = new DirectoryPathModel(parent, subDirInfo, parent.DirectoryBrowserViewModel);
+                DirectoryPathModel subDir = new DirectoryPathModel(parent, subDirInfo);
               
                 subDirs.Add(subDir);
 

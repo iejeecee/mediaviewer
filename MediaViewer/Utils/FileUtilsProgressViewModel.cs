@@ -1,6 +1,7 @@
 ﻿using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -8,11 +9,11 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Utils
 {
-    class FileUtilsProgress : CloseableObservableObject
+    class FileUtilsProgressViewModel : CloseableObservableObject
     {
         CancellationTokenSource tokenSource;
 
-        public FileUtilsProgress()
+        public FileUtilsProgressViewModel()
         {
            tokenSource = new CancellationTokenSource();
            cancellationToken = tokenSource.Token;
@@ -26,7 +27,8 @@ namespace MediaViewer.Utils
            {
                OnClosingRequest();
            }));
-          
+
+           infoMessages = new ObservableCollection<string>();
         }
 
         Command okCommand;
@@ -80,16 +82,26 @@ namespace MediaViewer.Utils
             }
         }
 
-        String messages;
+        String itemInfo;
 
-        public String Messages
+        public String ItemInfo
         {
-            get { return messages; }
-            set { messages = value;
+            get { return itemInfo; }
+            set { itemInfo = value;
             NotifyPropertyChanged();
             }
         }
 
+        ObservableCollection<String> infoMessages;
+
+        public ObservableCollection<String> InfoMessages
+        {
+            get { return infoMessages; }
+            set { infoMessages = value;
+            NotifyPropertyChanged();
+            }
+        }
+              
         CancellationToken cancellationToken;
 
         public CancellationToken CancellationToken

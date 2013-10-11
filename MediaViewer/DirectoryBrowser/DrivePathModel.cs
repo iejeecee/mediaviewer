@@ -20,27 +20,39 @@ namespace MediaViewer.DirectoryBrowser
             get { return info; }           
         }
 
-        public DrivePathModel(DriveInfo info, DirectoryBrowserViewModel directoryBrowserViewModel)
-            : base(directoryBrowserViewModel)
+        public DrivePathModel(DriveInfo info)          
         {
             this.info = info;
             Parent = null;
             Name = info.Name;
+                    
             switch (info.DriveType)
             {
                 case DriveType.CDRom:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/CD_Drive.ico";
+                        VolumeLabel = "CD ROM";
                         break;
                     }
                 case DriveType.Fixed:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/Hard_Drive.ico";
+
+                        try
+                        {
+                            VolumeLabel = !String.IsNullOrEmpty(info.VolumeLabel) ? info.VolumeLabel : "Local Disk";
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+
                         break;
                     }
                 case DriveType.Network:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/Network_Drive.ico";
+                        VolumeLabel = "Network Drive";
                         break;
                     }
                 case DriveType.NoRootDirectory:
@@ -50,16 +62,19 @@ namespace MediaViewer.DirectoryBrowser
                 case DriveType.Ram:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/ram.ico";
+                        VolumeLabel = "Ram Drive";
                         break;
                     }
                 case DriveType.Removable:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/Removable_Drive.ico";
+                        VolumeLabel = "Removable Drive";
                         break;
                     }
                 case DriveType.Unknown:
                     {
                         ImageUrl = "pack://application:,,,/Resources/Icons/UnknownDrive.ico";
+                        VolumeLabel = "Unknown Drive";
                         break;
                     }
               
@@ -85,6 +100,16 @@ namespace MediaViewer.DirectoryBrowser
             set
             {
                 freeSpaceBytes = value;          
+                NotifyPropertyChanged();
+            }
+        }
+
+        string volumeLabel;
+
+        override public string VolumeLabel
+        {
+            get { return volumeLabel; }
+            set { volumeLabel = value;
                 NotifyPropertyChanged();
             }
         }

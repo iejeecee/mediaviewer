@@ -117,12 +117,10 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
+    <Compile Include="Converters\PathNameConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
-    <Compile Include="DirectoryBrowser\DirectoryBrowserControl.xaml.cs">
-      <DependentUpon>DirectoryBrowserControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
       <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
     </Compile>
@@ -130,7 +128,6 @@
       <DependentUpon>DirectoryBrowserControl3.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
-    <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel2.cs" />
     <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
     <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
     <Compile Include="DirectoryBrowser\PathModel.cs" />
@@ -223,7 +220,7 @@
     <Compile Include="Timers\TimerQueueTimer.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
-    <Compile Include="Utils\FileUtilsProgress.cs" />
+    <Compile Include="Utils\FileUtilsProgressViewModel.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MediaFormatConvert.cs" />
     <Compile Include="Utils\Misc.cs" />
@@ -247,10 +244,6 @@
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
     <Page Include="About\AboutView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DirectoryBrowser\DirectoryBrowserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

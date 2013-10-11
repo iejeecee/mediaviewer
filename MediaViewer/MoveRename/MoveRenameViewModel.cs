@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -21,7 +22,6 @@ namespace MediaViewer.MoveRename
 
         public MoveRenameViewModel()
         {
-
             MovePathHistory = new ObservableCollection<string>();
 
             RenameFileName = "\"" + oldFilenameMarker + "\"";
@@ -56,7 +56,8 @@ namespace MediaViewer.MoveRename
 
             }));
 
-            moveRenameFilesCommand = new Command(new Action(() => {
+            moveRenameFilesCommand = new Command(new Action(() =>
+            {
 
                 moveRenameFiles();
             }));
@@ -66,7 +67,25 @@ namespace MediaViewer.MoveRename
             ModeList.Add("Move");
             ModeList.Add("Rename Only");
 
-            SelectedMode = "Move";
+            IsMove = true;
+        }
+
+        String infoString;
+
+        public String InfoString
+        {
+            get
+            {
+
+                return (infoString);
+            }
+
+            set
+            {
+                infoString = value;
+                NotifyPropertyChanged();
+            }
+
         }
 
         List<ImageGridItem> selectedItems;
@@ -74,7 +93,26 @@ namespace MediaViewer.MoveRename
         public List<ImageGridItem> SelectedItems
         {
             get { return selectedItems; }
-            set { selectedItems = value;
+            set
+            {
+                selectedItems = value;
+
+                if (selectedItems != null)
+                {
+                    String infoString = "Move/Copy/Rename: " + SelectedItems.Count.ToString() + " File(s) - ";
+                    long sizeBytes = 0;
+
+                    foreach (ImageGridItem item in SelectedItems)
+                    {
+                        FileInfo info = new FileInfo(item.Location);
+                        sizeBytes += info.Length;
+
+                    }
+
+                    infoString += Utils.Misc.formatSizeBytes(sizeBytes);
+                    InfoString = infoString;
+                }
+
                 NotifyPropertyChanged();
             }
         }
@@ -84,8 +122,10 @@ namespace MediaViewer.MoveRename
         public String MovePath
         {
             get { return movePath; }
-            set { movePath = value;
-            NotifyPropertyChanged();
+            set
+            {
+                movePath = value;
+                NotifyPropertyChanged();
             }
         }
         ObservableCollection<String> movePathHistory;
@@ -93,8 +133,10 @@ namespace MediaViewer.MoveRename
         public ObservableCollection<String> MovePathHistory
         {
             get { return movePathHistory; }
-            set { movePathHistory = value;
-            NotifyPropertyChanged();
+            set
+            {
+                movePathHistory = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -105,7 +147,7 @@ namespace MediaViewer.MoveRename
             get { return insertOldFilenameCommand; }
             set { insertOldFilenameCommand = value; }
         }
-        Command<Tuple<int,int>> insertCounterCommand;
+        Command<Tuple<int, int>> insertCounterCommand;
 
         public Command<Tuple<int, int>> InsertCounterCommand
         {
@@ -118,8 +160,10 @@ namespace MediaViewer.MoveRename
         public String RenameFileName
         {
             get { return renameFileName; }
-            set { renameFileName = value;
-            NotifyPropertyChanged();
+            set
+            {
+                renameFileName = value;
+                NotifyPropertyChanged();
             }
         }
         ObservableCollection<String> renameFileNameHistory;
@@ -135,8 +179,10 @@ namespace MediaViewer.MoveRename
         public String RenameExtension
         {
             get { return renameExtension; }
-            set { renameExtension = value;
-            NotifyPropertyChanged();
+            set
+            {
+                renameExtension = value;
+                NotifyPropertyChanged();
             }
         }
         ObservableCollection<String> renameExtensionHistory;
@@ -160,17 +206,49 @@ namespace MediaViewer.MoveRename
         public ObservableCollection<String> ModeList
         {
             get { return modeList; }
-            set { modeList = value;
-            NotifyPropertyChanged();
+            set
+            {
+                modeList = value;
+                NotifyPropertyChanged();
             }
         }
-        String selectedMode;
 
-        public String SelectedMode
+        bool isMove;
+
+        public bool IsMove
         {
-            get { return selectedMode; }
-            set { selectedMode = value;
-            NotifyPropertyChanged();
+            get { return isMove; }
+            set
+            {
+                isMove = value;
+                if (isMove == true && IsCopy == true)
+                {
+                    IsCopy = false;
+                }
+                else if (isMove == false && IsCopy == false)
+                {
+                    IsCopy = true;
+                }
+                NotifyPropertyChanged();
+            }
+        }
+        bool isCopy;
+
+        public bool IsCopy
+        {
+            get { return isCopy; }
+            set
+            {
+                isCopy = value;
+                if (isCopy == true && isMove == true)
+                {
+                    IsMove = false;
+                }
+                else if(isCopy == false && isMove == false)
+                {
+                    IsMove = true;
+                }
+                NotifyPropertyChanged();
             }
         }
 
@@ -193,19 +271,19 @@ namespace MediaViewer.MoveRename
 
                 destPaths.Add(MovePath + "\\" + destFileNameWithoutExtension + destExtension);
             }
-            
+
             MoveRenameProgressWindow progressWindow = new MoveRenameProgressWindow();
             progressWindow.Show();
-                      
-            FileUtilsProgress progress = (FileUtilsProgress)progressWindow.DataContext;
 
-            if (SelectedMode.Equals("Copy"))
+            FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)progressWindow.DataContext;
+
+            if (IsCopy)
             {
 
                 Action method = () => fileUtils.copy(sourcePaths, destPaths, progress);
 
                 await Task.Run(method, progress.CancellationToken);
-                
+
             }
             else
             {
@@ -214,7 +292,7 @@ namespace MediaViewer.MoveRename
                 await Task.Run(method, progress.CancellationToken);
             }
 
-           
+
         }
 
         string parseNewFilename(string newFilename, string oldFilename, List<int> counters)
@@ -257,9 +335,10 @@ namespace MediaViewer.MoveRename
                             {
                                 haveCounterValue = int.TryParse(subString.Substring(1), out counterValue);
 
-                                 if(haveCounterValue) {
+                                if (haveCounterValue)
+                                {
                                     counters.Add(counterValue);
-                                 }
+                                }
                             }
                             else
                             {
@@ -267,7 +346,8 @@ namespace MediaViewer.MoveRename
                                 haveCounterValue = true;
                             }
 
-                            if(haveCounterValue) {
+                            if (haveCounterValue)
+                            {
 
                                 outputFileName += counterValue.ToString();
 

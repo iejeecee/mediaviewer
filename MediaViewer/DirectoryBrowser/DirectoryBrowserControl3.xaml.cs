@@ -21,22 +21,40 @@ namespace MediaViewer.DirectoryBrowser
     /// </summary>
     public partial class DirectoryBrowserControl3 : UserControl
     {
-        DirectoryBrowserViewModel2 directoryBrowserViewModel;
+        DirectoryBrowserViewModel directoryBrowserViewModel;
+        bool bringSelectedNodeIntoViewOnVisibilityChange;
 
         public DirectoryBrowserControl3()
         {
             InitializeComponent();
-            DataContext = directoryTreeList.Model = directoryBrowserViewModel = new DirectoryBrowserViewModel2();
+            DataContext = directoryTreeList.Model = directoryBrowserViewModel = new DirectoryBrowserViewModel();
             directoryBrowserViewModel.SelectPathEvent += new EventHandler<string>((o, path) =>
             {
                 selectPath(path);
+            });
+
+            bringSelectedNodeIntoViewOnVisibilityChange = false;
+
+            directoryTreeList.IsVisibleChanged += new DependencyPropertyChangedEventHandler((o, e) =>
+            {
+                if ((bool)e.NewValue == true && bringSelectedNodeIntoViewOnVisibilityChange && directoryTreeList.SelectedItem != null)
+                {
+                    directoryTreeList.ScrollIntoView(directoryTreeList.SelectedItem);
+                    ListViewItem item = directoryTreeList.ItemContainerGenerator.ContainerFromItem(directoryTreeList.SelectedItem) as ListViewItem;
+                    if (item != null)
+                    {
+                        item.Focus();
+                    }
+
+                    bringSelectedNodeIntoViewOnVisibilityChange = false;
+                }
             });
          
         }
 
         private void directoryTreeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            DirectoryBrowserViewModel2.PathSelectedDelegate func = directoryBrowserViewModel.PathSelectedCallback;
+            DirectoryBrowserViewModel.PathSelectedDelegate func = directoryBrowserViewModel.PathSelectedCallback;
 
             if (func != null && directoryTreeList.SelectedNode != null)
             {
@@ -89,13 +107,27 @@ namespace MediaViewer.DirectoryBrowser
 
             //ListView test = (ListView)directoryTreeList;
             directoryTreeList.SelectedItem = node;
-            directoryTreeList.ScrollIntoView(directoryTreeList.SelectedItem);
-            ListViewItem item = directoryTreeList.ItemContainerGenerator.ContainerFromItem(directoryTreeList.SelectedItem) as ListViewItem;
-            item.Focus();
+
+            if (directoryTreeList.IsVisible == true)
+            {
+                bringSelectedNodeIntoView();
+                bringSelectedNodeIntoViewOnVisibilityChange = false;
+            }
+            else
+            {
+                bringSelectedNodeIntoViewOnVisibilityChange = true;
+            }
            
             node.IsSelected = true;
            
         }
 
+        void bringSelectedNodeIntoView()
+        {
+            directoryTreeList.ScrollIntoView(directoryTreeList.SelectedItem);
+            ListViewItem item = directoryTreeList.ItemContainerGenerator.ContainerFromItem(directoryTreeList.SelectedItem) as ListViewItem;
+            item.Focus();
+        }
+       
     }
 }

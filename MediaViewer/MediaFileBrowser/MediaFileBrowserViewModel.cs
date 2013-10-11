@@ -34,13 +34,6 @@ namespace MediaViewer.MediaFileBrowser
             get { return partialImageGridViewModel; }
             set { partialImageGridViewModel = value; }
         }
-        DirectoryBrowserViewModel directoryBrowserViewModel;
-
-        public DirectoryBrowserViewModel DirectoryBrowserViewModel
-        {
-            get { return directoryBrowserViewModel; }
-            set { directoryBrowserViewModel = value; }
-        }
       
         public MediaFileBrowserViewModel() {
 

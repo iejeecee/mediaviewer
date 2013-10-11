@@ -8,6 +8,7 @@
     <Converters:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
     <Converters:NegatedEnumToBooleanConverter x:Key="negatedEnumToBooleanConverter"/>
     <Converters:FormatSizeBytesConverter x:Key="formatSizeBytesConverter"/>
+    <Converters:PathNameConverter x:Key="pathNameConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 

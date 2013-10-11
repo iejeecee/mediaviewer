@@ -1,4 +1,5 @@
-﻿using MvvmFoundation.Wpf;
+﻿using Aga.Controls.Tree;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,16 +7,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
+using System.Windows.Threading;
 
 namespace MediaViewer.DirectoryBrowser
 {
-    public class DirectoryBrowserViewModel : ObservableObject
+    class DirectoryBrowserViewModel : ObservableObject, ITreeModel
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public delegate void PathSelectedDelegate(PathModel item);
-       
+        public event EventHandler<String> SelectPathEvent;
+
         PathSelectedDelegate pathSelectedCallback;
 
         // callback function will be called whenever a path node is selected
@@ -25,108 +27,120 @@ namespace MediaViewer.DirectoryBrowser
             set { pathSelectedCallback = value; }
         }
 
-        public DirectoryBrowserViewModel()
-        {
-            drives = null;
-        }
-
-        private ObservableCollection<PathModel> drives;
+        ObservableCollection<PathModel> drives;
 
         public ObservableCollection<PathModel> Drives
         {
-            get
-            {
-                if (drives == null)
-                {
-                    drives = updateDrives();
-                }
-
-                return (drives);
-            }
+            get { return drives; }
             set { drives = value; }
         }
 
-        private static DriveInfo[] getDrives()
+        void updateDrives()
         {
-            DriveInfo[] drivesInfo = new DriveInfo[0];
+            drives = new ObservableCollection<PathModel>();
+
+            DriveInfo[] drivesArray = new DriveInfo[0];
             try
             {
-                drivesInfo = DriveInfo.GetDrives();
+                drivesArray = DriveInfo.GetDrives();
             }
             catch (Exception e)
             {
                 log.Warn("Cannot read system drives: ", e);
             }
 
-            return (drivesInfo);
-        }
-
-        private ObservableCollection<PathModel> updateDrives()
-        {
-
-            ObservableCollection<PathModel> drives = new ObservableCollection<PathModel>();
-
-            DriveInfo[] drivesArray = DriveInfo.GetDrives();
-
             foreach (DriveInfo driveInfo in drivesArray)
             {
-                DrivePathModel drive = new DrivePathModel(driveInfo, this);               
-             
+                DrivePathModel drive = new DrivePathModel(driveInfo);
+
                 drives.Add(drive);
             }
 
-            return (drives);
         }
 
-        public async void selectPath(string path)
+        void DoEvents()
         {
-           
-            path = path.Replace('/', '\\');
+            App.Current.Dispatcher.Invoke(DispatcherPriority.Background,
+                                                  new Action(delegate { }));
+        }
 
-            string root = System.IO.Path.GetPathRoot(path).ToUpper();
-            PathModel node = null;
-
-            foreach (PathModel drive in Drives)
+        public void selectPath(String path)
+        {
+            if (SelectPathEvent == null)
             {
-
-                if (drive.Name.Equals(root))
-                {
-                    node = drive;
-                    break;
-                }
-
+                throw new Exception("setPathEvent not bound");
             }
 
-            if (node == null)
-            {
-                return;
-            }
+            SelectPathEvent(this, path);
+        }
+
+        public System.Collections.IEnumerable GetChildren(object parent)
+        {
+            if (parent == null)
+            {        
+                Task task = Task.Factory.StartNew(() => updateDrives());
           
-            string seperator = "\\";
-
-            string[] splitDirs = path.Split(seperator.ToCharArray());
-
-            for (int i = 1; i < splitDirs.Length; i++)
-            {
-                await PathModel.updateSubDirectoriesAsync(node);
-                   
-                foreach (PathModel directory in node.Directories)
+                while (!task.IsCompleted)
                 {
-                    if (directory.Name.Equals(splitDirs[i]))
+                    DoEvents();
+                }
+              
+                return (Drives);
+            }
+            else
+            {
+                PathModel path = (PathModel)parent;
+
+                if (path.Directories == null)
+                {                 
+                    Task task = Task.Factory.StartNew(() => path.updateSubDirectories());
+
+                    while (!task.IsCompleted)
                     {
-                        node = directory;                  
-                        break;
+                        DoEvents();
                     }
                 }
+
+                return (path.Directories);
             }
 
-            if (node.Parent != null)
-            {
-                node.Parent.IsExpanded = true;
-            }
-            node.IsSelected = true;
+          
         }
-     
-    }
 
+        public bool HasChildren(object parent)
+        {
+            Task<bool> task = Task<bool>.Factory.StartNew(() =>
+            {
+                if (parent as DrivePathModel != null)
+                {
+                    return (true);
+                }
+
+                DirectoryPathModel directory = parent as DirectoryPathModel;
+
+                DirectoryInfo dirInfo = new DirectoryInfo(directory.getFullPath());
+
+                DirectoryInfo[] subDirsInfo = new DirectoryInfo[0];
+                try
+                {
+                    subDirsInfo = dirInfo.GetDirectories();
+                }
+                catch (Exception e)
+                {
+                    log.Warn("Cannot access directory: " + dirInfo.FullName, e);
+                }
+
+                if (subDirsInfo.Length > 0) return (true);
+                else return (false);
+
+            });
+
+            while (!task.IsCompleted)
+            {
+                DoEvents();
+            }
+
+            return (task.Result);
+        }
+    }
 }
