@@ -65,5 +65,13 @@ namespace MediaViewer.ImageGrid
         /// <exception cref="System.ArgumentNullException">The collection parameter cannot be null.</exception> 
         public ObservableRangeCollection(IEnumerable<T> collection)
             : base(collection) { }
+
+        protected override void ClearItems()
+        {          
+            List<T> removed = new List<T>(this);
+            base.ClearItems();
+            base.OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Remove, removed));         
+        }
+
     }
 }

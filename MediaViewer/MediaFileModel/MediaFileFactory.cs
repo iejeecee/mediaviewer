@@ -168,7 +168,7 @@ namespace MediaViewer.MediaFileModel
             }
             catch (Exception e)
             {
-                log.Info("Error loading media: " + location, e);
+                log.Warn("Error loading media: " + location, e);
 
                 media.OpenError = e;
                 media.close();

@@ -111,10 +111,7 @@ namespace MediaViewer.MediaPreview
         public MediaPreviewControl()
         {
             InitializeComponent();
-
-           
-
-         
+                 
             IsSelected = false;
         }
        

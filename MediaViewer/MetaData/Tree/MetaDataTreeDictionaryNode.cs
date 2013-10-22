@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MetaData.MetaDataTree
+namespace MediaViewer.MetaData.Tree
 {
     abstract class MetaDataTreeDictionaryNode : MetaDataTreeNode
     {

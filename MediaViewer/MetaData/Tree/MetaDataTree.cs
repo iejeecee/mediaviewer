@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using XMPLib;
 
-namespace MediaViewer.MetaData.MetaDataTree
+namespace MediaViewer.MetaData.Tree
 {
     class MetaDataTree
     {

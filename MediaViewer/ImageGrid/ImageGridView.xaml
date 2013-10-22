@@ -23,7 +23,7 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <ToggleButton IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="2" 
+                <ToggleButton Name="toggleButton" IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="2" 
                               IsEnabled="{Binding Path=ItemState, Converter={StaticResource negatedEnumToBooleanConverter}, ConverterParameter={x:Static local:ImageGridItemState.LOADING}}">
                     <ToggleButton.Style>
                         <Style>
@@ -40,15 +40,15 @@
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="{Binding Media.DefaultFormatCaption}" 
                           Tag="{Binding}">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="25"/>
-                        </Grid.RowDefinitions>                      
+                            <RowDefinition MinHeight="{Binding ElementName=toggleButton,Path=ActualHeight,Converter={StaticResource mathConverter},ConverterParameter=(x*3)/4}"/>
+                            <RowDefinition MinHeight="{Binding ElementName=toggleButton,Path=ActualHeight,Converter={StaticResource mathConverter},ConverterParameter=x/4}"/>
+                        </Grid.RowDefinitions>                   
                         <Image HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0">
                             <Image.Style>
                                 <Style>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ItemState}" Value="LOADING">
-                                            <Setter Property="Image.Stretch" Value="None"/>
+                                            <Setter Property="Image.Stretch" Value="None"/>                                  
                                             <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="ERROR">
@@ -56,17 +56,20 @@
                                             <Setter Property="Image.Source" Value="{StaticResource errorImage}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
-                                            <Setter Property="Image.Stretch" Value="Uniform"/>
+                                            <Setter Property="Image.Stretch" Value="Uniform"/>                                      
                                             <Setter Property="Image.Source" Value="{Binding Media.Thumbnail}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
-                        </Image>
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Media.Name}" Grid.Row="1"/>
+                        </Image>                                       
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Location, Converter={StaticResource pathToFileNameConverter}}" Grid.Row="1"/>                      
                         <Grid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>
+                                <MenuItem Name="vieMenuItem" Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>
+                                <Separator/>
+                                <MenuItem Name="selectAllMenuItem" Header="Select All" Click="selectAllMenuItem_Click"/>
+                                <MenuItem Name="deselectAllMenuItem" Header="Deselect All" Click="deselectAllMenuItem_Click"/>
                             </ContextMenu>
                         </Grid.ContextMenu>
                     </Grid>

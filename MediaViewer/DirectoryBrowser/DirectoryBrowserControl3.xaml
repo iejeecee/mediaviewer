@@ -30,7 +30,7 @@
                                         <tree:RowExpander Grid.Column="0"/>
                                         <Image Grid.Column="1" Margin="2" Source="{Binding ImageUrl}"></Image>
                                         <TextBlock Grid.Column="2" Margin="2">
-                                            <TextBlock.Text>
+                                            <TextBlock.Text>                                               
                                                 <MultiBinding Converter="{StaticResource pathNameConverter}">
                                                     <Binding Path="VolumeLabel" />
                                                     <Binding Path="Name"/>

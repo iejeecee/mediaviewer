@@ -131,10 +131,8 @@ namespace MediaViewer.ImageGrid
                 
             }
 
-            // assign the results on the UI thread   
-            Dispatcher dispatcher = Application.Current.Dispatcher;
-
-            DispatcherOperation task = dispatcher.BeginInvoke(new Action(() =>
+            // assign the results on the UI thread           
+            DispatcherOperation task = Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 ItemState = result;
                 Media = media;

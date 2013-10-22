@@ -43,7 +43,7 @@ namespace MediaViewer.MediaFileBrowser
 
             pagedImageGridViewModel = new PagedImageGridViewModel();
             imageGrid.DataContext = pagedImageGridViewModel;
-
+            metaDataView.DataContext = pagedImageGridViewModel;
             pager.DataContext = pagedImageGridViewModel;
            
             // this is not the way it "should" be done, but fuck it
@@ -52,7 +52,8 @@ namespace MediaViewer.MediaFileBrowser
 
                 MediaFileBrowserViewModel mediaFileBrowserViewModel = (MediaFileBrowserViewModel)DataContext;
                 if (mediaFileBrowserViewModel == null) return;             
-                mediaFileBrowserViewModel.PartialImageGridViewModel = pagedImageGridViewModel;             
+                mediaFileBrowserViewModel.PagedImageGridViewModel = pagedImageGridViewModel;
+                
             });
           
         }

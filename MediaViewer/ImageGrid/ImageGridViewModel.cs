@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows;
 using System.Threading;
 using System.Windows.Threading;
+using System.Collections.Specialized;
 
 namespace MediaViewer.ImageGrid
 {
@@ -26,12 +27,15 @@ namespace MediaViewer.ImageGrid
 
         public ImageGridViewModel()
         {
-            items = new ObservableRangeCollection<ImageGridItem>();
+            SelectedItems = new ObservableRangeCollection<ImageGridItem>();
+            Items = new ObservableRangeCollection<ImageGridItem>();
+            Items.CollectionChanged += new NotifyCollectionChangedEventHandler(imageGridViewModel_CollectionChanged);           
 
             nrLoadingItems = 0;           
 
             nrLoadingItemsLock = new Object();
             loadItemsCTS = new CancellationTokenSource();
+            
         }
 
         ObservableRangeCollection<ImageGridItem> items;
@@ -41,20 +45,7 @@ namespace MediaViewer.ImageGrid
             get { return items; }
             set { items = value; }
         }
-
-       
-        void loadItemCompleted()
-        {
-
-            lock (nrLoadingItemsLock)
-            {
-               
-                nrLoadingItems = nrLoadingItems - 1;               
-
-                Monitor.PulseAll(nrLoadingItemsLock);
-            }
-        }
-
+             
         public void loadItemRangeAsync(int start, int nrItems)
         {
             // cancel any previously loading items           
@@ -79,7 +70,12 @@ namespace MediaViewer.ImageGrid
 
                 items[start + i].loadMediaFileAsync(loadItemsCTS.Token).ContinueWith(finishedTask =>
                 {
-                    loadItemCompleted();
+                    lock (nrLoadingItemsLock)
+                    {
+                        nrLoadingItems = nrLoadingItems - 1;
+
+                        Monitor.PulseAll(nrLoadingItemsLock);
+                    }
                 });
                 
                             
@@ -90,9 +86,19 @@ namespace MediaViewer.ImageGrid
 
         public void selectAll()
         {
+            SelectedItems.Clear();
+
             foreach (ImageGridItem item in Items)
             {
+                item.PropertyChanged -= item_PropertyChanged;
                 item.IsSelected = true;
+            }
+
+            SelectedItems.AddRange(Items);
+
+            foreach (ImageGridItem item in Items)
+            {
+                item.PropertyChanged += item_PropertyChanged;               
             }
         }
 
@@ -104,20 +110,71 @@ namespace MediaViewer.ImageGrid
             }
         }
 
-        public List<ImageGridItem> getSelectedItems()
+        void imageGridViewModel_CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e)
         {
-            List<ImageGridItem> selected = new List<ImageGridItem>();
 
-            foreach (ImageGridItem item in Items)
+            switch (e.Action)
             {
-                if (item.IsSelected)
+                case NotifyCollectionChangedAction.Reset:
+                    {                   
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Add:
+                    {
+                        foreach (ImageGridItem item in e.NewItems)
+                        {
+                            item.PropertyChanged += item_PropertyChanged;
+                        }
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Remove:
+                    {
+                        foreach (ImageGridItem item in e.OldItems)
+                        {
+                            item.PropertyChanged -= item_PropertyChanged;
+                            SelectedItems.Remove(item);
+                        }
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+        }
+
+        private void item_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName.Equals("IsSelected"))
+            {
+                ImageGridItem item = (ImageGridItem)sender;
+
+                if (item.IsSelected == true)
                 {
-                    selected.Add(item);
+                    SelectedItems.Add(item);
+                }
+                else
+                {
+                    SelectedItems.Remove(item);
                 }
             }
-
-            return (selected);
         }
+
+        ObservableRangeCollection<ImageGridItem> selectedItems;
+
+        public ObservableRangeCollection<ImageGridItem> SelectedItems
+        {
+            set
+            {
+                selectedItems = value;
+            }
+
+            get
+            {
+                return (selectedItems);
+            }
+        }
+        
       
     }
 }

@@ -28,7 +28,7 @@ namespace MediaViewer.ImageGrid
 
             }
 
-            Items.CollectionChanged += new NotifyCollectionChangedEventHandler(imageGridViewModel_CollectionChanged);
+            Items.CollectionChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_CollectionChanged);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -188,7 +188,7 @@ namespace MediaViewer.ImageGrid
             }
         }
 
-        void imageGridViewModel_CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e) {
+        void pagedImageGridViewModel_CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e) {
              
             //int startIndex = CurrentPage * maxItemsPerPage;
             //int endIndex = startIndex + maxItemsPerPage;
@@ -232,40 +232,7 @@ namespace MediaViewer.ImageGrid
             }
 
             setExecuteState();
-           
-/*
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Reset:
-                    {
-                        CurrentPage = 0;
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Add:
-                    {
-                        if (e.NewStartingIndex < endIndex && e.NewStartingIndex >= startIndex)
-                        {
-                            loadItemsAsync();                            
-                        }
-                        break;
-                    }
-                case NotifyCollectionChangedAction.Remove:
-                    {
-                        if (CurrentPage > NrPages)
-                        {
-                            CurrentPage = NrPages;
-
-                        }
-                        else
-                        {
-
-                            loadItemsAsync();
-                        }
-                        break;
-                    }             
-            }
-
-*/           
+                 
         }
 
         void loadItemsAsync()

@@ -117,10 +117,12 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
+    <Compile Include="Converters\MathConverter.cs" />
     <Compile Include="Converters\PathNameConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
+    <Compile Include="Converters\PathToFileNameConverter.cs" />
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
       <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
     </Compile>
@@ -180,22 +182,27 @@
     <Compile Include="GlobalMessenger.cs" />
     <Compile Include="MetaData\FileMetaData.cs" />
     <Compile Include="MetaData\FileMetaDataFactory.cs" />
+    <Compile Include="MetaData\FormatMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
     <Compile Include="MetaData\MetaDataThumb.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTree.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeArray.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeDictionaryNode.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeLanguage.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNameSpaceNode.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNode.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeNodeFactory.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeProperty.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeStructNode.cs" />
-    <Compile Include="MetaData\MetaDataTree\MetaDataTreeValue.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTree.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeArray.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeDictionaryNode.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeLanguage.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeNameSpaceNode.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeNode.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeNodeFactory.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeProperty.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeStructNode.cs" />
+    <Compile Include="MetaData\Tree\MetaDataTreeValue.cs" />
     <Compile Include="ImagePanel\DegreesConverter.cs" />
     <Compile Include="ImagePanel\ScaleConverter.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileWatcher.cs" />
+    <Compile Include="MetaData\MetaDataView.xaml.cs">
+      <DependentUpon>MetaDataView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\MetaDataTreeModel.cs" />
     <Compile Include="MoveRename\MoveRenameProgressWindow.xaml.cs">
       <DependentUpon>MoveRenameProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -280,6 +287,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ScaleView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\MetaDataView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -495,6 +506,19 @@
     <None Include="Shaders\YUVtoRGB.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\prop.ico" />
+    <Resource Include="Resources\Icons\namespace.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\array.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\constprop.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\language.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

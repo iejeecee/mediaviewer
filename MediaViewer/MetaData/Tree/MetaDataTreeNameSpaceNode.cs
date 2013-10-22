@@ -4,19 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MetaData.MetaDataTree
+namespace MediaViewer.MetaData.Tree
 {
-    class MetaDataTreeStructNode : MetaDataTreeDictionaryNode
+    class MetaDataTreeNameSpaceNode : MetaDataTreeDictionaryNode
     {
-
         protected override string getPath()
         {
 
-            return (data + "/");
+            return (data + ":");
         }
 
-        public MetaDataTreeStructNode(string data)
-            : base(data, MetaDataTreeNode.Type.STRUCT)
+        public MetaDataTreeNameSpaceNode(string data)
+            : base(data, MetaDataTreeNode.Type.NAMESPACE)
         {
 
         }

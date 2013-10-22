@@ -88,6 +88,29 @@ namespace MediaViewer.MoveRename
 
         }
 
+        void updateInfoString()
+        {
+            String temp = IsCopy ? "Copy/Rename" : "Move/Rename";
+
+            if (SelectedItems != null)
+            {
+
+                temp += " " + SelectedItems.Count.ToString() + " File(s) - ";
+                long sizeBytes = 0;
+
+                foreach (ImageGridItem item in SelectedItems)
+                {
+                    FileInfo info = new FileInfo(item.Location);
+                    sizeBytes += info.Length;
+
+                }
+
+                temp += Utils.Misc.formatSizeBytes(sizeBytes);
+            }
+
+            InfoString = temp;
+        }
+
         List<ImageGridItem> selectedItems;
 
         public List<ImageGridItem> SelectedItems
@@ -96,23 +119,9 @@ namespace MediaViewer.MoveRename
             set
             {
                 selectedItems = value;
-
-                if (selectedItems != null)
-                {
-                    String infoString = "Move/Copy/Rename: " + SelectedItems.Count.ToString() + " File(s) - ";
-                    long sizeBytes = 0;
-
-                    foreach (ImageGridItem item in SelectedItems)
-                    {
-                        FileInfo info = new FileInfo(item.Location);
-                        sizeBytes += info.Length;
-
-                    }
-
-                    infoString += Utils.Misc.formatSizeBytes(sizeBytes);
-                    InfoString = infoString;
-                }
-
+                             
+                updateInfoString();
+               
                 NotifyPropertyChanged();
             }
         }
@@ -229,6 +238,7 @@ namespace MediaViewer.MoveRename
                 {
                     IsCopy = true;
                 }
+                updateInfoString();
                 NotifyPropertyChanged();
             }
         }
@@ -248,6 +258,7 @@ namespace MediaViewer.MoveRename
                 {
                     IsMove = true;
                 }
+                updateInfoString();
                 NotifyPropertyChanged();
             }
         }

@@ -32,6 +32,11 @@ namespace MediaViewer.Logging
 			//filterComboBox.SelectedIndex = 2;
 
             DataContextChanged += new DependencyPropertyChangedEventHandler(logView_DataContextChanged);
+            Loaded += new RoutedEventHandler((o, e) =>
+            {              
+                logTextBox.ScrollToEnd();                
+            });
+
         }
 
         void logView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -44,7 +49,7 @@ namespace MediaViewer.Logging
             {
                 addMessage(message);
             }
-
+          
             logViewModel.Messages.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s, target) =>
                 {
                     if (target.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
@@ -57,6 +62,7 @@ namespace MediaViewer.Logging
                         {
                             addMessage(message);
                         }
+                      
                     }
 
                 });           
@@ -69,9 +75,15 @@ namespace MediaViewer.Logging
 
         private void addMessage(LogMessageModel message)
         {
-            if ((int)message.Level < (int)filterLevel) return;
+            if ((int)message.Level > (int)filterLevel)
+            {
+                return;
+            }
 
             String text = message.Text.TrimEnd(trimChars);
+            text = text.Replace("\r\n", "\n");
+            text = text.Replace("\n", "\r\t");
+           
             
             TextRange tr = new TextRange(logTextBox.Document.ContentEnd,
             logTextBox.Document.ContentEnd);
@@ -86,7 +98,7 @@ namespace MediaViewer.Logging
                 case MediaViewer.Logging.LogMessageModel.LogLevel.UNKNOWN:
                     {
 
-                        brush = Brushes.Yellow;
+                        brush = Brushes.Black;
                         break;
                     }
                 case MediaViewer.Logging.LogMessageModel.LogLevel.DEBUG:
@@ -111,7 +123,7 @@ namespace MediaViewer.Logging
                     }
                 case MediaViewer.Logging.LogMessageModel.LogLevel.WARNING:
                     {
-                        brush = Brushes.Yellow;
+                        brush = Brushes.Orange;
                         break;
                     }
                 default:
@@ -136,7 +148,7 @@ namespace MediaViewer.Logging
             if (filterComboBox.SelectedIndex == 0)
             {
 
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.INFO;
+                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.ERROR;
 
             }
             else if (filterComboBox.SelectedIndex == 1)
@@ -145,10 +157,14 @@ namespace MediaViewer.Logging
                 filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.WARNING;
 
             }
-            else
+            else if (filterComboBox.SelectedIndex == 2)
             {
 
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.ERROR;
+                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.INFO;
+            }
+            else
+            {
+                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.DEBUG;
             }
         }
 

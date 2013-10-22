@@ -41,11 +41,25 @@ namespace MediaViewer.ImageGrid
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)e.OriginalSource;
-
            
 
             GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
            
+        }
+
+        private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
+
+            vm.selectAll();
+        }
+
+        private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
+
+            vm.deselectAll();
+
         }
 
        

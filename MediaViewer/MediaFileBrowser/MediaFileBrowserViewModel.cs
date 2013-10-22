@@ -27,12 +27,13 @@ namespace MediaViewer.MediaFileBrowser
         private delegate void imageFileWatcherEventDelegate(List<MediaPreviewAsyncState> imageData);
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
 
-        PagedImageGridViewModel partialImageGridViewModel;
+        PagedImageGridViewModel pagedImageGridViewModel;
 
-        public PagedImageGridViewModel PartialImageGridViewModel
+        public PagedImageGridViewModel PagedImageGridViewModel
         {
-            get { return partialImageGridViewModel; }
-            set { partialImageGridViewModel = value; }
+            get { return pagedImageGridViewModel; }
+            set { pagedImageGridViewModel = value;                         
+            }
         }
       
         public MediaFileBrowserViewModel() {
@@ -47,7 +48,7 @@ namespace MediaViewer.MediaFileBrowser
   
             MoveRenameSelectedItemsCommand = new Command(new Action(() => {
 
-                List<ImageGridItem> selected = PartialImageGridViewModel.getSelectedItems();
+                List<ImageGridItem> selected = PagedImageGridViewModel.SelectedItems.ToList();
                 if (selected.Count == 0) return;
 
                 MoveRenameView moveRenameView = new MoveRenameView();
@@ -98,8 +99,8 @@ namespace MediaViewer.MediaFileBrowser
                     items.Add(new ImageGridItem(location));
                 }
 
-                partialImageGridViewModel.Items.Clear();
-                partialImageGridViewModel.Items.AddRange(items);
+                pagedImageGridViewModel.Items.Clear();
+                pagedImageGridViewModel.Items.AddRange(items);
 
                 GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_PathSelected", value);
 
@@ -119,12 +120,12 @@ namespace MediaViewer.MediaFileBrowser
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
 
-                for (int i = PartialImageGridViewModel.Items.Count - 1; i >= 0; i--)
+                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
                 {
-                    if (PartialImageGridViewModel.Items[i].Location.Equals(e.FullPath))
+                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.FullPath))
                     {
 
-                        PartialImageGridViewModel.Items.RemoveAt(i);
+                        PagedImageGridViewModel.Items.RemoveAt(i);
                     }
                 }
 
@@ -138,12 +139,12 @@ namespace MediaViewer.MediaFileBrowser
             {
                 if (e.ChangeType != WatcherChangeTypes.Changed) return;
 
-                for (int i = PartialImageGridViewModel.Items.Count - 1; i >= 0; i--)
+                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
                 {
-                    if (PartialImageGridViewModel.Items[i].Location.Equals(e.FullPath))
+                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.FullPath))
                     {
 
-                        PartialImageGridViewModel.Items.RemoveAt(i);
+                        PagedImageGridViewModel.Items.RemoveAt(i);
                     }
                 }
 
@@ -151,7 +152,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 items.Add(new ImageGridItem(e.FullPath));
 
-                PartialImageGridViewModel.Items.AddRange(items);
+                PagedImageGridViewModel.Items.AddRange(items);
 
             }));
          
@@ -166,7 +167,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 items.Add(new ImageGridItem(e.FullPath));
 
-                PartialImageGridViewModel.Items.AddRange(items);
+                PagedImageGridViewModel.Items.AddRange(items);
 
             }));
           
@@ -178,12 +179,12 @@ namespace MediaViewer.MediaFileBrowser
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
 
-                for (int i = PartialImageGridViewModel.Items.Count - 1; i >= 0; i--)
+                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
                 {
-                    if (PartialImageGridViewModel.Items[i].Location.Equals(e.OldFullPath))
+                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.OldFullPath))
                     {
 
-                        PartialImageGridViewModel.Items.RemoveAt(i);
+                        PagedImageGridViewModel.Items.RemoveAt(i);
                     }
                 }
 
@@ -191,7 +192,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 items.Add(new ImageGridItem(e.FullPath));
 
-                PartialImageGridViewModel.Items.AddRange(items);
+                PagedImageGridViewModel.Items.AddRange(items);
 
             }));
 
@@ -218,7 +219,7 @@ namespace MediaViewer.MediaFileBrowser
         private void deleteSelectedItems()
         {
 
-            List<ImageGridItem> selected = PartialImageGridViewModel.getSelectedItems();
+            List<ImageGridItem> selected = PagedImageGridViewModel.SelectedItems.ToList();
 
             if (selected.Count == 0) return;
            
@@ -238,7 +239,7 @@ namespace MediaViewer.MediaFileBrowser
                 {
 
                     log.Error("Error deleting file", ex);
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(ex.Message, "Error deleting file");
                 }
             }
 

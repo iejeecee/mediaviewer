@@ -22,7 +22,7 @@
             </FlowDocument>
         </RichTextBox>
         <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Right" Margin="0,0,10.333,6.333" Grid.Row="1" VerticalAlignment="Bottom" Width="75" Grid.Column="0" Command="{Binding ClearLog}"/>
-        <ComboBox x:Name="filterComboBox" HorizontalAlignment="Left" Margin="38,0,0,5.333" Grid.Row="1" VerticalAlignment="Bottom" Width="120" SelectedIndex="0" Grid.ColumnSpan="2" SelectionChanged="filterComboBox_SelectionChanged">
+        <ComboBox x:Name="filterComboBox" HorizontalAlignment="Left" Margin="38,0,0,5.333" Grid.Row="1" VerticalAlignment="Bottom" Width="120" SelectedIndex="2" Grid.ColumnSpan="2" SelectionChanged="filterComboBox_SelectionChanged">
             <ListBoxItem Content="Errors"/>
             <ListBoxItem Content="Warnings"/>
             <ListBoxItem Content="Info"/>

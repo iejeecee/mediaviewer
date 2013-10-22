@@ -6,8 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using DB = MediaDatabase;
 using XMPLib;
-using MediaViewer.MetaData.MetaDataTree;
 using System.Globalization;
+using MediaViewer.MetaData.Tree;
 
 
 namespace MediaViewer.MetaData
@@ -442,6 +442,8 @@ namespace MediaViewer.MetaData
                 hasGeoTag = true;
             }
 
+            tree = MetaDataTree.create(metaData);
+
         }
 
         public void Dispose()
@@ -638,14 +640,7 @@ namespace MediaViewer.MetaData
         {
 
             get
-            {
-
-                if (tree == null && metaData != null)
-                {
-
-                    tree = MetaDataTree.MetaDataTree.create(metaData);
-                }
-
+            {                                             
                 return (tree);
             }
         }

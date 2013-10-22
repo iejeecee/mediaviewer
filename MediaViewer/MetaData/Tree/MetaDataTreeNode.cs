@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MetaData.MetaDataTree
+namespace MediaViewer.MetaData.Tree
 {
     public abstract class MetaDataTreeNode
     {
@@ -37,7 +37,12 @@ namespace MediaViewer.MetaData.MetaDataTree
         }
 
 
-
+      
+        /// <summary>
+        /// Check if this node contains the child node at this level (non-recursive)
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>       
         public virtual bool hasChild(MetaDataTreeNode node)
         {
 
@@ -270,7 +275,7 @@ namespace MediaViewer.MetaData.MetaDataTree
 
         }
 
-        MetaDataTreeNode Parent
+        public MetaDataTreeNode Parent
         {
 
             get
@@ -288,6 +293,9 @@ namespace MediaViewer.MetaData.MetaDataTree
 
         public abstract void clear();
 
+        /// <summary>
+        /// Number of child nodes
+        /// </summary>
         public abstract int Count
         {
 
@@ -310,6 +318,9 @@ namespace MediaViewer.MetaData.MetaDataTree
             }
         }
 
+        /// <summary>
+        /// Data value of this node
+        /// </summary>
         public string Data
         {
 
@@ -325,7 +336,9 @@ namespace MediaViewer.MetaData.MetaDataTree
                 this.data = value;
             }
         }
-
+        /// <summary>
+        /// Path of this node
+        /// </summary>
         public string Path
         {
 
@@ -387,19 +400,20 @@ namespace MediaViewer.MetaData.MetaDataTree
 
         public override bool Equals(System.Object obj)
         {
+           
+            if (!(obj is MetaDataTreeNode)) return (false);
 
             MetaDataTreeNode node = (MetaDataTreeNode)(obj);
-
-            if (node == null) return (false);
-
+          
             if (node.NodeType != NodeType) return (false);
 
             if (node.Data.Equals(Data)) return (true);
 
             return (false);
+            
         }
 
-        MetaDataTreeNode intersection(MetaDataTreeNode tree)
+        public MetaDataTreeNode intersection(MetaDataTreeNode tree)
         {
 
             MetaDataTreeNode result = null;
