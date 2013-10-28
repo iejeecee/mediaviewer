@@ -1,5 +1,4 @@
-﻿using MediaViewer.Utils;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,32 +11,30 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
-namespace MediaViewer.MoveRename
+namespace MediaViewer.MetaData
 {
     /// <summary>
-    /// Interaction logic for MoveRenameProgressWindow.xaml
+    /// Interaction logic for MetaDataUpdateView.xaml
     /// </summary>
-    public partial class MoveRenameProgressWindow : Window
+    public partial class MetaDataUpdateView : Window
     {
-        FileUtilsProgressViewModel progress;
-
-        public MoveRenameProgressWindow()
+        public MetaDataUpdateView()
         {
             InitializeComponent();
+            MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel();
+            DataContext = vm;
 
-            progress = new FileUtilsProgressViewModel();
-            DataContext = progress;
-
-            progress.ClosingRequest += new EventHandler((o, e) => {
-                this.Close();
+            vm.ClosingRequest += new EventHandler((o, e) =>
+            {               
+                this.Close();               
             });
 
             Closing += new System.ComponentModel.CancelEventHandler((s, e) =>
             {
-                progress.CancelCommand.DoExecute();
+                vm.CancelCommand.DoExecute();
             });
-
         }
     }
 }

@@ -23,6 +23,7 @@ namespace MediaViewer.MediaFileModel
         private int height;
 
         private string container;
+        private string pixelFormat;
         private string videoCodecName;
         private List<string> fsMetaData;
 
@@ -108,6 +109,7 @@ namespace MediaViewer.MediaFileModel
                 container = videoPreview.Container;
                 videoCodecName = videoPreview.VideoCodecName;
                 fsMetaData = videoPreview.MetaData;
+                pixelFormat = videoPreview.PixelFormat;
 
                 frameRate = videoPreview.FrameRate;
 
@@ -228,6 +230,14 @@ namespace MediaViewer.MediaFileModel
             {
 
                 return (frameRate);
+            }
+        }
+
+        public string PixelFormat
+        {
+            get
+            {
+                return (pixelFormat);
             }
         }
 

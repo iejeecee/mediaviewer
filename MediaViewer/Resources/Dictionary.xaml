@@ -11,6 +11,7 @@
     <Converters:PathNameConverter x:Key="pathNameConverter"/>
     <Converters:PathToFileNameConverter x:Key="pathToFileNameConverter"/>
     <Converters:MathConverter x:Key="mathConverter"/>
+    <Converters:BooleanToVisibilityConverter x:Key="visibilityConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 

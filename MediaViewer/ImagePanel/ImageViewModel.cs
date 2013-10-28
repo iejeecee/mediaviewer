@@ -90,8 +90,7 @@ namespace MediaViewer.ImagePanel
             resetScaleCommand = new Command(() => { Scale = 1; });
 
             setIdentityTransform();
-
-
+                  
         }
 
         bool flipX;
@@ -140,7 +139,7 @@ namespace MediaViewer.ImagePanel
         {
             get { return image; }
             set
-            {
+            {                
                 image = value;
                 NotifyPropertyChanged();
             }
@@ -157,7 +156,8 @@ namespace MediaViewer.ImagePanel
                 NotifyPropertyChanged();
             }
         }
-
+      
+    
         double rotationDegrees;
 
         public double RotationDegrees

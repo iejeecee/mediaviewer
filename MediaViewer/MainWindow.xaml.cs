@@ -300,11 +300,11 @@ namespace MediaViewer
         {
             if (autoScaleImageCheckBox.IsChecked == true)
             {
-                //imageView.Stretch = Stretch.Uniform;
+                GlobalMessenger.Instance.NotifyColleagues("MainWindow_AutoScaleImageCheckBox_Click", true);
             }
             else
             {
-                //imageView.Stretch = Stretch.None;
+                GlobalMessenger.Instance.NotifyColleagues("MainWindow_AutoScaleImageCheckBox_Click", false);
             }
         }
 

@@ -178,21 +178,24 @@ namespace MediaViewer.MediaFileBrowser
         {
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-
+                
                 for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
                 {
                     if (PagedImageGridViewModel.Items[i].Location.Equals(e.OldFullPath))
                     {
-
                         PagedImageGridViewModel.Items.RemoveAt(i);
                     }
+                  
                 }
 
-                List<ImageGridItem> items = new List<ImageGridItem>();
+                if (MediaFormatConvert.isMediaFile(e.FullPath))
+                {
+                    List<ImageGridItem> items = new List<ImageGridItem>();
 
-                items.Add(new ImageGridItem(e.FullPath));
+                    items.Add(new ImageGridItem(e.FullPath));
 
-                PagedImageGridViewModel.Items.AddRange(items);
+                    PagedImageGridViewModel.Items.AddRange(items);
+                }
 
             }));
 

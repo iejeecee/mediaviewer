@@ -92,7 +92,7 @@ namespace XMPLib {
 
 		void iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%properties);
 		void iterate(String ^nameSpace, List<MetaDataProperty ^> ^%properties);
-		void iterate(String ^nameSpace, XMP_OptionBits options, List<MetaDataProperty ^> ^%properties);
+		void iterate(String ^nameSpace, Consts::IterOptions options, List<MetaDataProperty ^> ^%properties);
 		
 		static DateTime convertToDate(String ^dateString);
 

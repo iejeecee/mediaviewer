@@ -25,15 +25,19 @@ namespace MediaViewer.MetaData
     /// </summary>
     public partial class MetaDataView : UserControl
     {
-      
+        private MetaDataViewModel ViewModel
+        {
+            get { return this.Resources["viewModel"] as MetaDataViewModel; }
+        }
 
         public MetaDataView()
         {
             InitializeComponent();
 
-            
+            dynamicElements = new List<UIElement>();
+            dynamicRows = new List<RowDefinition>();
+                     
         }
-
 
         public ObservableCollection<ImageGridItem> MetaDataList
         {
@@ -68,44 +72,83 @@ namespace MediaViewer.MetaData
 
         private void metaDataList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+           
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                List<MetaDataTreeNode> nodes = new List<MetaDataTreeNode>();
 
-                foreach (ImageGridItem item in MetaDataList)
-                {
-                    if (item.Media != null && item.Media.MetaData != null)
-                    {
-                        nodes.Add(item.Media.MetaData.Tree);
-                        displayMetaDataProperties(item.Media);
-                       // metaDataPropertyGrid.SelectedObject = item.Media.MetaData;
-                    }
-                }
-
-                if (MetaDataList.Count == 0)
-                {
-                    displayMetaDataProperties(null);
-                }
-              
-                metaDataTreeList.Model = new MetaDataTreeModel(nodes);
-                metaDataTreeList.ExpandAll();
-               
+                ViewModel.ItemList = MetaDataList;
+                displayDynamicProperties(ViewModel.DynamicProperties);
+                                        
             }));
+
         }
+            
+        List<RowDefinition> dynamicRows;
+        List<UIElement> dynamicElements;
 
-        void displayMetaDataProperties(MediaFile media)
+        void displayDynamicProperties(List<Tuple<String, String>> additionalProps)
         {
+                        
+            foreach (RowDefinition row in dynamicRows)
+            {
+                mainGrid.RowDefinitions.Remove(row);               
+            }
 
-            FileMetaData metaData = media == null ? null : media.MetaData;
+            dynamicRows.Clear();
 
-            fileNameTextBox.Text = media == null ? "" : media.Name;
-            authorTextBox.Text = media == null ? "" : metaData.Creator;
-            copyrightTextBox.Text = media == null ? "" : metaData.Copyright;
-            descriptionTextBox.Text = media == null ? "" : metaData.Description;
-            titleNameTextBox.Text = media == null ? "" : metaData.Title;
-            creationDatePicker.Text = media == null ? "" : metaData.CreationDate.ToString("R");
-            modifiedDatePicker.Text = media == null ? "" : metaData.ModifiedDate.ToString("R");
-            metaDataDatePicker.Text = media == null ? "" : metaData.MetaDataDate.ToString("R");
+            foreach (UIElement elem in dynamicElements)
+            {
+                mainGrid.Children.Remove(elem);               
+            }
+
+            dynamicElements.Clear();
+
+            foreach(Tuple<String,String> prop in additionalProps) {
+
+                RowDefinition row;
+
+                if (String.IsNullOrEmpty(prop.Item1))
+                {
+                    row = new RowDefinition();
+                    row.Height = GridLength.Auto;
+
+                    mainGrid.RowDefinitions.Add(row);
+                    dynamicRows.Add(row);
+
+                    Separator seperator = new Separator();
+                    dynamicElements.Add(seperator);
+
+                    mainGrid.Children.Add(seperator);
+                    Grid.SetRow(seperator, mainGrid.RowDefinitions.Count - 1);
+                    Grid.SetColumnSpan(seperator, 3);
+
+                }
+
+                row = new RowDefinition();
+                row.Height = GridLength.Auto;
+
+                mainGrid.RowDefinitions.Add(row); 
+                dynamicRows.Add(row);
+
+                Label label = new Label();
+                label.Style = Resources["labelStyle"] as Style;
+                label.Content = prop.Item1;             
+
+                mainGrid.Children.Add(label);
+                dynamicElements.Add(label);
+                Grid.SetColumn(label, 0);
+                Grid.SetRow(label, mainGrid.RowDefinitions.Count - 1);
+
+                TextBlock value = new TextBlock();
+                value.Text = prop.Item2;
+                value.Margin = new Thickness(5, 5, 5, 5);
+
+                mainGrid.Children.Add(value);
+                dynamicElements.Add(value);
+                Grid.SetColumn(value, 1);
+                Grid.SetRow(value, mainGrid.RowDefinitions.Count - 1);
+                
+            }
         }
         
     }

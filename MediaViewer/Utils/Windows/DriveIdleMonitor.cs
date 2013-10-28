@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Timers;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace MediaViewer.Utils.Windows
 {
     class DriveIdleMonitor
     {
-        DispatcherTimer[] timers;
+        DefaultTimer[] timers;
         PerformanceCounter[] diskIdleTime;
         public event EventHandler<String> DriveInUse;
         List<string> drivesMonitored;
@@ -29,7 +30,7 @@ namespace MediaViewer.Utils.Windows
 
             if (instNames.Length - 1 > 0)
             {
-                timers = new DispatcherTimer[instNames.Length - 1];
+                timers = new DefaultTimer[instNames.Length - 1];
                 diskIdleTime = new PerformanceCounter[instNames.Length - 1];
             }
 
@@ -39,15 +40,15 @@ namespace MediaViewer.Utils.Windows
             {
                 if (inst.Equals("_Total")) continue;
 
-                timers[i] = new DispatcherTimer();
+                timers[i] = new DefaultTimer();
                 diskIdleTime[i] = new PerformanceCounter("PhysicalDisk",
                      "% Idle Time", inst);
                 diskIdleTime[i].NextValue();
 
-                timers[i].Interval = new TimeSpan(0, 0, 3);
+                timers[i].Interval = 3000;
                 timers[i].Tick += new EventHandler(timer_Tick);
                 timers[i].Tag = inst;
-                timers[i].Start();
+                timers[i].start();                
 
                 char[] delimiterChars = {' '};
            
@@ -71,10 +72,16 @@ namespace MediaViewer.Utils.Windows
 
         ~DriveIdleMonitor()
         {
+            foreach (DefaultTimer t in timers)
+            {
+                if (t != null) t.stop();
+            }
+
             foreach (PerformanceCounter c in diskIdleTime)
             {
-                c.Dispose();
+                if(c != null) c.Dispose();
             }
+           
         }
 
         void timer_Tick(object sender, EventArgs e)
@@ -83,7 +90,7 @@ namespace MediaViewer.Utils.Windows
 
             int i = 0;
 
-            foreach (DispatcherTimer t in timers)
+            foreach (DefaultTimer t in timers)
             {
                 if (t.Equals(sender))
                 {

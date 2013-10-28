@@ -141,6 +141,8 @@ namespace MediaViewer.Progress
                     case NotifyCollectionChangedAction.Reset:
                         {
                             infoTextBox.Text = "";
+                            if (e.NewItems == null) return;
+
                             foreach (String message in e.NewItems)
                             {
 

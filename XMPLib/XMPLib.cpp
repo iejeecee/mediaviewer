@@ -360,11 +360,11 @@ void MetaData::iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%p
 	}
 }
 
-void MetaData::iterate(String ^nameSpace, XMP_OptionBits options, List<MetaDataProperty ^> ^%properties) {
+void MetaData::iterate(String ^nameSpace, Consts::IterOptions options, List<MetaDataProperty ^> ^%properties) {
 
 	std::vector<XMPDLL::XMPProperty> propsTemp;
 
-	xmpFile->iterate(marshal_as<std::string>(nameSpace), options, propsTemp);
+	xmpFile->iterate(marshal_as<std::string>(nameSpace), (XMP_OptionBits) options, propsTemp);
 
 	properties->Clear();
 

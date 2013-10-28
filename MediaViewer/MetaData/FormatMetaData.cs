@@ -9,6 +9,7 @@ namespace MediaViewer.MetaData
 
 public class FormatMetaData
 {
+    private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 	// convert metadata properties to human readable strings
 	class FormatInfo {
@@ -148,7 +149,7 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ExposureBiasValue", "");
+		i = new FormatInfo("exif:ExposureBiasValue", "EV");
 
 		format.Add(i.name, i);
 
@@ -277,7 +278,7 @@ public class FormatMetaData
 
 		i = new FormatInfo("exif:LightSource", "");
 
-		i.lookup["0"] = "unknown";
+		i.lookup["0"] = "Unknown";
 		i.lookup["1"] = "Daylight";
 		i.lookup["2"] = "Fluorescent";
 		i.lookup["3"] = "Tungsten";
@@ -307,7 +308,7 @@ public class FormatMetaData
 
 		i = new FormatInfo("exif:MeteringMode", "");
 
-		i.lookup["0"] = "unknown";
+		i.lookup["0"] = "Unknown";
 		i.lookup["1"] = "Average";
 		i.lookup["2"] = "CenterWeightedAverage";
 		i.lookup["3"] = "Spot";
@@ -409,7 +410,115 @@ public class FormatMetaData
 		i.lookup["3"] = "strobe return light detected";
 		
 		format.Add(i.name, i);
+
+        i = new FormatInfo("exif:Flash/exif:Fired", "");
+
+        i.lookup["False"] = "Did not fire";
+        i.lookup["True"] = "Fired";
+
+        format.Add(i.name, i);
 	}
+
+    private static XMPLib.MetaDataProperty findProp(String path, List<XMPLib.MetaDataProperty> props)
+    {
+
+       XMPLib.MetaDataProperty result = props.Find(p => p.path == path);
+       return (result);
+    }
+
+    private static Tuple<String, String> addPropIfExists(String path, List<XMPLib.MetaDataProperty> props, List<Tuple<String, String>> propList)
+    {
+        XMPLib.MetaDataProperty result = props.Find(p => p.path == path);
+        Tuple<String, String> prop = null;
+
+        if (result != null)
+        {
+            prop = new Tuple<string, string>(formatPropertyName(result.path), formatPropertyValue(result.path, result.value));
+
+            propList.Add(prop);
+        }
+
+        return (prop);
+
+    }
+
+    private static Tuple<String, String> addPropIfExists(String path, List<XMPLib.MetaDataProperty> props, List<Tuple<String, String>> propList,
+        string overrideName)
+    {
+        XMPLib.MetaDataProperty result = props.Find(p => p.path == path);
+        Tuple<String, String> prop = null;
+
+        if (result != null)
+        {
+            prop = new Tuple<string, string>(overrideName, formatPropertyValue(result.path, result.value));
+
+            propList.Add(prop);
+        }
+
+        return (prop);
+    }
+
+
+    public static List<Tuple<String, String>> formatProperties(List<XMPLib.MetaDataProperty> props)
+    {
+        // http://ptgmedia.pearsoncmg.com/images/art_evening_lrmetadata/elementLinks/fig04.jpg
+
+        List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
+
+        XMPLib.MetaDataProperty length = findProp("tiff:ImageLength", props);
+        XMPLib.MetaDataProperty width = findProp("tiff:ImageWidth", props);
+
+        if (length != null && width != null)
+        {
+            propList.Add(new Tuple<string,string>("Size", width.value + " x " + length.value));
+        }
+             
+        addPropIfExists("exif:ExposureTime", props, propList);
+        addPropIfExists("exif:FNumber", props, propList, "ƒ");
+        addPropIfExists("exif:ExposureBiasValue", props, propList, "Exposure Bias");
+        Tuple<String,String> flash = addPropIfExists("exif:Flash/exif:Fired", props, propList, "Flash");
+
+        if (flash != null && flash.Item2.Equals("Fired"))
+        {
+            addPropIfExists("exif:Flash/exif:Mode", props, propList, "Flash Mode");
+            addPropIfExists("exif:Flash/exif:Return", props, propList, "Flash Return");
+        }
+
+        addPropIfExists("exif:ExposureProgram", props, propList);
+        addPropIfExists("exif:MeteringMode", props, propList);
+
+        XMPLib.MetaDataProperty isoSpeedRatings = findProp("exif:ISOSpeedRatings[1]", props);
+
+        if (isoSpeedRatings != null)
+        {
+            propList.Add(new Tuple<string, string>("ISO Speed Rating", "ISO " + isoSpeedRatings.value));
+        }
+
+        addPropIfExists("exif:FocalLength", props, propList);
+        addPropIfExists("aux:Lens", props, propList);
+        addPropIfExists("exif:WhiteBalance", props, propList);
+
+        addPropIfExists("exif:SensingMethod", props, propList);
+        addPropIfExists("exif:Sharpness", props, propList);
+        addPropIfExists("exif:Saturation", props, propList);
+        addPropIfExists("exif:Contrast", props, propList);
+        addPropIfExists("exif:LightSource", props, propList);
+        addPropIfExists("exif:SceneCaptureType", props, propList);
+        addPropIfExists("exif:SubjectDistance", props, propList);
+        addPropIfExists("exif:SubjectDistanceRange", props, propList);
+
+        addPropIfExists("tiff:Make", props, propList);
+        addPropIfExists("tiff:Model", props, propList);
+        addPropIfExists("aux:SerialNumber", props, propList);
+        addPropIfExists("xmp:CreatorTool", props, propList,"Software");
+
+        if (propList.Count > 0)
+        {
+            propList.Insert(0, new Tuple<string,string>("","EXIF"));
+        }
+
+        return (propList);
+    }
 
     public static String formatPropertyName(String prop)
     {
@@ -446,7 +555,7 @@ public class FormatMetaData
     {
 
 		if(String.IsNullOrEmpty(name) || String.IsNullOrEmpty(value)) return("");
-/*
+
 		int pos = value.IndexOf("/");
 
 		if(pos != -1) {
@@ -462,10 +571,10 @@ public class FormatMetaData
 
 			} catch (Exception e) {
 
-				System.Diagnostics.Debug.Write(e.Message);
+                log.Warn("Error converting property value to number: " + value, e);
 			}
 		}
-*/
+
 		String result = "";
 
 		FormatInfo info;

@@ -100,6 +100,38 @@ namespace MediaViewer.ImageGrid
             }
         }
 
+        public void loadMediaFile(CancellationToken token)
+        {
+            ItemState = ImageGridItemState.LOADING;
+
+            MediaFile media = null;
+            ImageGridItemState result = ImageGridItemState.LOADED;
+
+            try
+            {
+                media = MediaFileFactory.open(Location, MediaFile.MetaDataMode.LOAD_FROM_DISK, token);
+
+                media.close();
+
+                if (media.OpenError != null)
+                {
+                    result = ImageGridItemState.ERROR;
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                result = ImageGridItemState.CANCELLED;
+            }
+            catch (Exception e)
+            {
+                result = ImageGridItemState.ERROR;
+                log.Info("Error loading image grid item:" + Location, e);
+
+            }
+          
+            ItemState = result;
+            Media = media;           
+        }
     
         public async Task loadMediaFileAsync(CancellationToken token)
         {

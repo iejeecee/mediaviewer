@@ -89,6 +89,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Controls.Input.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\WPF Toolkit\v3.5.50211.1\System.Windows.Controls.Input.Toolkit.dll</HintPath>
+    </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -98,9 +102,12 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Xceed.Wpf.Toolkit, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\ExtendedWPFToolkit_Binaries\Xceed.Wpf.Toolkit.dll</HintPath>
@@ -117,6 +124,7 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
+    <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\MathConverter.cs" />
     <Compile Include="Converters\PathNameConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
@@ -159,6 +167,7 @@
     </Compile>
     <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
     <Compile Include="MediaFileModel\MediaFileFactory.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaFileWatcherQueue.cs" />
     <Compile Include="MediaPreview\InfoIcon.cs" />
     <Compile Include="MediaPreview\MediaPreviewAsyncState.cs" />
     <Compile Include="MediaPreview\MediaPreviewControl.xaml.cs">
@@ -185,6 +194,11 @@
     <Compile Include="MetaData\FormatMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
+    <Compile Include="MetaData\MetaDataUpdateView.xaml.cs">
+      <DependentUpon>MetaDataUpdateView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
+    <Compile Include="MetaData\MetaDataViewModel.cs" />
     <Compile Include="MetaData\MetaDataThumb.cs" />
     <Compile Include="MetaData\Tree\MetaDataTree.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeArray.cs" />
@@ -287,6 +301,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ScaleView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\MetaDataUpdateView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

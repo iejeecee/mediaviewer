@@ -34,8 +34,14 @@ namespace MediaViewer.MetaData
         private GeoTagCoordinatePair geoTag;
         private bool hasGeoTag;
 
-        private XMPLib.MetaData metaData;
-        private MetaDataTreeNode tree;
+        private XMPLib.MetaData metaData;   
+
+        List<MetaDataProperty> miscProps;
+
+        public List<MetaDataProperty> MiscProps
+        {
+            get { return miscProps; }          
+        }
 
         private void deleteThumbNails()
         {
@@ -125,6 +131,7 @@ namespace MediaViewer.MetaData
             creator = "";
             creatorTool = "";
             copyright = "";
+            rating = 0;
             thumbnail = new List<MetaDataThumb>();
             tags = new List<string>();
             creationDate = DateTime.MinValue;
@@ -133,9 +140,9 @@ namespace MediaViewer.MetaData
 
             geoTag = new GeoTagCoordinatePair();
             hasGeoTag = false;
-
-            tree = null;
+           
             metaData = null;
+            miscProps = new List<MetaDataProperty>();
 
         }
 
@@ -364,6 +371,20 @@ namespace MediaViewer.MetaData
                 CreatorTool = temp;
             }
 
+            exists = metaData.getProperty(Consts.XMP_NS_XMP, "Rating", ref temp);
+            if (exists)
+            {
+                try
+                {
+                    Rating = float.Parse(temp);
+                }
+                catch (Exception e)
+                {
+                    log.Error("Incorrect rating in " + filePath, e);
+                    Rating = 0;
+                }
+            }
+
             DateTime propValue = DateTime.MinValue;
 
             exists = metaData.getProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", ref propValue);
@@ -402,6 +423,26 @@ namespace MediaViewer.MetaData
 
             }
 
+            List<MetaDataProperty> tiffProps = new List<MetaDataProperty>();
+
+            metaData.iterate(Consts.XMP_NS_TIFF, Consts.IterOptions.XMP_IterProperties, ref tiffProps);
+            miscProps.AddRange(tiffProps);
+
+            List<MetaDataProperty> exifProps = new List<MetaDataProperty>();
+
+            metaData.iterate(Consts.XMP_NS_EXIF, Consts.IterOptions.XMP_IterProperties, ref exifProps);
+            miscProps.AddRange(exifProps);
+
+            List<MetaDataProperty> exifAuxProps = new List<MetaDataProperty>();
+
+            metaData.iterate(Consts.XMP_NS_EXIF_Aux, Consts.IterOptions.XMP_IterProperties, ref exifAuxProps);
+            miscProps.AddRange(exifAuxProps);
+
+            List<MetaDataProperty> xmpProps = new List<MetaDataProperty>();
+
+            metaData.iterate(Consts.XMP_NS_XMP, Consts.IterOptions.XMP_IterProperties, ref xmpProps);
+            miscProps.AddRange(xmpProps);
+         
             bool hasLat = false;
             bool hasLon = false;
 
@@ -440,9 +481,7 @@ namespace MediaViewer.MetaData
             {
 
                 hasGeoTag = true;
-            }
-
-            tree = MetaDataTree.create(metaData);
+            }          
 
         }
 
@@ -514,6 +553,15 @@ namespace MediaViewer.MetaData
                 this.title = value;
             }
         }
+
+        float rating;
+
+        public float Rating
+        {
+            get { return rating; }
+            set { rating = value; }
+        }
+
         public string Description
         {
 
@@ -635,15 +683,7 @@ namespace MediaViewer.MetaData
                 this.metaDataDate = value;
             }
         }
-
-        public MetaDataTreeNode Tree
-        {
-
-            get
-            {                                             
-                return (tree);
-            }
-        }
+      
 
         public List<MetaDataThumb> Thumbnail
         {
@@ -854,6 +894,8 @@ namespace MediaViewer.MetaData
 
             }
 
+            metaData.setProperty(Consts.XMP_NS_XMP, "Rating", Rating.ToString(), Consts.PropOptions.XMP_DeleteExisting);
+         
             if (!string.IsNullOrEmpty(Description))
             {
 

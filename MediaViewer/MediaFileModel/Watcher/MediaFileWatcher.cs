@@ -15,6 +15,50 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         private FileSystemWatcher watcher;
 
+        public event System.IO.FileSystemEventHandler MediaChanged;
+        public event System.IO.FileSystemEventHandler MediaCreated;
+        public event System.IO.FileSystemEventHandler MediaDeleted;
+        public event System.IO.RenamedEventHandler MediaRenamed;
+
+        static MediaFileWatcher instance = null;
+
+        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        protected MediaFileWatcher()
+        {
+
+            watcher = new FileSystemWatcher();
+            mediaFiles = new ObservableCollection<string>();
+
+            /* Watch for changes in LastAccess and LastWrite times, and 
+            the renaming of files or directories. */
+            watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
+                NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName);
+
+            // Only watch text files.
+            watcher.Filter = "*.*";
+
+            // Add event handlers.
+            watcher.Changed += new FileSystemEventHandler(FileChanged);
+            watcher.Created += new FileSystemEventHandler(FileCreated);
+            watcher.Deleted += new FileSystemEventHandler(FileDeleted);
+            watcher.Renamed += new System.IO.RenamedEventHandler(FileRenamed);
+
+        }
+
+        public static MediaFileWatcher Instance
+        {
+
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new MediaFileWatcher();
+                }
+
+                return (instance);
+            }
+        }
+
         private ObservableCollection<string> mediaFiles;
 
         public ObservableCollection<string> MediaFiles
@@ -96,17 +140,30 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         private void FileRenamed(System.Object sender, System.IO.RenamedEventArgs e)
         {
-
-            if (MediaFormatConvert.isMediaFile(e.FullPath))
+           
+            if (MediaFormatConvert.isMediaFile(e.OldFullPath) || MediaFormatConvert.isMediaFile(e.FullPath))
             {
 
                 int index = getMediaFileIndex(e.OldFullPath, MediaType.ANY);
 
                 if (index >= 0)
                 {
-
-                    mediaFiles[index] = e.FullPath;
-                }              
+                    if (MediaFormatConvert.isMediaFile(e.FullPath))
+                    {
+                        // media file renamed to media file
+                        mediaFiles[index] = e.FullPath;
+                    }
+                    else
+                    {
+                        // media file renamed to non media file
+                        mediaFiles.RemoveAt(index);
+                    }
+                }
+                else
+                {
+                    // non media file renamed to media file
+                    mediaFiles.Add(e.FullPath);
+                }
             
                 MediaRenamed(this, e);
             }
@@ -128,10 +185,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
 
 
-        public event System.IO.FileSystemEventHandler MediaChanged;
-        public event System.IO.FileSystemEventHandler MediaCreated;
-        public event System.IO.FileSystemEventHandler MediaDeleted;
-        public event System.IO.RenamedEventHandler MediaRenamed;
+   
 
         public string Path
         {
@@ -153,46 +207,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
 
         }
-
        
-
-        static MediaFileWatcher instance = null;
-
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
-        protected MediaFileWatcher()
-        {
-
-            watcher = new FileSystemWatcher();
-            mediaFiles = new ObservableCollection<string>();
-
-            /* Watch for changes in LastAccess and LastWrite times, and 
-            the renaming of files or directories. */
-            watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
-                NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName);
-
-            // Only watch text files.
-            watcher.Filter = "*.*";
-
-            // Add event handlers.
-            watcher.Changed += new FileSystemEventHandler(FileChanged);
-            watcher.Created += new FileSystemEventHandler(FileCreated);
-            watcher.Deleted += new FileSystemEventHandler(FileDeleted);
-            watcher.Renamed += new System.IO.RenamedEventHandler(FileRenamed);
-
-        }
-
-        public static MediaFileWatcher Instance {
-
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new MediaFileWatcher();
-                }
-
-                return (instance);
-            }
-        }
         public enum MediaType
         {
             ANY,

@@ -22,7 +22,7 @@ namespace MediaViewer.ImagePanel
     /// </summary>
     public partial class ImageView : UserControl
     {
-        
+     
 
         private bool isLeftMouseButtonDown;
         //private bool isModified;
@@ -38,7 +38,7 @@ namespace MediaViewer.ImagePanel
 
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
 
-           
+            GlobalMessenger.Instance.Register<bool>("MainWindow_AutoScaleImageCheckBox_Click", new Action<bool>(autoScale));
         }
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -79,6 +79,13 @@ namespace MediaViewer.ImagePanel
 
         public MatrixTransform getDefaultScaleMatrix(BitmapImage image)
         {
+            if (pictureBox.Stretch == Stretch.Uniform)
+            {
+                Matrix unitMatrix = new Matrix();
+                return (new MatrixTransform(unitMatrix));
+
+            }
+
             var source = PresentationSource.FromVisual(pictureBox);
             Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
             transformToDevice.Invert();
@@ -91,6 +98,24 @@ namespace MediaViewer.ImagePanel
             return (new MatrixTransform(scaleMatrix));
         }
 
+        void autoScale(bool value)
+        {
+            if (value == true)
+            {
+                pictureBox.Stretch = Stretch.Uniform;
+            }
+            else
+            {
+                pictureBox.Stretch = Stretch.None;
+            }
+
+            if (pictureBox.Source != null)
+            {
+                pictureBox.SetCurrentValue(Image.LayoutTransformProperty, getDefaultScaleMatrix(pictureBox.Source as BitmapImage));
+              
+            }
+
+        }
 
         private void gridContainer_PreviewMouseMove(object sender, MouseEventArgs e)
         {

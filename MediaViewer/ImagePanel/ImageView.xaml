@@ -25,7 +25,7 @@
                        ScrollViewer.CanContentScroll="True" 
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" 
                        ScrollViewer.VerticalScrollBarVisibility="Auto" 
-                       Stretch="None" SnapsToDevicePixels="True">
+                       Stretch="{Binding StretchMode}" SnapsToDevicePixels="True">
                     <Image.Style>
                         <Style>
                             <Style.Triggers>
@@ -39,7 +39,7 @@
                         </Style>
                     </Image.Style>
                     <Image.LayoutTransform>
-                        <MatrixTransform Matrix="{Binding Transform}" />
+                        <MatrixTransform Matrix="{Binding Transform}"/>
                     </Image.LayoutTransform>
                 </Image>
             </Grid>

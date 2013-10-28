@@ -67,6 +67,13 @@ namespace MediaViewer.Timers
             return (timeNow);
         }
 
+        object tag;
+
+        public object Tag
+        {
+            get { return tag; }
+            set { tag = value; }
+        }
     }
 
 }
