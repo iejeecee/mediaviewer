@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.MediaPreview;
 using MediaViewer.Utils.WPF;
+using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer.ImageGrid
 {
@@ -49,16 +50,14 @@ namespace MediaViewer.ImageGrid
 
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
-
-            vm.selectAll();
+         
+            MediaFileWatcher.Instance.MediaFiles.SelectAllItems();
         }
 
         private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
-
-            vm.deselectAll();
+           
+            MediaFileWatcher.Instance.MediaFiles.DeselectAllItems();
 
         }
 

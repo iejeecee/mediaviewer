@@ -1,4 +1,5 @@
 ﻿using MediaViewer.ImageGrid;
+using MediaViewer.MediaFileModel.Watcher;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -51,7 +52,7 @@ namespace MediaViewer.MetaData
 
             await Task.Factory.StartNew(() =>
             {
-                foreach (ImageGridItem item in vmState.ItemList)
+                foreach (MediaFileItem item in vmState.ItemList)
                 {
                     if (CancellationToken.IsCancellationRequested) return;
 
@@ -64,7 +65,7 @@ namespace MediaViewer.MetaData
                     {
                         ItemInfo = "Loading MetaData: " + item.Location;
 
-                        item.loadMediaFile(CancellationToken);
+                        item.loadMetaData(CancellationToken);
                         if (item.Media == null || item.Media.MetaData == null)
                         {
                             ItemInfo = "Could not open or read metadata for file: " + item.Location;

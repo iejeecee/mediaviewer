@@ -38,17 +38,13 @@ namespace MediaViewer.MediaFileBrowser
       
         public MediaFileBrowserViewModel() {
 
-            mediaFileWatcher = MediaFileWatcher.Instance;
-            mediaFileWatcher.MediaDeleted += new FileSystemEventHandler(ImageFileWatcherThread_MediaDeleted);
-            mediaFileWatcher.MediaChanged += new FileSystemEventHandler(ImageFileWatcherThread_MediaChanged);
-            mediaFileWatcher.MediaCreated += new FileSystemEventHandler(ImageFileWatcherThread_MediaCreated);
-            mediaFileWatcher.MediaRenamed += new RenamedEventHandler(ImageFileWatcherThread_MediaRenamed);
+            mediaFileWatcher = MediaFileWatcher.Instance;          
 
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));        
   
             MoveRenameSelectedItemsCommand = new Command(new Action(() => {
 
-                List<ImageGridItem> selected = PagedImageGridViewModel.SelectedItems.ToList();
+                List<MediaFileItem> selected = mediaFileWatcher.MediaFiles.GetSelectedItems();
                 if (selected.Count == 0) return;
 
                 MoveRenameView moveRenameView = new MoveRenameView();
@@ -91,17 +87,7 @@ namespace MediaViewer.MediaFileBrowser
                 }
 
                 mediaFileWatcher.Path = pathWithoutFileName;
-
-                List<ImageGridItem> items = new List<ImageGridItem>();
-
-                foreach (String location in mediaFileWatcher.MediaFiles)
-                {
-                    items.Add(new ImageGridItem(location));
-                }
-
-                pagedImageGridViewModel.Items.Clear();
-                pagedImageGridViewModel.Items.AddRange(items);
-
+              
                 GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_PathSelected", value);
 
                 NotifyPropertyChanged();
@@ -112,94 +98,7 @@ namespace MediaViewer.MediaFileBrowser
                 return (mediaFileWatcher.Path);
             }
         }
-      
-       
-        private void ImageFileWatcherThread_MediaDeleted(Object sender, System.IO.FileSystemEventArgs e)
-        {
-
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-
-                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
-                {
-                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.FullPath))
-                    {
-
-                        PagedImageGridViewModel.Items.RemoveAt(i);
-                    }
-                }
-
-            }));
-        }
-
-
-        private void ImageFileWatcherThread_MediaChanged(Object sender, System.IO.FileSystemEventArgs e)
-        {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (e.ChangeType != WatcherChangeTypes.Changed) return;
-
-                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
-                {
-                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.FullPath))
-                    {
-
-                        PagedImageGridViewModel.Items.RemoveAt(i);
-                    }
-                }
-
-                List<ImageGridItem> items = new List<ImageGridItem>();
-
-                items.Add(new ImageGridItem(e.FullPath));
-
-                PagedImageGridViewModel.Items.AddRange(items);
-
-            }));
-         
-
-        }
-
-        private void ImageFileWatcherThread_MediaCreated(Object sender, System.IO.FileSystemEventArgs e)
-        {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {              
-                List<ImageGridItem> items = new List<ImageGridItem>();
-
-                items.Add(new ImageGridItem(e.FullPath));
-
-                PagedImageGridViewModel.Items.AddRange(items);
-
-            }));
-          
-        }
-
-
-        private void ImageFileWatcherThread_MediaRenamed(Object sender, System.IO.RenamedEventArgs e)
-        {
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                
-                for (int i = PagedImageGridViewModel.Items.Count - 1; i >= 0; i--)
-                {
-                    if (PagedImageGridViewModel.Items[i].Location.Equals(e.OldFullPath))
-                    {
-                        PagedImageGridViewModel.Items.RemoveAt(i);
-                    }
-                  
-                }
-
-                if (MediaFormatConvert.isMediaFile(e.FullPath))
-                {
-                    List<ImageGridItem> items = new List<ImageGridItem>();
-
-                    items.Add(new ImageGridItem(e.FullPath));
-
-                    PagedImageGridViewModel.Items.AddRange(items);
-                }
-
-            }));
-
-        }
+     
 
         private void metaDataToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
@@ -222,7 +121,7 @@ namespace MediaViewer.MediaFileBrowser
         private void deleteSelectedItems()
         {
 
-            List<ImageGridItem> selected = PagedImageGridViewModel.SelectedItems.ToList();
+            List<MediaFileItem> selected = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
 
             if (selected.Count == 0) return;
            

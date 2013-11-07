@@ -144,13 +144,16 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
-    <Compile Include="ImageGrid\ObservableRangeCollection.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
+    <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaFileItemState.cs" />
+    <Compile Include="MediaFileModel\Watcher\ObservableRangeCollection.cs" />
     <Compile Include="ImageGrid\ImageGridView.xaml.cs">
       <DependentUpon>ImageGridView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridViewModel.cs" />
-    <Compile Include="ImageGrid\ImageGridItem.cs" />
     <Compile Include="ImageGrid\PagedImageGridViewModel.cs" />
     <Compile Include="Input\InputWindow.xaml.cs">
       <DependentUpon>InputWindow.xaml</DependentUpon>

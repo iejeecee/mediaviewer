@@ -11,6 +11,8 @@ using System.Windows;
 using System.Threading;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Pager;
+using MediaViewer.Utils;
+using System.Collections.Specialized;
 
 namespace MediaViewer.ImagePanel
 {
@@ -21,6 +23,15 @@ namespace MediaViewer.ImagePanel
         CancellationTokenSource loadImageCTS;
 
         ImageFile imageFile;
+
+        MediaFileState MediaFiles
+        {
+            get
+            {
+                return (MediaFileWatcher.Instance.MediaFiles);
+            }
+        }
+
 
         public ImageViewModel()
         {
@@ -35,31 +46,28 @@ namespace MediaViewer.ImagePanel
             }));
 
 
-            MediaFileWatcher.Instance.MediaFiles.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s, e) =>
+            MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler((s, e) =>
             {
-                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+
+                if (imageFile == null)
                 {
+                    IsPagingImagesEnabled = false;
+                    return;
+                }
 
-                    if (imageFile == null)
-                    {
-                        IsPagingImagesEnabled = false;
-                        return;
-                    }
+                int index = getImageFileIndex(imageFile.Location);
 
-                    int index = MediaFileWatcher.Instance.getMediaFileIndex(imageFile.Location, MediaFileWatcher.MediaType.IMAGE);                                                                             
-
-                    if (index == -1)
-                    {
-                        IsPagingImagesEnabled = false;                     
-                    }
-                    else
-                    {
-                        IsPagingImagesEnabled = true;
-                        NrImages = MediaFileWatcher.Instance.getNrMediaFiles(MediaFileWatcher.MediaType.IMAGE);
-                        CurrentImage = index + 1;                       
-                    }                    
-                     
-                }));
+                if (index == -1)
+                {
+                    IsPagingImagesEnabled = false;
+                }
+                else
+                {
+                    IsPagingImagesEnabled = true;
+                    NrImages = getNrImageFiles();
+                    CurrentImage = index + 1;
+                }                                                        
+                
             });
 
             nextImageCommand = new Command(new Action(() =>
@@ -268,18 +276,22 @@ namespace MediaViewer.ImagePanel
 
                     imageFile = (ImageFile)media;
 
-                    int index = MediaFileWatcher.Instance.getMediaFileIndex(imageFile.Location, MediaFileWatcher.MediaType.IMAGE);
+                    MediaFiles.EnterReaderLock();
+
+                    int index = getImageFileIndex(imageFile.Location);
 
                     if (index == -1)
                     {
-                        IsPagingImagesEnabled = false;                     
+                        IsPagingImagesEnabled = false;
                     }
                     else
                     {
                         IsPagingImagesEnabled = true;
-                        NrImages = MediaFileWatcher.Instance.getNrMediaFiles(MediaFileWatcher.MediaType.IMAGE);
+                        NrImages = getNrImageFiles();
                         CurrentImage = index + 1;
                     }
+
+                    MediaFiles.ExitReaderLock();
 
                     log.Info("Image loaded: " + media.Location);
                 }
@@ -354,13 +366,17 @@ namespace MediaViewer.ImagePanel
             set
             {
                 if (value <= 0 || value > NrImages || IsPagingImagesEnabled == false) return;
-              
-                String newImage = MediaFileWatcher.Instance.getMediaFileByIndex(MediaFileWatcher.MediaType.IMAGE, value - 1);
 
-                if (!String.IsNullOrEmpty(newImage) && imageFile != null && !newImage.Equals(imageFile.Location))
+                MediaFiles.EnterReaderLock();
+
+                String location = getImageFileByIndex(value - 1);
+
+                if (location != null && imageFile != null && !location.Equals(imageFile.Location))
                 {
-                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", newImage);
+                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
                 }
+
+                MediaFiles.ExitReaderLock();
 
                 currentImage = value;
 
@@ -446,5 +462,67 @@ namespace MediaViewer.ImagePanel
                 lastImageCommand = value;
             }
         }
+
+        int getNrImageFiles()
+        {           
+            int count = 0;
+
+            foreach (MediaFileItem item in MediaFiles.Items)
+            {                  
+                if (MediaFormatConvert.isImageFile(item.Location))
+                {
+                    count++;
+                }                  
+            }
+
+            return (count);            
+        }
+
+        string getImageFileByIndex(int index)
+        {
+
+            int i = 0;
+
+            foreach (MediaFileItem item in MediaFiles.Items)
+            {
+
+                if (MediaFormatConvert.isImageFile(item.Location))
+                {
+                    if (index == i)
+                    {
+                        return (item.Location);
+                    }
+
+                    i++;
+                }
+
+            }
+
+            return (null);
+        }
+
+        int getImageFileIndex(string location)
+        {
+
+            int i = 0;
+
+            foreach (MediaFileItem item in MediaFiles.Items)
+            {
+
+                if (MediaFormatConvert.isImageFile(item.Location))
+                {
+                    if (item.Location.ToLower().Equals(location.ToLower()))
+                    {
+                        return (i);
+                    }
+
+                    i++;
+                }
+
+            }
+
+            return (-1);
+        }
     }
+
 }

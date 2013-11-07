@@ -48,7 +48,8 @@ namespace MediaViewer
 
         public MainWindow()
         {
-           
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
+       
             InitializeComponent();
           
             Version version = Assembly.GetEntryAssembly().GetName().Version;
@@ -101,6 +102,11 @@ namespace MediaViewer
             //TestWindow test = new TestWindow();
             //test.Show();          
           
+        }
+
+        private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());            
         }
 
     

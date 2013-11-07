@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,9 +48,9 @@ namespace MediaViewer.ImageGrid
             get { return column; }
             set { column = value; }
         }
-        ImageGridItem item;
+        MediaFileItem item;
 
-        public ImageGridItem Item
+        public MediaFileItem Item
         {
             get { return item; }
             set { item = value; }
@@ -57,7 +58,7 @@ namespace MediaViewer.ImageGrid
 
 
     public ImageGridMouseEventArgs(MouseEventArgs mouseEvent, int panelNr, int imageNr, int row,
-        int column, ImageGridItem item) 	
+        int column, MediaFileItem item) 	
 	{
         MouseEvent = mouseEvent;
 		PanelNr = panelNr;

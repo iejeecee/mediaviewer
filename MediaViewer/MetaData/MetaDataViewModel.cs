@@ -1,5 +1,6 @@
 ﻿using MediaViewer.ImageGrid;
 using MediaViewer.MediaFileModel;
+using MediaViewer.MediaFileModel.Watcher;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -42,6 +43,25 @@ namespace MediaViewer.MetaData
                 await vm.writeMetaData(new MetaDataUpdateViewModelAsyncState(this));
 
             }));
+
+            MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((s,e) =>
+            {
+                ItemList = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+            });
+        }
+
+        List<MediaFileItem> itemList;
+
+        public List<MediaFileItem> ItemList
+        {
+            get { return itemList; }
+            set
+            {
+                itemList = value;
+
+                grabData();
+                NotifyPropertyChanged();
+            }
         }
 
         Command writeMetaDataCommand;
@@ -261,18 +281,7 @@ namespace MediaViewer.MetaData
             get { return dynamicProperties; }
         }
 
-        ObservableCollection<ImageGridItem> itemList;
-
-        public ObservableCollection<ImageGridItem> ItemList
-        {
-            get { return itemList; }
-            set
-            {
-                itemList = value;
-
-                grabData();
-            }
-        }
+      
 
         void grabData()
         {
@@ -385,7 +394,7 @@ namespace MediaViewer.MetaData
             c.filename = Filename;
             c.filenameEnabled = FilenameEnabled;
             c.isEnabled = IsEnabled;
-            c.itemList = new ObservableCollection<ImageGridItem>(ItemList);
+            c.itemList = new List<MediaFileItem>(ItemList);
             c.rating = Rating;
             c.ratingEnabled = RatingEnabled;
             c.title = Title;

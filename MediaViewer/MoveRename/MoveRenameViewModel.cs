@@ -1,4 +1,5 @@
 ﻿using MediaViewer.ImageGrid;
+using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
@@ -98,7 +99,7 @@ namespace MediaViewer.MoveRename
                 temp += " " + SelectedItems.Count.ToString() + " File(s) - ";
                 long sizeBytes = 0;
 
-                foreach (ImageGridItem item in SelectedItems)
+                foreach (MediaFileItem item in SelectedItems)
                 {
                     FileInfo info = new FileInfo(item.Location);
                     sizeBytes += info.Length;
@@ -111,9 +112,9 @@ namespace MediaViewer.MoveRename
             InfoString = temp;
         }
 
-        List<ImageGridItem> selectedItems;
+        List<MediaFileItem> selectedItems;
 
-        public List<ImageGridItem> SelectedItems
+        public List<MediaFileItem> SelectedItems
         {
             get { return selectedItems; }
             set
@@ -271,7 +272,7 @@ namespace MediaViewer.MoveRename
             StringCollection sourcePaths = new StringCollection();
             StringCollection destPaths = new StringCollection();
 
-            foreach (ImageGridItem item in SelectedItems)
+            foreach (MediaFileItem item in SelectedItems)
             {
                 sourcePaths.Add(item.Location);
                 String sourceFilenameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(item.Location);

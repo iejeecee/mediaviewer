@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaFileModel.Watcher
 {
     class ObservableRangeCollection<T> : ObservableCollection<T>
     {

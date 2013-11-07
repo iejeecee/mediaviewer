@@ -27,7 +27,7 @@
                 <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Column="0" SelectedPath="{Binding BrowsePath, Mode=TwoWay}"/>
             </TabItem>
             <TabItem Header="Meta Data">
-                <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="0" MetaDataList="{Binding SelectedItems}"/>                
+                <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="0"/>                
             </TabItem>
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>

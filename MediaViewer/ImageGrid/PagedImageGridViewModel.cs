@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaFileModel;
+using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Pager;
 using MvvmFoundation.Wpf;
 using System;
@@ -9,26 +10,27 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace MediaViewer.ImageGrid
 {
     class PagedImageGridViewModel : ImageGridViewModel
     {
-
         public PagedImageGridViewModel()
         {
 
-
             maxItemsPerPage = 25;
-            media = new ObservableCollection<ImageGridItem>();
+            mediaPage = new ObservableCollection<MediaFileItem>();
+            mediaPageLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(mediaPage, mediaPageLock);
 
             for (int i = 0; i < maxItemsPerPage; i++)
             {
-                media.Add(null);
+                mediaPage.Add(null);
 
             }
-
-            Items.CollectionChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_CollectionChanged);
+         
+            MediaFileWatcher.Instance.MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -61,6 +63,7 @@ namespace MediaViewer.ImageGrid
             NrPages = 0;
             isPagingEnabled = false;
 
+           
         }
 
         int maxItemsPerPage;
@@ -155,46 +158,52 @@ namespace MediaViewer.ImageGrid
             set { lastPageCommand = value; }
         }
 
-        ObservableCollection<ImageGridItem> media;
+        ObservableCollection<MediaFileItem> mediaPage;
 
-        public ObservableCollection<ImageGridItem> Media
+        public ObservableCollection<MediaFileItem> MediaPage
         {
-            get { return media; }
-            set { media = value; }
+            get { return mediaPage; }
+            set { mediaPage = value; }
         }
+
+        object mediaPageLock;
 
         void setExecuteState()
         {
-            if (CurrentPage + 1 <= NrPages)
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                nextPageCommand.CanExecute = true;
-                lastPageCommand.CanExecute = true;
-            }
-            else
-            {
-                nextPageCommand.CanExecute = false;
-                lastPageCommand.CanExecute = false;
-            }
 
-            if (CurrentPage - 1 >= 1)
-            {
-                prevPageCommand.CanExecute = true;
-                firstPageCommand.CanExecute = true;
-            }
-            else
-            {
-                prevPageCommand.CanExecute = false;
-                firstPageCommand.CanExecute = false;
-            }
+                if (CurrentPage + 1 <= NrPages)
+                {
+                    nextPageCommand.CanExecute = true;
+                    lastPageCommand.CanExecute = true;
+                }
+                else
+                {
+                    nextPageCommand.CanExecute = false;
+                    lastPageCommand.CanExecute = false;
+                }
+
+                if (CurrentPage - 1 >= 1)
+                {
+                    prevPageCommand.CanExecute = true;
+                    firstPageCommand.CanExecute = true;
+                }
+                else
+                {
+                    prevPageCommand.CanExecute = false;
+                    firstPageCommand.CanExecute = false;
+                }
+            }));
         }
 
-        void pagedImageGridViewModel_CollectionChanged(Object sender, NotifyCollectionChangedEventArgs e) {
+        void pagedImageGridViewModel_StateChangedLocked(Object sender, NotifyCollectionChangedEventArgs e) {
              
             //int startIndex = CurrentPage * maxItemsPerPage;
             //int endIndex = startIndex + maxItemsPerPage;
-            int totalPages = (int)Math.Ceiling(Items.Count / (float)MaxItemsPerPage);
+            int totalPages = (int)Math.Ceiling(MediaFileWatcher.Instance.MediaFiles.Count / (float)MaxItemsPerPage);
 
-            if(Items.Count == 0)
+            if (MediaFileWatcher.Instance.MediaFiles.Count == 0)
             {
                 NrPages = 0;              
             }
@@ -238,25 +247,29 @@ namespace MediaViewer.ImageGrid
         void loadItemsAsync()
         {
 
-            int startItem = (CurrentPage > 0 ? CurrentPage - 1 : CurrentPage) * MaxItemsPerPage;
-
-            int nrItems = startItem + maxItemsPerPage > Items.Count ? Items.Count - startItem : maxItemsPerPage;
-
-            for (int i = 0; i < maxItemsPerPage; i++)
+            lock (mediaPageLock)
             {
-                if (i < nrItems)
-                {
-                    Media[i] = Items[startItem + i];
-                }
-                else
-                {
-                    Media[i] = null;
-                }
-            }
 
-            this.loadItemRangeAsync(startItem, nrItems);
-            
+                int startItem = (CurrentPage > 0 ? CurrentPage - 1 : CurrentPage) * MaxItemsPerPage;
+
+                int nrItems = startItem + maxItemsPerPage > MediaFiles.Count ? MediaFiles.Count - startItem : maxItemsPerPage;
+
+                for (int i = 0; i < maxItemsPerPage; i++)
+                {
+                    if (i < nrItems)
+                    {
+                        MediaPage[i] = MediaFiles.Items[startItem + i];
+                    }
+                    else
+                    {
+                        MediaPage[i] = null;
+                    }
+                }
+
+                this.loadItemRangeAsync(startItem, nrItems);
+            }                            
+
         }
-        
+
     }
 }

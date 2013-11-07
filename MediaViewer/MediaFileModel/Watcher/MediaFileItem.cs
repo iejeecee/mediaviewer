@@ -1,50 +1,39 @@
-﻿using System;
+﻿using MvvmFoundation.Wpf;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
-using MediaViewer.MediaPreview;
-using MediaViewer.MediaFileModel;
-using MvvmFoundation.Wpf;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Threading;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaFileModel.Watcher
 {
-    public enum ImageGridItemState
+    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>
     {
-        EMPTY,
-        LOADING,
-        LOADED,
-        CANCELLED,
-        ERROR
-    }
 
-    public class ImageGridItem : ObservableObject
-    {
-       
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);      
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        ImageGridItemState state;
+        MediaFileItemState state;
 
-        public ImageGridItemState ItemState
+        public MediaFileItemState ItemState
         {
             get { return state; }
-            set { state = value;
-            NotifyPropertyChanged();           
+            set
+            {
+                state = value;
+                NotifyPropertyChanged();
             }
         }
 
-        public ImageGridItem(String location)
+        public MediaFileItem(String location)
         {
 
             Location = location;
             IsSelected = false;
             Media = null;
-            ItemState = ImageGridItemState.EMPTY;
+            ItemState = MediaFileItemState.EMPTY;
 
         }
 
@@ -100,12 +89,12 @@ namespace MediaViewer.ImageGrid
             }
         }
 
-        public void loadMediaFile(CancellationToken token)
+        public void loadMetaData(CancellationToken token)
         {
-            ItemState = ImageGridItemState.LOADING;
+            ItemState = MediaFileItemState.LOADING;
 
             MediaFile media = null;
-            ImageGridItemState result = ImageGridItemState.LOADED;
+            MediaFileItemState result = MediaFileItemState.LOADED;
 
             try
             {
@@ -115,31 +104,31 @@ namespace MediaViewer.ImageGrid
 
                 if (media.OpenError != null)
                 {
-                    result = ImageGridItemState.ERROR;
+                    result = MediaFileItemState.ERROR;
                 }
             }
             catch (TaskCanceledException)
             {
-                result = ImageGridItemState.CANCELLED;
+                result = MediaFileItemState.CANCELLED;
             }
             catch (Exception e)
             {
-                result = ImageGridItemState.ERROR;
+                result = MediaFileItemState.ERROR;
                 log.Info("Error loading image grid item:" + Location, e);
 
             }
-          
+
             ItemState = result;
-            Media = media;           
+            Media = media;
         }
-    
-        public async Task loadMediaFileAsync(CancellationToken token)
+
+        public async Task loadMetaDataAsync(CancellationToken token)
         {
-        
-            ItemState = ImageGridItemState.LOADING;
+
+            ItemState = MediaFileItemState.LOADING;
 
             MediaFile media = null;
-            ImageGridItemState result = ImageGridItemState.LOADED;
+            MediaFileItemState result = MediaFileItemState.LOADED;
 
             try
             {
@@ -149,18 +138,18 @@ namespace MediaViewer.ImageGrid
 
                 if (media.OpenError != null)
                 {
-                    result = ImageGridItemState.ERROR;
+                    result = MediaFileItemState.ERROR;
                 }
             }
             catch (TaskCanceledException)
             {
-                result = ImageGridItemState.CANCELLED;
+                result = MediaFileItemState.CANCELLED;
             }
             catch (Exception e)
             {
-                result = ImageGridItemState.ERROR;
+                result = MediaFileItemState.ERROR;
                 log.Info("Error loading image grid item:" + Location, e);
-                
+
             }
 
             // assign the results on the UI thread           
@@ -170,6 +159,14 @@ namespace MediaViewer.ImageGrid
                 Media = media;
             }));
 
+        }
+
+   
+        public bool Equals(MediaFileItem other)
+        {
+            if (other == null) return (false);
+
+            return (Location.Equals(other.Location));
         }
     }
 }

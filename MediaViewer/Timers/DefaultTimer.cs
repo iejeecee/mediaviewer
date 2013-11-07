@@ -39,7 +39,9 @@ namespace MediaViewer.Timers
                 timer.SynchronizingObject = value;
             }
         }
-
+        /// <summary>
+        /// Period in milliseconds until the timer fires
+        /// </summary>
         public override int Interval
         {
             get
@@ -53,6 +55,9 @@ namespace MediaViewer.Timers
             }
         }
 
+        /// <summary>
+        /// If false run the timer only once, otherwise automatically restart the timer
+        /// </summary>
         public override bool AutoReset
         {
             get
