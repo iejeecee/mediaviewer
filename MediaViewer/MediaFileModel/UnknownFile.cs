@@ -12,7 +12,7 @@ namespace MediaViewer.MediaFileModel
     {
 
         public UnknownFile(String location, Stream data)
-            : base(location, null, data, MetaDataMode.AUTO)
+            : base(location, null, data, MetaDataLoadOptions.AUTO)
         {
 
         }

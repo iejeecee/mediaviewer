@@ -256,7 +256,9 @@ namespace MediaViewer.ImagePanel
             {
                 IsLoading = true;
 
-                media = await MediaFileFactory.openAsync((String)fileName, MediaFile.MetaDataMode.AUTO, loadImageCTS.Token);
+                media = await MediaFileFactory.openAsync((String)fileName, 
+                    MediaFile.MetaDataLoadOptions.AUTO, 
+                    loadImageCTS.Token);
 
                 IsLoading = false;
 
@@ -329,10 +331,13 @@ namespace MediaViewer.ImagePanel
                 isPagingImagesEnabled = value;
                 if (value == false)
                 {
-                    NextImageCommand.CanExecute = false;
-                    PrevImageCommand.CanExecute = false;
-                    FirstImageCommand.CanExecute = false;
-                    LastImageCommand.CanExecute = false;
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        NextImageCommand.CanExecute = false;
+                        PrevImageCommand.CanExecute = false;
+                        FirstImageCommand.CanExecute = false;
+                        LastImageCommand.CanExecute = false;
+                    }));
 
                 }
                 NotifyPropertyChanged();
@@ -379,29 +384,30 @@ namespace MediaViewer.ImagePanel
                 MediaFiles.ExitReaderLock();
 
                 currentImage = value;
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                  {
+                      if (CurrentImage + 1 <= NrImages)
+                      {
+                          nextImageCommand.CanExecute = true;
+                          lastImageCommand.CanExecute = true;
+                      }
+                      else
+                      {
+                          nextImageCommand.CanExecute = false;
+                          lastImageCommand.CanExecute = false;
+                      }
 
-                if (CurrentImage + 1 <= NrImages)
-                {
-                    nextImageCommand.CanExecute = true;
-                    lastImageCommand.CanExecute = true;
-                }
-                else
-                {
-                    nextImageCommand.CanExecute = false;
-                    lastImageCommand.CanExecute = false;
-                }
-
-                if (CurrentImage - 1 > 0)
-                {
-                    prevImageCommand.CanExecute = true;
-                    firstImageCommand.CanExecute = true;
-                }
-                else
-                {
-                    prevImageCommand.CanExecute = false;
-                    firstImageCommand.CanExecute = false;
-                }
-
+                      if (CurrentImage - 1 > 0)
+                      {
+                          prevImageCommand.CanExecute = true;
+                          firstImageCommand.CanExecute = true;
+                      }
+                      else
+                      {
+                          prevImageCommand.CanExecute = false;
+                          firstImageCommand.CanExecute = false;
+                      }
+                  }));
 
                 NotifyPropertyChanged();
             }

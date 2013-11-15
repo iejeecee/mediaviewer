@@ -73,7 +73,7 @@ namespace MediaViewer.MediaFileModel
 		
 	}
 
-    public ImageFile(string location, string mimeType, Stream data, MediaFile.MetaDataMode mode) 
+    public ImageFile(string location, string mimeType, Stream data, MediaFile.MetaDataLoadOptions mode) 
 		: base(location, mimeType, data, mode) 
 	{
         width = 0;

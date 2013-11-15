@@ -11,6 +11,11 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
+    /// <summary>
+    /// Concurrent Collection that supports multiple readers and a single writer
+    /// Also makes sure the items in the collection are unique
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     class ReaderWriterLockedCollection<T> where T : System.IEquatable<T>
     {
         protected List<T> items;
@@ -53,17 +58,37 @@ namespace MediaViewer.MediaFileModel.Watcher
         {
             get
             {
-                return (items.Count);
+                rwLock.EnterReadLock();
+                try
+                {
+                    return (items.Count);
+                }
+                finally
+                {
+                    rwLock.ExitReadLock();
+                }
             }
         }
-
-        virtual public void AddRange(IEnumerable<T> newItems)
+        /// <summary>
+        /// Returns true when all items are added.
+        /// Returns false when one or more newItems already exist in the list,
+        /// none of the newItems will be added in this case
+        /// </summary>
+        /// <param name="newItems"></param>
+        /// <returns></returns>
+        virtual public bool AddRange(IEnumerable<T> newItems)
         {
             rwLock.EnterWriteLock();
 
             try {
-                         
+
+                if (Contains(newItems) == true)
+                {                    
+                    return (false);
+                }
+
                 items.AddRange(newItems);
+                return (true);
                         
             }
             finally
@@ -115,16 +140,50 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        virtual bool Contains(T item)
+        virtual public bool ReplaceAll(IEnumerable<T> oldItems, IEnumerable<T> newItems)
+        {
+
+            rwLock.EnterWriteLock();
+            try
+            {
+                if (Contains(newItems) == true)
+                {
+                    return (false);
+                }
+
+                foreach (T oldItem in oldItems)
+                {
+                    foreach (T item in items)
+                    {
+                        if (oldItem.Equals(item))
+                        {
+                            items.Remove(item);
+                            break;
+                        }
+
+                    }
+
+                }
+
+                items.AddRange(newItems);
+                return (true);
+
+            }
+            finally
+            {
+                rwLock.ExitWriteLock();
+            }
+        }
+
+        public virtual bool Contains(T compareItem)
         {
             rwLock.EnterReadLock();
 
             try
             {
-
-                foreach (T i in items)
+                foreach (T item in items)
                 {
-                    if (item.Equals(i))
+                    if (item.Equals(compareItem))
                     {
                         return (true);
                     }
@@ -136,6 +195,32 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {
                 rwLock.ExitReadLock();
+            }
+        }
+
+        public virtual bool Contains(IEnumerable<T> compareItems)
+        {
+            rwLock.EnterWriteLock();
+            try
+            {
+                foreach (T compareItem in compareItems)
+                {
+                    foreach (T item in items)
+                    {
+                        if (compareItem.Equals(item))
+                        {
+                            return (true);                            
+                        }
+
+                    }
+
+                }
+
+                return (false);
+            }
+            finally
+            {
+                rwLock.ExitWriteLock();
             }
         }
 

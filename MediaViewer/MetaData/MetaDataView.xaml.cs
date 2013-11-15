@@ -101,14 +101,14 @@ namespace MediaViewer.MetaData
             {
                 foreach (RowDefinition row in dynamicRows)
                 {
-                    mainGrid.RowDefinitions.Remove(row);
+                    miscGrid.RowDefinitions.Remove(row);
                 }
 
                 dynamicRows.Clear();
 
                 foreach (UIElement elem in dynamicElements)
                 {
-                    mainGrid.Children.Remove(elem);
+                    miscGrid.Children.Remove(elem);
                 }
 
                 dynamicElements.Clear();
@@ -123,14 +123,14 @@ namespace MediaViewer.MetaData
                         row = new RowDefinition();
                         row.Height = GridLength.Auto;
 
-                        mainGrid.RowDefinitions.Add(row);
+                        miscGrid.RowDefinitions.Add(row);
                         dynamicRows.Add(row);
 
                         Separator seperator = new Separator();
                         dynamicElements.Add(seperator);
 
-                        mainGrid.Children.Add(seperator);
-                        Grid.SetRow(seperator, mainGrid.RowDefinitions.Count - 1);
+                        miscGrid.Children.Add(seperator);
+                        Grid.SetRow(seperator, miscGrid.RowDefinitions.Count - 1);
                         Grid.SetColumnSpan(seperator, 3);
 
                     }
@@ -138,26 +138,26 @@ namespace MediaViewer.MetaData
                     row = new RowDefinition();
                     row.Height = GridLength.Auto;
 
-                    mainGrid.RowDefinitions.Add(row);
+                    miscGrid.RowDefinitions.Add(row);
                     dynamicRows.Add(row);
 
                     Label label = new Label();
                     label.Style = Resources["labelStyle"] as Style;
                     label.Content = prop.Item1;
 
-                    mainGrid.Children.Add(label);
+                    miscGrid.Children.Add(label);
                     dynamicElements.Add(label);
                     Grid.SetColumn(label, 0);
-                    Grid.SetRow(label, mainGrid.RowDefinitions.Count - 1);
+                    Grid.SetRow(label, miscGrid.RowDefinitions.Count - 1);
 
                     TextBlock value = new TextBlock();
                     value.Text = prop.Item2;
                     value.Margin = new Thickness(5, 5, 5, 5);
 
-                    mainGrid.Children.Add(value);
+                    miscGrid.Children.Add(value);
                     dynamicElements.Add(value);
                     Grid.SetColumn(value, 1);
-                    Grid.SetRow(value, mainGrid.RowDefinitions.Count - 1);
+                    Grid.SetRow(value, miscGrid.RowDefinitions.Count - 1);
 
                 }
             }));

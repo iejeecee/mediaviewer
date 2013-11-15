@@ -266,42 +266,57 @@ namespace MediaViewer.MoveRename
 
         async void moveRenameFiles()
         {
-            FileUtils fileUtils = new FileUtils();
 
-            List<int> counters = new List<int>();
-            StringCollection sourcePaths = new StringCollection();
-            StringCollection destPaths = new StringCollection();
+            bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(SelectedItems);
 
-            foreach (MediaFileItem item in SelectedItems)
+            try
             {
-                sourcePaths.Add(item.Location);
-                String sourceFilenameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(item.Location);
-                String sourceExtension = System.IO.Path.GetExtension(item.Location);
+                FileUtils fileUtils = new FileUtils();
 
-                String destFileNameWithoutExtension = parseNewFilename(RenameFileName, sourceFilenameWithoutExtension, counters);
-                String destExtension = parseNewExtension(RenameExtension, sourceExtension);
+                List<int> counters = new List<int>();
+                StringCollection sourcePaths = new StringCollection();
+                StringCollection destPaths = new StringCollection();
+              
+                foreach (MediaFileItem item in SelectedItems)
+                {
+                    sourcePaths.Add(item.Location);
+                    String sourceFilenameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(item.Location);
+                    String sourceExtension = System.IO.Path.GetExtension(item.Location);
 
-                destPaths.Add(MovePath + "\\" + destFileNameWithoutExtension + destExtension);
+                    String destFileNameWithoutExtension = parseNewFilename(RenameFileName, sourceFilenameWithoutExtension, counters);
+                    String destExtension = parseNewExtension(RenameExtension, sourceExtension);
+
+                    destPaths.Add(MovePath + "\\" + destFileNameWithoutExtension + destExtension);
+                }
+
+                MoveRenameProgressWindow progressWindow = new MoveRenameProgressWindow();
+                progressWindow.Show();
+
+                FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)progressWindow.DataContext;
+
+                if (success == false)
+                {
+                    progress.ItemInfo = "Cannot copy/move selected file(s), some are already scheduled for another operation";
+                    return;
+
+                } else if (IsCopy)
+                {
+
+                    Action method = () => fileUtils.copy(sourcePaths, destPaths, progress);
+
+                    await Task.Run(method, progress.CancellationToken);
+
+                }
+                else
+                {
+                    Action method = () => fileUtils.move(sourcePaths, destPaths, progress);
+
+                    await Task.Run(method, progress.CancellationToken);
+                }
             }
-
-            MoveRenameProgressWindow progressWindow = new MoveRenameProgressWindow();
-            progressWindow.Show();
-
-            FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)progressWindow.DataContext;
-
-            if (IsCopy)
+            finally
             {
-
-                Action method = () => fileUtils.copy(sourcePaths, destPaths, progress);
-
-                await Task.Run(method, progress.CancellationToken);
-
-            }
-            else
-            {
-                Action method = () => fileUtils.move(sourcePaths, destPaths, progress);
-
-                await Task.Run(method, progress.CancellationToken);
+                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(SelectedItems);
             }
 
 

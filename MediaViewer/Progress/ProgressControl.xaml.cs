@@ -136,6 +136,7 @@ namespace MediaViewer.Progress
                                 infoTextBox.Text += message + "\n";
                             }
 
+                            infoTextBox.ScrollToEnd();
                             break;
                         }
                     case NotifyCollectionChangedAction.Reset:
@@ -148,6 +149,7 @@ namespace MediaViewer.Progress
 
                                 infoTextBox.Text += message + "\n";
                             }
+                            infoTextBox.ScrollToEnd();
                             break;
                         }
                     default:

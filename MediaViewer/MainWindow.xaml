@@ -1,9 +1,10 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel"
         xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
-        Title="MediaViewer" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized">    
+        xmlns:Search="clr-namespace:MediaViewer.Search" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
+        Title="MediaViewer" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -60,6 +61,7 @@
                 <Button x:Name="deleteButton" Height="16" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                 </Button>
+                <Search:SearchView VerticalAlignment="Top" Width="250" Height="19"/>
             </ToolBar>
         </ToolBarTray>
         <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>

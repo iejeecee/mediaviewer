@@ -43,111 +43,162 @@ namespace MediaViewer.MetaData
 
         public async Task writeMetaData(MetaDataUpdateViewModelAsyncState state)
         {
-                      
-            // copy the viewmodel state to prevent outside changes to it influencing this function
-            MetaDataViewModel vmState = state.State;
-
-            TotalFiles = vmState.ItemList.Count;
+                                  
+            TotalFiles = state.ItemList.Count;
             CurrentFile = 0;
 
             await Task.Factory.StartNew(() =>
-            {
-                foreach (MediaFileItem item in vmState.ItemList)
+            {                
+                bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
+                if (success == false)
                 {
-                    if (CancellationToken.IsCancellationRequested) return;
-
-                    CurrentFileProgress = 0;
-                    bool isModified = false;
-
-                    ItemInfo = "Opening: " + item.Location;
-
-                    if (item.Media == null || item.Media.MetaData == null)
-                    {
-                        ItemInfo = "Loading MetaData: " + item.Location;
-
-                        item.loadMetaData(CancellationToken);
-                        if (item.Media == null || item.Media.MetaData == null)
-                        {
-                            ItemInfo = "Could not open or read metadata for file: " + item.Location;
-                            InfoMessages.Add("Could not open or read metadata for file: " + item.Location);
-                            log.Error("Could not open or read metadata for file: " + item.Location);
-                            return;
-                        }
-                    }
-
-                    FileMetaData metaData = item.Media.MetaData;
-
-                    if (vmState.RatingEnabled && (int)metaData.Rating != (int)(vmState.Rating * 5))
-                    {                       
-                        metaData.Rating = vmState.Rating * 5;
-                        isModified = true;
-                    }
-
-                    if (vmState.TitleEnabled && !metaData.Title.Equals(vmState.Title))
-                    {
-                        metaData.Title = vmState.Title;
-                        isModified = true;
-                    }
-
-                    if (vmState.DescriptionEnabled && !metaData.Description.Equals(vmState.Description))
-                    {
-                        metaData.Description = vmState.Description;
-                        isModified = true;
-                    }
-
-                    if (vmState.AuthorEnabled && !metaData.Creator.Equals(vmState.Author))
-                    {
-                        metaData.Creator = vmState.Author;
-                        isModified = true;
-                    }
-
-                    if (vmState.CopyrightEnabled && !metaData.Copyright.Equals(vmState.Copyright))
-                    {
-                        metaData.Copyright = vmState.Copyright;
-                        isModified = true;
-                    }
-
-                    ItemInfo = "Saving MetaData: " + item.Location;
-
-                    try
-                    {
-                        if (isModified)
-                        {
-                            metaData.saveToDisk();
-                        }
-                    }
-                    catch (Exception e)
-                    {                  
-                        ItemInfo = "Error Saving MetaData: " + item.Location;
-                        InfoMessages.Add("Could not save metaData for file: " + item.Location);
-                        log.Error("Could not save metaData for file: " + item.Location, e);
-                        return;
-                    }
-                   
-                    InfoMessages.Add("Completed updating Metadata for: " + item.Location);
-
-                    CurrentFileProgress = 100;
-                    CurrentFile++;
+                    InfoMessages.Add("Error selected file(s) are in use by another operation");
+                    log.Error("Error selected file(s) are in use by another operation");
+                    return;
                 }
 
-                if (vmState.ItemList.Count == 1 && !Path.GetFileName(vmState.ItemList[0].Location).Equals(vmState.Filename))
+                try
                 {
-                    String oldName = vmState.ItemList[0].Location;
-                    String destPath = Utils.FileUtils.getPathWithoutFileName(oldName);
-                    String newName = destPath + "\\" + vmState.Filename;
 
-                    try
+                    foreach (MediaFileItem item in state.ItemList)
                     {
-                        System.IO.File.Move(oldName, newName);
-                    }
-                    catch (Exception e)
-                    {
-                        ItemInfo = "Error renaming file: " + oldName;
-                        InfoMessages.Add("Error renaming file: " + oldName);
-                        log.Error("Error renaming file: " + oldName, e);
-                        return;
+                        if (CancellationToken.IsCancellationRequested) return;
+
+                        CurrentFileProgress = 0;
+                        bool isModified = false;
+
+                        ItemInfo = "Opening: " + item.Location;
+
+                        if (item.Media == null || item.Media.MetaData == null)
+                        {
+                            ItemInfo = "Loading MetaData: " + item.Location;
+
+                            item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.AUTO | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL
+                            , CancellationToken);
+                            if (item.Media == null || item.Media.MetaData == null)
+                            {
+                                ItemInfo = "Could not open or read metadata for file: " + item.Location;
+                                InfoMessages.Add("Could not open or read metadata for file: " + item.Location);
+                                log.Error("Could not open or read metadata for file: " + item.Location);
+                                return;
+                            }
+                        }
+
+                        FileMetaData metaData = item.Media.MetaData;
+
+                        if (state.RatingEnabled && (int)metaData.Rating != (int)(state.Rating * 5))
+                        {
+                            metaData.Rating = state.Rating * 5;
+                            isModified = true;
+                        }
+
+                        if (state.TitleEnabled && !metaData.Title.Equals(state.Title))
+                        {
+                            metaData.Title = state.Title;
+                            isModified = true;
+                        }
+
+                        if (state.DescriptionEnabled && !metaData.Description.Equals(state.Description))
+                        {
+                            metaData.Description = state.Description;
+                            isModified = true;
+                        }
+
+                        if (state.AuthorEnabled && !metaData.Creator.Equals(state.Author))
+                        {
+                            metaData.Creator = state.Author;
+                            isModified = true;
+                        }
+
+                        if (state.CopyrightEnabled && !metaData.Copyright.Equals(state.Copyright))
+                        {
+                            metaData.Copyright = state.Copyright;
+                            isModified = true;
+                        }
+
+                        if (state.BatchMode == false && !state.Tags.SequenceEqual(metaData.Tags))
+                        {
+                            metaData.Tags.Clear();
+                            metaData.Tags.AddRange(state.Tags);
+                            isModified = true;
+                        }
+                        else if (state.BatchMode == true)
+                        {
+                            bool addedTag = false;
+                            bool removedTag = false;
+
+                            foreach (string tag in state.AddTags)
+                            {
+                                if (!metaData.Tags.Contains(tag))
+                                {
+                                    metaData.Tags.Add(tag);
+                                    addedTag = true;
+                                }
+                            }
+
+                            foreach (string tag in state.RemoveTags)
+                            {
+                                if (metaData.Tags.Remove(tag) == true)
+                                {
+                                    removedTag = true;
+                                }
+                               
+                            }
+
+                            if (removedTag || addedTag)
+                            {
+                                isModified = true;
+                            }
+
+                        }
+
+                       
+                        try
+                        {
+                            if (isModified)
+                            {
+                                ItemInfo = "Saving MetaData: " + item.Location;
+                                metaData.saveToDisk();
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            ItemInfo = "Error Saving MetaData: " + item.Location;
+                            InfoMessages.Add("Could not save metaData for file: " + item.Location);
+                            log.Error("Could not save metaData for file: " + item.Location, e);
+                            return;
+                        }
+
+                        InfoMessages.Add("Completed updating Metadata for: " + item.Location);
+
+                        CurrentFileProgress = 100;
+                        CurrentFile++;
                     }
 
+                    if (state.ItemList.Count == 1 && !Path.GetFileNameWithoutExtension(state.ItemList[0].Location).Equals(state.Filename))
+                    {
+                        String oldName = state.ItemList[0].Location;
+                        String destPath = Utils.FileUtils.getPathWithoutFileName(oldName);
+                        String newName = destPath + "\\" + state.Filename + Path.GetExtension(state.ItemList[0].Location);
+
+                        try
+                        {
+                            System.IO.File.Move(oldName, newName);
+                        }
+                        catch (Exception e)
+                        {
+                            ItemInfo = "Error renaming file: " + oldName;
+                            InfoMessages.Add("Error renaming file: " + oldName);
+                            log.Error("Error renaming file: " + oldName, e);
+                            return;
+                        }
+
+                    }
+
+                }
+                finally
+                {
+                    MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(state.ItemList);
                 }
 
             },cancellationToken);
@@ -247,16 +298,157 @@ namespace MediaViewer.MetaData
 
     class MetaDataUpdateViewModelAsyncState
     {
-        MetaDataViewModel state;
-
-        public MetaDataViewModel State
-        {
-            get { return state; }            
-        }
-
         public MetaDataUpdateViewModelAsyncState(MetaDataViewModel vm)
         {
-            state = vm.Clone() as MetaDataViewModel;
+            Author = vm.Author;
+            AuthorEnabled = vm.AuthorEnabled;
+            BatchMode = vm.BatchMode;
+            Copyright = vm.Copyright;
+            CopyrightEnabled = vm.CopyrightEnabled;
+            Description = vm.Description;
+            DescriptionEnabled = vm.DescriptionEnabled;
+            Filename = vm.Filename;
+            FilenameEnabled = vm.FilenameEnabled;
+            isEnabled = vm.IsEnabled;
+            ItemList = new List<MediaFileItem>(vm.ItemList);
+            Rating = vm.Rating;
+            RatingEnabled = vm.RatingEnabled;
+            Title = vm.Title;
+            TitleEnabled = vm.TitleEnabled;
+            Tags = new List<String>(vm.Tags);
+            AddTags = new List<String>(vm.AddTags);
+            RemoveTags = new List<String>(vm.RemoveTags);
+        }
+
+        String author;
+
+        public String Author
+        {
+            get { return author; }
+            set { author = value; }
+        }
+        bool authorEnabled;
+
+        public bool AuthorEnabled
+        {
+            get { return authorEnabled; }
+            set { authorEnabled = value; }
+        }
+        bool batchMode;
+
+        public bool BatchMode
+        {
+            get { return batchMode; }
+            set { batchMode = value; }
+        }
+        String copyright;
+
+        public String Copyright
+        {
+            get { return copyright; }
+            set { copyright = value; }
+        }
+        bool copyrightEnabled;
+
+        public bool CopyrightEnabled
+        {
+            get { return copyrightEnabled; }
+            set { copyrightEnabled = value; }
+        }
+        String description;
+
+        public String Description
+        {
+            get { return description; }
+            set { description = value; }
+        }
+        bool descriptionEnabled;
+
+        public bool DescriptionEnabled
+        {
+            get { return descriptionEnabled; }
+            set { descriptionEnabled = value; }
+        }
+
+        String filename;
+
+        public String Filename
+        {
+            get { return filename; }
+            set { filename = value; }
+        }
+        bool filenameEnabled;
+
+        public bool FilenameEnabled
+        {
+            get { return filenameEnabled; }
+            set { filenameEnabled = value; }
+        }
+        bool isEnabled;
+
+        public bool IsEnabled
+        {
+            get { return isEnabled; }
+            set { isEnabled = value; }
+        }
+        List<MediaFileItem> itemList;
+
+        public List<MediaFileItem> ItemList
+        {
+            get { return itemList; }
+            set { itemList = value; }
+        }
+        float rating;
+
+        public float Rating
+        {
+            get { return rating; }
+            set { rating = value; }
+        }
+        bool ratingEnabled;
+
+        public bool RatingEnabled
+        {
+            get { return ratingEnabled; }
+            set { ratingEnabled = value; }
+        }
+        String title;
+
+        public String Title
+        {
+            get { return title; }
+            set { title = value; }
+        }
+        bool titleEnabled;
+
+        public bool TitleEnabled
+        {
+            get { return titleEnabled; }
+            set { titleEnabled = value; }
+        }
+
+        List<String> tags;
+
+        public List<String> Tags
+        {
+            get { return tags; }
+            set { tags = value; }
+        }
+
+        List<String> addTags;
+
+        public List<String> AddTags
+        {
+            get { return addTags; }
+            set { addTags = value; }
+        }
+
+        List<String> removeTags;
+
+        public List<String> RemoveTags
+        {
+            get { return removeTags; }
+            set { removeTags = value; }
         }
     }
 }

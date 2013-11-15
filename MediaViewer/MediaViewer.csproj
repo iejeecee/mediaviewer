@@ -49,6 +49,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Resources\Icons\bird.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aga.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1d788d229eb5990, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -203,6 +206,9 @@
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
     <Compile Include="MetaData\MetaDataThumb.cs" />
+    <Compile Include="MetaData\TagEditorView.xaml.cs">
+      <DependentUpon>TagEditorView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MetaData\Tree\MetaDataTree.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeArray.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeDictionaryNode.cs" />
@@ -232,6 +238,10 @@
     </Compile>
     <Compile Include="Progress\ProgressControl.xaml.cs">
       <DependentUpon>ProgressControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Search\SearchViewModel.cs" />
+    <Compile Include="Search\SearchView.xaml.cs">
+      <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
@@ -315,6 +325,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MetaData\TagEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MoveRename\MoveRenameProgressWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -351,6 +365,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Search\SearchView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -540,6 +558,16 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\language.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\bird.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\birdmedium.ico" />
+    <Resource Include="Resources\Icons\birdsmall.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\searchblack.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

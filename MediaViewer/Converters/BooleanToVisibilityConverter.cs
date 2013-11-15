@@ -13,6 +13,11 @@ namespace MediaViewer.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            if (parameter is String && parameter.Equals("invert"))
+            {
+                return (bool)value ? Visibility.Collapsed : Visibility.Visible;
+            }
+
             return (bool)value ? Visibility.Visible : Visibility.Collapsed;
         }
 

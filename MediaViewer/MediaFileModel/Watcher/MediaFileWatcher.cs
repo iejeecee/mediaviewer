@@ -15,9 +15,24 @@ namespace MediaViewer.MediaFileModel.Watcher
 {
     class MediaFileWatcher
     {
+              
+        ReaderWriterLockedCollection<MediaFileItem> mediaFilesInUseByOperation;
 
-        private MediaFileState mediaFiles;
+        /// <summary>
+        ///  Files that are scheduled to have some operation preformed on them
+        ///  e.g. modifying their metadata, moving them etc.
+        /// </summary>
+        public ReaderWriterLockedCollection<MediaFileItem> MediaFilesInUseByOperation
+        {
+            get { return mediaFilesInUseByOperation; }
+            private set { mediaFilesInUseByOperation = value; }
+        }
 
+        MediaFileState mediaFiles;
+        /// <summary>
+        /// All the mediafiles that are currently being watched using a mediafilewatcher
+        /// Several event's can be fired on changes to the file(s)
+        /// </summary>
         public MediaFileState MediaFiles
         {
             get
@@ -43,6 +58,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             watcher = new FileSystemWatcher();
             mediaFiles = new MediaFileState();
+            mediaFilesInUseByOperation = new ReaderWriterLockedCollection<MediaFileItem>();
             
                     
             /* Watch for changes in LastAccess and LastWrite times, and 
@@ -59,7 +75,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             watcher.Deleted += new FileSystemEventHandler(FileDeleted);
             watcher.Renamed += new System.IO.RenamedEventHandler(FileRenamed);
 
-            fileWatcherQueue = new MediaFileWatcherQueue(MediaFiles);
+            fileWatcherQueue = new MediaFileWatcherQueue(this);
          
         }
 

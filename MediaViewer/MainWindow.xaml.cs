@@ -414,5 +414,7 @@ namespace MediaViewer
         {
             showMediaFileBrowser();
         }
+
+        
     }
 }

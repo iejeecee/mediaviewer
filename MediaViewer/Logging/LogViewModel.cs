@@ -11,6 +11,8 @@ namespace MediaViewer.Logging
 {
     class LogViewModel : ObservableObject
     {
+        const int maxLinesInLog = 100;
+
         public LogViewModel()
         {
             messages = new ObservableCollection<LogMessageModel>();
@@ -28,17 +30,20 @@ namespace MediaViewer.Logging
 
         public void addMessage(LogMessageModel message) {
 
-            if (Application.Current.Dispatcher.CheckAccess())
-            {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+
+                if (Messages.Count > maxLinesInLog)                
+                {
+                    Messages.RemoveAt(0);
+                }
+                
                 Messages.Add(message);
-            }
-            else
-            {
-                Application.Current.Dispatcher.BeginInvoke(
-                    new Action(() => Messages.Add(message)));
-            }
+
+            }));
+
         }
 
+       
         Command clearLog;
 
         public Command ClearLog

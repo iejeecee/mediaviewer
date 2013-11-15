@@ -21,74 +21,111 @@
             <Style TargetType="CheckBox" x:Key="checkBoxStyle">
                 <Setter Property="HorizontalAlignment" Value="Center"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
-                <Setter Property="Margin" Value="0,5,0,0"/>
+                <Setter Property="Margin" Value="0,5,0,0"/>           
+                <Setter Property="ToolTip" Value="Enable/Disable update"/>                
             </Style>
             <MetaData:MetaDataViewModel x:Key="viewModel"/>
         </ResourceDictionary>       
     </UserControl.Resources>    
     <ScrollViewer>
         <Grid Name="mainGrid">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>            
-            <Label Grid.Row="0" Grid.Column="0" Content="FileName" Style="{StaticResource labelStyle}"></Label>
-            <TextBox Name="fileNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
-                Text="{Binding Source={StaticResource viewModel}, Path=Filename}"
-                IsEnabled="{Binding Source={StaticResource viewModel}, Path=FilenameEnabled}"/>
-            <Label Grid.Row="1" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"></Label>
-            <inputtoolkit:Rating x:Name="rating" ItemCount="5" Grid.Row="1" Grid.Column="1" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
-                Value="{Binding Source={StaticResource viewModel}, Path=Rating, Mode=TwoWay}"
-                IsEnabled="{Binding Source={StaticResource viewModel}, Path=RatingEnabled}"/>
-            <CheckBox Grid.Row="1" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="FileName" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="fileNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
+                    Text="{Binding Source={StaticResource viewModel}, Path=Filename}"
+                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=FilenameEnabled}"/>
+                <Label Grid.Row="1" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"></Label>
+                <inputtoolkit:Rating x:Name="rating" ItemCount="5" Grid.Row="1" Grid.Column="1" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
+                    Value="{Binding Source={StaticResource viewModel}, Path=Rating, Mode=TwoWay}"
+                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=RatingEnabled}"/>
+                <CheckBox Grid.Row="1" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
                       IsChecked="{Binding Source={StaticResource viewModel}, Path=RatingEnabled}"
                       Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>
-            <Label Grid.Row="2" Grid.Column="0" Content="Title" Style="{StaticResource labelStyle}"></Label>
-            <TextBox Name="titleNameTextBox" Grid.Row="2" Grid.Column="1" Margin="5,5,5,6" VerticalAlignment="Top"
-                Text="{Binding Source={StaticResource viewModel}, Path=Title}"
-                IsEnabled="{Binding Source={StaticResource viewModel}, Path=TitleEnabled}"/>
-            <CheckBox Grid.Row="2" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                <Label Grid.Row="2" Grid.Column="0" Content="Title" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="titleNameTextBox" Grid.Row="2" Grid.Column="1" Margin="5,5,5,6" VerticalAlignment="Top"
+                    Text="{Binding Source={StaticResource viewModel}, Path=Title}"
+                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=TitleEnabled}"/>
+                <CheckBox Grid.Row="2" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
                       IsChecked="{Binding Source={StaticResource viewModel}, Path=TitleEnabled}"
                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>
-            <Label Grid.Row="3" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"></Label>
-            <TextBox Name="descriptionTextBox" Grid.Row="3" Grid.Column="1"  TextWrapping="Wrap"
-                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35"
+                <Label Grid.Row="3" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="descriptionTextBox" Grid.Row="3" Grid.Column="1"  TextWrapping="Wrap"
+                     AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="70"
                      Text="{Binding Source={StaticResource viewModel}, Path=Description}"                     
                      IsEnabled="{Binding Source={StaticResource viewModel}, Path=DescriptionEnabled}"/>
-            <CheckBox Grid.Row="3" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                <CheckBox Grid.Row="3" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
                       IsChecked="{Binding Source={StaticResource viewModel}, Path=DescriptionEnabled}"
                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>
-            <Label Grid.Row="4" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}"></Label>
-            <TextBox Name="authorTextBox" Grid.Row="4" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
+                <Label Grid.Row="4" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="authorTextBox" Grid.Row="4" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
                      Text="{Binding Source={StaticResource viewModel}, Path=Author}"
                      IsEnabled="{Binding Source={StaticResource viewModel}, Path=AuthorEnabled}"/>
-            <CheckBox Grid.Row="4" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                <CheckBox Grid.Row="4" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
                       IsChecked="{Binding Source={StaticResource viewModel}, Path=AuthorEnabled}"
                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>
-            <Label Grid.Row="5" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}"></Label>
-            <TextBox Name="copyrightTextBox" Grid.Row="5" Grid.Column="1"  TextWrapping="Wrap"
+                <Label Grid.Row="5" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="copyrightTextBox" Grid.Row="5" Grid.Column="1"  TextWrapping="Wrap"
                      AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35"
                      Text="{Binding Source={StaticResource viewModel}, Path=Copyright}"
                      IsEnabled="{Binding Source={StaticResource viewModel}, Path=CopyrightEnabled}"/>
-            <CheckBox Grid.Row="5" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                <CheckBox Grid.Row="5" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
                         IsChecked="{Binding Source={StaticResource viewModel}, Path=CopyrightEnabled}"
-                       Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>                    
-            <Label Grid.Row="6" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"></Label>
-            <Button Grid.Row="7" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
+                       Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"/>
+                <Label Grid.Row="6" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
+                       Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}, ConverterParameter=invert}"
+                       />
+                <MetaData:TagEditorView Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                                        Tags="{Binding Source={StaticResource viewModel}, Path=Tags}"
+                                        IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"
+                                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}, ConverterParameter=invert}"
+                                        Margin="5, 5, 5, 5"/>                                    
+                <Label Grid.Row="7" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
+                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"
+                       />
+                <MetaData:TagEditorView Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                                        Tags="{Binding Source={StaticResource viewModel}, Path=AddTags}"                                       
+                                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"
+                                        Margin="5, 5, 5, 5"/>
+                <Label Grid.Row="8" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"
+                       />
+                <MetaData:TagEditorView Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                                        Tags="{Binding Source={StaticResource viewModel}, Path=RemoveTags}"                                      
+                                        Visibility="{Binding Source={StaticResource viewModel}, Path=BatchMode, Converter={StaticResource visibilityConverter}}"
+                                        Margin="5, 5, 5, 5"/>
+                <Button Grid.Row="9" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
                     IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"
-                    Command="{Binding Source={StaticResource viewModel}, Path=WriteMetaDataCommand}"/>
+                    Command="{Binding Source={StaticResource viewModel}, Path=WriteMetaDataCommand}"
+                    ToolTip="Save Metadata To Disk"/>
+            </Grid>
+            <Grid Name="miscGrid" Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+            </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>

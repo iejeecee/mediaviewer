@@ -5,6 +5,7 @@ using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataViewModel : ObservableObject, ICloneable
+    class MetaDataViewModel : ObservableObject
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -25,16 +26,25 @@ namespace MediaViewer.MetaData
             Description = "";
             Author = "";
             Copyright = "";
-            dynamicProperties = new List<Tuple<string, string>>();      
-      
+            dynamicProperties = new List<Tuple<string, string>>();
+
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {             
+                Tags.Clear();
+                AddTags.Clear();
+                RemoveTags.Clear();
+            }));
         }
 
         public MetaDataViewModel()
         {
+            Tags = new ObservableCollection<string>();
+            AddTags = new ObservableCollection<string>();
+            RemoveTags = new ObservableCollection<string>();
             clear();
             BatchMode = false;
             IsEnabled = false;
-
+            
             writeMetaDataCommand = new Command(new Action(async () =>
             {
                 MetaDataUpdateView metaDataUpdateView = new MetaDataUpdateView();
@@ -219,6 +229,36 @@ namespace MediaViewer.MetaData
             }
         }
 
+        ObservableCollection<String> tags;
+
+        public ObservableCollection<String> Tags
+        {
+            get { return tags; }
+            set { tags = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        ObservableCollection<String> addTags;
+
+        public ObservableCollection<String> AddTags
+        {
+            get { return addTags; }
+            set { addTags = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        ObservableCollection<String> removeTags;
+
+        public ObservableCollection<String> RemoveTags
+        {
+            get { return removeTags; }
+            set { removeTags = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         bool isEnabled;
 
         public bool IsEnabled
@@ -286,11 +326,12 @@ namespace MediaViewer.MetaData
         void grabData()
         {
             
+
             if (itemList.Count == 1 && ItemList[0].Media != null)
             {
                 MediaFile media = ItemList[0].Media;
 
-                Filename = media.Name;
+                Filename = Path.GetFileNameWithoutExtension(media.Name);
 
                 FileMetaData metaData = media.MetaData;
 
@@ -306,6 +347,12 @@ namespace MediaViewer.MetaData
                     Title = metaData.Title;
                     Description = metaData.Description;
                     Author = metaData.Creator;
+                    Copyright = metaData.Copyright;
+                   
+                    foreach (string tag in metaData.Tags)
+                    {
+                        Tags.Add(tag);
+                    }
 
                     dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
 
@@ -377,30 +424,6 @@ namespace MediaViewer.MetaData
             return (p);
 
         }
-
-
-
-        public object Clone()
-        {
-            MetaDataViewModel c = new MetaDataViewModel();
-            c.author = Author;
-            c.authorEnabled = AuthorEnabled;
-            c.batchMode = BatchMode;
-            c.copyright = Copyright;
-            c.copyrightEnabled = CopyrightEnabled;
-            c.description = Description;
-            c.descriptionEnabled = DescriptionEnabled;
-            c.dynamicProperties = new List<Tuple<String, String>>(DynamicProperties);
-            c.filename = Filename;
-            c.filenameEnabled = FilenameEnabled;
-            c.isEnabled = IsEnabled;
-            c.itemList = new List<MediaFileItem>(ItemList);
-            c.rating = Rating;
-            c.ratingEnabled = RatingEnabled;
-            c.title = Title;
-            c.titleEnabled = TitleEnabled;
-
-            return (c);
-        }
+        
     }
 }

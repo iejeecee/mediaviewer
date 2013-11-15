@@ -139,7 +139,7 @@ namespace MediaViewer.MediaFileModel
         }
 
 
-        public VideoFile(string location, string mimeType, Stream data, MediaFile.MetaDataMode mode)
+        public VideoFile(string location, string mimeType, Stream data, MediaFile.MetaDataLoadOptions mode)
             : base(location, mimeType, data, mode)
         {
 

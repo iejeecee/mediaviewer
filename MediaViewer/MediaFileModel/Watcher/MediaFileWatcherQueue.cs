@@ -52,30 +52,32 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         DefaultTimer timer;
 
-        MediaFileState mediaFiles;
+        MediaFileWatcher mediaFileWatcher;
 
-        public MediaFileState MediaFiles
+        public MediaFileWatcher MediaFileWatcher
         {
 
             get
             {
-                return (mediaFiles);
+                return (mediaFileWatcher);
             }
 
             private set
             {
 
-                this.mediaFiles = value;
+                this.mediaFileWatcher = value;
             }
         }
 
-        public MediaFileWatcherQueue(MediaFileState mediaFiles)
+        public MediaFileWatcherQueue(MediaFileWatcher mediaFileWatcher)
         {
-            MediaFiles = mediaFiles;
+            MediaFileWatcher = mediaFileWatcher;
 
             created = new List<MediaFileItem>();
             removed = new List<MediaFileItem>();
             changed = new List<MediaFileItem>();
+            renamedCreatedFiles = new List<MediaFileItem>();
+            renamedRemovedFiles = new List<MediaFileItem>();
 
             eventQueue = new ConcurrentQueue<FileSystemEventArgs>();
             timer = new DefaultTimer();
@@ -104,6 +106,8 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         List<MediaFileItem> created;
         List<MediaFileItem> removed;
+        List<MediaFileItem> renamedRemovedFiles;
+        List<MediaFileItem> renamedCreatedFiles;
         List<MediaFileItem> changed;
 
         void insertEvent(FileSystemEventArgs e)
@@ -138,6 +142,46 @@ namespace MediaViewer.MediaFileModel.Watcher
                     }
                 case WatcherChangeTypes.Renamed:
                     {
+                        RenamedEventArgs r = e as RenamedEventArgs;
+
+                        if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && !Utils.MediaFormatConvert.isMediaFile(r.Name))
+                        {
+                            MediaFileItem oldFile = new MediaFileItem(r.FullPath);
+
+                            if (MediaFileWatcher.MediaFilesInUseByOperation.Contains(oldFile)) 
+                            {
+                                // Updating metadata on a mediafile will create a temporary copy of the mediafile
+                                // which causes several create/rename/delete events
+                                // ignore these events to prevent order of file locking problems in the UI
+
+                            }
+                            else
+                            {
+                                renamedRemovedFiles.Add(oldFile);
+                            }
+                            
+                        }
+                        else if (!Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
+                        {
+                            MediaFileItem newFile = new MediaFileItem(r.FullPath);
+
+                            if (MediaFileWatcher.MediaFilesInUseByOperation.Contains(newFile))
+                            {
+                                // Updating metadata on a mediafile will create a temporary copy of the mediafile
+                                // which causes several create/rename/delete events
+                                // ignore these events to prevent order of file locking problems in the UI
+                            }
+                            else
+                            {
+                                renamedCreatedFiles.Add(newFile);
+                            }
+
+                        }
+                        else if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
+                        {
+                            renamedRemovedFiles.Add(new MediaFileItem(r.OldFullPath));
+                            renamedCreatedFiles.Add(new MediaFileItem(r.FullPath));
+                        }
 
                         break;
                     }
@@ -146,22 +190,29 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         void invokeEvents()
         {
-            if (created.Count > 0)
-            {
-                MediaFiles.AddRange(created);
-                created.Clear();
-            }
-
             if (removed.Count > 0)
             {
-                MediaFiles.RemoveAll(removed);
+                MediaFileWatcher.MediaFiles.RemoveAll(removed);
                 removed.Clear();
             }
 
+            if (created.Count > 0)
+            {
+                MediaFileWatcher.MediaFiles.AddRange(created);
+                created.Clear();
+            }
+          
             if (changed.Count > 0)
             {
-                //MediaFiles.RemoveAll(removed);
+                //MediaFileWatcher.MediaFiles.RemoveAll(removed);
                 changed.Clear();
+            }
+
+            if (renamedRemovedFiles.Count > 0 || renamedCreatedFiles.Count > 0)
+            {
+                MediaFileWatcher.MediaFiles.ReplaceAll(renamedRemovedFiles, renamedCreatedFiles);
+                renamedRemovedFiles.Clear();
+                renamedCreatedFiles.Clear();
             }
         }
 
@@ -175,12 +226,12 @@ namespace MediaViewer.MediaFileModel.Watcher
                     return;
                 }
 
-                FileSystemEventArgs prevEvent = null, e = null;
+                FileSystemEventArgs prevEvent = null;
 
                 eventQueue.TryDequeue(out prevEvent);
-                insertEvent(prevEvent);
+                FileSystemEventArgs e = prevEvent;
 
-                while (eventQueue.TryDequeue(out e))
+                do
                 {
                     switch (e.ChangeType)
                     {
@@ -193,6 +244,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                                 else
                                 {
                                     invokeEvents();
+                                    insertEvent(e);
                                 }
                                 break;
                             }
@@ -205,6 +257,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                                 else
                                 {
                                     invokeEvents();
+                                    insertEvent(e);
                                 }
                                 break;
                             }
@@ -217,18 +270,35 @@ namespace MediaViewer.MediaFileModel.Watcher
                                 else
                                 {
                                     invokeEvents();
+                                    insertEvent(e);
                                 }
                                 break;
                             }
                         case WatcherChangeTypes.Renamed:
                             {
 
+                                // this isn't correct for complex rename operations 
+                                // for example chained renames like a => b and then b => c 
+                                // Because in mediafilestate all the removes happen first in a batch operation
+                                // after which all the new items are added.
+                                // These situations will seldomly happen though, and to fix it 
+                                // more complex parsing of the rename events should be done
+                                if (prevEvent.ChangeType == WatcherChangeTypes.Renamed)
+                                {
+                                    insertEvent(e);
+                                }
+                                else
+                                {
+                                    invokeEvents();
+                                    insertEvent(e);
+                                }
                                 break;
                             }
                     }
 
                     prevEvent = e;
-                }
+
+                } while (eventQueue.TryDequeue(out e));
 
                 invokeEvents();
 

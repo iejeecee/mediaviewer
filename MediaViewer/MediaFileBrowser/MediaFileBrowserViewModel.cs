@@ -1,10 +1,12 @@
 ﻿using MediaViewer.DirectoryBrowser;
 using MediaViewer.ImageGrid;
 using MediaViewer.Input;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.MediaPreview;
 using MediaViewer.MoveRename;
 using MediaViewer.Pager;
+using MediaViewer.Search;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
@@ -13,6 +15,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -25,7 +28,7 @@ namespace MediaViewer.MediaFileBrowser
       
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherEventDelegate(List<MediaPreviewAsyncState> imageData);
-        private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
+        private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);       
 
         PagedImageGridViewModel pagedImageGridViewModel;
 
@@ -37,9 +40,9 @@ namespace MediaViewer.MediaFileBrowser
         }
       
         public MediaFileBrowserViewModel() {
-
-            mediaFileWatcher = MediaFileWatcher.Instance;          
-
+         
+            mediaFileWatcher = MediaFileWatcher.Instance;
+         
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));        
   
             MoveRenameSelectedItemsCommand = new Command(new Action(() => {
@@ -56,6 +59,8 @@ namespace MediaViewer.MediaFileBrowser
                 moveRenameView.ShowDialog();
 
             }));
+
+           
         }
 
         public string BrowsePath
@@ -109,7 +114,7 @@ namespace MediaViewer.MediaFileBrowser
         {
             
         }
-
+    
         Command deleteSelectedItemsCommand;
 
         public Command DeleteSelectedItemsCommand

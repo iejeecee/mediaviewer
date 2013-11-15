@@ -32,6 +32,5 @@
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
     <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
-    <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>
-
+    <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>    
 </ResourceDictionary>

@@ -23,7 +23,7 @@ namespace MediaViewer.MediaFileModel
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        static MediaFile openWebData(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState)
+        static MediaFile openWebData(string location, MediaFile.MetaDataLoadOptions options, CancellationToken token, Object userState)
         {
 
             HttpWebResponse response = null;
@@ -76,7 +76,7 @@ namespace MediaViewer.MediaFileModel
 
                 data.Seek(0, System.IO.SeekOrigin.Begin);
 
-                MediaFile media = newMediaFromMimeType(location, mode, userState, response.ContentType, data);
+                MediaFile media = newMediaFromMimeType(location, options, userState, response.ContentType, data);
 
                 return (media);
 
@@ -96,7 +96,7 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        static MediaFile openFileData(String location, MediaFile.MetaDataMode mode,
+        static MediaFile openFileData(String location, MediaFile.MetaDataLoadOptions options,
             Object userState, CancellationToken token, int timeoutMs)
         {
 
@@ -105,12 +105,12 @@ namespace MediaViewer.MediaFileModel
 
             string mimeType = MediaFormatConvert.fileNameToMimeType(location);
 
-            MediaFile media = newMediaFromMimeType(location, mode, userState, mimeType, data);
+            MediaFile media = newMediaFromMimeType(location, options, userState, mimeType, data);
 
             return (media);
         }
 
-        static MediaFile newMediaFromMimeType(String location, MediaFile.MetaDataMode mode,
+        static MediaFile newMediaFromMimeType(String location, MediaFile.MetaDataLoadOptions options,
             Object userState, string mimeType, Stream data)
         {
 
@@ -118,11 +118,11 @@ namespace MediaViewer.MediaFileModel
 
             if (mimeType.ToLower().StartsWith("image"))
             {
-                media = new ImageFile(location, mimeType, data, mode);
+                media = new ImageFile(location, mimeType, data, options);
             }
             else if (mimeType.ToLower().StartsWith("video"))
             {
-                media = new VideoFile(location, mimeType, data, mode);
+                media = new VideoFile(location, mimeType, data, options);
             }
             else
             {
@@ -135,7 +135,7 @@ namespace MediaViewer.MediaFileModel
         }
 
 
-        public static MediaFile open(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState = null)
+        public static MediaFile open(string location, MediaFile.MetaDataLoadOptions options, CancellationToken token, Object userState = null)
         {
             // initialize media with a dummy in case of exceptions
             MediaFile media = new UnknownFile(location, null);
@@ -149,16 +149,20 @@ namespace MediaViewer.MediaFileModel
                 }
                 else if (FileUtils.isUrl(location))
                 {
-                    media = openWebData(location, mode, token, userState);
+                    media = openWebData(location, options, token, userState);
                 }
                 else
                 {
-                    media = openFileData(location, mode, userState, 
-                        token, FILE_OPEN_ASYNC_TIMEOUT_MS);
+                    if(options.HasFlag(MediaFile.MetaDataLoadOptions.AUTO) || 
+                        options.HasFlag(MediaFile.MetaDataLoadOptions.LOAD_FROM_DISK))
+                    {
+                        media = openFileData(location, options, userState, 
+                            token, FILE_OPEN_ASYNC_TIMEOUT_MS);
 
-                    media.readMetaData();
+                        media.readMetaData();
+                    }
 
-                    if (media.Thumbnail == null)
+                    if (media.Thumbnail == null && options.HasFlag(MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL))
                     {
                         media.generateThumbnails();
                     }
@@ -179,10 +183,10 @@ namespace MediaViewer.MediaFileModel
         }
        
 
-        public static async Task<MediaFile> openAsync(string location, MediaFile.MetaDataMode mode, CancellationToken token, Object userState = null)
+        public static async Task<MediaFile> openAsync(string location, MediaFile.MetaDataLoadOptions options, CancellationToken token, Object userState = null)
         {
 
-            return await Task<MediaFile>.Run(() => open(location, mode, token, userState), token).ConfigureAwait(false);
+            return await Task<MediaFile>.Run(() => open(location, options, token, userState), token).ConfigureAwait(false);
            
 
         }

@@ -89,7 +89,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        public void loadMetaData(CancellationToken token)
+        public void loadMetaData(MediaFile.MetaDataLoadOptions options, CancellationToken token)
         {
             ItemState = MediaFileItemState.LOADING;
 
@@ -98,7 +98,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             try
             {
-                media = MediaFileFactory.open(Location, MediaFile.MetaDataMode.LOAD_FROM_DISK, token);
+                media = MediaFileFactory.open(Location, options, token);
 
                 media.close();
 
@@ -122,7 +122,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             Media = media;
         }
 
-        public async Task loadMetaDataAsync(CancellationToken token)
+        public async Task loadMetaDataAsync(MediaFile.MetaDataLoadOptions options, CancellationToken token)
         {
 
             ItemState = MediaFileItemState.LOADING;
@@ -132,7 +132,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             try
             {
-                media = await MediaFileFactory.openAsync(Location, MediaFile.MetaDataMode.LOAD_FROM_DISK, token).ConfigureAwait(false);
+                media = await MediaFileFactory.openAsync(Location, options, token).ConfigureAwait(false);
 
                 media.close();
 

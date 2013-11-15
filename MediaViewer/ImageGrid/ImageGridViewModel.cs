@@ -47,6 +47,8 @@ namespace MediaViewer.ImageGrid
              
         public void loadItemRangeAsync(int start, int nrItems)
         {
+
+            System.Diagnostics.Debug.WriteLine("loaditemrange");
             // cancel any previously loading items           
             loadItemsCTS.Cancel();
             // create new cts for the items that need to be loaded
@@ -55,10 +57,11 @@ namespace MediaViewer.ImageGrid
             MediaFiles.EnterReaderLock();
 
             for (int i = 0; i < nrItems; i++)
-            {
+            {                
+                // don't load files in use by another operation, locking them for loading might mess up the operations lock(s)
+                if (MediaFileWatcher.Instance.MediaFilesInUseByOperation.Contains(MediaFiles.Items[start + i])) continue;
                 // don't reload already loaded items
-                if (MediaFiles.Items[start + i].ItemState == MediaFileItemState.LOADED ||
-                    MediaFiles.Items[start + i].ItemState == MediaFileItemState.LOADING) continue;
+                if (MediaFiles.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
 
                 lock (nrLoadingItemsLock)
                 {
@@ -70,7 +73,8 @@ namespace MediaViewer.ImageGrid
                     nrLoadingItems = nrLoadingItems + 1;
                 }
 
-                MediaFiles.Items[start + i].loadMetaDataAsync(loadItemsCTS.Token).ContinueWith(finishedTask =>
+                MediaFiles.Items[start + i].loadMetaDataAsync(MediaFileModel.MediaFile.MetaDataLoadOptions.AUTO | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL,
+                    loadItemsCTS.Token).ContinueWith(finishedTask =>
                 {
                     lock (nrLoadingItemsLock)
                     {

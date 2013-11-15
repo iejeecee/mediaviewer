@@ -28,13 +28,24 @@ namespace MediaViewer.MediaFileModel.Watcher
         /// </summary>
         public event EventHandler ItemIsSelectedChanged;
 
-      
-        override public void AddRange(IEnumerable<MediaFileItem> newItems) 
+        /// <summary>
+        /// Returns true when all items are added
+        /// Returns false when one or more items already exist in the list
+        /// no items will actually be added in this case
+        /// </summary>
+        /// <param name="newItems"></param>
+        /// <returns></returns>
+        override public bool AddRange(IEnumerable<MediaFileItem> newItems) 
         {
             rwLock.EnterWriteLock();
           
             try
             {
+                if (Contains(newItems) == true)
+                {
+                    return (false);
+                }
+
                 bool itemIsSelectedChanged = false;
                 int startingIndex = Count;
 
@@ -58,6 +69,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 {
                     OnItemIsSelectedChanged();
                 }
+
+                return (true);
             }
             finally
             {                              
@@ -149,6 +162,70 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
             finally
             {                
+                rwLock.ExitWriteLock();
+            }
+        }
+
+        override public bool ReplaceAll(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
+        {
+
+            rwLock.EnterWriteLock();
+            try
+            {
+                if (Contains(newItems) == true)
+                {
+                    return (false);
+                }
+
+                bool itemIsSelectedChanged = false;
+                List<MediaFileItem> removed = new List<MediaFileItem>();
+
+                foreach (MediaFileItem oldItem in oldItems)
+                {
+                    foreach (MediaFileItem item in items)
+                    {
+                        if (oldItem.Equals(item))
+                        {
+                            item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
+                            if (item.IsSelected == true)
+                            {
+                                itemIsSelectedChanged = true;
+                            }
+
+                            removed.Add(item);
+                            items.Remove(item);
+                            break;
+                        }
+
+                    }
+
+                }
+
+                items.AddRange(newItems);
+
+                foreach (MediaFileItem item in newItems)
+                {
+                    item.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
+                    if (item.IsSelected == true)
+                    {
+                        itemIsSelectedChanged = true;
+                    }
+                }
+
+                NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(
+                    NotifyCollectionChangedAction.Replace, removed, newItems);
+
+                OnCollectionChangedEventLocked(args);
+
+                if (itemIsSelectedChanged)
+                {
+                    OnItemIsSelectedChanged();
+                }
+
+                return (true);
+            }
+            finally
+            {
                 rwLock.ExitWriteLock();
             }
         }

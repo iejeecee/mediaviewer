@@ -14,11 +14,12 @@ namespace MediaViewer.MediaFileModel
 {
     public abstract class MediaFile : EventArgs
     {
-        public enum MetaDataMode
+        public enum MetaDataLoadOptions
         {
-            AUTO,
-            LOAD_FROM_DISK,
-            LOAD_FROM_DATABASE
+            AUTO = 0x1,
+            LOAD_FROM_DISK = 0x2,         
+            LOAD_FROM_DATABASE = 0x4,
+            GENERATE_THUMBNAIL = 0x8
         }
 
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -58,7 +59,7 @@ namespace MediaViewer.MediaFileModel
 
         }
 
-        protected MediaFile(string location, string mimeType, Stream data, MetaDataMode mode)
+        protected MediaFile(string location, string mimeType, Stream data, MetaDataLoadOptions mode)
         {
 
             this.location = location;
