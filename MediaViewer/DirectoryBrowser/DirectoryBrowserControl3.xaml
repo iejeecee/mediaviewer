@@ -27,6 +27,12 @@
                                             <ColumnDefinition Width="26"></ColumnDefinition>
                                             <ColumnDefinition Width="*"></ColumnDefinition>                                            
                                         </Grid.ColumnDefinitions>
+                                        <Grid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Command="{Binding CreateDirectoryCommand}" Header="Create Directory">                                              
+                                                </MenuItem>
+                                            </ContextMenu>
+                                        </Grid.ContextMenu>
                                         <tree:RowExpander Grid.Column="0"/>
                                         <Image Grid.Column="1" Margin="2" Source="{Binding ImageUrl}"></Image>
                                         <TextBlock Grid.Column="2" Margin="2">

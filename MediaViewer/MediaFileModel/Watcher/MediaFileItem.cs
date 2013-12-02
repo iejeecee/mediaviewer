@@ -1,6 +1,7 @@
 ﻿using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -29,14 +30,14 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         public MediaFileItem(String location)
         {
-
             Location = location;
             IsSelected = false;
             Media = null;
-            ItemState = MediaFileItemState.EMPTY;
+            ItemState = MediaFileItemState.EMPTY;          
+        
 
         }
-
+       
         string location;
 
         public string Location
@@ -48,7 +49,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 NotifyPropertyChanged();
             }
         }
-
+      
         bool isSelected;
 
         public bool IsSelected

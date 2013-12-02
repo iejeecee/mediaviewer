@@ -166,70 +166,80 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        override public bool ReplaceAll(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
+        override public void ReplaceAll(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
         {
 
             rwLock.EnterWriteLock();
             try
             {
-                if (Contains(newItems) == true)
-                {
-                    return (false);
-                }
-
+           
                 bool itemIsSelectedChanged = false;
                 List<MediaFileItem> removed = new List<MediaFileItem>();
+                List<MediaFileItem> added = new List<MediaFileItem>();
 
-                foreach (MediaFileItem oldItem in oldItems)
+                int nrOldItems = oldItems.Count();
+                int nrNewItems = newItems.Count();
+
+                int iterations = Math.Max(nrOldItems, nrNewItems);
+
+                for (int i = 0; i < iterations; i++)
                 {
-                    foreach (MediaFileItem item in items)
+                    if (i < nrOldItems)
                     {
-                        if (oldItem.Equals(item))
+                        MediaFileItem oldItem = Find(oldItems.ElementAt(i));
+                        if (oldItem != null)
                         {
-                            item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
-                            if (item.IsSelected == true)
+                            oldItem.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
+                            if (oldItem.IsSelected == true)
                             {
                                 itemIsSelectedChanged = true;
                             }
 
-                            removed.Add(item);
-                            items.Remove(item);
-                            break;
+                            removed.Add(oldItem);
+
+                            items.Remove(oldItem);
                         }
 
                     }
 
-                }
-
-                items.AddRange(newItems);
-
-                foreach (MediaFileItem item in newItems)
-                {
-                    item.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
-                    if (item.IsSelected == true)
+                    if (i < nrNewItems)
                     {
-                        itemIsSelectedChanged = true;
-                    }
+                        MediaFileItem newItem = Find(newItems.ElementAt(i));
+                        if (newItem == null)
+                        {
+                            newItem = newItems.ElementAt(i);
+
+                            newItem.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler(Item_PropertyChanged);
+                            if (newItem.IsSelected == true)
+                            {
+                                itemIsSelectedChanged = true;
+                            }
+
+                            items.Add(newItem);
+                            added.Add(newItem);
+                        }
+                    }              
                 }
 
-                NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(
-                    NotifyCollectionChangedAction.Replace, removed, newItems);
+                if (removed.Count > 0 || added.Count > 0)
+                {
+                    NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(
+                        NotifyCollectionChangedAction.Replace, removed, added);
 
-                OnCollectionChangedEventLocked(args);
+                    OnCollectionChangedEventLocked(args);
+                }
 
                 if (itemIsSelectedChanged)
                 {
                     OnItemIsSelectedChanged();
                 }
-
-                return (true);
+            
             }
             finally
             {
                 rwLock.ExitWriteLock();
             }
         }
-
 
         public void SelectAllItems()
         {

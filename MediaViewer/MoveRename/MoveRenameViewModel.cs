@@ -293,7 +293,7 @@ namespace MediaViewer.MoveRename
                 progressWindow.Show();
 
                 FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)progressWindow.DataContext;
-
+               
                 if (success == false)
                 {
                     progress.ItemInfo = "Cannot copy/move selected file(s), some are already scheduled for another operation";
@@ -313,6 +313,9 @@ namespace MediaViewer.MoveRename
 
                     await Task.Run(method, progress.CancellationToken);
                 }
+
+                progress.OkCommand.CanExecute = true;
+                progress.CancelCommand.CanExecute = false;
             }
             finally
             {

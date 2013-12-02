@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using MvvmFoundation.Wpf;
 using System.Windows;
 using MediaViewer.Utils;
+using MediaViewer.MetaData;
+using MediaViewer.About;
+using MediaViewer.Logging;
 
 namespace MediaViewer
 {
@@ -36,11 +39,23 @@ namespace MediaViewer
             }
         }
 
+        string windowTitle;
+
+        public string WindowTitle
+        {
+            get { return windowTitle; }
+            set { windowTitle = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         public MainWindowViewModel()
         {
 
+            WindowTitle = "MediaViewer";
+
             // recieve messages requesting the display of media items
-          
+
             GlobalMessenger.Instance.Register<string>("MainWindowViewModel.ViewMediaCommand", new Action<string>((fileName) =>
             {
                 ViewMediaCommand.DoExecute(fileName);
@@ -64,6 +79,34 @@ namespace MediaViewer
                   }
 
               }));
+
+            TagEditorCommand = new Command(new Action(() =>
+                {
+                    LinkedTagEditorView linkedTagEditor = new LinkedTagEditorView();
+                    linkedTagEditor.ShowDialog();
+                }));
+
+            AboutCommand = new Command(new Action(() =>
+                {
+                    AboutView about = new AboutView();
+                    AboutViewModel aboutViewModel = new AboutViewModel();
+                    about.DataContext = aboutViewModel;
+
+                    about.ShowDialog();
+
+                }));
+
+            ShowLogCommand = new Command(new Action(() =>
+                {
+                    log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
+                    VisualAppender appender = (VisualAppender)(appenders[0]);
+
+                    LogView logView = new LogView();
+                    logView.DataContext = appender.LogViewModel;
+
+                    logView.Show();
+
+                }));
         }
 
         Command viewMediaCommand;
@@ -74,5 +117,28 @@ namespace MediaViewer
             set { viewMediaCommand = value; }
         }
 
+        Command tagEditorCommand;
+
+        public Command TagEditorCommand
+        {
+            get { return tagEditorCommand; }
+            set { tagEditorCommand = value; }
+        }
+
+        Command aboutCommand;
+
+        public Command AboutCommand
+        {
+            get { return aboutCommand; }
+            set { aboutCommand = value; }
+        }
+
+        Command showLogCommand;
+
+        public Command ShowLogCommand
+        {
+            get { return showLogCommand; }
+            set { showLogCommand = value; }
+        }
     }
 }

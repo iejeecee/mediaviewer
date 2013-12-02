@@ -1,7 +1,7 @@
 ﻿<Window xmlns:Progress="clr-namespace:MediaViewer.Progress"  x:Class="MediaViewer.MoveRename.MoveRenameProgressWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Move/Rename Progress" Height="350" Width="420">
+        Title="Move/Rename Progress" Height="350" Width="420" ResizeMode="NoResize">
     <Grid>
         <Progress:ProgressControl TotalProgress="{Binding CurrentFile}" TotalProgressMax="{Binding TotalFiles}"
                                   ItemProgress="{Binding CurrentFileProgress}" ItemProgressMax="100" ItemInfo="{Binding ItemInfo}"

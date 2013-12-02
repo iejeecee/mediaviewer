@@ -21,18 +21,33 @@ namespace MediaViewer.Search
     /// </summary>
     public partial class SearchView : UserControl
     {
+        bool firstFocus;
+
         public SearchView()
         {
             InitializeComponent();
             SearchViewModel viewModel = new SearchViewModel();
             DataContext = viewModel;
+            firstFocus = true;
         }
                            
         private void queryTextBox_KeyDown(object sender, KeyEventArgs e)
         {           
             if (e.Key == Key.Enter)
             {
-             
+                BindingExpression be = queryTextBox.GetBindingExpression(TextBox.TextProperty);
+                be.UpdateSource();
+            }
+        }
+
+        private void queryTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (firstFocus == true)
+            {
+                queryTextBox.Text = "";
+                BindingExpression be = queryTextBox.GetBindingExpression(TextBox.TextProperty);
+                be.UpdateSource();
+                firstFocus = false;
             }
         }
 

@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace MediaViewer.MetaData
 {
@@ -21,6 +22,8 @@ namespace MediaViewer.MetaData
         void clear()
         {
             Filename = "";
+            Location = "";
+            
             Rating = 0;
             Title = "";
             Description = "";
@@ -28,19 +31,43 @@ namespace MediaViewer.MetaData
             Copyright = "";
             dynamicProperties = new List<Tuple<string, string>>();
 
-            App.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {             
+            lock (locationHistoryLock)
+            {
+                LocationHistory.Clear();
+            }
+            lock (tagsLock)
+            {
                 Tags.Clear();
+            }
+            lock (addTagsLock)
+            {
                 AddTags.Clear();
+            }
+            lock (removeTagsLock)
+            {
                 RemoveTags.Clear();
-            }));
+            }
+            
         }
 
         public MetaDataViewModel()
         {
             Tags = new ObservableCollection<string>();
+            tagsLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(Tags, tagsLock);
+
             AddTags = new ObservableCollection<string>();
+            addTagsLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(AddTags, addTagsLock);
+
             RemoveTags = new ObservableCollection<string>();
+            removeTagsLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(RemoveTags, removeTagsLock);
+
+            LocationHistory = new ObservableCollection<string>();
+            locationHistoryLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(LocationHistory, locationHistoryLock);
+
             clear();
             BatchMode = false;
             IsEnabled = false;
@@ -58,6 +85,7 @@ namespace MediaViewer.MetaData
             {
                 ItemList = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
             });
+           
         }
 
         List<MediaFileItem> itemList;
@@ -81,8 +109,7 @@ namespace MediaViewer.MetaData
             get { return writeMetaDataCommand; }
             set { writeMetaDataCommand = value; }
         }
-
-
+    
         string filename;
 
         public string Filename
@@ -104,6 +131,28 @@ namespace MediaViewer.MetaData
             {
                 filenameEnabled = value;
                 NotifyPropertyChanged();
+            }
+        }
+
+        Object locationHistoryLock;
+
+        ObservableCollection<String> locationHistory;
+
+        public ObservableCollection<String> LocationHistory
+        {
+            get { return locationHistory; }
+            set { locationHistory = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        String location;
+
+        public String Location
+        {
+            get { return location; }
+            set { location = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -229,6 +278,7 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Object tagsLock;
         ObservableCollection<String> tags;
 
         public ObservableCollection<String> Tags
@@ -239,6 +289,7 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Object addTagsLock;
         ObservableCollection<String> addTags;
 
         public ObservableCollection<String> AddTags
@@ -249,6 +300,7 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Object removeTagsLock;
         ObservableCollection<String> removeTags;
 
         public ObservableCollection<String> RemoveTags
@@ -326,18 +378,23 @@ namespace MediaViewer.MetaData
         void grabData()
         {
             
-
             if (itemList.Count == 1 && ItemList[0].Media != null)
             {
+                
                 MediaFile media = ItemList[0].Media;
+                
+                FileMetaData metaData = media.MetaData;
+
+                if (metaData == null)
+                {
+                    clear();
+                }
 
                 Filename = Path.GetFileNameWithoutExtension(media.Name);
-
-                FileMetaData metaData = media.MetaData;
+                setLocation();
 
                 if (media is VideoFile)
                 {
-
                     dynamicProperties = getVideoProperties(media as VideoFile);
                 }
 
@@ -348,17 +405,20 @@ namespace MediaViewer.MetaData
                     Description = metaData.Description;
                     Author = metaData.Creator;
                     Copyright = metaData.Copyright;
-                   
-                    foreach (string tag in metaData.Tags)
+
+                    lock (tagsLock)
                     {
-                        Tags.Add(tag);
+                        foreach (string tag in metaData.Tags)
+                        {
+                            Tags.Add(tag);
+                        }
                     }
 
                     dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
 
                     if (metaData.CreationDate != DateTime.MinValue)
                     {
-                        dynamicProperties.Add(new Tuple<string, string>("Creation", metaData.CreationDate.ToString("R")));                       
+                        dynamicProperties.Add(new Tuple<string, string>("Creation", metaData.CreationDate.ToString("R")));
                     }
 
                     if (metaData.ModifiedDate != DateTime.MinValue)
@@ -370,8 +430,9 @@ namespace MediaViewer.MetaData
                     {
                         dynamicProperties.Add(new Tuple<string, string>("Metadata", metaData.MetaDataDate.ToString("R")));
                     }
-                    
+
                 }
+                
 
                 IsEnabled = true;
                 BatchMode = false;
@@ -379,15 +440,16 @@ namespace MediaViewer.MetaData
             }
             else if (itemList.Count > 1 && BatchMode == true)
             {
-
+                setLocation();
+                
             }
             else
             {
                 if (itemList.Count > 1)
                 {
                     IsEnabled = true;
-                    BatchMode = true;                   
-                
+                    BatchMode = true;
+                                   
                 } else if(itemList.Count == 0) {
 
                     BatchMode = false;
@@ -396,9 +458,32 @@ namespace MediaViewer.MetaData
                 }
 
                 clear();
+                setLocation();
             }
 
 
+        }
+
+        void setLocation()
+        {
+            if (itemList.Count == 0) return;
+
+            lock (LocationHistory)
+            {
+                Location = Utils.FileUtils.getPathWithoutFileName(itemList[0].Location);
+                LocationHistory.Insert(0, Location);
+
+                for (int i = 1; i < itemList.Count; i++)
+                {
+                    if (!Utils.FileUtils.getPathWithoutFileName(itemList[i].Location).Equals(Location))
+                    {
+                        Location = "";
+                        LocationHistory.RemoveAt(0);
+                        break;
+                    }
+
+                }
+            }
         }
 
         List<Tuple<String, String>> getVideoProperties(VideoFile video)

@@ -48,7 +48,6 @@ namespace MediaViewer.ImageGrid
         public void loadItemRangeAsync(int start, int nrItems)
         {
 
-            System.Diagnostics.Debug.WriteLine("loaditemrange");
             // cancel any previously loading items           
             loadItemsCTS.Cancel();
             // create new cts for the items that need to be loaded

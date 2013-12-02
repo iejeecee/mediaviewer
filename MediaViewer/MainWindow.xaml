@@ -4,7 +4,7 @@
         xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel"
         xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
         xmlns:Search="clr-namespace:MediaViewer.Search" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
-        Title="MediaViewer" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
+        Title="{Binding WindowTitle}" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -17,12 +17,13 @@
             <MenuItem Header="_File">
                 <MenuItem x:Name="OpenMenuItem" Header="_Open" Click="OpenMenuItem_Click"/>
                 <Separator/>
-                <MenuItem x:Name="LogMenuItem" Header="_Log" Click="LogMenuItem_Click"/>
+                <MenuItem x:Name="TagEditorMenuItem" Header="_Tag Editor" Command="{Binding TagEditorCommand}"/>
+                <MenuItem x:Name="LogMenuItem" Header="_Log" Command="{Binding ShowLogCommand}"/>
                 <Separator/>
                 <MenuItem x:Name="ExitMenuItem" Header="_Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">
-                <MenuItem x:Name="AboutMenuItem" Header="_About" Click="AboutMenuItem_Click"/>
+                <MenuItem x:Name="AboutMenuItem" Header="_About" Command="{Binding AboutCommand}"/>
             </MenuItem>
         </Menu>
         <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top">
@@ -61,7 +62,7 @@
                 <Button x:Name="deleteButton" Height="16" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                 </Button>
-                <Search:SearchView VerticalAlignment="Top" Width="250" Height="19"/>
+                <Search:SearchView VerticalAlignment="Top" Width="210" Height="19"/>
             </ToolBar>
         </ToolBarTray>
         <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvvmFoundation.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -168,12 +169,12 @@ namespace MediaViewer.Progress
 
             control.progressLabel.Content = content;
             control.totalProgressBar.Value = (double)(int)e.NewValue;
-
+/*
             if (control.totalProgressBar.Value == control.TotalProgressMax)
             {
                 control.okButton.IsEnabled = true;
             }
-
+*/
         }
 
         static void totalProgressMaxChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
@@ -216,6 +217,17 @@ namespace MediaViewer.Progress
             ProgressControl control = (ProgressControl)o;
 
             control.cancelButton.Command = (ICommand)e.NewValue;
+
+            Command cancelCommand = (Command)e.NewValue;
+
+            if (cancelCommand != null)
+            {
+                Binding b = new Binding();
+                b.Source = cancelCommand;
+                b.Path = new PropertyPath("CanExecute");
+                b.Mode = BindingMode.OneWay;
+                control.cancelButton.SetBinding(Button.IsEnabledProperty, b);
+            }
         }
 
         public ICommand OkCommand
@@ -233,6 +245,19 @@ namespace MediaViewer.Progress
             ProgressControl control = (ProgressControl)o;
 
             control.okButton.Command = (ICommand)e.NewValue;
+           
+            Command okCommand = (Command)e.NewValue;
+
+            if (okCommand != null)
+            {
+                Binding b = new Binding();
+                b.Source = okCommand;
+                b.Path = new PropertyPath("CanExecute");
+                b.Mode = BindingMode.OneWay;
+                control.okButton.SetBinding(Button.IsEnabledProperty, b);
+            }
+
+           
         }
     
     }

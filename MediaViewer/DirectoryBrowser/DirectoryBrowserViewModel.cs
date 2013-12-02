@@ -20,7 +20,7 @@ namespace MediaViewer.DirectoryBrowser
 
         PathSelectedDelegate pathSelectedCallback;
 
-        // callback function will be called whenever a path node is selected
+        // called whenever a path node is selected
         public PathSelectedDelegate PathSelectedCallback
         {
             get { return pathSelectedCallback; }
@@ -58,6 +58,7 @@ namespace MediaViewer.DirectoryBrowser
 
         }
 
+        // wait without blocking the ui thread
         void DoEvents()
         {
             App.Current.Dispatcher.Invoke(DispatcherPriority.Background,

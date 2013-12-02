@@ -97,7 +97,9 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
 
         }
-
+        /// <summary>
+        /// Remove all elements from the collection
+        /// </summary>
         virtual public void Clear()
         {
             rwLock.EnterWriteLock();
@@ -112,7 +114,10 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
 
         }
-
+        /// <summary>
+        /// Remove all elements contained in removeItems from the collection     
+        /// </summary>
+        /// <param name="removeItems"></param>
         virtual public void RemoveAll(IEnumerable<T> removeItems)
         {
 
@@ -140,38 +145,76 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        virtual public bool ReplaceAll(IEnumerable<T> oldItems, IEnumerable<T> newItems)
+        /// <summary>
+        /// Remove oldItems and add newItems in a sequential order and a single operation
+        /// For example:
+        /// oldItem[0] is removed
+        /// newItem[0] is added
+        /// oldItem[1] is removed
+        /// newItem[1] is added.... etc
+        /// oldItems and newItems do not have to be of the same size
+        /// </summary>
+        /// <param name="oldItems"></param>
+        /// <param name="newItems"></param>
+        virtual public void ReplaceAll(IEnumerable<T> oldItems, IEnumerable<T> newItems)
         {
 
             rwLock.EnterWriteLock();
             try
             {
-                if (Contains(newItems) == true)
-                {
-                    return (false);
-                }
+                int nrOldItems = oldItems.Count();
+                int nrNewItems = newItems.Count();
 
-                foreach (T oldItem in oldItems)
+                int iterations = Math.Max(nrOldItems, nrNewItems);
+
+                for (int i = 0; i < iterations; i++)
                 {
-                    foreach (T item in items)
+                    if (i < nrOldItems)
                     {
-                        if (oldItem.Equals(item))
+                        T oldItem = Find(oldItems.ElementAt(i));
+                        if (!object.Equals(oldItem, default(T)))
                         {
-                            items.Remove(item);
-                            break;
+                            items.Remove(oldItem);
                         }
 
                     }
 
-                }
+                    if (i < nrNewItems)
+                    {
+                        T newItem = Find(newItems.ElementAt(i));
+                        if (object.Equals(newItem, default(T)))
+                        {
+                            items.Add(newItems.ElementAt(i));
+                        }
+                    }
 
-                items.AddRange(newItems);
-                return (true);
+                }                                         
 
             }
             finally
             {
                 rwLock.ExitWriteLock();
+            }
+        }
+
+        public virtual T Find(T findItem)
+        {
+            rwLock.EnterReadLock();
+            try
+            {
+                foreach (T item in items)
+                {
+                    if (item.Equals(findItem))
+                    {
+                        return (item);
+                    }
+                }
+
+                return default(T);
+            }
+            finally
+            {
+                rwLock.ExitReadLock();
             }
         }
 

@@ -31,6 +31,6 @@
                 ToolTip="Add Tag"/>
         <Button Content="Remove" HorizontalAlignment="Right" Width="50" Margin="0,0,0,0" VerticalAlignment="Top" Click="removeButton_Click"
                 ToolTip="Remove Selected Tags"/>
-        <TextBox Name="addTagTextbox" HorizontalAlignment="Stretch" Margin="0,0,100,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBox Name="addTagTextbox" HorizontalAlignment="Stretch" Margin="0,0,100,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewKeyDown="addTagTextBox_PreviewKeyDown" />
     </Grid>
 </UserControl>

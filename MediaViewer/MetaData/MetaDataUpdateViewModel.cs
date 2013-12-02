@@ -35,10 +35,14 @@ namespace MediaViewer.MetaData
                 TokenSource.Cancel();
             });
 
+            CancelCommand.CanExecute = true;
+
             OkCommand = new Command(() =>
             {
                 OnClosingRequest();
             });
+
+            OkCommand.CanExecute = false;
         }
 
         public async Task writeMetaData(MetaDataUpdateViewModelAsyncState state)
@@ -77,9 +81,13 @@ namespace MediaViewer.MetaData
                             , CancellationToken);
                             if (item.Media == null || item.Media.MetaData == null)
                             {
-                                ItemInfo = "Could not open or read metadata for file: " + item.Location;
-                                InfoMessages.Add("Could not open or read metadata for file: " + item.Location);
-                                log.Error("Could not open or read metadata for file: " + item.Location);
+                                // reload metaData in metadataviewmodel
+                                item.IsSelected = false;
+                                item.IsSelected = true;
+
+                                ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
+                                InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
+                                log.Error("Could not open file and/or read it's metadata: " + item.Location);
                                 return;
                             }
                         }
@@ -159,20 +167,30 @@ namespace MediaViewer.MetaData
                             {
                                 ItemInfo = "Saving MetaData: " + item.Location;
                                 metaData.saveToDisk();
+
+                                InfoMessages.Add("Completed updating Metadata for: " + item.Location);
                             }
+                            else
+                            {
+                                InfoMessages.Add("Skipped updating Metadata (no changes) for: " + item.Location);
+                            }
+
+                            CurrentFileProgress = 100;
+                            CurrentFile++;
                         }
                         catch (Exception e)
-                        {
+                        {                           
+                            item.Media.MetaData.clear();
+                            // reload metaData in metadataviewmodel
+                            item.IsSelected = false;
+                            item.IsSelected = true;
+                                                   
                             ItemInfo = "Error Saving MetaData: " + item.Location;
                             InfoMessages.Add("Could not save metaData for file: " + item.Location);
                             log.Error("Could not save metaData for file: " + item.Location, e);
                             return;
                         }
-
-                        InfoMessages.Add("Completed updating Metadata for: " + item.Location);
-
-                        CurrentFileProgress = 100;
-                        CurrentFile++;
+                                              
                     }
 
                     if (state.ItemList.Count == 1 && !Path.GetFileNameWithoutExtension(state.ItemList[0].Location).Equals(state.Filename))
@@ -202,6 +220,9 @@ namespace MediaViewer.MetaData
                 }
 
             },cancellationToken);
+
+            OkCommand.CanExecute = true;
+            CancelCommand.CanExecute = false;
         }
 
         Command okCommand;
@@ -300,6 +321,7 @@ namespace MediaViewer.MetaData
     {
         public MetaDataUpdateViewModelAsyncState(MetaDataViewModel vm)
         {
+            Location = vm.Location;
             Author = vm.Author;
             AuthorEnabled = vm.AuthorEnabled;
             BatchMode = vm.BatchMode;
@@ -318,6 +340,14 @@ namespace MediaViewer.MetaData
             Tags = new List<String>(vm.Tags);
             AddTags = new List<String>(vm.AddTags);
             RemoveTags = new List<String>(vm.RemoveTags);
+        }
+
+        String location;
+
+        public String Location
+        {
+            get { return location; }
+            set { location = value; }
         }
 
         String author;

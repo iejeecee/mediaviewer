@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DB = MediaDatabase;
 using XMPLib;
 using System.Globalization;
 using MediaViewer.MetaData.Tree;
@@ -126,6 +125,12 @@ namespace MediaViewer.MetaData
         {
 
             this.filePath = filePath;
+            clear();
+
+        }
+
+        public void clear()
+        {
             title = "";
             description = "";
             creator = "";
@@ -140,90 +145,10 @@ namespace MediaViewer.MetaData
 
             geoTag = new GeoTagCoordinatePair();
             hasGeoTag = false;
-           
+
             metaData = null;
             miscProps = new List<MetaDataProperty>();
-
         }
-
-        private void initVarsFromDatabaseItem(DB.Media item)
-        {
-
-            FilePath = item.Location;
-
-            if (item.Title != null)
-            {
-
-                Title = item.Title;
-            }
-
-            if (item.Description != null)
-            {
-
-                Description = item.Description;
-            }
-
-            if (item.Author != null)
-            {
-
-                Creator = item.Author;
-            }
-
-            if (item.Copyright != null)
-            {
-
-                Copyright = item.Copyright;
-            }
-
-            if (item.CreatorTool != null)
-            {
-
-                CreatorTool = item.CreatorTool;
-            }
-
-            if (item.MetaDataLastModifiedDate.HasValue)
-            {
-
-                ModifiedDate = item.MetaDataLastModifiedDate.Value;
-            }
-
-            if (item.MetaDataDate.HasValue)
-            {
-
-                MetaDataDate = item.MetaDataDate.Value;
-            }
-
-            if (item.MetaDataCreationDate.HasValue)
-            {
-
-                CreationDate = item.MetaDataCreationDate.Value;
-            }
-
-            if (item.GeoTagLongitude != null && item.GeoTagLatitude != null)
-            {
-
-                hasGeoTag = true;
-                GeoTag.Longitude.Coord = item.GeoTagLongitude;
-                GeoTag.Latitude.Coord = item.GeoTagLatitude;
-            }
-
-            foreach (DB.MediaTag mediaTag in item.MediaTag)
-            {
-
-                Tags.Add(mediaTag.Tag);
-            }
-
-            foreach (DB.MediaThumb mediaThumb in item.MediaThumb)
-            {
-
-                MemoryStream stream = new MemoryStream(mediaThumb.ImageData);
-
-                MetaDataThumb thumb = new MetaDataThumb(stream);
-
-                Thumbnail.Add(thumb);
-            }
-        }
-
 
 
         public FileMetaData()
@@ -232,92 +157,14 @@ namespace MediaViewer.MetaData
             initialize("");
         }
 
-        public FileMetaData(DB.Media media)
-        {
-
-            initialize("");
-
-            initVarsFromDatabaseItem(media);
-        }
-
-
+   
         public void load(string filePath)
         {
            
             initialize(filePath);
-
-            DB.Context ctx = null;
-
-            try
-            {
-
-                ctx = new DB.Context();
-
-                DB.Media item = ctx.getMediaByLocation(filePath);
-
-                FileInfo file = new FileInfo(filePath);
-
-                if (item == null || DB.Context.isMediaItemOutdated(item, file))
-                {
-
-                    ctx.close();
-
-                    loadFromDisk(filePath);
-                    saveToDatabase();
-
-                }
-                else
-                {
-
-                    initVarsFromDatabaseItem(item);
-
-                }
-
-            }
-            finally
-            {
-
-                if (ctx != null)
-                {
-
-                    ctx.close();
-                }
-            }
-
+            loadFromDisk(filePath);                                  
         }
-
-        public bool loadFromDataBase(string filePath)
-        {
-
-            DB.Context ctx = null;
-
-            try
-            {
-
-                initialize(filePath);
-
-                ctx = new DB.Context();
-
-                DB.Media item = ctx.getMediaByLocation(filePath);
-
-                if (item == null) return (false);
-
-                initVarsFromDatabaseItem(item);
-
-                return (true);
-
-            }
-            finally
-            {
-
-                if (ctx != null)
-                {
-
-                    ctx.close();
-                }
-            }
-        }
-
+        
         public void loadFromDisk(string filePath)
         {
 
@@ -705,174 +552,10 @@ namespace MediaViewer.MetaData
         {
 
             saveToDisk();
-            saveToDatabase();
+       
         }
 
-        public void saveToDatabase()
-        {
-
-            try
-            {
-
-                DB.Context ctx = new DB.Context();
-
-                DB.Media item = ctx.getMediaByLocation(FilePath);
-
-                FileInfo file = new FileInfo(FilePath);
-
-                bool exists = true;
-                if (item == null)
-                {
-
-                    item = DB.Context.newMediaItem(file);
-                    exists = false;
-                }
-
-                item.FileLastWriteTimeTicks = file.LastWriteTime.Ticks;
-                item.FileCreationTimeTicks = file.CreationTime.Ticks;
-
-                if (!string.IsNullOrEmpty(Title))
-                {
-
-                    item.Title = Title;
-
-                }
-                else
-                {
-
-                    item.Title = null;
-                }
-
-                if (!string.IsNullOrEmpty(Description))
-                {
-
-                    item.Description = Description;
-
-                }
-                else
-                {
-
-                    item.Description = null;
-                }
-
-                if (!string.IsNullOrEmpty(CreatorTool))
-                {
-
-                    item.CreatorTool = CreatorTool;
-
-                }
-                else
-                {
-
-                    item.CreatorTool = null;
-                }
-
-                if (!string.IsNullOrEmpty(Creator))
-                {
-
-                    item.Author = Creator;
-
-                }
-                else
-                {
-
-                    item.Author = null;
-                }
-
-                if (!string.IsNullOrEmpty(Copyright))
-                {
-
-                    item.Copyright = Creator;
-
-                }
-                else
-                {
-
-                    item.Copyright = null;
-                }
-
-                if (CreationDate != DateTime.MinValue)
-                {
-
-                    item.MetaDataCreationDate = CreationDate;
-
-                }
-                else
-                {
-
-                    item.MetaDataCreationDate = new Nullable<DateTime>();
-                }
-
-                if (ModifiedDate != DateTime.MinValue)
-                {
-
-                    item.MetaDataLastModifiedDate = ModifiedDate;
-
-                }
-                else
-                {
-
-                    item.MetaDataLastModifiedDate = new Nullable<DateTime>();
-                }
-
-                if (HasGeoTag == true)
-                {
-
-                    item.GeoTagLongitude = GeoTag.Longitude.Coord;
-                    item.GeoTagLatitude = GeoTag.Latitude.Coord;
-                }
-
-                item.MetaDataDate = DateTime.Now;
-
-                item.MediaTag.Clear();
-
-                List<string> temp = new List<string>();
-
-                foreach (string tag in Tags)
-                {
-
-                    if (temp.Contains(tag)) continue;
-                    temp.Add(tag);
-
-                    DB.MediaTag mediaTag = new DB.MediaTag();
-                    mediaTag.Tag = tag;
-
-                    item.MediaTag.Add(mediaTag);
-
-                }
-
-                int i = 0;
-
-                item.MediaThumb.Clear();
-
-                foreach (MetaDataThumb thumb in Thumbnail)
-                {
-
-                    DB.MediaThumb mediaThumb = new DB.MediaThumb();
-                    mediaThumb.ImageData = thumb.Data.ToArray();
-                    mediaThumb.ThumbNr = i;
-
-                    item.MediaThumb.Add(mediaThumb);
-                    i++;
-                }
-
-                ////log.Info("saving: " + FilePath + " " + i.ToString() + " thumbs");
-                if (exists == false)
-                {
-                    ctx.insert(item);
-                }
-                ctx.saveChanges();
-                ctx.close();
-
-            }
-            catch (Exception e)
-            {
-
-                log.Error("DATABASE Failed to store: " + FilePath + " - " + e.Message);
-
-            }
-        }
-
+      
         public virtual void saveToDisk()
         {
 

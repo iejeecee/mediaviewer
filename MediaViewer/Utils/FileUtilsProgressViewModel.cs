@@ -23,10 +23,14 @@ namespace MediaViewer.Utils
                tokenSource.Cancel();
            }));
 
+           cancelCommand.CanExecute = true;
+
            okCommand = new Command(new Action(() =>
            {
                OnClosingRequest();
            }));
+
+           okCommand.CanExecute = false;
 
            infoMessages = new ObservableCollection<string>();
         }

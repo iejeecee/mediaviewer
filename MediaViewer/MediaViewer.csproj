@@ -61,6 +61,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
     </Reference>
+    <Reference Include="EntityFramework">
+      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>C:\game\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
@@ -89,12 +95,15 @@
       <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.DXGI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Controls.Input.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\mediaviewer external libs\WPF Toolkit\v3.5.50211.1\System.Windows.Controls.Input.Toolkit.dll</HintPath>
+      <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\System.Windows.Controls.Input.Toolkit.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Windows.Controls.Layout.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\System.Windows.Controls.Layout.Toolkit.dll</HintPath>
     </Reference>
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -110,7 +119,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\WPFToolkit.dll</HintPath>
+    </Reference>
     <Reference Include="Xceed.Wpf.Toolkit, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3e4669d2f30244f4, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\ExtendedWPFToolkit_Binaries\Xceed.Wpf.Toolkit.dll</HintPath>
@@ -147,6 +158,12 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
+    <Compile Include="MediaDatabase\DbCommands.cs" />
+    <Compile Include="MediaDatabase\MediaDatabaseContext.cs" />
+    <Compile Include="MediaDatabase\Tag.cs" />
+    <Compile Include="MediaDatabase\TagCategory.cs" />
+    <Compile Include="MediaDatabase\TagDbCommands.cs" />
+    <Compile Include="MediaDatabase\Test.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
     <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
@@ -200,6 +217,10 @@
     <Compile Include="MetaData\FormatMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
+    <Compile Include="MetaData\LinkedTagEditorView.xaml.cs">
+      <DependentUpon>LinkedTagEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\LinkedTagEditorViewModel.cs" />
     <Compile Include="MetaData\MetaDataUpdateView.xaml.cs">
       <DependentUpon>MetaDataUpdateView.xaml</DependentUpon>
     </Compile>
@@ -226,6 +247,15 @@
       <DependentUpon>MetaDataView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\MetaDataTreeModel.cs" />
+    <Compile Include="Migrations\201311291532467_initial.cs" />
+    <Compile Include="Migrations\201311291532467_initial.Designer.cs">
+      <DependentUpon>201311291532467_initial.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201311291857094_test.cs" />
+    <Compile Include="Migrations\201311291857094_test.Designer.cs">
+      <DependentUpon>201311291857094_test.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="MoveRename\MoveRenameProgressWindow.xaml.cs">
       <DependentUpon>MoveRenameProgressWindow.xaml</DependentUpon>
     </Compile>
@@ -236,6 +266,7 @@
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Progress\IProgress.cs" />
     <Compile Include="Progress\ProgressControl.xaml.cs">
       <DependentUpon>ProgressControl.xaml</DependentUpon>
     </Compile>
@@ -314,6 +345,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ScaleView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\LinkedTagEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -396,6 +431,12 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <EmbeddedResource Include="Migrations\201311291532467_initial.resx">
+      <DependentUpon>201311291532467_initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201311291857094_test.resx">
+      <DependentUpon>201311291857094_test.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -403,6 +444,7 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -415,10 +457,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MediaDatabase\MediaDatabase.csproj">
-      <Project>{1e33135b-d4b0-42f5-b778-dc681ca9d22f}</Project>
-      <Name>MediaDatabase</Name>
-    </ProjectReference>
     <ProjectReference Include="..\MvvmFoundation\MvvmFoundation.Wpf\MvvmFoundation.Wpf.csproj">
       <Project>{2e922430-eaac-4589-a8f4-f35fbb9799b8}</Project>
       <Name>MvvmFoundation.Wpf</Name>

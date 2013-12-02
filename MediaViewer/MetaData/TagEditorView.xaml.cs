@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaDatabase;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -45,12 +46,35 @@ namespace MediaViewer.MetaData
                      
         }
 
+        private void addTag(string tagName)
+        {
+            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;
+
+            if (!Tags.Contains(tagName))
+            {
+                Tags.Add(tagName);
+            }
+            
+            using (TagDbCommands tc = new TagDbCommands(null))
+            {
+                Tag tag = tc.getTagByName(tagName);
+             
+                foreach (Tag linkedTag in tag.LinkedTags)
+                {
+                    if (!Tags.Contains(linkedTag.Name))
+                    {
+                        Tags.Add(linkedTag.Name);
+                    }
+                }                
+
+            }
+
+            addTagTextbox.Text = "";
+        }
+
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            if (String.IsNullOrEmpty(addTagTextbox.Text) || String.IsNullOrWhiteSpace(addTagTextbox.Text)) return;
-
-            Tags.Add(addTagTextbox.Text);
-            addTagTextbox.Text = "";
+            addTag(addTagTextbox.Text);
         }
 
         private void removeButton_Click(object sender, RoutedEventArgs e)
@@ -59,6 +83,15 @@ namespace MediaViewer.MetaData
             {
                 Tags.Remove((String)tagListBox.SelectedItem);
             }  
+        }
+
+        private void addTagTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                addTag(addTagTextbox.Text);
+            }
+
         }
         
     }

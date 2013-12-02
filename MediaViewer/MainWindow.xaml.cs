@@ -43,9 +43,7 @@ namespace MediaViewer
         private ImageViewModel imageViewModel;
         private MainWindowViewModel mainWindowViewModel;
         private MediaFileBrowserViewModel mediaFileBrowserViewModel;    
-
-        private string currentBrowsingDirectory;
-
+    
         public MainWindow()
         {
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
@@ -68,39 +66,13 @@ namespace MediaViewer
             DataContext = mainWindowViewModel;
 
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
-
-            currentBrowsingDirectory = "";
        
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_PathSelected", new Action<String>(browsingDirectory_IsSelected));
-/*
-            DispatcherTimer timer = new DispatcherTimer();
-            timer.Interval = new TimeSpan(0,0,10);
-            timer.Tick += new EventHandler((o,e) => {
-                 if (App.Args.Length != 0)
-                {
-                    loadAndDisplayMedia(App.Args[0]);
-                    mediaFileBrowserViewModel.BrowsePath = App.Args[0];
 
-                }
-
-            });
-            timer.Start();
-
-/*
-            Dispatcher.BeginInvoke(DispatcherPriority.ContextIdle, new Action(() =>
-            {
-                if (App.Args.Length != 0)
-                {
-                    loadAndDisplayMedia(App.Args[0]);
-                    mediaFileBrowserViewModel.BrowsePath = App.Args[0];
-
-                }
-            }));
-*/
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
-            //TestWindow test = new TestWindow();
-            //test.Show();          
+            MediaDatabase.Test.test();
+           
           
         }
 
@@ -186,11 +158,11 @@ namespace MediaViewer
         {
             if (string.IsNullOrEmpty(info))
             {
-                mainWindow.Title = "MediaViewer";
+                mainWindowViewModel.WindowTitle = "MediaViewer";
             }
             else
             {
-                mainWindow.Title = info + " - MediaViewer";
+                mainWindowViewModel.WindowTitle = info + " - MediaViewer";
             }
         }
 
@@ -266,31 +238,13 @@ namespace MediaViewer
 
         }
 
-        private void AboutMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            AboutView about = new AboutView();
-            AboutViewModel aboutViewModel = new AboutViewModel();
-            about.DataContext = aboutViewModel;
-
-            about.ShowDialog();
-
-        }
+    
 
         private void ExitMenuItem_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
-
-        private void LogMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
-            VisualAppender appender = (VisualAppender)(appenders[0]);
-
-            LogView logView = new LogView();
-            logView.DataContext = appender.LogViewModel;
-
-            logView.Show();
-        }
+       
 
         private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -365,7 +319,7 @@ namespace MediaViewer
             imageToolBar.Visibility = Visibility.Hidden;
             mediaFileBrowserToolBar.Visibility = Visibility.Visible;
          
-            setTitle(currentBrowsingDirectory);
+            setTitle(mediaFileBrowserViewModel.BrowsePath);
         }
 
         private void showImageView(string location)

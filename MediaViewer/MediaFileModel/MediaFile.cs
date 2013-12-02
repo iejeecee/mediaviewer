@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MetaData;
 using MediaViewer.Utils;
-using DB = MediaDatabase;
 using System.Threading;
 using System.Windows.Media.Imaging;
 

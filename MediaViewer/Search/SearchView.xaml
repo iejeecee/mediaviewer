@@ -10,14 +10,14 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="7*"/>
             <ColumnDefinition Width="1.5*"/>
-            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="0.5*"/>
         </Grid.ColumnDefinitions>
         <TextBox x:Name="queryTextBox" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding Query}" VerticalAlignment="Stretch"
-			ToolTip="Query" KeyDown="queryTextBox_KeyDown"/>
+			ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus"/>
         <Button x:Name="searchButton" Grid.Column="1" VerticalAlignment="Stretch" ToolTip="Search" HorizontalAlignment="Stretch" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}">
             <Image Source="pack://application:,,,/Resources/Icons/searchblack.ico"/>
         </Button>
-        <xctk:DropDownButton Name="DropDownButton" Grid.Column="2" Content="Options">
+        <xctk:DropDownButton Name="DropDownButton" Grid.Column="2" ToolTip="Search Options">
             <xctk:DropDownButton.DropDownContent>
                 <Grid>
                     <Grid.RowDefinitions>
