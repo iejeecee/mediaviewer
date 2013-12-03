@@ -23,6 +23,14 @@
                 <Setter Property="Margin" Value="0,5,0,0"/>           
                 <Setter Property="ToolTip" Value="Enable/Disable update"/>                
             </Style>
+            <ContextMenu x:Key="fileNameContextMenu">
+                <MenuItem Header="Insert Counter" Click="fileNameContextMenu_InsertCounter"/>
+                <MenuItem Header="Insert Existing Filename" Click="fileNameContextMenu_InsertExistingFilename"/>                
+                <Separator/>
+                <MenuItem Command="ApplicationCommands.Copy" />
+                <MenuItem Command="ApplicationCommands.Cut" />
+                <MenuItem Command="ApplicationCommands.Paste" />                                
+            </ContextMenu>
             <MetaData:MetaDataViewModel x:Key="viewModel"/>
         </ResourceDictionary>       
     </UserControl.Resources>    
@@ -54,8 +62,8 @@
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="FileName" Style="{StaticResource labelStyle}"></Label>
                 <TextBox Name="fileNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
-                    Text="{Binding Source={StaticResource viewModel}, Path=Filename}"
-                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=FilenameEnabled}"/>
+                    Text="{Binding Source={StaticResource viewModel}, Path=Filename, UpdateSourceTrigger=PropertyChanged}"
+                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}"/>                               
                 <Label Grid.Row="1" Grid.Column="0" Content="Path" Style="{StaticResource labelStyle}"></Label>
                 <Label Grid.Row="2" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"></Label>               
                 <inputtoolkit:Rating x:Name="rating" ItemCount="5" Grid.Row="2" Grid.Column="1" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
@@ -121,10 +129,17 @@
                     IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"
                     Command="{Binding Source={StaticResource viewModel}, Path=WriteMetaDataCommand}"
                     ToolTip="Save Metadata To Disk"/>
-                <ComboBox Name="pathComboBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 5, 5" Grid.Row="1" VerticalAlignment="Top" 
-                          ItemsSource="{Binding Source={StaticResource viewModel},Path=LocationHistory}" 
-                          SelectedItem="{Binding Source={StaticResource viewModel},Path=Location, Mode=TwoWay}"
-                          IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"/>
+                <TextBox Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5" Grid.Row="1" VerticalAlignment="Top"                         
+                          Text="{Binding Source={StaticResource viewModel},Path=Location, Mode=TwoWay}"
+                          ToolTip="{Binding Source={StaticResource viewModel},Path=Location}"
+                          IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}" IsReadOnly="True"/>
+                <Button Name="directoryPickerButton" Grid.Column="1" Grid.Row="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"
+                        Command="{Binding Source={StaticResource viewModel}, Path=DirectoryPickerCommand}"
+                        ToolTip="Change Directory">
+                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
+                </Button>
             </Grid>
             <Grid Name="miscGrid" Grid.Row="1">
                 <Grid.ColumnDefinitions>

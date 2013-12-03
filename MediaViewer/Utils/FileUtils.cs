@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.GenericEventArgs;
+using MediaViewer.Progress;
 
 namespace MediaViewer.Utils
 {
@@ -108,9 +109,9 @@ namespace MediaViewer.Utils
             int fileProgress = (int)((100 * totalBytesTransferred) / totalFileSize);
 
             GCHandle h = GCHandle.FromIntPtr(data);
-            FileUtilsProgressViewModel progress = (FileUtilsProgressViewModel)h.Target;
+            IProgress progress = (IProgress)h.Target;
 
-            progress.CurrentFileProgress = fileProgress;
+            progress.ItemProgress = fileProgress;
 
             CopyFileCallbackAction action = progress.CancellationToken.IsCancellationRequested ? CopyFileCallbackAction.CANCEL : CopyFileCallbackAction.CONTINUE;
 
@@ -118,7 +119,7 @@ namespace MediaViewer.Utils
 
         }
 
-        bool copyFile(string source, string destination, CopyFileOptions options, FileUtilsProgressViewModel progress)
+        public bool copyFile(string source, string destination, IProgress progress)
         {
 
             GCHandle handle = GCHandle.Alloc(progress);
@@ -126,6 +127,8 @@ namespace MediaViewer.Utils
 
             try
             {
+
+                progress.ItemInfo = "Copying: " + source + " -> " + destination;
 
                 FileIOPermission sourcePermission = new FileIOPermission(FileIOPermissionAccess.Read, source);
                 sourcePermission.Demand();
@@ -147,7 +150,7 @@ namespace MediaViewer.Utils
                 int cancel = 0;
 
                 if (!CopyFileEx(source, destination, progressCallback,
-                    progressPtr, ref cancel, (int)options))
+                    progressPtr, ref cancel, (int)CopyFileOptions.ALL))
                 {
 
                     Win32Exception win32exception = new Win32Exception();
@@ -162,6 +165,8 @@ namespace MediaViewer.Utils
                     throw new IOException(win32exception.Message);
                 }
 
+                progress.InfoMessages.Add("Copied: " + source + " -> " + destination);
+
                 return (true);
 
             }
@@ -170,6 +175,176 @@ namespace MediaViewer.Utils
 
                 handle.Free();
             }
+        }
+
+        public void copy(StringCollection sourcePaths, StringCollection destPaths, IProgress progress)
+        {
+            if (sourcePaths.Count != destPaths.Count)
+            {
+
+                throw new System.ArgumentException();
+            }
+
+            try
+            {
+
+                StringCollection allSourcePaths;
+                StringCollection allDestPaths;
+                StringCollection createDirs;
+                StringCollection removeDirs;
+
+                getPaths(sourcePaths, destPaths, out allSourcePaths, out allDestPaths, out createDirs, out removeDirs);
+
+                progress.TotalProgressMax = allSourcePaths.Count - 1;              
+         
+                foreach (String directory in createDirs)
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                for (int i = 0; i < allSourcePaths.Count; i++)
+                {
+
+                    progress.TotalProgress = i;
+
+                    bool success = copyFile(allSourcePaths[i], allDestPaths[i], progress);               
+
+                    if (success == false) break;
+                                     
+                }            
+
+            }
+            catch (Exception e)
+            {
+                log.Error("Copy Exception", e);
+                progress.ItemInfo = "Copy Exception: " + e.Message;
+            }            
+
+        }
+       
+        public void moveFile(string source, string destination, IProgress progress)
+        {
+            if (progress.CancellationToken.IsCancellationRequested) return;
+
+            if (Path.GetPathRoot(source).Equals(Path.GetPathRoot(destination)))
+            {
+                progress.ItemProgress = 0;
+                progress.ItemInfo = "Moving: " + source + "->" + destination;
+
+                System.IO.Directory.Move(source, destination);
+
+                progress.InfoMessages.Add("Moved: " + source + " -> " + destination);
+                progress.ItemProgress = progress.ItemProgressMax;
+            }
+            else
+            {
+                copyFile(source, destination, progress);
+
+                System.IO.Directory.Delete(source, true);
+                progress.InfoMessages.Add("Deleted: " + source);
+            }
+
+        }
+
+        public void move(StringCollection sourcePaths, StringCollection destPaths, IProgress progress)
+        {
+
+            if (progress.CancellationToken.IsCancellationRequested) return;
+
+            if (sourcePaths.Count != destPaths.Count)
+            {
+                throw new System.ArgumentException();
+            }
+
+            try
+            {
+
+                StringCollection allSourcePaths;
+                StringCollection allDestPaths;
+                StringCollection createDirs;
+                StringCollection removeDirs;
+
+                getPaths(sourcePaths, destPaths, out allSourcePaths, out allDestPaths, out createDirs, out removeDirs);
+
+                progress.TotalProgressMax = allSourcePaths.Count - 1;
+
+                foreach (String directory in createDirs)
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                for (int i = 0; i < allSourcePaths.Count; i++)
+                {
+                    if (progress.CancellationToken.IsCancellationRequested) return;
+
+                    progress.TotalProgress = i;
+
+                    moveFile(allSourcePaths[i], allDestPaths[i], progress);
+                }
+
+                foreach (String directory in removeDirs)
+                {
+                    Directory.Delete(directory);
+                }
+
+            }
+            catch (Exception e)
+            {
+
+                log.Error("Move Exception", e);
+                progress.ItemInfo = "Move Exception: " + e.Message;
+            }
+         
+
+        }
+
+        void getPaths(StringCollection sourcePaths, StringCollection destPaths, 
+           out StringCollection allSourcePaths, out StringCollection allDestPaths,
+           out StringCollection createDirs, out StringCollection removeDirs)
+        {
+            allSourcePaths = new StringCollection();
+            allDestPaths = new StringCollection();
+            removeDirs = new StringCollection();
+            createDirs = new StringCollection();
+
+            for (int i = 0; i < sourcePaths.Count; i++)
+            {
+
+                if (Directory.Exists(sourcePaths[i]))
+                {
+                    // file is a directory, get all it's subdirectories and files
+                    StringCollection extraPaths = new StringCollection();
+
+                    getAllFiles(sourcePaths[i], removeDirs, extraPaths);
+
+                    foreach (string extraPath in extraPaths)
+                    {
+                        if (addIfNotExists(extraPath, allSourcePaths))
+                        {
+
+                            string postfix = extraPath.Remove(0, sourcePaths[i].Length);
+
+                            string destPath = destPaths[i] + postfix;
+
+                            allDestPaths.Add(destPath);
+                        }
+                    }
+
+                    foreach (string removeDir in removeDirs)
+                    {
+                        createDirs.Add(destPaths[i] + "/" + Path.GetFileName(removeDir));
+                    }
+
+                }
+                else
+                {
+                    if (addIfNotExists(sourcePaths[i], allSourcePaths))
+                    {
+                        allDestPaths.Add(destPaths[i]);
+                    }
+                }
+            }
+
         }
 
         void getAllFiles(string path, StringCollection directories, StringCollection files)
@@ -213,242 +388,6 @@ namespace MediaViewer.Utils
             }
 
             return (!containsPath);
-        }
-
-
-        public void copy(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgressViewModel progress)
-        {
-            if (sourcePaths.Count != destPaths.Count)
-            {
-
-                throw new System.ArgumentException();
-            }
-
-            try
-            {
-
-                StringCollection movePaths = new StringCollection();
-                StringCollection moveDestPaths = new StringCollection();
-
-                StringCollection copyPaths = new StringCollection();
-                StringCollection copyDestPaths = new StringCollection();
-
-                StringCollection removePaths = new StringCollection();
-
-                getPaths(sourcePaths, destPaths, movePaths, moveDestPaths, copyPaths, copyDestPaths, removePaths, Action.COPY);
-
-                progress.TotalFiles = movePaths.Count + copyPaths.Count;              
-
-                bool success = true;
-
-                for (int i = 0; i < movePaths.Count; i++)
-                {
-
-                    progress.CurrentFile = i;
-                    progress.ItemInfo = "Copying: " + movePaths[i] + " -> " + moveDestPaths[i];
-
-                    success = copyFile(movePaths[i], moveDestPaths[i], CopyFileOptions.ALL, progress);               
-
-                    if (success == false) break;
-
-                    bool isDirectory = Directory.Exists(moveDestPaths[i]);
-
-                    progress.InfoMessages.Add("Copied: " + movePaths[i] + " -> " + moveDestPaths[i]);
-                }
-
-
-                for (int i = 0; (i < copyPaths.Count) && (success == true); i++)
-                {
-
-                    progress.CurrentFile = movePaths.Count + i;
-                    progress.ItemInfo = "Copying: " + copyPaths[i] + " -> " + copyDestPaths[i];
-
-                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);                
-
-                    if (success == false) break;
-
-                    progress.InfoMessages.Add("Copied: " + copyPaths[i] + " -> " + copyDestPaths[i]);
-                }
-
-                if (success == true)
-                {
-                    progress.CurrentFile = progress.TotalFiles;
-                }
-
-            }
-            catch (Exception e)
-            {
-                log.Error("Copy Exception", e);
-                progress.ItemInfo = "Copy Exception: " + e.Message;
-            }            
-
-        }
-
-        void getPaths(StringCollection sourcePaths, StringCollection destPaths,
-            StringCollection movePaths, StringCollection moveDestPaths,
-            StringCollection copyPaths, StringCollection copyDestPaths,
-            StringCollection removePaths, Action action)
-        {
-
-            for (int i = 0; i < sourcePaths.Count; i++)
-            {
-
-                string sourceRoot = System.IO.Path.GetPathRoot(sourcePaths[i]);
-                string destRoot = System.IO.Path.GetPathRoot(destPaths[i]);
-
-                if (sourcePaths[i].Equals(destPaths[i]))
-                {
-
-                    if (action == Action.MOVE)
-                    {
-
-                        // don't do anything
-
-                    }
-                    else
-                    {
-
-                        if (Directory.Exists(sourcePaths[i])) continue;
-
-                        // copy to unique filename
-                        copyPaths.Add(sourcePaths[i]);
-                        copyDestPaths.Add(getUniqueFileName(sourcePaths[i]));
-                    }
-
-                }
-                else if (sourceRoot.Equals(destRoot))
-                {
-
-                    // files can be moved on the same drive
-                    movePaths.Add(sourcePaths[i]);
-                    moveDestPaths.Add(destPaths[i]);
-
-                }
-                else
-                {
-
-                    // files need to be copied between drives
-                    if (Directory.Exists(sourcePaths[i]))
-                    {
-
-                        // file is a directory, get all it's subdirectories and files
-                        StringCollection subPaths = new StringCollection();
-
-                        addIfNotExists(sourcePaths[i], removePaths);
-
-                        getAllFiles(sourcePaths[i], null, subPaths);
-
-                        foreach (string subPath in subPaths)
-                        {
-
-                            if (addIfNotExists(subPath, copyPaths))
-                            {
-
-                                string postfix = subPath.Remove(0, sourcePaths[i].Length);
-
-                                string destPath = destPaths[i] + postfix;
-
-                                copyDestPaths.Add(destPath);
-                            }
-                        }
-
-                    }
-                    else
-                    {
-
-
-                        if (addIfNotExists(sourcePaths[i], copyPaths))
-                        {
-
-                            copyDestPaths.Add(destPaths[i]);
-                        }
-                    }
-                }
-            }
-        }
-
-        public void move(StringCollection sourcePaths, StringCollection destPaths, FileUtilsProgressViewModel progress)
-        {
-
-            if (progress.CancellationToken.IsCancellationRequested) return;
-
-            if (sourcePaths.Count != destPaths.Count)
-            {
-                throw new System.ArgumentException();
-            }
-
-            try
-            {
-              
-                StringCollection movePaths = new StringCollection();
-                StringCollection moveDestPaths = new StringCollection();
-
-                StringCollection copyPaths = new StringCollection();
-                StringCollection copyDestPaths = new StringCollection();
-
-                StringCollection removePaths = new StringCollection();
-
-                getPaths(sourcePaths, destPaths, movePaths, moveDestPaths, copyPaths, copyDestPaths, removePaths, Action.MOVE);
-
-                progress.TotalFiles = movePaths.Count + copyPaths.Count;
-
-                for (int i = 0; i < movePaths.Count; i++)
-                {
-                    progress.CurrentFile = i;
-                    progress.ItemInfo = "Moving: " + movePaths[i] + " -> " + moveDestPaths[i];
-
-                    if (progress.CancellationToken.IsCancellationRequested) return;
-
-                    System.IO.Directory.Move(movePaths[i], moveDestPaths[i]);
-
-                    //Thread.Sleep(100);
-
-                    bool isDirectory = Directory.Exists(moveDestPaths[i]);
-
-                    progress.InfoMessages.Add("Moved: " + movePaths[i] + " -> " + moveDestPaths[i]);
-                }
-
-                bool success = true;
-
-                for (int i = 0; i < copyPaths.Count; i++)
-                {
-
-                    if (progress.CancellationToken.IsCancellationRequested) return;
-
-                    progress.CurrentFile = movePaths.Count + i;
-                    progress.ItemInfo = "Moving: " + copyPaths[i] + "->" + copyDestPaths[i];
-                    success = copyFile(copyPaths[i], copyDestPaths[i], CopyFileOptions.ALL, progress);
-                
-                    if (success == false) break;
-
-                    progress.InfoMessages.Add("Moved: " + copyPaths[i] + " -> " + copyDestPaths[i]);
-                }
-
-                if (success == true)
-                {
-
-                    progress.CurrentFile = progress.TotalFiles;
-
-                    foreach (string copySource in copyPaths)
-                    {
-                        System.IO.File.Delete(copySource);                      
-                    }
-
-                    foreach (string directorySource in removePaths)
-                    {
-                        System.IO.Directory.Delete(directorySource, true);                       
-                    }
-                }
-
-            }
-            catch (Exception e)
-            {
-
-                log.Error("Move Exception", e);
-                progress.ItemInfo = "Move Exception: " + e.Message;
-            }
-         
-
         }
 
         static bool isFileLockedException(IOException exception)

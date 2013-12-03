@@ -3,8 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Metadata Update Progress" Height="350" Width="420" ResizeMode="NoResize">
     <Grid>
-        <Progress:ProgressControl TotalProgress="{Binding CurrentFile}" TotalProgressMax="{Binding TotalFiles}"
-                                  ItemProgress="{Binding CurrentFileProgress}" ItemProgressMax="100" 
+        <Progress:ProgressControl TotalProgress="{Binding TotalProgress}" TotalProgressMax="{Binding TotalProgressMax}"
+                                  ItemProgress="{Binding ItemProgress}" ItemProgressMax="100" 
                                   ItemInfo="{Binding ItemInfo}"
                                   InfoMessages="{Binding InfoMessages}"
                                   CancelCommand="{Binding CancelCommand}" OkCommand="{Binding OkCommand}"/> 

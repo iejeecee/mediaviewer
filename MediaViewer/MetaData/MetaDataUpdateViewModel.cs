@@ -1,5 +1,7 @@
 ﻿using MediaViewer.ImageGrid;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Progress;
+using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -12,9 +14,12 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataUpdateViewModel : CloseableObservableObject
+    class MetaDataUpdateViewModel : CloseableObservableObject, IProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
+        public const string oldFilenameMarker = "@";
+        public const string counterMarker = "&";
 
         CancellationTokenSource tokenSource;
 
@@ -48,11 +53,13 @@ namespace MediaViewer.MetaData
         public async Task writeMetaData(MetaDataUpdateViewModelAsyncState state)
         {
                                   
-            TotalFiles = state.ItemList.Count;
-            CurrentFile = 0;
+            TotalProgressMax = state.ItemList.Count;
+            TotalProgress = 0;
 
             await Task.Factory.StartNew(() =>
-            {                
+            {
+                FileUtils fileUtils = new FileUtils();
+
                 bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
                 if (success == false)
                 {
@@ -63,12 +70,14 @@ namespace MediaViewer.MetaData
 
                 try
                 {
+                  
+                    List<int> counters = new List<int>();
 
                     foreach (MediaFileItem item in state.ItemList)
                     {
                         if (CancellationToken.IsCancellationRequested) return;
 
-                        CurrentFileProgress = 0;
+                        ItemProgress = 0;
                         bool isModified = false;
 
                         ItemInfo = "Opening: " + item.Location;
@@ -165,6 +174,7 @@ namespace MediaViewer.MetaData
                         {
                             if (isModified)
                             {
+                                // Save metadata changes
                                 ItemInfo = "Saving MetaData: " + item.Location;
                                 metaData.saveToDisk();
 
@@ -175,8 +185,18 @@ namespace MediaViewer.MetaData
                                 InfoMessages.Add("Skipped updating Metadata (no changes) for: " + item.Location);
                             }
 
-                            CurrentFileProgress = 100;
-                            CurrentFile++;
+                            //if filename/location has changed rename and/or move
+                            String oldPath = FileUtils.getPathWithoutFileName(item.Location);
+                            String oldFileName = Path.GetFileNameWithoutExtension(item.Location);
+                            String ext = Path.GetExtension(item.Location);
+
+                            String newFileName = parseNewFilename(state.Filename, oldFileName, counters);
+                            String newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
+                                                
+                            fileUtils.moveFile(oldPath + "\\" + oldFileName + ext, newPath + "\\" + newFileName + ext, this);
+                           
+                            ItemProgress = 100;
+                            TotalProgress++;
                         }
                         catch (Exception e)
                         {                           
@@ -192,27 +212,7 @@ namespace MediaViewer.MetaData
                         }
                                               
                     }
-
-                    if (state.ItemList.Count == 1 && !Path.GetFileNameWithoutExtension(state.ItemList[0].Location).Equals(state.Filename))
-                    {
-                        String oldName = state.ItemList[0].Location;
-                        String destPath = Utils.FileUtils.getPathWithoutFileName(oldName);
-                        String newName = destPath + "\\" + state.Filename + Path.GetExtension(state.ItemList[0].Location);
-
-                        try
-                        {
-                            System.IO.File.Move(oldName, newName);
-                        }
-                        catch (Exception e)
-                        {
-                            ItemInfo = "Error renaming file: " + oldName;
-                            InfoMessages.Add("Error renaming file: " + oldName);
-                            log.Error("Error renaming file: " + oldName, e);
-                            return;
-                        }
-
-                    }
-
+               
                 }
                 finally
                 {
@@ -223,6 +223,87 @@ namespace MediaViewer.MetaData
 
             OkCommand.CanExecute = true;
             CancelCommand.CanExecute = false;
+        }
+
+        string parseNewFilename(string newFilename, string oldFilename, List<int> counters)
+        {
+            if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
+            {
+                return (oldFilename);
+            }
+
+            int nrCounters = 0;
+            string outputFileName = "";
+
+            for (int i = 0; i < newFilename.Length; i++)
+            {
+
+                if (newFilename[i].Equals('\"'))
+                {
+                    // grab substring
+                    string subString = "";
+
+                    int k = i + 1;
+
+                    while (k < newFilename.Length && !newFilename[k].Equals('\"'))
+                    {
+                        subString += newFilename[k];
+                        k++;
+                    }
+
+                    // replace
+                    if (subString.Length > 0)
+                    {
+                        if (subString[0].Equals(oldFilenameMarker[0]))
+                        {
+                            // insert old filename
+                            outputFileName += oldFilename;
+                        }
+                        else if (subString[0].Equals(counterMarker[0]))
+                        {
+                            // insert counter
+                            nrCounters++;
+                            int counterValue;
+                            bool haveCounterValue = false;
+
+                            if (counters.Count < nrCounters)
+                            {
+                                haveCounterValue = int.TryParse(subString.Substring(1), out counterValue);
+
+                                if (haveCounterValue)
+                                {
+                                    counters.Add(counterValue);
+                                }
+                            }
+                            else
+                            {
+                                counterValue = counters[nrCounters - 1];
+                                haveCounterValue = true;
+                            }
+
+                            if (haveCounterValue)
+                            {
+
+                                outputFileName += counterValue.ToString();
+
+                                // increment counter
+                                counters[nrCounters - 1] += 1;
+                            }
+                        }
+                    }
+
+                    if (newFilename[k].Equals('\"'))
+                    {
+                        i = k;
+                    }
+                }
+                else
+                {
+                    outputFileName += newFilename[i];
+                }
+            }
+
+            return (outputFileName);
         }
 
         Command okCommand;
@@ -248,42 +329,7 @@ namespace MediaViewer.MetaData
                 NotifyPropertyChanged();
             }
         }
-
-        int totalFiles;
-
-        public int TotalFiles
-        {
-            get { return totalFiles; }
-            set
-            {
-                totalFiles = value;
-                NotifyPropertyChanged();
-            }
-        }
-        int currentFile;
-
-        public int CurrentFile
-        {
-            get { return currentFile; }
-            set
-            {
-                currentFile = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        int currentFileProgress;
-
-        public int CurrentFileProgress
-        {
-            get { return currentFileProgress; }
-            set
-            {
-                currentFileProgress = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+   
         String itemInfo;
 
         public String ItemInfo
@@ -315,6 +361,66 @@ namespace MediaViewer.MetaData
             get { return cancellationToken; }
             set { cancellationToken = value; }
         }
+
+        int totalProgress;
+
+        public int TotalProgress
+        {
+            get
+            {
+                return (totalProgress);
+            }
+            set
+            {
+                totalProgress = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        int totalProgressMax;
+
+        public int TotalProgressMax
+        {
+            get
+            {
+                return (totalProgressMax);
+            }
+            set
+            {
+                totalProgressMax = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        int itemProgress;
+
+        public int ItemProgress
+        {
+            get
+            {
+                return (itemProgress);
+            }
+            set
+            {
+                itemProgress = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        int itemProgressMax;
+
+        public int ItemProgressMax
+        {
+            get
+            {
+                return (itemProgressMax);
+            }
+            set
+            {
+                itemProgressMax = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
     class MetaDataUpdateViewModelAsyncState
@@ -329,8 +435,7 @@ namespace MediaViewer.MetaData
             CopyrightEnabled = vm.CopyrightEnabled;
             Description = vm.Description;
             DescriptionEnabled = vm.DescriptionEnabled;
-            Filename = vm.Filename;
-            FilenameEnabled = vm.FilenameEnabled;
+            Filename = vm.Filename;       
             isEnabled = vm.IsEnabled;
             ItemList = new List<MediaFileItem>(vm.ItemList);
             Rating = vm.Rating;
@@ -406,14 +511,8 @@ namespace MediaViewer.MetaData
         {
             get { return filename; }
             set { filename = value; }
-        }
-        bool filenameEnabled;
-
-        public bool FilenameEnabled
-        {
-            get { return filenameEnabled; }
-            set { filenameEnabled = value; }
-        }
+        }     
+      
         bool isEnabled;
 
         public bool IsEnabled

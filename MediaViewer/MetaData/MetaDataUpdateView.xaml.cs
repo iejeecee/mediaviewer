@@ -26,7 +26,7 @@ namespace MediaViewer.MetaData
             MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel();
             DataContext = vm;
 
-            vm.ClosingRequest += new EventHandler((o, e) =>
+            vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
             {               
                 this.Close();               
             });

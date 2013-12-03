@@ -4,7 +4,7 @@ using MediaViewer.Input;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.MediaPreview;
-using MediaViewer.MoveRename;
+using MediaViewer.DirectoryPicker;
 using MediaViewer.Pager;
 using MediaViewer.Search;
 using MediaViewer.Utils;
@@ -45,21 +45,6 @@ namespace MediaViewer.MediaFileBrowser
          
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));        
   
-            MoveRenameSelectedItemsCommand = new Command(new Action(() => {
-
-                List<MediaFileItem> selected = mediaFileWatcher.MediaFiles.GetSelectedItems();
-                if (selected.Count == 0) return;
-
-                MoveRenameView moveRenameView = new MoveRenameView();
-                MoveRenameViewModel moveRenameViewModel = (MoveRenameViewModel)moveRenameView.DataContext;
-
-                moveRenameViewModel.SelectedItems = selected;
-                moveRenameViewModel.MovePath = BrowsePath;
-             
-                moveRenameView.ShowDialog();
-
-            }));
-
            
         }
 
@@ -150,14 +135,6 @@ namespace MediaViewer.MediaFileBrowser
                 }
             }
 
-        }
-
-        Command moveRenameSelectedItemsCommand;
-
-        public Command MoveRenameSelectedItemsCommand
-        {
-            get { return moveRenameSelectedItemsCommand; }
-            set { moveRenameSelectedItemsCommand = value; }
         }
 
         private void renameImageToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)

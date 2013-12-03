@@ -1,6 +1,8 @@
-﻿using MediaViewer.ImageGrid;
+﻿using MediaViewer.DirectoryPicker;
+using MediaViewer.ImageGrid;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -30,11 +32,7 @@ namespace MediaViewer.MetaData
             Author = "";
             Copyright = "";
             dynamicProperties = new List<Tuple<string, string>>();
-
-            lock (locationHistoryLock)
-            {
-                LocationHistory.Clear();
-            }
+         
             lock (tagsLock)
             {
                 Tags.Clear();
@@ -63,11 +61,7 @@ namespace MediaViewer.MetaData
             RemoveTags = new ObservableCollection<string>();
             removeTagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(RemoveTags, removeTagsLock);
-
-            LocationHistory = new ObservableCollection<string>();
-            locationHistoryLock = new Object();
-            BindingOperations.EnableCollectionSynchronization(LocationHistory, locationHistoryLock);
-
+            
             clear();
             BatchMode = false;
             IsEnabled = false;
@@ -80,6 +74,46 @@ namespace MediaViewer.MetaData
                 await vm.writeMetaData(new MetaDataUpdateViewModelAsyncState(this));
 
             }));
+
+            directoryPickerCommand = new Command(new Action(() => 
+            {
+                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
+                vm.MovePath = MediaFileWatcher.Instance.Path;
+                vm.SelectedItems = ItemList;
+
+                if (directoryPicker.ShowDialog() == true)
+                {                    
+                    Location = vm.MovePath;
+                }
+
+            }));
+
+            insertCounterCommand = new Command<int>(new Action<int>((startIndex) =>
+            {
+                try
+                {                    
+                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + "0\"");
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+
+            }));
+
+            insertExistingFilenameCommand = new Command<int>(new Action<int>((startIndex) =>
+                {
+                    try
+                    {
+                        Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error(e);
+                    }
+
+                }));
 
             MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((s,e) =>
             {
@@ -122,28 +156,20 @@ namespace MediaViewer.MetaData
             }
         }
 
-        bool filenameEnabled;
+        Command<int> insertCounterCommand;
 
-        public bool FilenameEnabled
+        public Command<int> InsertCounterCommand
         {
-            get { return filenameEnabled; }
-            set
-            {
-                filenameEnabled = value;
-                NotifyPropertyChanged();
-            }
+            get { return insertCounterCommand; }
+            set { insertCounterCommand = value; }
         }
 
-        Object locationHistoryLock;
+        Command<int> insertExistingFilenameCommand;
 
-        ObservableCollection<String> locationHistory;
-
-        public ObservableCollection<String> LocationHistory
+        public Command<int> InsertExistingFilenameCommand
         {
-            get { return locationHistory; }
-            set { locationHistory = value;
-            NotifyPropertyChanged();
-            }
+            get { return insertExistingFilenameCommand; }
+            set { insertExistingFilenameCommand = value; }
         }
 
         String location;
@@ -154,6 +180,14 @@ namespace MediaViewer.MetaData
             set { location = value;
             NotifyPropertyChanged();
             }
+        }
+
+        Command directoryPickerCommand;
+
+        public Command DirectoryPickerCommand
+        {
+            get { return directoryPickerCommand; }
+            set { directoryPickerCommand = value; }
         }
 
         float rating;
@@ -321,8 +355,7 @@ namespace MediaViewer.MetaData
                 isEnabled = value;
                 NotifyPropertyChanged();
                 if (isEnabled == false)
-                {
-                    FilenameEnabled = false;
+                {                   
                     RatingEnabled = false;
                     TitleEnabled = false;
                     DescriptionEnabled = false;
@@ -345,8 +378,7 @@ namespace MediaViewer.MetaData
                 NotifyPropertyChanged();
 
                 if (batchMode == true && IsEnabled == true)
-                {
-                    FilenameEnabled = false;
+                {                   
                     RatingEnabled = false;
                     TitleEnabled = false;
                     DescriptionEnabled = false;
@@ -354,8 +386,7 @@ namespace MediaViewer.MetaData
                     CopyrightEnabled = false;
                 }
                 else if(IsEnabled == true)
-                {
-                    FilenameEnabled = true;
+                {               
                     RatingEnabled = true;
                     TitleEnabled = true;
                     DescriptionEnabled = true;
@@ -391,7 +422,7 @@ namespace MediaViewer.MetaData
                 }
 
                 Filename = Path.GetFileNameWithoutExtension(media.Name);
-                setLocation();
+                Location = FileUtils.getPathWithoutFileName(media.Location);
 
                 if (media is VideoFile)
                 {
@@ -440,7 +471,7 @@ namespace MediaViewer.MetaData
             }
             else if (itemList.Count > 1 && BatchMode == true)
             {
-                setLocation();
+                
                 
             }
             else
@@ -449,42 +480,22 @@ namespace MediaViewer.MetaData
                 {
                     IsEnabled = true;
                     BatchMode = true;
+                    clear();
                                    
                 } else if(itemList.Count == 0) {
 
                     BatchMode = false;
                     IsEnabled = false;
-                    
+                    clear();
                 }
 
-                clear();
-                setLocation();
+                              
             }
 
 
         }
 
-        void setLocation()
-        {
-            if (itemList.Count == 0) return;
-
-            lock (LocationHistory)
-            {
-                Location = Utils.FileUtils.getPathWithoutFileName(itemList[0].Location);
-                LocationHistory.Insert(0, Location);
-
-                for (int i = 1; i < itemList.Count; i++)
-                {
-                    if (!Utils.FileUtils.getPathWithoutFileName(itemList[i].Location).Equals(Location))
-                    {
-                        Location = "";
-                        LocationHistory.RemoveAt(0);
-                        break;
-                    }
-
-                }
-            }
-        }
+    
 
         List<Tuple<String, String>> getVideoProperties(VideoFile video)
         {

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.Progress
@@ -18,6 +19,7 @@ namespace MediaViewer.Progress
        ObservableCollection<String> InfoMessages { get; set; }
        Command OkCommand { get; set; }
        Command CancelCommand { get; set; }
+       CancellationToken CancellationToken { get; set; }
 
     }
 }

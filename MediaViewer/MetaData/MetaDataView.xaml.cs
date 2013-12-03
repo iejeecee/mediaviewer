@@ -18,6 +18,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MediaViewer.ExtensionMethods;
 
 namespace MediaViewer.MetaData
 {
@@ -161,6 +162,20 @@ namespace MediaViewer.MetaData
 
                 }
             }));
+        }
+
+        private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
+        {           
+            int index = fileNameTextBox.CaretIndex;
+
+            ViewModel.InsertCounterCommand.DoExecute(index);
+        }
+
+        private void fileNameContextMenu_InsertExistingFilename(object sender, RoutedEventArgs e)
+        {
+            int index = fileNameTextBox.CaretIndex;
+
+            ViewModel.InsertExistingFilenameCommand.DoExecute(index);
         }
         
     }

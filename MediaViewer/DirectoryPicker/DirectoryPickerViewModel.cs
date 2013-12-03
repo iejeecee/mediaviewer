@@ -12,16 +12,130 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MoveRename
+namespace MediaViewer.DirectoryPicker
 {
-    class MoveRenameViewModel : ObservableObject
+    class DirectoryPickerViewModel : CloseableObservableObject
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        public DirectoryPickerViewModel()
+        {
+            MovePathHistory = new ObservableCollection<string>();
+
+            OkCommand = new Command(new Action(() =>
+            {
+                OnClosingRequest(new DialogEventArgs(DialogMode.SUBMIT));
+            }));
+
+            CancelCommand = new Command(new Action(() =>
+            {
+                OnClosingRequest(new DialogEventArgs(DialogMode.CANCEL));
+
+            }));
+            
+                               
+        }
+
+        Command okCommand;
+
+        public Command OkCommand
+        {
+            get { return okCommand; }
+            set { okCommand = value; }
+        }
+        Command cancelCommand;
+
+        public Command CancelCommand
+        {
+            get { return cancelCommand; }
+            set { cancelCommand = value; }
+        }
+
+        String infoString;
+
+        public String InfoString
+        {
+            get
+            {
+
+                return (infoString);
+            }
+
+            set
+            {
+                infoString = value;
+                NotifyPropertyChanged();
+            }
+
+        }
+
+        void updateInfoString()
+        {      
+            String temp = "";
+
+            if (SelectedItems != null)
+            {
+
+                temp += " " + SelectedItems.Count.ToString() + " File(s) - ";
+                long sizeBytes = 0;
+
+                foreach (MediaFileItem item in SelectedItems)
+                {
+                    FileInfo info = new FileInfo(item.Location);
+                    sizeBytes += info.Length;
+
+                }
+
+                temp += Utils.Misc.formatSizeBytes(sizeBytes);
+            }
+
+            InfoString = temp;
+        }
+
+        List<MediaFileItem> selectedItems;
+
+        public List<MediaFileItem> SelectedItems
+        {
+            get { return selectedItems; }
+            set
+            {
+                selectedItems = value;
+                             
+                updateInfoString();
+               
+                NotifyPropertyChanged();
+            }
+        }
+
+        String movePath;
+
+        public String MovePath
+        {
+            get { return movePath; }
+            set
+            {
+                movePath = value;
+                NotifyPropertyChanged();
+            }
+        }
+        ObservableCollection<String> movePathHistory;
+
+        public ObservableCollection<String> MovePathHistory
+        {
+            get { return movePathHistory; }
+            set
+            {
+                movePathHistory = value;
+                NotifyPropertyChanged();
+            }
+        }
+    
+
+/*
         const string oldFilenameMarker = "@";
         const string counterMarker = "&";
 
-        public MoveRenameViewModel()
+        public DirectoryPickerViewModel()
         {
             MovePathHistory = new ObservableCollection<string>();
 
@@ -63,12 +177,7 @@ namespace MediaViewer.MoveRename
                 moveRenameFiles();
             }));
 
-            ModeList = new ObservableCollection<string>();
-            ModeList.Add("Copy");
-            ModeList.Add("Move");
-            ModeList.Add("Rename Only");
-
-            IsMove = true;
+           
         }
 
         String infoString;
@@ -223,47 +332,6 @@ namespace MediaViewer.MoveRename
             }
         }
 
-        bool isMove;
-
-        public bool IsMove
-        {
-            get { return isMove; }
-            set
-            {
-                isMove = value;
-                if (isMove == true && IsCopy == true)
-                {
-                    IsCopy = false;
-                }
-                else if (isMove == false && IsCopy == false)
-                {
-                    IsCopy = true;
-                }
-                updateInfoString();
-                NotifyPropertyChanged();
-            }
-        }
-        bool isCopy;
-
-        public bool IsCopy
-        {
-            get { return isCopy; }
-            set
-            {
-                isCopy = value;
-                if (isCopy == true && isMove == true)
-                {
-                    IsMove = false;
-                }
-                else if(isCopy == false && isMove == false)
-                {
-                    IsMove = true;
-                }
-                updateInfoString();
-                NotifyPropertyChanged();
-            }
-        }
-
         async void moveRenameFiles()
         {
 
@@ -412,5 +480,6 @@ namespace MediaViewer.MoveRename
                 return (newExtension);
             }
         }
+ */
     }
 }

@@ -256,13 +256,10 @@
       <DependentUpon>201311291857094_test.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
-    <Compile Include="MoveRename\MoveRenameProgressWindow.xaml.cs">
-      <DependentUpon>MoveRenameProgressWindow.xaml</DependentUpon>
+    <Compile Include="DirectoryPicker\DirectoryPickerView.xaml.cs">
+      <DependentUpon>DirectoryPickerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MoveRename\MoveRenameView.xaml.cs">
-      <DependentUpon>MoveRenameView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MoveRename\MoveRenameViewModel.cs" />
+    <Compile Include="DirectoryPicker\DirectoryPickerViewModel.cs" />
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
@@ -285,7 +282,6 @@
     <Compile Include="Timers\TimerQueueTimer.cs" />
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
-    <Compile Include="Utils\FileUtilsProgressViewModel.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
     <Compile Include="Utils\MediaFormatConvert.cs" />
     <Compile Include="Utils\Misc.cs" />
@@ -364,11 +360,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MoveRename\MoveRenameProgressWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MoveRename\MoveRenameView.xaml">
+    <Page Include="DirectoryPicker\DirectoryPickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

@@ -10,11 +10,11 @@ namespace MediaViewer.MediaDatabase
     {
         public static void test()
         {
-
+/*
             String name1 = "this";
             String name2 = "sucks";
             String name3 = "ass";
-/*
+
             using (var db = new MediaDatabaseContext())
             {
                 // Create and save a new Blog
