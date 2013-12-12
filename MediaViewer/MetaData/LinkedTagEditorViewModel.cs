@@ -100,7 +100,7 @@ namespace MediaViewer.MetaData
                 try
                 {
                     var newTag = new Tag { Name = NewTagName };
-                    newTag = db.Tags.Add(newTag);
+                    newTag = db.TagSet.Add(newTag);
                     db.SaveChanges();
 
                     Tags.Add(newTag);
@@ -224,7 +224,7 @@ namespace MediaViewer.MetaData
                     TagCategory newCategory = new TagCategory();
                     newCategory.Name = NewCategoryName;
 
-                    db.TagCategories.Add(newCategory);                     
+                    db.TagCategorySet.Add(newCategory);                     
 
                     db.SaveChanges();
                     Categories.Add(newCategory);
@@ -246,9 +246,9 @@ namespace MediaViewer.MetaData
             {
                 try
                 {
-                    db.TagCategories.Attach(SelectedCategory);
+                    db.TagCategorySet.Attach(SelectedCategory);
 
-                    db.TagCategories.Remove(SelectedCategory);
+                    db.TagCategorySet.Remove(SelectedCategory);
 
                     db.SaveChanges();
                     Categories.Remove(SelectedCategory);
@@ -271,13 +271,13 @@ namespace MediaViewer.MetaData
                 {
 
 
-                    db.Tags.Attach(selectedTag);
+                    db.TagSet.Attach(selectedTag);
                     // create a copy of newLinkedTag because db.SaveChanges() will modify
                     // newLinkedTag. 
                     Tag temp = new TagDbCommands(db).getTagByName(newLinkedTag.Name);               
                     selectedTag.LinkedTags.Add(temp);
                     db.Entry(temp).State = EntityState.Added;
-                    /*db.Tags.Attach(newLinkedTag);
+                    /*db.TagSet.Attach(newLinkedTag);
                     selectedTag.LinkedTags.Add(newLinkedTag);
                     db.Entry(newLinkedTag).State = EntityState.Added;*/
                                 
@@ -313,8 +313,8 @@ namespace MediaViewer.MetaData
             {
                 try
                 {
-                    db.Tags.Attach(SelectedTag);
-                    db.TagCategories.Attach(selectedTagCategory);
+                    db.TagSet.Attach(SelectedTag);
+                    db.TagCategorySet.Attach(selectedTagCategory);
 
                     SelectedTag.TagCategory = SelectedTagCategory;
                   
@@ -346,9 +346,9 @@ namespace MediaViewer.MetaData
             {
                 try
                 {
-                    db.Tags.Attach(SelectedTag);
+                    db.TagSet.Attach(SelectedTag);
 
-                    db.Tags.Remove(SelectedTag);
+                    db.TagSet.Remove(SelectedTag);
 
                     db.SaveChanges();
                     Tags.Remove(SelectedTag);

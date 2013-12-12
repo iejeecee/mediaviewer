@@ -32,8 +32,8 @@ namespace MediaViewer.DirectoryPicker
                 OnClosingRequest(new DialogEventArgs(DialogMode.CANCEL));
 
             }));
-            
-                               
+
+            InfoString = "";                  
         }
 
         Command okCommand;
@@ -71,12 +71,12 @@ namespace MediaViewer.DirectoryPicker
 
         void updateInfoString()
         {      
-            String temp = "";
+            String temp = "Select Directory";
 
             if (SelectedItems != null)
             {
 
-                temp += " " + SelectedItems.Count.ToString() + " File(s) - ";
+                temp += " - " + SelectedItems.Count.ToString() + " File(s) Selected: ";
                 long sizeBytes = 0;
 
                 foreach (MediaFileItem item in SelectedItems)

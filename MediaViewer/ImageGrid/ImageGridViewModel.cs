@@ -18,11 +18,13 @@ namespace MediaViewer.ImageGrid
     class ImageGridViewModel : ObservableObject
     {
 
-        protected MediaFileState MediaFiles
+        MediaFileState mediaFiles;
+
+        public MediaFileState MediaFiles
         {
             get
             {
-                return (MediaFileWatcher.Instance.MediaFiles);
+                return (mediaFiles);
             }
         }
 
@@ -34,9 +36,11 @@ namespace MediaViewer.ImageGrid
         int nrLoadingItems;
         Object nrLoadingItemsLock;
 
-        public ImageGridViewModel()
+        public ImageGridViewModel(MediaFileState mediaFiles)
         {
-           
+
+            this.mediaFiles = mediaFiles;
+
             nrLoadingItems = 0;           
 
             nrLoadingItemsLock = new Object();

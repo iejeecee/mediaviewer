@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -130,7 +131,24 @@ namespace MediaViewer.Utils
             return (true);
         }
 
+        const int maxHistorySize = 16;
 
+        public static void insertIntoHistoryCollection(List<String> history, String element)
+        {
+            if(String.IsNullOrEmpty(element) || String.IsNullOrWhiteSpace(element)) return;
+
+            if (history.Contains(element))
+            {
+                history.Remove(element);               
+            }
+
+            history.Insert(0, element);
+
+            if (history.Count > maxHistorySize)
+            {
+                history.RemoveAt(history.Count - 1);
+            }
+        }
 
 
     }

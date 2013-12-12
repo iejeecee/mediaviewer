@@ -90,6 +90,8 @@ namespace MediaViewer.MediaFileModel
         BitmapFrame frame = bitmap.Frames[0];
 
         BitmapSource thumb = frame.Thumbnail;
+        width = frame.PixelWidth;
+        height = frame.PixelHeight;
 
         if (thumb == null)
         {

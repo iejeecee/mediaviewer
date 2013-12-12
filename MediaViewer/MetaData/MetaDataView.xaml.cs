@@ -177,6 +177,22 @@ namespace MediaViewer.MetaData
 
             ViewModel.InsertExistingFilenameCommand.DoExecute(index);
         }
+
+        private void fileNameContextMenu_InsertResolution(object sender, RoutedEventArgs e)
+        {
+            int index = fileNameTextBox.CaretIndex;
+
+            ViewModel.InsertResolutionCommand.DoExecute(index);
+
+        }
+
+        private void fileNameContextMenu_InsertDate(object sender, RoutedEventArgs e)
+        {
+            int index = fileNameTextBox.CaretIndex;
+
+            ViewModel.InsertDateCommand.DoExecute(index);
+
+        }
         
     }
 }

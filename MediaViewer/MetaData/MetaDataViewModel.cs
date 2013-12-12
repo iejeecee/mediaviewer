@@ -71,9 +71,21 @@ namespace MediaViewer.MetaData
                 MetaDataUpdateView metaDataUpdateView = new MetaDataUpdateView();
                 metaDataUpdateView.Show();
                 MetaDataUpdateViewModel vm = (MetaDataUpdateViewModel)metaDataUpdateView.DataContext;
-                await vm.writeMetaData(new MetaDataUpdateViewModelAsyncState(this));
+                await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
 
             }));
+
+            filenamePresetsCommand = new Command(new Action(() =>
+            {
+                FilenamePresetsView filenamePreset = new FilenamePresetsView();
+                FilenamePresetsViewModel vm = (FilenamePresetsViewModel)filenamePreset.DataContext;
+
+                if (filenamePreset.ShowDialog() == true)
+                {
+                    Filename = vm.SelectedPreset;                    
+                }
+
+            })); 
 
             directoryPickerCommand = new Command(new Action(() => 
             {
@@ -81,10 +93,14 @@ namespace MediaViewer.MetaData
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
                 vm.MovePath = MediaFileWatcher.Instance.Path;
                 vm.SelectedItems = ItemList;
+                foreach(String path in Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory) {
+                    vm.MovePathHistory.Add(path); 
+                }
 
                 if (directoryPicker.ShowDialog() == true)
                 {                    
                     Location = vm.MovePath;
+                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, Location);
                 }
 
             }));
@@ -114,6 +130,33 @@ namespace MediaViewer.MetaData
                     }
 
                 }));
+
+            insertResolutionCommand = new Command<int>(new Action<int>((startIndex) =>
+            {
+                try
+                {
+                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+
+            }));
+
+            insertDateCommand = new Command<int>(new Action<int>((startIndex) =>
+            {
+                try
+                {
+                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.dateMarker 
+                        + MetaDataUpdateViewModel.defaultDateFormat + "\"");
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+
+            }));
 
             MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((s,e) =>
             {
@@ -172,6 +215,22 @@ namespace MediaViewer.MetaData
             set { insertExistingFilenameCommand = value; }
         }
 
+        Command<int> insertResolutionCommand;
+
+        public Command<int> InsertResolutionCommand
+        {
+            get { return insertResolutionCommand; }
+            set { insertResolutionCommand = value; }
+        }
+
+        Command<int> insertDateCommand;
+
+        public Command<int> InsertDateCommand
+        {
+            get { return insertDateCommand; }
+            set { insertDateCommand = value; }
+        }
+
         String location;
 
         public String Location
@@ -180,6 +239,14 @@ namespace MediaViewer.MetaData
             set { location = value;
             NotifyPropertyChanged();
             }
+        }
+
+        Command filenamePresetsCommand;
+
+        public Command FilenamePresetsCommand
+        {
+            get { return filenamePresetsCommand; }
+            set { filenamePresetsCommand = value; }
         }
 
         Command directoryPickerCommand;

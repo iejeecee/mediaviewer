@@ -1,4 +1,5 @@
 ﻿using MediaViewer.ImageGrid;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MediaViewer.Utils;
@@ -17,9 +18,12 @@ namespace MediaViewer.MetaData
     class MetaDataUpdateViewModel : CloseableObservableObject, IProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
-        public const string oldFilenameMarker = "@";
-        public const string counterMarker = "&";
+
+        public const string oldFilenameMarker = "filename";
+        public const string counterMarker = "counter:";
+        public const string resolutionMarker = "resolution";
+        public const string dateMarker = "date:";
+        public const string defaultDateFormat = "g";
 
         CancellationTokenSource tokenSource;
 
@@ -28,14 +32,15 @@ namespace MediaViewer.MetaData
             get { return tokenSource; }
             set { tokenSource = value; }
         }
-       
+
         public MetaDataUpdateViewModel()
         {
             InfoMessages = new ObservableCollection<string>();
             tokenSource = new CancellationTokenSource();
             CancellationToken = tokenSource.Token;
 
-            CancelCommand = new Command(() => {
+            CancelCommand = new Command(() =>
+            {
 
                 TokenSource.Cancel();
             });
@@ -48,60 +53,76 @@ namespace MediaViewer.MetaData
             });
 
             OkCommand.CanExecute = false;
+            setWindowTitle();
         }
 
-        public async Task writeMetaData(MetaDataUpdateViewModelAsyncState state)
+        public async Task writeMetaDataAsync(MetaDataUpdateViewModelAsyncState state)
         {
-                                  
+
             TotalProgressMax = state.ItemList.Count;
             TotalProgress = 0;
 
             await Task.Factory.StartNew(() =>
             {
-                FileUtils fileUtils = new FileUtils();
+                writeMetaData(state);
 
-                bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
-                if (success == false)
+            }, cancellationToken);
+
+            OkCommand.CanExecute = true;
+            CancelCommand.CanExecute = false;
+        }
+
+        void writeMetaData(MetaDataUpdateViewModelAsyncState state)
+        {
+            FileUtils fileUtils = new FileUtils();
+
+            bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
+            if (success == false)
+            {
+                InfoMessages.Add("Error selected file(s) are in use by another operation");
+                log.Error("Error selected file(s) are in use by another operation");
+                return;
+            }
+
+            try
+            {
+
+                List<int> counters = new List<int>();
+
+                foreach (MediaFileItem item in state.ItemList)
                 {
-                    InfoMessages.Add("Error selected file(s) are in use by another operation");
-                    log.Error("Error selected file(s) are in use by another operation");
-                    return;
-                }
+                    setWindowTitle();
+                    if (CancellationToken.IsCancellationRequested) return;
 
-                try
-                {
-                  
-                    List<int> counters = new List<int>();
+                    ItemProgress = 0;
+                    bool isModified = false;
 
-                    foreach (MediaFileItem item in state.ItemList)
+                    ItemInfo = "Opening: " + item.Location;
+
+                    if (item.Media == null || item.Media.MetaData == null)
                     {
-                        if (CancellationToken.IsCancellationRequested) return;
+                        ItemInfo = "Loading MetaData: " + item.Location;
 
-                        ItemProgress = 0;
-                        bool isModified = false;
-
-                        ItemInfo = "Opening: " + item.Location;
-
+                        item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.AUTO | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL
+                        , CancellationToken);
                         if (item.Media == null || item.Media.MetaData == null)
                         {
-                            ItemInfo = "Loading MetaData: " + item.Location;
+                            // reload metaData in metadataviewmodel
+                            item.IsSelected = false;
+                            item.IsSelected = true;
 
-                            item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.AUTO | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL
-                            , CancellationToken);
-                            if (item.Media == null || item.Media.MetaData == null)
-                            {
-                                // reload metaData in metadataviewmodel
-                                item.IsSelected = false;
-                                item.IsSelected = true;
-
-                                ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
-                                InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                                log.Error("Could not open file and/or read it's metadata: " + item.Location);
-                                return;
-                            }
+                            ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
+                            InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
+                            log.Error("Could not open file and/or read it's metadata: " + item.Location);                           
                         }
+                    }
 
-                        FileMetaData metaData = item.Media.MetaData;
+                    FileMetaData metaData = null;
+
+                    if (item.Media != null && item.Media.MetaData != null)
+                    {
+
+                        metaData = item.Media.MetaData;
 
                         if (state.RatingEnabled && (int)metaData.Rating != (int)(state.Rating * 5))
                         {
@@ -159,7 +180,7 @@ namespace MediaViewer.MetaData
                                 {
                                     removedTag = true;
                                 }
-                               
+
                             }
 
                             if (removedTag || addedTag)
@@ -169,63 +190,60 @@ namespace MediaViewer.MetaData
 
                         }
 
-                       
-                        try
-                        {
-                            if (isModified)
-                            {
-                                // Save metadata changes
-                                ItemInfo = "Saving MetaData: " + item.Location;
-                                metaData.saveToDisk();
-
-                                InfoMessages.Add("Completed updating Metadata for: " + item.Location);
-                            }
-                            else
-                            {
-                                InfoMessages.Add("Skipped updating Metadata (no changes) for: " + item.Location);
-                            }
-
-                            //if filename/location has changed rename and/or move
-                            String oldPath = FileUtils.getPathWithoutFileName(item.Location);
-                            String oldFileName = Path.GetFileNameWithoutExtension(item.Location);
-                            String ext = Path.GetExtension(item.Location);
-
-                            String newFileName = parseNewFilename(state.Filename, oldFileName, counters);
-                            String newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
-                                                
-                            fileUtils.moveFile(oldPath + "\\" + oldFileName + ext, newPath + "\\" + newFileName + ext, this);
-                           
-                            ItemProgress = 100;
-                            TotalProgress++;
-                        }
-                        catch (Exception e)
-                        {                           
-                            item.Media.MetaData.clear();
-                            // reload metaData in metadataviewmodel
-                            item.IsSelected = false;
-                            item.IsSelected = true;
-                                                   
-                            ItemInfo = "Error Saving MetaData: " + item.Location;
-                            InfoMessages.Add("Could not save metaData for file: " + item.Location);
-                            log.Error("Could not save metaData for file: " + item.Location, e);
-                            return;
-                        }
-                                              
                     }
-               
-                }
-                finally
-                {
-                    MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(state.ItemList);
+
+                    try
+                    {
+                        if (isModified)
+                        {
+                            // Save metadata changes
+                            ItemInfo = "Saving MetaData: " + item.Location;
+                            metaData.saveToDisk();
+
+                            InfoMessages.Add("Completed updating Metadata for: " + item.Location);
+                        }
+                        else
+                        {
+                            InfoMessages.Add("Skipped updating Metadata (no changes) for: " + item.Location);
+                        }
+
+                        //rename and/or move
+                        String oldPath = FileUtils.getPathWithoutFileName(item.Location);
+                        String oldFileName = Path.GetFileNameWithoutExtension(item.Location);
+                        String ext = Path.GetExtension(item.Location);
+
+                        String newFileName = parseNewFilename(state.Filename, oldFileName, counters, item.Media);
+                        String newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
+
+                        fileUtils.moveFile(oldPath + "\\" + oldFileName + ext, newPath + "\\" + newFileName + ext, this);
+
+                        ItemProgress = 100;
+                        TotalProgress++;
+                    }
+                    catch (Exception e)
+                    {
+                        item.Media.MetaData.clear();
+                        // reload metaData in metadataviewmodel
+                        item.IsSelected = false;
+                        item.IsSelected = true;
+
+                        ItemInfo = "Error Saving MetaData: " + item.Location;
+                        InfoMessages.Add("Could not save metaData for file: " + item.Location);
+                        log.Error("Could not save metaData for file: " + item.Location, e);
+                        return;
+                    }
+
                 }
 
-            },cancellationToken);
-
-            OkCommand.CanExecute = true;
-            CancelCommand.CanExecute = false;
+                setWindowTitle();
+            }
+            finally
+            {
+                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(state.ItemList);
+            }
         }
 
-        string parseNewFilename(string newFilename, string oldFilename, List<int> counters)
+        string parseNewFilename(string newFilename, string oldFilename, List<int> counters, MediaFile media)
         {
             if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
             {
@@ -254,12 +272,12 @@ namespace MediaViewer.MetaData
                     // replace
                     if (subString.Length > 0)
                     {
-                        if (subString[0].Equals(oldFilenameMarker[0]))
+                        if (subString.StartsWith(oldFilenameMarker))
                         {
                             // insert old filename
                             outputFileName += oldFilename;
                         }
-                        else if (subString[0].Equals(counterMarker[0]))
+                        else if (subString.StartsWith(counterMarker))
                         {
                             // insert counter
                             nrCounters++;
@@ -268,7 +286,7 @@ namespace MediaViewer.MetaData
 
                             if (counters.Count < nrCounters)
                             {
-                                haveCounterValue = int.TryParse(subString.Substring(1), out counterValue);
+                                haveCounterValue = int.TryParse(subString.Substring(counterMarker.Length), out counterValue);
 
                                 if (haveCounterValue)
                                 {
@@ -289,6 +307,36 @@ namespace MediaViewer.MetaData
                                 // increment counter
                                 counters[nrCounters - 1] += 1;
                             }
+                        } else if(subString.StartsWith(resolutionMarker)) {
+
+                            int width = 0;
+                            int height = 0;
+
+                            if (media != null && media is ImageFile)
+                            {
+                                width = (media as ImageFile).Width;
+                                height = (media as ImageFile).Height;
+                            }
+                            else if (media != null && media is VideoFile)
+                            {
+                                width = (media as VideoFile).Width;
+                                height = (media as VideoFile).Height;
+                            }
+
+                            outputFileName += width.ToString() + "x" + height.ToString();
+
+                        }
+                        else if (subString.StartsWith(dateMarker))
+                        {
+                            String format = subString.Substring(dateMarker.Length);
+                            String dateString = "";
+
+                            if (media != null && media.MetaData != null)
+                            {
+                                dateString = media.MetaData.CreationDate.ToString(format);                                                              
+                            }
+
+                            outputFileName += dateString;
                         }
                     }
 
@@ -302,6 +350,8 @@ namespace MediaViewer.MetaData
                     outputFileName += newFilename[i];
                 }
             }
+
+            outputFileName = Utils.FileUtils.removeIllegalCharsFromFileName(outputFileName, "-");
 
             return (outputFileName);
         }
@@ -329,7 +379,7 @@ namespace MediaViewer.MetaData
                 NotifyPropertyChanged();
             }
         }
-   
+
         String itemInfo;
 
         public String ItemInfo
@@ -421,6 +471,23 @@ namespace MediaViewer.MetaData
                 NotifyPropertyChanged();
             }
         }
+
+        void setWindowTitle()
+        {
+            WindowTitle = "Updating Metadata - Completed: " + TotalProgress.ToString() + "/" + TotalProgressMax.ToString() + " file(s)";
+        }
+
+        String windowTitle;
+
+        public String WindowTitle
+        {
+            get { return windowTitle; }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
     class MetaDataUpdateViewModelAsyncState
@@ -435,7 +502,7 @@ namespace MediaViewer.MetaData
             CopyrightEnabled = vm.CopyrightEnabled;
             Description = vm.Description;
             DescriptionEnabled = vm.DescriptionEnabled;
-            Filename = vm.Filename;       
+            Filename = vm.Filename;
             isEnabled = vm.IsEnabled;
             ItemList = new List<MediaFileItem>(vm.ItemList);
             Rating = vm.Rating;
@@ -511,8 +578,8 @@ namespace MediaViewer.MetaData
         {
             get { return filename; }
             set { filename = value; }
-        }     
-      
+        }
+
         bool isEnabled;
 
         public bool IsEnabled

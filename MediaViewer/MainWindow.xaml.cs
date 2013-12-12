@@ -91,6 +91,8 @@ namespace MediaViewer
                
             }
 
+            MediaViewer.Settings.AppSettings.load();
+
            // VideoTestWindow test = new VideoTestWindow();
 
             //test.Show();
@@ -248,6 +250,7 @@ namespace MediaViewer
 
         private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            MediaViewer.Settings.AppSettings.save();        
             Dispatcher.InvokeShutdown();
         }
 

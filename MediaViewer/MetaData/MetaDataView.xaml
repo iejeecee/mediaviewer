@@ -25,7 +25,9 @@
             </Style>
             <ContextMenu x:Key="fileNameContextMenu">
                 <MenuItem Header="Insert Counter" Click="fileNameContextMenu_InsertCounter"/>
-                <MenuItem Header="Insert Existing Filename" Click="fileNameContextMenu_InsertExistingFilename"/>                
+                <MenuItem Header="Insert Existing Filename" Click="fileNameContextMenu_InsertExistingFilename"/> 
+                <MenuItem Header="Insert Resolution" Click="fileNameContextMenu_InsertResolution"/>
+                <MenuItem Header="Insert Date" Click="fileNameContextMenu_InsertDate"/>
                 <Separator/>
                 <MenuItem Command="ApplicationCommands.Copy" />
                 <MenuItem Command="ApplicationCommands.Cut" />
@@ -60,10 +62,17 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="0" Grid.Column="0" Content="FileName" Style="{StaticResource labelStyle}"></Label>
-                <TextBox Name="fileNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
+                <Label Grid.Row="0" Grid.Column="0" Content="Filename" Style="{StaticResource labelStyle}"></Label>
+                <TextBox Name="fileNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
                     Text="{Binding Source={StaticResource viewModel}, Path=Filename, UpdateSourceTrigger=PropertyChanged}"
-                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}"/>                               
+                    IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}"/>
+                <Button Name="filenamePresetButton" Grid.Column="1" Grid.Row="0" Margin="5, 5, 5, 5" Width="20" Height="19"
+                        HorizontalAlignment="Right"
+                        IsEnabled="{Binding Source={StaticResource viewModel}, Path=IsEnabled}"
+                        Command="{Binding Source={StaticResource viewModel}, Path=FilenamePresetsCommand}"
+                        ToolTip="Preset Filename">
+                    <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
+                </Button>
                 <Label Grid.Row="1" Grid.Column="0" Content="Path" Style="{StaticResource labelStyle}"></Label>
                 <Label Grid.Row="2" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"></Label>               
                 <inputtoolkit:Rating x:Name="rating" ItemCount="5" Grid.Row="2" Grid.Column="1" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"

@@ -41,7 +41,7 @@ namespace MediaViewer.MediaFileBrowser
             DataContext = new MediaFileBrowserViewModel();
             directoryBrowser.DataContext = DataContext;
 
-            pagedImageGridViewModel = new PagedImageGridViewModel();
+            pagedImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaFiles);
             imageGrid.DataContext = pagedImageGridViewModel;
             metaDataView.DataContext = pagedImageGridViewModel;
             pager.DataContext = pagedImageGridViewModel;

@@ -38,7 +38,21 @@ namespace MediaViewer.ImagePanel
 
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
 
+            pictureBox.Stretch = Stretch.None;
+
             GlobalMessenger.Instance.Register<bool>("MainWindow_AutoScaleImageCheckBox_Click", new Action<bool>(autoScale));
+
+            scrollViewer.SizeChanged += new SizeChangedEventHandler((s, e) =>
+            {
+                if (pictureBox.Source != null)
+                {
+                    ImageViewModel imageViewModel = (ImageViewModel)DataContext;
+
+                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, 
+                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage).Matrix));
+                }
+
+            });
         }
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -58,7 +72,8 @@ namespace MediaViewer.ImagePanel
                 {         
                     if (m.Image != null)
                     {
-                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, getDefaultScaleMatrix(m.Image));
+                                              
+                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, getScaleMatrix(m.Image));
                         scrollViewer.ScrollToHorizontalOffset(0);
                         scrollViewer.ScrollToVerticalOffset(0);
                     }
@@ -68,41 +83,49 @@ namespace MediaViewer.ImagePanel
             // make sure to unscale the dpi as well
             imageViewModelObserver.RegisterHandler(m => m.Transform,
                m =>
-               {
-                
+               {                
                    if (m.Image != null)
                    {
-                       pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getDefaultScaleMatrix(m.Image).Matrix));
+                       pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
                    }
                });               
         }
 
-        public MatrixTransform getDefaultScaleMatrix(BitmapImage image)
+        public MatrixTransform getScaleMatrix(BitmapImage image)
         {
+                       
             if (pictureBox.Stretch == Stretch.Uniform)
-            {
-                Matrix unitMatrix = new Matrix();
-                return (new MatrixTransform(unitMatrix));
+            {                
+                double widthScale = scrollViewer.ActualWidth / image.Width;
+                double heightScale = scrollViewer.ActualHeight / image.Height;
+               
+                double scale = Math.Min(widthScale, heightScale);
+               
+                Matrix scaleMatrix = new Matrix();
+                scaleMatrix.Scale(scale, scale);
 
+                return (new MatrixTransform(scaleMatrix));
             }
+            else
+            {
+                var source = PresentationSource.FromVisual(pictureBox);
+                Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+                transformToDevice.Invert();
+                Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
+                double scale = actualSize.Width / image.Width;
 
-            var source = PresentationSource.FromVisual(pictureBox);
-            Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
-            transformToDevice.Invert();
-            var actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
-            double scale = actualSize.Width / image.Width;
+                Matrix scaleMatrix = new Matrix();
+                scaleMatrix.Scale(scale, scale);
 
-            Matrix scaleMatrix = new Matrix();
-            scaleMatrix.Scale(scale, scale);
-
-            return (new MatrixTransform(scaleMatrix));
+                return (new MatrixTransform(scaleMatrix));
+            }
         }
 
         void autoScale(bool value)
         {
             if (value == true)
             {
-                pictureBox.Stretch = Stretch.Uniform;
+                pictureBox.Stretch = Stretch.Uniform;               
             }
             else
             {
@@ -111,7 +134,10 @@ namespace MediaViewer.ImagePanel
 
             if (pictureBox.Source != null)
             {
-                pictureBox.SetCurrentValue(Image.LayoutTransformProperty, getDefaultScaleMatrix(pictureBox.Source as BitmapImage));
+                ImageViewModel imageViewModel = (ImageViewModel)DataContext;
+
+                pictureBox.SetCurrentValue(Image.LayoutTransformProperty,
+                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage).Matrix));
               
             }
 

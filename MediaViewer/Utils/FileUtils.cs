@@ -226,7 +226,11 @@ namespace MediaViewer.Utils
         {
             if (progress.CancellationToken.IsCancellationRequested) return;
 
-            if (Path.GetPathRoot(source).Equals(Path.GetPathRoot(destination)))
+            if (source.Equals(destination))
+            {
+                return;
+
+            } else if (Path.GetPathRoot(source).Equals(Path.GetPathRoot(destination)))
             {
                 progress.ItemProgress = 0;
                 progress.ItemInfo = "Moving: " + source + "->" + destination;
@@ -240,7 +244,7 @@ namespace MediaViewer.Utils
             {
                 copyFile(source, destination, progress);
 
-                System.IO.Directory.Delete(source, true);
+                System.IO.File.Delete(source);
                 progress.InfoMessages.Add("Deleted: " + source);
             }
 
@@ -667,12 +671,12 @@ namespace MediaViewer.Utils
             return (fullPath.Remove(fullPath.Length - fileName.Length - 1));
         }
 
-        public static string removeIllegalCharsFromFileName(string fileName)
+        public static string removeIllegalCharsFromFileName(string fileName, string replaceString)
         {
 
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            return (r.Replace(fileName, ""));
+            return (r.Replace(fileName, replaceString));
 
         }
 

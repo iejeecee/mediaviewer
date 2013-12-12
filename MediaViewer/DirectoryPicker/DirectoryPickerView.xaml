@@ -4,7 +4,7 @@
         xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         x:Class="MediaViewer.DirectoryPicker.DirectoryPickerView"
-        Title="{Binding InfoString}" Height="315.667" Width="500" Icon="/MediaViewer;component/Resources/Icons/folder_open.ico">
+        Title="{Binding InfoString}" Height="290.667" Width="500" Icon="/MediaViewer;component/Resources/Icons/folder_open.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -12,24 +12,15 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Background="{StaticResource imageGridBackgroundColorBrush}" Margin="0,0,-0.333,-4">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <GroupBox Header="Destination Path" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Top" Grid.Row="1">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                <ComboBox x:Name="currentPathComboBox" Grid.Row="0" IsEditable="True" ItemsSource="{Binding MovePathHistory}" Text="{Binding MovePath, Mode=TwoWay,UpdateSourceTrigger=Explicit}" HorizontalAlignment="Stretch"
-                  PreviewKeyDown="currentPathComboBox_PreviewKeyDown"/>
-                <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Row="1" Height="220" SelectedPath="{Binding MovePath, Mode=TwoWay}"/>
+    <Grid Background="{StaticResource imageGridBackgroundColorBrush}" Margin="0,0,-0.333,-2.667">       
+        <GroupBox Header="Destination Path" HorizontalAlignment="Stretch" Margin="0,0,0,30" VerticalAlignment="Stretch">
+            <Grid>               
+                <ComboBox x:Name="currentPathComboBox" IsEditable="True" ItemsSource="{Binding MovePathHistory}" Text="{Binding MovePath, Mode=TwoWay,UpdateSourceTrigger=Explicit}" HorizontalAlignment="Stretch"
+                  PreviewKeyDown="currentPathComboBox_PreviewKeyDown" SelectionChanged="currentPathComboBox_SelectionChanged" Height="20" VerticalAlignment="Top"/>
+                <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" VerticalAlignment="Stretch" Margin="0,21,0,0" SelectedPath="{Binding MovePath, Mode=TwoWay}"/>
             </Grid>
         </GroupBox>
-        <Button Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" Margin="0,3.667,81,0" Grid.Row="2" VerticalAlignment="Top" Width="75"/>
-        <Button Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" HorizontalAlignment="Right" Margin="0,3.667,6,0" Grid.Row="2" VerticalAlignment="Top" Width="75"/>
+        <Button Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" Margin="0,0,81,5" VerticalAlignment="Bottom" Width="75"/>
+        <Button Name="CancelButton" Content="Cancel" Command="{Binding CancelCommand}" HorizontalAlignment="Right" Margin="0,0,6,5" VerticalAlignment="Bottom" Width="75"/>
     </Grid>
 </Window>

@@ -16,7 +16,8 @@ namespace MediaViewer.ImageGrid
 {
     class PagedImageGridViewModel : ImageGridViewModel
     {
-        public PagedImageGridViewModel()
+        public PagedImageGridViewModel(MediaFileState mediaFiles) :
+            base(mediaFiles)
         {
 
             maxItemsPerPage = 25;
@@ -30,7 +31,7 @@ namespace MediaViewer.ImageGrid
 
             }
          
-            MediaFileWatcher.Instance.MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
+            MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -203,7 +204,7 @@ namespace MediaViewer.ImageGrid
             //int endIndex = startIndex + maxItemsPerPage;
             int totalPages = (int)Math.Ceiling(MediaFileWatcher.Instance.MediaFiles.Count / (float)MaxItemsPerPage);
 
-            if (MediaFileWatcher.Instance.MediaFiles.Count == 0)
+            if (MediaFiles.Count == 0)
             {
                 NrPages = 0;              
             }

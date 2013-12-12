@@ -56,6 +56,29 @@ namespace MediaViewer.DirectoryPicker
                 be.UpdateSource();              
             }
         }
+
+        private void currentPathComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count > 0)
+            {
+                directoryPickerViewModel.MovePath = (String)e.AddedItems[0];
+            }
+            /*
+            if (e.AddedItems.Count > 0)
+            {
+                //directoryPickerViewModel.MovePath = (String)e.AddedItems[0];
+                currentPathComboBox.SetCurrentValue(ComboBox.TextProperty, (String)e.AddedItems[0]);
+                //currentPathComboBox.Text = (String)e.AddedItems[0];
+                BindingExpression be = currentPathComboBox.GetBindingExpression(ComboBox.TextProperty);
+                be.UpdateSource();
+            }
+            else
+            {
+                currentPathComboBox.Text = (String)e.RemovedItems[0];
+            }
+            */
+           
+        }
 /*
         private void oldNameButton_Click(object sender, RoutedEventArgs e)
         {

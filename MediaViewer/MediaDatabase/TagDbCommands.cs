@@ -19,7 +19,7 @@ namespace MediaViewer.MediaDatabase
         {
             List<TagCategory> categories = new List<TagCategory>();
 
-            foreach (TagCategory category in Db.TagCategories.OrderBy(x => x.Name))
+            foreach (TagCategory category in Db.TagCategorySet.OrderBy(x => x.Name))
             {
                 categories.Add(category);
             }
@@ -32,7 +32,7 @@ namespace MediaViewer.MediaDatabase
         {
             List<Tag> tags = new List<Tag>();
          
-            foreach (Tag tag in Db.Tags.Where(x => x.ParentId == null).OrderBy(x => x.Name))
+            foreach (Tag tag in Db.TagSet.Where(x => x.ParentTagId == null).OrderBy(x => x.Name))
             {
                 tags.Add(tag);
             }
@@ -42,17 +42,17 @@ namespace MediaViewer.MediaDatabase
 
         public Tag getTagByName(String name)
         {               
-            List<Tag> result = (from b in Db.Tags.Include("LinkedTags").Include("TagCategory")
-                        where b.Name == name && b.ParentId == null
+            List<Tag> result = (from b in Db.TagSet.Include("LinkedTags").Include("TagCategory")
+                        where b.Name == name && b.ParentTagId == null
                         select b).ToList();
 
-            if (result == null) return (null);
+            if (result.Count == 0) return (null);
             else return (result[0]);                           
         }
 
         public List<Tag> getTagsByCategory(String categoryName)
         {
-            List<Tag> result = (from b in Db.Tags.Include("LinkedTags").Include("Category")
+            List<Tag> result = (from b in Db.TagSet.Include("LinkedTags").Include("Category")
                                 where b.TagCategory.Name == categoryName
                                 select b).ToList();
 

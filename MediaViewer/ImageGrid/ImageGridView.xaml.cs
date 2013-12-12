@@ -28,36 +28,31 @@ namespace MediaViewer.ImageGrid
     /// </summary>
     public partial class ImageGridView : UserControl
     {
-
-
         public ImageGridView()
-        {
-           
-            InitializeComponent();
-         
-                      
+        {           
+            InitializeComponent();                               
         }
         
-
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
             MenuItem item = (MenuItem)e.OriginalSource;
            
-
             GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
            
         }
 
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
-         
-            MediaFileWatcher.Instance.MediaFiles.SelectAllItems();
+
+            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
+            vm.MediaFiles.SelectAllItems();
         }
 
         private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
-           
-            MediaFileWatcher.Instance.MediaFiles.DeselectAllItems();
+
+            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
+            vm.MediaFiles.DeselectAllItems();          
 
         }
 

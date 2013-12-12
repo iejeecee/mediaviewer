@@ -54,11 +54,17 @@ namespace MediaViewer.MetaData
             {
                 Tags.Add(tagName);
             }
-            
+
+            addTagTextbox.Text = "";
+
+            // add linked tags
+
             using (TagDbCommands tc = new TagDbCommands(null))
             {
                 Tag tag = tc.getTagByName(tagName);
-             
+
+                if (tag == null) return;
+
                 foreach (Tag linkedTag in tag.LinkedTags)
                 {
                     if (!Tags.Contains(linkedTag.Name))
@@ -69,7 +75,7 @@ namespace MediaViewer.MetaData
 
             }
 
-            addTagTextbox.Text = "";
+           
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e)

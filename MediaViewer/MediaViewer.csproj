@@ -39,6 +39,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -61,10 +62,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework">
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
@@ -99,6 +102,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Controls.Input.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\System.Windows.Controls.Input.Toolkit.dll</HintPath>
     </Reference>
@@ -114,6 +119,7 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Xml.Serialization" />
     <Reference Include="UIAutomationProvider" />
     <Reference Include="UIAutomationTypes" />
     <Reference Include="WindowsBase" />
@@ -159,10 +165,30 @@
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
     <Compile Include="MediaDatabase\DbCommands.cs" />
-    <Compile Include="MediaDatabase\MediaDatabaseContext.cs" />
-    <Compile Include="MediaDatabase\Tag.cs" />
-    <Compile Include="MediaDatabase\TagCategory.cs" />
+    <Compile Include="MediaDatabase\MediaDatabase.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabase.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\MediaDatabase.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\MediaDatabase.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabase.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\Tag.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\TagCategory.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\TagCategoryPartial.cs" />
     <Compile Include="MediaDatabase\TagDbCommands.cs" />
+    <Compile Include="MediaDatabase\TagPartial.cs" />
     <Compile Include="MediaDatabase\Test.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
     <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
@@ -214,6 +240,10 @@
     <Compile Include="GlobalMessenger.cs" />
     <Compile Include="MetaData\FileMetaData.cs" />
     <Compile Include="MetaData\FileMetaDataFactory.cs" />
+    <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
+      <DependentUpon>FilenamePresetsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\FilenamePresetsViewModel.cs" />
     <Compile Include="MetaData\FormatMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
@@ -247,15 +277,6 @@
       <DependentUpon>MetaDataView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\MetaDataTreeModel.cs" />
-    <Compile Include="Migrations\201311291532467_initial.cs" />
-    <Compile Include="Migrations\201311291532467_initial.Designer.cs">
-      <DependentUpon>201311291532467_initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201311291857094_test.cs" />
-    <Compile Include="Migrations\201311291857094_test.Designer.cs">
-      <DependentUpon>201311291857094_test.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="DirectoryPicker\DirectoryPickerView.xaml.cs">
       <DependentUpon>DirectoryPickerView.xaml</DependentUpon>
     </Compile>
@@ -271,6 +292,10 @@
     <Compile Include="Search\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="Settings\IsolatedStorageSettingsStore.cs" />
+    <Compile Include="Settings\AppSettings.cs" />
+    <Compile Include="Settings\SettingsProvider.cs" />
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
@@ -341,6 +366,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ScaleView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\FilenamePresetsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -423,18 +452,29 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Migrations\201311291532467_initial.resx">
-      <DependentUpon>201311291532467_initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201311291857094_test.resx">
-      <DependentUpon>201311291857094_test.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <EntityDeploy Include="MediaDatabase\MediaDatabase.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="MediaDatabase\MediaDatabase.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>MediaDatabase.edmx</DependentUpon>
+      <LastGenOutput>MediaDatabase.Context.cs</LastGenOutput>
+    </None>
+    <None Include="MediaDatabase\MediaDatabase.edmx.diagram">
+      <DependentUpon>MediaDatabase.edmx</DependentUpon>
+    </None>
+    <None Include="MediaDatabase\MediaDatabase.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>MediaDatabase.edmx</DependentUpon>
+      <LastGenOutput>MediaDatabase.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -598,6 +638,13 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\searchblack.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\circle.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
