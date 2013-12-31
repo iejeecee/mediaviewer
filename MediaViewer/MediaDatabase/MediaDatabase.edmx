@@ -5,59 +5,191 @@
     <!-- SSDL content -->
     <edmx:StorageModels>
     <Schema Namespace="MediaDatabase.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityContainer Name="MediaDatabaseStoreContainer">
-          <EntitySet Name="TagCategorySet" EntityType="MediaDatabase.Store.TagCategorySet" store:Type="Tables" Schema="dbo" />
-          <EntitySet Name="TagSet" EntityType="MediaDatabase.Store.TagSet" store:Type="Tables" Schema="dbo" />
-          <AssociationSet Name="FK_LinkedTags" Association="MediaDatabase.Store.FK_LinkedTags">
-            <End Role="TagSet" EntitySet="TagSet" />
-            <End Role="TagSet1" EntitySet="TagSet" />
-          </AssociationSet>
-          <AssociationSet Name="FK_TagCategoryTag" Association="MediaDatabase.Store.FK_TagCategoryTag">
-            <End Role="TagCategorySet" EntitySet="TagCategorySet" />
-            <End Role="TagSet" EntitySet="TagSet" />
-          </AssociationSet>
-        </EntityContainer>
-        <EntityType Name="TagCategorySet">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
-        </EntityType>
-        <EntityType Name="TagSet">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="int" Nullable="false" StoreGeneratedPattern="Identity" />
-          <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
-          <Property Name="TagCategoryId" Type="int" />
-          <Property Name="ParentTagId" Type="int" />
-        </EntityType>
-        <Association Name="FK_LinkedTags">
-          <End Role="TagSet" Type="MediaDatabase.Store.TagSet" Multiplicity="0..1" />
-          <End Role="TagSet1" Type="MediaDatabase.Store.TagSet" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="TagSet">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="TagSet1">
-              <PropertyRef Name="ParentTagId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_TagCategoryTag">
-          <End Role="TagCategorySet" Type="MediaDatabase.Store.TagCategorySet" Multiplicity="0..1" />
-          <End Role="TagSet" Type="MediaDatabase.Store.TagSet" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="TagCategorySet">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="TagSet">
-              <PropertyRef Name="TagCategoryId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-      </Schema></edmx:StorageModels>
+  <EntityContainer Name="MediaDatabaseStoreContainer">
+    <EntitySet Name="TagSet" EntityType="MediaDatabase.Store.TagSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="TagCategorySet" EntityType="MediaDatabase.Store.TagCategorySet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MediaSet" EntityType="MediaDatabase.Store.MediaSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.Store.PresetMetadataSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MediaTag" EntityType="MediaDatabase.Store.MediaTag" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="PresetMetadataTag" EntityType="MediaDatabase.Store.PresetMetadataTag" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="TagTag" EntityType="MediaDatabase.Store.TagTag" store:Type="Tables" Schema="dbo" />
+    <AssociationSet Name="TagCategoryTag" Association="MediaDatabase.Store.TagCategoryTag">
+      <End Role="TagCategory" EntitySet="TagCategorySet" />
+      <End Role="Tag" EntitySet="TagSet" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MediaTag_Media" Association="MediaDatabase.Store.FK_MediaTag_Media">
+      <End Role="Media" EntitySet="MediaSet" />
+      <End Role="MediaTag" EntitySet="MediaTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_MediaTag_Tag" Association="MediaDatabase.Store.FK_MediaTag_Tag">
+      <End Role="Tag" EntitySet="TagSet" />
+      <End Role="MediaTag" EntitySet="MediaTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_PresetMetadataTag_PresetMetadata" Association="MediaDatabase.Store.FK_PresetMetadataTag_PresetMetadata">
+      <End Role="PresetMetadata" EntitySet="PresetMetadataSet" />
+      <End Role="PresetMetadataTag" EntitySet="PresetMetadataTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_PresetMetadataTag_Tag" Association="MediaDatabase.Store.FK_PresetMetadataTag_Tag">
+      <End Role="Tag" EntitySet="TagSet" />
+      <End Role="PresetMetadataTag" EntitySet="PresetMetadataTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_TagTag_Tag" Association="MediaDatabase.Store.FK_TagTag_Tag">
+      <End Role="Tag" EntitySet="TagSet" />
+      <End Role="TagTag" EntitySet="TagTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_TagTag_Tag1" Association="MediaDatabase.Store.FK_TagTag_Tag1">
+      <End Role="Tag1" EntitySet="TagSet" />
+      <End Role="TagTag" EntitySet="TagTag" />
+    </AssociationSet>
+  </EntityContainer>
+  <EntityType Name="TagSet">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="TagCategoryId" Type="int" Nullable="true" />
+  </EntityType>
+  <EntityType Name="TagCategorySet">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+  </EntityType>
+  <EntityType Name="MediaSet">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Location" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Title" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Rating" Type="float" Nullable="true" />
+    <Property Name="Description" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Author" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Copyright" Type="nvarchar(max)" Nullable="true" />
+  </EntityType>
+  <EntityType Name="PresetMetadataSet">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Title" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Rating" Type="float" Nullable="true" />
+    <Property Name="Description" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Author" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Copyright" Type="nvarchar(max)" Nullable="true" />
+  </EntityType>
+  <EntityType Name="MediaTag">
+    <Key>
+      <PropertyRef Name="Media_Id" />
+      <PropertyRef Name="Tags_Id" />
+    </Key>
+    <Property Name="Media_Id" Type="int" Nullable="false" />
+    <Property Name="Tags_Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="PresetMetadataTag">
+    <Key>
+      <PropertyRef Name="PresetMetadataTag_Tag_Id" />
+      <PropertyRef Name="Tags_Id" />
+    </Key>
+    <Property Name="PresetMetadataTag_Tag_Id" Type="int" Nullable="false" />
+    <Property Name="Tags_Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="TagTag">
+    <Key>
+      <PropertyRef Name="ParentTags_Id" />
+      <PropertyRef Name="ChildTags_Id" />
+    </Key>
+    <Property Name="ParentTags_Id" Type="int" Nullable="false" />
+    <Property Name="ChildTags_Id" Type="int" Nullable="false" />
+  </EntityType>
+  <Association Name="TagCategoryTag">
+    <End Role="TagCategory" Type="MediaDatabase.Store.TagCategorySet" Multiplicity="0..1" />
+    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="TagCategory">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Tag">
+        <PropertyRef Name="TagCategoryId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MediaTag_Media">
+    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1" />
+    <End Role="MediaTag" Type="MediaDatabase.Store.MediaTag" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Media">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MediaTag">
+        <PropertyRef Name="Media_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_MediaTag_Tag">
+    <End Role="MediaTag" Type="MediaDatabase.Store.MediaTag" Multiplicity="*" />
+    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Tag">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="MediaTag">
+        <PropertyRef Name="Tags_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_PresetMetadataTag_PresetMetadata">
+    <End Role="PresetMetadata" Type="MediaDatabase.Store.PresetMetadataSet" Multiplicity="1" />
+    <End Role="PresetMetadataTag" Type="MediaDatabase.Store.PresetMetadataTag" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="PresetMetadata">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="PresetMetadataTag">
+        <PropertyRef Name="PresetMetadataTag_Tag_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_PresetMetadataTag_Tag">
+    <End Role="PresetMetadataTag" Type="MediaDatabase.Store.PresetMetadataTag" Multiplicity="*" />
+    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Tag">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="PresetMetadataTag">
+        <PropertyRef Name="Tags_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_TagTag_Tag">
+    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
+    <End Role="TagTag" Type="MediaDatabase.Store.TagTag" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Tag">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="TagTag">
+        <PropertyRef Name="ParentTags_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_TagTag_Tag1">
+    <End Role="TagTag" Type="MediaDatabase.Store.TagTag" Multiplicity="*" />
+    <End Role="Tag1" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Tag1">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="TagTag">
+        <PropertyRef Name="ChildTags_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+</Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema xmlns="http://schemas.microsoft.com/ado/2009/11/edm" xmlns:cg="http://schemas.microsoft.com/ado/2006/04/codegeneration" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" Namespace="MediaDatabase" Alias="Self" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" annotation:UseStrongSpatialTypes="false">
@@ -68,7 +200,17 @@
             <End Role="TagCategory" EntitySet="TagCategorySet" />
             <End Role="Tag" EntitySet="TagSet" />
           </AssociationSet>
-          <AssociationSet Name="LinkedTags" Association="MediaDatabase.LinkedTags">
+          <EntitySet Name="MediaSet" EntityType="MediaDatabase.Media" />
+          <AssociationSet Name="MediaTag" Association="MediaDatabase.MediaTag">
+            <End Role="Media" EntitySet="MediaSet" />
+            <End Role="Tag" EntitySet="TagSet" />
+          </AssociationSet>
+          <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.PresetMetadata" />
+          <AssociationSet Name="PresetMetadataTag" Association="MediaDatabase.PresetMetadataTag">
+            <End Role="PresetMetadata" EntitySet="PresetMetadataSet" />
+            <End Role="Tag" EntitySet="TagSet" />
+          </AssociationSet>
+          <AssociationSet Name="TagTag" Association="MediaDatabase.TagTag">
             <End Role="Tag" EntitySet="TagSet" />
             <End Role="Tag1" EntitySet="TagSet" />
           </AssociationSet>
@@ -81,9 +223,9 @@
           <Property Type="String" Name="Name" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
           <NavigationProperty Name="TagCategory" Relationship="MediaDatabase.TagCategoryTag" FromRole="Tag" ToRole="TagCategory" />
           <Property Type="Int32" Name="TagCategoryId" Nullable="true" />
-          <NavigationProperty Name="LinkedTags" Relationship="MediaDatabase.LinkedTags" FromRole="Tag" ToRole="Tag1" />
-          <NavigationProperty Name="ParentTag" Relationship="MediaDatabase.LinkedTags" FromRole="Tag1" ToRole="Tag" />
-          <Property Type="Int32" Name="ParentTagId" Nullable="true" />
+          <NavigationProperty Name="Media" Relationship="MediaDatabase.MediaTag" FromRole="Tag" ToRole="Media" />
+          <NavigationProperty Name="ChildTags" Relationship="MediaDatabase.TagTag" FromRole="Tag" ToRole="Tag1" />
+          <NavigationProperty Name="ParentTags" Relationship="MediaDatabase.TagTag" FromRole="Tag1" ToRole="Tag" />
         </EntityType>
         <EntityType Name="TagCategory">
           <Key>
@@ -105,17 +247,43 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="LinkedTags">
-          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="0..1" />
+        <EntityType Name="Media">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="Location" Nullable="false" MaxLength="Max" />
+          <Property Type="String" Name="Title" Nullable="true" />
+          <Property Type="Double" Name="Rating" Nullable="true" />
+          <Property Type="String" Name="Description" Nullable="true" />
+          <Property Type="String" Name="Author" Nullable="true" />
+          <Property Type="String" Name="Copyright" Nullable="true" />
+          <NavigationProperty Name="Tags" Relationship="MediaDatabase.MediaTag" FromRole="Media" ToRole="Tag" />
+        </EntityType>
+        <Association Name="MediaTag">
+          <End Type="MediaDatabase.Media" Role="Media" Multiplicity="*" />
+          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
+        </Association>
+        <EntityType Name="PresetMetadata">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="String" Name="Name" Nullable="false" />
+          <Property Type="String" Name="Title" Nullable="true" />
+          <Property Type="Double" Name="Rating" Nullable="true" />
+          <Property Type="String" Name="Description" Nullable="true" />
+          <Property Type="String" Name="Author" Nullable="true" />
+          <Property Type="String" Name="Copyright" Nullable="true" />
+          <NavigationProperty Name="Tags" Relationship="MediaDatabase.PresetMetadataTag" FromRole="PresetMetadata" ToRole="Tag" />
+        </EntityType>
+        <Association Name="PresetMetadataTag">
+          <End Type="MediaDatabase.PresetMetadata" Role="PresetMetadata" Multiplicity="*" />
+          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
+        </Association>
+        <Association Name="TagTag">
+          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
           <End Type="MediaDatabase.Tag" Role="Tag1" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Tag">
-              <PropertyRef Name="Id" />
-            </Principal>
-            <Dependent Role="Tag1">
-              <PropertyRef Name="ParentTagId" />
-            </Dependent>
-          </ReferentialConstraint>
         </Association>
       </Schema>
     </edmx:ConceptualModels>
@@ -129,7 +297,6 @@
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Name" ColumnName="Name" />
           <ScalarProperty Name="TagCategoryId" ColumnName="TagCategoryId" />
-          <ScalarProperty Name="ParentTagId" ColumnName="ParentTagId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -141,6 +308,56 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
+    <EntitySetMapping Name="MediaSet">
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.Media)">
+        <MappingFragment StoreEntitySet="MediaSet">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Location" ColumnName="Location" />
+          <ScalarProperty Name="Title" ColumnName="Title" />
+          <ScalarProperty Name="Rating" ColumnName="Rating" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="Author" ColumnName="Author" />
+          <ScalarProperty Name="Copyright" ColumnName="Copyright" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="PresetMetadataSet">
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.PresetMetadata)">
+        <MappingFragment StoreEntitySet="PresetMetadataSet">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Name" ColumnName="Name" />
+          <ScalarProperty Name="Title" ColumnName="Title" />
+          <ScalarProperty Name="Rating" ColumnName="Rating" />
+          <ScalarProperty Name="Description" ColumnName="Description" />
+          <ScalarProperty Name="Author" ColumnName="Author" />
+          <ScalarProperty Name="Copyright" ColumnName="Copyright" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <AssociationSetMapping Name="MediaTag" TypeName="MediaDatabase.MediaTag" StoreEntitySet="MediaTag">
+      <EndProperty Name="Media">
+        <ScalarProperty Name="Id" ColumnName="Media_Id" />
+      </EndProperty>
+      <EndProperty Name="Tag">
+        <ScalarProperty Name="Id" ColumnName="Tags_Id" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="PresetMetadataTag" TypeName="MediaDatabase.PresetMetadataTag" StoreEntitySet="PresetMetadataTag">
+      <EndProperty Name="PresetMetadata">
+        <ScalarProperty Name="Id" ColumnName="PresetMetadataTag_Tag_Id" />
+      </EndProperty>
+      <EndProperty Name="Tag">
+        <ScalarProperty Name="Id" ColumnName="Tags_Id" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="TagTag" TypeName="MediaDatabase.TagTag" StoreEntitySet="TagTag">
+      <EndProperty Name="Tag">
+        <ScalarProperty Name="Id" ColumnName="ParentTags_Id" />
+      </EndProperty>
+      <EndProperty Name="Tag1">
+        <ScalarProperty Name="Id" ColumnName="ChildTags_Id" />
+      </EndProperty>
+    </AssociationSetMapping>
   </EntityContainerMapping>
 </Mapping></edmx:Mappings>
   </edmx:Runtime>

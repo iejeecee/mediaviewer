@@ -107,6 +107,16 @@ namespace MediaViewer
                     logView.Show();
 
                 }));
+
+            ClearHistoryCommand = new Command(new Action(() =>
+                {
+
+                    if (MessageBox.Show("Clear all history?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                    {
+                        MediaViewer.Settings.AppSettings.Instance.clearHistory();
+                    }
+
+                }));
         }
 
         Command viewMediaCommand;
@@ -140,5 +150,14 @@ namespace MediaViewer
             get { return showLogCommand; }
             set { showLogCommand = value; }
         }
+
+        Command clearHistoryCommand;
+
+        public Command ClearHistoryCommand
+        {
+            get { return clearHistoryCommand; }
+            set { clearHistoryCommand = value; }
+        }
+
     }
 }

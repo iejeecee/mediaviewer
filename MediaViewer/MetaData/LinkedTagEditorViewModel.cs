@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,56 @@ namespace MediaViewer.MetaData
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+
+        public static TagCategory NullCategory = new TagCategory() { Name = "None", Id = -1 };
+
+        public LinkedTagEditorViewModel()
+        {          
+            ChildTags = new ObservableCollection<Tag>();
+
+            using (TagDbCommands tc = new TagDbCommands())
+            {
+                Categories = new ObservableCollection<TagCategory>(tc.getAllCategories());              
+                Tags = new ObservableCollection<Tag>(tc.getAllTags());             
+            }
+
+            SelectTagCommand = new Command(new Action(selectTag));
+            SelectTagCommand.CanExecute = false;
+
+            ClearTagCommand = new Command(new Action(clearTag));        
+
+            CreateTagCommand = new Command(new Action(createTag));
+            CreateTagCommand.CanExecute = false;
+
+            UpdateTagCommand = new Command(new Action(updateTag));
+            UpdateTagCommand.CanExecute = false;
+
+            DeleteTagCommand = new Command(new Action(deleteTag));
+            DeleteTagCommand.CanExecute = false;
+
+            AddChildTagCommand = new Command(new Action(() =>
+            {
+                Utils.Misc.insertIntoSortedCollection<Tag>(ChildTags, NewChildTag);     
+            }));
+            AddChildTagCommand.CanExecute = false;
+
+            RemoveChildTagCommand = new Command(new Action(() =>
+                {
+                    ChildTags.Remove(SelectedChildTag);
+                }));
+            RemoveChildTagCommand.CanExecute = false;
+
+            CreateCategoryCommand = new Command(new Action(createCategory));
+            CreateCategoryCommand.CanExecute = false;
+
+            DeleteCategoryCommand = new Command(new Action(deleteCategory));
+            DeleteCategoryCommand.CanExecute = false;
+        
+            TagName = "";
+            NewCategoryName = "";
+            
+        }
+
         ObservableCollection<Tag> tags;
 
         public ObservableCollection<Tag> Tags
@@ -28,89 +79,188 @@ namespace MediaViewer.MetaData
             }
         }
 
-        ObservableCollection<Tag> linkedTags;
+        Tag selectedTag;
 
-        public ObservableCollection<Tag> LinkedTags
+        public Tag SelectedTag
         {
-            get { return linkedTags; }
+            get { return selectedTag; }
             set
             {
-                linkedTags = value;
-            NotifyPropertyChanged();
+                selectedTag = value;
+
+                if (selectedTag != null)
+                {
+                    SelectTagCommand.CanExecute = true;                   
+                    selectTag();
+                }
+                else
+                {
+                    SelectTagCommand.CanExecute = false;
+                    UpdateTagCommand.CanExecute = false;
+                }
+                
+                NotifyPropertyChanged();
             }
         }
 
-        public LinkedTagEditorViewModel()
-        {
-            NewTagName = "";
-            Tags = new ObservableCollection<Tag>();
-            LinkedTags = new ObservableCollection<Tag>();
-            Categories = new ObservableCollection<TagCategory>();
+        Command selectTagCommand;
 
-            using (TagDbCommands tc = new TagDbCommands(null))
+        public Command SelectTagCommand
+        {
+            get { return selectTagCommand; }
+            set { selectTagCommand = value; }
+        }
+
+        void selectTag()
+        {
+                   
+            using (var tc = new TagDbCommands())
             {
-                List<TagCategory> categories = tc.getAllCategories();
+                Tag tag = tc.getTagById(SelectedTag.Id);
 
-                foreach (TagCategory category in categories)
+                TagName = tag.Name;
+
+                ChildTags.Clear();
+
+                foreach (Tag childTag in tag.ChildTags)
                 {
-                    Categories.Add(category);
+                    ChildTags.Add(childTag);
                 }
 
-                List<Tag> temp = tc.getAllTags();
-
-                foreach (Tag tag in temp)
-                {
-                    tags.Add(tag);
-                }
-
+                TagCategory = tag.TagCategory;
             }
-           
-            AddTagCommand = new Command(new Action(addTag));
-            RemoveTagCommand = new Command(new Action(removeTag));
-            AddLinkedTagCommand = new Command(new Action(addLinkedTag));
-            CreateCategoryCommand = new Command(new Action(createCategory));
-            DeleteCategoryCommand = new Command(new Action(deleteCategory));
+          
+            CreateTagCommand.CanExecute = true;
+            UpdateTagCommand.CanExecute = true;
+            DeleteTagCommand.CanExecute = true;
+                          
+        }
+
+        String tagName;
+
+        public String TagName
+        {
+            get { return tagName; }
+            set
+            {
+                tagName = value;
+
+                if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
+                {                    
+                   CreateTagCommand.CanExecute = false;                  
+                   UpdateTagCommand.CanExecute = false;                    
+                }
+                else
+                {                    
+                   CreateTagCommand.CanExecute = true;                    
+                   UpdateTagCommand.CanExecute = true;                   
+                }
+
+                NotifyPropertyChanged();
+            }
+        }
+
+        ObservableCollection<Tag> childTags;
+
+        public ObservableCollection<Tag> ChildTags
+        {
+            get { return childTags; }
+            set
+            {
+                childTags = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        TagCategory tagCategory;
+
+        public TagCategory TagCategory
+        {
+            get { return tagCategory; }
+            set
+            {
+                tagCategory = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Command createTagCommand;
+
+        public Command CreateTagCommand
+        {
+            get { return createTagCommand; }
+            set { createTagCommand = value; }
+        }
+
+        void createTag()
+        {
+            Tag tag = new Tag();
+            tag.Name = TagName;
             
-        }
-
-        String newTagName;
-
-        public String NewTagName
-        {
-            get { return newTagName; }
-            set { newTagName = value;
-            NotifyPropertyChanged();
+            foreach (Tag childTag in ChildTags)
+            {
+                tag.ChildTags.Add(childTag);
             }
-        }
 
-        Command addTagCommand;
+            tag.TagCategory = TagCategory;
 
-        public Command AddTagCommand
-        {
-            get { return addTagCommand; }
-            set { addTagCommand = value; }
-        }
-
-        void addTag()
-        {
-            if (String.IsNullOrEmpty(NewTagName) || String.IsNullOrWhiteSpace(NewTagName)) return;
-
-            using (var db = new MediaDatabaseContext())
+            using (var tc = new TagDbCommands())
             {
                 try
-                {
-                    var newTag = new Tag { Name = NewTagName };
-                    newTag = db.TagSet.Add(newTag);
-                    db.SaveChanges();
+                {                   
+                    tag = tc.createTag(tag);
 
-                    Tags.Add(newTag);
-                    NewTagName = "";
+                    if (tag != null)
+                    {
+                        insertTagIntoTagsCollection(tag, false);                      
+                        clearTag();
+                    }
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not add tag to database: " + NewTagName, e);
+                    log.Error("Could not add tag to database: " + TagName, e);
                 }
             }
+        }
+
+        Command updateTagCommand;
+
+        public Command UpdateTagCommand
+        {
+            get { return updateTagCommand; }
+            set { updateTagCommand = value; }
+        }
+
+        void updateTag()
+        {
+            if (SelectedTag == null) return;
+          
+            using (var tc = new TagDbCommands())
+            {
+                try
+                {
+                    Tag tag = new Tag();
+
+                    tag.Id = SelectedTag.Id;
+                    tag.Name = TagName;
+                    tag.TagCategory = TagCategory;
+                  
+                    foreach (Tag childTag in ChildTags)
+                    {                       
+                        tag.ChildTags.Add(childTag);
+                    }
+                          
+                    tag = tc.updateTag(tag);
+                    Tags.Remove(SelectedTag);
+                    insertTagIntoTagsCollection(tag, true);                 
+                
+                }
+                catch (Exception e)
+                {
+                    log.Error("Could not update tag in database: " + TagName, e);
+                }
+            }
+
         }
 
         ObservableCollection<TagCategory> categories;
@@ -141,8 +291,18 @@ namespace MediaViewer.MetaData
         public TagCategory SelectedCategory
         {
             get { return selectedCategory; }
-            set { selectedCategory = value;
-            NotifyPropertyChanged();
+            set
+            {
+                selectedCategory = value;
+                if (selectedCategory != null)
+                {
+                    DeleteCategoryCommand.CanExecute = true;
+                }
+                else
+                {
+                    DeleteCategoryCommand.CanExecute = false;
+                }
+                NotifyPropertyChanged();
             }
         }
 
@@ -151,84 +311,137 @@ namespace MediaViewer.MetaData
         public String NewCategoryName
         {
             get { return newCategoryName; }
-            set { newCategoryName = value;
-            NotifyPropertyChanged();
-            }
-        }
-
-        Tag selectedTag;
-
-        public Tag SelectedTag
-        {
-            get { return selectedTag; }
             set
             {
-                selectedTag = value;
-                NotifyPropertyChanged();
-
-                if(selectedTag == null) return;
-
-                using (TagDbCommands tc = new TagDbCommands(null))
+                newCategoryName = value;
+                if (String.IsNullOrEmpty(newCategoryName) || String.IsNullOrWhiteSpace(newCategoryName))
                 {
-                    LinkedTags.Clear();
-
-                    Tag item = tc.getTagByName(selectedTag.Name);
-                                                                                  
-                    foreach (Tag linkedTag in item.LinkedTags)
-                    {
-                        LinkedTags.Add(linkedTag);
-                    }
-
-                    SelectedTagCategory = item.TagCategory;         
+                    CreateCategoryCommand.CanExecute = false;
                 }
+                else
+                {
+                    CreateCategoryCommand.CanExecute = true;
+                }
+                NotifyPropertyChanged();
+            }
+        }
+              
+        Tag newChildTag;
+
+        public Tag NewChildTag
+        {
+            get { return newChildTag; }
+            set
+            {
+                newChildTag = value;
+
+                if (value != null)
+                {
+                    AddChildTagCommand.CanExecute = true;
+                }
+                else
+                {
+                    AddChildTagCommand.CanExecute = false;
+                }
+                NotifyPropertyChanged();
             }
         }
 
-        TagCategory selectedTagCategory;
+        Tag selectedChildTag;
 
-        public TagCategory SelectedTagCategory
+        public Tag SelectedChildTag
         {
-            get { return selectedTagCategory; }
-            set { selectedTagCategory = value;
-            NotifyPropertyChanged();
-            updateTagCategory();
+            get { return selectedChildTag; }
+            set
+            {
+                selectedChildTag = value;
+
+                if (selectedChildTag != null)
+                {
+                    RemoveChildTagCommand.CanExecute = true;
+                }
+                else
+                {
+                    RemoveChildTagCommand.CanExecute = false;
+                }
+                NotifyPropertyChanged();
             }
         }
 
-        Tag newLinkedTag;
+        TagCategory categoryFilter;
 
-        public Tag NewLinkedTag
+        public TagCategory CategoryFilter
         {
-            get { return newLinkedTag; }
-            set { newLinkedTag = value;
-            NotifyPropertyChanged();
+            get { return categoryFilter; }
+            set
+            {
+                categoryFilter = value;
+
+                using (TagDbCommands tagCommands = new TagDbCommands())
+                {
+                    try
+                    {
+                        List<Tag> result;
+
+                        if (categoryFilter != null)
+                        {
+                            result = tagCommands.getTagsByCategory(categoryFilter);
+                        }
+                        else
+                        {
+                            result = tagCommands.getAllTags();
+                        }
+
+                        Tags.Clear();
+
+                        foreach (Tag tag in result)
+                        {
+                            Tags.Add(tag);
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        log.Error("Error setting category filter", e);
+                    }
+                }
+                NotifyPropertyChanged();
             }
+                    
         }
 
-        Command addLinkedTagCommand;
+        Command addChildTagCommand;
 
-        public Command AddLinkedTagCommand
+        public Command AddChildTagCommand
         {
-            get { return addLinkedTagCommand; }
-            set { addLinkedTagCommand = value; }
+            get { return addChildTagCommand; }
+            set { addChildTagCommand = value; }
+        }
+
+        Command removeChildTagCommand;
+
+        public Command RemoveChildTagCommand
+        {
+            get { return removeChildTagCommand; }
+            set { removeChildTagCommand = value; }
         }
 
         void createCategory()
         {
-            if (String.IsNullOrEmpty(NewCategoryName) || String.IsNullOrWhiteSpace(NewCategoryName)) return;
-
-            using (var db = new MediaDatabaseContext())
+           
+            using (var tc = new TagDbCommands())
             {
                 try
                 {
-                    TagCategory newCategory = new TagCategory();
-                    newCategory.Name = NewCategoryName;
+                    TagCategory newCategory = new TagCategory() { Name = NewCategoryName };
 
-                    db.TagCategorySet.Add(newCategory);                     
+                    newCategory = tc.createTagCategory(newCategory);
 
-                    db.SaveChanges();
-                    Categories.Add(newCategory);
-                    NewCategoryName = "";
+                    if (newCategory != null)
+                    {
+                        Utils.Misc.insertIntoSortedCollection<TagCategory>(Categories, newCategory);                  
+                        NewCategoryName = "";
+                    }
                 }
                 catch (Exception e)
                 {
@@ -240,18 +453,18 @@ namespace MediaViewer.MetaData
 
         void deleteCategory()
         {
-            if (SelectedCategory == null) return;
-
-            using (var db = new MediaDatabaseContext())
+          
+            using (var tc = new TagDbCommands())
             {
                 try
                 {
-                    db.TagCategorySet.Attach(SelectedCategory);
-
-                    db.TagCategorySet.Remove(SelectedCategory);
-
-                    db.SaveChanges();
+                    tc.deleteTagCategory(SelectedCategory);
                     Categories.Remove(SelectedCategory);
+
+                    // update cached tags to reflect changes
+                    CategoryFilter = null;
+                    clearTag();
+                   
                 }
                 catch (Exception e)
                 {
@@ -260,103 +473,66 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Command deleteTagCommand;
 
-        void addLinkedTag()
+        public Command DeleteTagCommand
         {
-            if (SelectedTag == null || NewLinkedTag == null) return;
-  
-            using (var db = new MediaDatabaseContext())
-            {
-                try
-                {
-
-
-                    db.TagSet.Attach(selectedTag);
-                    // create a copy of newLinkedTag because db.SaveChanges() will modify
-                    // newLinkedTag. 
-                    Tag temp = new TagDbCommands(db).getTagByName(newLinkedTag.Name);               
-                    selectedTag.LinkedTags.Add(temp);
-                    db.Entry(temp).State = EntityState.Added;
-                    /*db.TagSet.Attach(newLinkedTag);
-                    selectedTag.LinkedTags.Add(newLinkedTag);
-                    db.Entry(newLinkedTag).State = EntityState.Added;*/
-                                
-                    db.SaveChanges();
-                   
-
-                    LinkedTags.Add(temp);
-                    NewLinkedTag = null;
-                }
-                catch (Exception e)
-                {
-                    log.Error("Could not update SelectedTag in database: " + SelectedTag.Name, e);
-                }
-            }
+            get { return deleteTagCommand; }
+            set { deleteTagCommand = value; }
         }
 
-        void updateTagCategory()
+        void deleteTag()
         {
-            if (SelectedTag == null) return;
-            if (SelectedTagCategory == null)
-            {
-                if (SelectedTag.TagCategory == null) return;
-            }
-            else
-            {
-                if (SelectedTag.TagCategory != null)
-                {
-                    if(SelectedTag.TagCategory.Equals(SelectedTagCategory)) return;
-                }
-            }
-
-            using (var db = new MediaDatabaseContext())
+            using (var tc = new TagDbCommands())
             {
                 try
                 {
-                    db.TagSet.Attach(SelectedTag);
-                    db.TagCategorySet.Attach(selectedTagCategory);
-
-                    SelectedTag.TagCategory = SelectedTagCategory;
                   
-                    db.Entry(SelectedTag).State = EntityState.Modified;
 
-                    db.SaveChanges();
-                                 
-                }
-                catch (Exception e)
-                {
-                    log.Error("Could not update SelectedTag category in database: " + SelectedTag.Name, e);
-                }
-            }
-        }
-
-        Command removeTagCommand;
-
-        public Command RemoveTagCommand
-        {
-            get { return removeTagCommand; }
-            set { removeTagCommand = value; }
-        }
-
-        void removeTag()
-        {
-            if (SelectedTag == null) return;
-
-            using (var db = new MediaDatabaseContext())
-            {
-                try
-                {
-                    db.TagSet.Attach(SelectedTag);
-
-                    db.TagSet.Remove(SelectedTag);
-
-                    db.SaveChanges();
+                    tc.deleteTag(SelectedTag);
                     Tags.Remove(SelectedTag);
                 }
                 catch (Exception e)
                 {
                     log.Error("Could not remove SelectedTag from database: " + SelectedTag.Name, e);
                 }
+            }
+        }
+
+        Command clearTagCommand;
+
+        public Command ClearTagCommand
+        {
+            get { return clearTagCommand; }
+            set { clearTagCommand = value; }
+        }
+
+        void clearTag()
+        {
+            
+            TagName = "";
+            TagCategory = null;
+            SelectedTag = null;          
+            ChildTags.Clear();
+
+            CreateTagCommand.CanExecute = false;
+            UpdateTagCommand.CanExecute = false;
+            DeleteTagCommand.CanExecute = false;
+        }
+
+        void insertTagIntoTagsCollection(Tag tag, bool select)
+        {
+            if ((categoryFilter != null && tag.TagCategory == null) ||
+                (categoryFilter != null && tag.TagCategory.Id != categoryFilter.Id))                
+            {
+               return;                             
+            }
+
+            Utils.Misc.insertIntoSortedCollection<Tag>(Tags, tag);
+
+            if (select == true)
+            {
+                SelectedTag = tag;
             }
         }
     }

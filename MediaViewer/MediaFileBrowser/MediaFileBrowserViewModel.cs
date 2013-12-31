@@ -120,8 +120,14 @@ namespace MediaViewer.MediaFileBrowser
                 == MessageBoxResult.Yes)
             {
 
+                if (MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(selected) == false)
+                {
+                    MessageBox.Show("Error", "Cannot delete file(s) in use by another operation");
+                    return;
+                }
+
                 try
-                {     
+                {
                     for (int i = 0; i < selected.Count; i++)
                     {
                         System.IO.File.Delete(selected[i].Location);
@@ -133,6 +139,10 @@ namespace MediaViewer.MediaFileBrowser
                     log.Error("Error deleting file", ex);
                     MessageBox.Show(ex.Message, "Error deleting file");
                 }
+                finally
+                {
+                    MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(selected);
+                }
             }
 
         }
@@ -140,57 +150,6 @@ namespace MediaViewer.MediaFileBrowser
         private void renameImageToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            InputWindow input = new InputWindow();
-
-            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
-
-            string info;
-
-            if (selected.Count == 0)
-            {
-
-                //selected.Add(e.Item.AsyncState);
-                //info = "Rename Image: " + e.Item.AsyncState.MediaLocation;
-                //input.InputText = System.IO.Path.GetFileNameWithoutExtension(e.Item.AsyncState.MediaLocation);
-
-            }
-            else
-            {
-
-                info = "Rename " + Convert.ToString(selected.Count) + " images";
-            }
-
-            //input.Title = info;
-
-            if (input.ShowDialog() == true)
-            {
-
-                try
-                {
-
-                    for (int i = 0; i < selected.Count; i++)
-                    {
-
-                        string directory = System.IO.Path.GetDirectoryName(selected[i].MediaLocation);
-                        string counter = selected.Count > 1 ? " (" + Convert.ToString(i + 1) + ")" : "";
-
-                        string name = System.IO.Path.GetFileNameWithoutExtension(input.InputText);
-                        string ext = System.IO.Path.GetExtension(selected[i].MediaLocation);
-
-                        string newLocation = directory + "\\" + name + counter + ext;
-
-                        File.Move(selected[i].MediaLocation, newLocation);
-                    }
-
-                }
-                catch (Exception ex)
-                {
-
-                    log.Error("Error renaming file", ex);
-                    MessageBox.Show(ex.Message);
-                }
-
-            }
 
         }
         private void selectAllToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)

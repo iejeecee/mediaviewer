@@ -29,8 +29,10 @@
                                         </Grid.ColumnDefinitions>
                                         <Grid.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Command="{Binding CreateDirectoryCommand}" Header="Create Directory">                                              
-                                                </MenuItem>
+                                                <MenuItem Header="Refresh" Click="refreshDirectory_Click"/>
+                                                <Separator/>
+                                                <MenuItem Header="Create Directory" Click="createDirectory_Click"/>
+                                                <MenuItem Header="Delete Directory" Click="deleteDirectory_Click"/>
                                             </ContextMenu>
                                         </Grid.ContextMenu>
                                         <tree:RowExpander Grid.Column="0"/>

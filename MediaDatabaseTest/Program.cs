@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
@@ -11,28 +12,17 @@ namespace MediaDatabaseTest
     class Program
     {
 
-        class Dummy
-        {
-            [Key]
-            public String Name {get; set;}
-        }
-
-        class DummyContext : DbContext
-        {
-            public DbSet<Dummy> Dummies { get; set; }
-        }
-
         static void Main(string[] args)
         {
-            using (var db = new DummyContext())
+            using (var db = new MediaDatabaseTestContainer())
             {
                 // Create and save a new Blog
 
                 string name = "test";
 
-                var tag = new Dummy { Name = name };
+                var tag = new Tag { Name = name };
         
-                db.Dummies.Add(tag);
+                db.TagSet.Add(tag);
                 db.SaveChanges();
             }
         }

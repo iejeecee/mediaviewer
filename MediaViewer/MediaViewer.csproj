@@ -145,7 +145,9 @@
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\IsNullConverter.cs" />
     <Compile Include="Converters\MathConverter.cs" />
+    <Compile Include="Converters\NullConverter.cs" />
     <Compile Include="Converters\PathNameConverter.cs" />
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
@@ -164,7 +166,11 @@
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
-    <Compile Include="MediaDatabase\DbCommands.cs" />
+    <Compile Include="Input\InputViewModel.cs" />
+    <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
+    <Compile Include="MediaDatabase\Media.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="MediaDatabase\MediaDatabase.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -180,6 +186,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>
     </Compile>
+    <Compile Include="MediaDatabase\PresetMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\DbCommands\PresetMetadataDbCommands.cs" />
+    <Compile Include="MediaDatabase\PresetMetadataPartial.cs" />
     <Compile Include="MediaDatabase\Tag.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -187,9 +198,8 @@
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\TagCategoryPartial.cs" />
-    <Compile Include="MediaDatabase\TagDbCommands.cs" />
+    <Compile Include="MediaDatabase\DbCommands\TagDbCommands.cs" />
     <Compile Include="MediaDatabase\TagPartial.cs" />
-    <Compile Include="MediaDatabase\Test.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
     <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
@@ -201,8 +211,8 @@
     <Compile Include="ImageGrid\ImageGridMouseEventArgs.cs" />
     <Compile Include="ImageGrid\ImageGridViewModel.cs" />
     <Compile Include="ImageGrid\PagedImageGridViewModel.cs" />
-    <Compile Include="Input\InputWindow.xaml.cs">
-      <DependentUpon>InputWindow.xaml</DependentUpon>
+    <Compile Include="Input\InputView.xaml.cs">
+      <DependentUpon>InputView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Logging\LogMessageModel.cs" />
     <Compile Include="Logging\LogViewModel.cs" />
@@ -238,6 +248,7 @@
     <Compile Include="MediaFileModel\UnknownFile.cs" />
     <Compile Include="MediaFileModel\VideoFile.cs" />
     <Compile Include="GlobalMessenger.cs" />
+    <Compile Include="MetaData\ExtendedComboBox.cs" />
     <Compile Include="MetaData\FileMetaData.cs" />
     <Compile Include="MetaData\FileMetaDataFactory.cs" />
     <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
@@ -251,6 +262,10 @@
       <DependentUpon>LinkedTagEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\LinkedTagEditorViewModel.cs" />
+    <Compile Include="MetaData\MetaDataPresetsView.xaml.cs">
+      <DependentUpon>MetaDataPresetsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\MetaDataPresetsViewModel.cs" />
     <Compile Include="MetaData\MetaDataUpdateView.xaml.cs">
       <DependentUpon>MetaDataUpdateView.xaml</DependentUpon>
     </Compile>
@@ -345,7 +360,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Input\InputWindow.xaml">
+    <Page Include="Input\InputView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -374,6 +389,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MetaData\LinkedTagEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\MetaDataPresetsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -644,6 +663,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\text.ico" />
     <Resource Include="Resources\Icons\circle.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

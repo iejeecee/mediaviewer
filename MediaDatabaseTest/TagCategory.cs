@@ -7,27 +7,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MediaViewer.MediaDatabase
+namespace MediaDatabaseTest
 {
     using System;
     using System.Collections.Generic;
     
-    public partial class Tag
+    public partial class TagCategory
     {
-        public Tag()
+        public TagCategory()
         {
-            this.Media = new HashSet<Media>();
-            this.ChildTags = new HashSet<Tag>();
-            this.ParentTags = new HashSet<Tag>();
+            this.Tag = new HashSet<Tag>();
         }
     
         public int Id { get; set; }
         public string Name { get; set; }
-        public Nullable<int> TagCategoryId { get; set; }
     
-        public virtual TagCategory TagCategory { get; set; }
-        public virtual ICollection<Media> Media { get; set; }
-        public virtual ICollection<Tag> ChildTags { get; set; }
-        public virtual ICollection<Tag> ParentTags { get; set; }
+        public virtual ICollection<Tag> Tag { get; set; }
     }
 }

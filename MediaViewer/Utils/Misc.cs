@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
@@ -133,7 +134,7 @@ namespace MediaViewer.Utils
 
         const int maxHistorySize = 16;
 
-        public static void insertIntoHistoryCollection(List<String> history, String element)
+        public static void insertIntoHistoryCollection(ObservableCollection<String> history, String element)
         {
             if(String.IsNullOrEmpty(element) || String.IsNullOrWhiteSpace(element)) return;
 
@@ -150,6 +151,50 @@ namespace MediaViewer.Utils
             }
         }
 
+        public static void insertIntoSortedCollection<T>(ObservableCollection<T> list, T item) where T : IComparable<T>
+        {
 
+            if (list.Count == 0)
+            {
+                list.Add(item);
+                return;
+            }
+
+            int mid = 0;
+            int low = 0;
+            int high = list.Count - 1;         
+
+            while (low <= high)
+            {
+                mid = (high + low) / 2;  
+
+                int val = list[mid].CompareTo(item);
+               
+                if (val < 0)
+                {
+                    high = mid - 1;                                                         
+                }
+                else if (val > 0)
+                {
+                    low = mid + 1;                                               
+                }
+                else
+                {
+                    break;
+                }
+
+            }
+
+            if (list[mid].CompareTo(item) >= 0)
+            {
+                list.Insert(mid + 1, item);
+            }
+            else
+            {
+                list.Insert(mid, item);
+            }
+
+
+        }
     }
 }

@@ -6,16 +6,9 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
-    partial class Tag : IComparable<Tag>
+    partial class PresetMetadata : IComparable<PresetMetadata>
     {
-
-        public override string ToString()
-        {
-            return Name;
-        }
-
-     
-        public int CompareTo(Tag other)
+        public int CompareTo(PresetMetadata other)
         {
             if (other == null)
             {

@@ -71,7 +71,7 @@ namespace MediaViewer
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
-            MediaDatabase.Test.test();
+            //MediaDatabase.Test.test();
            
           
         }
@@ -91,7 +91,7 @@ namespace MediaViewer
                
             }
 
-            MediaViewer.Settings.AppSettings.load();
+           
 
            // VideoTestWindow test = new VideoTestWindow();
 

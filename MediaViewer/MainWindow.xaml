@@ -20,6 +20,8 @@
                 <MenuItem x:Name="TagEditorMenuItem" Header="_Tag Editor" Command="{Binding TagEditorCommand}"/>
                 <MenuItem x:Name="LogMenuItem" Header="_Log" Command="{Binding ShowLogCommand}"/>
                 <Separator/>
+                <MenuItem x:Name="ClearHistoryItem" Header="_Clear History" Command="{Binding ClearHistoryCommand}"/>
+                <Separator/>
                 <MenuItem x:Name="ExitMenuItem" Header="_Exit" Click="ExitMenuItem_Click"/>
             </MenuItem>
             <MenuItem Header="_Help">

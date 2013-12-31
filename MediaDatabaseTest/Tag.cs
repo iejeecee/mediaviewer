@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MediaViewer.MediaDatabase
+namespace MediaDatabaseTest
 {
     using System;
     using System.Collections.Generic;
@@ -16,18 +16,16 @@ namespace MediaViewer.MediaDatabase
     {
         public Tag()
         {
-            this.Media = new HashSet<Media>();
-            this.ChildTags = new HashSet<Tag>();
-            this.ParentTags = new HashSet<Tag>();
+            this.LinkedTags = new HashSet<Tag>();
         }
     
         public int Id { get; set; }
         public string Name { get; set; }
         public Nullable<int> TagCategoryId { get; set; }
+        public Nullable<int> TagId { get; set; }
     
         public virtual TagCategory TagCategory { get; set; }
-        public virtual ICollection<Media> Media { get; set; }
-        public virtual ICollection<Tag> ChildTags { get; set; }
-        public virtual ICollection<Tag> ParentTags { get; set; }
+        public virtual ICollection<Tag> LinkedTags { get; set; }
+        public virtual Tag ParentTag { get; set; }
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Window xmlns:Progress="clr-namespace:MediaViewer.Progress"  x:Class="MediaViewer.MetaData.MetaDataUpdateView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{Binding WindowTitle}" Height="350" Width="420" ResizeMode="CanMinimize">
+        Title="{Binding WindowTitle}" Height="350" Width="520">
     <Grid>
         <Progress:ProgressControl TotalProgress="{Binding TotalProgress}" TotalProgressMax="{Binding TotalProgressMax}"
                                   ItemProgress="{Binding ItemProgress}" ItemProgressMax="100" 

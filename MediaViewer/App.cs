@@ -26,7 +26,7 @@ namespace MediaViewer
         private void Application_Startup(object sender, StartupEventArgs e)
         {
             Args = e.Args;
-           
+            MediaViewer.Settings.AppSettings.load();
                   
         }
 

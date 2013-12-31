@@ -13,13 +13,20 @@
         </ResourceDictionary>
     </Control.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
-        <ProgressBar x:Name="totalProgressBar" Height="19" Margin="42,22,41.333,0" VerticalAlignment="Top" Width="330" HorizontalAlignment="Center" RenderTransformOrigin="0.504,-0.421"/>
-        <Label x:Name="progressLabel" Content="Finished 0 / 0" Height="28" Margin="10,51,10.333,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" RenderTransformOrigin="0.504,2.118"/>
-        <ProgressBar x:Name="itemProgressBar" Height="18" Margin="42,84,41.333,0" VerticalAlignment="Top" Width="330" HorizontalAlignment="Center" RenderTransformOrigin="0.504,-0.421"/>
-        <Label x:Name="itemLabel" Content="Progress" Height="28" Margin="10,102,10.333,0" VerticalAlignment="Top" HorizontalContentAlignment="Center" RenderTransformOrigin="0.504,2.118"/>
-        <TextBox x:Name="infoTextBox" HorizontalAlignment="Center" Height="92" Margin="0,151,0,0" IsReadOnly="True" VerticalAlignment="Top" Width="330" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
-        <Button x:Name="okButton" Content="Ok" HorizontalAlignment="Center" Margin="138,276,200.333,0" VerticalAlignment="Top" Width="75"/>
-        <Button x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="213,276,125.333,0" VerticalAlignment="Top" Width="75"/>
-
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ProgressBar Grid.Row="0" x:Name="totalProgressBar" Height="19" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+        <Label Grid.Row="1" x:Name="progressLabel" Content="Finished 0 / 0" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center"/>
+        <ProgressBar Grid.Row="2" x:Name="itemProgressBar" Height="18" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+        <Label Grid.Row="3" x:Name="itemLabel" Content="Progress" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center"/>
+        <TextBox Grid.Row="4" x:Name="infoTextBox" HorizontalAlignment="Stretch" Margin="10,10,10,10" IsReadOnly="True" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+        <Button Grid.Row="5" x:Name="okButton" Content="Ok" HorizontalAlignment="Center" Margin="5,5,80,5" VerticalAlignment="Top" Width="75"/>
+        <Button Grid.Row="6" x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="5,5,-80,5" VerticalAlignment="Top" Width="75"/>
     </Grid>
 </UserControl>

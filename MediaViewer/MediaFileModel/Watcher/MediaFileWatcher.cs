@@ -20,7 +20,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         /// <summary>
         ///  Files that are scheduled to have some operation preformed on them
-        ///  e.g. modifying their metadata, moving them etc.
+        ///  e.g. modifying their metadata, moving, deleting them etc.
         /// </summary>
         public ReaderWriterLockedCollection<MediaFileItem> MediaFilesInUseByOperation
         {

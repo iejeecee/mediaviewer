@@ -19,6 +19,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.ExtensionMethods;
+using System.Windows.Threading;
 
 namespace MediaViewer.MetaData
 {
@@ -46,53 +47,10 @@ namespace MediaViewer.MetaData
                 }
 
             });
-                     
-        }
-/*
-        public ObservableCollection<MediaFileItem> MetaDataList
-        {
-            get { return (ObservableCollection<MediaFileItem>)GetValue(MetaDataListProperty); }
-            set { SetValue(MetaDataListProperty, value); }
-        }
 
-        // Using a DependencyProperty as the backing store for MyProperty.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MetaDataListProperty =
-            DependencyProperty.Register("MetaDataList", typeof(ObservableCollection<MediaFileItem>), typeof(MetaDataView), new PropertyMetadata(null,
-                new PropertyChangedCallback(metaDataList_PropertyChangedCallback)));
-
-        private static void metaDataList_PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            MetaDataView metaDataView = (MetaDataView)d;
-
-            if (e.OldValue != null)
-            {
-                var coll = (ObservableCollection<MediaFileItem>)e.OldValue;
-                // Unsubscribe from CollectionChanged on the old collection
-                coll.CollectionChanged -= metaDataView.metaDataList_CollectionChanged;
-            }
-
-            if (e.NewValue != null)
-            {
-                var coll = (ObservableCollection<MediaFileItem>)e.NewValue;
-                // Subscribe to CollectionChanged on the new collection
-                coll.CollectionChanged += metaDataView.metaDataList_CollectionChanged;
-            }
-
-        }
-
-        private void metaDataList_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
            
-            App.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-
-                //ViewModel.ItemList = MetaDataList;
-                displayDynamicProperties(ViewModel.DynamicProperties);
-                                        
-            }));
-
         }
-*/            
+    
         List<RowDefinition> dynamicRows;
         List<UIElement> dynamicElements;
 
@@ -165,22 +123,46 @@ namespace MediaViewer.MetaData
         }
 
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
-        {           
-            int index = fileNameTextBox.CaretIndex;
+        {
+            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
 
             ViewModel.InsertCounterCommand.DoExecute(index);
         }
 
         private void fileNameContextMenu_InsertExistingFilename(object sender, RoutedEventArgs e)
         {
-            int index = fileNameTextBox.CaretIndex;
+            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
 
             ViewModel.InsertExistingFilenameCommand.DoExecute(index);
         }
 
         private void fileNameContextMenu_InsertResolution(object sender, RoutedEventArgs e)
         {
-            int index = fileNameTextBox.CaretIndex;
+            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
 
             ViewModel.InsertResolutionCommand.DoExecute(index);
 
@@ -188,11 +170,21 @@ namespace MediaViewer.MetaData
 
         private void fileNameContextMenu_InsertDate(object sender, RoutedEventArgs e)
         {
-            int index = fileNameTextBox.CaretIndex;
+            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
 
             ViewModel.InsertDateCommand.DoExecute(index);
 
         }
+
+       
         
     }
 }

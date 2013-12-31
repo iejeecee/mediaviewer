@@ -12,15 +12,29 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataUpdateViewModel : CloseableObservableObject, IProgress
     {
+        class Counter
+        {
+            public Counter(int value, int nrDigits)
+            {
+                this.value = value;
+                this.nrDigits = nrDigits;
+            }
+
+            public int value;
+            public int nrDigits;
+        };
+
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public const string oldFilenameMarker = "filename";
         public const string counterMarker = "counter:";
+        public const string defaultCounter = "0001";
         public const string resolutionMarker = "resolution";
         public const string dateMarker = "date:";
         public const string defaultDateFormat = "g";
@@ -87,7 +101,9 @@ namespace MediaViewer.MetaData
             try
             {
 
-                List<int> counters = new List<int>();
+                List<Counter> counters = new List<Counter>();
+                String oldPath = "", newPath = "";
+                String oldFilename = "", newFilename = "";
 
                 foreach (MediaFileItem item in state.ItemList)
                 {
@@ -208,34 +224,57 @@ namespace MediaViewer.MetaData
                         }
 
                         //rename and/or move
-                        String oldPath = FileUtils.getPathWithoutFileName(item.Location);
-                        String oldFileName = Path.GetFileNameWithoutExtension(item.Location);
+                        oldPath = FileUtils.getPathWithoutFileName(item.Location);
+                        oldFilename = Path.GetFileNameWithoutExtension(item.Location);
                         String ext = Path.GetExtension(item.Location);
 
-                        String newFileName = parseNewFilename(state.Filename, oldFileName, counters, item.Media);
-                        String newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
-
-                        fileUtils.moveFile(oldPath + "\\" + oldFileName + ext, newPath + "\\" + newFileName + ext, this);
+                        newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Media);
+                        newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
+                     
+                        fileUtils.moveFile(oldPath + "\\" + oldFilename + ext, newPath + "\\" + newFilename + ext, this);
 
                         ItemProgress = 100;
                         TotalProgress++;
                     }
                     catch (Exception e)
                     {
-                        item.Media.MetaData.clear();
+                        if (item.Media != null && item.Media.MetaData != null)
+                        {
+                            item.Media.MetaData.clear();
+                        }
                         // reload metaData in metadataviewmodel
                         item.IsSelected = false;
                         item.IsSelected = true;
 
-                        ItemInfo = "Error Saving MetaData: " + item.Location;
-                        InfoMessages.Add("Could not save metaData for file: " + item.Location);
-                        log.Error("Could not save metaData for file: " + item.Location, e);
+                        ItemInfo = "Error updating file: " + item.Location;
+                        InfoMessages.Add("Error updating file: " + item.Location + " " + e.Message);
+                        log.Error("Error updating file: " + item.Location, e);
+                        MessageBox.Show("Error updating file: " + item.Location + "\n\n" + e.Message,
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         return;
                     }
 
                 }
 
                 setWindowTitle();
+
+                if (!oldFilename.Equals(newFilename))
+                {
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+
+                        Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.FilenameHistory, state.Filename);
+                    }));
+                }
+
+                if (!oldPath.Equals(newPath))
+                {
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                    {
+
+                        Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, newPath);
+                    }));
+                }
             }
             finally
             {
@@ -243,7 +282,7 @@ namespace MediaViewer.MetaData
             }
         }
 
-        string parseNewFilename(string newFilename, string oldFilename, List<int> counters, MediaFile media)
+        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, MediaFile media)
         {
             if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
             {
@@ -286,26 +325,27 @@ namespace MediaViewer.MetaData
 
                             if (counters.Count < nrCounters)
                             {
-                                haveCounterValue = int.TryParse(subString.Substring(counterMarker.Length), out counterValue);
+                                String stringValue = subString.Substring(counterMarker.Length);
+                                haveCounterValue = int.TryParse(stringValue, out counterValue);
 
                                 if (haveCounterValue)
                                 {
-                                    counters.Add(counterValue);
+                                    counters.Add(new Counter(counterValue, stringValue.Length));
                                 }
                             }
                             else
                             {
-                                counterValue = counters[nrCounters - 1];
+                                counterValue = counters[nrCounters - 1].value;
                                 haveCounterValue = true;
                             }
 
                             if (haveCounterValue)
                             {
 
-                                outputFileName += counterValue.ToString();
+                                outputFileName += counterValue.ToString("D" + counters[nrCounters - 1].nrDigits);
 
                                 // increment counter
-                                counters[nrCounters - 1] += 1;
+                                counters[nrCounters - 1].value += 1;
                             }
                         } else if(subString.StartsWith(resolutionMarker)) {
 
@@ -331,7 +371,7 @@ namespace MediaViewer.MetaData
                             String format = subString.Substring(dateMarker.Length);
                             String dateString = "";
 
-                            if (media != null && media.MetaData != null)
+                            if (media != null && media.MetaData != null && !media.MetaData.CreationDate.Equals(DateTime.MinValue))
                             {
                                 dateString = media.MetaData.CreationDate.ToString(format);                                                              
                             }

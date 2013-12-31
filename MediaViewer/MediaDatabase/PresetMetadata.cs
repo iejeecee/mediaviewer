@@ -12,22 +12,21 @@ namespace MediaViewer.MediaDatabase
     using System;
     using System.Collections.Generic;
     
-    public partial class Tag
+    public partial class PresetMetadata
     {
-        public Tag()
+        public PresetMetadata()
         {
-            this.Media = new HashSet<Media>();
-            this.ChildTags = new HashSet<Tag>();
-            this.ParentTags = new HashSet<Tag>();
+            this.Tags = new HashSet<Tag>();
         }
     
         public int Id { get; set; }
         public string Name { get; set; }
-        public Nullable<int> TagCategoryId { get; set; }
+        public string Title { get; set; }
+        public Nullable<double> Rating { get; set; }
+        public string Description { get; set; }
+        public string Author { get; set; }
+        public string Copyright { get; set; }
     
-        public virtual TagCategory TagCategory { get; set; }
-        public virtual ICollection<Media> Media { get; set; }
-        public virtual ICollection<Tag> ChildTags { get; set; }
-        public virtual ICollection<Tag> ParentTags { get; set; }
+        public virtual ICollection<Tag> Tags { get; set; }
     }
 }

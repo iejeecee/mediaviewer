@@ -20,20 +20,25 @@ namespace MediaViewer.MetaData
     /// </summary>
     public partial class LinkedTagEditorView : Window
     {
+        LinkedTagEditorViewModel linkedTagEditorViewModel;
+
         public LinkedTagEditorView()
         {
             InitializeComponent();
-            DataContext = new LinkedTagEditorViewModel();
+            DataContext = linkedTagEditorViewModel = new LinkedTagEditorViewModel();
 
-            linkedTagsListBox.DisplayMemberPath = "Name";
-        }
+            linkedTagEditorViewModel.ClearTagCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler((o, e) =>
+            {
 
-        private void tagsListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count >= 1)
-            {                         
-                linkedTagsListBox.ItemsSource = ((Tag)e.AddedItems[0]).LinkedTags;                
-            }
+                addChildTagTextBox.Text = "";
+            });
+
+            linkedTagEditorViewModel.AddChildTagCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler((o, e) =>
+            {
+                addChildTagTextBox.Text = "";
+            });
+
+
         }
     }
 }

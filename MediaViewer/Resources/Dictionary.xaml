@@ -12,6 +12,8 @@
     <Converters:PathToFileNameConverter x:Key="pathToFileNameConverter"/>
     <Converters:MathConverter x:Key="mathConverter"/>
     <Converters:BooleanToVisibilityConverter x:Key="visibilityConverter"/>
+    <Converters:IsNullConverter x:Key="isNullConverter"/>
+    <Converters:NullConverter x:Key="nullConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
@@ -32,5 +34,10 @@
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
     <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
-    <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>    
+    <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
+    
+    <!--Styles-->
+    <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">        
+        <Setter Property="Foreground" Value="Gray"/>
+    </Style>
 </ResourceDictionary>

@@ -32,15 +32,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EntityFramework">
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework.SqlServer">
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,11 +52,49 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MediaDatabaseTest.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabaseTest.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabaseTest.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabaseTest.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabaseTest.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MediaDatabaseTest.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tag.cs">
+      <DependentUpon>MediaDatabaseTest.tt</DependentUpon>
+    </Compile>
+    <Compile Include="TagCategory.cs">
+      <DependentUpon>MediaDatabaseTest.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <EntityDeploy Include="MediaDatabaseTest.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>MediaDatabaseTest.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="MediaDatabaseTest.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>MediaDatabaseTest.edmx</DependentUpon>
+      <LastGenOutput>MediaDatabaseTest.Context.cs</LastGenOutput>
+    </None>
+    <None Include="MediaDatabaseTest.edmx.diagram">
+      <DependentUpon>MediaDatabaseTest.edmx</DependentUpon>
+    </None>
+    <None Include="MediaDatabaseTest.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>MediaDatabaseTest.edmx</DependentUpon>
+      <LastGenOutput>MediaDatabaseTest.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -60,6 +102,12 @@
       <Project>{e1abf557-0726-4fb5-86b9-4ed43f130369}</Project>
       <Name>MediaDatabase</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="MediaDatabaseTest.edmx.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

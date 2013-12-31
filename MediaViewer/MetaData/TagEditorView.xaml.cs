@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -65,11 +66,11 @@ namespace MediaViewer.MetaData
 
                 if (tag == null) return;
 
-                foreach (Tag linkedTag in tag.LinkedTags)
+                foreach (Tag childTag in tag.ChildTags)
                 {
-                    if (!Tags.Contains(linkedTag.Name))
+                    if (!Tags.Contains(childTag.Name))
                     {
-                        Tags.Add(linkedTag.Name);
+                        Tags.Add(childTag.Name);
                     }
                 }                
 

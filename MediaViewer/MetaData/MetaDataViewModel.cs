@@ -91,25 +91,32 @@ namespace MediaViewer.MetaData
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = MediaFileWatcher.Instance.Path;
+                vm.MovePath = String.IsNullOrEmpty(Location) ? MediaFileWatcher.Instance.Path : Location;
                 vm.SelectedItems = ItemList;
-                foreach(String path in Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory) {
-                    vm.MovePathHistory.Add(path); 
-                }
-
+                vm.MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
+              
                 if (directoryPicker.ShowDialog() == true)
                 {                    
-                    Location = vm.MovePath;
-                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, Location);
+                    Location = vm.MovePath;                    
                 }
 
             }));
+
+            metaDataPresetsCommand = new Command(new Action(() =>
+                {
+                    MetaDataPresetsView metaDataPresets = new MetaDataPresetsView();
+                    if (metaDataPresets.ShowDialog() == true)
+                    {
+                    }
+
+                }));
 
             insertCounterCommand = new Command<int>(new Action<int>((startIndex) =>
             {
                 try
                 {                    
-                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + "0\"");
+                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + 
+                        MetaDataUpdateViewModel.defaultCounter + "\"");
                 }
                 catch (Exception e)
                 {
@@ -162,7 +169,11 @@ namespace MediaViewer.MetaData
             {
                 ItemList = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
             });
-           
+
+            FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
+
+            MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
+            
         }
 
         List<MediaFileItem> itemList;
@@ -236,8 +247,10 @@ namespace MediaViewer.MetaData
         public String Location
         {
             get { return location; }
-            set { location = value;
-            NotifyPropertyChanged();
+            set
+            {           
+                location = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -255,6 +268,14 @@ namespace MediaViewer.MetaData
         {
             get { return directoryPickerCommand; }
             set { directoryPickerCommand = value; }
+        }
+
+        Command metaDataPresetsCommand;
+
+        public Command MetaDataPresetsCommand
+        {
+            get { return metaDataPresetsCommand; }
+            set { metaDataPresetsCommand = value; }
         }
 
         float rating;
@@ -412,6 +433,22 @@ namespace MediaViewer.MetaData
             }
         }
 
+        ObservableCollection<String> filenameHistory;
+
+        public ObservableCollection<String> FilenameHistory
+        {
+            get { return filenameHistory; }
+            set { filenameHistory = value; }
+        }
+
+        ObservableCollection<String> movePathHistory;
+
+        public ObservableCollection<String> MovePathHistory
+        {
+            get { return movePathHistory; }
+            set { movePathHistory = value; }
+        }
+
         bool isEnabled;
 
         public bool IsEnabled
@@ -471,7 +508,7 @@ namespace MediaViewer.MetaData
             get { return dynamicProperties; }
         }
 
-      
+        
 
         void grabData()
         {

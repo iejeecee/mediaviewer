@@ -7,16 +7,16 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace MediaViewer.MediaDatabase
+namespace MediaDatabaseTest
 {
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     
-    public partial class MediaDatabaseContext : DbContext
+    public partial class MediaDatabaseTestContainer : DbContext
     {
-        public MediaDatabaseContext()
-            : base("name=MediaDatabaseContext")
+        public MediaDatabaseTestContainer()
+            : base("name=MediaDatabaseTestContainer")
         {
         }
     
@@ -27,7 +27,5 @@ namespace MediaViewer.MediaDatabase
     
         public DbSet<Tag> TagSet { get; set; }
         public DbSet<TagCategory> TagCategorySet { get; set; }
-        public DbSet<Media> MediaSet { get; set; }
-        public DbSet<PresetMetadata> PresetMetadataSet { get; set; }
     }
 }

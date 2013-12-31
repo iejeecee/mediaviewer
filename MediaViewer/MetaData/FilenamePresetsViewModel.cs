@@ -16,18 +16,13 @@ namespace MediaViewer.MetaData
         {
             NewPreset = "";
 
-            filenamePresets = new ObservableCollection<string>();
-            foreach (String preset in MediaViewer.Settings.AppSettings.Instance.FilenamePresets)
-            {
-                filenamePresets.Add(preset);
-            }
-
+            filenamePresets = MediaViewer.Settings.AppSettings.Instance.FilenamePresets;
+          
             addNewPresetCommand = new Command(new Action(() =>
             {
                 if (String.IsNullOrEmpty(NewPreset) || String.IsNullOrWhiteSpace(NewPreset)) return;
 
-                filenamePresets.Add(NewPreset);
-                MediaViewer.Settings.AppSettings.Instance.FilenamePresets.Add(NewPreset);
+                filenamePresets.Add(NewPreset);           
                 NewPreset = "";
             }));
 
@@ -50,7 +45,7 @@ namespace MediaViewer.MetaData
 
             SelectedDateFormat = DateFormats[3];
 
-            counterValue = 0;
+            counterValue = "0001";
 
             SelectCommand = new Command(new Action(() =>
             {             
@@ -60,9 +55,9 @@ namespace MediaViewer.MetaData
             SelectCommand.CanExecute = false;
 
             DeleteCommand = new Command(new Action(() =>
-            {
+            {               
                 FilenamePresets.Remove(SelectedPreset);
-                MediaViewer.Settings.AppSettings.Instance.FilenamePresets.Remove(SelectedPreset);
+                            
             }));
 
             cancelCommand = new Command(new Action(() =>
@@ -77,7 +72,7 @@ namespace MediaViewer.MetaData
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + CounterValue.ToString() + "\"");
+                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + CounterValue + "\"");
                 }
                 catch (Exception e)
                 {
@@ -157,14 +152,30 @@ namespace MediaViewer.MetaData
             set { filenamePresets = value; }
         }
 
-        int counterValue;
+        String counterValue;
 
-        public int CounterValue
+        public String CounterValue
         {
             get { return counterValue; }
             set
             {
                 counterValue = value;
+
+                if (counterValue != null)
+                {
+                    int temp;
+                    bool isInteger = int.TryParse(counterValue, out temp);
+                    if (!isInteger)
+                    {
+                        InsertCounterCommand.CanExecute = false;
+                        throw new ArgumentException("Counter value must be a number");
+                    }
+                    else
+                    {
+                        InsertCounterCommand.CanExecute = true;
+                    }
+                }
+
                 NotifyPropertyChanged();
             }
         }

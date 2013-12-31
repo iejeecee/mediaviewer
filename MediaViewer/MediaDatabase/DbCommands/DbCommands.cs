@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MediaDatabase
+namespace MediaViewer.MediaDatabase.DbCommands
 {
     class DbCommands : IDisposable
     {
@@ -17,13 +17,13 @@ namespace MediaViewer.MediaDatabase
         }
         MediaDatabaseContext db;
 
-        protected MediaDatabaseContext Db
+        public MediaDatabaseContext Db
         {
             get { return db; }
             set { db = value; }
         }
 
-        protected DbCommands(MediaDatabaseContext existingContext)
+        protected DbCommands(MediaDatabaseContext existingContext = null)
         {
             if (existingContext == null)
             {

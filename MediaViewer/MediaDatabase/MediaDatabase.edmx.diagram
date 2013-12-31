@@ -5,10 +5,14 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="c86114a749be4989a46eaa85528e08cb" Name="Diagram1" >
-        <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="3.5" PointY="1" />
+        <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="2.5" PointY="0.875" />
         <EntityTypeShape EntityType="MediaDatabase.TagCategory" Width="1.5" PointX="0.625" PointY="0.875" />
         <AssociationConnector Association="MediaDatabase.TagCategoryTag" />
-        <AssociationConnector Association="MediaDatabase.LinkedTags" />
+        <EntityTypeShape EntityType="MediaDatabase.Media" Width="1.5" PointX="4.625" PointY="0.875" />
+        <AssociationConnector Association="MediaDatabase.MediaTag" />
+        <EntityTypeShape EntityType="MediaDatabase.PresetMetadata" Width="1.5" PointX="6.75" PointY="1" />
+        <AssociationConnector Association="MediaDatabase.PresetMetadataTag" />
+        <AssociationConnector Association="MediaDatabase.TagTag" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
