@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 12/23/2013 16:01:50
+-- Date Created: 01/06/2014 20:55:37
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -20,9 +20,6 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_TagCategoryTag]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[TagSet] DROP CONSTRAINT [FK_TagCategoryTag];
 GO
-IF OBJECT_ID(N'[dbo].[FK_LinkedTags]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[TagSet] DROP CONSTRAINT [FK_LinkedTags];
-GO
 IF OBJECT_ID(N'[dbo].[FK_MediaTag_Media]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[MediaTag] DROP CONSTRAINT [FK_MediaTag_Media];
 GO
@@ -34,6 +31,12 @@ IF OBJECT_ID(N'[dbo].[FK_PresetMetadataTag_PresetMetadata]', 'F') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[FK_PresetMetadataTag_Tag]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[PresetMetadataTag] DROP CONSTRAINT [FK_PresetMetadataTag_Tag];
+GO
+IF OBJECT_ID(N'[dbo].[FK_TagTag_Tag]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[TagTag] DROP CONSTRAINT [FK_TagTag_Tag];
+GO
+IF OBJECT_ID(N'[dbo].[FK_TagTag_Tag1]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[TagTag] DROP CONSTRAINT [FK_TagTag_Tag1];
 GO
 
 -- --------------------------------------------------
@@ -57,6 +60,9 @@ IF OBJECT_ID(N'[dbo].[MediaTag]', 'U') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[PresetMetadataTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[PresetMetadataTag];
+GO
+IF OBJECT_ID(N'[dbo].[TagTag]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[TagTag];
 GO
 
 -- --------------------------------------------------
@@ -98,7 +104,15 @@ CREATE TABLE [dbo].[PresetMetadataSet] (
     [Rating] float  NULL,
     [Description] nvarchar(max)  NULL,
     [Author] nvarchar(max)  NULL,
-    [Copyright] nvarchar(max)  NULL
+    [Copyright] nvarchar(max)  NULL,
+    [IsNameEnabled] bit  NOT NULL,
+    [IsTitleEnabled] bit  NOT NULL,
+    [IsRatingEnabled] bit  NOT NULL,
+    [IsDescriptionEnabled] bit  NOT NULL,
+    [IsAuthorEnabled] bit  NOT NULL,
+    [IsCopyrightEnabled] bit  NOT NULL,
+    [CreationDate] datetime  NOT NULL,
+    [IsCreationDateEnabled] bit  NOT NULL
 );
 GO
 

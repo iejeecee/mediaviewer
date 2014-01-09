@@ -639,7 +639,8 @@ namespace MediaViewer.MetaData
                 }
 
             }
-
+       
+            metaData.setProperty_Date(Consts.XMP_NS_XMP, "CreateDate", CreationDate);
             metaData.setProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", DateTime.Now);
 
             List<string> tags = Tags;

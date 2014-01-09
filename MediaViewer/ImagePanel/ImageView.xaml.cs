@@ -22,7 +22,20 @@ namespace MediaViewer.ImagePanel
     /// </summary>
     public partial class ImageView : UserControl
     {
-     
+        public enum ScaleMode
+        {
+            NONE,
+            FIT_TO_SCREEN,
+            FIT_HEIGHT_TO_SCREEN,
+            FIT_WIDTH_TO_SCREEN
+        }
+
+        ScaleMode mode;
+
+        public ScaleMode Mode
+        {
+            get { return mode; }            
+        }
 
         private bool isLeftMouseButtonDown;
         //private bool isModified;
@@ -39,8 +52,9 @@ namespace MediaViewer.ImagePanel
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
 
             pictureBox.Stretch = Stretch.None;
+            mode = ScaleMode.NONE;
 
-            GlobalMessenger.Instance.Register<bool>("MainWindow_AutoScaleImageCheckBox_Click", new Action<bool>(autoScale));
+            GlobalMessenger.Instance.Register<ScaleMode>("MainWindow_AutoScaleImageCheckBox_Click", new Action<ScaleMode>(setScaleMode));
 
             scrollViewer.SizeChanged += new SizeChangedEventHandler((s, e) =>
             {
@@ -93,18 +107,30 @@ namespace MediaViewer.ImagePanel
 
         public MatrixTransform getScaleMatrix(BitmapImage image)
         {
-                       
-            if (pictureBox.Stretch == Stretch.Uniform)
-            {                
+            Matrix scaleMatrix = new Matrix();
+
+            if (Mode == ScaleMode.FIT_HEIGHT_TO_SCREEN)
+            {
+                double heightScale = scrollViewer.ActualHeight / image.Height;
+
+                scaleMatrix.Scale(heightScale, heightScale);
+            }
+            else if (Mode == ScaleMode.FIT_WIDTH_TO_SCREEN)
+            {
+                double widthScale = scrollViewer.ActualWidth / image.Width;
+
+                scaleMatrix.Scale(widthScale, widthScale);
+
+            }
+            else if (Mode == ScaleMode.FIT_TO_SCREEN)
+            {
                 double widthScale = scrollViewer.ActualWidth / image.Width;
                 double heightScale = scrollViewer.ActualHeight / image.Height;
-               
+
                 double scale = Math.Min(widthScale, heightScale);
-               
-                Matrix scaleMatrix = new Matrix();
+
                 scaleMatrix.Scale(scale, scale);
 
-                return (new MatrixTransform(scaleMatrix));
             }
             else
             {
@@ -114,23 +140,16 @@ namespace MediaViewer.ImagePanel
                 Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
                 double scale = actualSize.Width / image.Width;
 
-                Matrix scaleMatrix = new Matrix();
                 scaleMatrix.Scale(scale, scale);
 
-                return (new MatrixTransform(scaleMatrix));
             }
+
+            return (new MatrixTransform(scaleMatrix));
         }
 
-        void autoScale(bool value)
+        void setScaleMode(ScaleMode mode)
         {
-            if (value == true)
-            {
-                pictureBox.Stretch = Stretch.Uniform;               
-            }
-            else
-            {
-                pictureBox.Stretch = Stretch.None;
-            }
+            this.mode = mode;
 
             if (pictureBox.Source != null)
             {

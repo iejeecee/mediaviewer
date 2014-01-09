@@ -54,10 +54,17 @@ namespace MediaViewer.MetaData
             SelectedPreset = null;
             Name = "";
             Rating = 0;
+            RatingEnabled = false;
             Title = "";
+            TitleEnabled = false;
             Description = "";
+            DescriptionEnabled = false;
             Author = "";
+            AuthorEnabled = false;
             Copyright = "";
+            CopyrightEnabled = false;
+            Creation = DateTime.MinValue;
+            CreationEnabled = false;
             Tags.Clear();
         }
 
@@ -81,10 +88,17 @@ namespace MediaViewer.MetaData
                 if (selectedPreset != null)
                 {
                     Rating = (float)selectedPreset.Rating;
+                    RatingEnabled = selectedPreset.IsRatingEnabled;
                     Title = selectedPreset.Title;
+                    TitleEnabled = selectedPreset.IsTitleEnabled;
                     Description = selectedPreset.Description;
+                    DescriptionEnabled = selectedPreset.IsDescriptionEnabled;
                     Author = selectedPreset.Author;
+                    AuthorEnabled = selectedPreset.IsAuthorEnabled;
                     Copyright = selectedPreset.Copyright;
+                    CopyrightEnabled = selectedPreset.IsCopyrightEnabled;
+                    Creation = selectedPreset.CreationDate;
+                    CreationEnabled = selectedPreset.IsCreationDateEnabled;
 
                     CreatePresetCommand.CanExecute = false;
                     UpdatePresetCommand.CanExecute = true;
@@ -134,8 +148,7 @@ namespace MediaViewer.MetaData
             NotifyPropertyChanged();
             }
         }
-
-     
+           
         float rating;
 
         public float Rating
@@ -145,6 +158,16 @@ namespace MediaViewer.MetaData
             {
                 rating = value;
                 NotifyPropertyChanged();
+            }
+        }
+
+        bool ratingEnabled;
+
+        public bool RatingEnabled
+        {
+            get { return ratingEnabled; }
+            set { ratingEnabled = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -160,6 +183,16 @@ namespace MediaViewer.MetaData
             }
         }
 
+        bool titleEnabled;
+
+        public bool TitleEnabled
+        {
+            get { return titleEnabled; }
+            set { titleEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         string description;
 
         public string Description
@@ -169,6 +202,16 @@ namespace MediaViewer.MetaData
             {
                 description = value;
                 NotifyPropertyChanged();
+            }
+        }
+
+        bool descriptionEnabled;
+
+        public bool DescriptionEnabled
+        {
+            get { return descriptionEnabled; }
+            set { descriptionEnabled = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -184,6 +227,16 @@ namespace MediaViewer.MetaData
             }
         }
 
+        bool authorEnabled;
+
+        public bool AuthorEnabled
+        {
+            get { return authorEnabled; }
+            set { authorEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         string copyright;
 
         public string Copyright
@@ -194,6 +247,36 @@ namespace MediaViewer.MetaData
             {
                 copyright = value;
                 NotifyPropertyChanged();
+            }
+        }
+
+        bool copyrightEnabled;
+
+        public bool CopyrightEnabled
+        {
+            get { return copyrightEnabled; }
+            set { copyrightEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        DateTime creation;
+
+        public DateTime Creation
+        {
+            get { return creation; }
+            set { creation = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        bool creationEnabled;
+
+        public bool CreationEnabled
+        {
+            get { return creationEnabled; }
+            set { creationEnabled = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -244,10 +327,17 @@ namespace MediaViewer.MetaData
             PresetMetadata preset = new PresetMetadata();
             preset.Name = Name;
             preset.Rating = Rating;
+            preset.IsRatingEnabled = RatingEnabled;
             preset.Title = Title;
+            preset.IsTitleEnabled = TitleEnabled;
             preset.Author = Author;
+            preset.IsAuthorEnabled = AuthorEnabled;
             preset.Description = Description;
+            preset.IsDescriptionEnabled = DescriptionEnabled;
             preset.Copyright = Copyright;
+            preset.IsCopyrightEnabled = CopyrightEnabled;
+            preset.CreationDate = Creation;
+            preset.IsCreationDateEnabled = CreationEnabled;
 
             using (PresetMetadataDbCommands metaDataCommands = new PresetMetadataDbCommands())
             {
@@ -286,19 +376,28 @@ namespace MediaViewer.MetaData
 
         void updatePreset()
         {
-            SelectedPreset.Name = Name;
-            SelectedPreset.Rating = Rating;
-            SelectedPreset.Title = Title;
-            SelectedPreset.Author = Author;
-            SelectedPreset.Description = Description;
-            SelectedPreset.Copyright = Copyright;
+            PresetMetadata preset = new PresetMetadata();
+            preset.Id = selectedPreset.Id;
+            preset.Name = Name;
+            preset.Rating = Rating;
+            preset.IsRatingEnabled = RatingEnabled;
+            preset.Title = Title;
+            preset.IsTitleEnabled = TitleEnabled;
+            preset.Author = Author;
+            preset.IsAuthorEnabled = AuthorEnabled;
+            preset.Description = Description;
+            preset.IsDescriptionEnabled = DescriptionEnabled;
+            preset.Copyright = Copyright;
+            preset.IsCopyrightEnabled = CopyrightEnabled;
+            preset.CreationDate = Creation;
+            preset.IsCreationDateEnabled = CreationEnabled;
 
             using (PresetMetadataDbCommands metaDataCommands = new PresetMetadataDbCommands())
             {
 
                 try
                 {
-                    PresetMetadata result = metaDataCommands.updatePresetMetadata(SelectedPreset);
+                    PresetMetadata result = metaDataCommands.updatePresetMetadata(preset);
                     MetadataPresets.Remove(SelectedPreset);
                     Utils.Misc.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
                    

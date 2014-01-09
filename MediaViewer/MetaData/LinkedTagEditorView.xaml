@@ -46,7 +46,8 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <ComboBox Grid.Row="0" Grid.Column="0" Name="categoryFilterComboBox" Margin="5,5,5,5" DisplayMemberPath="Name"
-                              SelectedItem="{Binding CategoryFilter, Converter={StaticResource nullConverter}, ConverterParameter={x:Static MetaData:LinkedTagEditorViewModel.NullCategory}}">
+                              SelectedItem="{Binding CategoryFilter, Converter={StaticResource nullConverter}, ConverterParameter={x:Static MetaData:LinkedTagEditorViewModel.NullCategory}}"
+                              Style="{StaticResource baseComboBoxStyle}">
                         <ComboBox.ItemsSource>
                             <CompositeCollection>
                                 <x:Static Member="MetaData:LinkedTagEditorViewModel.NullCategory"/>
@@ -82,7 +83,8 @@
                     <Label Grid.Row="3" Grid.Column="0" Content="Category" HorizontalAlignment="Right"  Style="{StaticResource labelStyle}"/>
                     <ComboBox Grid.Row="3" Grid.Column="1" DisplayMemberPath="Name" 
                               SelectedItem="{Binding TagCategory, Mode=TwoWay, Converter={StaticResource nullConverter}, ConverterParameter={x:Static MetaData:LinkedTagEditorViewModel.NullCategory}}" 
-                              Margin="5,5,5,5" HorizontalAlignment="Stretch" Height="20">
+                              Margin="5,5,5,5" HorizontalAlignment="Stretch" Height="20"
+                              Style="{StaticResource baseComboBoxStyle}">
                         <ComboBox.ItemsSource>
                             <CompositeCollection>
                                 <x:Static Member="MetaData:LinkedTagEditorViewModel.NullCategory"/>

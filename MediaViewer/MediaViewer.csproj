@@ -153,6 +153,9 @@
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="Converters\PathToFileNameConverter.cs" />
+    <Compile Include="DateTimePicker\DateTimePickerView.xaml.cs">
+      <DependentUpon>DateTimePickerView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
       <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
     </Compile>
@@ -345,6 +348,10 @@
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
     <Page Include="About\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="DateTimePicker\DateTimePickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -663,6 +670,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\Calendar.ico" />
     <Resource Include="Resources\Icons\text.ico" />
     <Resource Include="Resources\Icons\circle.ico" />
   </ItemGroup>

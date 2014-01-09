@@ -170,6 +170,12 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
+                        if (state.CreationEnabled && !metaData.CreationDate.Equals(state.Creation))
+                        {
+                            metaData.CreationDate = state.Creation;
+                            isModified = true;
+                        }
+
                         if (state.BatchMode == false && !state.Tags.SequenceEqual(metaData.Tags))
                         {
                             metaData.Tags.Clear();
@@ -540,6 +546,8 @@ namespace MediaViewer.MetaData
             BatchMode = vm.BatchMode;
             Copyright = vm.Copyright;
             CopyrightEnabled = vm.CopyrightEnabled;
+            Creation = vm.Creation;
+            CreationEnabled = vm.CreationEnabled;
             Description = vm.Description;
             DescriptionEnabled = vm.DescriptionEnabled;
             Filename = vm.Filename;
@@ -685,6 +693,22 @@ namespace MediaViewer.MetaData
         {
             get { return removeTags; }
             set { removeTags = value; }
+        }
+
+        DateTime creation;
+
+        public DateTime Creation
+        {
+            get { return creation; }
+            set { creation = value; }
+        }
+
+        bool creationEnabled;
+
+        public bool CreationEnabled
+        {
+            get { return creationEnabled; }
+            set { creationEnabled = value; }
         }
     }
 }

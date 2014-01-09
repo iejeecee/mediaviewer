@@ -2,62 +2,87 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:MediaViewer.MetaData" xmlns:Controls="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit" x:Class="MediaViewer.MetaData.MetaDataPresetsView"
-        Title="Metadata Presets" Height="490" Width="500">
+        xmlns:DateTimePicker="clr-namespace:MediaViewer.DateTimePicker"
+        Title="Metadata Presets" Height="530" Width="500">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
-                <Setter Property="HorizontalAlignment" Value="Right"/>               
-            </Style>           
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+            </Style>
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-            <GroupBox Header="Preset" Grid.Row="0">
+        <GroupBox Header="Preset" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Name" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding MetadataPresets}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedPreset}" Text="{Binding Name, Mode=TwoWay}" Margin="5,5,5,5" IsEditable="True" IsTextSearchEnabled="False"/>
-                <Separator Grid.Row="1" Grid.ColumnSpan="2"/>
+                <ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding MetadataPresets}" DisplayMemberPath="Name" SelectedItem="{Binding SelectedPreset}" Text="{Binding Name, Mode=TwoWay}" 
+                          Margin="5,5,5,5" IsEditable="True" IsTextSearchEnabled="False"  Grid.ColumnSpan="2"/>
+                <Separator Grid.Row="1" Grid.ColumnSpan="3"/>
                 <Label Grid.Row="2" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <Controls:Rating Grid.Row="2" Grid.Column="1" x:Name="rating" ItemCount="5" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5,5,5,5"
-			Value="{Binding Rating, Mode=TwoWay}"/>
+                <Controls:Rating Grid.Row="2" Grid.Column="1" x:Name="rating" ItemCount="5" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5,5,5,5"                
+			        Value="{Binding Rating, Mode=TwoWay}" IsEnabled="{Binding RatingEnabled}"/>
+                <CheckBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
+                          IsChecked="{Binding RatingEnabled}"/>
                 <Label Grid.Row="3" Grid.Column="0"  Content="Title" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <TextBox Grid.Row="3" Grid.Column="1" x:Name="titleNameTextBox" Margin="5,5,5,5" VerticalAlignment="Top"
-			Text="{Binding Title}"/>
+                <TextBox Grid.Row="3" Grid.Column="1" x:Name="titleNameTextBox" Margin="5,5,5,5" VerticalAlignment="Top" Text="{Binding Title}"
+                         IsEnabled="{Binding TitleEnabled}"/>
+                <CheckBox Grid.Row="3" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
+                          IsChecked="{Binding TitleEnabled}"/>                
                 <Label Grid.Row="4" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <TextBox Grid.Row="4" Grid.Column="1" x:Name="descriptionTextBox"  TextWrapping="Wrap"
-			AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5,5,5,5" Height="70"
-			Text="{Binding Description}"/>
+                <TextBox Grid.Row="4" Grid.Column="1" x:Name="descriptionTextBox"  TextWrapping="Wrap" AcceptsReturn="True" 
+                         VerticalScrollBarVisibility="Auto" Margin="5,5,5,5" 
+                         VerticalAlignment="Stretch"
+                         Text="{Binding Description}"
+                         IsEnabled="{Binding DescriptionEnabled}"/>
+                <CheckBox Grid.Row="4" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
+                          IsChecked="{Binding DescriptionEnabled}"/>
                 <Label  Grid.Row="5" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
                 <TextBox Grid.Row="5" Grid.Column="1" x:Name="authorTextBox" Margin="5,5,5,5" VerticalAlignment="Top"
-			Text="{Binding Author}"/>
+                         Text="{Binding Author}"
+                         IsEnabled="{Binding AuthorEnabled}"/>
+                <CheckBox Grid.Row="5" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
+                          IsChecked="{Binding AuthorEnabled}"/>
                 <Label Grid.Row="6" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <TextBox Grid.Row="6" Grid.Column="1" x:Name="copyrightTextBox"  TextWrapping="Wrap"
-			AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5,5,5,5" Height="35"
-			Text="{Binding Copyright}"/>
-                <Label Grid.Row="7" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <local:TagEditorView Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
-			Tags="{Binding Tags}" Margin="5,5,5,5"/>                
+                <TextBox Grid.Row="6" Grid.Column="1" x:Name="copyrightTextBox"  TextWrapping="Wrap" 
+                         AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5,5,5,5"  
+                         Text="{Binding Copyright}"
+                         VerticalAlignment="Stretch"
+                         IsEnabled="{Binding CopyrightEnabled}"/>
+                <CheckBox Grid.Row="6" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
+                          IsChecked="{Binding CopyrightEnabled}"/>
+                <Label Grid.Row="7" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
+                <DateTimePicker:DateTimePickerView Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                  
+                                                   DateFormat="dd-MM-yyyy HH:mm:ss"
+                                                   SelectedDate="{Binding Creation, Mode=TwoWay}"
+                                                   IsEnabled="{Binding CreationEnabled}"/>
+                <CheckBox Grid.Row="7" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5" IsChecked="{Binding CreationEnabled}"/>
+                <Label Grid.Row="8" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
+                <local:TagEditorView Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+			Tags="{Binding Tags}" Margin="5,5,5,5"/>
             </Grid>
         </GroupBox>
         <Button Grid.Row="1" Grid.Column="1" Content="Clear" Command="{Binding ClearPresetCommand}" Width="50" HorizontalAlignment="Right" Margin="5,5,115,5"/>

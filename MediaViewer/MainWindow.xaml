@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel"
         xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:Search="clr-namespace:MediaViewer.Search" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
         Title="{Binding WindowTitle}" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
     <Grid x:Name="MainGrid">

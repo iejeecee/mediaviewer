@@ -80,6 +80,14 @@
     <Property Name="Description" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Author" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Copyright" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="IsNameEnabled" Type="bit" Nullable="false" />
+    <Property Name="IsTitleEnabled" Type="bit" Nullable="false" />
+    <Property Name="IsRatingEnabled" Type="bit" Nullable="false" />
+    <Property Name="IsDescriptionEnabled" Type="bit" Nullable="false" />
+    <Property Name="IsAuthorEnabled" Type="bit" Nullable="false" />
+    <Property Name="IsCopyrightEnabled" Type="bit" Nullable="false" />
+    <Property Name="CreationDate" Type="datetime" Nullable="false" />
+    <Property Name="IsCreationDateEnabled" Type="bit" Nullable="false" />
   </EntityType>
   <EntityType Name="MediaTag">
     <Key>
@@ -276,6 +284,14 @@
           <Property Type="String" Name="Author" Nullable="true" />
           <Property Type="String" Name="Copyright" Nullable="true" />
           <NavigationProperty Name="Tags" Relationship="MediaDatabase.PresetMetadataTag" FromRole="PresetMetadata" ToRole="Tag" />
+          <Property Type="Boolean" Name="IsNameEnabled" Nullable="false" />
+          <Property Type="Boolean" Name="IsTitleEnabled" Nullable="false" />
+          <Property Type="Boolean" Name="IsRatingEnabled" Nullable="false" />
+          <Property Type="Boolean" Name="IsDescriptionEnabled" Nullable="false" />
+          <Property Type="Boolean" Name="IsAuthorEnabled" Nullable="false" />
+          <Property Type="Boolean" Name="IsCopyrightEnabled" Nullable="false" />
+          <Property Type="DateTime" Name="CreationDate" Nullable="false" />
+          <Property Type="Boolean" Name="IsCreationDateEnabled" Nullable="false" />
         </EntityType>
         <Association Name="PresetMetadataTag">
           <End Type="MediaDatabase.PresetMetadata" Role="PresetMetadata" Multiplicity="*" />
@@ -331,6 +347,14 @@
           <ScalarProperty Name="Description" ColumnName="Description" />
           <ScalarProperty Name="Author" ColumnName="Author" />
           <ScalarProperty Name="Copyright" ColumnName="Copyright" />
+          <ScalarProperty Name="IsNameEnabled" ColumnName="IsNameEnabled" />
+          <ScalarProperty Name="IsTitleEnabled" ColumnName="IsTitleEnabled" />
+          <ScalarProperty Name="IsRatingEnabled" ColumnName="IsRatingEnabled" />
+          <ScalarProperty Name="IsDescriptionEnabled" ColumnName="IsDescriptionEnabled" />
+          <ScalarProperty Name="IsAuthorEnabled" ColumnName="IsAuthorEnabled" />
+          <ScalarProperty Name="IsCopyrightEnabled" ColumnName="IsCopyrightEnabled" />
+          <ScalarProperty Name="CreationDate" ColumnName="CreationDate" />
+          <ScalarProperty Name="IsCreationDateEnabled" ColumnName="IsCreationDateEnabled" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

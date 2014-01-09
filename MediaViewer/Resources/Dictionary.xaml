@@ -31,13 +31,29 @@
         <GradientStop Color="#888" Offset="1" />
     </LinearGradientBrush>
 
+    <SolidColorBrush x:Key="disabledColor" Color="#FFD4D0C8"/>
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
     <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
     
-    <!--Styles-->
+    <!-- Label -->
     <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">        
         <Setter Property="Foreground" Value="Gray"/>
+    </Style>
+    
+    <!-- ComboBox -->
+    <Style TargetType="{x:Type ComboBox}" x:Key="baseComboBoxStyle">
+        <Style.Triggers>
+            <Trigger Property="IsEditable" Value="False">
+                <Setter Property="Background" Value="LightGray"/>
+            </Trigger>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Background" Value="LightGray"/>
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+            </Trigger>
+        </Style.Triggers>        
     </Style>
 </ResourceDictionary>

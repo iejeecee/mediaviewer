@@ -1,5 +1,7 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.ImageGrid;
+using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
@@ -31,8 +33,11 @@ namespace MediaViewer.MetaData
             Description = "";
             Author = "";
             Copyright = "";
+            Creation = DateTime.MinValue;
             dynamicProperties = new List<Tuple<string, string>>();
-         
+
+            SelectedMetaDataPreset = noPresetMetaData;
+
             lock (tagsLock)
             {
                 Tags.Clear();
@@ -61,7 +66,11 @@ namespace MediaViewer.MetaData
             RemoveTags = new ObservableCollection<string>();
             removeTagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(RemoveTags, removeTagsLock);
-            
+
+            MetaDataPresets = new ObservableCollection<PresetMetadata>();
+
+            loadMetaDataPresets();
+
             clear();
             BatchMode = false;
             IsEnabled = false;
@@ -105,9 +114,8 @@ namespace MediaViewer.MetaData
             metaDataPresetsCommand = new Command(new Action(() =>
                 {
                     MetaDataPresetsView metaDataPresets = new MetaDataPresetsView();
-                    if (metaDataPresets.ShowDialog() == true)
-                    {
-                    }
+                    metaDataPresets.ShowDialog();
+                    loadMetaDataPresets();                    
 
                 }));
 
@@ -278,6 +286,106 @@ namespace MediaViewer.MetaData
             set { metaDataPresetsCommand = value; }
         }
 
+        static PresetMetadata noPresetMetaData = new PresetMetadata() { Name = "None", Id = -1 };
+
+        ObservableCollection<PresetMetadata> metaDataPresets;
+
+        public ObservableCollection<PresetMetadata> MetaDataPresets
+        {
+            get { return metaDataPresets; }
+            set { metaDataPresets = value; }
+        }
+
+        PresetMetadata selectedMetaDataPreset;
+
+        public PresetMetadata SelectedMetaDataPreset
+        {
+            get { return selectedMetaDataPreset; }
+            set
+            {
+                bool dontGrabData = false;
+
+                if (value != null && selectedMetaDataPreset != null)
+                {
+                    if (value.Id == -1 && selectedMetaDataPreset.Id == -1)
+                    {
+                        dontGrabData = true;
+                    }
+                }
+
+                selectedMetaDataPreset = value;
+               
+                if (selectedMetaDataPreset== null)
+                {
+
+                }
+                else if (selectedMetaDataPreset.Id == -1)
+                {
+                    if (itemList != null && itemList.Count == 1 && dontGrabData == false)
+                    {
+                        grabData();
+                    }
+                }
+                else
+                {
+                    selectedMetaDataPreset = value;
+
+                    if (selectedMetaDataPreset.IsTitleEnabled)
+                    {
+                        TitleEnabled = true;
+                        Title = selectedMetaDataPreset.Title;
+                    }
+                    if (selectedMetaDataPreset.IsRatingEnabled)
+                    {
+                        RatingEnabled = true;
+                        Rating = (float)selectedMetaDataPreset.Rating;
+                    }
+                    if (selectedMetaDataPreset.IsDescriptionEnabled)
+                    {
+                        DescriptionEnabled = true;
+                        Description = selectedMetaDataPreset.Description;
+                    }
+                    if (selectedMetaDataPreset.IsAuthorEnabled)
+                    {
+                        AuthorEnabled = true;
+                        Author = selectedMetaDataPreset.Author;
+                    }
+
+                    if (selectedMetaDataPreset.IsCreationDateEnabled)
+                    {
+                        CreationEnabled = true;
+                        Creation = selectedMetaDataPreset.CreationDate;
+                    }
+
+                    if (selectedMetaDataPreset.IsCopyrightEnabled)
+                    {
+                        CopyrightEnabled = true;
+                        Copyright = selectedMetaDataPreset.Copyright;
+                    }
+
+                }
+                NotifyPropertyChanged();
+            }
+
+        }
+
+        void loadMetaDataPresets()
+        {           
+            MetaDataPresets.Clear();
+
+            MetaDataPresets.Add(noPresetMetaData);
+
+            using (PresetMetadataDbCommands db = new PresetMetadataDbCommands())
+            {
+                foreach (PresetMetadata data in db.getAllPresets())
+                {
+                    MetaDataPresets.Add(data);
+                }
+
+            }
+            SelectedMetaDataPreset = noPresetMetaData;
+        }
+
         float rating;
 
         public float Rating
@@ -400,6 +508,26 @@ namespace MediaViewer.MetaData
             }
         }
 
+        DateTime creation;
+
+        public DateTime Creation
+        {
+            get { return creation; }
+            set { creation = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        bool creationEnabled;
+
+        public bool CreationEnabled
+        {
+            get { return creationEnabled; }
+            set { creationEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         Object tagsLock;
         ObservableCollection<String> tags;
 
@@ -465,6 +593,7 @@ namespace MediaViewer.MetaData
                     DescriptionEnabled = false;
                     AuthorEnabled = false;
                     CopyrightEnabled = false;
+                    CreationEnabled = false;
 
                 }
             }
@@ -488,6 +617,7 @@ namespace MediaViewer.MetaData
                     DescriptionEnabled = false;
                     AuthorEnabled = false;
                     CopyrightEnabled = false;
+                    CreationEnabled = false;
                 }
                 else if(IsEnabled == true)
                 {               
@@ -496,6 +626,7 @@ namespace MediaViewer.MetaData
                     DescriptionEnabled = true;
                     AuthorEnabled = true;
                     CopyrightEnabled = true;
+                    CreationEnabled = true;
                 }
 
             }
@@ -512,6 +643,7 @@ namespace MediaViewer.MetaData
 
         void grabData()
         {
+           
             
             if (itemList.Count == 1 && ItemList[0].Media != null)
             {
@@ -540,9 +672,12 @@ namespace MediaViewer.MetaData
                     Description = metaData.Description;
                     Author = metaData.Creator;
                     Copyright = metaData.Copyright;
+                    Creation = metaData.CreationDate;
 
                     lock (tagsLock)
                     {
+                        Tags.Clear();
+
                         foreach (string tag in metaData.Tags)
                         {
                             Tags.Add(tag);
@@ -567,8 +702,8 @@ namespace MediaViewer.MetaData
                     }
 
                 }
-                
 
+                SelectedMetaDataPreset = noPresetMetaData;
                 IsEnabled = true;
                 BatchMode = false;
 
@@ -626,4 +761,6 @@ namespace MediaViewer.MetaData
         }
         
     }
+
+
 }

@@ -45,12 +45,19 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             Db.PresetMetadataSet.Add(newPreset);
 
-            newPreset.Name = preset.Name;
+            newPreset.Name = preset.Name;           
             newPreset.Author = preset.Author;
+            newPreset.IsAuthorEnabled = preset.IsAuthorEnabled;
             newPreset.Copyright = preset.Copyright;
+            newPreset.IsCopyrightEnabled = preset.IsCopyrightEnabled;
             newPreset.Description = preset.Description;
+            newPreset.IsDescriptionEnabled = preset.IsDescriptionEnabled;
             newPreset.Rating = preset.Rating;
+            newPreset.IsRatingEnabled = preset.IsRatingEnabled;
             newPreset.Title = preset.Title;
+            newPreset.IsTitleEnabled = preset.IsTitleEnabled;
+            newPreset.CreationDate = preset.CreationDate;
+            newPreset.IsCreationDateEnabled = preset.IsCreationDateEnabled;
 
             TagDbCommands tagCommands = new TagDbCommands(Db);
 
@@ -86,10 +93,17 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             preset.Name = updatePreset.Name;
             preset.Author = updatePreset.Author;
+            preset.IsAuthorEnabled = updatePreset.IsAuthorEnabled;
             preset.Copyright = updatePreset.Copyright;
+            preset.IsCopyrightEnabled = updatePreset.IsCopyrightEnabled;
             preset.Description = updatePreset.Description;
+            preset.IsDescriptionEnabled = updatePreset.IsDescriptionEnabled;
             preset.Rating = updatePreset.Rating;
+            preset.IsRatingEnabled = updatePreset.IsRatingEnabled;
             preset.Title = updatePreset.Title;
+            preset.IsTitleEnabled = updatePreset.IsTitleEnabled;
+            preset.CreationDate = updatePreset.CreationDate;
+            preset.IsCreationDateEnabled = updatePreset.IsCreationDateEnabled;
 
             preset.Tags.Clear();
 

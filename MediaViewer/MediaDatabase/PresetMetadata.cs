@@ -26,6 +26,14 @@ namespace MediaViewer.MediaDatabase
         public string Description { get; set; }
         public string Author { get; set; }
         public string Copyright { get; set; }
+        public bool IsNameEnabled { get; set; }
+        public bool IsTitleEnabled { get; set; }
+        public bool IsRatingEnabled { get; set; }
+        public bool IsDescriptionEnabled { get; set; }
+        public bool IsAuthorEnabled { get; set; }
+        public bool IsCopyrightEnabled { get; set; }
+        public System.DateTime CreationDate { get; set; }
+        public bool IsCreationDateEnabled { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
     }
