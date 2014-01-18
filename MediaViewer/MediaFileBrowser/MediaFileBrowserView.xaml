@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" xmlns:Pager="clr-namespace:MediaViewer.Pager" xmlns:MetaData="clr-namespace:MediaViewer.MetaData" x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView" 
+             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" xmlns:Pager="clr-namespace:MediaViewer.Pager" xmlns:MetaData="clr-namespace:MediaViewer.MetaData" xmlns:Search="clr-namespace:MediaViewer.Search" x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="403.333">
     <UserControl.Resources>
@@ -27,7 +27,10 @@
                 <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Column="0" SelectedPath="{Binding BrowsePath, Mode=TwoWay}"/>
             </TabItem>
             <TabItem Header="Meta Data">
-                <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="0"/>                
+                <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="0"/>
+            </TabItem>
+            <TabItem Header="Search">
+                <Search:SearchView Grid.Column="0"/>
             </TabItem>
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>

@@ -3,41 +3,58 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:Search="clr-namespace:MediaViewer.Search"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="MediaViewer.Search.SearchView" 
              mc:Ignorable="d" 
-             d:DesignWidth="300" d:DesignHeight="20">
-    <Grid>
+             d:DesignWidth="300" d:DesignHeight="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+            </Style>
+            <Style TargetType="{x:Type CheckBox}" x:Key="checkBoxStyle">
+                <Setter Property="HorizontalAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Top"/>
+                <Setter Property="Margin" Value="0,5,0,0"/>
+                <Setter Property="ToolTip" Value="Enable/Disable update"/>
+            </Style>
+            <ObjectDataProvider x:Key="mediaTypeEnum"
+                MethodName="GetValues" ObjectType="{x:Type System:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="Search:MediaType"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+        </ResourceDictionary>     
+    </UserControl.Resources>
+    <Grid>        
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="7*"/>
-            <ColumnDefinition Width="1.5*"/>
-            <ColumnDefinition Width="0.5*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>           
         </Grid.ColumnDefinitions>
-        <TextBox x:Name="queryTextBox" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="Wrap" Text="{Binding Query}" VerticalAlignment="Stretch"
-			ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus"/>
-        <Button x:Name="searchButton" Grid.Column="1" VerticalAlignment="Stretch" ToolTip="Search" HorizontalAlignment="Stretch" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Query" Style="{StaticResource labelStyle}"/>
+        <TextBox Grid.Row="0" Grid.Column="1" x:Name="queryTextBox" HorizontalAlignment="Stretch" Text="{Binding Query}" VerticalAlignment="Stretch"
+			ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,35,5"/>
+        <Button Grid.Row="0" Grid.Column="1" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
+                Width="30" Height="20" HorizontalAlignment="Right" Margin="5, 5, 5, 5">
             <Image Source="pack://application:,,,/Resources/Icons/searchblack.ico"/>
         </Button>
-        <xctk:DropDownButton Name="DropDownButton" Grid.Column="2" ToolTip="Search Options">
-            <xctk:DropDownButton.DropDownContent>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                        <RowDefinition/>
-                    </Grid.RowDefinitions>
-                    <CheckBox Grid.Row="0" Name="allMediaCheckBox" Content="All Media"
-                              IsChecked="{Binding AllMedia}"/>
-                    <CheckBox Grid.Row="1" Name="videoOnlyCheckBox" Content="Video Only"
-                              IsChecked="{Binding VideoOnly}"/>
-                    <CheckBox Grid.Row="2" Name="imagesOnlyCheckBox" Content="Images Only"
-                              IsChecked="{Binding ImagesOnly}"/>
-                    <Separator Grid.Row="3"/>
-                    <CheckBox  Grid.Row="4" Name="recurseSubDirectoriesCheckBox" Content="Recurse Subdirectories"
-                              IsChecked="{Binding RecurseSubDirectories}"/>
-                </Grid>
-            </xctk:DropDownButton.DropDownContent>
-        </xctk:DropDownButton>
+        <Label Grid.Row="1" Grid.Column="0"  Content="Media Type" Style="{StaticResource labelStyle}"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" VerticalAlignment="Top" HorizontalAlignment="Stretch" 
+                  ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding SearchType}"/>
+        <Label Grid.Row="2" Grid.Column="0"  Content="Recursive" Style="{StaticResource labelStyle}"/>
+        <CheckBox  Grid.Row="2" Grid.Column="1" Name="recurseSubDirectoriesCheckBox" IsChecked="{Binding RecurseSubDirectories}" Margin="5,5,5,5"/>
+        
     </Grid>
 </UserControl>

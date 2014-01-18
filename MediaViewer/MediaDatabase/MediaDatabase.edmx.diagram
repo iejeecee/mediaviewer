@@ -13,6 +13,8 @@
         <EntityTypeShape EntityType="MediaDatabase.PresetMetadata" Width="1.5" PointX="6.75" PointY="1" />
         <AssociationConnector Association="MediaDatabase.PresetMetadataTag" />
         <AssociationConnector Association="MediaDatabase.TagTag" />
+        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="2.625" PointY="3.875" />
+        <AssociationConnector Association="MediaDatabase.MediaThumbnail" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

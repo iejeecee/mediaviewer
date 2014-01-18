@@ -17,6 +17,8 @@ namespace MediaViewer.MediaDatabase
         public Media()
         {
             this.Tags = new HashSet<Tag>();
+            this.VideoProps = new VideoProps();
+            this.ImageProps = new ImageProps();
         }
     
         public int Id { get; set; }
@@ -26,7 +28,15 @@ namespace MediaViewer.MediaDatabase
         public string Description { get; set; }
         public string Author { get; set; }
         public string Copyright { get; set; }
+        public System.DateTime LastModified { get; set; }
+        public Nullable<System.DateTime> CreationDate { get; set; }
+        public string MimeType { get; set; }
+        public long SizeBytes { get; set; }
+    
+        public VideoProps VideoProps { get; set; }
+        public ImageProps ImageProps { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
+        public virtual Thumbnail Thumbnail { get; set; }
     }
 }

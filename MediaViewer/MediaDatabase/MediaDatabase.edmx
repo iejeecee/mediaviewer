@@ -10,6 +10,7 @@
     <EntitySet Name="TagCategorySet" EntityType="MediaDatabase.Store.TagCategorySet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="MediaSet" EntityType="MediaDatabase.Store.MediaSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.Store.PresetMetadataSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="ThumbnailSet" EntityType="MediaDatabase.Store.ThumbnailSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="MediaTag" EntityType="MediaDatabase.Store.MediaTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataTag" EntityType="MediaDatabase.Store.PresetMetadataTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="TagTag" EntityType="MediaDatabase.Store.TagTag" store:Type="Tables" Schema="dbo" />
@@ -41,6 +42,10 @@
       <End Role="Tag1" EntitySet="TagSet" />
       <End Role="TagTag" EntitySet="TagTag" />
     </AssociationSet>
+    <AssociationSet Name="MediaThumbnail" Association="MediaDatabase.Store.MediaThumbnail">
+      <End Role="Media" EntitySet="MediaSet" />
+      <End Role="Thumbnail" EntitySet="ThumbnailSet" />
+    </AssociationSet>
   </EntityContainer>
   <EntityType Name="TagSet">
     <Key>
@@ -68,6 +73,22 @@
     <Property Name="Description" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Author" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Copyright" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="LastModified" Type="datetime" Nullable="false" />
+    <Property Name="CreationDate" Type="datetime" Nullable="true" />
+    <Property Name="MimeType" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="SizeBytes" Type="bigint" Nullable="false" />
+    <Property Name="VideoProps_VideoContainer" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="VideoProps_VideoCodec" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="VideoProps_Width" Type="bigint" Nullable="true" />
+    <Property Name="VideoProps_Height" Type="bigint" Nullable="true" />
+    <Property Name="VideoProps_DurationSeconds" Type="bigint" Nullable="true" />
+    <Property Name="VideoProps_PixelFormat" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="VideoProps_FramesPerSecond" Type="float" Nullable="true" />
+    <Property Name="VideoProps_SamplesPerSecond" Type="smallint" Nullable="true" />
+    <Property Name="VideoProps_NrChannels" Type="smallint" Nullable="true" />
+    <Property Name="VideoProps_BitsPerSample" Type="smallint" Nullable="true" />
+    <Property Name="ImageProps_Width" Type="int" Nullable="true" />
+    <Property Name="ImageProps_Height" Type="int" Nullable="true" />
   </EntityType>
   <EntityType Name="PresetMetadataSet">
     <Key>
@@ -88,6 +109,16 @@
     <Property Name="IsCopyrightEnabled" Type="bit" Nullable="false" />
     <Property Name="CreationDate" Type="datetime" Nullable="false" />
     <Property Name="IsCreationDateEnabled" Type="bit" Nullable="false" />
+  </EntityType>
+  <EntityType Name="ThumbnailSet">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+    <Property Name="ImageData" Type="varbinary(max)" Nullable="false" />
+    <Property Name="Width" Type="smallint" Nullable="false" />
+    <Property Name="Height" Type="smallint" Nullable="false" />
+    <Property Name="Media_Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="MediaTag">
     <Key>
@@ -122,6 +153,18 @@
       </Principal>
       <Dependent Role="Tag">
         <PropertyRef Name="TagCategoryId" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="MediaThumbnail">
+    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1" />
+    <End Role="Thumbnail" Type="MediaDatabase.Store.ThumbnailSet" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="Media">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="Thumbnail">
+        <PropertyRef Name="Media_Id" />
       </Dependent>
     </ReferentialConstraint>
   </Association>
@@ -222,6 +265,11 @@
             <End Role="Tag" EntitySet="TagSet" />
             <End Role="Tag1" EntitySet="TagSet" />
           </AssociationSet>
+          <EntitySet Name="ThumbnailSet" EntityType="MediaDatabase.Thumbnail" />
+          <AssociationSet Name="MediaThumbnail" Association="MediaDatabase.MediaThumbnail">
+            <End Role="Media" EntitySet="MediaSet" />
+            <End Role="Thumbnail" EntitySet="ThumbnailSet" />
+          </AssociationSet>
         </EntityContainer>
         <EntityType Name="Tag">
           <Key>
@@ -267,6 +315,13 @@
           <Property Type="String" Name="Author" Nullable="true" />
           <Property Type="String" Name="Copyright" Nullable="true" />
           <NavigationProperty Name="Tags" Relationship="MediaDatabase.MediaTag" FromRole="Media" ToRole="Tag" />
+          <Property Type="DateTime" Name="LastModified" Nullable="false" />
+          <Property Type="DateTime" Name="CreationDate" Nullable="true" />
+          <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.MediaThumbnail" FromRole="Media" ToRole="Thumbnail" />
+          <Property Type="String" Name="MimeType" Nullable="false" />
+          <Property Type="Int64" Name="SizeBytes" Nullable="false" />
+          <Property Name="VideoProps" Type="MediaDatabase.VideoProps" Nullable="false" />
+          <Property Name="ImageProps" Type="MediaDatabase.ImageProps" Nullable="false" />
         </EntityType>
         <Association Name="MediaTag">
           <End Type="MediaDatabase.Media" Role="Media" Multiplicity="*" />
@@ -301,6 +356,36 @@
           <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
           <End Type="MediaDatabase.Tag" Role="Tag1" Multiplicity="*" />
         </Association>
+        <EntityType Name="Thumbnail">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Type="Int32" Name="Id" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Type="Binary" Name="ImageData" Nullable="false" />
+          <Property Type="Int16" Name="Width" Nullable="false" />
+          <Property Type="Int16" Name="Height" Nullable="false" />
+          <NavigationProperty Name="Media" Relationship="MediaDatabase.MediaThumbnail" FromRole="Thumbnail" ToRole="Media" />
+        </EntityType>
+        <Association Name="MediaThumbnail">
+          <End Type="MediaDatabase.Media" Role="Media" Multiplicity="1" />
+          <End Type="MediaDatabase.Thumbnail" Role="Thumbnail" Multiplicity="0..1" />
+        </Association>
+        <ComplexType Name="ImageProps" >
+          <Property Type="Int32" Name="Width" Nullable="true" />
+          <Property Type="Int32" Name="Height" Nullable="true" />
+        </ComplexType>
+        <ComplexType Name="VideoProps" >
+          <Property Type="String" Name="VideoContainer" Nullable="true" />
+          <Property Type="String" Name="VideoCodec" Nullable="true" />
+          <Property Type="Int64" Name="Width" Nullable="true" />
+          <Property Type="Int64" Name="Height" Nullable="true" />
+          <Property Type="Int64" Name="DurationSeconds" Nullable="true" />
+          <Property Type="String" Name="PixelFormat" Nullable="true" />
+          <Property Type="Double" Name="FramesPerSecond" Nullable="true" />
+          <Property Type="Int16" Name="SamplesPerSecond" Nullable="true" />
+          <Property Type="Int16" Name="NrChannels" Nullable="true" />
+          <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
+        </ComplexType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -334,6 +419,26 @@
           <ScalarProperty Name="Description" ColumnName="Description" />
           <ScalarProperty Name="Author" ColumnName="Author" />
           <ScalarProperty Name="Copyright" ColumnName="Copyright" />
+          <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+          <ScalarProperty Name="CreationDate" ColumnName="CreationDate" />
+          <ScalarProperty Name="MimeType" ColumnName="MimeType" />
+          <ScalarProperty Name="SizeBytes" ColumnName="SizeBytes" />
+          <ComplexProperty Name="VideoProps" TypeName="MediaDatabase.VideoProps">
+            <ScalarProperty Name="VideoContainer" ColumnName="VideoProps_VideoContainer" />
+            <ScalarProperty Name="VideoCodec" ColumnName="VideoProps_VideoCodec" />
+            <ScalarProperty Name="Width" ColumnName="VideoProps_Width" />
+            <ScalarProperty Name="Height" ColumnName="VideoProps_Height" />
+            <ScalarProperty Name="DurationSeconds" ColumnName="VideoProps_DurationSeconds" />
+            <ScalarProperty Name="PixelFormat" ColumnName="VideoProps_PixelFormat" />
+            <ScalarProperty Name="FramesPerSecond" ColumnName="VideoProps_FramesPerSecond" />
+            <ScalarProperty Name="SamplesPerSecond" ColumnName="VideoProps_SamplesPerSecond" />
+            <ScalarProperty Name="NrChannels" ColumnName="VideoProps_NrChannels" />
+            <ScalarProperty Name="BitsPerSample" ColumnName="VideoProps_BitsPerSample" />
+          </ComplexProperty>
+          <ComplexProperty Name="ImageProps" TypeName="MediaDatabase.ImageProps">
+            <ScalarProperty Name="Width" ColumnName="ImageProps_Width" />
+            <ScalarProperty Name="Height" ColumnName="ImageProps_Height" />
+          </ComplexProperty>
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -355,6 +460,16 @@
           <ScalarProperty Name="IsCopyrightEnabled" ColumnName="IsCopyrightEnabled" />
           <ScalarProperty Name="CreationDate" ColumnName="CreationDate" />
           <ScalarProperty Name="IsCreationDateEnabled" ColumnName="IsCreationDateEnabled" />
+        </MappingFragment>
+      </EntityTypeMapping>
+    </EntitySetMapping>
+    <EntitySetMapping Name="ThumbnailSet">
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.Thumbnail)">
+        <MappingFragment StoreEntitySet="ThumbnailSet">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="ImageData" ColumnName="ImageData" />
+          <ScalarProperty Name="Width" ColumnName="Width" />
+          <ScalarProperty Name="Height" ColumnName="Height" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
@@ -380,6 +495,14 @@
       </EndProperty>
       <EndProperty Name="Tag1">
         <ScalarProperty Name="Id" ColumnName="ChildTags_Id" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="MediaThumbnail" TypeName="MediaDatabase.MediaThumbnail" StoreEntitySet="ThumbnailSet">
+      <EndProperty Name="Media">
+        <ScalarProperty Name="Id" ColumnName="Media_Id" />
+      </EndProperty>
+      <EndProperty Name="Thumbnail">
+        <ScalarProperty Name="Id" ColumnName="Id" />
       </EndProperty>
     </AssociationSetMapping>
   </EntityContainerMapping>

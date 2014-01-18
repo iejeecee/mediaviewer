@@ -104,14 +104,17 @@ namespace MediaViewer.MediaDatabase.DbCommands
             Tag newTag = new Tag();
             Db.TagSet.Add(newTag);
 
-            newTag.Name = tag.Name;
+            Db.Entry<Tag>(newTag).CurrentValues.SetValues(tag);
+            newTag.Id = 0;
            
             // Attach tagcategory to the context, otherwise a duplicate tagcategory will be created
             if (tag.TagCategory != null)
             {
                 newTag.TagCategory = getCategoryById(tag.TagCategory.Id);
             }
-          
+
+            newTag.ChildTags.Clear();
+
             foreach (Tag childTag in tag.ChildTags)
             {
                 Tag child = getTagById(childTag.Id);
@@ -168,7 +171,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Cannot update non-existing tag id: " + updateTag.Id.ToString());
             }
 
-            tag.Name = updateTag.Name;
+            Db.Entry<Tag>(tag).CurrentValues.SetValues(updateTag);
+   
             if (updateTag.TagCategory != null)
             {
                 tag.TagCategory = getCategoryById(updateTag.TagCategory.Id);
@@ -199,19 +203,25 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (tag);
         }
 
-        public TagCategory createTagCategory(TagCategory newTagCategory)
+        public TagCategory createTagCategory(TagCategory tagCategory)
         {
-            if (String.IsNullOrEmpty(newTagCategory.Name) || String.IsNullOrWhiteSpace(newTagCategory.Name))
+            if (String.IsNullOrEmpty(tagCategory.Name) || String.IsNullOrWhiteSpace(tagCategory.Name))
             {
                 return (null);
             }
 
             TagCategory result = null;
 
-            if (Db.TagCategorySet.Any(t => t.Name == newTagCategory.Name))
+            if (Db.TagCategorySet.Any(t => t.Name == tagCategory.Name))
             {
-                throw new DbEntityValidationException("Cannot create duplicate category: " + newTagCategory.Name);
+                throw new DbEntityValidationException("Cannot create duplicate category: " + tagCategory.Name);
             }
+
+            TagCategory newTagCategory = new TagCategory();
+            Db.TagCategorySet.Add(newTagCategory);
+
+            Db.Entry<TagCategory>(newTagCategory).CurrentValues.SetValues(tagCategory);
+            newTagCategory.Id = 0;
 
             result = Db.TagCategorySet.Add(newTagCategory);
             Db.SaveChanges();

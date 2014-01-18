@@ -29,5 +29,6 @@ namespace MediaViewer.MediaDatabase
         public DbSet<TagCategory> TagCategorySet { get; set; }
         public DbSet<Media> MediaSet { get; set; }
         public DbSet<PresetMetadata> PresetMetadataSet { get; set; }
+        public DbSet<Thumbnail> ThumbnailSet { get; set; }
     }
 }

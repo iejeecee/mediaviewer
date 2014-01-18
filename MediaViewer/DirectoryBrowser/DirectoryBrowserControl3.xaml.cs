@@ -242,12 +242,7 @@ namespace MediaViewer.DirectoryBrowser
                 infoText += directoryPath + "\n";
             }
 
-            if (MessageBox.Show("Delete:\n\n" + infoText + "\nand any subdirectories and files within the directory?",
-                   "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.Cancel)
-            {
-                return;
-            }
-           
+          
             foreach (TreeNode selectedNode in directoryTreeList.SelectedNodes)
             {
 
@@ -255,40 +250,40 @@ namespace MediaViewer.DirectoryBrowser
                 PathModel directory = selectedNode.Tag as PathModel;
                 directoryPath = directory.getFullPath();
 
-                if(deleteDirectory(directory.getFullPath()) == false) return;              
+                if(deleteDirectory(directory.getFullPath(), infoText) == false) return;              
                 parent.Directories.Remove(directory);
             }
 
           
         }
 
-        bool deleteDirectory(string path)
+        bool deleteDirectory(string path, string infoText)
         {
 
-            MediaFileWatcher.Instance.MediaFiles.EnterReaderLock();
-            List<MediaFileItem> mediaFilesInUse = new List<MediaFileItem>();
+            List<MediaFileItem> mediaFilesToDelete = new List<MediaFileItem>();
 
-            foreach (MediaFileItem item in MediaFileWatcher.Instance.MediaFiles.Items)
+            FileUtils.walkDirectoryTree(new DirectoryInfo(path), getFiles, mediaFilesToDelete, true);
+     
+            try           
             {
 
-                if (FileUtils.getPathWithoutFileName(item.Location).Equals(path))
+                if (mediaFilesToDelete.Count > 0 && MessageBox.Show("Delete:\n\n" + infoText + "\nand any subdirectories and files within the directory?",
+                 "Warning", MessageBoxButton.OKCancel, MessageBoxImage.Warning) == MessageBoxResult.Cancel)
                 {
-                    mediaFilesInUse.Add(item);
+                    return(false);
                 }
-            }
+           
 
-            MediaFileWatcher.Instance.MediaFiles.ExitReaderLock();
-          
-            try
-            {
-                bool result = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(mediaFilesInUse);
+                bool result = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(mediaFilesToDelete);
                 if (result == false)
                 {
                     MessageBox.Show("Error", "Cannot delete file(s) in use by another operation");
                     return (false);
                 }
 
-                System.IO.Directory.Delete(path, true);
+                FileUtils fileUtils = new FileUtils();
+                fileUtils.deleteDirectory(path);
+            
                 return(true);
             }
             catch (Exception e)
@@ -299,9 +294,19 @@ namespace MediaViewer.DirectoryBrowser
             }
             finally
             {
-                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(mediaFilesInUse);
+                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(mediaFilesToDelete);
             }
 
+        }
+
+        private void getFiles(FileInfo info, object state)
+        {
+            List<MediaFileItem> items = (List<MediaFileItem>)state;
+
+            if (Utils.MediaFormatConvert.isMediaFile(info.FullName))
+            {
+                items.Add(new MediaFileItem(info.FullName));
+            }
         }
 
         void insertIntoSortedCollection(ObservableCollection<PathModel> collection, PathModel item)

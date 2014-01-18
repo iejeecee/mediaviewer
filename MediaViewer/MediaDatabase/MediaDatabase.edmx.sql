@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 01/06/2014 20:55:37
+-- Date Created: 01/17/2014 22:03:28
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -38,6 +38,9 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_TagTag_Tag1]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[TagTag] DROP CONSTRAINT [FK_TagTag_Tag1];
 GO
+IF OBJECT_ID(N'[dbo].[FK_MediaThumbnail]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[ThumbnailSet] DROP CONSTRAINT [FK_MediaThumbnail];
+GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
@@ -54,6 +57,9 @@ IF OBJECT_ID(N'[dbo].[MediaSet]', 'U') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[PresetMetadataSet]', 'U') IS NOT NULL
     DROP TABLE [dbo].[PresetMetadataSet];
+GO
+IF OBJECT_ID(N'[dbo].[ThumbnailSet]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[ThumbnailSet];
 GO
 IF OBJECT_ID(N'[dbo].[MediaTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[MediaTag];
@@ -92,7 +98,23 @@ CREATE TABLE [dbo].[MediaSet] (
     [Rating] float  NULL,
     [Description] nvarchar(max)  NULL,
     [Author] nvarchar(max)  NULL,
-    [Copyright] nvarchar(max)  NULL
+    [Copyright] nvarchar(max)  NULL,
+    [LastModified] datetime  NOT NULL,
+    [CreationDate] datetime  NULL,
+    [MimeType] nvarchar(max)  NOT NULL,
+    [SizeBytes] bigint  NOT NULL,
+    [VideoProps_VideoContainer] nvarchar(max)  NULL,
+    [VideoProps_VideoCodec] nvarchar(max)  NULL,
+    [VideoProps_Width] bigint  NULL,
+    [VideoProps_Height] bigint  NULL,
+    [VideoProps_DurationSeconds] bigint  NULL,
+    [VideoProps_PixelFormat] nvarchar(max)  NULL,
+    [VideoProps_FramesPerSecond] float  NULL,
+    [VideoProps_SamplesPerSecond] smallint  NULL,
+    [VideoProps_NrChannels] smallint  NULL,
+    [VideoProps_BitsPerSample] smallint  NULL,
+    [ImageProps_Width] int  NULL,
+    [ImageProps_Height] int  NULL
 );
 GO
 
@@ -113,6 +135,16 @@ CREATE TABLE [dbo].[PresetMetadataSet] (
     [IsCopyrightEnabled] bit  NOT NULL,
     [CreationDate] datetime  NOT NULL,
     [IsCreationDateEnabled] bit  NOT NULL
+);
+GO
+
+-- Creating table 'ThumbnailSet'
+CREATE TABLE [dbo].[ThumbnailSet] (
+    [Id] int IDENTITY(1,1) NOT NULL,
+    [ImageData] varbinary(max)  NOT NULL,
+    [Width] smallint  NOT NULL,
+    [Height] smallint  NOT NULL,
+    [Media_Id] int  NOT NULL
 );
 GO
 
@@ -162,6 +194,12 @@ GO
 -- Creating primary key on [Id] in table 'PresetMetadataSet'
 ALTER TABLE [dbo].[PresetMetadataSet]
 ADD CONSTRAINT [PK_PresetMetadataSet]
+    PRIMARY KEY CLUSTERED ([Id] ASC);
+GO
+
+-- Creating primary key on [Id] in table 'ThumbnailSet'
+ALTER TABLE [dbo].[ThumbnailSet]
+ADD CONSTRAINT [PK_ThumbnailSet]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -268,6 +306,20 @@ ADD CONSTRAINT [FK_TagTag_Tag1]
 CREATE INDEX [IX_FK_TagTag_Tag1]
 ON [dbo].[TagTag]
     ([ChildTags_Id]);
+GO
+
+-- Creating foreign key on [Media_Id] in table 'ThumbnailSet'
+ALTER TABLE [dbo].[ThumbnailSet]
+ADD CONSTRAINT [FK_MediaThumbnail]
+    FOREIGN KEY ([Media_Id])
+    REFERENCES [dbo].[MediaSet]
+        ([Id])
+    ON DELETE NO ACTION ON UPDATE NO ACTION;
+
+-- Creating non-clustered index for FOREIGN KEY 'FK_MediaThumbnail'
+CREATE INDEX [IX_FK_MediaThumbnail]
+ON [dbo].[ThumbnailSet]
+    ([Media_Id]);
 GO
 
 -- --------------------------------------------------

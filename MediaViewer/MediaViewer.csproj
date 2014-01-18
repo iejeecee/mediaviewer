@@ -165,12 +165,25 @@
     <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
     <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
     <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
+    <Compile Include="DirectoryBrowser\NrImportedFilesConverter.cs" />
     <Compile Include="DirectoryBrowser\PathModel.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
+    <Compile Include="Converters\EnumConverter.cs" />
+    <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
+    <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
+    <Compile Include="Import\ImportState.cs" />
+    <Compile Include="Import\ImportView.xaml.cs">
+      <DependentUpon>ImportView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Import\ImportViewModel.cs" />
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
+    <Compile Include="MediaDatabase\DbCommands\MediaDbCommands.cs" />
+    <Compile Include="MediaDatabase\ImageProps.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="MediaDatabase\Media.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -189,6 +202,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>
     </Compile>
+    <Compile Include="MediaDatabase\MediaPartial.cs" />
     <Compile Include="MediaDatabase\PresetMetadata.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -203,6 +217,14 @@
     <Compile Include="MediaDatabase\TagCategoryPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagDbCommands.cs" />
     <Compile Include="MediaDatabase\TagPartial.cs" />
+    <Compile Include="MediaDatabase\Thumbnail.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
+    <Compile Include="MediaDatabase\VideoProps.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoPropsPartial.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
     <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
@@ -367,6 +389,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Import\ImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Input\InputView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -454,6 +480,10 @@
     <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="VideoPanel\VideoTestWindow.xaml">
       <SubType>Designer</SubType>
@@ -670,6 +700,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\mediafolder.ico" />
+    <Resource Include="Resources\Icons\Import.ico" />
     <Resource Include="Resources\Icons\Calendar.ico" />
     <Resource Include="Resources\Icons\text.ico" />
     <Resource Include="Resources\Icons\circle.ico" />

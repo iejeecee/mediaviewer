@@ -1,4 +1,6 @@
-﻿using MediaViewer.MetaData;
+﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MetaData;
 using MediaViewer.Utils;
 using System;
 using System.Collections.Generic;
@@ -134,6 +136,30 @@ namespace MediaViewer.MediaFileModel
             return (media);
         }
 
+        private static MediaFile getMediaFromDatabase(string location, MediaFile.MetaDataLoadOptions options, object userState)
+        {
+            MediaDbCommands mediaCommands = new MediaDbCommands();
+
+            MediaFile media = new UnknownFile(location, null);
+
+            Media result = mediaCommands.findMediaByLocation(location);
+
+            if (result == null)
+            {
+                return (media);
+
+            } else if (result.MimeType.ToLower().StartsWith("image"))
+            {
+                //media = new ImageFile(location, mimeType, data, options);
+            }
+            else if (result.MimeType.ToLower().ToLower().StartsWith("video"))
+            {
+                //media = new VideoFile(location, mimeType, data, options);
+            }
+
+            return (media);
+        }
+
 
         public static MediaFile open(string location, MediaFile.MetaDataLoadOptions options, CancellationToken token, Object userState = null)
         {
@@ -153,8 +179,12 @@ namespace MediaViewer.MediaFileModel
                 }
                 else
                 {
-                    if(options.HasFlag(MediaFile.MetaDataLoadOptions.AUTO) || 
-                        options.HasFlag(MediaFile.MetaDataLoadOptions.LOAD_FROM_DISK))
+                    if(options.HasFlag(MediaFile.MetaDataLoadOptions.AUTO)) {
+
+                        media = getMediaFromDatabase(location, options, userState);
+                    } 
+                    
+                    if(media.MediaFormat == MediaFile.MediaType.UNKNOWN || options.HasFlag(MediaFile.MetaDataLoadOptions.LOAD_FROM_DISK))
                     {
                         media = openFileData(location, options, userState, 
                             token, FILE_OPEN_ASYNC_TIMEOUT_MS);
@@ -181,6 +211,8 @@ namespace MediaViewer.MediaFileModel
             
             return (media);
         }
+
+
        
 
         public static async Task<MediaFile> openAsync(string location, MediaFile.MetaDataLoadOptions options, CancellationToken token, Object userState = null)

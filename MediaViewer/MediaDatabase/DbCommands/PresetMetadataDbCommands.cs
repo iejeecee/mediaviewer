@@ -44,21 +44,9 @@ namespace MediaViewer.MediaDatabase.DbCommands
             PresetMetadata newPreset = new PresetMetadata();
 
             Db.PresetMetadataSet.Add(newPreset);
-
-            newPreset.Name = preset.Name;           
-            newPreset.Author = preset.Author;
-            newPreset.IsAuthorEnabled = preset.IsAuthorEnabled;
-            newPreset.Copyright = preset.Copyright;
-            newPreset.IsCopyrightEnabled = preset.IsCopyrightEnabled;
-            newPreset.Description = preset.Description;
-            newPreset.IsDescriptionEnabled = preset.IsDescriptionEnabled;
-            newPreset.Rating = preset.Rating;
-            newPreset.IsRatingEnabled = preset.IsRatingEnabled;
-            newPreset.Title = preset.Title;
-            newPreset.IsTitleEnabled = preset.IsTitleEnabled;
-            newPreset.CreationDate = preset.CreationDate;
-            newPreset.IsCreationDateEnabled = preset.IsCreationDateEnabled;
-
+            Db.Entry<PresetMetadata>(newPreset).CurrentValues.SetValues(preset);
+            newPreset.Id = 0;
+            
             TagDbCommands tagCommands = new TagDbCommands(Db);
 
             foreach (Tag tag in preset.Tags)
@@ -90,21 +78,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 throw new DbEntityValidationException("Cannot update non-existing tag id: " + updatePreset.Id.ToString());
             }
-
-            preset.Name = updatePreset.Name;
-            preset.Author = updatePreset.Author;
-            preset.IsAuthorEnabled = updatePreset.IsAuthorEnabled;
-            preset.Copyright = updatePreset.Copyright;
-            preset.IsCopyrightEnabled = updatePreset.IsCopyrightEnabled;
-            preset.Description = updatePreset.Description;
-            preset.IsDescriptionEnabled = updatePreset.IsDescriptionEnabled;
-            preset.Rating = updatePreset.Rating;
-            preset.IsRatingEnabled = updatePreset.IsRatingEnabled;
-            preset.Title = updatePreset.Title;
-            preset.IsTitleEnabled = updatePreset.IsTitleEnabled;
-            preset.CreationDate = updatePreset.CreationDate;
-            preset.IsCreationDateEnabled = updatePreset.IsCreationDateEnabled;
-
+            Db.Entry<PresetMetadata>(preset).CurrentValues.SetValues(updatePreset);
+           
             preset.Tags.Clear();
 
             TagDbCommands tagCommands = new TagDbCommands(Db);

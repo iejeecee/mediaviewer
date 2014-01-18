@@ -412,10 +412,26 @@ namespace MediaViewer.Utils
 
         }
 
-        
-        public void remove(StringCollection sourcePaths)
+        public void deleteDirectory(String location)
         {
+            StringCollection files = new StringCollection();
+            StringCollection directories = new StringCollection();
 
+            getAllFiles(location, directories, files);
+
+            foreach (String file in files)
+            {
+                deleteFile(file);
+            }
+
+            System.IO.Directory.Delete(location, true);
+        }
+                
+        public void deleteFile(String location)
+        {
+           
+            System.IO.File.Delete(location);
+            
         }
 
         public static Stream waitForFileAccess(string filePath, FileAccess access, int timeoutMs,

@@ -93,8 +93,8 @@ namespace MediaViewer.MetaData
             bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
             if (success == false)
             {
-                InfoMessages.Add("Error selected file(s) are in use by another operation");
-                log.Error("Error selected file(s) are in use by another operation");
+                InfoMessages.Add("Cannot update files, selected file(s) are in use by another operation");
+                log.Error("Cannot update files, selected file(s) are in use by another operation");
                 return;
             }
 

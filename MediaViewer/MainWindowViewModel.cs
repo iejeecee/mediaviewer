@@ -9,6 +9,9 @@ using MediaViewer.Utils;
 using MediaViewer.MetaData;
 using MediaViewer.About;
 using MediaViewer.Logging;
+using MediaViewer.ImagePanel;
+using MediaViewer.Import;
+using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer
 {
@@ -44,8 +47,10 @@ namespace MediaViewer
         public string WindowTitle
         {
             get { return windowTitle; }
-            set { windowTitle = value;
-            NotifyPropertyChanged();
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -80,13 +85,13 @@ namespace MediaViewer
 
               }));
 
-            TagEditorCommand = new Command(new Action(() =>
+            TagEditorCommand = new Command(() =>
                 {
                     LinkedTagEditorView linkedTagEditor = new LinkedTagEditorView();
                     linkedTagEditor.ShowDialog();
-                }));
+                });
 
-            AboutCommand = new Command(new Action(() =>
+            AboutCommand = new Command(() =>
                 {
                     AboutView about = new AboutView();
                     AboutViewModel aboutViewModel = new AboutViewModel();
@@ -94,9 +99,9 @@ namespace MediaViewer
 
                     about.ShowDialog();
 
-                }));
+                });
 
-            ShowLogCommand = new Command(new Action(() =>
+            ShowLogCommand = new Command(() =>
                 {
                     log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
                     VisualAppender appender = (VisualAppender)(appenders[0]);
@@ -106,9 +111,9 @@ namespace MediaViewer
 
                     logView.Show();
 
-                }));
+                });
 
-            ClearHistoryCommand = new Command(new Action(() =>
+            ClearHistoryCommand = new Command(() =>
                 {
 
                     if (MessageBox.Show("Clear all history?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
@@ -116,7 +121,9 @@ namespace MediaViewer
                         MediaViewer.Settings.AppSettings.Instance.clearHistory();
                     }
 
-                }));
+                });
+
+           
         }
 
         Command viewMediaCommand;
@@ -157,7 +164,7 @@ namespace MediaViewer
         {
             get { return clearHistoryCommand; }
             set { clearHistoryCommand = value; }
-        }
+        }       
 
     }
 }

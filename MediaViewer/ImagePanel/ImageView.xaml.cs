@@ -22,21 +22,7 @@ namespace MediaViewer.ImagePanel
     /// </summary>
     public partial class ImageView : UserControl
     {
-        public enum ScaleMode
-        {
-            NONE,
-            FIT_TO_SCREEN,
-            FIT_HEIGHT_TO_SCREEN,
-            FIT_WIDTH_TO_SCREEN
-        }
-
-        ScaleMode mode;
-
-        public ScaleMode Mode
-        {
-            get { return mode; }            
-        }
-
+    
         private bool isLeftMouseButtonDown;
         //private bool isModified;
 
@@ -52,10 +38,7 @@ namespace MediaViewer.ImagePanel
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
 
             pictureBox.Stretch = Stretch.None;
-            mode = ScaleMode.NONE;
-
-            GlobalMessenger.Instance.Register<ScaleMode>("MainWindow_AutoScaleImageCheckBox_Click", new Action<ScaleMode>(setScaleMode));
-
+   
             scrollViewer.SizeChanged += new SizeChangedEventHandler((s, e) =>
             {
                 if (pictureBox.Source != null)
@@ -86,8 +69,8 @@ namespace MediaViewer.ImagePanel
                 {         
                     if (m.Image != null)
                     {
-                                              
-                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, getScaleMatrix(m.Image));
+
+                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
                         scrollViewer.ScrollToHorizontalOffset(0);
                         scrollViewer.ScrollToVerticalOffset(0);
                     }
@@ -102,27 +85,50 @@ namespace MediaViewer.ImagePanel
                    {
                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
                    }
-               });               
+               });
+
+            // update image whenever scalemode is changed
+            imageViewModelObserver.RegisterHandler(m => m.SelectedScaleMode,
+               m =>
+               {
+                   if (m.Image != null)
+                   {
+                       pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
+                   }
+               });  
         }
 
         public MatrixTransform getScaleMatrix(BitmapImage image)
         {
+
+            ImageViewModel vm = (ImageViewModel)DataContext;
+
             Matrix scaleMatrix = new Matrix();
 
-            if (Mode == ScaleMode.FIT_HEIGHT_TO_SCREEN)
+            if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_HEIGHT)
             {
                 double heightScale = scrollViewer.ActualHeight / image.Height;
 
+                if (image.Width * heightScale > scrollViewer.ActualWidth)
+                {
+                    heightScale = (scrollViewer.ActualHeight - SystemParameters.ScrollHeight) / image.Height; 
+                }
+
                 scaleMatrix.Scale(heightScale, heightScale);
             }
-            else if (Mode == ScaleMode.FIT_WIDTH_TO_SCREEN)
+            else if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_WIDTH)
             {
                 double widthScale = scrollViewer.ActualWidth / image.Width;
+
+                if (image.Height * widthScale > scrollViewer.ActualHeight)
+                {
+                    widthScale = (scrollViewer.ActualWidth - SystemParameters.ScrollWidth) / image.Width;
+                }
 
                 scaleMatrix.Scale(widthScale, widthScale);
 
             }
-            else if (Mode == ScaleMode.FIT_TO_SCREEN)
+            else if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.AUTO)
             {
                 double widthScale = scrollViewer.ActualWidth / image.Width;
                 double heightScale = scrollViewer.ActualHeight / image.Height;
@@ -147,20 +153,6 @@ namespace MediaViewer.ImagePanel
             return (new MatrixTransform(scaleMatrix));
         }
 
-        void setScaleMode(ScaleMode mode)
-        {
-            this.mode = mode;
-
-            if (pictureBox.Source != null)
-            {
-                ImageViewModel imageViewModel = (ImageViewModel)DataContext;
-
-                pictureBox.SetCurrentValue(Image.LayoutTransformProperty,
-                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage).Matrix));
-              
-            }
-
-        }
 
         private void gridContainer_PreviewMouseMove(object sender, MouseEventArgs e)
         {

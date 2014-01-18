@@ -25,6 +25,8 @@ using MediaViewer.MediaFileBrowser;
 using MediaViewer.Timers;
 using MediaViewer.Utils.Windows;
 using System.Windows.Threading;
+using MediaViewer.MediaFileModel.Watcher;
+using System.IO;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -64,6 +66,7 @@ namespace MediaViewer
 
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
+            
 
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
        
@@ -72,7 +75,23 @@ namespace MediaViewer
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
-           
+            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((o,e) =>
+            {
+                if (mediaFileBrowser.Visibility == Visibility.Visible)
+                {
+                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+                 
+                    if (selected.Count > 0)
+                    {
+                        setTitle(mediaFileBrowserViewModel.BrowsePath + " - " + selected.Count.ToString() + " Item(s) Selected");
+                    }
+                    else
+                    {
+                        setTitle(mediaFileBrowserViewModel.BrowsePath);
+                    }
+                }
+            });
+        
           
         }
 
@@ -113,8 +132,7 @@ namespace MediaViewer
             rotationView.Closing += new CancelEventHandler((sender, e) =>
             {
                 e.Cancel = true;
-                ((Window)sender).Hide();
-                rotateImageCheckBox.IsChecked = false;
+                ((Window)sender).Hide();              
             });
             rotationView.DataContext = imageViewModel;
 
@@ -122,12 +140,12 @@ namespace MediaViewer
             scaleView.Closing += new CancelEventHandler((sender, e) =>
             {
                 e.Cancel = true;
-                ((Window)sender).Hide();
-                scaleImageCheckBox.IsChecked = false;
+                ((Window)sender).Hide();               
             });
             scaleView.DataContext = imageViewModel;
 
             imageToolBar.DataContext = imageViewModel;
+           
         }   
 
         void initializeMediaFileBrowser()
@@ -259,19 +277,6 @@ namespace MediaViewer
            
         }
 
-        private void autoScaleImageCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (autoScaleImageCheckBox.IsChecked == true)
-            {
-                GlobalMessenger.Instance.NotifyColleagues("MainWindow_AutoScaleImageCheckBox_Click", true);
-            }
-            else
-            {
-                GlobalMessenger.Instance.NotifyColleagues("MainWindow_AutoScaleImageCheckBox_Click", false);
-            }
-        }
-
-
         static void PrintLoadedAssemblies(AppDomain domain)
         {          
             foreach (Assembly a in domain.GetAssemblies())
@@ -284,31 +289,7 @@ namespace MediaViewer
         {
             log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);           
         }
-
-        private void rotateImageCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (rotateImageCheckBox.IsChecked.Value == true)
-            {                
-                rotationView.Show();
-            }
-            else
-            {
-                rotationView.Hide();
-            }
-        }
-
-        private void scaleImageCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            if (scaleImageCheckBox.IsChecked.Value == true)
-            {
-                scaleView.Show();            
-            }
-            else
-            {
-                scaleView.Hide();
-            }
-        }
-
+      
         private void showMediaFileBrowser()
         {
 
@@ -338,7 +319,7 @@ namespace MediaViewer
             imageToolBar.Visibility = Visibility.Visible;
             mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
 
-            setTitle(location);
+            setTitle(System.IO.Path.GetFileName(location));
         }
 
         private void showVideoView(string location)
@@ -354,7 +335,7 @@ namespace MediaViewer
             imageToolBar.Visibility = Visibility.Hidden;
             mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
 
-            setTitle(location);
+            setTitle(System.IO.Path.GetFileName(location));
         }
 
         private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)

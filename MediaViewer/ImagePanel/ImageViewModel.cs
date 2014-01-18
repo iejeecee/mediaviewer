@@ -95,10 +95,30 @@ namespace MediaViewer.ImagePanel
             }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
-            resetScaleCommand = new Command(() => { Scale = 1; });
+            resetScaleCommand = new Command(() => { CustomScale = 1; });
 
             setIdentityTransform();
+            SelectedScaleMode = ScaleMode.NONE;
+            CustomScale = 1;
+            SelectedRotationMode = RotationMode.NONE;
+            CustomRotation = 0;
                   
+            SetCustomScaleCommand = new Command(() => {
+
+                SelectedScaleMode = ScaleMode.CUSTOM;            
+                ScaleView custom = new ScaleView();
+                custom.DataContext = this;
+                custom.ShowDialog();
+            });
+
+            SetCustomRotationCommand = new Command(() =>
+            {
+                SelectedRotationMode = RotationMode.CUSTOM;
+                RotationView custom = new RotationView();
+                custom.DataContext = this;
+                custom.ShowDialog();
+            });
+
         }
 
         bool flipX;
@@ -299,7 +319,7 @@ namespace MediaViewer.ImagePanel
                 }
 
                 Image = loadedImage;
-                setIdentityTransform();
+                //setIdentityTransform();
 
             }
             catch (TaskCanceledException)
@@ -528,6 +548,130 @@ namespace MediaViewer.ImagePanel
             }
 
             return (-1);
+        }
+
+        public enum ScaleMode
+        {
+            NONE,
+            AUTO,
+            FIT_HEIGHT,
+            FIT_WIDTH,
+            CUSTOM
+        }
+
+        ScaleMode selectedScaleMode;
+
+        public ScaleMode SelectedScaleMode
+        {
+            get { return selectedScaleMode; }
+            set
+            {
+                selectedScaleMode = value;
+
+                if (selectedScaleMode == ScaleMode.CUSTOM)
+                {
+                    Scale = CustomScale;
+                }
+                else
+                {
+                    Scale = 1;
+                }
+
+                NotifyPropertyChanged();
+            }
+        }
+
+        float customScale;
+
+        public float CustomScale
+        {
+            get { return customScale; }
+            set { customScale = value;
+            Scale = customScale;
+            NotifyPropertyChanged();
+            }
+        }
+        
+        Command setCustomScaleCommand;
+
+        public Command SetCustomScaleCommand
+        {
+            get { return setCustomScaleCommand; }
+            set { setCustomScaleCommand = value; }
+        }
+
+        public enum RotationMode
+        {
+            NONE,
+            CW_90,
+            CW_180,
+            CCW_90,
+            CUSTOM
+        }
+
+        RotationMode selectedRotationMode;
+
+        public RotationMode SelectedRotationMode
+        {
+            get { return selectedRotationMode; }
+            set
+            {
+                selectedRotationMode = value;
+
+                switch (selectedRotationMode)
+                {
+                    case RotationMode.NONE:
+                        {
+                            RotationDegrees = 0;
+                            break;
+                        }
+                    case RotationMode.CW_90:
+                        {
+                            RotationDegrees = 90;
+                            break;
+                        }
+                    case RotationMode.CW_180:
+                        {
+                            RotationDegrees = 180;
+                            break;
+                        }
+                    case RotationMode.CCW_90:
+                        {
+                            RotationDegrees = -90;
+                            break;
+                        }
+                    case RotationMode.CUSTOM:
+                        {
+                            RotationDegrees = CustomRotation;
+                            break;
+                        }
+
+                }
+            
+                NotifyPropertyChanged();
+            }
+        }
+
+
+        float customRotation;
+
+        public float CustomRotation
+        {
+            get { return customRotation; }
+            set
+            {
+                customRotation = value;
+                RotationDegrees = customRotation;
+                NotifyPropertyChanged();
+            }
+        }
+        
+        Command setCustomRotationCommand;
+
+        public Command SetCustomRotationCommand
+        {
+            get { return setCustomRotationCommand; }
+            set { setCustomRotationCommand = value; }
         }
     }
 

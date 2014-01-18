@@ -1,4 +1,6 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.Import;
+using MediaViewer.MediaDatabase.DbCommands;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,6 +18,29 @@ namespace MediaViewer.DirectoryBrowser
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        protected PathModel(String name)
+        {
+            this.name = name;
+
+            ImportState.Instance.ImportStateChanged += new EventHandler<ImportStateEventArgs>(importStateChanged);
+        }
+
+        protected virtual void importStateChanged(object sender, ImportStateEventArgs e)
+        {
+            if (e.Item.Location.StartsWith(getFullPath()))
+            {
+                if (e.Mode == Mode.ADDED)
+                {
+                    NrImportedFiles++;
+                }
+                else
+                {
+                    NrImportedFiles--;
+                }
+            }
+            
+        }
+             
         private ObservableCollection<PathModel> directories;
         public ObservableCollection<PathModel> Directories
         {
@@ -65,7 +90,17 @@ namespace MediaViewer.DirectoryBrowser
                 NotifyPropertyChanged();
             }
         }
-       
+
+        int nrImportedFiles;
+
+        public int NrImportedFiles
+        {
+            get { return nrImportedFiles; }
+            set { nrImportedFiles = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         public string getFullPath()
         {
 

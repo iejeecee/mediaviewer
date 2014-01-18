@@ -14,12 +14,14 @@
     <Converters:BooleanToVisibilityConverter x:Key="visibilityConverter"/>
     <Converters:IsNullConverter x:Key="isNullConverter"/>
     <Converters:NullConverter x:Key="nullConverter"/>
+    <Converters:EnumConverter x:Key="enumConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
-    <ImagePanel:DegreesConverter x:Key="degreesConverter"/>
-
+    <ImagePanel:DegreesConverter x:Key="degreesConverter"/>    
     <ImagePanel:ScaleConverter x:Key="scaleConverter"/>
+    <ImagePanel:RotationEnumToStringConverter x:Key="rotationEnumToStringConverter"/>
+    <ImagePanel:ScaleEnumToStringConverter x:Key="scaleEnumToStringConverter"/>
 
     <VideoPanel:TimeConverter x:Key="timeConverter"/>
 

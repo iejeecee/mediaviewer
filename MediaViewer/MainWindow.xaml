@@ -6,6 +6,13 @@
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:Search="clr-namespace:MediaViewer.Search" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
         Title="{Binding WindowTitle}" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>      
+    </Window.Resources>  
     <Grid x:Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -41,16 +48,101 @@
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="104">
-                <CheckBox x:Name="autoScaleImageCheckBox" Height="16" Click="autoScaleImageCheckBox_Click" ToolTip="Auto Scale Image">
-                    <Image Source="pack://application:,,,/Resources/Icons/ruler.ico"/>
-                </CheckBox>
-                <CheckBox x:Name="scaleImageCheckBox" Height="16" Click="scaleImageCheckBox_Click" ToolTip="Scale Image">
-                    <Image Source="pack://application:,,,/Resources/Icons/scale.ico"/>
-                </CheckBox>
-                <CheckBox x:Name="rotateImageCheckBox" Height="16" Click="rotateImageCheckBox_Click" ToolTip="Rotate Image">
-                    <Image Source="pack://application:,,,/Resources/Icons/rotate.ico"/>
-                </CheckBox>
+            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="220">
+                <xctk:DropDownButton Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="pack://application:,,,/Resources/Icons/ruler.ico" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Margin="2,0,0,0" Text="{Binding SelectedScaleMode, Converter={StaticResource scaleEnumToStringConverter}}" VerticalAlignment="Center"/>
+                    </Grid>
+                    <xctk:DropDownButton.DropDownContent>
+                        <StackPanel>
+                            <RadioButton GroupName="Scale" Content="None"
+                                         IsChecked="{Binding Path=SelectedScaleMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},                                            
+                                            ConverterParameter=NONE}"  />
+                            <RadioButton GroupName="Scale" Content="Auto" 
+                                         IsChecked="{Binding Path=SelectedScaleMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=AUTO}"  />
+                            <RadioButton GroupName="Scale" Content="Fit Height"
+                                         IsChecked="{Binding Path=SelectedScaleMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=FIT_HEIGHT}"  />
+                            <RadioButton GroupName="Scale" Content="Fit Width"
+                                         IsChecked="{Binding Path=SelectedScaleMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=FIT_WIDTH}"  />
+                            <Separator/>
+                            <RadioButton GroupName="Scale"
+                                         IsChecked="{Binding Path=SelectedScaleMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=CUSTOM}">
+                                <RadioButton.Content>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="Custom" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Content="{Binding CustomScale, Converter={StaticResource scaleConverter}}" Command="{Binding SetCustomScaleCommand}"
+                                                    ToolTip="Change Scale"/>
+                                    </Grid>
+                                </RadioButton.Content>
+                            </RadioButton>
+                        </StackPanel>                                                 
+                    </xctk:DropDownButton.DropDownContent>
+                </xctk:DropDownButton>
+                <xctk:DropDownButton Name="rotateDropDownButton" ToolTip="Rotation Mode" Height="16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Column="0" Source="pack://application:,,,/Resources/Icons/rotate.ico" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Margin="2,0,0,0" Text="{Binding SelectedRotationMode, Converter={StaticResource rotationEnumToStringConverter}}" VerticalAlignment="Center"/>
+                    </Grid>
+                <xctk:DropDownButton.DropDownContent>
+                    <StackPanel>
+                        <RadioButton GroupName="Rotation" Content="None"
+                                         IsChecked="{Binding Path=SelectedRotationMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},                                            
+                                            ConverterParameter=NONE}"  />
+                            <RadioButton GroupName="Rotation" Content="90°" 
+                                         IsChecked="{Binding Path=SelectedRotationMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=CW_90}"  />
+                            <RadioButton GroupName="Rotation" Content="180°"
+                                         IsChecked="{Binding Path=SelectedRotationMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=CW_180}"  />
+                            <RadioButton GroupName="Rotation" Content="-90°"
+                                         IsChecked="{Binding Path=SelectedRotationMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=CCW_90}"  />
+                        <Separator/>
+                            <RadioButton GroupName="Rotation"
+                                         IsChecked="{Binding Path=SelectedRotationMode, Mode=TwoWay, 
+                                            Converter={StaticResource enumConverter},
+                                            ConverterParameter=CUSTOM}">
+                            <RadioButton.Content>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="Custom" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Content="{Binding CustomRotation, Converter={StaticResource degreesConverter}}" Command="{Binding SetCustomRotationCommand}"
+                                                    ToolTip="Change Rotation"/>
+                                </Grid>
+                            </RadioButton.Content>
+                        </RadioButton>
+                    </StackPanel>
+                </xctk:DropDownButton.DropDownContent>
+                </xctk:DropDownButton>                
                 <CheckBox x:Name="flipImageHorizontalCheckBox" Height="16" ToolTip="Flip Image Horizontally" IsChecked="{Binding FlipX}">
                     <Image Source="pack://application:,,,/Resources/Icons/FlipHorizontal.ico"/>
                 </CheckBox>
@@ -58,15 +150,17 @@
                     <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-69.667,-2,72.333,0.667">                
+            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-300,0,0,0" Width="100">
+                <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
+                </Button>
                 <Button x:Name="deleteButton" Height="16" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
-                </Button>
-                <Search:SearchView VerticalAlignment="Top" Width="210" Height="19"/>
+                </Button>           
             </ToolBar>
         </ToolBarTray>
         <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
         <ImagePanel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
-        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
+        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>        
     </Grid>
 </Window>

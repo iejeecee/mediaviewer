@@ -15,7 +15,7 @@
         </Grid.Background>
         <TextBox x:Name="degreesTextBox" HorizontalAlignment="Left" Height="23" Margin="60,38,0,0" VerticalAlignment="Top" Width="56" PreviewKeyDown="degreesTextBox_PreviewKeyDown" >
             <TextBox.Text>
-                <Binding Path="RotationDegrees" UpdateSourceTrigger="Explicit"
+                <Binding Path="CustomRotation" UpdateSourceTrigger="Explicit"
                          Converter="{StaticResource degreesConverter}">
                     <Binding.ValidationRules>
                         <ExceptionValidationRule></ExceptionValidationRule>
@@ -23,7 +23,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <Slider x:Name="degreesSlider" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="273" Minimum="-360" Maximum="360" TickPlacement="TopLeft" TickFrequency="90" ToolTip="Slide To Adjust Rotation" Value="{Binding Path=RotationDegrees}"/>
+        <Slider x:Name="degreesSlider" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="273" Minimum="-360" Maximum="360" TickPlacement="TopLeft" TickFrequency="90" ToolTip="Slide To Adjust Rotation" Value="{Binding Path=CustomRotation}"/>
         <CheckBox x:Name="clampAngleCheckBox" Content="Clamp" HorizontalAlignment="Left" Margin="238,43,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.903,-0.294" Click="clampAngleCheckBox_Click"/>
         <Label Content="Degrees" HorizontalAlignment="Left" Margin="10,38,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.533,0.457"/>
         <Button x:Name="resetButton" Content="Reset" HorizontalAlignment="Left" Margin="121,39,0,0" VerticalAlignment="Top" Width="46" Command="{Binding ResetRotationDegreesCommand}" Height="23"/>

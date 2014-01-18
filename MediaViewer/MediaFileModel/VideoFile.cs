@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaFileModel
 {
-    class VideoFile : MediaFile
+    public class VideoFile : MediaFile
     {
       
         private VideoPreview videoPreview;

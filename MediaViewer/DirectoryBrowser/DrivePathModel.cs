@@ -1,4 +1,5 @@
-﻿using MediaViewer.Utils.Windows;
+﻿using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Utils.Windows;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,7 +21,7 @@ namespace MediaViewer.DirectoryBrowser
             get { return info; }           
         }
 
-        public DrivePathModel(DriveInfo info)          
+        public DrivePathModel(DriveInfo info) : base(info.Name)         
         {
             this.info = info;
             Parent = null;
@@ -89,7 +90,11 @@ namespace MediaViewer.DirectoryBrowser
             {
                 FreeSpaceBytes = 0;
             }
-            
+
+
+            MediaDbCommands mediaCommand = new MediaDbCommands();
+
+            NrImportedFiles = mediaCommand.getNrMediaInLocation(getFullPath());
         }
 
         long freeSpaceBytes;

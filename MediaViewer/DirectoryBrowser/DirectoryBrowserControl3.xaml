@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
+             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -11,6 +12,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <DirectoryBrowser:NrImportedFilesConverter x:Key="nrImportedFilesConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -49,7 +51,7 @@
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-
+                        <GridViewColumn Header="Imported" Width="100" DisplayMemberBinding="{Binding NrImportedFiles, Converter={StaticResource nrImportedFilesConverter}}"/>
                         <GridViewColumn Header="Free Space" Width="100" DisplayMemberBinding="{Binding FreeSpaceBytes, Converter={StaticResource formatSizeBytesConverter}}"/>                      
 
                     </GridView.Columns>

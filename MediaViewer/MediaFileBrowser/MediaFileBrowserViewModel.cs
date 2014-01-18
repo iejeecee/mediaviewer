@@ -18,6 +18,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using MediaViewer.Import;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -43,8 +44,19 @@ namespace MediaViewer.MediaFileBrowser
          
             mediaFileWatcher = MediaFileWatcher.Instance;
          
-            DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));        
-  
+            DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
+
+            ImportSelectedItemsCommand = new Command(async () =>
+            {
+                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+                if (selectedItems.Count == 0) return;
+
+                ImportView import = new ImportView();
+                import.Show();
+                ImportViewModel vm = (ImportViewModel)import.DataContext;
+                await vm.importAsync(selectedItems);
+
+            });
            
         }
 
@@ -108,6 +120,14 @@ namespace MediaViewer.MediaFileBrowser
             set { deleteSelectedItemsCommand = value; }
         }
 
+        Command importSelectedItemsCommand;
+
+        public Command ImportSelectedItemsCommand
+        {
+            get { return importSelectedItemsCommand; }
+            set { importSelectedItemsCommand = value; }
+        }
+
         private void deleteSelectedItems()
         {
 
@@ -128,9 +148,11 @@ namespace MediaViewer.MediaFileBrowser
 
                 try
                 {
+                    FileUtils fileUtils = new FileUtils();
+
                     for (int i = 0; i < selected.Count; i++)
                     {
-                        System.IO.File.Delete(selected[i].Location);
+                        fileUtils.deleteFile(selected[i].Location);
                     }
                 }
                 catch (Exception ex)
