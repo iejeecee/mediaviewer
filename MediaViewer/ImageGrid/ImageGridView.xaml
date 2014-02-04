@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:MediaPreview="clr-namespace:MediaViewer.MediaPreview" x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView" 
+             x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView" 
              xmlns:db="clr-namespace:MediaViewer.DirectoryBrowser"
              xmlns:local="clr-namespace:MediaViewer.MediaFileModel.Watcher"
              mc:Ignorable="d" 
@@ -57,13 +57,26 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
                                             <Setter Property="Image.Stretch" Value="Uniform"/>                                      
-                                            <Setter Property="Image.Source" Value="{Binding Media.Thumbnail}" />
+                                            <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}" />
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
-                        </Image>                                       
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Location, Converter={StaticResource pathToFileNameConverter}}" Grid.Row="1"/>                      
+                        </Image>
+                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Location, Converter={StaticResource pathToFileNameConverter}}" Grid.Row="1">
+                            <TextBlock.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Media.IsImported}" Value="true">
+                                            <Setter Property="TextBlock.Foreground" Value="{StaticResource importedImageTextColorBrush}" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Media.IsImported}" Value="false">
+                                            <Setter Property="TextBlock.Foreground" Value="{StaticResource imageTextColorBrush}"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
                         <Grid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Name="vieMenuItem" Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>

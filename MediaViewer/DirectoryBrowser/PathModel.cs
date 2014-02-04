@@ -1,9 +1,11 @@
 ﻿using MediaViewer.Import;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel.Watcher;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -22,23 +24,37 @@ namespace MediaViewer.DirectoryBrowser
         {
             this.name = name;
 
-            ImportState.Instance.ImportStateChanged += new EventHandler<ImportStateEventArgs>(importStateChanged);
+            MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new NotifyCollectionChangedEventHandler(importStateChanged);
         }
 
-        protected virtual void importStateChanged(object sender, ImportStateEventArgs e)
+        protected virtual void importStateChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.Item.Location.StartsWith(getFullPath()))
+
+            if (e.NewItems != null)
             {
-                if (e.Mode == Mode.ADDED)
+                foreach (MediaFileItem item in e.NewItems)
                 {
-                    NrImportedFiles++;
-                }
-                else
-                {
-                    NrImportedFiles--;
+                    if (item.Location.StartsWith(getFullPath()))
+                    {
+
+                        NrImportedFiles++;
+                    }
                 }
             }
-            
+
+            if (e.OldItems != null)
+            {
+
+                foreach (MediaFileItem item in e.OldItems)
+                {
+                    if (item.Location.StartsWith(getFullPath()))
+                    {
+
+                        NrImportedFiles--;
+                    }
+                }
+            }
+                                    
         }
              
         private ObservableCollection<PathModel> directories;

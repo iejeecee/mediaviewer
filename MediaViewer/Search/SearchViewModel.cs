@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
@@ -13,24 +14,19 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Search
 {
-    public enum MediaType
-    {
-        All,
-        Video,
-        Images
-    }
+  
 
     class SearchViewModel : ObservableObject
     {
                
-        class IgnoreCaseComparer : IEqualityComparer<String>
+        class IgnoreCaseComparer : IEqualityComparer<Tag>
         {
-            public bool Equals(string x, string y)
+            public bool Equals(Tag x, Tag y)
             {
-                return (x.ToLower().Equals(y.ToLower()));
+                return (x.Name.ToLower().Equals(y.Name.ToLower()));
             }
 
-            public int GetHashCode(string obj)
+            public int GetHashCode(Tag obj)
             {
                 return (obj.GetHashCode());
             }
@@ -40,13 +36,22 @@ namespace MediaViewer.Search
         {
             
             RecurseSubDirectories = false;
-            Query = "Search";
-            SearchType = MediaType.All;
+            Query = new SearchQuery();      
 
-            searchCommand = new Command<String>(new Action<String>((query) =>
+            searchCommand = new Command<SearchQuery>(new Action<SearchQuery>((query) =>
             {
                 doSearch(query);
             }));
+        }
+
+        SearchQuery query;
+
+        public SearchQuery Query
+        {
+            get { return query; }
+            set { query = value;
+            NotifyPropertyChanged();
+            }
         }
 
         MediaType searchType;
@@ -59,9 +64,9 @@ namespace MediaViewer.Search
             }
         }
 
-        Command<String> searchCommand;
+        Command<SearchQuery> searchCommand;
 
-        public Command<String> SearchCommand
+        public Command<SearchQuery> SearchCommand
         {
             get { return searchCommand; }
             set
@@ -71,17 +76,7 @@ namespace MediaViewer.Search
             }
         }
 
-        String query;
-
-        public String Query
-        {
-            get { return query; }
-            set
-            {
-                query = value;
-                NotifyPropertyChanged();
-            }
-        }
+     
 
         bool recurseSubDirectories;
 
@@ -94,36 +89,35 @@ namespace MediaViewer.Search
                 NotifyPropertyChanged();
             }
         }
-
         
-
-        private void doSearch(String query)
+        private void doSearch(SearchQuery searchQuery)
         {
-            if (String.IsNullOrEmpty(query) || String.IsNullOrWhiteSpace(query)) return;
+            if (String.IsNullOrEmpty(searchQuery.Text) || String.IsNullOrWhiteSpace(searchQuery.Text)) return;
        
             CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-            List<Tag> tags;
+            List<Tag> tags = searchQuery.Tags;
 
-            parseQuery(Query, out tags);
+            searchQuery.parseQuery();
 
             //List<MediaFileItem> results = diskTagSearch(tags, RecurseSubDirectories, tokenSource.Token);
-            List<MediaFileItem> results = dbTagSearch(tags);
+            List<MediaFileItem> results = dbTagSearch(searchQuery);
 
             foreach (MediaFileItem item in results)
             {
                 item.ItemState = MediaFileItemState.EMPTY;
             }
 
-            MediaFileWatcher.Instance.MediaFiles.Clear();
-            MediaFileWatcher.Instance.MediaFiles.AddRange(results);
+            MediaFileWatcher.Instance.IsWatcherEnabled = false;          
+            MediaFileWatcher.Instance.MediaState.clear();
+            MediaFileWatcher.Instance.MediaState.add(results);
         }
 
-        public List<MediaFileItem> dbTagSearch(List<Tag> tags)
+        public List<MediaFileItem> dbTagSearch(SearchQuery searchQuery)
         {
             MediaDbCommands mediaCommands = new MediaDbCommands();
 
-            List<Media> results = mediaCommands.findMediaByTags(tags);
+            List<Media> results = mediaCommands.findMediaByQuery(searchQuery);
             List<MediaFileItem> items = new List<MediaFileItem>();
 
             foreach (Media result in results)
@@ -149,17 +143,12 @@ namespace MediaViewer.Search
 
             foreach (MediaFileItem item in mediaItems)
             {
-                item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.LOAD_FROM_DISK, token);
+                item.readMetaData(MediaFactory.ReadOptions.READ_FROM_DISK, token);
                 if (item.ItemState == MediaFileItemState.LOADED)
                 {
                     foreach (Tag tag in tags)
-                    {
-                        if (item.Media.MetaData == null)
-                        {
-                            continue;
-                        }
-
-                        if (item.Media.MetaData.Tags.Contains(tag.Name, new IgnoreCaseComparer()))
+                    {                      
+                        if (item.Media.Tags.Contains(tag, new IgnoreCaseComparer()))
                         {
                             matches.Add(item);
                             continue;
@@ -190,28 +179,7 @@ namespace MediaViewer.Search
             }
         }
 
-        void parseQuery(String query, out List<Tag> tags)
-        {
-            TagDbCommands tagCommands = new TagDbCommands();
-
-            tags = new List<Tag>();
-
-            foreach (String tagName in query.Split(','))
-            {
-                String tagNameTrimmed = tagName.Trim();
-
-                Tag dbTag = tagCommands.getTagByName(tagNameTrimmed);
-
-                if (dbTag == null)
-                {
-                    tags.Add(new Tag() { Name = tagNameTrimmed });
-                }
-                else
-                {
-                    tags.Add(dbTag);
-                }
-            }
-        }
+        
 
     }
 }

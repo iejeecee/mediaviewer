@@ -17,7 +17,6 @@ using System.Windows.Shapes;
 using MediaViewer.DirectoryBrowser;
 using MediaViewer.ImageGrid;
 using MediaViewer.Input;
-using MediaViewer.MediaPreview;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
 using MediaViewer.Pager;
@@ -41,7 +40,7 @@ namespace MediaViewer.MediaFileBrowser
             DataContext = new MediaFileBrowserViewModel();
             directoryBrowser.DataContext = DataContext;
 
-            pagedImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaFiles);
+            pagedImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
             imageGrid.DataContext = pagedImageGridViewModel;
             metaDataView.DataContext = pagedImageGridViewModel;
             pager.DataContext = pagedImageGridViewModel;

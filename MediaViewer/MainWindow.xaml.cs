@@ -75,11 +75,11 @@ namespace MediaViewer
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
-            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((o,e) =>
+            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((o,e) =>
             {
                 if (mediaFileBrowser.Visibility == Visibility.Visible)
                 {
-                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItems();
                  
                     if (selected.Count > 0)
                     {

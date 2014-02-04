@@ -146,9 +146,9 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                         if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && !Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            MediaFileItem oldFile = new MediaFileItem(r.FullPath);
+                            MediaFileItem oldFile = new MediaFileItem(r.OldFullPath);
 
-                            if (MediaFileWatcher.MediaFilesInUseByOperation.Contains(oldFile)) 
+                            if (MediaFileWatcher.MediaState.isInUse(oldFile)) 
                             {
                                 // Updating metadata on a mediafile will create a temporary copy of the mediafile
                                 // which causes several create/rename/delete events
@@ -165,7 +165,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         {
                             MediaFileItem newFile = new MediaFileItem(r.FullPath);
 
-                            if (MediaFileWatcher.MediaFilesInUseByOperation.Contains(newFile))
+                            if (MediaFileWatcher.MediaState.isInUse(newFile))
                             {
                                 // Updating metadata on a mediafile will create a temporary copy of the mediafile
                                 // which causes several create/rename/delete events
@@ -192,13 +192,13 @@ namespace MediaViewer.MediaFileModel.Watcher
         {
             if (removed.Count > 0)
             {
-                MediaFileWatcher.MediaFiles.RemoveAll(removed);
+                MediaFileWatcher.MediaState.remove(removed);
                 removed.Clear();
             }
 
             if (created.Count > 0)
             {
-                MediaFileWatcher.MediaFiles.AddRange(created);
+                MediaFileWatcher.MediaState.add(created);
                 created.Clear();
             }
           
@@ -210,7 +210,8 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             if (renamedRemovedFiles.Count > 0 || renamedCreatedFiles.Count > 0)
             {
-                MediaFileWatcher.MediaFiles.ReplaceAll(renamedRemovedFiles, renamedCreatedFiles);
+                MediaFileWatcher.MediaState.remove(renamedRemovedFiles);
+                MediaFileWatcher.MediaState.add(renamedCreatedFiles);
                 renamedRemovedFiles.Clear();
                 renamedCreatedFiles.Clear();
             }

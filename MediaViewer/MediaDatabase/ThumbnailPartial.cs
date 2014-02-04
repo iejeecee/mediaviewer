@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaFileModel.Watcher;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,8 +10,24 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaDatabase
 {
-    partial class Thumbnail
+    partial class Thumbnail : ObservableObject
     {
+        BitmapSource image;
+
+        public BitmapSource Image
+        {
+            get { return image; } 
+            private set {
+                image = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        public Thumbnail()
+        {
+
+        }
+
         public Thumbnail(BitmapSource source)
         {
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();
@@ -25,23 +42,29 @@ namespace MediaViewer.MediaDatabase
             this.ImageData = stream.ToArray();
             this.Width = (short)source.PixelWidth;
             this.Height = (short)source.PixelHeight;
+
+            source.Freeze();
+            Image = source;        
         }
 
-        public BitmapSource toBitmapSource()
+        public void decodeImage()
         {
             MemoryStream stream = new MemoryStream();
             stream.Write(ImageData, 0, ImageData.Length);
             stream.Position = 0;
 
-            BitmapImage tempImage = new BitmapImage();
-            tempImage.BeginInit();
-            tempImage.CacheOption = BitmapCacheOption.OnLoad;
-            tempImage.StreamSource = stream;
-            tempImage.DecodePixelWidth = Width;
-            tempImage.DecodePixelHeight = Height;
-            tempImage.EndInit();
+            BitmapImage thumb = new BitmapImage();
+            thumb.BeginInit();
+            thumb.CacheOption = BitmapCacheOption.OnLoad;
+            thumb.StreamSource = stream;
+            thumb.DecodePixelWidth = Width;
+            thumb.DecodePixelHeight = Height;
+            thumb.EndInit();
 
-            return (tempImage);
+            thumb.Freeze();
+
+            Image = thumb;
+           
         }
     }
 }

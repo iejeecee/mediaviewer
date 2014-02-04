@@ -14,17 +14,7 @@ namespace MediaDatabaseTest
 
         static void Main(string[] args)
         {
-            using (var db = new MediaDatabaseTestContainer())
-            {
-                // Create and save a new Blog
-
-                string name = "test";
-
-                var tag = new Tag { Name = name };
-        
-                db.TagSet.Add(tag);
-                db.SaveChanges();
-            }
+           
         }
     }
 }

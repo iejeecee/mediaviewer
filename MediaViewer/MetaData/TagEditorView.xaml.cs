@@ -29,33 +29,28 @@ namespace MediaViewer.MetaData
             InitializeComponent();           
         }
 
-        public ObservableCollection<String> Tags
+        public ObservableCollection<Tag> Tags
         {
-            get { return (ObservableCollection<String>)GetValue(TagsProperty); }
+            get { return (ObservableCollection<Tag>)GetValue(TagsProperty); }
             set { SetValue(TagsProperty, value); }
         }
 
         public static readonly DependencyProperty TagsProperty =
-            DependencyProperty.Register("Tags", typeof(ObservableCollection<String>), typeof(TagEditorView), 
+            DependencyProperty.Register("Tags", typeof(ObservableCollection<Tag>), typeof(TagEditorView), 
             new PropertyMetadata(null, new PropertyChangedCallback(tagsChangedCallback)));
 
         static void tagsChangedCallback(DependencyObject o, DependencyPropertyChangedEventArgs e)
         {
             TagEditorView control = (TagEditorView)o;
                     
-            control.tagListBox.ItemsSource = (ObservableCollection<String>)e.NewValue;
+            control.tagListBox.ItemsSource = (ObservableCollection<Tag>)e.NewValue;
                      
         }
 
         private void addTag(string tagName)
         {
             if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;
-
-            if (!Tags.Contains(tagName))
-            {
-                Tags.Add(tagName);
-            }
-
+         
             addTagTextbox.Text = "";
 
             // add linked tags
@@ -64,19 +59,28 @@ namespace MediaViewer.MetaData
             {
                 Tag tag = tc.getTagByName(tagName);
 
-                if (tag == null) return;
-
-                foreach (Tag childTag in tag.ChildTags)
+                if (tag != null)
                 {
-                    if (!Tags.Contains(childTag.Name))
+                    foreach (Tag childTag in tag.ChildTags)
                     {
-                        Tags.Add(childTag.Name);
+                        if (!Tags.Contains(childTag))
+                        {
+                            Tags.Add(childTag);
+                        }
                     }
-                }                
 
-            }
-
-           
+                }
+                else
+                {
+                    tag = new Tag();
+                    tag.Name = tagName;
+                }
+              
+                if (!Tags.Contains(tag))
+                {
+                    Tags.Add(tag);
+                }
+            }           
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e)
@@ -88,7 +92,7 @@ namespace MediaViewer.MetaData
         {
             while (tagListBox.SelectedItems.Count > 0)
             {
-                Tags.Remove((String)tagListBox.SelectedItem);
+                Tags.Remove((Tag)tagListBox.SelectedItem);
             }  
         }
 

@@ -48,7 +48,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="220">
+            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="180">
                 <xctk:DropDownButton Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -150,7 +150,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-300,0,0,0" Width="100">
+            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-145.667,0,85.667,-0.333" Width="60">
                 <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
                 </Button>

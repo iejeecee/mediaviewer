@@ -24,13 +24,18 @@ namespace MediaViewer.Utils
             System.Diagnostics.Debug.Print(obj.ToString());
         }
 
-
-        public static string formatTimeSeconds(int totalSeconds)
+        public static void parseTimeSeconds(long totalSeconds, out int seconds, out int minutes, out int hours)
         {
+            seconds = (int)(totalSeconds % 60);
+            minutes = (int)((totalSeconds / 60) % 60);
+            hours = (int)(totalSeconds / 3600);
+        }
 
-            int seconds = (int)(totalSeconds % 60);
-            int minutes = (int)((totalSeconds / 60) % 60);
-            int hours = (int)(totalSeconds / 3600);
+        public static string formatTimeSeconds(long totalSeconds)
+        {
+            int seconds, minutes, hours;       
+
+            parseTimeSeconds(totalSeconds, out seconds, out minutes, out hours);
 
             string hoursStr = "";
 

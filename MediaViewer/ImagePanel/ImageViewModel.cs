@@ -13,6 +13,7 @@ using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Pager;
 using MediaViewer.Utils;
 using System.Collections.Specialized;
+using MediaViewer.MediaDatabase;
 
 namespace MediaViewer.ImagePanel
 {
@@ -22,13 +23,13 @@ namespace MediaViewer.ImagePanel
 
         CancellationTokenSource loadImageCTS;
 
-        ImageFile imageFile;
+        ImageMedia imageFile;
 
-        MediaFileState MediaFiles
+        MediaState MediaState
         {
             get
             {
-                return (MediaFileWatcher.Instance.MediaFiles);
+                return (MediaFileWatcher.Instance.MediaState);
             }
         }
 
@@ -46,7 +47,7 @@ namespace MediaViewer.ImagePanel
             }));
 
 
-            MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler((s, e) =>
+            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler((s, e) =>
             {
 
                 if (imageFile == null)
@@ -270,22 +271,21 @@ namespace MediaViewer.ImagePanel
 
             // async load media
 
-            MediaFile media = null;
+            Media media = null;
 
             try
             {
                 IsLoading = true;
 
-                media = await MediaFileFactory.openAsync((String)fileName, 
-                    MediaFile.MetaDataLoadOptions.AUTO, 
+                media = await MediaFactory.readAsync((String)fileName, 
+                    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ, 
                     loadImageCTS.Token);
 
                 IsLoading = false;
 
                 BitmapImage loadedImage = null;
 
-                if (media.OpenSuccess &&
-                      media.MediaFormat == MediaFile.MediaType.IMAGE)
+                if (media is ImageMedia && media.Data != null)
                 {
                     loadedImage = new BitmapImage();
 
@@ -296,9 +296,9 @@ namespace MediaViewer.ImagePanel
 
                     loadedImage.Freeze();
 
-                    imageFile = (ImageFile)media;
+                    imageFile = (ImageMedia)media;
 
-                    MediaFiles.EnterReaderLock();
+                    MediaState.MediaCollection.EnterReaderLock();
 
                     int index = getImageFileIndex(imageFile.Location);
 
@@ -313,7 +313,7 @@ namespace MediaViewer.ImagePanel
                         CurrentImage = index + 1;
                     }
 
-                    MediaFiles.ExitReaderLock();
+                    MediaState.MediaCollection.ExitReaderLock();
 
                     log.Info("Image loaded: " + media.Location);
                 }
@@ -392,7 +392,7 @@ namespace MediaViewer.ImagePanel
             {
                 if (value <= 0 || value > NrImages || IsPagingImagesEnabled == false) return;
 
-                MediaFiles.EnterReaderLock();
+                MediaState.MediaCollection.EnterReaderLock();
 
                 String location = getImageFileByIndex(value - 1);
 
@@ -401,7 +401,7 @@ namespace MediaViewer.ImagePanel
                     GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
                 }
 
-                MediaFiles.ExitReaderLock();
+                MediaState.MediaCollection.ExitReaderLock();
 
                 currentImage = value;
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -493,7 +493,7 @@ namespace MediaViewer.ImagePanel
         {           
             int count = 0;
 
-            foreach (MediaFileItem item in MediaFiles.Items)
+            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
             {                  
                 if (MediaFormatConvert.isImageFile(item.Location))
                 {
@@ -509,7 +509,7 @@ namespace MediaViewer.ImagePanel
 
             int i = 0;
 
-            foreach (MediaFileItem item in MediaFiles.Items)
+            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
             {
 
                 if (MediaFormatConvert.isImageFile(item.Location))
@@ -532,7 +532,7 @@ namespace MediaViewer.ImagePanel
 
             int i = 0;
 
-            foreach (MediaFileItem item in MediaFiles.Items)
+            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
             {
 
                 if (MediaFormatConvert.isImageFile(item.Location))

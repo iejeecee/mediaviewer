@@ -15,35 +15,23 @@ namespace MediaViewer.MediaFileModel.Watcher
 {
     class MediaFileWatcher
     {
-              
-        ReaderWriterLockedCollection<MediaFileItem> mediaFilesInUseByOperation;
-
-        /// <summary>
-        ///  Files that are scheduled to have some operation preformed on them
-        ///  e.g. modifying their metadata, moving, deleting them etc.
-        /// </summary>
-        public ReaderWriterLockedCollection<MediaFileItem> MediaFilesInUseByOperation
-        {
-            get { return mediaFilesInUseByOperation; }
-            private set { mediaFilesInUseByOperation = value; }
-        }
-
-        MediaFileState mediaFiles;
+             
+        MediaState mediaState;
         /// <summary>
         /// All the mediafiles that are currently being watched using a mediafilewatcher
         /// Several event's can be fired on changes to the file(s)
         /// </summary>
-        public MediaFileState MediaFiles
+        public MediaState MediaState
         {
             get
             {
-                return (mediaFiles);
+                return (mediaState);
             }
 
             private set
             {
 
-                this.mediaFiles = value;
+                this.mediaState = value;
             }
         }
 
@@ -55,11 +43,8 @@ namespace MediaViewer.MediaFileModel.Watcher
         [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
         protected MediaFileWatcher()
         {
-
             watcher = new FileSystemWatcher();
-            mediaFiles = new MediaFileState();
-            mediaFilesInUseByOperation = new ReaderWriterLockedCollection<MediaFileItem>();
-            
+            mediaState = new MediaState();                     
                     
             /* Watch for changes in LastAccess and LastWrite times, and 
             the renaming of files or directories. */
@@ -79,6 +64,14 @@ namespace MediaViewer.MediaFileModel.Watcher
          
         }
 
+        bool isWatcherEnabled;
+
+        public bool IsWatcherEnabled
+        {
+            get { return watcher.EnableRaisingEvents; }
+            set { watcher.EnableRaisingEvents = value; }
+        }
+
         public static MediaFileWatcher Instance
         {
 
@@ -92,10 +85,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 return (instance);
             }
         }
-
         
-
-
         private void listMediaFiles(string path)
         {
 
@@ -113,8 +103,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
             }
 
-            mediaFiles.Clear();
-            mediaFiles.AddRange(items);
+            mediaState.clear();
+            mediaState.add(items);
         }
 
         private void FileChanged(System.Object sender, System.IO.FileSystemEventArgs e)

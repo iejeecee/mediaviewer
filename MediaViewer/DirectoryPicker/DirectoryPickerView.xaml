@@ -4,7 +4,7 @@
         xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         x:Class="MediaViewer.DirectoryPicker.DirectoryPickerView"
-        Title="{Binding InfoString}" Height="290.667" Width="500" Icon="/MediaViewer;component/Resources/Icons/folder_open.ico">
+        Title="{Binding InfoString}" Height="400" Width="600" Icon="/MediaViewer;component/Resources/Icons/folder_open.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

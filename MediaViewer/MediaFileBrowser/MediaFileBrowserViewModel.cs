@@ -3,7 +3,6 @@ using MediaViewer.ImageGrid;
 using MediaViewer.Input;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.MediaPreview;
 using MediaViewer.DirectoryPicker;
 using MediaViewer.Pager;
 using MediaViewer.Search;
@@ -28,7 +27,6 @@ namespace MediaViewer.MediaFileBrowser
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
       
         private MediaFileWatcher mediaFileWatcher;
-        private delegate void imageFileWatcherEventDelegate(List<MediaPreviewAsyncState> imageData);
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);       
 
         PagedImageGridViewModel pagedImageGridViewModel;
@@ -48,7 +46,7 @@ namespace MediaViewer.MediaFileBrowser
 
             ImportSelectedItemsCommand = new Command(async () =>
             {
-                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItems();
                 if (selectedItems.Count == 0) return;
 
                 ImportView import = new ImportView();
@@ -131,7 +129,8 @@ namespace MediaViewer.MediaFileBrowser
         private void deleteSelectedItems()
         {
 
-            List<MediaFileItem> selected = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            List<MediaFileItem> selected = MediaFileWatcher.Instance.MediaState.getSelectedItems();
 
             if (selected.Count == 0) return;
            
@@ -139,21 +138,11 @@ namespace MediaViewer.MediaFileBrowser
                 "Delete Media", MessageBoxButton.YesNo, MessageBoxImage.Question)
                 == MessageBoxResult.Yes)
             {
-
-                if (MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(selected) == false)
-                {
-                    MessageBox.Show("Error", "Cannot delete file(s) in use by another operation");
-                    return;
-                }
-
+              
                 try
                 {
-                    FileUtils fileUtils = new FileUtils();
-
-                    for (int i = 0; i < selected.Count; i++)
-                    {
-                        fileUtils.deleteFile(selected[i].Location);
-                    }
+                    MediaFileWatcher.Instance.MediaState.delete(selected, tokenSource.Token);
+                    
                 }
                 catch (Exception ex)
                 {
@@ -161,10 +150,7 @@ namespace MediaViewer.MediaFileBrowser
                     log.Error("Error deleting file", ex);
                     MessageBox.Show(ex.Message, "Error deleting file");
                 }
-                finally
-                {
-                    MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(selected);
-                }
+                
             }
 
         }
@@ -187,58 +173,12 @@ namespace MediaViewer.MediaFileBrowser
         private void cutToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
-
-            if (selected.Count == 0)
-            {
-
-                //selected.Add(e.Item.AsyncState);
-            }
-
-            StringCollection files = new StringCollection();
-
-            foreach (MediaPreviewAsyncState item in selected)
-            {
-
-                files.Add(item.MediaLocation);
-            }
-
-            //DirectoryBrowserControl.clipboardAction = DirectoryBrowserControl.ClipboardAction.CUT;
-
-            Clipboard.Clear();
-            if (files.Count > 0)
-            {
-
-                Clipboard.SetFileDropList(files);
-            }
+            
         }
         private void copyToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
         {
 
-            List<MediaPreviewAsyncState> selected = null;// imageGrid.getSelectedImageData();
-
-            if (selected.Count == 0)
-            {
-
-                //selected.Add(e.Item.AsyncState);
-            }
-
-            StringCollection files = new StringCollection();
-
-            foreach (MediaPreviewAsyncState item in selected)
-            {
-
-                files.Add(item.MediaLocation);
-            }
-
-            //DirectoryBrowserControl.clipboardAction = DirectoryBrowserControl.ClipboardAction.COPY;
-
-            Clipboard.Clear();
-            if (files.Count > 0)
-            {
-
-                Clipboard.SetFileDropList(files);
-            }
+           
         }
 
 

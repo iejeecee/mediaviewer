@@ -10,7 +10,7 @@ using System.Windows.Media;
 using System.Windows.Documents;
 using System.Windows.Shapes;
 
-namespace MediaViewer.DateTimePicker
+namespace MediaViewer.UserControls.DateTimePicker
 {
     /// <summary>
     /// A WPF DateTimePickerView control that allows the user to edit the date with a

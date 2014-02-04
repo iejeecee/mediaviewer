@@ -6,12 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
-    class MediaFileException : Exception
+    class VideoMetadataWriter : MetadataWriter
     {
-        public MediaFileException(string message)
-            : base(message)
-        {
-
-        }
     }
 }

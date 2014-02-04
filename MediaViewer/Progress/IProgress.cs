@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Progress
 {
-    interface IProgress
+    public interface IProgress
     {      
        int TotalProgress { get; set; }
        int TotalProgressMax { get; set; }

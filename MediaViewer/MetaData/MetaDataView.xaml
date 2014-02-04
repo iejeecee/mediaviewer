@@ -6,7 +6,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/wpf/2008/toolkit"
              xmlns:inputtoolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"           
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
-             xmlns:DateTimePicker="clr-namespace:MediaViewer.DateTimePicker"  x:Class="MediaViewer.MetaData.MetaDataView"
+             xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"  x:Class="MediaViewer.MetaData.MetaDataView"
              mc:Ignorable="d" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>

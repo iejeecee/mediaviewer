@@ -26,7 +26,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="0,0,0,10.333">
-        <ListBox Name="tagListBox" HorizontalAlignment="Stretch" Height="111" Margin="0,21,0,0" VerticalAlignment="Top" SelectionMode="Multiple"/>
+        <ListBox Name="tagListBox" HorizontalAlignment="Stretch" Height="111" Margin="0,21,0,0" VerticalAlignment="Top" SelectionMode="Multiple" DisplayMemberPath="Name"/>
         <Button Content="Add" HorizontalAlignment="Right" Width="50" Margin="0,0,50,0" VerticalAlignment="Top" Click="addButton_Click"
                 ToolTip="Add Tag"/>
         <Button Content="Remove" HorizontalAlignment="Right" Width="50" Margin="0,0,0,0" VerticalAlignment="Top" Click="removeButton_Click"

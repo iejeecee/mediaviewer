@@ -2,6 +2,7 @@
 using MediaViewer.MediaDatabase.DbCommands;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,7 +31,7 @@ namespace MediaViewer.DirectoryBrowser
             }
         }
 
-        protected override void importStateChanged(object sender, ImportStateEventArgs e) 
+        protected override void importStateChanged(object sender, NotifyCollectionChangedEventArgs e) 
         {
             base.importStateChanged(sender, e);
 

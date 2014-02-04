@@ -45,7 +45,20 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 Db = null;
             }
         }
-
+/*
+        protected void saveChanges()
+        {
+            // changes are only saved in the topmost context
+            if (UsingExistingContext)
+            {
+                return;
+            }
+            else
+            {
+                Db.SaveChanges();
+            }
+        }
+*/
         public void Dispose()
         {
             if (!UsingExistingContext)

@@ -11,6 +11,9 @@
     <EntitySet Name="MediaSet" EntityType="MediaDatabase.Store.MediaSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.Store.PresetMetadataSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="ThumbnailSet" EntityType="MediaDatabase.Store.ThumbnailSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MediaSet_ImageMedia" EntityType="MediaDatabase.Store.MediaSet_ImageMedia" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MediaSet_VideoMedia" EntityType="MediaDatabase.Store.MediaSet_VideoMedia" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="MediaSet_UnknownMedia" EntityType="MediaDatabase.Store.MediaSet_UnknownMedia" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="MediaTag" EntityType="MediaDatabase.Store.MediaTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataTag" EntityType="MediaDatabase.Store.PresetMetadataTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="TagTag" EntityType="MediaDatabase.Store.TagTag" store:Type="Tables" Schema="dbo" />
@@ -46,6 +49,18 @@
       <End Role="Media" EntitySet="MediaSet" />
       <End Role="Thumbnail" EntitySet="ThumbnailSet" />
     </AssociationSet>
+    <AssociationSet Name="FK_ImageMedia_inherits_Media" Association="MediaDatabase.Store.FK_ImageMedia_inherits_Media">
+      <End Role="Media" EntitySet="MediaSet" />
+      <End Role="ImageMedia" EntitySet="MediaSet_ImageMedia" />
+    </AssociationSet>
+    <AssociationSet Name="FK_VideoMedia_inherits_Media" Association="MediaDatabase.Store.FK_VideoMedia_inherits_Media">
+      <End Role="Media" EntitySet="MediaSet" />
+      <End Role="VideoMedia" EntitySet="MediaSet_VideoMedia" />
+    </AssociationSet>
+    <AssociationSet Name="FK_UnknownMedia_inherits_Media" Association="MediaDatabase.Store.FK_UnknownMedia_inherits_Media">
+      <End Role="Media" EntitySet="MediaSet" />
+      <End Role="UnknownMedia" EntitySet="MediaSet_UnknownMedia" />
+    </AssociationSet>
   </EntityContainer>
   <EntityType Name="TagSet">
     <Key>
@@ -73,22 +88,14 @@
     <Property Name="Description" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Author" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Copyright" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="LastModified" Type="datetime" Nullable="false" />
+    <Property Name="LastModifiedDate" Type="datetime" Nullable="false" />
     <Property Name="CreationDate" Type="datetime" Nullable="true" />
+    <Property Name="MetadataModifiedDate" Type="datetime" Nullable="true" />
+    <Property Name="MetadataDate" Type="datetime" Nullable="true" />
     <Property Name="MimeType" Type="nvarchar(max)" Nullable="false" />
     <Property Name="SizeBytes" Type="bigint" Nullable="false" />
-    <Property Name="VideoProps_VideoContainer" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="VideoProps_VideoCodec" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="VideoProps_Width" Type="bigint" Nullable="true" />
-    <Property Name="VideoProps_Height" Type="bigint" Nullable="true" />
-    <Property Name="VideoProps_DurationSeconds" Type="bigint" Nullable="true" />
-    <Property Name="VideoProps_PixelFormat" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="VideoProps_FramesPerSecond" Type="float" Nullable="true" />
-    <Property Name="VideoProps_SamplesPerSecond" Type="smallint" Nullable="true" />
-    <Property Name="VideoProps_NrChannels" Type="smallint" Nullable="true" />
-    <Property Name="VideoProps_BitsPerSample" Type="smallint" Nullable="true" />
-    <Property Name="ImageProps_Width" Type="int" Nullable="true" />
-    <Property Name="ImageProps_Height" Type="int" Nullable="true" />
+    <Property Name="Software" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="SupportsXMPMetadata" Type="bit" Nullable="false" DefaultValue="true" />
   </EntityType>
   <EntityType Name="PresetMetadataSet">
     <Key>
@@ -119,6 +126,37 @@
     <Property Name="Width" Type="smallint" Nullable="false" />
     <Property Name="Height" Type="smallint" Nullable="false" />
     <Property Name="Media_Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="MediaSet_ImageMedia">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Width" Type="int" Nullable="false" />
+    <Property Name="Height" Type="int" Nullable="false" />
+    <Property Name="Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="MediaSet_VideoMedia">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Width" Type="int" Nullable="false" />
+    <Property Name="Height" Type="int" Nullable="false" />
+    <Property Name="BitsPerSample" Type="smallint" Nullable="true" />
+    <Property Name="DurationSeconds" Type="int" Nullable="false" />
+    <Property Name="FramesPerSecond" Type="float" Nullable="false" />
+    <Property Name="NrChannels" Type="smallint" Nullable="false" />
+    <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="SamplesPerSecond" Type="int" Nullable="false" />
+    <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="AudioCodec" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="MediaSet_UnknownMedia">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="MediaTag">
     <Key>
@@ -240,6 +278,48 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
+  <Association Name="FK_ImageMedia_inherits_Media">
+    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+      <OnDelete Action="Cascade" />
+    </End>
+    <End Role="ImageMedia" Type="MediaDatabase.Store.MediaSet_ImageMedia" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="Media">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="ImageMedia">
+        <PropertyRef Name="Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_VideoMedia_inherits_Media">
+    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+      <OnDelete Action="Cascade" />
+    </End>
+    <End Role="VideoMedia" Type="MediaDatabase.Store.MediaSet_VideoMedia" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="Media">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="VideoMedia">
+        <PropertyRef Name="Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_UnknownMedia_inherits_Media">
+    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+      <OnDelete Action="Cascade" />
+    </End>
+    <End Role="UnknownMedia" Type="MediaDatabase.Store.MediaSet_UnknownMedia" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="Media">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="UnknownMedia">
+        <PropertyRef Name="Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
 </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
@@ -303,7 +383,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Media">
+        <EntityType Name="Media" Abstract="true">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
@@ -315,13 +395,15 @@
           <Property Type="String" Name="Author" Nullable="true" />
           <Property Type="String" Name="Copyright" Nullable="true" />
           <NavigationProperty Name="Tags" Relationship="MediaDatabase.MediaTag" FromRole="Media" ToRole="Tag" />
-          <Property Type="DateTime" Name="LastModified" Nullable="false" />
+          <Property Type="DateTime" Name="LastModifiedDate" Nullable="false" />
           <Property Type="DateTime" Name="CreationDate" Nullable="true" />
           <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.MediaThumbnail" FromRole="Media" ToRole="Thumbnail" />
+          <Property Type="DateTime" Name="MetadataModifiedDate" Nullable="true" />
+          <Property Type="DateTime" Name="MetadataDate" Nullable="true" />
           <Property Type="String" Name="MimeType" Nullable="false" />
           <Property Type="Int64" Name="SizeBytes" Nullable="false" />
-          <Property Name="VideoProps" Type="MediaDatabase.VideoProps" Nullable="false" />
-          <Property Name="ImageProps" Type="MediaDatabase.ImageProps" Nullable="false" />
+          <Property Type="String" Name="Software" Nullable="true" />
+          <Property Type="Boolean" Name="SupportsXMPMetadata" Nullable="false" DefaultValue="true" />
         </EntityType>
         <Association Name="MediaTag">
           <End Type="MediaDatabase.Media" Role="Media" Multiplicity="*" />
@@ -386,6 +468,24 @@
           <Property Type="Int16" Name="NrChannels" Nullable="true" />
           <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
         </ComplexType>
+        <EntityType Name="ImageMedia" BaseType="MediaDatabase.Media" >
+          <Property Type="Int32" Name="Width" Nullable="false" />
+          <Property Type="Int32" Name="Height" Nullable="false" />
+        </EntityType>
+        <EntityType Name="VideoMedia" BaseType="MediaDatabase.Media" >
+          <Property Type="Int32" Name="Width" Nullable="false" />
+          <Property Type="Int32" Name="Height" Nullable="false" />
+          <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
+          <Property Type="Int32" Name="DurationSeconds" Nullable="false" />
+          <Property Type="Double" Name="FramesPerSecond" Nullable="false" />
+          <Property Type="Int16" Name="NrChannels" Nullable="false" />
+          <Property Type="String" Name="PixelFormat" Nullable="false" />
+          <Property Type="Int32" Name="SamplesPerSecond" Nullable="false" />
+          <Property Type="String" Name="VideoCodec" Nullable="false" />
+          <Property Type="String" Name="VideoContainer" Nullable="false" />
+          <Property Type="String" Name="AudioCodec" Nullable="true" />
+        </EntityType>
+        <EntityType Name="UnknownMedia" BaseType="MediaDatabase.Media" />
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -419,26 +519,42 @@
           <ScalarProperty Name="Description" ColumnName="Description" />
           <ScalarProperty Name="Author" ColumnName="Author" />
           <ScalarProperty Name="Copyright" ColumnName="Copyright" />
-          <ScalarProperty Name="LastModified" ColumnName="LastModified" />
+          <ScalarProperty Name="LastModifiedDate" ColumnName="LastModifiedDate" />
           <ScalarProperty Name="CreationDate" ColumnName="CreationDate" />
+          <ScalarProperty Name="MetadataModifiedDate" ColumnName="MetadataModifiedDate" />
+          <ScalarProperty Name="MetadataDate" ColumnName="MetadataDate" />
           <ScalarProperty Name="MimeType" ColumnName="MimeType" />
           <ScalarProperty Name="SizeBytes" ColumnName="SizeBytes" />
-          <ComplexProperty Name="VideoProps" TypeName="MediaDatabase.VideoProps">
-            <ScalarProperty Name="VideoContainer" ColumnName="VideoProps_VideoContainer" />
-            <ScalarProperty Name="VideoCodec" ColumnName="VideoProps_VideoCodec" />
-            <ScalarProperty Name="Width" ColumnName="VideoProps_Width" />
-            <ScalarProperty Name="Height" ColumnName="VideoProps_Height" />
-            <ScalarProperty Name="DurationSeconds" ColumnName="VideoProps_DurationSeconds" />
-            <ScalarProperty Name="PixelFormat" ColumnName="VideoProps_PixelFormat" />
-            <ScalarProperty Name="FramesPerSecond" ColumnName="VideoProps_FramesPerSecond" />
-            <ScalarProperty Name="SamplesPerSecond" ColumnName="VideoProps_SamplesPerSecond" />
-            <ScalarProperty Name="NrChannels" ColumnName="VideoProps_NrChannels" />
-            <ScalarProperty Name="BitsPerSample" ColumnName="VideoProps_BitsPerSample" />
-          </ComplexProperty>
-          <ComplexProperty Name="ImageProps" TypeName="MediaDatabase.ImageProps">
-            <ScalarProperty Name="Width" ColumnName="ImageProps_Width" />
-            <ScalarProperty Name="Height" ColumnName="ImageProps_Height" />
-          </ComplexProperty>
+          <ScalarProperty Name="Software" ColumnName="Software" />
+          <ScalarProperty Name="SupportsXMPMetadata" ColumnName="SupportsXMPMetadata" />
+        </MappingFragment>
+      </EntityTypeMapping>
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.ImageMedia)">
+        <MappingFragment StoreEntitySet="MediaSet_ImageMedia">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Width" ColumnName="Width" />
+          <ScalarProperty Name="Height" ColumnName="Height" />
+        </MappingFragment>
+      </EntityTypeMapping>
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.VideoMedia)">
+        <MappingFragment StoreEntitySet="MediaSet_VideoMedia">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="Width" ColumnName="Width" />
+          <ScalarProperty Name="Height" ColumnName="Height" />
+          <ScalarProperty Name="BitsPerSample" ColumnName="BitsPerSample" />
+          <ScalarProperty Name="DurationSeconds" ColumnName="DurationSeconds" />
+          <ScalarProperty Name="FramesPerSecond" ColumnName="FramesPerSecond" />
+          <ScalarProperty Name="NrChannels" ColumnName="NrChannels" />
+          <ScalarProperty Name="PixelFormat" ColumnName="PixelFormat" />
+          <ScalarProperty Name="SamplesPerSecond" ColumnName="SamplesPerSecond" />
+          <ScalarProperty Name="VideoCodec" ColumnName="VideoCodec" />
+          <ScalarProperty Name="VideoContainer" ColumnName="VideoContainer" />
+          <ScalarProperty Name="AudioCodec" ColumnName="AudioCodec" />
+        </MappingFragment>
+      </EntityTypeMapping>
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.UnknownMedia)">
+        <MappingFragment StoreEntitySet="MediaSet_UnknownMedia">
+          <ScalarProperty Name="Id" ColumnName="Id" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

@@ -145,6 +145,7 @@
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Converters\EmptyStringConverter.cs" />
     <Compile Include="Converters\IsNullConverter.cs" />
     <Compile Include="Converters\MathConverter.cs" />
     <Compile Include="Converters\NullConverter.cs" />
@@ -153,7 +154,7 @@
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="Converters\PathToFileNameConverter.cs" />
-    <Compile Include="DateTimePicker\DateTimePickerView.xaml.cs">
+    <Compile Include="UserControls\DateTimePicker\DateTimePickerView.xaml.cs">
       <DependentUpon>DateTimePickerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
@@ -173,7 +174,6 @@
     <Compile Include="Converters\EnumConverter.cs" />
     <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
     <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
-    <Compile Include="Import\ImportState.cs" />
     <Compile Include="Import\ImportView.xaml.cs">
       <DependentUpon>ImportView.xaml</DependentUpon>
     </Compile>
@@ -181,6 +181,10 @@
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
     <Compile Include="MediaDatabase\DbCommands\MediaDbCommands.cs" />
+    <Compile Include="MediaDatabase\ImageMedia.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\ImageMediaPartial.cs" />
     <Compile Include="MediaDatabase\ImageProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -221,12 +225,26 @@
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
+    <Compile Include="MediaDatabase\UnknownMedia.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\UnknownMediaPartial.cs" />
+    <Compile Include="MediaDatabase\VideoMedia.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoMediaPartial.cs" />
     <Compile Include="MediaDatabase\VideoProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
-    <Compile Include="MediaDatabase\VideoPropsPartial.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileState.cs" />
-    <Compile Include="MediaFileModel\Watcher\ReaderWriterLockedCollection.cs" />
+    <Compile Include="MediaFileModel\ImageMetadataReader.cs" />
+    <Compile Include="MediaFileModel\ImageMetadataWriter.cs" />
+    <Compile Include="MediaFileModel\MediaState.cs" />
+    <Compile Include="MediaFileModel\MetadataReader.cs" />
+    <Compile Include="MediaFileModel\MetadataWriter.cs" />
+    <Compile Include="MediaFileModel\VideoMetadataReader.cs" />
+    <Compile Include="MediaFileModel\VideoMetadataWriter.cs" />
+    <Compile Include="MediaFileModel\IMediaState.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaLockedCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItemState.cs" />
     <Compile Include="MediaFileModel\Watcher\ObservableRangeCollection.cs" />
@@ -250,13 +268,8 @@
       <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
-    <Compile Include="MediaFileModel\MediaFileFactory.cs" />
+    <Compile Include="MediaFileModel\MediaFactory.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileWatcherQueue.cs" />
-    <Compile Include="MediaPreview\InfoIcon.cs" />
-    <Compile Include="MediaPreview\MediaPreviewAsyncState.cs" />
-    <Compile Include="MediaPreview\MediaPreviewControl.xaml.cs">
-      <DependentUpon>MediaPreviewControl.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ImagePanel\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
     </Compile>
@@ -267,15 +280,9 @@
     <Compile Include="ImagePanel\ScaleView.xaml.cs">
       <DependentUpon>ScaleView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaFileModel\ImageFile.cs" />
-    <Compile Include="MediaFileModel\MediaFile.cs" />
-    <Compile Include="MediaFileModel\MediaFileException.cs" />
-    <Compile Include="MediaFileModel\UnknownFile.cs" />
-    <Compile Include="MediaFileModel\VideoFile.cs" />
+    <Compile Include="MediaFileModel\MediaStateException.cs" />
     <Compile Include="GlobalMessenger.cs" />
     <Compile Include="MetaData\ExtendedComboBox.cs" />
-    <Compile Include="MetaData\FileMetaData.cs" />
-    <Compile Include="MetaData\FileMetaDataFactory.cs" />
     <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
       <DependentUpon>FilenamePresetsView.xaml</DependentUpon>
     </Compile>
@@ -296,7 +303,6 @@
     </Compile>
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
-    <Compile Include="MetaData\MetaDataThumb.cs" />
     <Compile Include="MetaData\TagEditorView.xaml.cs">
       <DependentUpon>TagEditorView.xaml</DependentUpon>
     </Compile>
@@ -321,6 +327,15 @@
       <DependentUpon>DirectoryPickerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="DirectoryPicker\DirectoryPickerViewModel.cs" />
+    <Compile Include="UserControls\DateTimePicker\TimePicker.xaml.cs">
+      <DependentUpon>TimePicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\NumberSpinner\FloatSpinner.xaml.cs">
+      <DependentUpon>FloatSpinner.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\NumberSpinner\IntegerSpinner.xaml.cs">
+      <DependentUpon>IntegerSpinner.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
@@ -328,6 +343,7 @@
     <Compile Include="Progress\ProgressControl.xaml.cs">
       <DependentUpon>ProgressControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Search\SearchViewModel.cs" />
     <Compile Include="Search\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
@@ -345,6 +361,10 @@
     <Compile Include="Timers\MultiMediaTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />
     <Compile Include="Timers\TimerQueueTimer.cs" />
+    <Compile Include="UserControls\Relation\RelationEnum.cs" />
+    <Compile Include="UserControls\Relation\RelationView.xaml.cs">
+      <DependentUpon>RelationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
@@ -354,6 +374,8 @@
     <Compile Include="Utils\Windows\FileDialog.cs" />
     <Compile Include="Utils\Windows\PerformanceCounters.cs" />
     <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
+    <Compile Include="ValidationRules\FloatValidationRule.cs" />
+    <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\AudioPlayer.cs" />
     <Compile Include="VideoPanel\Disposer.cs" />
     <Compile Include="VideoPanel\DPFCanvas.cs" />
@@ -373,7 +395,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="DateTimePicker\DateTimePickerView.xaml">
+    <Page Include="UserControls\DateTimePicker\DateTimePickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -398,10 +420,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MediaFileBrowser\MediaFileBrowserView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MediaPreview\MediaPreviewControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -445,6 +463,18 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\DateTimePicker\TimePicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\NumberSpinner\FloatSpinner.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\NumberSpinner\IntegerSpinner.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Pager\PagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -484,6 +514,10 @@
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UserControls\Relation\RelationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoTestWindow.xaml">
       <SubType>Designer</SubType>
@@ -700,6 +734,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\down arrow.ico" />
+    <Resource Include="Resources\Icons\up arrow.ico" />
     <Resource Include="Resources\Icons\mediafolder.ico" />
     <Resource Include="Resources\Icons\Import.ico" />
     <Resource Include="Resources\Icons\Calendar.ico" />

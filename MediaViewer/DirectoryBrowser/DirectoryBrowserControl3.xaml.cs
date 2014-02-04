@@ -8,6 +8,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -259,7 +260,7 @@ namespace MediaViewer.DirectoryBrowser
 
         bool deleteDirectory(string path, string infoText)
         {
-
+            CancellationTokenSource tokenSource = new CancellationTokenSource();
             List<MediaFileItem> mediaFilesToDelete = new List<MediaFileItem>();
 
             FileUtils.walkDirectoryTree(new DirectoryInfo(path), getFiles, mediaFilesToDelete, true);
@@ -272,15 +273,9 @@ namespace MediaViewer.DirectoryBrowser
                 {
                     return(false);
                 }
-           
 
-                bool result = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(mediaFilesToDelete);
-                if (result == false)
-                {
-                    MessageBox.Show("Error", "Cannot delete file(s) in use by another operation");
-                    return (false);
-                }
-
+                MediaFileWatcher.Instance.MediaState.delete(mediaFilesToDelete, tokenSource.Token);
+              
                 FileUtils fileUtils = new FileUtils();
                 fileUtils.deleteDirectory(path);
             
@@ -291,11 +286,7 @@ namespace MediaViewer.DirectoryBrowser
                 log.Error("Error deleting directory: " + path, e);
                 MessageBox.Show("Error deleting directory: " + path + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return (false);
-            }
-            finally
-            {
-                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(mediaFilesToDelete);
-            }
+            }            
 
         }
 

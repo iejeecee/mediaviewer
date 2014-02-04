@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 01/17/2014 22:03:28
+-- Date Created: 01/20/2014 00:44:35
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -41,6 +41,15 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_MediaThumbnail]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[ThumbnailSet] DROP CONSTRAINT [FK_MediaThumbnail];
 GO
+IF OBJECT_ID(N'[dbo].[FK_ImageMedia_inherits_Media]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MediaSet_ImageMedia] DROP CONSTRAINT [FK_ImageMedia_inherits_Media];
+GO
+IF OBJECT_ID(N'[dbo].[FK_VideoMedia_inherits_Media]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MediaSet_VideoMedia] DROP CONSTRAINT [FK_VideoMedia_inherits_Media];
+GO
+IF OBJECT_ID(N'[dbo].[FK_UnknownMedia_inherits_Media]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[MediaSet_UnknownMedia] DROP CONSTRAINT [FK_UnknownMedia_inherits_Media];
+GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
@@ -60,6 +69,15 @@ IF OBJECT_ID(N'[dbo].[PresetMetadataSet]', 'U') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[ThumbnailSet]', 'U') IS NOT NULL
     DROP TABLE [dbo].[ThumbnailSet];
+GO
+IF OBJECT_ID(N'[dbo].[MediaSet_ImageMedia]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[MediaSet_ImageMedia];
+GO
+IF OBJECT_ID(N'[dbo].[MediaSet_VideoMedia]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[MediaSet_VideoMedia];
+GO
+IF OBJECT_ID(N'[dbo].[MediaSet_UnknownMedia]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[MediaSet_UnknownMedia];
 GO
 IF OBJECT_ID(N'[dbo].[MediaTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[MediaTag];
@@ -99,22 +117,14 @@ CREATE TABLE [dbo].[MediaSet] (
     [Description] nvarchar(max)  NULL,
     [Author] nvarchar(max)  NULL,
     [Copyright] nvarchar(max)  NULL,
-    [LastModified] datetime  NOT NULL,
+    [LastModifiedDate] datetime  NOT NULL,
     [CreationDate] datetime  NULL,
+    [MetadataModifiedDate] datetime  NULL,
+    [MetadataDate] datetime  NULL,
     [MimeType] nvarchar(max)  NOT NULL,
     [SizeBytes] bigint  NOT NULL,
-    [VideoProps_VideoContainer] nvarchar(max)  NULL,
-    [VideoProps_VideoCodec] nvarchar(max)  NULL,
-    [VideoProps_Width] bigint  NULL,
-    [VideoProps_Height] bigint  NULL,
-    [VideoProps_DurationSeconds] bigint  NULL,
-    [VideoProps_PixelFormat] nvarchar(max)  NULL,
-    [VideoProps_FramesPerSecond] float  NULL,
-    [VideoProps_SamplesPerSecond] smallint  NULL,
-    [VideoProps_NrChannels] smallint  NULL,
-    [VideoProps_BitsPerSample] smallint  NULL,
-    [ImageProps_Width] int  NULL,
-    [ImageProps_Height] int  NULL
+    [Software] nvarchar(max)  NULL,
+    [SupportsXMPMetadata] bit  NOT NULL
 );
 GO
 
@@ -145,6 +155,37 @@ CREATE TABLE [dbo].[ThumbnailSet] (
     [Width] smallint  NOT NULL,
     [Height] smallint  NOT NULL,
     [Media_Id] int  NOT NULL
+);
+GO
+
+-- Creating table 'MediaSet_ImageMedia'
+CREATE TABLE [dbo].[MediaSet_ImageMedia] (
+    [Width] int  NOT NULL,
+    [Height] int  NOT NULL,
+    [Id] int  NOT NULL
+);
+GO
+
+-- Creating table 'MediaSet_VideoMedia'
+CREATE TABLE [dbo].[MediaSet_VideoMedia] (
+    [Width] int  NOT NULL,
+    [Height] int  NOT NULL,
+    [BitsPerSample] smallint  NULL,
+    [DurationSeconds] int  NOT NULL,
+    [FramesPerSecond] float  NOT NULL,
+    [NrChannels] smallint  NOT NULL,
+    [PixelFormat] nvarchar(max)  NOT NULL,
+    [SamplesPerSecond] int  NOT NULL,
+    [VideoCodec] nvarchar(max)  NOT NULL,
+    [VideoContainer] nvarchar(max)  NOT NULL,
+    [AudioCodec] nvarchar(max)  NULL,
+    [Id] int  NOT NULL
+);
+GO
+
+-- Creating table 'MediaSet_UnknownMedia'
+CREATE TABLE [dbo].[MediaSet_UnknownMedia] (
+    [Id] int  NOT NULL
 );
 GO
 
@@ -200,6 +241,24 @@ GO
 -- Creating primary key on [Id] in table 'ThumbnailSet'
 ALTER TABLE [dbo].[ThumbnailSet]
 ADD CONSTRAINT [PK_ThumbnailSet]
+    PRIMARY KEY CLUSTERED ([Id] ASC);
+GO
+
+-- Creating primary key on [Id] in table 'MediaSet_ImageMedia'
+ALTER TABLE [dbo].[MediaSet_ImageMedia]
+ADD CONSTRAINT [PK_MediaSet_ImageMedia]
+    PRIMARY KEY CLUSTERED ([Id] ASC);
+GO
+
+-- Creating primary key on [Id] in table 'MediaSet_VideoMedia'
+ALTER TABLE [dbo].[MediaSet_VideoMedia]
+ADD CONSTRAINT [PK_MediaSet_VideoMedia]
+    PRIMARY KEY CLUSTERED ([Id] ASC);
+GO
+
+-- Creating primary key on [Id] in table 'MediaSet_UnknownMedia'
+ALTER TABLE [dbo].[MediaSet_UnknownMedia]
+ADD CONSTRAINT [PK_MediaSet_UnknownMedia]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -320,6 +379,33 @@ ADD CONSTRAINT [FK_MediaThumbnail]
 CREATE INDEX [IX_FK_MediaThumbnail]
 ON [dbo].[ThumbnailSet]
     ([Media_Id]);
+GO
+
+-- Creating foreign key on [Id] in table 'MediaSet_ImageMedia'
+ALTER TABLE [dbo].[MediaSet_ImageMedia]
+ADD CONSTRAINT [FK_ImageMedia_inherits_Media]
+    FOREIGN KEY ([Id])
+    REFERENCES [dbo].[MediaSet]
+        ([Id])
+    ON DELETE CASCADE ON UPDATE NO ACTION;
+GO
+
+-- Creating foreign key on [Id] in table 'MediaSet_VideoMedia'
+ALTER TABLE [dbo].[MediaSet_VideoMedia]
+ADD CONSTRAINT [FK_VideoMedia_inherits_Media]
+    FOREIGN KEY ([Id])
+    REFERENCES [dbo].[MediaSet]
+        ([Id])
+    ON DELETE CASCADE ON UPDATE NO ACTION;
+GO
+
+-- Creating foreign key on [Id] in table 'MediaSet_UnknownMedia'
+ALTER TABLE [dbo].[MediaSet_UnknownMedia]
+ADD CONSTRAINT [FK_UnknownMedia_inherits_Media]
+    FOREIGN KEY ([Id])
+    REFERENCES [dbo].[MediaSet]
+        ([Id])
+    ON DELETE CASCADE ON UPDATE NO ACTION;
 GO
 
 -- --------------------------------------------------

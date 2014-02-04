@@ -1,4 +1,8 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Progress;
+using MediaViewer.Utils;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 
 namespace MediaViewer.MediaFileModel.Watcher
@@ -27,15 +32,13 @@ namespace MediaViewer.MediaFileModel.Watcher
                 NotifyPropertyChanged();
             }
         }
-
+  
         public MediaFileItem(String location)
         {
             Location = location;
             IsSelected = false;
             Media = null;
             ItemState = MediaFileItemState.EMPTY;          
-        
-
         }
        
         string location;
@@ -78,32 +81,50 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        MediaFile media;
+        Media media;
 
-        public MediaFile Media
+        public Media Media
         {
             get { return media; }
             set
             {
                 media = value;
+              
+
                 NotifyPropertyChanged();
             }
         }
+/*
+        BitmapSource thumbnail;
 
-        public void loadMetaData(MediaFile.MetaDataLoadOptions options, CancellationToken token)
+        public BitmapSource Thumbnail
+        {
+            get { return thumbnail; }
+            set { thumbnail = value;
+            NotifyPropertyChanged();
+            }
+        }
+  */      
+        public void writeMetaData(MediaFactory.WriteOptions options, CancellationToken token)
+        {
+            if (media != null)
+            {
+                MediaFactory.write(Media, options);
+            }
+        }
+
+        public void readMetaData(MediaFactory.ReadOptions options, CancellationToken token)
         {
             ItemState = MediaFileItemState.LOADING;
 
-            MediaFile media = null;
+            Media media = null;
             MediaFileItemState result = MediaFileItemState.LOADED;
 
             try
             {
-                media = MediaFileFactory.open(Location, options, token);
-
-                media.close();
-
-                if (media.OpenError != null)
+                media = MediaFactory.read(Location, options, token);
+         
+                if (media == null || media is UnknownMedia)
                 {
                     result = MediaFileItemState.ERROR;
                 }
@@ -123,21 +144,19 @@ namespace MediaViewer.MediaFileModel.Watcher
             Media = media;
         }
 
-        public async Task loadMetaDataAsync(MediaFile.MetaDataLoadOptions options, CancellationToken token)
+        public async Task readMetaDataAsync(MediaFactory.ReadOptions options, CancellationToken token)
         {
 
             ItemState = MediaFileItemState.LOADING;
 
-            MediaFile media = null;
+            Media media = null;
             MediaFileItemState result = MediaFileItemState.LOADED;
 
             try
             {
-                media = await MediaFileFactory.openAsync(Location, options, token).ConfigureAwait(false);
+                media = await MediaFactory.readAsync(Location, options, token).ConfigureAwait(false);
 
-                media.close();
-
-                if (media.OpenError != null)
+                if (media == null || media is UnknownMedia)
                 {
                     result = MediaFileItemState.ERROR;
                 }
@@ -160,6 +179,93 @@ namespace MediaViewer.MediaFileModel.Watcher
                 Media = media;
             }));
 
+        }
+
+        /// <summary>
+        /// Returns true if deleted file was imported otherwise false
+        /// </summary>
+        /// <returns></returns>
+        public bool delete()
+        {
+            bool isImported = false;
+
+            if (ItemState == MediaFileItemState.DELETED)
+            {
+                return (isImported);
+            }
+
+            FileUtils fileUtils = new FileUtils();
+           
+            fileUtils.deleteFile(Location);
+         
+            if (Media != null && Media.IsImported)
+            {
+                MediaDbCommands mediaCommands = new MediaDbCommands();
+                mediaCommands.deleteMedia(Media);
+                Media = null;
+
+                isImported = true;
+            }
+
+            ItemState = MediaFileItemState.DELETED;
+            return (isImported);
+        }
+
+        /// <summary>
+        /// returns true if the moved item was a imported item otherwise false
+        /// </summary>
+        /// <param name="newLocation"></param>
+        /// <param name="progress"></param>
+        /// <returns></returns>
+        public bool move(String newLocation, IProgress progress)
+        {
+            bool isImported = false;
+
+            if (ItemState == MediaFileItemState.DELETED)
+            {
+                return (isImported);
+            }
+
+            FileUtils fileUtils = new FileUtils();
+
+            fileUtils.moveFile(Location, newLocation, progress);
+
+            // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
+            // If location is changed to it's new location it will not be be found. 
+            // So only update the location when mediafilewatcher is not active.
+            if (MediaFileWatcher.Instance.IsWatcherEnabled == false)
+            {
+                Location = newLocation;
+            }
+
+            if (Media != null)
+            {
+                Media.Location = newLocation;
+
+                if (Media.IsImported)
+                {
+                    MediaDbCommands mediaCommands = new MediaDbCommands();
+                    Media = mediaCommands.updateMedia(Media);
+                    isImported = true;
+                }
+            }
+
+            return (isImported);
+        }
+
+        public bool import()
+        {
+            if (ItemState == MediaFileItemState.DELETED || media == null || media.IsImported == true)
+            {
+                return (false);
+            }
+          
+            MediaDbCommands mediaCommands = new MediaDbCommands();
+            Media = mediaCommands.createMedia(Media);
+
+            media.IsImported = true;
+
+            return (true);
         }
 
    

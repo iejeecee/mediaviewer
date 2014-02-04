@@ -55,15 +55,15 @@ namespace MediaViewer.MetaData
 
         public MetaDataViewModel()
         {
-            Tags = new ObservableCollection<string>();
+            Tags = new ObservableCollection<Tag>();
             tagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(Tags, tagsLock);
 
-            AddTags = new ObservableCollection<string>();
+            AddTags = new ObservableCollection<Tag>();
             addTagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(AddTags, addTagsLock);
 
-            RemoveTags = new ObservableCollection<string>();
+            RemoveTags = new ObservableCollection<Tag>();
             removeTagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(RemoveTags, removeTagsLock);
 
@@ -173,9 +173,9 @@ namespace MediaViewer.MetaData
 
             }));
 
-            MediaFileWatcher.Instance.MediaFiles.ItemIsSelectedChanged += new EventHandler((s,e) =>
+            MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((s,e) =>
             {
-                ItemList = MediaFileWatcher.Instance.MediaFiles.GetSelectedItems();
+                ItemList = MediaFileWatcher.Instance.MediaState.getSelectedItems();
             });
 
             FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
@@ -386,9 +386,9 @@ namespace MediaViewer.MetaData
             SelectedMetaDataPreset = noPresetMetaData;
         }
 
-        float rating;
+        Nullable<double> rating;
 
-        public float Rating
+        public Nullable<double> Rating
         {
             get { return rating; }
             set
@@ -529,9 +529,9 @@ namespace MediaViewer.MetaData
         }
 
         Object tagsLock;
-        ObservableCollection<String> tags;
+        ObservableCollection<Tag> tags;
 
-        public ObservableCollection<String> Tags
+        public ObservableCollection<Tag> Tags
         {
             get { return tags; }
             set { tags = value;
@@ -540,9 +540,9 @@ namespace MediaViewer.MetaData
         }
 
         Object addTagsLock;
-        ObservableCollection<String> addTags;
+        ObservableCollection<Tag> addTags;
 
-        public ObservableCollection<String> AddTags
+        public ObservableCollection<Tag> AddTags
         {
             get { return addTags; }
             set { addTags = value;
@@ -551,9 +551,9 @@ namespace MediaViewer.MetaData
         }
 
         Object removeTagsLock;
-        ObservableCollection<String> removeTags;
+        ObservableCollection<Tag> removeTags;
 
-        public ObservableCollection<String> RemoveTags
+        public ObservableCollection<Tag> RemoveTags
         {
             get { return removeTags; }
             set { removeTags = value;
@@ -643,66 +643,60 @@ namespace MediaViewer.MetaData
 
         void grabData()
         {
-           
-            
+                       
             if (itemList.Count == 1 && ItemList[0].Media != null)
             {
                 
-                MediaFile media = ItemList[0].Media;
-                
-                FileMetaData metaData = media.MetaData;
-
-                if (metaData == null)
+                Media media = ItemList[0].Media;
+                             
+                if (media.SupportsXMPMetadata == false)
                 {
                     clear();
                 }
 
-                Filename = Path.GetFileNameWithoutExtension(media.Name);
+                Filename = Path.GetFileNameWithoutExtension(media.Location);
                 Location = FileUtils.getPathWithoutFileName(media.Location);
 
-                if (media is VideoFile)
+                if (media is VideoMedia)
                 {
-                    dynamicProperties = getVideoProperties(media as VideoFile);
+                    dynamicProperties = getVideoProperties(media as VideoMedia);
                 }
 
-                if (metaData != null)
+                Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
+                Title = media.Title;
+                Description = media.Description;
+                Author = media.Author;
+                Copyright = media.Copyright;
+                Creation = media.CreationDate == null ? DateTime.MinValue : media.CreationDate.Value;
+
+                lock (tagsLock)
                 {
-                    Rating = metaData.Rating / 5;
-                    Title = metaData.Title;
-                    Description = metaData.Description;
-                    Author = metaData.Creator;
-                    Copyright = metaData.Copyright;
-                    Creation = metaData.CreationDate;
+                    Tags.Clear();
 
-                    lock (tagsLock)
+                    foreach (Tag tag in media.Tags)
                     {
-                        Tags.Clear();
-
-                        foreach (string tag in metaData.Tags)
-                        {
-                            Tags.Add(tag);
-                        }
+                        Tags.Add(tag);
                     }
-
-                    dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
-
-                    if (metaData.CreationDate != DateTime.MinValue)
-                    {
-                        dynamicProperties.Add(new Tuple<string, string>("Creation", metaData.CreationDate.ToString("R")));
-                    }
-
-                    if (metaData.ModifiedDate != DateTime.MinValue)
-                    {
-                        dynamicProperties.Add(new Tuple<string, string>("Modified", metaData.ModifiedDate.ToString("R")));
-                    }
-
-                    if (metaData.MetaDataDate != DateTime.MinValue)
-                    {
-                        dynamicProperties.Add(new Tuple<string, string>("Metadata", metaData.MetaDataDate.ToString("R")));
-                    }
-
                 }
 
+                /*dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
+
+                if (metaData.CreationDate != DateTime.MinValue)
+                {
+                    dynamicProperties.Add(new Tuple<string, string>("Creation", metaData.CreationDate.ToString("R")));
+                }
+
+                if (metaData.ModifiedDate != DateTime.MinValue)
+                {
+                    dynamicProperties.Add(new Tuple<string, string>("Modified", metaData.ModifiedDate.ToString("R")));
+                }
+
+                if (metaData.MetaDataDate != DateTime.MinValue)
+                {
+                    dynamicProperties.Add(new Tuple<string, string>("Metadata", metaData.MetaDataDate.ToString("R")));
+                }
+                 */
+                
                 SelectedMetaDataPreset = noPresetMetaData;
                 IsEnabled = true;
                 BatchMode = false;
@@ -736,22 +730,22 @@ namespace MediaViewer.MetaData
 
     
 
-        List<Tuple<String, String>> getVideoProperties(VideoFile video)
+        List<Tuple<String, String>> getVideoProperties(VideoMedia video)
         {
             List<Tuple<String, String>> p = new List<Tuple<string, string>>();
 
             p.Add(new Tuple<string, string>("", "VIDEO"));
-            p.Add(new Tuple<string, string>("Video Container", video.Container));
-            p.Add(new Tuple<string, string>("Video Codec", video.VideoCodecName));
+            p.Add(new Tuple<string, string>("Video Container", video.VideoContainer));
+            p.Add(new Tuple<string, string>("Video Codec", video.VideoCodec));
             p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
             p.Add(new Tuple<string, string>("Duration", Utils.Misc.formatTimeSeconds(video.DurationSeconds)));
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
-            p.Add(new Tuple<string, string>("Frames Per Second", video.FrameRate.ToString()));
+            p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString()));
 
-            if (video.HasAudio)
+            if (video.AudioCodec != null)
             {
-                p.Add(new Tuple<string, string>("Audio Codec", video.AudioCodecName));
-                p.Add(new Tuple<string, string>("Bits Per Sample", (video.BytesPerSample * 8).ToString()));
+                p.Add(new Tuple<string, string>("Audio Codec", video.AudioCodec));
+                p.Add(new Tuple<string, string>("Bits Per Sample", video.BitsPerSample.ToString()));
                 p.Add(new Tuple<string, string>("Samples Per Second", video.SamplesPerSecond.ToString()));
                 p.Add(new Tuple<string, string>("Nr Channels", video.NrChannels.ToString()));
             }

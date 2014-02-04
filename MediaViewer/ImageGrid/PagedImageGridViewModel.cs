@@ -16,7 +16,7 @@ namespace MediaViewer.ImageGrid
 {
     class PagedImageGridViewModel : ImageGridViewModel
     {
-        public PagedImageGridViewModel(MediaFileState mediaFiles) :
+        public PagedImageGridViewModel(IMediaState mediaFiles) :
             base(mediaFiles)
         {
 
@@ -31,7 +31,7 @@ namespace MediaViewer.ImageGrid
 
             }
          
-            MediaFiles.StateChangedLocked += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
+            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -202,9 +202,9 @@ namespace MediaViewer.ImageGrid
              
             //int startIndex = CurrentPage * maxItemsPerPage;
             //int endIndex = startIndex + maxItemsPerPage;
-            int totalPages = (int)Math.Ceiling(MediaFileWatcher.Instance.MediaFiles.Count / (float)MaxItemsPerPage);
+            int totalPages = (int)Math.Ceiling(MediaState.MediaCollection.Count / (float)MaxItemsPerPage);
 
-            if (MediaFiles.Count == 0)
+            if (MediaState.MediaCollection.Count == 0)
             {
                 NrPages = 0;              
             }
@@ -253,13 +253,15 @@ namespace MediaViewer.ImageGrid
 
                 int startItem = (CurrentPage > 0 ? CurrentPage - 1 : CurrentPage) * MaxItemsPerPage;
 
-                int nrItems = startItem + maxItemsPerPage > MediaFiles.Count ? MediaFiles.Count - startItem : maxItemsPerPage;
+                int itemsInState = MediaState.MediaCollection.Items.Count;
+
+                int nrItems = startItem + maxItemsPerPage > itemsInState ? itemsInState - startItem : maxItemsPerPage;
 
                 for (int i = 0; i < maxItemsPerPage; i++)
                 {
                     if (i < nrItems)
                     {
-                        MediaPage[i] = MediaFiles.Items[startItem + i];
+                        MediaPage[i] = MediaState.MediaCollection.Items[startItem + i];
                     }
                     else
                     {

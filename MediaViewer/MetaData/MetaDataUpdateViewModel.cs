@@ -1,4 +1,5 @@
 ﻿using MediaViewer.ImageGrid;
+using MediaViewer.MediaDatabase;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
@@ -88,15 +89,6 @@ namespace MediaViewer.MetaData
 
         void writeMetaData(MetaDataUpdateViewModelAsyncState state)
         {
-            FileUtils fileUtils = new FileUtils();
-
-            bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(state.ItemList);
-            if (success == false)
-            {
-                InfoMessages.Add("Cannot update files, selected file(s) are in use by another operation");
-                log.Error("Cannot update files, selected file(s) are in use by another operation");
-                return;
-            }
 
             try
             {
@@ -115,13 +107,14 @@ namespace MediaViewer.MetaData
 
                     ItemInfo = "Opening: " + item.Location;
 
-                    if (item.Media == null || item.Media.MetaData == null)
+                    if (item.Media == null)
                     {
                         ItemInfo = "Loading MetaData: " + item.Location;
 
-                        item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.AUTO | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL
-                        , CancellationToken);
-                        if (item.Media == null || item.Media.MetaData == null)
+                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
+                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+
+                        if (item.Media is UnknownMedia)
                         {
                             // reload metaData in metadataviewmodel
                             item.IsSelected = false;
@@ -129,57 +122,66 @@ namespace MediaViewer.MetaData
 
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
                             InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                            log.Error("Could not open file and/or read it's metadata: " + item.Location);                           
+                            log.Error("Could not open file and/or read it's metadata: " + item.Location);
                         }
                     }
 
-                    FileMetaData metaData = null;
 
-                    if (item.Media != null && item.Media.MetaData != null)
+                    if (item.Media != null && !(item.Media is UnknownMedia))
                     {
 
-                        metaData = item.Media.MetaData;
+                        Media media = item.Media;
 
-                        if (state.RatingEnabled && (int)metaData.Rating != (int)(state.Rating * 5))
+                        if (state.RatingEnabled)
                         {
-                            metaData.Rating = state.Rating * 5;
+                            Nullable<double> oldValue = media.Rating;
+
+                            media.Rating = state.Rating.HasValue == false ? null : state.Rating * 5;
+
+                            if (media.Rating != oldValue)
+                            {
+                                isModified = true;
+                            }
+                        }
+
+                        if (state.TitleEnabled && !EqualityComparer<String>.Default.Equals(media.Title, state.Title))
+                        {
+                            media.Title = state.Title;
                             isModified = true;
                         }
 
-                        if (state.TitleEnabled && !metaData.Title.Equals(state.Title))
+                        if (state.DescriptionEnabled && !EqualityComparer<String>.Default.Equals(media.Description, state.Description))
                         {
-                            metaData.Title = state.Title;
+                            media.Description = state.Description;
                             isModified = true;
                         }
 
-                        if (state.DescriptionEnabled && !metaData.Description.Equals(state.Description))
+                        if (state.AuthorEnabled && !EqualityComparer<String>.Default.Equals(media.Author, state.Author))
                         {
-                            metaData.Description = state.Description;
+                            media.Author = state.Author;
                             isModified = true;
                         }
 
-                        if (state.AuthorEnabled && !metaData.Creator.Equals(state.Author))
+                        if (state.CopyrightEnabled && !EqualityComparer<String>.Default.Equals(media.Copyright, state.Copyright))
                         {
-                            metaData.Creator = state.Author;
+                            media.Copyright = state.Copyright;
                             isModified = true;
                         }
 
-                        if (state.CopyrightEnabled && !metaData.Copyright.Equals(state.Copyright))
+                        if (state.CreationEnabled && !state.Creation.Equals(DateTime.MinValue) &&
+                            !media.CreationDate.Equals(state.Creation))
                         {
-                            metaData.Copyright = state.Copyright;
+                            media.CreationDate = state.Creation;
                             isModified = true;
                         }
 
-                        if (state.CreationEnabled && !metaData.CreationDate.Equals(state.Creation))
+                        if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
                         {
-                            metaData.CreationDate = state.Creation;
-                            isModified = true;
-                        }
-
-                        if (state.BatchMode == false && !state.Tags.SequenceEqual(metaData.Tags))
-                        {
-                            metaData.Tags.Clear();
-                            metaData.Tags.AddRange(state.Tags);
+                            media.Tags.Clear();
+                            foreach (Tag tag in state.Tags)
+                            {
+                                media.Tags.Add(tag);
+                            }
                             isModified = true;
                         }
                         else if (state.BatchMode == true)
@@ -187,18 +189,18 @@ namespace MediaViewer.MetaData
                             bool addedTag = false;
                             bool removedTag = false;
 
-                            foreach (string tag in state.AddTags)
+                            foreach (Tag tag in state.AddTags)
                             {
-                                if (!metaData.Tags.Contains(tag))
+                                if (!media.Tags.Contains(tag))
                                 {
-                                    metaData.Tags.Add(tag);
+                                    media.Tags.Add(tag);
                                     addedTag = true;
                                 }
                             }
 
-                            foreach (string tag in state.RemoveTags)
+                            foreach (Tag tag in state.RemoveTags)
                             {
-                                if (metaData.Tags.Remove(tag) == true)
+                                if (media.Tags.Remove(tag) == true)
                                 {
                                     removedTag = true;
                                 }
@@ -220,7 +222,7 @@ namespace MediaViewer.MetaData
                         {
                             // Save metadata changes
                             ItemInfo = "Saving MetaData: " + item.Location;
-                            metaData.saveToDisk();
+                            MediaFactory.write(item.Media, MediaFactory.WriteOptions.AUTO);
 
                             InfoMessages.Add("Completed updating Metadata for: " + item.Location);
                         }
@@ -236,17 +238,17 @@ namespace MediaViewer.MetaData
 
                         newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Media);
                         newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
-                     
-                        fileUtils.moveFile(oldPath + "\\" + oldFilename + ext, newPath + "\\" + newFilename + ext, this);
+
+                        MediaFileWatcher.Instance.MediaState.move(item, newPath + "\\" + newFilename + ext, this);
 
                         ItemProgress = 100;
                         TotalProgress++;
                     }
                     catch (Exception e)
                     {
-                        if (item.Media != null && item.Media.MetaData != null)
+                        if (item.Media != null)
                         {
-                            item.Media.MetaData.clear();
+                            item.Media.clear();
                         }
                         // reload metaData in metadataviewmodel
                         item.IsSelected = false;
@@ -282,13 +284,15 @@ namespace MediaViewer.MetaData
                     }));
                 }
             }
-            finally
+            catch (Exception e)
             {
-                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(state.ItemList);
+                log.Error("Error writing metadata", e);
+                MessageBox.Show("Error writing metadata", e.Message);
             }
+            
         }
 
-        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, MediaFile media)
+        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, Media media)
         {
             if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
             {
@@ -358,15 +362,15 @@ namespace MediaViewer.MetaData
                             int width = 0;
                             int height = 0;
 
-                            if (media != null && media is ImageFile)
+                            if (media != null && media is ImageMedia)
                             {
-                                width = (media as ImageFile).Width;
-                                height = (media as ImageFile).Height;
+                                width = (media as ImageMedia).Width;
+                                height = (media as ImageMedia).Height;
                             }
-                            else if (media != null && media is VideoFile)
+                            else if (media != null && media is VideoMedia)
                             {
-                                width = (media as VideoFile).Width;
-                                height = (media as VideoFile).Height;
+                                width = (media as VideoMedia).Width;
+                                height = (media as VideoMedia).Height;
                             }
 
                             outputFileName += width.ToString() + "x" + height.ToString();
@@ -377,9 +381,9 @@ namespace MediaViewer.MetaData
                             String format = subString.Substring(dateMarker.Length);
                             String dateString = "";
 
-                            if (media != null && media.MetaData != null && !media.MetaData.CreationDate.Equals(DateTime.MinValue))
+                            if (media.CreationDate != null)
                             {
-                                dateString = media.MetaData.CreationDate.ToString(format);                                                              
+                                dateString = media.CreationDate.Value.ToString(format);                                                              
                             }
 
                             outputFileName += dateString;
@@ -557,9 +561,9 @@ namespace MediaViewer.MetaData
             RatingEnabled = vm.RatingEnabled;
             Title = vm.Title;
             TitleEnabled = vm.TitleEnabled;
-            Tags = new List<String>(vm.Tags);
-            AddTags = new List<String>(vm.AddTags);
-            RemoveTags = new List<String>(vm.RemoveTags);
+            Tags = new List<Tag>(vm.Tags);
+            AddTags = new List<Tag>(vm.AddTags);
+            RemoveTags = new List<Tag>(vm.RemoveTags);
         }
 
         String location;
@@ -642,9 +646,9 @@ namespace MediaViewer.MetaData
             get { return itemList; }
             set { itemList = value; }
         }
-        float rating;
+        Nullable<double> rating;
 
-        public float Rating
+        public Nullable<double> Rating
         {
             get { return rating; }
             set { rating = value; }
@@ -671,25 +675,25 @@ namespace MediaViewer.MetaData
             set { titleEnabled = value; }
         }
 
-        List<String> tags;
+        List<Tag> tags;
 
-        public List<String> Tags
+        public List<Tag> Tags
         {
             get { return tags; }
             set { tags = value; }
         }
 
-        List<String> addTags;
+        List<Tag> addTags;
 
-        public List<String> AddTags
+        public List<Tag> AddTags
         {
             get { return addTags; }
             set { addTags = value; }
         }
 
-        List<String> removeTags;
+        List<Tag> removeTags;
 
-        public List<String> RemoveTags
+        public List<Tag> RemoveTags
         {
             get { return removeTags; }
             set { removeTags = value; }

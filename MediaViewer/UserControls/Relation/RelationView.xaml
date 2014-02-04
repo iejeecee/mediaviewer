@@ -1,0 +1,29 @@
+﻿<UserControl x:Class="MediaViewer.UserControls.Relation.RelationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">  
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ToggleButton Grid.Column="0" Name="equalRadioButton" Checked="equalRadioButton_Checked" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="Equals">
+            <Viewbox StretchDirection="Both" Stretch="Uniform">
+                <ContentControl Content="="/>
+            </Viewbox>
+        </ToggleButton>
+        <ToggleButton Grid.Column="1" Name="greaterRadioButton" Checked="greaterRadioButton_Checked" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="Greater Than Or Equal">
+            <Viewbox StretchDirection="Both" Stretch="Uniform">
+                <ContentControl Content="≥"/>
+            </Viewbox>
+        </ToggleButton>
+        <ToggleButton Grid.Column="2" Name="lessRadioButton" Checked="lessRadioButton_Checked" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="Less Than Or Equal">
+            <Viewbox StretchDirection="Both" Stretch="Uniform">
+                <ContentControl Content="≤"/>
+            </Viewbox>
+        </ToggleButton>
+    </Grid>
+</UserControl>

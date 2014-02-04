@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
@@ -58,66 +59,55 @@ namespace MediaViewer.Import
         }
 
         void import(List<MediaFileItem> items)
-        {
-            bool success = MediaFileWatcher.Instance.MediaFilesInUseByOperation.AddRange(items);
-            if (success == false)
+        {                
+            foreach (MediaFileItem item in items)
             {
-                InfoMessages.Add("Cannot import files, selected file(s) are in use by another operation");
-                log.Error("Cannot import files, selected file(s) are in use by another operation");
-                return;
-            }
-
-            try
-            {
-
-                MediaDbCommands mediaCommands = new MediaDbCommands();
-
-                foreach (MediaFileItem item in items)
+                try
                 {
-                    try
+                    if (CancellationToken.IsCancellationRequested) return;                      
+                    ItemProgress = 0;
+
+                    if (item.Media == null)
                     {
-                        if (CancellationToken.IsCancellationRequested) return;
-                        ItemProgress = 0;
+                        ItemInfo = "Reading Metadata: " + item.Location;
 
-                        if (item.Media == null || item.Media.MetaData == null)
+                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.READ_FROM_DISK | 
+                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+                        if (item.Media is UnknownMedia)
                         {
-                            ItemInfo = "Loading MetaData: " + item.Location;
-
-                            item.loadMetaData(MediaFileModel.MediaFile.MetaDataLoadOptions.LOAD_FROM_DISK | MediaFileModel.MediaFile.MetaDataLoadOptions.GENERATE_THUMBNAIL
-                            , CancellationToken);
-                            if (item.Media == null || item.Media.MetaData == null)
-                            {
-                                ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
-                                InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                                log.Error("Could not open file and/or read it's metadata: " + item.Location);
-                            }
+                            ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
+                            InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
+                            log.Error("Could not open file and/or read it's metadata: " + item.Location);
                         }
+                    }
 
-                        ItemInfo = "Importing: " + item.Location;
-
-                        ImportState.Instance.import(item, mediaCommands.Db);
-                                                   
+                    if (item.Media.IsImported == true)
+                    {
+                        InfoMessages.Add("Skipping already imported file: " + item.Location);
                         ItemProgress = 100;
                         TotalProgress++;
-                        InfoMessages.Add("Imported: " + item.Location);
+                        continue;
                     }
-                    catch (Exception e)
-                    {
-                        ItemInfo = "Error importing file: " + item.Location;
-                        InfoMessages.Add("Error importing file: " + item.Location + " " + e.Message);
-                        log.Error("Error importing file: " + item.Location, e);
-                        MessageBox.Show("Error importing file: " + item.Location + "\n\n" + e.Message,
-                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
 
-                    }
+                    ItemInfo = "Importing: " + item.Location;
+
+                    MediaFileWatcher.Instance.MediaState.import(item, CancellationToken);
+                                                                        
+                    ItemProgress = 100;
+                    TotalProgress++;
+                    InfoMessages.Add("Imported: " + item.Location);
                 }
+                catch (Exception e)
+                {
+                    ItemInfo = "Error importing file: " + item.Location;
+                    InfoMessages.Add("Error importing file: " + item.Location + " " + e.Message);
+                    log.Error("Error importing file: " + item.Location, e);
+                    MessageBox.Show("Error importing file: " + item.Location + "\n\n" + e.Message,
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
 
-            }
-            finally
-            {
-                MediaFileWatcher.Instance.MediaFilesInUseByOperation.RemoveAll(items);
-            }
+                }
+            }           
         }
     
         Command okCommand;

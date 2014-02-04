@@ -12,6 +12,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         LOADING,
         LOADED,
         CANCELLED,
+        DELETED,
         ERROR
     }
 }
