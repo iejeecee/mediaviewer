@@ -238,6 +238,7 @@ namespace MediaViewer.MetaData
 
                         newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Media);
                         newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
+                        newPath = newPath.TrimEnd('\\');
 
                         MediaFileWatcher.Instance.MediaState.move(item, newPath + "\\" + newFilename + ext, this);
 

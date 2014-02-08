@@ -679,6 +679,8 @@ namespace MediaViewer.MetaData
                     }
                 }
 
+                getExifProperties(dynamicProperties, media);
+
                 /*dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
 
                 if (metaData.CreationDate != DateTime.MinValue)
@@ -726,6 +728,30 @@ namespace MediaViewer.MetaData
             }
 
 
+        }
+
+        private void getExifProperties(List<Tuple<string, string>> dynamicProperties, Media media)
+        {
+            int nrProps = dynamicProperties.Count;
+           
+            if (media.Software != null)
+            {
+                dynamicProperties.Add(new Tuple<string,string>("Software", media.Software));
+            }
+            if(media.MetadataDate != null) {
+
+                dynamicProperties.Add(new Tuple<string, string>("Metadata Date", media.MetadataDate.ToString()));
+            }
+            if (media.MetadataModifiedDate != null)
+            {
+                dynamicProperties.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
+            }
+
+            if (dynamicProperties.Count > nrProps)
+            {
+                dynamicProperties.Insert(nrProps, new Tuple<string, string>("", "EXIF"));
+            }
+            
         }
 
     

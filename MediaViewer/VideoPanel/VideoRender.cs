@@ -186,8 +186,8 @@ namespace MediaViewer.VideoPanel
 
             try
             {            
-                ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath, "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);
-                this.SimpleEffect = new Effect(device, shaderBytes);
+                ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath, "fx_4_0", ShaderFlags.None, EffectFlags.None, null, null);             
+                this.SimpleEffect = new Effect(device, shaderBytes);             
             }
             catch (Exception e)
             {              

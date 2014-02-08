@@ -82,6 +82,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 items.Add(newItem);
+                items.Sort();
                 return (true);
 
             }
@@ -110,6 +111,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 items.AddRange(newItems);
+                items.Sort();
                 return (true);
                         
             }
@@ -237,8 +239,9 @@ namespace MediaViewer.MediaFileModel.Watcher
                         }
                     }
 
-                }                                         
+                }
 
+                items.Sort();
             }
             finally
             {

@@ -14,13 +14,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MediaViewer.Import
+namespace MediaViewer.Export
 {
-    class ImportViewModel : CloseableObservableObject, IProgress
+    class ExportViewModel : CloseableObservableObject, IProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public ImportViewModel()
+        public ExportViewModel()
         {
             InfoMessages = new ObservableCollection<string>();
             ItemInfo = "";
@@ -34,46 +34,45 @@ namespace MediaViewer.Import
             CancellationToken = tokenSource.Token;
 
             CancelCommand = new Command(() =>
-                {
-                    tokenSource.Cancel();
-                });
+            {
+                tokenSource.Cancel();
+            });
 
             OkCommand.CanExecute = false;
             CancelCommand.CanExecute = true;
         }
 
-        public async Task importAsync(List<MediaFileItem> items)
+        public async Task exportAsync(List<MediaFileItem> items)
         {
             TotalProgressMax = items.Count;
             TotalProgress = 0;
-           
+
 
             await Task.Factory.StartNew(() =>
             {
-                import(items);
+                export(items);
 
             }, cancellationToken);
 
             OkCommand.CanExecute = true;
             CancelCommand.CanExecute = false;
-                      
+
         }
 
-        void import(List<MediaFileItem> items)
-        {                
+        void export(List<MediaFileItem> items)
+        {
             foreach (MediaFileItem item in items)
             {
                 try
                 {
-                    if (CancellationToken.IsCancellationRequested) return;                      
+                    if (CancellationToken.IsCancellationRequested) return;
                     ItemProgress = 0;
 
                     if (item.Media == null)
                     {
                         ItemInfo = "Reading Metadata: " + item.Location;
 
-                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.READ_FROM_DISK | 
-                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO, CancellationToken);
                         if (item.Media is UnknownMedia)
                         {
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
@@ -82,35 +81,35 @@ namespace MediaViewer.Import
                         }
                     }
 
-                    if (item.Media.IsImported == true)
+                    if (item.Media.IsImported == false)
                     {
-                        InfoMessages.Add("Skipping already imported file: " + item.Location);
+                        InfoMessages.Add("Skipping non-imported file: " + item.Location);
                         ItemProgress = 100;
                         TotalProgress++;
                         continue;
                     }
 
-                    ItemInfo = "Importing: " + item.Location;
+                    ItemInfo = "Exporting: " + item.Location;
 
-                    MediaFileWatcher.Instance.MediaState.import(item, CancellationToken);
-                                                                        
+                    MediaFileWatcher.Instance.MediaState.export(item, CancellationToken);
+
                     ItemProgress = 100;
                     TotalProgress++;
-                    InfoMessages.Add("Imported: " + item.Location);
+                    InfoMessages.Add("Exported: " + item.Location);
                 }
                 catch (Exception e)
                 {
-                    ItemInfo = "Error importing file: " + item.Location;
-                    InfoMessages.Add("Error importing file: " + item.Location + " " + e.Message);
-                    log.Error("Error importing file: " + item.Location, e);
-                    MessageBox.Show("Error importing file: " + item.Location + "\n\n" + e.Message,
+                    ItemInfo = "Error exporting file: " + item.Location;
+                    InfoMessages.Add("Error exporting file: " + item.Location + " " + e.Message);
+                    log.Error("Error exporting file: " + item.Location, e);
+                    MessageBox.Show("Error exporting file: " + item.Location + "\n\n" + e.Message,
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
 
                 }
-            }           
+            }
         }
-    
+
         Command okCommand;
 
         public Command OkCommand
@@ -227,8 +226,8 @@ namespace MediaViewer.Import
             }
         }
 
-         
+
     }
 
- 
+
 }

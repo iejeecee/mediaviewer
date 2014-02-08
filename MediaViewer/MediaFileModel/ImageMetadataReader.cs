@@ -19,7 +19,7 @@ namespace MediaViewer.MediaFileModel
             ImageMedia image = media as ImageMedia;
 
             BitmapDecoder bitmapDecoder = null;
-
+         
             try
             {
                 bitmapDecoder = BitmapDecoder.Create(data,
@@ -40,6 +40,7 @@ namespace MediaViewer.MediaFileModel
             catch (Exception e)
             {
                 log.Error("Cannot generate image thumbnail: " + image.Location, e);
+                media.MetadataReadError = e;
             }
             finally
             {
@@ -56,6 +57,7 @@ namespace MediaViewer.MediaFileModel
             {
                 image.SupportsXMPMetadata = false;
             }
+          
         }
 
         public void generateThumbnail(Stream data, BitmapFrame frame, ImageMedia image)

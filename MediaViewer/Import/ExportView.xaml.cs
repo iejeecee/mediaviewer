@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Export;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,16 +16,14 @@ using System.Windows.Shapes;
 namespace MediaViewer.Import
 {
     /// <summary>
-    /// Interaction logic for ImportView.xaml
+    /// Interaction logic for ExportView.xaml
     /// </summary>
-    public partial class ImportView : Window
+    public partial class ExportView : Window
     {
-      
-
-        public ImportView()
+        public ExportView()
         {
             InitializeComponent();
-            ImportViewModel vm = new ImportViewModel();
+            ExportViewModel vm = new ExportViewModel();
             DataContext = vm;
             vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
             {
@@ -36,7 +35,5 @@ namespace MediaViewer.Import
                 vm.CancelCommand.DoExecute();
             });
         }
-
-        
     }
 }

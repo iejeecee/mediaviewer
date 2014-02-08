@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Pager="clr-namespace:MediaViewer.Pager"
+             xmlns:Effects="clr-namespace:MediaViewer.Effects"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -20,7 +21,7 @@
         </Grid.RowDefinitions>
         <ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both">
             <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave"
-                  Background="{StaticResource imageGridBackgroundColorBrush}">              
+                  Background="{StaticResource imageGridBackgroundColorBrush}">
                 <Image x:Name="pictureBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        ScrollViewer.CanContentScroll="True" 
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" 
@@ -29,10 +30,10 @@
                     <Image.Style>
                         <Style>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="true">                                  
+                                <DataTrigger Binding="{Binding IsLoading}" Value="true">
                                     <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="false">                                   
+                                <DataTrigger Binding="{Binding IsLoading}" Value="false">
                                     <Setter Property="Image.Source" Value="{Binding Image}" />
                                 </DataTrigger>
                             </Style.Triggers>
@@ -41,6 +42,9 @@
                     <Image.LayoutTransform>
                         <MatrixTransform Matrix="{Binding Transform}"/>
                     </Image.LayoutTransform>
+                    <Image.Effect>
+                        <Effects:BrightnessContrastEffect Brightness="{Binding Brightness}" Contrast="{Binding Contrast}"/>
+                    </Image.Effect>
                 </Image>
             </Grid>
         </ScrollViewer>

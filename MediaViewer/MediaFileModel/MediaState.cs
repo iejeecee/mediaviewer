@@ -409,11 +409,50 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-    
 
-        public void export(IEnumerable<MediaFileItem> item)
+        public void export(MediaFileItem item, CancellationToken token)
         {
-           
+            List<MediaFileItem> dummy = new List<MediaFileItem>();
+            dummy.Add(item);
+            export(dummy, token);
+        }
+
+        public void export(IEnumerable<MediaFileItem> items, CancellationToken token)
+        {
+            List<MediaFileItem> exportedItems = new List<MediaFileItem>();
+
+            bool success = busyItems.AddRange(items);
+            if (success == false)
+            {
+                throw new MediaStateException("Cannot export items, items already in use");
+            }
+
+            try
+            {
+                foreach (MediaFileItem item in items)
+                {
+                    if (token.IsCancellationRequested) return;
+
+                    success = item.export();
+                    if (success)
+                    {
+                        exportedItems.Add(item);
+                    }
+
+                    busyItems.Remove(item);
+                }
+
+            }
+            finally
+            {
+                if (exportedItems.Count > 0)
+                {
+                    OnNrImportedItemsChanged(new NotifyCollectionChangedEventArgs(
+                        NotifyCollectionChangedAction.Remove, exportedItems));
+                }
+
+                busyItems.RemoveAll(items);
+            }
         }
 
     

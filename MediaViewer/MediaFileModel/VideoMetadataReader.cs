@@ -52,6 +52,7 @@ namespace MediaViewer.MediaFileModel
                 catch (Exception e)
                 {
                     log.Error("FFMPG cannot read video file: " + video.Location, e);
+                    media.MetadataReadError = e;
                 }
 
                 try
@@ -64,6 +65,7 @@ namespace MediaViewer.MediaFileModel
                 catch (Exception e)
                 {
                     log.Error("Cannot create video thumbnail: " + video.Location, e);
+                    media.MetadataReadError = e;
                 }
                 
                 if (fsMetaData != null)
@@ -76,7 +78,7 @@ namespace MediaViewer.MediaFileModel
                 }
 
                 base.readMetadata(data, options, media);
-               
+            
             }
             finally
             {

@@ -120,6 +120,33 @@ namespace MediaViewer.ImagePanel
                 custom.ShowDialog();
             });
 
+            SetBrightnessCommand = new Command(() =>
+                {
+                    BrightnessView brightnessView = new BrightnessView();
+                    brightnessView.DataContext = this;
+                    brightnessView.ShowDialog();
+                });
+
+            ResetBrightnessCommand = new Command(() =>
+                {
+                    Brightness = 0;
+                });
+
+            SetContrastCommand = new Command(() =>
+                {
+                    ContrastView contrastView = new ContrastView();
+                    contrastView.DataContext = this;
+                    contrastView.ShowDialog();
+
+                });
+            ResetContrastCommand = new Command(() =>
+                {
+                    Contrast = 1;
+                });
+
+
+            Brightness = 0;
+            Contrast = 1;
         }
 
         bool flipX;
@@ -206,6 +233,44 @@ namespace MediaViewer.ImagePanel
         {
             get { return resetRotationDegreesCommand; }
         }
+        Command setBrightnessCommand;
+
+        public Command SetBrightnessCommand
+        {
+            get { return setBrightnessCommand; }
+            set { setBrightnessCommand = value;
+            NotifyPropertyChanged();
+            }
+        }
+        Command resetBrightnessCommand;
+
+        public Command ResetBrightnessCommand
+        {
+            get { return resetBrightnessCommand; }
+            set { resetBrightnessCommand = value;
+            NotifyPropertyChanged();
+            }
+            
+        }
+
+        Command setContrastCommand;
+
+        public Command SetContrastCommand
+        {
+            get { return setContrastCommand; }
+            set { setContrastCommand = value;
+            NotifyPropertyChanged();
+            }
+        }
+        Command resetContrastCommand;
+
+        public Command ResetContrastCommand
+        {
+            get { return resetContrastCommand; }
+            set { resetContrastCommand = value;
+            NotifyPropertyChanged();
+            }
+        }
 
         double scale;
 
@@ -217,6 +282,25 @@ namespace MediaViewer.ImagePanel
                 scale = value;
                 NotifyPropertyChanged();
                 updateTransform();
+            }
+        }
+
+        double brightness;
+
+        public double Brightness
+        {
+            get { return brightness; }
+            set { brightness = value;
+            NotifyPropertyChanged();
+            }
+        }
+        double contrast;
+
+        public double Contrast
+        {
+            get { return contrast; }
+            set { contrast = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -329,6 +413,8 @@ namespace MediaViewer.ImagePanel
             catch (Exception e)
             {
                 log.Error("Error decoding image:" + (String)fileName, e);
+                MessageBox.Show("Error loading image: " + fileName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
                 Image = null;
             }
             finally
@@ -337,6 +423,7 @@ namespace MediaViewer.ImagePanel
                 {
                     media.close();
                 }
+                IsLoading = false;
             }
 
         }
@@ -396,7 +483,7 @@ namespace MediaViewer.ImagePanel
 
                 String location = getImageFileByIndex(value - 1);
 
-                if (location != null && imageFile != null && !location.Equals(imageFile.Location))
+                if (location != null && imageFile != null && !location.ToLower().Equals(imageFile.Location.ToLower()))
                 {
                     GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
                 }

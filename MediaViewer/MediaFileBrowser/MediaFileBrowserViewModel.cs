@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.Import;
+using MediaViewer.Export;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -53,6 +54,18 @@ namespace MediaViewer.MediaFileBrowser
                 import.Show();
                 ImportViewModel vm = (ImportViewModel)import.DataContext;
                 await vm.importAsync(selectedItems);
+
+            });
+
+            ExportSelectedItemsCommand = new Command(async () =>
+            {
+                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItems();
+                if (selectedItems.Count == 0) return;
+
+                ExportView export = new ExportView();
+                export.Show();
+                ExportViewModel vm = (ExportViewModel)export.DataContext;
+                await vm.exportAsync(selectedItems);
 
             });
            
@@ -124,6 +137,14 @@ namespace MediaViewer.MediaFileBrowser
         {
             get { return importSelectedItemsCommand; }
             set { importSelectedItemsCommand = value; }
+        }
+
+        Command exportSelectedItemsCommand;
+
+        public Command ExportSelectedItemsCommand
+        {
+            get { return exportSelectedItemsCommand; }
+            set { exportSelectedItemsCommand = value; }
         }
 
         private void deleteSelectedItems()

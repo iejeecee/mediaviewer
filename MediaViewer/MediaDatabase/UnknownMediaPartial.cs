@@ -25,6 +25,11 @@ namespace MediaViewer.MediaDatabase
         {
             get
             {
+                if (MetadataReadError != null)
+                {
+                    return MetadataReadError.Message;
+                }
+
                 return (Location);
             }
         }

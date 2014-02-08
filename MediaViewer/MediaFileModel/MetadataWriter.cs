@@ -118,7 +118,15 @@ namespace MediaViewer.MediaFileModel
                 xmpMetaDataWriter.setProperty_Date(Consts.XMP_NS_XMP, "CreateDate", media.CreationDate.Value);
             }
 
-            xmpMetaDataWriter.setProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", DateTime.Now);
+            if (media.MetadataDate == null)
+            {
+
+                xmpMetaDataWriter.setProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", DateTime.Now);
+            }
+            else
+            {
+                xmpMetaDataWriter.setProperty_Date(Consts.XMP_NS_XMP, "ModifyDate", DateTime.Now);
+            }
 
            
             int nrTags = xmpMetaDataWriter.countArrayItems(Consts.XMP_NS_DC, "subject");

@@ -48,7 +48,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="180">
+            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="210">
                 <xctk:DropDownButton Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -149,10 +149,19 @@
                 <CheckBox x:Name="flipImageVerticalCheckBox" Height="16" ToolTip="Flip Image Vertically" IsChecked="{Binding FlipY}">
                     <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
                 </CheckBox>
+                <Button x:Name="brightnessButton" Height="16" ToolTip="Brightness" Command="{Binding SetBrightnessCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/brightness.ico"/>
+                </Button>
+                <Button x:Name="contrastButton" Height="16" ToolTip="Contrast" Command="{Binding SetContrastCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/contrast.ico"/>
+                </Button>
             </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-145.667,0,85.667,-0.333" Width="60">
+            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-180,0,85.667,-0.333" Width="90">
                 <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
+                </Button>
+                <Button x:Name="exportButton" Height="16" ToolTip="Export" Command="{Binding ExportSelectedItemsCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
                 </Button>
                 <Button x:Name="deleteButton" Height="16" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>

@@ -24,13 +24,10 @@ namespace MediaViewer.MediaDatabase
         {
             get
             {
-                /*
-                if (OpenError != null)
+                if (MetadataReadError != null)
                 {
-                    return OpenError.Message;
-
+                    return MetadataReadError.Message;
                 }
-                */
 
                 StringBuilder sb = new StringBuilder();
 

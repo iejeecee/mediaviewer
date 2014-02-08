@@ -16,7 +16,7 @@ using System.Windows.Threading;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>
+    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>, IComparable<MediaFileItem>
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -123,11 +123,23 @@ namespace MediaViewer.MediaFileModel.Watcher
             try
             {
                 media = MediaFactory.read(Location, options, token);
-         
+
                 if (media == null || media is UnknownMedia)
                 {
                     result = MediaFileItemState.ERROR;
                 }
+                else if (media.MetadataReadError != null)
+                {
+                    if (media.MetadataReadError is FileNotFoundException)
+                    {
+                        result = MediaFileItemState.FILE_NOT_FOUND;
+                    }
+                    else
+                    {
+                        result = MediaFileItemState.ERROR;
+                    }
+                }
+               
             }
             catch (TaskCanceledException)
             {
@@ -159,6 +171,17 @@ namespace MediaViewer.MediaFileModel.Watcher
                 if (media == null || media is UnknownMedia)
                 {
                     result = MediaFileItemState.ERROR;
+                }
+                else if (media.MetadataReadError != null)
+                {
+                    if (media.MetadataReadError is FileNotFoundException)
+                    {
+                        result = MediaFileItemState.FILE_NOT_FOUND;
+                    }
+                    else
+                    {
+                        result = MediaFileItemState.ERROR;
+                    }
                 }
             }
             catch (TaskCanceledException)
@@ -268,12 +291,32 @@ namespace MediaViewer.MediaFileModel.Watcher
             return (true);
         }
 
+        public bool export()
+        {
+            if (ItemState == MediaFileItemState.DELETED || media == null || media.IsImported == false)
+            {
+                return (false);
+            }
+
+            MediaDbCommands mediaCommands = new MediaDbCommands();
+            mediaCommands.deleteMedia(Media);
+
+            media.IsImported = false;
+
+            return (true);
+        }
+
    
         public bool Equals(MediaFileItem other)
         {
             if (other == null) return (false);
 
             return (Location.Equals(other.Location));
+        }
+
+        public int CompareTo(MediaFileItem other)
+        {
+            return(Path.GetFileName(Location).CompareTo(Path.GetFileName(other.Location)));
         }
     }
 }

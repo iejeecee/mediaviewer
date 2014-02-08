@@ -1,0 +1,24 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" x:Class="MediaViewer.ImagePanel.ContrastView"
+        Title="Contrast" Height="100" Width="300" Icon="/MediaViewer;component/Resources/Icons/contrast.ico">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <Slider Grid.Row="0" HorizontalAlignment="Stretch" Height="23" Margin="10,5,5,5" VerticalAlignment="Top" Minimum="0" Maximum="10" TickPlacement="TopLeft" TickFrequency="0.5" ToolTip="Slide To Adjust Contrast" Value="{Binding Contrast}"/>
+        <CheckBox Grid.Row="1" Content="Clamp" HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Center"/>
+        <Label Grid.Row="1" Content="Contrast" HorizontalAlignment="Left" Margin="5,5,5,5" VerticalAlignment="Center"/>
+        <Button Grid.Row="1" Content="Reset" HorizontalAlignment="Left" Margin="115,5,5,5" VerticalAlignment="Center" Width="46" Command="{Binding ResetContrastCommand}"/>
+        <NumberSpinner:FloatSpinner Grid.Row="1" HorizontalAlignment="Left" Width="55" Margin="55,5,5,5" VerticalAlignment="Center" Value="{Binding Contrast}" SpinValue="0.1" Min="0" Max="10"/>
+    </Grid>
+</Window>

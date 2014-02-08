@@ -4,6 +4,7 @@ using MediaViewer.UserControls.Relation;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -143,7 +144,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             }
 
-            return(result.OrderBy(m => m.Location).ToList());
+            return(result.ToList());
         }
 
     
@@ -176,7 +177,10 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 Db.Entry<ImageMedia>(image).CurrentValues.SetValues(media);
                 newMedia = image;
             }
-           
+
+            FileInfo info = new FileInfo(media.Location);
+            info.Refresh();
+            newMedia.LastModifiedDate = info.LastWriteTime;
            
             newMedia.Id = 0;
     
@@ -237,7 +241,10 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 Db.Entry<ImageMedia>(updateMedia as ImageMedia).CurrentValues.SetValues(media);      
             }
-      
+
+            FileInfo info = new FileInfo(media.Location);
+            info.Refresh();
+            updateMedia.LastModifiedDate = info.LastWriteTime;
 
             if (media.Thumbnail != null && media.Thumbnail.Id != 0)
             {
@@ -247,6 +254,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else
             {
+                if (updateMedia.Thumbnail != null)
+                {
+                    // remove old thumbnail
+                    Db.ThumbnailSet.Remove(updateMedia.Thumbnail);
+                }
 
                 updateMedia.Thumbnail = media.Thumbnail;
             }

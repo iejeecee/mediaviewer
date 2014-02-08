@@ -182,6 +182,33 @@ namespace MediaViewer.MediaFileModel
 
                     media.Data = data;
                 }
+
+                // check if media stored in the database is outdated                
+                FileInfo info = new FileInfo(media.Location);
+                info.Refresh();
+
+                if (info.Exists == false)
+                {
+                    media.MetadataReadError = new FileNotFoundException("File not found", media.Location);
+                    return (media);
+                }
+               
+                if ((info.LastWriteTime - media.LastModifiedDate) > TimeSpan.FromSeconds(10))
+                {
+                    // media is outdated so update in database
+                    log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
+                    int id = media.Id;
+                    media = readMediaFromFile(media.Location, options, token);
+
+                    if (media != null)
+                    {
+                        media.IsImported = true;
+                        media.Id = id;
+                        write(media, WriteOptions.WRITE_TO_DATABASE);
+                    }
+
+                }
+                                
             }
 
             return (media);
@@ -227,41 +254,29 @@ namespace MediaViewer.MediaFileModel
         {
             // initialize media with a dummy in case of exceptions
             Media media = null;
-           
-            try
+                       
+            if (string.IsNullOrEmpty(location) || token.IsCancellationRequested == true)
             {
-
-                if (string.IsNullOrEmpty(location) || token.IsCancellationRequested == true)
-                {
-                    return(media);
-                }
-                else if (FileUtils.isUrl(location))
-                {
-                    media = readMediaFromWeb(location, options, token);
-                }
-                else
-                {
-                    if(options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE)) {
-
-                        media = readMediaFromDatabase(location, options, token);                        
-                    }                
-
-                    if ((media == null && options.HasFlag(ReadOptions.AUTO)) || 
-                        options.HasFlag(ReadOptions.READ_FROM_DISK))
-                    {
-                        media = readMediaFromFile(location, options, token);
-                      
-                    }
-                                                          
-                }
-
+                return(media);
             }
-            catch (Exception e)
+            else if (FileUtils.isUrl(location))
             {
-                log.Warn("Error reading media: " + location, e);
-                                     
+                media = readMediaFromWeb(location, options, token);
             }
-            
+            else
+            {
+                if(options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE)) {
+
+                    media = readMediaFromDatabase(location, options, token);                        
+                }                
+
+                if ((media == null && options.HasFlag(ReadOptions.AUTO)) || 
+                    options.HasFlag(ReadOptions.READ_FROM_DISK))
+                {
+                    media = readMediaFromFile(location, options, token);                       
+                }                                                          
+            }
+                        
             return (media);
         }
 

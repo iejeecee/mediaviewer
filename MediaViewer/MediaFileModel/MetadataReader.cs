@@ -25,10 +25,7 @@ namespace MediaViewer.MediaFileModel
 
             try
             {
-
-                FileInfo info = new FileInfo(media.Location);
-                media.LastModifiedDate = info.LastWriteTime;
-
+               
                 if (media.SupportsXMPMetadata == false) return;
 
                 xmpMetaDataReader.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForRead);
@@ -38,6 +35,7 @@ namespace MediaViewer.MediaFileModel
             catch (Exception e)
             {
                 log.Error("Cannot read XMP metadata for: " + media.Location, e);
+                media.MetadataReadError = e;
 
             } finally {
           

@@ -145,6 +145,20 @@ namespace MediaViewer.UserControls.NumberSpinner
             DependencyProperty.Register("Max", typeof(float), typeof(FloatSpinner), new PropertyMetadata(float.MaxValue));
 
 
+
+        public float SpinValue
+        {
+            get { return (float)GetValue(SpinValueProperty); }
+            set { SetValue(SpinValueProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SpinValue.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SpinValueProperty =
+            DependencyProperty.Register("SpinValue", typeof(float), typeof(FloatSpinner), new PropertyMetadata(1.0f));
+
+        
+
+
         public float Min
         {
             get { return (float)GetValue(MinProperty); }
@@ -163,7 +177,7 @@ namespace MediaViewer.UserControls.NumberSpinner
             }
             else
             {
-                Value += 1;
+                Value += SpinValue;
             }          
         }
 
@@ -175,7 +189,7 @@ namespace MediaViewer.UserControls.NumberSpinner
             }
             else
             {
-                Value -= 1;
+                Value -= SpinValue;
             }          
         }
      

@@ -20,6 +20,7 @@ namespace MediaViewer.MediaDatabase
 
             Tags = new HashSet<Tag>();
             IsImported = false;
+            metadataReadError = null;
         }
 
         Stream data;
@@ -28,6 +29,14 @@ namespace MediaViewer.MediaDatabase
         {
             set { data = value; }
             get { return data; }           
+        }
+
+        Exception metadataReadError;
+
+        public Exception MetadataReadError
+        {
+            get { return metadataReadError; }
+            set { metadataReadError = value; }
         }
 
         bool isImported;

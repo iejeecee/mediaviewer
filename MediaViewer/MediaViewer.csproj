@@ -154,6 +154,19 @@
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="Converters\PathToFileNameConverter.cs" />
+    <Compile Include="Effects\BrightnessContrastEffect.cs" />
+    <Compile Include="Effects\GrayscaleEffect.cs" />
+    <Compile Include="Effects\PixelShaderEffect.cs" />
+    <Compile Include="ImagePanel\BrightnessView.xaml.cs">
+      <DependentUpon>BrightnessView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImagePanel\ContrastView.xaml.cs">
+      <DependentUpon>ContrastView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Import\ExportView.xaml.cs">
+      <DependentUpon>ExportView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Import\ExportViewModel.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePickerView.xaml.cs">
       <DependentUpon>DateTimePickerView.xaml</DependentUpon>
     </Compile>
@@ -392,6 +405,18 @@
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
     <Page Include="About\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImagePanel\BrightnessView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImagePanel\ContrastView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Import\ExportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -691,6 +716,8 @@
     <Resource Include="Resources\Icons\Muted.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\CompiledShaders\BrightnessContrast.ps" />
+    <Resource Include="Resources\CompiledShaders\Grayscale.ps" />
     <None Include="Shaders\Simple.fx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -734,6 +761,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\contrast.ico" />
+    <Resource Include="Resources\Icons\brightness.ico" />
+    <None Include="Shaders\BrightnessContrast.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Shaders\Grayscale.fx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Resource Include="Resources\Icons\export.ico" />
     <Resource Include="Resources\Icons\down arrow.ico" />
     <Resource Include="Resources\Icons\up arrow.ico" />
     <Resource Include="Resources\Icons\mediafolder.ico" />

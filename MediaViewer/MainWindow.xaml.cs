@@ -105,6 +105,7 @@ namespace MediaViewer
         {
             if (App.Args.Length != 0)
             {               
+            
                 loadAndDisplayMedia(App.Args[0]);               
                 mediaFileBrowserViewModel.BrowsePath = App.Args[0];          
                
@@ -190,12 +191,14 @@ namespace MediaViewer
         {
             if (Utils.MediaFormatConvert.isImageFile(media))
             {
-                loadAndDisplayImage(media);
+                mainWindowViewModel.CurrentImageLocation = media;
+                //loadAndDisplayImage(media);
 
             }
             else if (Utils.MediaFormatConvert.isVideoFile(media))
             {
-                loadAndDisplayVideo(media);
+                mainWindowViewModel.CurrentVideoLocation = media;
+                //loadAndDisplayVideo(media);
             }
 
         }
