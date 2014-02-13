@@ -7,6 +7,7 @@
              xmlns:db="clr-namespace:MediaViewer.DirectoryBrowser"
              xmlns:local="clr-namespace:MediaViewer.MediaFileModel.Watcher"
              xmlns:effects="clr-namespace:MediaViewer.Effects"
+             xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -15,6 +16,7 @@
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
+            <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <ItemsControl x:Name="itemsControl" ItemsSource="{Binding MediaPage}">
@@ -56,7 +58,7 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="ERROR">
                                             <Setter Property="Image.Stretch" Value="None"/>
-                                            <Setter Property="Image.Source" Value="{StaticResource errorImage}" />
+                                            <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>
                                             <Setter Property="Image.Effect" Value="{x:Null}"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
@@ -66,7 +68,7 @@
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ItemState}" Value="FILE_NOT_FOUND">
                                             <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}" />
+                                            <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}" />
                                             <Setter Property="Image.Effect" Value="{StaticResource grayscaleEffect}"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -89,10 +91,13 @@
                         </TextBlock>
                         <Grid.ContextMenu>
                             <ContextMenu>
-                                <MenuItem Name="vieMenuItem" Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>
+                                <MenuItem Name="viewMenuItem" Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>
                                 <Separator/>
                                 <MenuItem Name="selectAllMenuItem" Header="Select All" Click="selectAllMenuItem_Click"/>
                                 <MenuItem Name="deselectAllMenuItem" Header="Deselect All" Click="deselectAllMenuItem_Click"/>
+                                <Separator/>
+                                <MenuItem Name="browseMenuItem" Header="Browse Location" Tag="{Binding Location}" Click="browseMenuItem_Click"/>
+                                <MenuItem Name="openInExplorerMenuItem" Header="Open Location" Tag="{Binding Location}" Click="openInExplorerMenuItem_Click"/>                                
                             </ContextMenu>
                         </Grid.ContextMenu>
                     </Grid>

@@ -1,6 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MetaData;
+using MediaViewer.Progress;
 using MediaViewer.Utils;
 using System;
 using System.Collections.Generic;
@@ -204,7 +205,7 @@ namespace MediaViewer.MediaFileModel
                     {
                         media.IsImported = true;
                         media.Id = id;
-                        write(media, WriteOptions.WRITE_TO_DATABASE);
+                        write(media, WriteOptions.WRITE_TO_DATABASE, null);
                     }
 
                 }
@@ -214,7 +215,7 @@ namespace MediaViewer.MediaFileModel
             return (media);
         }
 
-        public static void write(Media media, WriteOptions options)
+        public static void write(Media media, WriteOptions options, IProgress progress)
         {
            
             if (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DISK))
@@ -223,13 +224,13 @@ namespace MediaViewer.MediaFileModel
                 if (media.MimeType.ToLower().StartsWith("image"))
                 {
                     ImageMetadataWriter imageMetadataWriter = new ImageMetadataWriter();
-                    imageMetadataWriter.writeMetadata(media);
+                    imageMetadataWriter.writeMetadata(media, progress);
 
                 }
                 else if (media.MimeType.ToLower().StartsWith("video"))
                 {
                     VideoMetadataWriter videoMetadataWriter = new VideoMetadataWriter();
-                    videoMetadataWriter.writeMetadata(media);
+                    videoMetadataWriter.writeMetadata(media, progress);
 
                 }
             }

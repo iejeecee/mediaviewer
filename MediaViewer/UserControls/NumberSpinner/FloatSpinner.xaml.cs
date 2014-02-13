@@ -23,6 +23,8 @@ namespace MediaViewer.UserControls.NumberSpinner
     public partial class FloatSpinner : UserControl
     {
         static Timers.DefaultTimer timer;
+        const int initialRepeatDelayMS = 800;
+        const int repeatDelayMS = 50;
 
         static FloatSpinner()
         {
@@ -47,14 +49,14 @@ namespace MediaViewer.UserControls.NumberSpinner
             if (downButton.IsPressed == true)
             {
                 subtractValue();
-                timer.Interval = 1000;
+                timer.Interval = initialRepeatDelayMS;
                 timer.Tag = this;
                 timer.start();
             } 
             else if(upButton.IsPressed == true)
             {
                 addValue();
-                timer.Interval = 1000;
+                timer.Interval = initialRepeatDelayMS;
                 timer.Tag = this;
                 timer.start();
             }
@@ -80,7 +82,7 @@ namespace MediaViewer.UserControls.NumberSpinner
                }
            }));
 
-           timer.Interval = 200;
+           timer.Interval = repeatDelayMS;
         }
         
         public Nullable<float> Value

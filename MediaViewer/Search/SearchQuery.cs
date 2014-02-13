@@ -26,17 +26,20 @@ namespace MediaViewer.Search
             SearchType = MediaType.All;
             Tags = new List<Tag>();
                       
-            VideoWidth = null;
-            VideoWidthRelation = RelationEnum.EQUAL;
+            VideoWidthStart = null;
+            VideoWidthEnd = null;
 
-            VideoHeight = null;
-            VideoHeightRelation = RelationEnum.EQUAL;
+            VideoHeightStart = null;
+            VideoHeightEnd = null;
 
-            FramesPerSecond = null;
-            FramesPerSecondRelation = RelationEnum.EQUAL;
+            FramesPerSecondStart = null;
+            framesPerSecondEnd = null;
 
-            DurationSeconds = null;
-            DurationSecondsRelation = RelationEnum.EQUAL;
+            DurationSecondsStart = null;
+            DurationSecondsEnd = null;
+
+            CreationStart = null;
+            CreationEnd = null;
         }
 
         List<Tag> tags;
@@ -94,84 +97,103 @@ namespace MediaViewer.Search
             }
         }
 
-        Nullable<int> videoWidth;
+        Nullable<int> videoWidthStart;
 
-        public Nullable<int> VideoWidth
+        public Nullable<int> VideoWidthStart
         {
-            get { return videoWidth; }
-            set { videoWidth = value;
+            get { return videoWidthStart; }
+            set { videoWidthStart = value;
             NotifyPropertyChanged();
             }
         }
 
-        RelationEnum videoWidthRelation;
+        Nullable<int> videoWidthEnd;
 
-        public RelationEnum VideoWidthRelation
+        public Nullable<int> VideoWidthEnd
         {
-            get { return videoWidthRelation; }
-            set { videoWidthRelation = value;
+            get { return videoWidthEnd; }
+            set { videoWidthEnd = value;
             NotifyPropertyChanged();
             }
         }
 
-        Nullable<int> videoHeight;
+        Nullable<int> videoHeightStart;
 
-        public Nullable<int> VideoHeight
+        public Nullable<int> VideoHeightStart
         {
-            get { return videoHeight; }
+            get { return videoHeightStart; }
             set
             {
-                videoHeight = value;
+                videoHeightStart = value;
                 NotifyPropertyChanged();
             }
         }
 
-        RelationEnum videoHeightRelation;
+        Nullable<int> videoHeightEnd;
 
-        public RelationEnum VideoHeightRelation
+        public Nullable<int> VideoHeightEnd
         {
-            get { return videoHeightRelation; }
-            set { videoHeightRelation = value;
+            get { return videoHeightEnd; }
+            set { videoHeightEnd = value;
             NotifyPropertyChanged();
             }
         }
 
-        Nullable<float> framesPerSecond;
+        Nullable<float> framesPerSecondStart;
 
-        public Nullable<float> FramesPerSecond
+        public Nullable<float> FramesPerSecondStart
         {
-            get { return framesPerSecond; }
-            set { framesPerSecond = value;
+            get { return framesPerSecondStart; }
+            set { framesPerSecondStart = value;
             NotifyPropertyChanged();
             }
         }
 
-        RelationEnum framesPerSecondRelation;
+        Nullable<float> framesPerSecondEnd;
 
-        public RelationEnum FramesPerSecondRelation
+        public Nullable<float> FramesPerSecondEnd
         {
-            get { return framesPerSecondRelation; }
-            set { framesPerSecondRelation = value;
+            get { return framesPerSecondEnd; }
+            set { framesPerSecondEnd = value;
             NotifyPropertyChanged();
             }
         }
 
-        Nullable<long> durationSeconds;
+        Nullable<long> durationSecondsStart;
 
-        public Nullable<long> DurationSeconds
+        public Nullable<long> DurationSecondsStart
         {
-            get { return durationSeconds; }
-            set { durationSeconds = value;
+            get { return durationSecondsStart; }
+            set { durationSecondsStart = value;
             NotifyPropertyChanged();
             }
         }
 
-        RelationEnum durationSecondsRelation;
+        Nullable<long> durationSecondsEnd;
 
-        public RelationEnum DurationSecondsRelation
+        public Nullable<long> DurationSecondsEnd
         {
-            get { return durationSecondsRelation; }
-            set { durationSecondsRelation = value;
+            get { return durationSecondsEnd; }
+            set { durationSecondsEnd = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        Nullable<DateTime> creationStart;
+
+        public Nullable<DateTime> CreationStart
+        {
+            get { return creationStart; }
+            set { creationStart = value;
+            NotifyPropertyChanged();
+            }
+        }
+        Nullable<DateTime> creationEnd;
+
+        public Nullable<DateTime> CreationEnd
+        {
+            get { return creationEnd; }
+            set { creationEnd = value;
             NotifyPropertyChanged();
             }
         }

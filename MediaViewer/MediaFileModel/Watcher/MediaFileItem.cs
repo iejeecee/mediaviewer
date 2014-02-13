@@ -94,24 +94,38 @@ namespace MediaViewer.MediaFileModel.Watcher
                 NotifyPropertyChanged();
             }
         }
-/*
-        BitmapSource thumbnail;
-
-        public BitmapSource Thumbnail
-        {
-            get { return thumbnail; }
-            set { thumbnail = value;
-            NotifyPropertyChanged();
-            }
-        }
-  */      
-        public void writeMetaData(MediaFactory.WriteOptions options, CancellationToken token)
+    
+        public void writeMetaData(MediaFactory.WriteOptions options, IProgress progress)
         {
             if (media != null)
             {
-                MediaFactory.write(Media, options);
+                MediaFactory.write(Media, options, progress);
             }
         }
+
+        MediaFileItemState getMediaState(Media media)
+        {
+            MediaFileItemState result = MediaFileItemState.LOADED;
+
+            if (media == null || media is UnknownMedia)
+            {
+                result = MediaFileItemState.ERROR;
+            }
+            else if (media.MetadataReadError != null)
+            {
+                if (media.MetadataReadError is FileNotFoundException)
+                {
+                    result = MediaFileItemState.FILE_NOT_FOUND;
+                }           
+                else
+                {
+                    result = MediaFileItemState.ERROR;
+                }
+            }
+
+            return (result);
+        }
+
 
         public void readMetaData(MediaFactory.ReadOptions options, CancellationToken token)
         {
@@ -124,21 +138,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 media = MediaFactory.read(Location, options, token);
 
-                if (media == null || media is UnknownMedia)
-                {
-                    result = MediaFileItemState.ERROR;
-                }
-                else if (media.MetadataReadError != null)
-                {
-                    if (media.MetadataReadError is FileNotFoundException)
-                    {
-                        result = MediaFileItemState.FILE_NOT_FOUND;
-                    }
-                    else
-                    {
-                        result = MediaFileItemState.ERROR;
-                    }
-                }
+                result = getMediaState(media); 
                
             }
             catch (TaskCanceledException)
@@ -168,21 +168,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 media = await MediaFactory.readAsync(Location, options, token).ConfigureAwait(false);
 
-                if (media == null || media is UnknownMedia)
-                {
-                    result = MediaFileItemState.ERROR;
-                }
-                else if (media.MetadataReadError != null)
-                {
-                    if (media.MetadataReadError is FileNotFoundException)
-                    {
-                        result = MediaFileItemState.FILE_NOT_FOUND;
-                    }
-                    else
-                    {
-                        result = MediaFileItemState.ERROR;
-                    }
-                }
+                result = getMediaState(media); 
             }
             catch (TaskCanceledException)
             {

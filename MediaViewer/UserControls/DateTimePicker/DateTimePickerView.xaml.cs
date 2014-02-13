@@ -246,6 +246,7 @@ namespace MediaViewer.UserControls.DateTimePicker
             TimeSpan timeOfDay = TimeSpan.Zero;
             timeOfDay = SelectedDate.TimeOfDay;
             SelectedDate = CalDisplay.SelectedDate.Value.Date + timeOfDay;
+           
         }
 
         private void DateDisplay_PreviewMouseUp(object sender, System.Windows.Input.MouseButtonEventArgs e)

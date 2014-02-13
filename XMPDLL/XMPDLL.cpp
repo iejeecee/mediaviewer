@@ -60,6 +60,18 @@ namespace XMPDLL {
 	
 	public:
 
+		XMPFileImpl(XMPFiles_ErrorCallbackProc errorProc, XMP_ProgressReportProc progressProc, void *context) {
+						
+			if(errorProc != NULL) {
+				
+				myFile.SetErrorCallback(errorProc, context, 1);
+			}
+			if(progressProc != NULL) {
+				
+				myFile.SetProgressCallback(progressProc, context, 1.0F, false);
+			}
+		}
+	
 		bool open(const std::string &filename, XMP_OptionBits options) {
 
 			if(filename.empty()) 
@@ -71,6 +83,7 @@ namespace XMPDLL {
 			{
 				return(false);
 			}
+			
 
 			//XMP_OptionBits options = 0;
 
@@ -80,7 +93,9 @@ namespace XMPDLL {
 			{
 				return(false);
 			}
+
 			
+
 			// Options to open the file with - read only and use a file handler
 			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
 
@@ -94,6 +109,8 @@ namespace XMPDLL {
 				opts = options | kXMPFiles_OpenUsePacketScanning;			
 				ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
 			}
+
+			
 
 			if(ok)
 			{			
@@ -333,11 +350,12 @@ namespace XMPDLL {
 		}	
 
 		
+		
 	};
 
-	XMPDLL_API XMPFile* WINAPI newXMPFile(void)
-	{
-		return new XMPFileImpl();
+	XMPDLL_API XMPFile* WINAPI newXMPFile(XMPFiles_ErrorCallbackProc errorProc, XMP_ProgressReportProc progressProc, void *context) {
+		
+		return new XMPFileImpl(errorProc, progressProc, context);
 	}
 
 	XMPDLL_API void WINAPI convertToDate(const std::string &dateString, XMP_DateTime &date) {
@@ -374,4 +392,5 @@ namespace XMPDLL {
 		TXMPUtils<std::string>::DecodeFromBase64(encodedStr, &rawStr);
 	}
 
+	
 }

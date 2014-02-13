@@ -17,15 +17,17 @@ using System.Windows.Shapes;
 namespace MediaViewer.UserControls.DateTimePicker
 {
     /// <summary>
-    /// Interaction logic for TimePicker.xaml
+    /// Interaction logic for DateTimePicker.xaml
     /// </summary>
-    public partial class TimePicker : UserControl
+    public partial class DateTimePicker : UserControl
     {
         static Timers.DefaultTimer timer;
         const int initialRepeatDelayMS = 800;
         const int repeatDelayMS = 50;
+        static DateTime minDateTime = new DateTime(1753, 1, 1);
+        static String format = "dd-MM-yyyy HH:mm:ss";
 
-        static TimePicker()
+        static DateTimePicker()
         {
             timer = new Timers.DefaultTimer();
             timer.Tick += timer_Tick;
@@ -34,15 +36,15 @@ namespace MediaViewer.UserControls.DateTimePicker
 
         int caretIndex;
 
-        public TimePicker()
+        public DateTimePicker()
         {
             InitializeComponent();
-                                    
+                              
             var descriptor = DependencyPropertyDescriptor.FromProperty(Button.IsPressedProperty, typeof(Button));
             descriptor.AddValueChanged(upButton, new EventHandler(button_IsPressedChanged));          
             descriptor.AddValueChanged(downButton, new EventHandler(button_IsPressedChanged));
 
-            caretIndex = 7;
+            caretIndex = 0;
         }
 
         private void button_IsPressedChanged(object sender, EventArgs e)
@@ -67,9 +69,18 @@ namespace MediaViewer.UserControls.DateTimePicker
             }
         }
 
+        DateTime DefaultDateTime
+        {
+            get
+            {
+                DateTime defDateTime = new DateTime(DateTime.Now.Year, 1, 1);
+                return defDateTime;
+            }
+        }
+
         static void timer_Tick(Object sender, EventArgs e)
         {
-            TimePicker spinner = (TimePicker)(sender as Timers.DefaultTimer).Tag;
+            DateTimePicker spinner = (DateTimePicker)(sender as Timers.DefaultTimer).Tag;
 
            spinner.Dispatcher.BeginInvoke(new Action(() =>
            {
@@ -86,15 +97,15 @@ namespace MediaViewer.UserControls.DateTimePicker
            timer.Interval = repeatDelayMS;
         }
         
-        public Nullable<long> Value
+        public Nullable<DateTime> Value
         {
-            get { return (Nullable<long>)GetValue(ValueProperty); }
+            get { return (Nullable<DateTime>)GetValue(ValueProperty); }
             set { SetValue(ValueProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Value.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(Nullable<long>), typeof(TimePicker),
+            DependencyProperty.Register("Value", typeof(Nullable<DateTime>), typeof(DateTimePicker),
             new FrameworkPropertyMetadata()
             {
                 DefaultValue = null,
@@ -105,15 +116,14 @@ namespace MediaViewer.UserControls.DateTimePicker
             });
  
         private static object coerceValueCallback(DependencyObject d, object baseValue)
-        {
-          
-            Nullable<long> value = (Nullable<long>)baseValue;
+        {          
+            Nullable<DateTime> value = (Nullable<DateTime>)baseValue;
 
             if (value != null)
             {
-                if (value.Value < 0)
+                if (value.Value < minDateTime)
                 {
-                    return (new Nullable<long>(0));
+                    return (new Nullable<DateTime>(minDateTime));
                 }
             
             }
@@ -123,20 +133,13 @@ namespace MediaViewer.UserControls.DateTimePicker
 
         private static void valueChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            TimePicker control = (TimePicker)d;
+            DateTimePicker control = (DateTimePicker)d;
 
-            Nullable<long> value = (Nullable<long>)e.NewValue;
-
-            int hours = 0,minutes = 0,seconds = 0;
-
+            Nullable<DateTime> value = (Nullable<DateTime>)e.NewValue;
+      
             if (value != null)
             {
-
-                Utils.Misc.parseTimeSeconds(value.Value, out seconds, out minutes, out hours);
-
-                TimeSpan temp = new TimeSpan(hours, minutes, seconds);
-
-                control.valueTextBox.Text = temp.ToString("hh\\:mm\\:ss");
+                control.valueTextBox.Text = value.Value.ToString(format);
             }
             else
             {
@@ -146,33 +149,65 @@ namespace MediaViewer.UserControls.DateTimePicker
                    
         }
 
-        int caretIndexMultiplier()
+        void spinAtCaretPosition(int val)
         {
-            int index = caretIndex;
+            int nrDateItems = 0;
+            int nrTimeItems = 0;
+            int nrWhiteSpace = 0;
 
-            if (index <= 2)
+            for (int i = caretIndex; i < valueTextBox.Text.Length; i++)
             {
-                return (60 * 60);
+                if (valueTextBox.Text[i] == '-')
+                {
+                    nrDateItems++;
+                }
+                else if (valueTextBox.Text[i] == ':')
+                {
+                    nrTimeItems++;
+
+                } else if(Char.IsWhiteSpace(valueTextBox.Text[i])) {
+
+                    nrWhiteSpace++;
+                }
             }
-            if (index > 2 && index <= 5)
+
+            if (nrDateItems == 2)
             {
-                return (60);
+                Value = Value.Value.AddDays(val);
             }
-            else
+            else if (nrDateItems == 1)
             {
-                return (1);
+                Value = Value.Value.AddMonths(val);
             }
+            else if (nrDateItems == 0 && nrWhiteSpace > 0)
+            {
+                Value = Value.Value.AddYears(val);
+            }
+            else if (nrTimeItems == 2)
+            {
+                Value = Value.Value.AddHours(val);
+            }
+            else if (nrTimeItems == 1)
+            {
+                Value = Value.Value.AddMinutes(val);
+            }
+            else if (nrTimeItems == 0)
+            {
+                Value = Value.Value.AddSeconds(val);
+            }
+
         }
+
 
         private void addValue()
         {          
             if (Value == null)
             {
-                Value = 0;
+                Value = DefaultDateTime;
             }
             else
             {
-                Value += 1 * caretIndexMultiplier();
+                spinAtCaretPosition(1);
             }          
         }
 
@@ -180,11 +215,11 @@ namespace MediaViewer.UserControls.DateTimePicker
         {           
             if (Value == null)
             {
-                Value = 0;
+                Value = DefaultDateTime;
             }
             else
             {
-                Value -= 1 * caretIndexMultiplier(); 
+                spinAtCaretPosition(-1);
             }          
         }
      
@@ -192,7 +227,7 @@ namespace MediaViewer.UserControls.DateTimePicker
         {
             foreach (char c in e.Text)
             {
-                if (!"0123456789".Contains(c))
+                if (!"0123456789-:".Contains(c))
                 {
                     e.Handled = true;
                     System.Media.SystemSounds.Beep.Play();
@@ -201,7 +236,7 @@ namespace MediaViewer.UserControls.DateTimePicker
                 else if(Value == null)
                 {
                     e.Handled = true;
-                    Value = 0;
+                    Value = DefaultDateTime;
                 }
                 
             }
@@ -221,8 +256,8 @@ namespace MediaViewer.UserControls.DateTimePicker
                 }
                 else
                 {
-                    TimeSpan value = TimeSpan.Parse(input);
-                    Value = new Nullable<long>((long)value.TotalSeconds);
+                    DateTime value = DateTime.Parse(input);                    
+                    Value = new Nullable<DateTime>(value);
                 }
             }
             catch (Exception)
@@ -236,14 +271,14 @@ namespace MediaViewer.UserControls.DateTimePicker
         {
             int start = valueTextBox.CaretIndex;
             
-            while (start != 0 && valueTextBox.Text[start - 1] != ':')
+            while (start != 0 && !"-:".Contains(valueTextBox.Text[start - 1]) && !Char.IsWhiteSpace(valueTextBox.Text[start - 1]))
             {
                 start--;
             }
 
             int end = valueTextBox.CaretIndex;
 
-            while (end < valueTextBox.Text.Count() && valueTextBox.Text[end] != ':')
+            while (end < valueTextBox.Text.Count() && !"-:".Contains(valueTextBox.Text[end]) && !Char.IsWhiteSpace(valueTextBox.Text[end]))
             {
                 end++;
             }

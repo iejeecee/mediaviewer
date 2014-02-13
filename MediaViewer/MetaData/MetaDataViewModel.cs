@@ -33,7 +33,7 @@ namespace MediaViewer.MetaData
             Description = "";
             Author = "";
             Copyright = "";
-            Creation = DateTime.MinValue;
+            Creation = null;
             dynamicProperties = new List<Tuple<string, string>>();
 
             SelectedMetaDataPreset = noPresetMetaData;
@@ -508,9 +508,9 @@ namespace MediaViewer.MetaData
             }
         }
 
-        DateTime creation;
+        Nullable<DateTime> creation;
 
-        public DateTime Creation
+        public Nullable<DateTime> Creation
         {
             get { return creation; }
             set { creation = value;
@@ -667,7 +667,7 @@ namespace MediaViewer.MetaData
                 Description = media.Description;
                 Author = media.Author;
                 Copyright = media.Copyright;
-                Creation = media.CreationDate == null ? DateTime.MinValue : media.CreationDate.Value;
+                Creation = media.CreationDate;
 
                 lock (tagsLock)
                 {

@@ -1,4 +1,10 @@
 //http://www.codeproject.com/Articles/28969/HowTo-Export-C-classes-from-a-DLL#CppMatureApproach
+// ------NOTE-------
+// To debug native code in Visual Studio 2012 check the following option:
+// MediaViewer->Properties->Debug->Enable Native Code Debugging
+// To be able to dereference native variables in the debugger make sure the following is also checked
+// Debug->Options and Settings->General->Managed C++ Compatibilty Mode
+
 #pragma once
 
 #ifdef XMPLIB_IMPORTS
@@ -39,6 +45,7 @@ namespace XMPDLL {
 	class XMPFile
 	{
 	public:
+				
 		virtual bool open(const std::string &filename, XMP_OptionBits options) = 0;
 		virtual void release() = 0;
 
@@ -132,13 +139,12 @@ namespace XMPDLL {
 			const std::string &quotes,
 			XMP_OptionBits options,
 			std::string &catedStr) const = 0;
-
 		
 		 
 	};
 
 	
-	EXTERN_C XMPDLL_API XMPFile* WINAPI newXMPFile(void);
+	EXTERN_C XMPDLL_API XMPFile* WINAPI newXMPFile(XMPFiles_ErrorCallbackProc errorProc = NULL, XMP_ProgressReportProc progressProc = NULL, void *context = NULL);
 
 	EXTERN_C XMPDLL_API void WINAPI convertToDate(const std::string &dateString, 
 		XMP_DateTime &date);

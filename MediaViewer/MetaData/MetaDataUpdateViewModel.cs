@@ -75,6 +75,7 @@ namespace MediaViewer.MetaData
         {
 
             TotalProgressMax = state.ItemList.Count;
+            itemProgressMax = 100;
             TotalProgress = 0;
 
             await Task.Factory.StartNew(() =>
@@ -116,10 +117,7 @@ namespace MediaViewer.MetaData
 
                         if (item.Media is UnknownMedia)
                         {
-                            // reload metaData in metadataviewmodel
-                            item.IsSelected = false;
-                            item.IsSelected = true;
-
+                            // reload metaData in metadataviewmodel                          
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
                             InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
                             log.Error("Could not open file and/or read it's metadata: " + item.Location);
@@ -168,8 +166,7 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
-                        if (state.CreationEnabled && !state.Creation.Equals(DateTime.MinValue) &&
-                            !media.CreationDate.Equals(state.Creation))
+                        if (state.CreationEnabled && !(Nullable.Compare<DateTime>(media.CreationDate, state.Creation) == 0))
                         {
                             media.CreationDate = state.Creation;
                             isModified = true;
@@ -222,7 +219,7 @@ namespace MediaViewer.MetaData
                         {
                             // Save metadata changes
                             ItemInfo = "Saving MetaData: " + item.Location;
-                            MediaFactory.write(item.Media, MediaFactory.WriteOptions.AUTO);
+                            MediaFileWatcher.Instance.MediaState.writeMetadata(item, MediaFactory.WriteOptions.AUTO, this);
 
                             InfoMessages.Add("Completed updating Metadata for: " + item.Location);
                         }
@@ -251,7 +248,11 @@ namespace MediaViewer.MetaData
                         {
                             item.Media.clear();
                         }
+
                         // reload metaData in metadataviewmodel
+                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
+                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+
                         item.IsSelected = false;
                         item.IsSelected = true;
 
@@ -700,9 +701,9 @@ namespace MediaViewer.MetaData
             set { removeTags = value; }
         }
 
-        DateTime creation;
+        Nullable<DateTime> creation;
 
-        public DateTime Creation
+        public Nullable<DateTime> Creation
         {
             get { return creation; }
             set { creation = value; }

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
+// converts a empty string to NULL or vice versa
 namespace MediaViewer.Converters
 {
     class EmptyStringConverter : IValueConverter

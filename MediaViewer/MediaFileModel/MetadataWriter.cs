@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Progress;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,23 +13,35 @@ namespace MediaViewer.MediaFileModel
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public virtual void writeMetadata(Media media)
+        private IProgress progress;
+
+        protected IProgress Progress
         {
-           
-            XMPLib.MetaData xmpMetaDataWriter = new XMPLib.MetaData();
+            get { return progress; }
+            set { progress = value; }
+        }
+
+        public virtual void writeMetadata(Media media, IProgress progress)
+        {
+            Progress = progress;
+
+            XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
+            XMPLib.MetaData.ProgressCallbackDelegate progressCallbackDelegate = new XMPLib.MetaData.ProgressCallbackDelegate(progressCallback);
+
+            XMPLib.MetaData xmpMetaDataWriter = new XMPLib.MetaData(errorCallbackDelegate, progressCallbackDelegate);
 
             try
             {
-                if (media.SupportsXMPMetadata)
-                {
-                    xmpMetaDataWriter.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForUpdate);
+               if (media.SupportsXMPMetadata)
+               {
+                   xmpMetaDataWriter.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForUpdate);
 
-                    write(xmpMetaDataWriter, media);
-                }
-                else
-                {
-                    throw new Exception("Format does not support XMP metadata");
-                }
+                   write(xmpMetaDataWriter, media);
+               }
+               else
+               {
+                  throw new Exception("Format does not support XMP metadata");
+               }
 
             }
             finally
@@ -36,6 +49,26 @@ namespace MediaViewer.MediaFileModel
                 xmpMetaDataWriter.Dispose();
                 xmpMetaDataWriter = null;
             }
+        }
+
+        private bool progressCallback(float elapsedTime, float fractionDone, float secondsToGo)
+        {
+            progress.ItemProgress = (int)(progress.ItemProgressMax * fractionDone);
+
+            if (progress.CancellationToken.IsCancellationRequested)
+            {
+                return (false);
+            }
+            else
+            {
+                return (true);
+            }
+        }
+
+        private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
+        {
+            log.Error("MetadataWriter: " + filePath + " - " + message);
+            return (true);
         }
 
         protected virtual void write(XMPLib.MetaData xmpMetaDataWriter, Media media) {

@@ -20,8 +20,10 @@ namespace MediaViewer.MediaFileModel
 
         public virtual void readMetadata(Stream data, MediaFactory.ReadOptions options, Media media)
         {
-          
-            XMPLib.MetaData xmpMetaDataReader = new XMPLib.MetaData();
+
+            XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
+
+            XMPLib.MetaData xmpMetaDataReader = new XMPLib.MetaData(errorCallbackDelegate, null);
 
             try
             {
@@ -44,6 +46,12 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
+        private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
+        {
+            log.Error("MetadataReader: " + filePath + " - " + message);
+            return (true);
+        }
+      
         protected virtual void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, Media media)
         {
                      

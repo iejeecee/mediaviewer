@@ -68,7 +68,12 @@ namespace MediaViewer.MediaFileBrowser
                 await vm.exportAsync(selectedItems);
 
             });
-           
+
+            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_SetPath", (location) =>
+            {
+                BrowsePath = location;
+            });
+
         }
 
         public string BrowsePath

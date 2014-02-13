@@ -39,7 +39,9 @@ namespace XMPLib {
 			INFO
 		};
 
-		delegate void LogCallbackDelegate(LogLevel level, String ^message);
+		delegate void LogCallbackDelegate(LogLevel level, String ^message);			
+		delegate bool ErrorCallbackDelegate(String ^filePath, Byte errorSeverity, System::UInt32 cause, String ^message);			
+		delegate bool ProgressCallbackDelegate(float elapsedTime, float fractionDone, float secondsToGo);	
 
 	private:
 
@@ -49,14 +51,28 @@ namespace XMPLib {
 
 		static void log(LogLevel level, String ^message);
 
+		GCHandle errorCallbackPtr, progressCallbackPtr;
+			
+		[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+		delegate bool NativeErrorCallbackDelegate(void *context, XMP_StringPtr filePath, XMP_ErrorSeverity errorSeverity, XMP_Int32 cause,  XMP_StringPtr message);
+		bool errorCallback(void *context, XMP_StringPtr filePath, XMP_ErrorSeverity errorSeverity, XMP_Int32 cause,  XMP_StringPtr message);
+
+		[UnmanagedFunctionPointer(CallingConvention::Cdecl)]
+		delegate bool NativeProgressCallbackDelegate(void *context, float secondsDone, float fractionsDone, float secondsToGo);
+		bool progressCallback(void *context, float elapsedTime, float fractionDone, float secondsToGo);
+
+
+		ErrorCallbackDelegate ^managedErrorCallback;
+		ProgressCallbackDelegate ^managedProgressCallback;
+
 	public:
 
 		static MetaData() {
 
 			logCallback = nullptr;
 		}
-
-		MetaData();
+	
+		MetaData(ErrorCallbackDelegate ^errorCallback, ProgressCallbackDelegate ^progress);
 		~MetaData();
 
 		bool open(String ^filename, Consts::OpenOptions options); 

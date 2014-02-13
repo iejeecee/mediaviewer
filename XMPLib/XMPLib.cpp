@@ -54,18 +54,84 @@ bool MetaDataProperty::Equals(Object ^obj) {
 }
 
 
-MetaData::MetaData() {
+MetaData::MetaData(ErrorCallbackDelegate ^managedErrorCallback, ProgressCallbackDelegate ^managedProgressCallback) {
 
-	xmpFile = XMPDLL::newXMPFile();
+	this->managedErrorCallback = managedErrorCallback;
+	this->managedProgressCallback = managedProgressCallback;
+
+	XMP_ProgressReportProc nativeProgressCallback = NULL;
+
+	if(managedProgressCallback != nullptr) {
+
+		NativeProgressCallbackDelegate ^nativeProgressCallbackDelegate = gcnew NativeProgressCallbackDelegate(this, &MetaData::progressCallback);
+
+		progressCallbackPtr = GCHandle::Alloc(nativeProgressCallbackDelegate);
+
+		IntPtr ipProgressCallback = Marshal::GetFunctionPointerForDelegate(nativeProgressCallbackDelegate);
+		nativeProgressCallback = static_cast<XMP_ProgressReportProc>(ipProgressCallback.ToPointer());
+
+	}
+
+	XMPFiles_ErrorCallbackProc nativeErrorCallback = NULL;
+
+	if(managedErrorCallback != nullptr) {
+
+		NativeErrorCallbackDelegate ^nativeErrorCallbackDelegate = gcnew NativeErrorCallbackDelegate(this, &MetaData::errorCallback);
+
+		errorCallbackPtr = GCHandle::Alloc(nativeErrorCallbackDelegate);
+
+		IntPtr ipErrorCallback = Marshal::GetFunctionPointerForDelegate(nativeErrorCallbackDelegate);
+		nativeErrorCallback = static_cast<XMPFiles_ErrorCallbackProc>(ipErrorCallback.ToPointer());
+
+	}
+
+	xmpFile = XMPDLL::newXMPFile(nativeErrorCallback, nativeProgressCallback, NULL);
+
 }
 
+bool MetaData::errorCallback(void *context, XMP_StringPtr filePath, XMP_ErrorSeverity errorSeverity, XMP_Int32 cause,  XMP_StringPtr message) 
+{
+	bool result = true;
+
+	if(managedErrorCallback != nullptr) {
+
+		result = managedErrorCallback->Invoke(gcnew String(filePath), errorSeverity, cause, gcnew String(message));
+	}
+
+	return(result);
+}
+
+bool MetaData::progressCallback(void *context, float elapsedTime, float fractionDone, float secondsToGo) 
+{
+	bool result = true;
+
+	if(managedProgressCallback != nullptr) {
+
+		result = managedProgressCallback->Invoke(elapsedTime, fractionDone, secondsToGo);
+	}
+
+	return(result);
+
+}
+
+
 MetaData::~MetaData() {
+	
+	if(errorCallbackPtr.IsAllocated) {
+		errorCallbackPtr.Free();
+	}
+	if(progressCallbackPtr.IsAllocated) {
+		progressCallbackPtr.Free();	
+	}
 
 	if(xmpFile != nullptr) {
 
 		xmpFile->release();
 	}
 }
+
+
+
 
 void MetaData::setLogCallback(LogCallbackDelegate ^logCallback) {
 

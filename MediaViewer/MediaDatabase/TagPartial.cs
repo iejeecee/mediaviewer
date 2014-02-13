@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
-    partial class Tag : IComparable<Tag>
+    partial class Tag : IComparable<Tag>, IEquatable<Tag>
     {
 
         public override string ToString()
         {
             return Name;
         }
-
      
         public int CompareTo(Tag other)
         {
@@ -23,6 +22,16 @@ namespace MediaViewer.MediaDatabase
             }
 
             return (other.Name.CompareTo(Name));
+        }
+
+        public bool Equals(Tag other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentException();
+            }
+
+            return (other.Name.Equals(Name));
         }
     }
 }

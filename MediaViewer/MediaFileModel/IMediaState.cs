@@ -44,8 +44,8 @@ namespace MediaViewer.MediaFileModel
         void readMetadataRangeAsync(int start, int nrItems, CancellationToken token);
         void readMetadata(MediaFileItem item, MediaFactory.ReadOptions options, CancellationToken token);
         void readMetadata(IEnumerable<MediaFileItem> items, MediaFactory.ReadOptions options, CancellationToken token);
-        void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, CancellationToken token);
-        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, CancellationToken token);
+        void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, IProgress progress);
+        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, IProgress progress);
 
         bool isInUse(MediaFileItem item);
     }

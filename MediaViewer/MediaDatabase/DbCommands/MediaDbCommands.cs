@@ -44,107 +44,98 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             var result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
 
+            // duration
+
+            if (query.CreationStart != null && query.CreationEnd == null)
+            {
+                result = result.Where(m => m.CreationDate >= query.CreationStart.Value);
+            }
+            else if (query.CreationStart == null && query.CreationEnd!= null)
+            {
+                result = result.Where(m => m.CreationDate <= query.CreationEnd.Value);
+            }
+            else if (query.CreationStart != null && query.CreationEnd != null)
+            {
+                result = result.Where(m => (m.CreationDate >= query.CreationStart.Value) && (m.CreationDate <= query.CreationEnd.Value));
+            }
+
             if (query.SearchType == MediaType.Video)
             {
                 result = result.Where(m => m.MimeType.StartsWith("video"));
+
+                result = videoQueryFilter(result, query);
             }
             else if (query.SearchType == MediaType.Images)
             {
                 result = result.Where(m => m.MimeType.StartsWith("image"));
             }
-
-            if (query.DurationSeconds != null)
-            {
-                switch (query.DurationSecondsRelation)
-                {
-                    case RelationEnum.EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.DurationSeconds == query.DurationSeconds.Value);
-                            break;
-                        }
-                    case RelationEnum.GREATER_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.DurationSeconds >= query.DurationSeconds.Value);
-                            break;
-                        }
-                    case RelationEnum.LESS_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.DurationSeconds <= query.DurationSeconds.Value);
-                            break;
-                        }
-                }
-
-            }
-
-            if (query.VideoWidth != null)
-            {
-                switch (query.VideoWidthRelation)
-                {
-                    case RelationEnum.EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Width == query.VideoWidth.Value);
-                            break;
-                        }
-                    case RelationEnum.GREATER_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Width >= query.VideoWidth.Value);
-                            break;
-                        }
-                    case RelationEnum.LESS_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Width <= query.VideoWidth.Value);
-                            break;
-                        }
-                }
-            }
-
-            if (query.VideoHeight != null)
-            {
-                switch (query.VideoHeightRelation)
-                {
-                    case RelationEnum.EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Height == query.VideoHeight.Value);
-                            break;
-                        }
-                    case RelationEnum.GREATER_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Height >= query.VideoHeight.Value);
-                            break;
-                        }
-                    case RelationEnum.LESS_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.Height <= query.VideoHeight.Value);
-                            break;
-                        }
-                }
-              
-            }
-
-            if (query.FramesPerSecond != null)
-            {
-                switch (query.FramesPerSecondRelation)
-                {
-                    case RelationEnum.EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.FramesPerSecond == query.FramesPerSecond.Value);
-                            break;
-                        }
-                    case RelationEnum.GREATER_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.FramesPerSecond >= query.FramesPerSecond.Value);
-                            break;
-                        }
-                    case RelationEnum.LESS_THAN_OR_EQUAL:
-                        {
-                            result = result.OfType<VideoMedia>().Where(m => m.FramesPerSecond <= query.FramesPerSecond.Value);
-                            break;
-                        }
-                }
-
-            }
-
+           
             return(result.ToList());
+        }
+
+        IQueryable<Media> videoQueryFilter(IQueryable<Media> result, SearchQuery query)
+        {
+            // duration
+
+            if (query.DurationSecondsStart != null && query.DurationSecondsEnd == null)
+            {              
+                result = result.OfType<VideoMedia>().Where(m => m.DurationSeconds >= query.DurationSecondsStart.Value);
+            }
+            else if (query.DurationSecondsStart == null && query.DurationSecondsEnd != null)
+            {               
+                result = result.OfType<VideoMedia>().Where(m => m.DurationSeconds <= query.DurationSecondsEnd.Value);
+            }
+            else if (query.DurationSecondsStart != null && query.DurationSecondsEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => (m.DurationSeconds >= query.DurationSecondsStart.Value) && (m.DurationSeconds <= query.DurationSecondsEnd.Value));
+            }
+
+            // width
+
+            if (query.VideoWidthStart != null && query.VideoWidthEnd == null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.Width >= query.VideoWidthStart.Value);
+            }
+            else if (query.VideoWidthStart == null && query.VideoWidthEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.Width <= query.VideoWidthEnd.Value);
+            }
+            else if (query.VideoWidthStart != null && query.VideoWidthEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => (m.Width >= query.VideoWidthStart.Value) && (m.Width <= query.VideoWidthEnd.Value));
+            }
+
+            // height
+
+            if (query.VideoHeightStart != null && query.VideoHeightEnd == null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.Height >= query.VideoHeightStart.Value);
+            }
+            else if (query.VideoHeightStart == null && query.VideoHeightEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.Height <= query.VideoHeightEnd.Value);
+            }
+            else if (query.VideoHeightStart != null && query.VideoHeightEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => (m.Height >= query.VideoHeightStart.Value) && (m.Height <= query.VideoHeightEnd.Value));
+            }
+
+            // frames per second
+
+            if (query.FramesPerSecondStart != null && query.FramesPerSecondEnd == null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.FramesPerSecond >= query.FramesPerSecondStart.Value);
+            }
+            else if (query.FramesPerSecondStart == null && query.FramesPerSecondEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.FramesPerSecond <= query.FramesPerSecondEnd.Value);
+            }
+            else if (query.FramesPerSecondStart != null && query.FramesPerSecondEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => (m.FramesPerSecond >= query.FramesPerSecondStart.Value) && (m.FramesPerSecond <= query.FramesPerSecondEnd.Value));
+            }
+
+            return result;
         }
 
     

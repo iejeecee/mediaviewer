@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="MediaViewer.UserControls.DateTimePicker.DateTimePicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid Name="mainGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Name="valueTextBox" Grid.Column="0" HorizontalAlignment="Stretch" 
+                 TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Left" PreviewTextInput="valueTextBox_PreviewTextInput" LostFocus="valueTextBox_LostFocus" PreviewMouseUp="valueTextBox_PreviewMouseUp" TextChanged="valueTextBox_TextChanged"/>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Button Grid.Row="0" Name="upButton" Height="{Binding ElementName=valueTextBox, Path=ActualHeight, Converter={StaticResource mathConverter}, ConverterParameter=x/2}" Width="12" ToolTip="Increase">
+                <Image Source="pack://application:,,,/Resources/Icons/up arrow.ico" Width="7" Height="7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+            <Button Grid.Row="1" Name="downButton" Height="{Binding ElementName=valueTextBox, Path=ActualHeight, Converter={StaticResource mathConverter}, ConverterParameter=x/2}" Width="12" ToolTip="Decrease">
+                <Image Source="pack://application:,,,/Resources/Icons/down arrow.ico" Width="7" Height="7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Button>
+        </Grid>
+    </Grid>
+</UserControl>

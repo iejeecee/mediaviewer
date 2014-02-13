@@ -496,14 +496,14 @@ namespace MediaViewer.MediaFileModel
             MediaCollection.ExitReaderLock();
         }
 
-        public void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, CancellationToken token)
+        public void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, IProgress progress)
         {
             List<MediaFileItem> dummy = new List<MediaFileItem>();
             dummy.Add(item);
-            writeMetadata(dummy, options, token);
+            writeMetadata(dummy, options, progress);
         }
 
-        public void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, CancellationToken token)
+        public void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, IProgress progress)
         {
           
             bool success = busyItems.AddRange(items);
@@ -516,9 +516,9 @@ namespace MediaViewer.MediaFileModel
             {
                 foreach (MediaFileItem item in items)
                 {
-                    if (token.IsCancellationRequested) return;
+                    if (progress.CancellationToken.IsCancellationRequested) return;
 
-                    item.writeMetaData(options, token);
+                    item.writeMetaData(options, progress);
                     
                     busyItems.Remove(item);
                 }

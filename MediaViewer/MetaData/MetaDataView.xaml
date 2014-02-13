@@ -147,9 +147,8 @@
 					IsChecked="{Binding CopyrightEnabled, Source={StaticResource viewModel}}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"/>
                 <Label Grid.Row="11" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}"/>
-                <DateTimePicker:DateTimePickerView Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                  
-                                                   DateFormat="dd-MM-yyyy HH:mm:ss"
-                                                   SelectedDate="{Binding Creation, Mode=TwoWay, Source={StaticResource viewModel}}"
+                <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
+                                                   Value="{Binding Creation, Mode=TwoWay, Source={StaticResource viewModel}}"
                                                    IsEnabled="{Binding CreationEnabled, Source={StaticResource viewModel}}"/>
                 <CheckBox Grid.Row="11" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CreationEnabled, Source={StaticResource viewModel}}"
