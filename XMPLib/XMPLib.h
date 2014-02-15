@@ -83,14 +83,18 @@ namespace XMPLib {
 		void putXMP();
 
 		bool doesPropertyExists(String ^nameSpace, String ^propName);
-		bool getProperty(String ^nameSpace, String ^propName, String^ %propValue);
+		void getProperty(String ^nameSpace, String ^propName, String^ %propValue);
 		void deleteProperty(String ^nameSpace, String ^propName);
-		bool getProperty_Date(String ^nameSpace, String ^propName, DateTime %propValue);
+		void getProperty_Date(String ^nameSpace, String ^propName, Nullable<DateTime> %propValue);
+		void getProperty_Bool(String ^nameSpace, String ^propName, Nullable<bool> %propValue);
+		void getProperty_Float(String ^nameSpace, String ^propName, Nullable<double> %propValue);
+		void getProperty_Int(String ^nameSpace, String ^propName, Nullable<long> %propValue);
+		void getProperty_Int64(String ^nameSpace, String ^propName, Nullable<Int64> %propValue);
 		void setProperty(String ^nameSpace, String ^propName, String ^propValue, Consts::PropOptions options);
 		void setProperty_Date(String ^nameSpace, String ^propName, DateTime propValue);
 		
 		int countArrayItems(String ^nameSpace, String ^arrayName);
-		bool getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue);
+		void getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue);
 		bool doesArrayItemExist(String ^nameSpace, String ^arrayName, int item);
 		void setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, Consts::PropOptions options);
 		void appendArrayItem(String ^nameSpace, String ^arrayName, Consts::PropOptions arrayOptions, String ^itemValue, Consts::PropOptions options);
@@ -101,7 +105,7 @@ namespace XMPLib {
 		void setStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
 			String ^fieldName, String ^fieldValue, XMP_OptionBits options);
 
-		bool getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue);
+		void getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue);
 		void setLocalizedText(String ^nameSpace, String ^textName, String ^genericLang, String ^specificLang, String ^itemValue);
 		
 		////MetaDataTreeNode ^parse();

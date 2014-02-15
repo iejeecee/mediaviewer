@@ -35,14 +35,43 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public List<Media> findMediaByQuery(SearchQuery query)
         {
+            IQueryable<Media> result = null;
 
-            List<int> tagIds = new List<int>();
-            foreach (Tag tag in query.Tags)
+            if (!String.IsNullOrEmpty(query.Text) && !String.IsNullOrWhiteSpace(query.Text) && (
+                query.IsTitleSearch ||
+                query.IsDescriptionSearch ||
+                query.IsAuthorSearch ||
+                query.IsCopyrightSearch))
             {
-                tagIds.Add(tag.Id);
+                result = Db.MediaSet.Include("Tags").Where(m => (query.IsTitleSearch && !String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
+                    (query.IsDescriptionSearch && !String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
+                    (query.IsAuthorSearch && !String.IsNullOrEmpty(m.Author) && m.Author.Contains(query.Text)) ||
+                    (query.IsCopyrightSearch && !String.IsNullOrEmpty(m.Copyright) && m.Copyright.Contains(query.Text)));
+            }
+           
+            if (query.Tags.Count > 0)
+            {
+                List<int> tagIds = new List<int>();
+                foreach (Tag tag in query.Tags)
+                {
+                    tagIds.Add(tag.Id);
+                }
+
+                if (result == null)
+                {
+                    result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                }
+                else
+                {
+                    result = result.Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                }
+
             }
 
-            var result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+            if (result == null)
+            {
+                return (new List<Media>());
+            }
 
             // duration
 

@@ -16,5 +16,29 @@ namespace MediaViewer.MediaDatabase
     {
         public int Width { get; set; }
         public int Height { get; set; }
+        public Nullable<short> LightSource { get; set; }
+        public Nullable<short> MeteringMode { get; set; }
+        public Nullable<short> Saturation { get; set; }
+        public Nullable<short> SceneCaptureType { get; set; }
+        public Nullable<short> SensingMethod { get; set; }
+        public Nullable<short> Sharpness { get; set; }
+        public Nullable<double> SubjectDistance { get; set; }
+        public Nullable<double> ShutterSpeedValue { get; set; }
+        public Nullable<short> SubjectDistanceRange { get; set; }
+        public Nullable<short> WhiteBalance { get; set; }
+        public Nullable<bool> FlashFired { get; set; }
+        public Nullable<short> FlashMode { get; set; }
+        public Nullable<short> FlashReturn { get; set; }
+        public string CameraMake { get; set; }
+        public string CameraModel { get; set; }
+        public string Lens { get; set; }
+        public string SerialNumber { get; set; }
+        public Nullable<double> ExposureTime { get; set; }
+        public Nullable<double> FNumber { get; set; }
+        public Nullable<double> ExposureBiasValue { get; set; }
+        public Nullable<short> ExposureProgram { get; set; }
+        public Nullable<double> FocalLength { get; set; }
+        public Nullable<int> ISOSpeedRating { get; set; }
+        public Nullable<short> Contrast { get; set; }
     }
 }

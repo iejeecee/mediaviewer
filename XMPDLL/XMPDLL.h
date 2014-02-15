@@ -62,6 +62,22 @@ namespace XMPDLL {
 						    const std::string &propName,
 						    XMP_DateTime &propValue) const = 0;
 
+		virtual bool getProperty_Bool(const std::string &nameSpace,
+						    const std::string &propName,
+						    bool &propValue) const = 0;
+
+		virtual bool getProperty_Float(const std::string &nameSpace,
+						    const std::string &propName,
+						    double &propValue) const = 0;
+
+		virtual bool getProperty_Int(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int32 &propValue) const = 0;
+
+		virtual bool getProperty_Int64(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int64 &propValue) const = 0;
+
 		virtual void deleteProperty(const std::string &nameSpace, 
 			const std::string &propName) = 0;
 

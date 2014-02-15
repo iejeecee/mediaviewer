@@ -151,7 +151,7 @@ namespace XMPDLL {
 		bool getProperty(const std::string &nameSpace, const std::string &name, std::string &value) const {
 
 			bool exists = meta.GetProperty(nameSpace.c_str(), name.c_str(), &value, NULL);
-
+						
 			if(exists == false) {
 
 				value.clear();
@@ -166,6 +166,41 @@ namespace XMPDLL {
 			meta.DeleteProperty(nameSpace.c_str(), propName.c_str());
 		}
 
+		bool getProperty_Bool(const std::string &nameSpace,
+						    const std::string &name,
+						    bool &value) const
+		{
+			bool exists = meta.GetProperty_Bool(nameSpace.c_str(), name.c_str(), &value, NULL);
+								
+			return(exists);
+		}
+
+		bool getProperty_Float(const std::string &nameSpace,
+						    const std::string &name,
+						    double &value) const 
+		{
+			bool exists = meta.GetProperty_Float(nameSpace.c_str(), name.c_str(), &value, NULL);
+										
+			return(exists);
+		}
+		bool getProperty_Int(const std::string &nameSpace,
+						    const std::string &name,
+						    XMP_Int32 &value) const 
+		{
+			bool exists = meta.GetProperty_Int(nameSpace.c_str(), name.c_str(), &value, NULL);
+								
+			return(exists);
+
+		}
+
+		virtual bool getProperty_Int64(const std::string &nameSpace,
+						    const std::string &name,
+						    XMP_Int64 &value) const
+		{
+			bool exists = meta.GetProperty_Int64(nameSpace.c_str(), name.c_str(), &value, NULL);
+								
+			return(exists);
+		}
 
 		bool getProperty_Date(const std::string &nameSpace, const std::string &propName,
 			XMP_DateTime &propValue) const

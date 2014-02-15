@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaDatabase;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -36,7 +37,7 @@ public class FormatMetaData
 
 		format = new Dictionary<String , FormatInfo >();
 
-		FormatInfo i = new FormatInfo("photoshop:ColorMode", "");
+		FormatInfo i = new FormatInfo("ColorMode", "");
 
 		i.lookup["0"] = "Bitmap";
 		i.lookup["1"] = "Gray scale";
@@ -49,21 +50,21 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:Compression", "");
+		i = new FormatInfo("Compression", "");
 		i.lookup["1"] = "uncompressed";
 		i.lookup["6"] = "jpeg";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:ImageLength", "pixels");
+		i = new FormatInfo("ImageLength", "pixels");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:ImageWidth", "pixels");
+		i = new FormatInfo("ImageWidth", "pixels");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:Orientation", "");
+		i = new FormatInfo("Orientation", "");
 
 		i.lookup["1"] = "0th row at top, 0th column at left";
 		i.lookup["2"] = "0th row at top, 0th column at right";
@@ -76,53 +77,53 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:PhotometricInterpretation", "");;
+		i = new FormatInfo("PhotometricInterpretation", "");;
 		i.lookup["2"] = "RGB";
 		i.lookup["6"] = "YCbCr";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:PlanarConfiguration", "");
+		i = new FormatInfo("PlanarConfiguration", "");
 		i.lookup["1"] = "chunky";
 		i.lookup["2"] = "planar";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:ResolutionUnit", "");
+		i = new FormatInfo("ResolutionUnit", "");
 		i.lookup["2"] = "inches";
 		i.lookup["3"] = "centimeters";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:XResolution", "pixels per unit");
+		i = new FormatInfo("XResolution", "pixels per unit");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:YResolution", "pixels per unit");
+		i = new FormatInfo("YResolution", "pixels per unit");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("tiff:YCbCrPositioning", "");
+		i = new FormatInfo("YCbCrPositioning", "");
 		i.lookup["1"] = "centered";
 		i.lookup["2"] = "co-sited";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ApertureValue", "");
+		i = new FormatInfo("ApertureValue", "");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:BrightnessValue", "");
+		i = new FormatInfo("BrightnessValue", "");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ColorSpace", "");
+		i = new FormatInfo("ColorSpace", "");
 		i.lookup["1"] = "sRGB";
 		i.lookup["65535"] = "uncalibrated";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ComponentsConfiguration", "");
+		i = new FormatInfo("ComponentsConfiguration", "");
 		i.lookup["0"] = "does not exist";
 		i.lookup["1"] = "Y";
 		i.lookup["2"] = "Cb";
@@ -136,31 +137,31 @@ public class FormatMetaData
 		format.Add(i.name + "[3]", i);
 		format.Add(i.name + "[4]", i);*/
 
-		i = new FormatInfo("exif:Contrast", "");
+		i = new FormatInfo("Contrast", "");
 		i.lookup["0"] = "Normal";
 		i.lookup["1"] = "Soft";
 		i.lookup["2"] = "Hard";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:CustomRendered", "");
+		i = new FormatInfo("CustomRendered", "");
 		i.lookup["0"] = "Normal process";
 		i.lookup["1"] = "Custom process";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ExposureBiasValue", "EV");
+		i = new FormatInfo("ExposureBiasValue", "EV");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ExposureMode", "");
+		i = new FormatInfo("ExposureMode", "");
 		i.lookup["0"] = "Auto exposure";
 		i.lookup["1"] = "Manual exposure";
 		i.lookup["2"] = "Auto bracket";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ExposureProgram", "");
+		i = new FormatInfo("ExposureProgram", "");
 
 		i.lookup["0"] = "not defined";
 		i.lookup["1"] = "Manual";
@@ -174,34 +175,34 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ExposureTime", "seconds");
+		i = new FormatInfo("ExposureTime", "seconds");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:FileSource", "");
+		i = new FormatInfo("FileSource", "");
 		i.lookup["3"] = "DSC";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:FocalLength", "millimeters");
+		i = new FormatInfo("FocalLength", "millimeters");
 
 		format.Add(i.name, i);
 		
-		i = new FormatInfo("exif:FocalPlaneResolutionUnit", "");
+		i = new FormatInfo("FocalPlaneResolutionUnit", "");
 		i.lookup["2"] = "inches";
 		i.lookup["3"] = "centimeters";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:FocalPlaneXResolution", "pixels per unit");
+		i = new FormatInfo("FocalPlaneXResolution", "pixels per unit");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:FocalPlaneYResolution", "pixels per unit");
+		i = new FormatInfo("FocalPlaneYResolution", "pixels per unit");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GainControl", "");
+		i = new FormatInfo("GainControl", "");
 
 		i.lookup["0"] = "None";
 		i.lookup["1"] = "Low gain up";
@@ -211,21 +212,21 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSAltitudeRef", "");
+		i = new FormatInfo("GPSAltitudeRef", "");
 
 		i.lookup["0"] = "Above sea level";
 		i.lookup["1"] = "Below sea level";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSDestBearingRef", "");
+		i = new FormatInfo("GPSDestBearingRef", "");
 
 		i.lookup["T"] = "true direction";
 		i.lookup["M"] = "magnetic direction";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSDestDistanceRef", "");
+		i = new FormatInfo("GPSDestDistanceRef", "");
 
 		i.lookup["K"] = "kilometers per hour";
 		i.lookup["M"] = "miles per hour";
@@ -233,35 +234,35 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSDifferential", "");
+		i = new FormatInfo("GPSDifferential", "");
 
 		i.lookup["0"] = "Without correction";
 		i.lookup["1"] = "Correction applied";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSImgDirectionRef", "");
+		i = new FormatInfo("GPSImgDirectionRef", "");
 
 		i.lookup["T"] = "true direction";
 		i.lookup["M"] = "magnetic direction";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSMeasureMode", "");
+		i = new FormatInfo("GPSMeasureMode", "");
 
 		i.lookup["2"] = "two-dimensional measurement";
 		i.lookup["3"] = "three-dimensional measurement";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSTrackRef", "");
+		i = new FormatInfo("GPSTrackRef", "");
 
 		i.lookup["T"] = "true direction";
 		i.lookup["M"] = "magnetic direction";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSSpeedRef", "");
+		i = new FormatInfo("GPSSpeedRef", "");
 
 		i.lookup["K"] = "kilometers per hour";
 		i.lookup["M"] = "miles per hour";
@@ -269,14 +270,14 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:GPSStatus", "");
+		i = new FormatInfo("GPSStatus", "");
 
 		i.lookup["A"] = "Measurement in progress";
 		i.lookup["V"] = "Measurement is interoperability";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:LightSource", "");
+		i = new FormatInfo("LightSource", "");
 
 		i.lookup["0"] = "Unknown";
 		i.lookup["1"] = "Daylight";
@@ -302,11 +303,11 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:MaxApertureValue", "");
+		i = new FormatInfo("MaxApertureValue", "");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:MeteringMode", "");
+		i = new FormatInfo("MeteringMode", "");
 
 		i.lookup["0"] = "Unknown";
 		i.lookup["1"] = "Average";
@@ -319,15 +320,15 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:PixelXDimension", "pixels");
+		i = new FormatInfo("PixelXDimension", "pixels");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:PixelYDimension", "pixels");
+		i = new FormatInfo("PixelYDimension", "pixels");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:Saturation", "");
+		i = new FormatInfo("Saturation", "");
 
 		i.lookup["0"] = "Normal saturation";
 		i.lookup["1"] = "Low saturation";
@@ -335,7 +336,7 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:SceneCaptureType", "");
+		i = new FormatInfo("SceneCaptureType", "");
 
 		i.lookup["0"] = "Standard";
 		i.lookup["1"] = "Landscape";
@@ -344,13 +345,13 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:SceneType", "");
+		i = new FormatInfo("SceneType", "");
 
 		i.lookup["1"] = "Directly photographed image";
 		
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:SensingMethod", "");
+		i = new FormatInfo("SensingMethod", "");
 
 		i.lookup["1"] = "Not defined";
 		i.lookup["2"] = "One-chip colour area sensor";
@@ -362,7 +363,7 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:Sharpness", "");
+		i = new FormatInfo("Sharpness", "");
 
 		i.lookup["0"] = "Normal";
 		i.lookup["1"] = "Soft";
@@ -370,15 +371,15 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:ShutterSpeedValue", "");
+		i = new FormatInfo("ShutterSpeedValue", "");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:SubjectDistance", "meters");
+		i = new FormatInfo("SubjectDistance", "meters");
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:SubjectDistanceRange", "");
+		i = new FormatInfo("SubjectDistanceRange", "");
 
 		i.lookup["0"] = "Unknown";
 		i.lookup["1"] = "Macro";
@@ -387,14 +388,14 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:WhiteBalance", "");
+		i = new FormatInfo("WhiteBalance", "");
 
 		i.lookup["0"] = "Auto white balance";
 		i.lookup["1"] = "Manual white balance";
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:Flash/exif:Mode", "");
+		i = new FormatInfo("FlashMode", "");
 
 		i.lookup["0"] = "unknown";
 		i.lookup["1"] = "compulsory flash firing";
@@ -403,7 +404,7 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("exif:Flash/exif:Return", "");
+		i = new FormatInfo("FlashReturn", "");
 
 		i.lookup["0"] = "no strobe return detection";
 		i.lookup["2"] = "strobe return light not detected";
@@ -411,7 +412,7 @@ public class FormatMetaData
 		
 		format.Add(i.name, i);
 
-        i = new FormatInfo("exif:Flash/exif:Fired", "");
+        i = new FormatInfo("FlashFired", "");
 
         i.lookup["False"] = "Did not fire";
         i.lookup["True"] = "Fired";
@@ -426,97 +427,77 @@ public class FormatMetaData
        return (result);
     }
 
-    private static Tuple<String, String> addPropIfExists(String path, List<XMPLib.MetaDataProperty> props, List<Tuple<String, String>> propList)
-    {
-        XMPLib.MetaDataProperty result = props.Find(p => p.path == path);
-        Tuple<String, String> prop = null;
-
-        if (result != null)
+    private static void addPropIfExists<T>(String path, T prop, List<Tuple<String, String>> propList)
+    {       
+        if (prop != null)
         {
-            prop = new Tuple<string, string>(formatPropertyName(result.path), formatPropertyValue(result.path, result.value));
+            Tuple<String, String> tuple = 
+                new Tuple<string, string>(formatPropertyName(path), formatPropertyValue(path, prop.ToString()));
 
-            propList.Add(prop);
+            propList.Add(tuple);
         }
-
-        return (prop);
-
+       
     }
 
-    private static Tuple<String, String> addPropIfExists(String path, List<XMPLib.MetaDataProperty> props, List<Tuple<String, String>> propList,
+    private static void addPropIfExists<T>(String path, T prop, List<Tuple<String, String>> propList,
         string overrideName)
     {
-        XMPLib.MetaDataProperty result = props.Find(p => p.path == path);
-        Tuple<String, String> prop = null;
-
-        if (result != null)
+        if (prop != null)
         {
-            prop = new Tuple<string, string>(overrideName, formatPropertyValue(result.path, result.value));
+            Tuple<String, String> tuple =
+                new Tuple<string, string>(overrideName, formatPropertyValue(path, prop.ToString()));
 
-            propList.Add(prop);
+            propList.Add(tuple);
         }
-
-        return (prop);
     }
 
 
-    public static List<Tuple<String, String>> formatProperties(List<XMPLib.MetaDataProperty> props)
+    public static List<Tuple<String, String>> formatProperties(ImageMedia image)
     {
         // http://ptgmedia.pearsoncmg.com/images/art_evening_lrmetadata/elementLinks/fig04.jpg
 
         List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
+           
+        propList.Add(new Tuple<string, string>("Size", image.Width + " x " + image.Height));
+                     
+        addPropIfExists("ExposureTime", image.ExposureTime, propList);
+        addPropIfExists("FNumber", image.FNumber, propList, "ƒ");
+        addPropIfExists("ExposureBiasValue", image.ExposureBiasValue, propList, "Exposure Bias");
+        addPropIfExists("FlashFired", image.FlashFired, propList, "Flash");
 
-        XMPLib.MetaDataProperty length = findProp("tiff:ImageLength", props);
-        XMPLib.MetaDataProperty width = findProp("tiff:ImageWidth", props);
-
-        if (length != null && width != null)
+        if (image.FlashFired != null && image.FlashFired == true)
         {
-            propList.Add(new Tuple<string,string>("Size", width.value + " x " + length.value));
-        }
-             
-        addPropIfExists("exif:ExposureTime", props, propList);
-        addPropIfExists("exif:FNumber", props, propList, "ƒ");
-        addPropIfExists("exif:ExposureBiasValue", props, propList, "Exposure Bias");
-        Tuple<String,String> flash = addPropIfExists("exif:Flash/exif:Fired", props, propList, "Flash");
-
-        if (flash != null && flash.Item2.Equals("Fired"))
-        {
-            addPropIfExists("exif:Flash/exif:Mode", props, propList, "Flash Mode");
-            addPropIfExists("exif:Flash/exif:Return", props, propList, "Flash Return");
+            addPropIfExists("FlashMode", image.FlashMode, propList, "Flash Mode");
+            addPropIfExists("FlashReturn", image.FlashReturn, propList, "Flash Return");
         }
 
-        addPropIfExists("exif:ExposureProgram", props, propList);
-        addPropIfExists("exif:MeteringMode", props, propList);
-
-        XMPLib.MetaDataProperty isoSpeedRatings = findProp("exif:ISOSpeedRatings[1]", props);
+        addPropIfExists("ExposureProgram", image.ExposureProgram, propList);
+        addPropIfExists("MeteringMode", image.MeteringMode, propList);
+/*
+        XMPLib.MetaDataProperty isoSpeedRatings = findProp("ISOSpeedRatings[1]", props);
 
         if (isoSpeedRatings != null)
         {
             propList.Add(new Tuple<string, string>("ISO Speed Rating", "ISO " + isoSpeedRatings.value));
         }
+*/
+        addPropIfExists("FocalLength", image.FocalLength, propList);
+        addPropIfExists("Lens", image.Lens, propList);
+        addPropIfExists("WhiteBalance", image.WhiteBalance, propList);
 
-        addPropIfExists("exif:FocalLength", props, propList);
-        addPropIfExists("aux:Lens", props, propList);
-        addPropIfExists("exif:WhiteBalance", props, propList);
+        addPropIfExists("SensingMethod", image.SensingMethod, propList);
+        addPropIfExists("Sharpness", image.Sharpness, propList);
+        addPropIfExists("Saturation", image.Saturation, propList);
+        addPropIfExists("Contrast", image.Contrast, propList);
+        addPropIfExists("LightSource", image.LightSource, propList);
+        addPropIfExists("SceneCaptureType", image.SceneCaptureType, propList);
+        addPropIfExists("SubjectDistance", image.SubjectDistance, propList);
+        addPropIfExists("SubjectDistanceRange", image.SubjectDistanceRange, propList);
 
-        addPropIfExists("exif:SensingMethod", props, propList);
-        addPropIfExists("exif:Sharpness", props, propList);
-        addPropIfExists("exif:Saturation", props, propList);
-        addPropIfExists("exif:Contrast", props, propList);
-        addPropIfExists("exif:LightSource", props, propList);
-        addPropIfExists("exif:SceneCaptureType", props, propList);
-        addPropIfExists("exif:SubjectDistance", props, propList);
-        addPropIfExists("exif:SubjectDistanceRange", props, propList);
-
-        addPropIfExists("tiff:Make", props, propList);
-        addPropIfExists("tiff:Model", props, propList);
-        addPropIfExists("aux:SerialNumber", props, propList);
-        addPropIfExists("xmp:CreatorTool", props, propList,"Software");
-
-        if (propList.Count > 0)
-        {
-            propList.Insert(0, new Tuple<string,string>("","EXIF"));
-        }
-
+        addPropIfExists("Make", image.CameraMake, propList);
+        addPropIfExists("Model", image.CameraModel, propList);
+        addPropIfExists("SerialNumber", image.SerialNumber, propList);
+  
         return (propList);
     }
 

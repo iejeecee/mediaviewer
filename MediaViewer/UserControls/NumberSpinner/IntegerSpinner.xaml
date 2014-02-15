@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="MediaViewer.UserControls.NumberSpinner.IntegerSpinner"
+﻿<Controls:IntegerSpinnerBase x:Class="MediaViewer.UserControls.NumberSpinner.IntegerSpinner"
+             xmlns:Controls="clr-namespace:MediaViewer.UserControls.NumberSpinner"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -30,4 +31,4 @@
             </Button>
         </Grid>        
     </Grid>
-</UserControl>
+</Controls:IntegerSpinnerBase>

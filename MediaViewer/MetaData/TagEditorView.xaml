@@ -25,12 +25,21 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Margin="0,0,0,10.333">
-        <ListBox Name="tagListBox" HorizontalAlignment="Stretch" Height="111" Margin="0,21,0,0" VerticalAlignment="Top" SelectionMode="Multiple" DisplayMemberPath="Name"/>
-        <Button Content="Add" HorizontalAlignment="Right" Width="50" Margin="0,0,50,0" VerticalAlignment="Top" Click="addButton_Click"
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <TextBox Grid.Row="0" Grid.Column="0" Name="addTagTextbox" HorizontalAlignment="Stretch" TextWrapping="Wrap" PreviewKeyDown="addTagTextBox_PreviewKeyDown" />
+        <Button Grid.Row="0" Grid.Column="1" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
                 ToolTip="Add Tag"/>
-        <Button Content="Remove" HorizontalAlignment="Right" Width="50" Margin="0,0,0,0" VerticalAlignment="Top" Click="removeButton_Click"
+        <Button Grid.Row="0" Grid.Column="2" Content="Remove" HorizontalAlignment="Right" Width="50" Click="removeButton_Click"
                 ToolTip="Remove Selected Tags"/>
-        <TextBox Name="addTagTextbox" HorizontalAlignment="Stretch" Margin="0,0,100,0" TextWrapping="Wrap" VerticalAlignment="Top" PreviewKeyDown="addTagTextBox_PreviewKeyDown" />
+        <ListBox Grid.Row="1" Grid.ColumnSpan="3" Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" SelectionMode="Multiple" DisplayMemberPath="Name"/>               
     </Grid>
 </UserControl>

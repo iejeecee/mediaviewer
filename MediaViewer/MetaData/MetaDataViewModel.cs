@@ -680,24 +680,7 @@ namespace MediaViewer.MetaData
                 }
 
                 getExifProperties(dynamicProperties, media);
-
-                /*dynamicProperties.AddRange(FormatMetaData.formatProperties(metaData.MiscProps));
-
-                if (metaData.CreationDate != DateTime.MinValue)
-                {
-                    dynamicProperties.Add(new Tuple<string, string>("Creation", metaData.CreationDate.ToString("R")));
-                }
-
-                if (metaData.ModifiedDate != DateTime.MinValue)
-                {
-                    dynamicProperties.Add(new Tuple<string, string>("Modified", metaData.ModifiedDate.ToString("R")));
-                }
-
-                if (metaData.MetaDataDate != DateTime.MinValue)
-                {
-                    dynamicProperties.Add(new Tuple<string, string>("Metadata", metaData.MetaDataDate.ToString("R")));
-                }
-                 */
+        
                 
                 SelectedMetaDataPreset = noPresetMetaData;
                 IsEnabled = true;
@@ -746,6 +729,11 @@ namespace MediaViewer.MetaData
             {
                 dynamicProperties.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
             }
+           
+            if (media is ImageMedia)
+            {
+                dynamicProperties.AddRange(FormatMetaData.formatProperties(media as ImageMedia));
+            }
 
             if (dynamicProperties.Count > nrProps)
             {
@@ -768,7 +756,7 @@ namespace MediaViewer.MetaData
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
             p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString()));
 
-            if (video.AudioCodec != null)
+            if (!String.IsNullOrEmpty(video.AudioCodec))
             {
                 p.Add(new Tuple<string, string>("Audio Codec", video.AudioCodec));
                 p.Add(new Tuple<string, string>("Bits Per Sample", video.BitsPerSample.ToString()));

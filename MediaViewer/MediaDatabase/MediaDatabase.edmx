@@ -114,7 +114,7 @@
     <Property Name="IsDescriptionEnabled" Type="bit" Nullable="false" />
     <Property Name="IsAuthorEnabled" Type="bit" Nullable="false" />
     <Property Name="IsCopyrightEnabled" Type="bit" Nullable="false" />
-    <Property Name="CreationDate" Type="datetime" Nullable="false" />
+    <Property Name="CreationDate" Type="datetime" Nullable="true" />
     <Property Name="IsCreationDateEnabled" Type="bit" Nullable="false" />
   </EntityType>
   <EntityType Name="ThumbnailSet">
@@ -133,6 +133,30 @@
     </Key>
     <Property Name="Width" Type="int" Nullable="false" />
     <Property Name="Height" Type="int" Nullable="false" />
+    <Property Name="LightSource" Type="smallint" Nullable="true" />
+    <Property Name="MeteringMode" Type="smallint" Nullable="true" />
+    <Property Name="Saturation" Type="smallint" Nullable="true" />
+    <Property Name="SceneCaptureType" Type="smallint" Nullable="true" />
+    <Property Name="SensingMethod" Type="smallint" Nullable="true" />
+    <Property Name="Sharpness" Type="smallint" Nullable="true" />
+    <Property Name="SubjectDistance" Type="float" Nullable="true" />
+    <Property Name="ShutterSpeedValue" Type="float" Nullable="true" />
+    <Property Name="SubjectDistanceRange" Type="smallint" Nullable="true" />
+    <Property Name="WhiteBalance" Type="smallint" Nullable="true" />
+    <Property Name="FlashFired" Type="bit" Nullable="true" />
+    <Property Name="FlashMode" Type="smallint" Nullable="true" />
+    <Property Name="FlashReturn" Type="smallint" Nullable="true" />
+    <Property Name="CameraMake" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="CameraModel" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Lens" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="SerialNumber" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="ExposureTime" Type="float" Nullable="true" />
+    <Property Name="FNumber" Type="float" Nullable="true" />
+    <Property Name="ExposureBiasValue" Type="float" Nullable="true" />
+    <Property Name="ExposureProgram" Type="smallint" Nullable="true" />
+    <Property Name="FocalLength" Type="float" Nullable="true" />
+    <Property Name="ISOSpeedRating" Type="int" Nullable="true" />
+    <Property Name="Contrast" Type="smallint" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="MediaSet_VideoMedia">
@@ -144,9 +168,9 @@
     <Property Name="BitsPerSample" Type="smallint" Nullable="true" />
     <Property Name="DurationSeconds" Type="int" Nullable="false" />
     <Property Name="FramesPerSecond" Type="float" Nullable="false" />
-    <Property Name="NrChannels" Type="smallint" Nullable="false" />
+    <Property Name="NrChannels" Type="smallint" Nullable="true" />
     <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="SamplesPerSecond" Type="int" Nullable="false" />
+    <Property Name="SamplesPerSecond" Type="int" Nullable="true" />
     <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="false" />
     <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="false" />
     <Property Name="AudioCodec" Type="nvarchar(max)" Nullable="true" />
@@ -427,7 +451,7 @@
           <Property Type="Boolean" Name="IsDescriptionEnabled" Nullable="false" />
           <Property Type="Boolean" Name="IsAuthorEnabled" Nullable="false" />
           <Property Type="Boolean" Name="IsCopyrightEnabled" Nullable="false" />
-          <Property Type="DateTime" Name="CreationDate" Nullable="false" />
+          <Property Type="DateTime" Name="CreationDate" Nullable="true" />
           <Property Type="Boolean" Name="IsCreationDateEnabled" Nullable="false" />
         </EntityType>
         <Association Name="PresetMetadataTag">
@@ -471,6 +495,30 @@
         <EntityType Name="ImageMedia" BaseType="MediaDatabase.Media" >
           <Property Type="Int32" Name="Width" Nullable="false" />
           <Property Type="Int32" Name="Height" Nullable="false" />
+          <Property Type="Int16" Name="LightSource" Nullable="true" />
+          <Property Type="Int16" Name="MeteringMode" Nullable="true" />
+          <Property Type="Int16" Name="Saturation" Nullable="true" />
+          <Property Type="Int16" Name="SceneCaptureType" Nullable="true" />
+          <Property Type="Int16" Name="SensingMethod" Nullable="true" />
+          <Property Type="Int16" Name="Sharpness" Nullable="true" />
+          <Property Type="Double" Name="SubjectDistance" Nullable="true" />
+          <Property Type="Double" Name="ShutterSpeedValue" Nullable="true" />
+          <Property Type="Int16" Name="SubjectDistanceRange" Nullable="true" />
+          <Property Type="Int16" Name="WhiteBalance" Nullable="true" />
+          <Property Type="Boolean" Name="FlashFired" Nullable="true" />
+          <Property Type="Int16" Name="FlashMode" Nullable="true" />
+          <Property Type="Int16" Name="FlashReturn" Nullable="true" />
+          <Property Type="String" Name="CameraMake" Nullable="true" />
+          <Property Type="String" Name="CameraModel" Nullable="true" />
+          <Property Type="String" Name="Lens" Nullable="true" />
+          <Property Type="String" Name="SerialNumber" Nullable="true" />
+          <Property Type="Double" Name="ExposureTime" Nullable="true" />
+          <Property Type="Double" Name="FNumber" Nullable="true" />
+          <Property Type="Double" Name="ExposureBiasValue" Nullable="true" />
+          <Property Type="Int16" Name="ExposureProgram" Nullable="true" />
+          <Property Type="Double" Name="FocalLength" Nullable="true" />
+          <Property Type="Int32" Name="ISOSpeedRating" Nullable="true" />
+          <Property Type="Int16" Name="Contrast" Nullable="true" />
         </EntityType>
         <EntityType Name="VideoMedia" BaseType="MediaDatabase.Media" >
           <Property Type="Int32" Name="Width" Nullable="false" />
@@ -478,9 +526,9 @@
           <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
           <Property Type="Int32" Name="DurationSeconds" Nullable="false" />
           <Property Type="Double" Name="FramesPerSecond" Nullable="false" />
-          <Property Type="Int16" Name="NrChannels" Nullable="false" />
+          <Property Type="Int16" Name="NrChannels" Nullable="true" />
           <Property Type="String" Name="PixelFormat" Nullable="false" />
-          <Property Type="Int32" Name="SamplesPerSecond" Nullable="false" />
+          <Property Type="Int32" Name="SamplesPerSecond" Nullable="true" />
           <Property Type="String" Name="VideoCodec" Nullable="false" />
           <Property Type="String" Name="VideoContainer" Nullable="false" />
           <Property Type="String" Name="AudioCodec" Nullable="true" />
@@ -534,6 +582,30 @@
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Width" ColumnName="Width" />
           <ScalarProperty Name="Height" ColumnName="Height" />
+          <ScalarProperty Name="LightSource" ColumnName="LightSource" />
+          <ScalarProperty Name="MeteringMode" ColumnName="MeteringMode" />
+          <ScalarProperty Name="Saturation" ColumnName="Saturation" />
+          <ScalarProperty Name="SceneCaptureType" ColumnName="SceneCaptureType" />
+          <ScalarProperty Name="SensingMethod" ColumnName="SensingMethod" />
+          <ScalarProperty Name="Sharpness" ColumnName="Sharpness" />
+          <ScalarProperty Name="SubjectDistance" ColumnName="SubjectDistance" />
+          <ScalarProperty Name="ShutterSpeedValue" ColumnName="ShutterSpeedValue" />
+          <ScalarProperty Name="SubjectDistanceRange" ColumnName="SubjectDistanceRange" />
+          <ScalarProperty Name="WhiteBalance" ColumnName="WhiteBalance" />
+          <ScalarProperty Name="FlashFired" ColumnName="FlashFired" />
+          <ScalarProperty Name="FlashMode" ColumnName="FlashMode" />
+          <ScalarProperty Name="FlashReturn" ColumnName="FlashReturn" />
+          <ScalarProperty Name="CameraMake" ColumnName="CameraMake" />
+          <ScalarProperty Name="CameraModel" ColumnName="CameraModel" />
+          <ScalarProperty Name="Lens" ColumnName="Lens" />
+          <ScalarProperty Name="SerialNumber" ColumnName="SerialNumber" />
+          <ScalarProperty Name="ExposureTime" ColumnName="ExposureTime" />
+          <ScalarProperty Name="FNumber" ColumnName="FNumber" />
+          <ScalarProperty Name="ExposureBiasValue" ColumnName="ExposureBiasValue" />
+          <ScalarProperty Name="ExposureProgram" ColumnName="ExposureProgram" />
+          <ScalarProperty Name="FocalLength" ColumnName="FocalLength" />
+          <ScalarProperty Name="ISOSpeedRating" ColumnName="ISOSpeedRating" />
+          <ScalarProperty Name="Contrast" ColumnName="Contrast" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.VideoMedia)">

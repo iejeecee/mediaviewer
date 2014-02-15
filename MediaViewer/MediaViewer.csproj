@@ -172,6 +172,7 @@
     <Compile Include="UserControls\DateTimePicker\DateTimePicker.xaml.cs">
       <DependentUpon>DateTimePicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\DateTimePicker\DateTimePickerBase.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePickerView.xaml.cs">
       <DependentUpon>DateTimePickerView.xaml</DependentUpon>
     </Compile>
@@ -348,9 +349,11 @@
     <Compile Include="UserControls\DateTimePicker\TimePicker.xaml.cs">
       <DependentUpon>TimePicker.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\DateTimePicker\TimePickerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\FloatSpinner.xaml.cs">
       <DependentUpon>FloatSpinner.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\NumberSpinner\FloatSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\IntegerSpinner.xaml.cs">
       <DependentUpon>IntegerSpinner.xaml</DependentUpon>
     </Compile>
@@ -379,6 +382,8 @@
     <Compile Include="Timers\MultiMediaTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />
     <Compile Include="Timers\TimerQueueTimer.cs" />
+    <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
+    <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
     <Compile Include="UserControls\Relation\RelationEnum.cs" />
     <Compile Include="UserControls\Relation\RelationView.xaml.cs">
       <DependentUpon>RelationView.xaml</DependentUpon>

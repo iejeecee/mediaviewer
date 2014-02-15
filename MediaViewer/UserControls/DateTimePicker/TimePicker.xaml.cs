@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.UserControls.NumberSpinner;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -19,109 +20,22 @@ namespace MediaViewer.UserControls.DateTimePicker
     /// <summary>
     /// Interaction logic for TimePicker.xaml
     /// </summary>
-    public partial class TimePicker : UserControl
+    public partial class TimePicker : TimePickerBase
     {
-        static Timers.DefaultTimer timer;
-        const int initialRepeatDelayMS = 800;
-        const int repeatDelayMS = 50;
-
-        static TimePicker()
-        {
-            timer = new Timers.DefaultTimer();
-            timer.Tick += timer_Tick;
-            timer.AutoReset = true;
-        }
-
+    
         int caretIndex;
 
         public TimePicker()
         {
             InitializeComponent();
-                                    
-            var descriptor = DependencyPropertyDescriptor.FromProperty(Button.IsPressedProperty, typeof(Button));
-            descriptor.AddValueChanged(upButton, new EventHandler(button_IsPressedChanged));          
-            descriptor.AddValueChanged(downButton, new EventHandler(button_IsPressedChanged));
+
+            initializeElems(upButton, downButton, valueTextBox);
 
             caretIndex = 7;
+
         }
 
-        private void button_IsPressedChanged(object sender, EventArgs e)
-        {
-            if (downButton.IsPressed == true)
-            {               
-                subtractValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            } 
-            else if(upButton.IsPressed == true)
-            {          
-                addValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            }
-            else
-            {
-                timer.stop();
-            }
-        }
-
-        static void timer_Tick(Object sender, EventArgs e)
-        {
-            TimePicker spinner = (TimePicker)(sender as Timers.DefaultTimer).Tag;
-
-           spinner.Dispatcher.BeginInvoke(new Action(() =>
-           {
-               if (spinner.downButton.IsPressed == true)
-               {
-                   spinner.subtractValue();
-               }
-               else if (spinner.upButton.IsPressed == true)
-               {
-                   spinner.addValue();
-               }
-           }));
-
-           timer.Interval = repeatDelayMS;
-        }
-        
-        public Nullable<long> Value
-        {
-            get { return (Nullable<long>)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Value.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(Nullable<long>), typeof(TimePicker),
-            new FrameworkPropertyMetadata()
-            {
-                DefaultValue = null,
-                BindsTwoWayByDefault = true,
-                PropertyChangedCallback = new PropertyChangedCallback(valueChangedCallback),
-                CoerceValueCallback = new CoerceValueCallback(coerceValueCallback),
-                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged                      
-            });
- 
-        private static object coerceValueCallback(DependencyObject d, object baseValue)
-        {
-          
-            Nullable<long> value = (Nullable<long>)baseValue;
-
-            if (value != null)
-            {
-                if (value.Value < 0)
-                {
-                    return (new Nullable<long>(0));
-                }
-            
-            }
-
-            return (value);
-        }
-
-        private static void valueChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        protected override void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e) 
         {
             TimePicker control = (TimePicker)d;
 
@@ -164,11 +78,11 @@ namespace MediaViewer.UserControls.DateTimePicker
             }
         }
 
-        private void addValue()
+        protected override void addValue()
         {          
             if (Value == null)
             {
-                Value = 0;
+                Value = Min == null ? 0 : Min;
             }
             else
             {
@@ -176,11 +90,11 @@ namespace MediaViewer.UserControls.DateTimePicker
             }          
         }
 
-        private void subtractValue()
+        protected override void subtractValue()
         {           
             if (Value == null)
             {
-                Value = 0;
+                Value = Min == null ? 0 : Min;
             }
             else
             {

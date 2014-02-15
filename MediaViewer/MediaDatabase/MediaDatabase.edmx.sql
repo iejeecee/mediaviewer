@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 01/20/2014 00:44:35
+-- Date Created: 02/15/2014 19:56:08
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -143,7 +143,7 @@ CREATE TABLE [dbo].[PresetMetadataSet] (
     [IsDescriptionEnabled] bit  NOT NULL,
     [IsAuthorEnabled] bit  NOT NULL,
     [IsCopyrightEnabled] bit  NOT NULL,
-    [CreationDate] datetime  NOT NULL,
+    [CreationDate] datetime  NULL,
     [IsCreationDateEnabled] bit  NOT NULL
 );
 GO
@@ -162,6 +162,30 @@ GO
 CREATE TABLE [dbo].[MediaSet_ImageMedia] (
     [Width] int  NOT NULL,
     [Height] int  NOT NULL,
+    [LightSource] smallint  NULL,
+    [MeteringMode] smallint  NULL,
+    [Saturation] smallint  NULL,
+    [SceneCaptureType] smallint  NULL,
+    [SensingMethod] smallint  NULL,
+    [Sharpness] smallint  NULL,
+    [SubjectDistance] float  NULL,
+    [ShutterSpeedValue] float  NULL,
+    [SubjectDistanceRange] smallint  NULL,
+    [WhiteBalance] smallint  NULL,
+    [FlashFired] bit  NULL,
+    [FlashMode] smallint  NULL,
+    [FlashReturn] smallint  NULL,
+    [CameraMake] nvarchar(max)  NULL,
+    [CameraModel] nvarchar(max)  NULL,
+    [Lens] nvarchar(max)  NULL,
+    [SerialNumber] nvarchar(max)  NULL,
+    [ExposureTime] float  NULL,
+    [FNumber] float  NULL,
+    [ExposureBiasValue] float  NULL,
+    [ExposureProgram] smallint  NULL,
+    [FocalLength] float  NULL,
+    [ISOSpeedRating] int  NULL,
+    [Contrast] smallint  NULL,
     [Id] int  NOT NULL
 );
 GO
@@ -173,9 +197,9 @@ CREATE TABLE [dbo].[MediaSet_VideoMedia] (
     [BitsPerSample] smallint  NULL,
     [DurationSeconds] int  NOT NULL,
     [FramesPerSecond] float  NOT NULL,
-    [NrChannels] smallint  NOT NULL,
+    [NrChannels] smallint  NULL,
     [PixelFormat] nvarchar(max)  NOT NULL,
-    [SamplesPerSecond] int  NOT NULL,
+    [SamplesPerSecond] int  NULL,
     [VideoCodec] nvarchar(max)  NOT NULL,
     [VideoContainer] nvarchar(max)  NOT NULL,
     [AudioCodec] nvarchar(max)  NULL,

@@ -55,133 +55,72 @@ namespace MediaViewer.MediaFileModel
         protected virtual void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, Media media)
         {
                      
-            string temp = "";
+            string title = "";
 
-            bool exists = xmpMetaDataReader.getLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", ref temp);
-            if (exists)
-            {
+            xmpMetaDataReader.getLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", ref title);
 
-                media.Title = temp;
+            media.Title = title;
+
+            string description = "";
+
+            xmpMetaDataReader.getLocalizedText(Consts.XMP_NS_DC, "description", "en", "en-US", ref description);
+           
+            media.Description = description;
+
+            string author = "";
+
+            xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "creator", 1, ref author);
+
+            media.Author = author;
+
+            string copyright = "";
+
+            xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "rights", 1, ref copyright);
+          
+            media.Copyright = copyright;
+
+            string software = "";
+
+            xmpMetaDataReader.getProperty(Consts.XMP_NS_XMP, "CreatorTool", ref software);
+                       
+            media.Software = software;
+         
+            Nullable<double> rating = new Nullable<double>();
+
+            xmpMetaDataReader.getProperty_Float(Consts.XMP_NS_XMP, "Rating", ref rating);
+
+            media.Rating = rating;
+
+            Nullable<DateTime> date = new Nullable<DateTime>();
+
+            xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", ref date);
+            if (date != null && date < sqlMinDate)
+            {               
+                media.MetadataDate = null;               
             }
             else
             {
-                media.Title = null;
+                media.MetadataDate = date;
             }
 
-            exists = xmpMetaDataReader.getLocalizedText(Consts.XMP_NS_DC, "description", "en", "en-US", ref temp);
-            if (exists)
-            {
-
-                media.Description = temp;
-            }
-            else
-            {
-                media.Description = null;
-            }
-
-            exists = xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "creator", 1, ref temp);
-            if (exists)
-            {
-
-                media.Author = temp;
-            }
-            else
-            {
-                media.Author = null;
-            }
-
-            exists = xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "rights", 1, ref temp);
-            if (exists)
-            {
-
-                media.Copyright = temp;
-            }
-            else
-            {
-                media.Copyright = null;
-            }
-
-            exists = xmpMetaDataReader.getProperty(Consts.XMP_NS_XMP, "CreatorTool", ref temp);
-            if (exists)
-            {
-
-                media.Software = temp;
-            }
-            else
-            {
-                media.Software = null;
-            }
-
-            exists = xmpMetaDataReader.getProperty(Consts.XMP_NS_XMP, "Rating", ref temp);
-            if (exists)
-            {
-                try
-                {
-                    media.Rating = float.Parse(temp);
-                }
-                catch (Exception e)
-                {
-                    log.Error("Incorrect rating in " + media.Location, e);
-                    media.Rating = null;
-                }
-            }
-            else
-            {
-                media.Rating = null;
-            }
-
-            DateTime propValue = DateTime.MinValue;
-
-            exists = xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "MetadataDate", ref propValue);
-            if (exists)
-            {
-                if (propValue < sqlMinDate)
-                {
-                    media.MetadataDate = null;
-                }
-                else
-                {
-                    media.MetadataDate = propValue;
-                }
-            }
-            else
-            {
-                media.MetadataDate = null;
-            }
-
-            exists = xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "CreateDate", ref propValue);
-            if (exists)
-            {
-                if (propValue < sqlMinDate)
-                {
-                    media.CreationDate = null;
-                }
-                else
-                {
-                    media.CreationDate = propValue;                   
-                }
-            }
-            else
+            xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "CreateDate", ref date);
+            if (date != null && date < sqlMinDate)
             {
                 media.CreationDate = null;
             }
-
-            exists = xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "ModifyDate", ref propValue);
-            if (exists)
+            else
             {
+                media.CreationDate = date;
+            }
 
-                if (propValue < sqlMinDate)
-                {
-                    media.MetadataModifiedDate = null;
-                }
-                else
-                {
-                    media.MetadataModifiedDate = propValue;                    
-                }
+            xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "ModifyDate", ref date);
+            if (date != null && date < sqlMinDate)
+            {
+                media.MetadataModifiedDate = null;
             }
             else
             {
-                media.MetadataModifiedDate = null;
+                media.MetadataModifiedDate = date;
             }
 /*
             if (metaDataReader.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLatitude") && metaDataReader.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLongitude"))
@@ -232,9 +171,9 @@ namespace MediaViewer.MediaFileModel
             {
 
                 string tagName = "";
-                exists = xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "subject", i, ref tagName);
+                xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "subject", i, ref tagName);
 
-                if (exists)
+                if (tagName != null)
                 {
 
                     Tag newTag = new Tag();

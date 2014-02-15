@@ -19,9 +19,9 @@ namespace MediaViewer.MediaDatabase
         public Nullable<short> BitsPerSample { get; set; }
         public int DurationSeconds { get; set; }
         public double FramesPerSecond { get; set; }
-        public short NrChannels { get; set; }
+        public Nullable<short> NrChannels { get; set; }
         public string PixelFormat { get; set; }
-        public int SamplesPerSecond { get; set; }
+        public Nullable<int> SamplesPerSecond { get; set; }
         public string VideoCodec { get; set; }
         public string VideoContainer { get; set; }
         public string AudioCodec { get; set; }

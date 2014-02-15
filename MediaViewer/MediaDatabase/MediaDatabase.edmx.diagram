@@ -17,7 +17,7 @@
         <AssociationConnector Association="MediaDatabase.MediaThumbnail" />
         <EntityTypeShape EntityType="MediaDatabase.ImageMedia" Width="1.5" PointX="5.875" PointY="2" />
         <InheritanceConnector EntityType="MediaDatabase.ImageMedia" />
-        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="5.875" PointY="3.5" />
+        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="4.125" PointY="4.875" />
         <InheritanceConnector EntityType="MediaDatabase.VideoMedia" />
         <EntityTypeShape EntityType="MediaDatabase.UnknownMedia" Width="1.5" PointX="5.875" PointY="0.875" />
         <InheritanceConnector EntityType="MediaDatabase.UnknownMedia" />

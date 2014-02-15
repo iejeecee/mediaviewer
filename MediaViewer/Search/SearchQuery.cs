@@ -4,6 +4,7 @@ using MediaViewer.UserControls.Relation;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,8 +25,8 @@ namespace MediaViewer.Search
         {
             Text = "Search";
             SearchType = MediaType.All;
-            Tags = new List<Tag>();
-                      
+            Tags = new ObservableCollection<Tag>();
+
             VideoWidthStart = null;
             VideoWidthEnd = null;
 
@@ -40,11 +41,16 @@ namespace MediaViewer.Search
 
             CreationStart = null;
             CreationEnd = null;
+
+            IsAuthorSearch = false;
+            IsCopyrightSearch = false;
+            IsDescriptionSearch = false;
+            IsTitleSearch = false;
         }
 
-        List<Tag> tags;
+        ObservableCollection<Tag> tags;
 
-        public List<Tag> Tags
+        public ObservableCollection<Tag> Tags
         {
             get { return tags; }
             set { tags = value; }
@@ -76,7 +82,7 @@ namespace MediaViewer.Search
 
         public void parseQuery()
         {
-            TagDbCommands tagCommands = new TagDbCommands();
+            /*TagDbCommands tagCommands = new TagDbCommands();
 
             tags = new List<Tag>();
 
@@ -94,6 +100,51 @@ namespace MediaViewer.Search
                 {
                     Tags.Add(dbTag);
                 }
+            }*/
+        }
+
+        bool isTitleSearch;
+
+        public bool IsTitleSearch
+        {
+            get { return isTitleSearch; }
+            set
+            {
+                isTitleSearch = value;
+                NotifyPropertyChanged();
+            }
+        }
+        bool isDescriptionSearch;
+
+        public bool IsDescriptionSearch
+        {
+            get { return isDescriptionSearch; }
+            set
+            {
+                isDescriptionSearch = value;
+                NotifyPropertyChanged();
+            }
+        }
+        bool isAuthorSearch;
+
+        public bool IsAuthorSearch
+        {
+            get { return isAuthorSearch; }
+            set
+            {
+                isAuthorSearch = value;
+                NotifyPropertyChanged();
+            }
+        }
+        bool isCopyrightSearch;
+
+        public bool IsCopyrightSearch
+        {
+            get { return isCopyrightSearch; }
+            set
+            {
+                isCopyrightSearch = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -102,8 +153,10 @@ namespace MediaViewer.Search
         public Nullable<int> VideoWidthStart
         {
             get { return videoWidthStart; }
-            set { videoWidthStart = value;
-            NotifyPropertyChanged();
+            set
+            {
+                videoWidthStart = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -112,8 +165,10 @@ namespace MediaViewer.Search
         public Nullable<int> VideoWidthEnd
         {
             get { return videoWidthEnd; }
-            set { videoWidthEnd = value;
-            NotifyPropertyChanged();
+            set
+            {
+                videoWidthEnd = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -134,8 +189,10 @@ namespace MediaViewer.Search
         public Nullable<int> VideoHeightEnd
         {
             get { return videoHeightEnd; }
-            set { videoHeightEnd = value;
-            NotifyPropertyChanged();
+            set
+            {
+                videoHeightEnd = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -144,8 +201,10 @@ namespace MediaViewer.Search
         public Nullable<float> FramesPerSecondStart
         {
             get { return framesPerSecondStart; }
-            set { framesPerSecondStart = value;
-            NotifyPropertyChanged();
+            set
+            {
+                framesPerSecondStart = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -154,8 +213,10 @@ namespace MediaViewer.Search
         public Nullable<float> FramesPerSecondEnd
         {
             get { return framesPerSecondEnd; }
-            set { framesPerSecondEnd = value;
-            NotifyPropertyChanged();
+            set
+            {
+                framesPerSecondEnd = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -164,8 +225,10 @@ namespace MediaViewer.Search
         public Nullable<long> DurationSecondsStart
         {
             get { return durationSecondsStart; }
-            set { durationSecondsStart = value;
-            NotifyPropertyChanged();
+            set
+            {
+                durationSecondsStart = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -174,8 +237,10 @@ namespace MediaViewer.Search
         public Nullable<long> DurationSecondsEnd
         {
             get { return durationSecondsEnd; }
-            set { durationSecondsEnd = value;
-            NotifyPropertyChanged();
+            set
+            {
+                durationSecondsEnd = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -184,8 +249,10 @@ namespace MediaViewer.Search
         public Nullable<DateTime> CreationStart
         {
             get { return creationStart; }
-            set { creationStart = value;
-            NotifyPropertyChanged();
+            set
+            {
+                creationStart = value;
+                NotifyPropertyChanged();
             }
         }
         Nullable<DateTime> creationEnd;
@@ -193,8 +260,10 @@ namespace MediaViewer.Search
         public Nullable<DateTime> CreationEnd
         {
             get { return creationEnd; }
-            set { creationEnd = value;
-            NotifyPropertyChanged();
+            set
+            {
+                creationEnd = value;
+                NotifyPropertyChanged();
             }
         }
     }

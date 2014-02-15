@@ -92,15 +92,10 @@ namespace MediaViewer.Search
         
         private void doSearch(SearchQuery searchQuery)
         {
-            if (String.IsNullOrEmpty(searchQuery.Text) || String.IsNullOrWhiteSpace(searchQuery.Text)) return;
+            if ((String.IsNullOrEmpty(searchQuery.Text) || String.IsNullOrWhiteSpace(searchQuery.Text)) && searchQuery.Tags.Count == 0) return;
        
             CancellationTokenSource tokenSource = new CancellationTokenSource();
-
-            List<Tag> tags = searchQuery.Tags;
-
-            searchQuery.parseQuery();
-
-            //List<MediaFileItem> results = diskTagSearch(tags, RecurseSubDirectories, tokenSource.Token);
+                   
             List<MediaFileItem> results = dbTagSearch(searchQuery);
 
             foreach (MediaFileItem item in results)

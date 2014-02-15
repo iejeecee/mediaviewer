@@ -32,7 +32,7 @@ namespace MediaViewer.MediaDatabase
         public bool IsDescriptionEnabled { get; set; }
         public bool IsAuthorEnabled { get; set; }
         public bool IsCopyrightEnabled { get; set; }
-        public System.DateTime CreationDate { get; set; }
+        public Nullable<System.DateTime> CreationDate { get; set; }
         public bool IsCreationDateEnabled { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }

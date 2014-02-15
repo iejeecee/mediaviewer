@@ -75,9 +75,8 @@
                 <CheckBox Grid.Row="6" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5"
                           IsChecked="{Binding CopyrightEnabled}"/>
                 <Label Grid.Row="7" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>
-                <DateTimePicker:DateTimePickerView Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                  
-                                                   DateFormat="dd-MM-yyyy HH:mm:ss"
-                                                   SelectedDate="{Binding Creation, Mode=TwoWay}"
+                <DateTimePicker:DateTimePicker Grid.Row="7" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                    
+                                                   Value="{Binding Creation, Mode=TwoWay}"
                                                    IsEnabled="{Binding CreationEnabled}"/>
                 <CheckBox Grid.Row="7" Grid.Column="2" VerticalAlignment="Top" HorizontalAlignment="Center" Margin="5,5,5,5" IsChecked="{Binding CreationEnabled}"/>
                 <Label Grid.Row="8" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Margin="5,5,5,5"/>

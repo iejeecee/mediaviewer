@@ -63,7 +63,7 @@ namespace MediaViewer.MetaData
             AuthorEnabled = false;
             Copyright = "";
             CopyrightEnabled = false;
-            Creation = DateTime.MinValue;
+            Creation = null;
             CreationEnabled = false;
             Tags.Clear();
         }
@@ -260,9 +260,9 @@ namespace MediaViewer.MetaData
             }
         }
 
-        DateTime creation;
+        Nullable<DateTime> creation;
 
-        public DateTime Creation
+        public Nullable<DateTime> Creation
         {
             get { return creation; }
             set { creation = value;

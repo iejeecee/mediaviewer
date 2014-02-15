@@ -20,133 +20,16 @@ namespace MediaViewer.UserControls.NumberSpinner
     /// <summary>
     /// Interaction logic for FloatSpinner.xaml
     /// </summary>
-    public partial class FloatSpinner : UserControl
+    public partial class FloatSpinner : FloatSpinnerBase
     {
-        static Timers.DefaultTimer timer;
-        const int initialRepeatDelayMS = 800;
-        const int repeatDelayMS = 50;
-
-        static FloatSpinner()
-        {
-            timer = new Timers.DefaultTimer();
-            timer.Tick += timer_Tick;
-            timer.AutoReset = true;
-        }
-
+      
         public FloatSpinner()
         {
             InitializeComponent();
-                                    
-            var descriptor = DependencyPropertyDescriptor.FromProperty(Button.IsPressedProperty, typeof(Button));
-            descriptor.AddValueChanged(upButton, new EventHandler(button_IsPressedChanged));
-          
-            descriptor.AddValueChanged(downButton, new EventHandler(button_IsPressedChanged));
-           
+
+            initializeElems(upButton, downButton, valueTextBox);         
+                      
         }
-
-        private void button_IsPressedChanged(object sender, EventArgs e)
-        {
-            if (downButton.IsPressed == true)
-            {
-                subtractValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            } 
-            else if(upButton.IsPressed == true)
-            {
-                addValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            }
-            else
-            {
-                timer.stop();
-            }
-        }
-
-        static void timer_Tick(Object sender, EventArgs e)
-        {
-           FloatSpinner spinner = (FloatSpinner)(sender as Timers.DefaultTimer).Tag;
-
-           spinner.Dispatcher.BeginInvoke(new Action(() =>
-           {
-               if (spinner.downButton.IsPressed == true)
-               {
-                   spinner.subtractValue();
-               }
-               else if (spinner.upButton.IsPressed == true)
-               {
-                   spinner.addValue();
-               }
-           }));
-
-           timer.Interval = repeatDelayMS;
-        }
-        
-        public Nullable<float> Value
-        {
-            get { return (Nullable<float>)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Value.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(Nullable<float>), typeof(FloatSpinner),
-            new FrameworkPropertyMetadata()
-            {
-                DefaultValue = null,
-                BindsTwoWayByDefault = true,
-                PropertyChangedCallback = new PropertyChangedCallback(valueChangedCallback),
-                CoerceValueCallback = new CoerceValueCallback(coerceValueCallback),
-                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged                      
-            });
- 
-        private static object coerceValueCallback(DependencyObject d, object baseValue)
-        {
-            float max = (float)d.GetValue(MaxProperty);
-            float min = (float)d.GetValue(MinProperty);
-
-            Nullable<float> value = (Nullable<float>)baseValue;
-
-            if (value != null)
-            {
-                if (value.Value > max)
-                {
-                    return (new Nullable<float>(max));
-                }
-
-                if (value.Value < min)
-                {
-                    return (new Nullable<float>(min));
-                }
-            }
-
-            return (value);
-        }
-
-        private static void valueChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            FloatSpinner control = (FloatSpinner)d;
-
-            Nullable<float> value = (Nullable<float>)e.NewValue;
-
-            control.valueTextBox.Text = value == null ? "" : value.Value.ToString();          
-        }
-
-
-        public float Max
-        {
-            get { return (float)GetValue(MaxProperty); }
-            set { SetValue(MaxProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Max.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MaxProperty =
-            DependencyProperty.Register("Max", typeof(float), typeof(FloatSpinner), new PropertyMetadata(float.MaxValue));
-
-
 
         public float SpinValue
         {
@@ -158,24 +41,12 @@ namespace MediaViewer.UserControls.NumberSpinner
         public static readonly DependencyProperty SpinValueProperty =
             DependencyProperty.Register("SpinValue", typeof(float), typeof(FloatSpinner), new PropertyMetadata(1.0f));
 
-        
 
-
-        public float Min
-        {
-            get { return (float)GetValue(MinProperty); }
-            set { SetValue(MinProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Min.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MinProperty =
-            DependencyProperty.Register("Min", typeof(float), typeof(FloatSpinner), new PropertyMetadata(float.MinValue));
-
-        private void addValue()
+        protected override void addValue() 
         {          
             if (Value == null)
             {
-                Value = Min;
+                Value = Min == null ? 0 : Min;
             }
             else
             {
@@ -183,11 +54,11 @@ namespace MediaViewer.UserControls.NumberSpinner
             }          
         }
 
-        private void subtractValue()
+        protected override void subtractValue()
         {           
             if (Value == null)
             {
-                Value = Min;
+                Value = Min == null ? 0 : Min;
             }
             else
             {

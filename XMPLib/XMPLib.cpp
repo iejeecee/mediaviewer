@@ -217,7 +217,7 @@ void MetaData::putXMP()
 	}
 }
 
-bool MetaData::getProperty(String ^nameSpace, String ^propName, String^ %propValue)
+void MetaData::getProperty(String ^nameSpace, String ^propName, String^ %propValue)
 {
 	std::string temp;
 
@@ -225,9 +225,15 @@ bool MetaData::getProperty(String ^nameSpace, String ^propName, String^ %propVal
 		marshal_as<std::string>(propName), 
 		temp);
 
-	propValue = marshal_as<String ^>(temp);
+	if(result == true) {
 
-	return(result);
+		propValue = marshal_as<String ^>(temp);
+
+	} else {
+
+		propValue = nullptr;
+	}
+	
 }
 
 void MetaData::deleteProperty(String ^nameSpace, String ^propName) {
@@ -236,16 +242,14 @@ void MetaData::deleteProperty(String ^nameSpace, String ^propName) {
 		marshal_as<std::string>(propName));
 }
 
-bool MetaData::getProperty_Date(String ^nameSpace, String ^propName, DateTime %propValue)
+void MetaData::getProperty_Date(String ^nameSpace, String ^propName, Nullable<DateTime> %propValue)
 {
 	XMP_DateTime xmpDate;
 
 	bool result = xmpFile->getProperty_Date(marshal_as<std::string>(nameSpace),
 		marshal_as<std::string>(propName),
 		xmpDate);
-
-	propValue = DateTime::MinValue;
-
+	
 	try {
 
 		if(xmpDate.hasDate && xmpDate.hasTime) {
@@ -260,11 +264,88 @@ bool MetaData::getProperty_Date(String ^nameSpace, String ^propName, DateTime %p
 
 	} catch(Exception ^) {
 
-		propValue = DateTime::MinValue;
+		propValue = Nullable<DateTime>();
+	}
+
+}
+
+void MetaData::getProperty_Bool(String ^nameSpace, String ^propName, Nullable<bool> %propValue)
+{
+	bool xmpValue;
+
+	bool result = xmpFile->getProperty_Bool(marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		xmpValue);
+
+	if(result == true) {
+
+		propValue = Nullable<bool>(xmpValue);
+
+	} else {
+
+		propValue = Nullable<bool>();
+	}
+
+}
+
+void MetaData::getProperty_Float(String ^nameSpace, String ^propName, Nullable<double> %propValue)
+{
+	double xmpValue = 0;
+
+	bool result = xmpFile->getProperty_Float(marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		xmpValue);
+
+	if(result == true) {
+
+		propValue = Nullable<double>(xmpValue);
+
+	} else {
+
+		propValue = Nullable<double>();
 	}
 
 
-	return(result);
+}
+
+void MetaData::getProperty_Int(String ^nameSpace, String ^propName, Nullable<long> %propValue)
+{
+	long xmpValue;
+
+	bool result = xmpFile->getProperty_Int(marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		xmpValue);
+
+	if(result == true) {
+
+		propValue = Nullable<long>(xmpValue);
+
+	} else {
+
+		propValue = Nullable<long>();
+	}
+
+
+}	
+
+void MetaData::getProperty_Int64(String ^nameSpace, String ^propName, Nullable<Int64> %propValue)
+{
+	Int64 xmpValue;
+
+	bool result = xmpFile->getProperty_Int64(marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		xmpValue);
+
+	if(result == true) {
+
+		propValue = Nullable<Int64>(xmpValue);
+
+	} else {
+
+		propValue = Nullable<Int64>();
+	}
+
+
 }
 
 void MetaData::setProperty_Date(String ^nameSpace, String ^propName, DateTime propValue) {
@@ -311,7 +392,7 @@ int MetaData::countArrayItems(String ^nameSpace, String ^arrayName)
 	return(count);
 
 }
-bool MetaData::getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue)
+void MetaData::getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue)
 {
 	std::string temp;
 
@@ -321,9 +402,16 @@ bool MetaData::getArrayItem(String ^nameSpace, String ^arrayName, int item, Stri
 		item, 
 		temp);
 
-	itemValue = marshal_as<String ^>(temp);
+	if(result = true) {
 
-	return(result);
+		itemValue = marshal_as<String ^>(temp);
+
+	} else {
+
+		itemValue = nullptr;
+	}
+
+	
 }
 
 bool MetaData::doesArrayItemExist(String ^nameSpace, String ^arrayName, int item) {
@@ -379,7 +467,7 @@ void MetaData::deleteArrayItem(String ^nameSpace, String ^arrayName, int item)
 
 }
 
-bool MetaData::getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue) 
+void MetaData::getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue) 
 {
 	std::string temp;
 
@@ -390,9 +478,14 @@ bool MetaData::getLocalizedText(String ^nameSpace, String ^textName, String ^gen
 		marshal_as<std::string>(specificLang), 
 		temp);
 
-	itemValue = marshal_as<String ^>(temp);
+	if(result == true) {
 
-	return(result);
+		itemValue = marshal_as<String ^>(temp);
+
+	} else {
+
+		itemValue = nullptr;
+	}
 
 }
 

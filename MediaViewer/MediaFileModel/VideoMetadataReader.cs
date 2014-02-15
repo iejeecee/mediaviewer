@@ -42,10 +42,22 @@ namespace MediaViewer.MediaFileModel
 
                     video.FramesPerSecond = videoPreview.FrameRate;
 
-                    video.AudioCodec = videoPreview.AudioCodecName;
-                    video.SamplesPerSecond = videoPreview.SamplesPerSecond;
-                    video.BitsPerSample = (short)(videoPreview.BytesPerSample * 8);
-                    video.NrChannels = (short)videoPreview.NrChannels;
+                    if (!String.IsNullOrEmpty(videoPreview.AudioCodecName))
+                    {
+                        video.AudioCodec = videoPreview.AudioCodecName;
+                        video.SamplesPerSecond = videoPreview.SamplesPerSecond;
+                        video.BitsPerSample = (short)(videoPreview.BytesPerSample * 8);
+                        video.NrChannels = (short)videoPreview.NrChannels;
+                    }
+                    else
+                    {
+                        video.AudioCodec = null;
+                        video.SamplesPerSecond = null;
+                        video.BitsPerSample = null;
+                        video.NrChannels = null;
+                    }
+
+
                     fsMetaData = videoPreview.MetaData;
 
                 }

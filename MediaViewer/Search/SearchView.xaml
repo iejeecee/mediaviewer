@@ -6,8 +6,9 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Search="clr-namespace:MediaViewer.Search"
              xmlns:ValidationRules="clr-namespace:MediaViewer.ValidationRules"
-             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:Relation="clr-namespace:MediaViewer.UserControls.Relation" x:Class="MediaViewer.Search.SearchView" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:Relation="clr-namespace:MediaViewer.UserControls.Relation" 
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
+             xmlns:MetaData="clr-namespace:MediaViewer.MetaData" x:Class="MediaViewer.Search.SearchView"
              mc:Ignorable="d" 
              d:DesignWidth="300" d:DesignHeight="300">
     <UserControl.Resources>
@@ -49,30 +50,43 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Query" Style="{StaticResource labelStyle}"/>
                 <TextBox Grid.Row="0" Grid.Column="1" x:Name="queryTextBox" HorizontalAlignment="Stretch" Text="{Binding Query.Text}" 
-				ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,35,5" AllowDrop="True"/>
-                <Button Grid.Row="0" Grid.Column="1" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
-				Width="30" Height="20" HorizontalAlignment="Right" Margin="5, 5, 5, 5">
-                    <Image Source="pack://application:,,,/Resources/Icons/searchblack.ico"/>
-                </Button>
+					ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,5,5" AllowDrop="True"/>                       
                 <Label Grid.Row="1" Grid.Column="0"  Content="Media Type" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="1" Grid.Column="1" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" 
-				ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
-                <Label Grid.Row="2" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}"/>
-                <Grid Grid.Row="2" Grid.Column="1">
+					ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
+                <Label Grid.Row="2" Grid.Column="0"  Content="Include" Style="{StaticResource labelStyle}"/>
+                <Border Grid.Row="2" Margin="5,5,5,5" Grid.Column="1" BorderBrush="Black" BorderThickness="1">
+                    <StackPanel>
+                        <CheckBox Grid.Row="0" Margin="5,5,5,5" Content="Title" IsChecked="{Binding Query.IsTitleSearch}"/>
+                        <CheckBox Grid.Row="1" Margin="5,0,5,5" Content="Description" IsChecked="{Binding Query.IsDescriptionSearch}"/>
+                        <CheckBox Grid.Row="2" Margin="5,0,5,5" Content="Author" IsChecked="{Binding Query.IsAuthorSearch}"/>
+                        <CheckBox Grid.Row="3" Margin="5,0,5,5" Content="Copyright" IsChecked="{Binding Query.IsCopyrightSearch}"/>
+                    </StackPanel>
+                </Border>
+                <Label Grid.Row="3" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"/>
+                <MetaData:TagEditorView Grid.Row="3" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                        Tags="{Binding Query.Tags}"/>
+                <Label Grid.Row="4" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}"/>
+                <Grid Grid.Row="4" Grid.Column="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <DateTimePicker:DateTimePicker Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationStart}"/>
+                    <DateTimePicker:DateTimePicker Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>
                     <Label Grid.Column="1"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
-                    <DateTimePicker:DateTimePicker Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationEnd}"/>
+                    <DateTimePicker:DateTimePicker Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationEnd}" Min="{Binding Query.CreationStart}"/>
                 </Grid>
+                <Button Grid.Row="5" Grid.Column="1" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
+					Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5" Content="Search">           
+                </Button>
             </Grid>
-            <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, Converter={StaticResource enumToVisibilityConverter}, ConverterParameter={x:Static Search:MediaType.Video}}">
+            <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Video}, Converter={StaticResource enumToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -92,22 +106,22 @@
                 </Grid.RowDefinitions>
                 <Separator Grid.Row="0" Grid.ColumnSpan="4"/>
                 <Label Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="3" Content="VIDEO OPTIONS" HorizontalAlignment="Left"/>
-                <Label Grid.Row="2" Grid.Column="0"  Content="Width" Style="{StaticResource labelStyle}"/>       
-                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding Query.VideoWidthStart}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="2" Grid.Column="0"  Content="Width" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding Query.VideoWidthStart}" Min="0" Max="{Binding Query.VideoWidthEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="2" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="3" Value="{Binding Query.VideoWidthEnd}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
-                <Label Grid.Row="3" Grid.Column="0"  Content="Height" Style="{StaticResource labelStyle}"/>               
-                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Query.VideoHeightStart}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="3" Value="{Binding Query.VideoWidthEnd}" Min="{Binding Query.VideoWidthStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="3" Grid.Column="0"  Content="Height" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Query.VideoHeightStart}" Min="0" Max="{Binding Query.VideoHeightEnd}"  HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="3" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="3" Value="{Binding Query.VideoHeightEnd}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
-                <Label Grid.Row="4" Grid.Column="0"  Content="Duration" Style="{StaticResource labelStyle}"/>               
-                <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="1" Value="{Binding Query.DurationSecondsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="3" Value="{Binding Query.VideoHeightEnd}" Min="{Binding Query.VideoHeightStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="4" Grid.Column="0"  Content="Duration" Style="{StaticResource labelStyle}"/>
+                <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="1" Value="{Binding Query.DurationSecondsStart}" Min="0" Max="{Binding Query.DurationSecondsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="4" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
-                <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="3" Value="{Binding Query.DurationSecondsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
-                <Label Grid.Row="5" Grid.Column="0"  Content="Frames Per Second" Style="{StaticResource labelStyle}"/>                
-                <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="1" Value="{Binding Query.FramesPerSecondStart}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="3" Value="{Binding Query.DurationSecondsEnd}" Min="{Binding Query.DurationSecondsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="5" Grid.Column="0"  Content="Frames Per Second" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="1" Value="{Binding Query.FramesPerSecondStart}" Min="0" Max="{Binding Query.FramesPerSecondEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="5" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="3" Value="{Binding Query.FramesPerSecondEnd}" Min="0" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="3" Value="{Binding Query.FramesPerSecondEnd}" Min="{Binding Query.FramesPerSecondStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
             </Grid>
             <xctk:DateTimePicker HorizontalAlignment="Left" Margin="-138,28,0,0" Grid.Row="1" VerticalAlignment="Top"/>
         </Grid>

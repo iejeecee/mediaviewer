@@ -19,56 +19,23 @@ namespace MediaViewer.UserControls.DateTimePicker
     /// <summary>
     /// Interaction logic for DateTimePicker.xaml
     /// </summary>
-    public partial class DateTimePicker : UserControl
-    {
-        static Timers.DefaultTimer timer;
-        const int initialRepeatDelayMS = 800;
-        const int repeatDelayMS = 50;
+    public partial class DateTimePicker : DateTimePickerBase
+    {  
         static DateTime minDateTime = new DateTime(1753, 1, 1);
         static String format = "dd-MM-yyyy HH:mm:ss";
-
-        static DateTimePicker()
-        {
-            timer = new Timers.DefaultTimer();
-            timer.Tick += timer_Tick;
-            timer.AutoReset = true;
-        }
 
         int caretIndex;
 
         public DateTimePicker()
         {
             InitializeComponent();
-                              
-            var descriptor = DependencyPropertyDescriptor.FromProperty(Button.IsPressedProperty, typeof(Button));
-            descriptor.AddValueChanged(upButton, new EventHandler(button_IsPressedChanged));          
-            descriptor.AddValueChanged(downButton, new EventHandler(button_IsPressedChanged));
+
+            initializeElems(upButton, downButton, valueTextBox);
 
             caretIndex = 0;
+            //Min = new Nullable<DateTime>(minDateTime);
         }
-
-        private void button_IsPressedChanged(object sender, EventArgs e)
-        {
-            if (downButton.IsPressed == true)
-            {               
-                subtractValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            } 
-            else if(upButton.IsPressed == true)
-            {          
-                addValue();
-                timer.Interval = initialRepeatDelayMS;
-                timer.Tag = this;
-                timer.start();
-            }
-            else
-            {
-                timer.stop();
-            }
-        }
-
+       
         DateTime DefaultDateTime
         {
             get
@@ -78,60 +45,8 @@ namespace MediaViewer.UserControls.DateTimePicker
             }
         }
 
-        static void timer_Tick(Object sender, EventArgs e)
-        {
-            DateTimePicker spinner = (DateTimePicker)(sender as Timers.DefaultTimer).Tag;
-
-           spinner.Dispatcher.BeginInvoke(new Action(() =>
-           {
-               if (spinner.downButton.IsPressed == true)
-               {
-                   spinner.subtractValue();
-               }
-               else if (spinner.upButton.IsPressed == true)
-               {
-                   spinner.addValue();
-               }
-           }));
-
-           timer.Interval = repeatDelayMS;
-        }
-        
-        public Nullable<DateTime> Value
-        {
-            get { return (Nullable<DateTime>)GetValue(ValueProperty); }
-            set { SetValue(ValueProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for Value.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty ValueProperty =
-            DependencyProperty.Register("Value", typeof(Nullable<DateTime>), typeof(DateTimePicker),
-            new FrameworkPropertyMetadata()
-            {
-                DefaultValue = null,
-                BindsTwoWayByDefault = true,
-                PropertyChangedCallback = new PropertyChangedCallback(valueChangedCallback),
-                CoerceValueCallback = new CoerceValueCallback(coerceValueCallback),
-                DefaultUpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged                      
-            });
- 
-        private static object coerceValueCallback(DependencyObject d, object baseValue)
-        {          
-            Nullable<DateTime> value = (Nullable<DateTime>)baseValue;
-
-            if (value != null)
-            {
-                if (value.Value < minDateTime)
-                {
-                    return (new Nullable<DateTime>(minDateTime));
-                }
-            
-            }
-
-            return (value);
-        }
-
-        private static void valueChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+       
+        protected override void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             DateTimePicker control = (DateTimePicker)d;
 
@@ -198,12 +113,11 @@ namespace MediaViewer.UserControls.DateTimePicker
 
         }
 
-
-        private void addValue()
+        protected override void addValue()
         {          
             if (Value == null)
-            {
-                Value = DefaultDateTime;
+            { 
+                Value = Min == null ? DefaultDateTime : Min;
             }
             else
             {
@@ -211,11 +125,11 @@ namespace MediaViewer.UserControls.DateTimePicker
             }          
         }
 
-        private void subtractValue()
+        protected override void subtractValue()
         {           
             if (Value == null)
             {
-                Value = DefaultDateTime;
+                Value = Min == null ? DefaultDateTime : Min;
             }
             else
             {
