@@ -26,7 +26,9 @@ namespace MediaViewer.MetaData
     {
         public TagEditorView()
         {
-            InitializeComponent();           
+         
+            InitializeComponent();
+                      
         }
 
         public ObservableCollection<Tag> Tags
@@ -43,15 +45,27 @@ namespace MediaViewer.MetaData
         {
             TagEditorView control = (TagEditorView)o;
                     
-            control.tagListBox.ItemsSource = (ObservableCollection<Tag>)e.NewValue;
-                     
+            control.tagListBox.ItemsSource = (ObservableCollection<Tag>)e.NewValue;                         
         }
+
+
+        public bool AddLinkedTags
+        {
+            get { return (bool)GetValue(AddLinkedTagsProperty); }
+            set { SetValue(AddLinkedTagsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for AddLinkedTags.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty AddLinkedTagsProperty =
+            DependencyProperty.Register("AddLinkedTags", typeof(bool), typeof(TagEditorView), new PropertyMetadata(true));
+
+        
 
         private void addTag(string tagName)
         {
             if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;
-         
-            addTagTextbox.Text = "";
+
+            addTagAutoCompleteBox.Text = "";
 
             // add linked tags
 
@@ -61,14 +75,16 @@ namespace MediaViewer.MetaData
 
                 if (tag != null)
                 {
-                    foreach (Tag childTag in tag.ChildTags)
+                    if (AddLinkedTags)
                     {
-                        if (!Tags.Contains(childTag))
+                        foreach (Tag childTag in tag.ChildTags)
                         {
-                            Tags.Add(childTag);
+                            if (!Tags.Contains(childTag))
+                            {
+                                Tags.Add(childTag);
+                            }
                         }
                     }
-
                 }
                 else
                 {
@@ -78,14 +94,14 @@ namespace MediaViewer.MetaData
               
                 if (!Tags.Contains(tag))
                 {
-                    Tags.Add(tag);
+                    Utils.Misc.insertIntoSortedCollection<Tag>(Tags, tag);
                 }
             }           
         }
 
         private void addButton_Click(object sender, RoutedEventArgs e)
         {
-            addTag(addTagTextbox.Text);
+            addTag(addTagAutoCompleteBox.Text);
         }
 
         private void removeButton_Click(object sender, RoutedEventArgs e)
@@ -96,13 +112,33 @@ namespace MediaViewer.MetaData
             }  
         }
 
-        private void addTagTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        private void addTagAutoCompleteBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                addTag(addTagTextbox.Text);
+                addTag(addTagAutoCompleteBox.Text);              
             }
 
+        }
+
+        private void clearButton_Click(object sender, RoutedEventArgs e)
+        {
+            Tags.Clear();
+        }
+
+        private void tagButton_Click(object sender, RoutedEventArgs e)
+        {
+           Tag tag = (sender as Button).Tag as Tag;
+
+           Tags.Remove(tag);
+        }
+
+        private void addTagAutoCompleteBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            using (TagDbCommands tc = new TagDbCommands())
+            {               
+                addTagAutoCompleteBox.Items = tc.getAllTags();
+            }
         }
         
     }

@@ -2,6 +2,7 @@
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
 using System.Text;

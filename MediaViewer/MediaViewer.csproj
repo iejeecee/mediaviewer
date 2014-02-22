@@ -169,6 +169,11 @@
       <DependentUpon>ExportView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Import\ExportViewModel.cs" />
+    <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
+      <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxViewModel.cs" />
+    <Compile Include="UserControls\AutoCompleteBox\TernaryTree.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePicker.xaml.cs">
       <DependentUpon>DateTimePicker.xaml</DependentUpon>
     </Compile>
@@ -427,6 +432,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Import\ExportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

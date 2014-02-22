@@ -6,6 +6,7 @@ using MediaViewer.Progress;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -172,6 +173,8 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
+                        
+
                         if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
                         {
                             media.Tags.Clear();
@@ -188,7 +191,9 @@ namespace MediaViewer.MetaData
 
                             foreach (Tag tag in state.AddTags)
                             {
-                                if (!media.Tags.Contains(tag))
+                                // Hashset compares items using their gethashcode function
+                                // which can be different for the same database entities created at different times
+                                if (!media.Tags.Contains(tag, EqualityComparer<Tag>.Default))
                                 {
                                     media.Tags.Add(tag);
                                     addedTag = true;
@@ -197,11 +202,14 @@ namespace MediaViewer.MetaData
 
                             foreach (Tag tag in state.RemoveTags)
                             {
-                                if (media.Tags.Remove(tag) == true)
+                                Tag removeTag = media.Tags.FirstOrDefault((t) => t.Name.Equals(tag.Name));
+
+                                if (removeTag != null)
                                 {
+                                    media.Tags.Remove(removeTag);
                                     removedTag = true;
                                 }
-
+                               
                             }
 
                             if (removedTag || addedTag)
@@ -238,6 +246,24 @@ namespace MediaViewer.MetaData
                         newPath = newPath.TrimEnd('\\');
 
                         MediaFileWatcher.Instance.MediaState.move(item, newPath + "\\" + newFilename + ext, this);
+
+                        if (state.ImportedEnabled == true)
+                        {
+                            if (item.Media.IsImported == false && state.IsImported == true)
+                            {
+                                ItemInfo = "Importing: " + item.Location;
+                                MediaFileWatcher.Instance.MediaState.import(item, TokenSource.Token);
+                                InfoMessages.Add("Imported: " + item.Location);
+
+                            }
+                            else if (item.Media.IsImported == true && state.IsImported == false)
+                            {
+                                ItemInfo = "Exporting: " + item.Location;
+                                MediaFileWatcher.Instance.MediaState.export(item, TokenSource.Token);
+                                InfoMessages.Add("Exported: " + item.Location);
+                            }
+
+                        }
 
                         ItemProgress = 100;
                         TotalProgress++;
@@ -563,6 +589,8 @@ namespace MediaViewer.MetaData
             RatingEnabled = vm.RatingEnabled;
             Title = vm.Title;
             TitleEnabled = vm.TitleEnabled;
+            IsImported = vm.IsImported;
+            ImportedEnabled = vm.ImportedEnabled;
             Tags = new List<Tag>(vm.Tags);
             AddTags = new List<Tag>(vm.AddTags);
             RemoveTags = new List<Tag>(vm.RemoveTags);
@@ -715,6 +743,21 @@ namespace MediaViewer.MetaData
         {
             get { return creationEnabled; }
             set { creationEnabled = value; }
+        }
+
+        bool isImported;
+
+        public bool IsImported
+        {
+            get { return isImported; }
+            set { isImported = value; }
+        }
+        bool importedEnabled;
+
+        public bool ImportedEnabled
+        {
+            get { return importedEnabled; }
+            set { importedEnabled = value; }
         }
     }
 }

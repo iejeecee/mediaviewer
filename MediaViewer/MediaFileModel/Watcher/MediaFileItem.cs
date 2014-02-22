@@ -209,11 +209,12 @@ namespace MediaViewer.MediaFileModel.Watcher
          
             if (Media != null && Media.IsImported)
             {
-                MediaDbCommands mediaCommands = new MediaDbCommands();
-                mediaCommands.deleteMedia(Media);
-                Media = null;
+                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                {
+                    mediaCommands.deleteMedia(Media);
+                }
 
-                isImported = true;
+                Media = null;         
             }
 
             ItemState = MediaFileItemState.DELETED;
@@ -253,8 +254,10 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                 if (Media.IsImported)
                 {
-                    MediaDbCommands mediaCommands = new MediaDbCommands();
-                    Media = mediaCommands.updateMedia(Media);
+                    using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                    {
+                        Media = mediaCommands.updateMedia(Media);
+                    }
                     isImported = true;
                 }
             }
@@ -268,11 +271,11 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 return (false);
             }
-          
-            MediaDbCommands mediaCommands = new MediaDbCommands();
-            Media = mediaCommands.createMedia(Media);
 
-            media.IsImported = true;
+            using (MediaDbCommands mediaCommands = new MediaDbCommands())
+            {
+                Media = mediaCommands.createMedia(Media);
+            }    
 
             return (true);
         }
@@ -284,10 +287,10 @@ namespace MediaViewer.MediaFileModel.Watcher
                 return (false);
             }
 
-            MediaDbCommands mediaCommands = new MediaDbCommands();
-            mediaCommands.deleteMedia(Media);
-
-            media.IsImported = false;
+            using (MediaDbCommands mediaCommands = new MediaDbCommands())
+            {
+                mediaCommands.deleteMedia(Media);
+            }  
 
             return (true);
         }

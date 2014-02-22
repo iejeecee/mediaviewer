@@ -26,7 +26,8 @@ namespace MediaViewer.MediaFileModel
             Progress = progress;
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
-            XMPLib.MetaData.ProgressCallbackDelegate progressCallbackDelegate = new XMPLib.MetaData.ProgressCallbackDelegate(progressCallback);
+            // bug in xmplib, crashes on write when video is mpg and a progresscallback is active
+            XMPLib.MetaData.ProgressCallbackDelegate progressCallbackDelegate = media.MimeType.Equals("video/mpeg") ? null : new XMPLib.MetaData.ProgressCallbackDelegate(progressCallback);
 
             XMPLib.MetaData xmpMetaDataWriter = new XMPLib.MetaData(errorCallbackDelegate, progressCallbackDelegate);
 
@@ -67,7 +68,7 @@ namespace MediaViewer.MediaFileModel
 
         private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
         {
-            log.Error("MetadataWriter: " + filePath + " - " + message);
+            log.Error("MetadataWriter (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
             return (true);
         }
 

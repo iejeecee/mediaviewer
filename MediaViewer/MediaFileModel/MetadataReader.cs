@@ -48,7 +48,7 @@ namespace MediaViewer.MediaFileModel
 
         private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
         {
-            log.Error("MetadataReader: " + filePath + " - " + message);
+            log.Error("MetadataReader (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
             return (true);
         }
       

@@ -99,13 +99,13 @@ namespace MediaViewer.MediaFileModel
 
                 string[] split = rational.Split(splitter);
 
-                int teller = 0;
-                int noemer = 0;
+                Int64 teller = 0;
+                Int64 noemer = 0;
                 double value = 0;
 
                 if (split.Length > 0)
                 {
-                    teller = int.Parse(split[0]);
+                    teller = Int64.Parse(split[0]);
                     value = teller;
                 }
 

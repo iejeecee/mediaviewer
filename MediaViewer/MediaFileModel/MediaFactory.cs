@@ -163,53 +163,56 @@ namespace MediaViewer.MediaFileModel
 
         private static Media readMediaFromDatabase(string location, ReadOptions options, CancellationToken token)
         {
-            MediaDbCommands mediaCommands = new MediaDbCommands();
-          
-            Media media = mediaCommands.findMediaByLocation(location);
+            Media media = null;
 
-            if (media != null)
+            using (MediaDbCommands mediaCommands = new MediaDbCommands())
             {
-                media.IsImported = true;
+                media = mediaCommands.findMediaByLocation(location);
 
-                if (media.Thumbnail != null)
+                if (media != null)
                 {
-                    media.Thumbnail.decodeImage();
-                }
+                    media.IsImported = true;
 
-                if (options.HasFlag(ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ))
-                {
-                    Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
-                        FILE_OPEN_ASYNC_TIMEOUT_MS, token);
-
-                    media.Data = data;
-                }
-
-                // check if media stored in the database is outdated                
-                FileInfo info = new FileInfo(media.Location);
-                info.Refresh();
-
-                if (info.Exists == false)
-                {
-                    media.MetadataReadError = new FileNotFoundException("File not found", media.Location);
-                    return (media);
-                }
-               
-                if ((info.LastWriteTime - media.LastModifiedDate) > TimeSpan.FromSeconds(10))
-                {
-                    // media is outdated so update in database
-                    log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
-                    int id = media.Id;
-                    media = readMediaFromFile(media.Location, options, token);
-
-                    if (media != null)
+                    if (media.Thumbnail != null)
                     {
-                        media.IsImported = true;
-                        media.Id = id;
-                        write(media, WriteOptions.WRITE_TO_DATABASE, null);
+                        media.Thumbnail.decodeImage();
+                    }
+
+                    if (options.HasFlag(ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ))
+                    {
+                        Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
+                            FILE_OPEN_ASYNC_TIMEOUT_MS, token);
+
+                        media.Data = data;
+                    }
+
+                    // check if media stored in the database is outdated                
+                    FileInfo info = new FileInfo(media.Location);
+                    info.Refresh();
+
+                    if (info.Exists == false)
+                    {
+                        media.MetadataReadError = new FileNotFoundException("File not found", media.Location);
+                        return (media);
+                    }
+
+                    if ((info.LastWriteTime - media.LastModifiedDate) > TimeSpan.FromSeconds(10))
+                    {
+                        // media is outdated so update in database
+                        log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
+                        int id = media.Id;
+                        media = readMediaFromFile(media.Location, options, token);
+
+                        if (media != null)
+                        {
+                            media.IsImported = true;
+                            media.Id = id;
+                            write(media, WriteOptions.WRITE_TO_DATABASE, null);
+                        }
+
                     }
 
                 }
-                                
             }
 
             return (media);
@@ -237,8 +240,10 @@ namespace MediaViewer.MediaFileModel
 
             if (media.IsImported && (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DATABASE)))
             {
-                MediaDbCommands mediaCommands = new MediaDbCommands();
-                media = mediaCommands.updateMedia(media);
+                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                {
+                    media = mediaCommands.updateMedia(media);
+                }
             }
             
         }

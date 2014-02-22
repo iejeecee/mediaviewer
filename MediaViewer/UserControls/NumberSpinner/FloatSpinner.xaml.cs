@@ -65,8 +65,21 @@ namespace MediaViewer.UserControls.NumberSpinner
                 Value -= SpinValue;
             }          
         }
-     
-        private void valueTextBox_TextChanged(object sender, TextChangedEventArgs e)
+           
+        private void valueTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            foreach (char c in e.Text)
+            {
+                if (!"-0123456789,".Contains(c))
+                {
+                    e.Handled = true;
+                    SystemSounds.Beep.Play();
+                    break;
+                }
+            }
+        }
+
+        private void valueTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -87,19 +100,7 @@ namespace MediaViewer.UserControls.NumberSpinner
                 Value = null;
                 valueTextBox.Text = "";
             }
-        }
 
-        private void valueTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            foreach (char c in e.Text)
-            {
-                if (!"-0123456789,".Contains(c))
-                {
-                    e.Handled = true;
-                    SystemSounds.Beep.Play();
-                    break;
-                }
-            }
         }
         
     }

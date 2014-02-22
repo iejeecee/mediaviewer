@@ -8,6 +8,7 @@ namespace MediaViewer.MediaDatabase
 {
     partial class Tag : IComparable<Tag>, IEquatable<Tag>
     {
+   
 
         public override string ToString()
         {

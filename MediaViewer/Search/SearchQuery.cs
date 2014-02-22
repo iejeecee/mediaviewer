@@ -41,11 +41,7 @@ namespace MediaViewer.Search
 
             CreationStart = null;
             CreationEnd = null;
-
-            IsAuthorSearch = false;
-            IsCopyrightSearch = false;
-            IsDescriptionSearch = false;
-            IsTitleSearch = false;
+      
         }
 
         ObservableCollection<Tag> tags;
@@ -101,51 +97,6 @@ namespace MediaViewer.Search
                     Tags.Add(dbTag);
                 }
             }*/
-        }
-
-        bool isTitleSearch;
-
-        public bool IsTitleSearch
-        {
-            get { return isTitleSearch; }
-            set
-            {
-                isTitleSearch = value;
-                NotifyPropertyChanged();
-            }
-        }
-        bool isDescriptionSearch;
-
-        public bool IsDescriptionSearch
-        {
-            get { return isDescriptionSearch; }
-            set
-            {
-                isDescriptionSearch = value;
-                NotifyPropertyChanged();
-            }
-        }
-        bool isAuthorSearch;
-
-        public bool IsAuthorSearch
-        {
-            get { return isAuthorSearch; }
-            set
-            {
-                isAuthorSearch = value;
-                NotifyPropertyChanged();
-            }
-        }
-        bool isCopyrightSearch;
-
-        public bool IsCopyrightSearch
-        {
-            get { return isCopyrightSearch; }
-            set
-            {
-                isCopyrightSearch = value;
-                NotifyPropertyChanged();
-            }
         }
 
         Nullable<int> videoWidthStart;
@@ -263,6 +214,54 @@ namespace MediaViewer.Search
             set
             {
                 creationEnd = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Nullable<int> imageWidthStart;
+
+        public Nullable<int> ImageWidthStart
+        {
+            get { return imageWidthStart; }
+            set
+            {
+                imageWidthStart = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Nullable<int> imageWidthEnd;
+
+        public Nullable<int> ImageWidthEnd
+        {
+            get { return imageWidthEnd; }
+            set
+            {
+                imageWidthEnd = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Nullable<int> imageHeightStart;
+
+        public Nullable<int> ImageHeightStart
+        {
+            get { return imageHeightStart; }
+            set
+            {
+                imageHeightStart = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Nullable<int> imageHeightEnd;
+
+        public Nullable<int> ImageHeightEnd
+        {
+            get { return imageHeightEnd; }
+            set
+            {
+                imageHeightEnd = value;
                 NotifyPropertyChanged();
             }
         }

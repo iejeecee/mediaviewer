@@ -54,8 +54,8 @@ namespace MediaViewer.UserControls.NumberSpinner
                 Value -= 1;
             }          
         }
-     
-        private void valueTextBox_TextChanged(object sender, TextChangedEventArgs e)
+
+        private void valueTextBox_LostFocus(object sender, RoutedEventArgs e)
         {
             try
             {
@@ -89,7 +89,9 @@ namespace MediaViewer.UserControls.NumberSpinner
                     break;
                 }
             }
-        }        
+        }
+
+          
         
     }
 }

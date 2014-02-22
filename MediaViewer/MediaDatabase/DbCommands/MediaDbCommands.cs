@@ -35,45 +35,16 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public List<Media> findMediaByQuery(SearchQuery query)
         {
-            IQueryable<Media> result = null;
+            IQueryable<Media> result = textQuery(query);
 
-            if (!String.IsNullOrEmpty(query.Text) && !String.IsNullOrWhiteSpace(query.Text) && (
-                query.IsTitleSearch ||
-                query.IsDescriptionSearch ||
-                query.IsAuthorSearch ||
-                query.IsCopyrightSearch))
-            {
-                result = Db.MediaSet.Include("Tags").Where(m => (query.IsTitleSearch && !String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
-                    (query.IsDescriptionSearch && !String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
-                    (query.IsAuthorSearch && !String.IsNullOrEmpty(m.Author) && m.Author.Contains(query.Text)) ||
-                    (query.IsCopyrightSearch && !String.IsNullOrEmpty(m.Copyright) && m.Copyright.Contains(query.Text)));
-            }
-           
-            if (query.Tags.Count > 0)
-            {
-                List<int> tagIds = new List<int>();
-                foreach (Tag tag in query.Tags)
-                {
-                    tagIds.Add(tag.Id);
-                }
-
-                if (result == null)
-                {
-                    result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
-                }
-                else
-                {
-                    result = result.Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
-                }
-
-            }
+            result = tagQuery(result, query);
 
             if (result == null)
             {
                 return (new List<Media>());
             }
 
-            // duration
+            // creation
 
             if (query.CreationStart != null && query.CreationEnd == null)
             {
@@ -89,17 +60,140 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
 
             if (query.SearchType == MediaType.Video)
-            {
-                result = result.Where(m => m.MimeType.StartsWith("video"));
-
+            {               
                 result = videoQueryFilter(result, query);
             }
             else if (query.SearchType == MediaType.Images)
-            {
-                result = result.Where(m => m.MimeType.StartsWith("image"));
+            {                
+                result = imageQueryFilter(result, query);
             }
            
             return(result.ToList());
+        }
+
+        IQueryable<Media> textQuery(SearchQuery query)
+        {
+            IQueryable<Media> result = null;
+
+            if (String.IsNullOrEmpty(query.Text) || String.IsNullOrWhiteSpace(query.Text))
+            {
+                return (result);
+            }
+           
+            if (query.SearchType == MediaType.All)
+            {
+
+                result = Db.MediaSet.Include("Tags").Where(m =>
+                       (m.Location.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Author) && m.Author.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Copyright) && m.Copyright.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Software) && m.Software.Contains(query.Text))
+                       );
+            }
+            else if (query.SearchType == MediaType.Images)
+            {
+                result = Db.MediaSet.Include("Tags").OfType<ImageMedia>().Where(m =>
+                       (m.Location.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Author) && m.Author.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Copyright) && m.Copyright.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Software) && m.Software.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.CameraMake) && m.CameraMake.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.CameraModel) && m.CameraModel.Contains(query.Text)) ||
+                       (!String.IsNullOrEmpty(m.Lens) && m.Lens.Contains(query.Text))
+                       );
+            }
+            else if (query.SearchType == MediaType.Video)
+            {              
+                result = Db.MediaSet.Include("Tags").OfType<VideoMedia>().Where(m =>
+                        (m.Location.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.Author) && m.Author.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.Copyright) && m.Copyright.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.Software) && m.Software.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.AudioCodec) && m.AudioCodec.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.VideoCodec) && m.VideoCodec.Contains(query.Text)) ||
+                        (!String.IsNullOrEmpty(m.VideoContainer) && m.VideoContainer.Contains(query.Text))
+                        );
+               
+            }
+
+            return (result);
+        }
+
+        IQueryable<Media> tagQuery(IQueryable<Media> result, SearchQuery query)
+        {
+            if (query.Tags.Count == 0)
+            {
+                return(result);
+            }
+            List<int> tagIds = new List<int>();
+            foreach (Tag tag in query.Tags)
+            {
+                tagIds.Add(tag.Id);
+            }
+
+            if (result == null)
+            {
+                if (query.SearchType == MediaType.All)
+                {
+                    result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                }
+                else if (query.SearchType == MediaType.Video)
+                {
+                    result = Db.MediaSet.Include("Tags").OfType<VideoMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                }
+                else if (query.SearchType == MediaType.Images)
+                {
+                    result = Db.MediaSet.Include("Tags").OfType<ImageMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                }
+            }
+            else
+            {
+                result = result.Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+            }
+                          
+            return (result);
+        }
+
+
+        IQueryable<Media> imageQueryFilter(IQueryable<Media> result, SearchQuery query)
+        {
+            // width
+
+            if (query.ImageWidthStart != null && query.ImageWidthEnd == null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => m.Width >= query.ImageWidthStart.Value);
+            }
+            else if (query.ImageWidthStart == null && query.ImageWidthEnd != null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => m.Width <= query.ImageWidthEnd.Value);
+            }
+            else if (query.ImageWidthStart != null && query.ImageWidthEnd != null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => (m.Width >= query.ImageWidthStart.Value) && (m.Width <= query.ImageWidthEnd.Value));
+            }
+
+            // height
+
+            if (query.ImageHeightStart != null && query.ImageHeightEnd == null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => m.Height >= query.ImageHeightStart.Value);
+            }
+            else if (query.ImageHeightStart == null && query.ImageHeightEnd != null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => m.Height <= query.ImageHeightEnd.Value);
+            }
+            else if (query.ImageHeightStart != null && query.ImageHeightEnd != null)
+            {
+                result = result.OfType<ImageMedia>().Where(m => (m.Height >= query.ImageHeightStart.Value) && (m.Height <= query.ImageHeightEnd.Value));
+            }           
+
+            return (result);
         }
 
         IQueryable<Media> videoQueryFilter(IQueryable<Media> result, SearchQuery query)
@@ -212,7 +306,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else
             {
-
+                Db.ThumbnailSet.Add(media.Thumbnail);
                 newMedia.Thumbnail = media.Thumbnail;
             }
 
@@ -280,6 +374,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     Db.ThumbnailSet.Remove(updateMedia.Thumbnail);
                 }
 
+                Db.ThumbnailSet.Add(media.Thumbnail);
                 updateMedia.Thumbnail = media.Thumbnail;
             }
 
@@ -323,11 +418,17 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if(deleteMedia.Thumbnail != null) {
                 Db.ThumbnailSet.Remove(deleteMedia.Thumbnail);
+                deleteMedia.Thumbnail = null;
             }
 
             Db.MediaSet.Remove(deleteMedia);
             Db.SaveChanges();
 
+            media.Id = 0;
+            if (media.Thumbnail != null)
+            {
+                media.Thumbnail.Id = 0;
+            }
             media.IsImported = false;
         }
     }

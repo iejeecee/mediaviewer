@@ -433,7 +433,7 @@ public class FormatMetaData
         {
             Tuple<String, String> tuple = 
                 new Tuple<string, string>(formatPropertyName(path), formatPropertyValue(path, prop.ToString()));
-
+            
             propList.Add(tuple);
         }
        
@@ -445,7 +445,8 @@ public class FormatMetaData
         if (prop != null)
         {
             Tuple<String, String> tuple =
-                new Tuple<string, string>(overrideName, formatPropertyValue(path, prop.ToString()));
+                 new Tuple<string, string>(overrideName, formatPropertyValue(path, prop.ToString()));
+          
 
             propList.Add(tuple);
         }
@@ -536,7 +537,7 @@ public class FormatMetaData
     {
 
 		if(String.IsNullOrEmpty(name) || String.IsNullOrEmpty(value)) return("");
-
+/*
 		int pos = value.IndexOf("/");
 
 		if(pos != -1) {
@@ -555,7 +556,7 @@ public class FormatMetaData
                 log.Warn("Error converting property value to number: " + value, e);
 			}
 		}
-
+*/
 		String result = "";
 
 		FormatInfo info;

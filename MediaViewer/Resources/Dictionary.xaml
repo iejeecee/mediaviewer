@@ -27,8 +27,7 @@
 
     <VideoPanel:TimeConverter x:Key="timeConverter"/>
 
-    <LinearGradientBrush x:Key="flat3DBorderBrush"
-                         StartPoint="0.499,0" EndPoint="0.501,1">
+    <LinearGradientBrush x:Key="flat3DBorderBrush" StartPoint="0.499,0" EndPoint="0.501,1">
         <GradientStop Color="#FFF" Offset="0" />
         <GradientStop Color="#DDD" Offset="0.01" />
         <GradientStop Color="#AAA" Offset="0.99" />

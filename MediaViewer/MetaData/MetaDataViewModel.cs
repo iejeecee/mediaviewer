@@ -34,6 +34,7 @@ namespace MediaViewer.MetaData
             Author = "";
             Copyright = "";
             Creation = null;
+            IsImported = false;
             dynamicProperties = new List<Tuple<string, string>>();
 
             SelectedMetaDataPreset = noPresetMetaData;
@@ -528,6 +529,26 @@ namespace MediaViewer.MetaData
             }
         }
 
+        bool isImported;
+
+        public bool IsImported
+        {
+            get { return isImported; }
+            set { isImported = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        bool importedEnabled;
+
+        public bool ImportedEnabled
+        {
+            get { return importedEnabled; }
+            set { importedEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         Object tagsLock;
         ObservableCollection<Tag> tags;
 
@@ -594,6 +615,7 @@ namespace MediaViewer.MetaData
                     AuthorEnabled = false;
                     CopyrightEnabled = false;
                     CreationEnabled = false;
+                    ImportedEnabled = false;
 
                 }
             }
@@ -618,6 +640,7 @@ namespace MediaViewer.MetaData
                     AuthorEnabled = false;
                     CopyrightEnabled = false;
                     CreationEnabled = false;
+                    ImportedEnabled = false;
                 }
                 else if(IsEnabled == true)
                 {               
@@ -627,6 +650,7 @@ namespace MediaViewer.MetaData
                     AuthorEnabled = true;
                     CopyrightEnabled = true;
                     CreationEnabled = true;
+                    ImportedEnabled = true;
                 }
 
             }
@@ -668,6 +692,7 @@ namespace MediaViewer.MetaData
                 Author = media.Author;
                 Copyright = media.Copyright;
                 Creation = media.CreationDate;
+                IsImported = media.IsImported;
 
                 lock (tagsLock)
                 {

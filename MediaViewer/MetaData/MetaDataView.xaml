@@ -65,6 +65,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="4" Grid.Column="0" Content="Preset" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="4" x:Name="presetComboBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
@@ -153,29 +154,36 @@
                 <CheckBox Grid.Row="11" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CreationEnabled, Source={StaticResource viewModel}}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"/>
-                <Label Grid.Row="12" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
+                <Label Grid.Row="12" Grid.Column="0" Content="Imported" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="12" Grid.Column="1" Margin="5,5,5,5"
+					IsChecked="{Binding IsImported, Source={StaticResource viewModel}}"
+                    IsEnabled="{Binding ImportedEnabled, Source={StaticResource viewModel}}"/>
+                <CheckBox Grid.Row="12" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+					IsChecked="{Binding ImportedEnabled, Source={StaticResource viewModel}}"
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"/>
+                <Label Grid.Row="13" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
-                <MetaData:TagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                <MetaData:TagEditorView Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags, Source={StaticResource viewModel}}"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
 					Margin="5, 5, 5, 5"/>
-                <Label Grid.Row="13" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
-					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-                       />
-                <MetaData:TagEditorView Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
-					Tags="{Binding AddTags, Source={StaticResource viewModel}}"                                       
-					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-					Margin="5, 5, 5, 5"/>
-                <Label Grid.Row="14" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+                <Label Grid.Row="14" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
                 <MetaData:TagEditorView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
-					Tags="{Binding RemoveTags, Source={StaticResource viewModel}}"                                      
+					Tags="{Binding AddTags, Source={StaticResource viewModel}}"                                       
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
 					Margin="5, 5, 5, 5"/>
-                <Button Grid.Row="15" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
+                <Label Grid.Row="15" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
+                       />
+                <MetaData:TagEditorView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+					Tags="{Binding RemoveTags, Source={StaticResource viewModel}}"                                      
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
+					Margin="5, 5, 5, 5"/>               
+                <Button Grid.Row="16" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Command="{Binding WriteMetaDataCommand, Source={StaticResource viewModel}}"
 					ToolTip="Save Metadata To Disk"/>
