@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.AutoCompleteBox
 {
-    class AutoCompleteBoxViewModel : ObservableObject
+    class AutoCompleteBoxViewModel : ObservableObject, IAutoCompleteBoxViewModel
     {
         TernaryTree tree;
 
@@ -110,7 +110,7 @@ namespace MediaViewer.UserControls.AutoCompleteBox
             }
 
             List<Object> matches = tree.AutoComplete(Text);
-      
+          
             Suggestions.ReplaceRange(matches.Take(Math.Min(MaxSuggestions, matches.Count)));
                                       
         }

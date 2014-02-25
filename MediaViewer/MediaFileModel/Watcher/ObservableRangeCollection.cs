@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    class ObservableRangeCollection<T> : ObservableCollection<T>
+    public class ObservableRangeCollection<T> : ObservableCollection<T>
     {
         public void AddRange(IEnumerable<T> collection)
         {

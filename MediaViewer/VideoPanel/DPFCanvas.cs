@@ -163,7 +163,7 @@ namespace MediaViewer.VideoPanel
             this.RenderTimer.Start();
         }
 
-        private void StopRendering()
+        public void StopRendering()
         {
             if (!this.RenderTimer.IsRunning)
                 return;

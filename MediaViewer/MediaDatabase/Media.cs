@@ -35,6 +35,7 @@ namespace MediaViewer.MediaDatabase
         public long SizeBytes { get; set; }
         public string Software { get; set; }
         public bool SupportsXMPMetadata { get; set; }
+        public byte[] TimeStamp { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
         public virtual Thumbnail Thumbnail { get; set; }

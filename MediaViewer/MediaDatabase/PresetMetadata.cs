@@ -34,6 +34,7 @@ namespace MediaViewer.MediaDatabase
         public bool IsCopyrightEnabled { get; set; }
         public Nullable<System.DateTime> CreationDate { get; set; }
         public bool IsCreationDateEnabled { get; set; }
+        public byte[] TimeStamp { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
     }

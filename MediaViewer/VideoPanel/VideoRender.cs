@@ -95,11 +95,14 @@ namespace MediaViewer.VideoPanel
             //videoPlayerViewModel = new VideoPlayerViewModel(displayVideoFrame, VideoLib.VideoPlayer.DecodedVideoFormat.BGRA);
             videoPlayerViewModel = new VideoPlayerViewModel(displayVideoFrame, VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
             videoPlayerViewModel.VideoOpened += new EventHandler(videoPanelViewModel_VideoOpened);
+            videoPlayerViewModel.VideoClosed += new EventHandler(videoPanelViewModel_VideoClosed);
 
             yuvTexture = new Texture2D[3] { null, null, null };
             textureView = new ShaderResourceView[3] { null, null, null };
             nrTextures = 0;
         }
+
+      
 
         Texture2D createTextureFromFile(string filename)
         {
@@ -310,6 +313,12 @@ namespace MediaViewer.VideoPanel
             DPFCanvas canvas = (DPFCanvas)Host;
             canvas.StartRendering();
              
+        }
+
+        private void videoPanelViewModel_VideoClosed(object sender, EventArgs e)
+        {
+            DPFCanvas canvas = (DPFCanvas)Host;
+            canvas.StopRendering();
         }
 
         Viewport setupViewport(int videoWidth, int videoHeight)

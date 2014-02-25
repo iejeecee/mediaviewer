@@ -211,7 +211,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 using (MediaDbCommands mediaCommands = new MediaDbCommands())
                 {
-                    mediaCommands.deleteMedia(Media);
+                    mediaCommands.delete(Media);
                 }
 
                 Media = null;         
@@ -256,7 +256,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 {
                     using (MediaDbCommands mediaCommands = new MediaDbCommands())
                     {
-                        Media = mediaCommands.updateMedia(Media);
+                        Media = mediaCommands.update(Media);
                     }
                     isImported = true;
                 }
@@ -274,7 +274,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             using (MediaDbCommands mediaCommands = new MediaDbCommands())
             {
-                Media = mediaCommands.createMedia(Media);
+                Media = mediaCommands.create(Media);
             }    
 
             return (true);
@@ -289,7 +289,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             using (MediaDbCommands mediaCommands = new MediaDbCommands())
             {
-                mediaCommands.deleteMedia(Media);
+                mediaCommands.delete(Media);
             }  
 
             return (true);

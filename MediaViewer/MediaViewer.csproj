@@ -64,11 +64,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="log4net">
       <HintPath>C:\game\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
@@ -100,6 +100,7 @@
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
@@ -169,10 +170,12 @@
       <DependentUpon>ExportView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Import\ExportViewModel.cs" />
+    <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxViewModel.cs" />
+    <Compile Include="UserControls\AutoCompleteBox\IAutoCompleteBoxViewModel.cs" />
     <Compile Include="UserControls\AutoCompleteBox\TernaryTree.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePicker.xaml.cs">
       <DependentUpon>DateTimePicker.xaml</DependentUpon>

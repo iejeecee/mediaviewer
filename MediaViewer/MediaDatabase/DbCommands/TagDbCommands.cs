@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
 {
-    class TagDbCommands : DbCommands
+    class TagDbCommands : DbCommands<Tag>
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -16,48 +16,29 @@ namespace MediaViewer.MediaDatabase.DbCommands
         public TagDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
         {
-            
+
         }
-
-        public List<TagCategory> getAllCategories()
-        {
-            List<TagCategory> categories = new List<TagCategory>();
-
-            foreach (TagCategory category in Db.TagCategorySet.OrderBy(x => x.Name))
-            {
-                categories.Add(category);
-            }
-
-            return (categories);
-           
-        }
-
-        public TagCategory getCategoryById(int id)
-        {
-            TagCategory category = Db.TagCategorySet.FirstOrDefault<TagCategory>(c => c.Id == id);
-            return (category);
-        }
-
+         
         public List<Tag> getAllTags()
         {
             List<Tag> tags = new List<Tag>();
-         
+
             foreach (Tag tag in Db.TagSet.OrderBy(x => x.Name))
             {
                 tags.Add(tag);
             }
-          
+
             return (tags);
         }
 
         public Tag getTagByName(String name)
-        {               
+        {
             List<Tag> result = (from b in Db.TagSet.Include("ChildTags").Include("TagCategory")
-                        where b.Name == name
-                        select b).ToList();
+                                where b.Name == name
+                                select b).ToList();
 
             if (result.Count == 0) return (null);
-            else return (result[0]);                           
+            else return (result[0]);
         }
 
         public Tag getTagById(int id)
@@ -69,28 +50,9 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (result.Count == 0) return (null);
             else return (result[0]);
         }
-
-        public List<Tag> getTagsByCategory(TagCategory category)
+     
+        protected override Tag createFunc(Tag tag)
         {
-            TagCategory c = getCategoryById(category.Id);
-
-            if (c == null)
-            {
-                throw new DbEntityValidationException("Category does not exist: " + category.Id);
-            }
-
-            List<Tag> result = new List<Tag>();
-            
-            foreach (Tag tag in c.Tag)
-            {
-                result.Add(tag);
-            }
-
-            return (result);
-        }
-
-        public Tag createTag(Tag tag)
-        {           
             if (String.IsNullOrEmpty(tag.Name) || String.IsNullOrWhiteSpace(tag.Name))
             {
                 throw new DbEntityValidationException("Error creating tag, name cannot be null, empty or whitespace");
@@ -106,11 +68,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             Db.Entry<Tag>(newTag).CurrentValues.SetValues(tag);
             newTag.Id = 0;
-           
+
+            TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
+
             // Attach tagcategory to the context, otherwise a duplicate tagcategory will be created
             if (tag.TagCategory != null)
             {
-                newTag.TagCategory = getCategoryById(tag.TagCategory.Id);
+                newTag.TagCategory = tagCategoryCommands.getCategoryById(tag.TagCategory.Id);
             }
 
             newTag.ChildTags.Clear();
@@ -125,15 +89,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     continue;
                 }
 
-                newTag.ChildTags.Add(child);              
+                newTag.ChildTags.Add(child);
             }
-      
+         
             Db.SaveChanges();
-                                  
+
             return (newTag);
         }
 
-        public void deleteTag(Tag tag)
+        protected override void deleteFunc(Tag tag)
         {
 
             Tag deleteTag = getTagById(tag.Id);
@@ -143,21 +107,21 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Cannot delete non-existing tag: " + tag.Id.ToString());
             }
 
-        
+
             for (int i = deleteTag.ParentTags.Count - 1; i >= 0; i--)
             {
                 Db.Entry<Tag>(deleteTag.ParentTags.ElementAt(i)).State = EntityState.Modified;
-                deleteTag.ParentTags.ElementAt(i).ChildTags.Remove(tag);                
-                
+                deleteTag.ParentTags.ElementAt(i).ChildTags.Remove(tag);
+
             }
 
             Db.TagSet.Remove(deleteTag);
             Db.SaveChanges();
         }
 
-       
 
-        public Tag updateTag(Tag updateTag)
+
+        protected override Tag updateFunc(Tag updateTag)
         {
             if (String.IsNullOrEmpty(updateTag.Name) || String.IsNullOrWhiteSpace(updateTag.Name))
             {
@@ -172,19 +136,21 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
 
             Db.Entry<Tag>(tag).CurrentValues.SetValues(updateTag);
-   
+
+            TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
+
             if (updateTag.TagCategory != null)
             {
-                tag.TagCategory = getCategoryById(updateTag.TagCategory.Id);
+                tag.TagCategory = tagCategoryCommands.getCategoryById(updateTag.TagCategory.Id);
             }
             else
             {
                 tag.TagCategory = null;
             }
 
-           
+
             tag.ChildTags.Clear();
-                     
+
             foreach (Tag updateChild in updateTag.ChildTags)
             {
                 Tag child = getTagById(updateChild.Id);
@@ -194,64 +160,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     log.Warn("Cannot add non-existent child tag: " + updateChild.Id.ToString() + " to parent: " + tag.Id.ToString());
                     continue;
                 }
-              
-                tag.ChildTags.Add(child); 
+
+                tag.ChildTags.Add(child);
             }
-                       
+     
+
             Db.SaveChanges();
 
             return (tag);
         }
 
-        public TagCategory createTagCategory(TagCategory tagCategory)
-        {
-            if (String.IsNullOrEmpty(tagCategory.Name) || String.IsNullOrWhiteSpace(tagCategory.Name))
-            {
-                return (null);
-            }
-
-            TagCategory result = null;
-
-            if (Db.TagCategorySet.Any(t => t.Name == tagCategory.Name))
-            {
-                throw new DbEntityValidationException("Cannot create duplicate category: " + tagCategory.Name);
-            }
-
-            TagCategory newTagCategory = new TagCategory();
-            Db.TagCategorySet.Add(newTagCategory);
-
-            Db.Entry<TagCategory>(newTagCategory).CurrentValues.SetValues(tagCategory);
-            newTagCategory.Id = 0;
-
-            result = Db.TagCategorySet.Add(newTagCategory);
-            Db.SaveChanges();
-
-            return (result);
-        }
-
-        public void deleteTagCategory(TagCategory tagCategory)
-        {
-            if (String.IsNullOrEmpty(tagCategory.Name) || String.IsNullOrWhiteSpace(tagCategory.Name))
-            {
-                return;
-            }
-
-            TagCategory deleteCategory = getCategoryById(tagCategory.Id);
-            if (deleteCategory == null)
-            {
-                throw new DbEntityValidationException("Cannot delete non-existent category: " + tagCategory.Id.ToString());
-            }
-
-            foreach (Tag tag in Db.TagSet.Where(t => t.TagCategoryId == deleteCategory.Id))
-            {
-                tag.TagCategoryId = null;
-                tag.TagCategory = null;
-            }
-
-            Db.TagCategorySet.Remove(deleteCategory);
-
-            Db.SaveChanges();
-        }
-       
     }
 }

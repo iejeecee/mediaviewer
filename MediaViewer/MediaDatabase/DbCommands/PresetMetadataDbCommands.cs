@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
 {
-    class PresetMetadataDbCommands : DbCommands
+    class PresetMetadataDbCommands : DbCommands<PresetMetadata>
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -34,7 +34,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
-        public PresetMetadata createPresetMetadata(PresetMetadata preset)
+        protected override PresetMetadata createFunc(PresetMetadata preset)
         {
             if (String.IsNullOrEmpty(preset.Name) || String.IsNullOrWhiteSpace(preset.Name))
             {
@@ -65,7 +65,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (newPreset);
         }
 
-        public PresetMetadata updatePresetMetadata(PresetMetadata updatePreset)
+        protected override PresetMetadata updateFunc(PresetMetadata updatePreset)
         {
             if (String.IsNullOrEmpty(updatePreset.Name) || String.IsNullOrWhiteSpace(updatePreset.Name))
             {
@@ -102,7 +102,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (preset);
         }
 
-        public void deletePresetMetadata(PresetMetadata preset)
+        protected override void deleteFunc(PresetMetadata preset)
         {
             PresetMetadata deletePreset = getPresetMetadataById(preset.Id);
 

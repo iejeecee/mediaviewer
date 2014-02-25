@@ -46,9 +46,9 @@
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>        
         <AutoCompleteBox:AutoCompleteBoxView  x:Name="addTagAutoCompleteBox" Grid.Row="0" Grid.Column="0" GotFocus="addTagAutoCompleteBox_GotFocus" PreviewKeyDown="addTagAutoCompleteBox_PreviewKeyDown"/>
-        <Button Grid.Row="0" Grid.Column="1" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
+        <Button Grid.Row="0" Grid.Column="1" Name="addButton" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
 			ToolTip="Add Tag"/>
-        <Button Grid.Row="0" Grid.Column="2" Content="Clear" HorizontalAlignment="Right" Width="50" Click="clearButton_Click"
+        <Button Grid.Row="0" Grid.Column="2" Name="clearButton" Content="Clear" HorizontalAlignment="Right" Width="50" Click="clearButton_Click"
 			ToolTip="Remove Selected Tags"/>
         <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" MaxHeight="111" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListBox.ItemsPanel>

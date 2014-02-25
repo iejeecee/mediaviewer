@@ -26,10 +26,14 @@ namespace MediaViewer.MetaData
         {          
             ChildTags = new ObservableCollection<Tag>();
 
-            using (TagDbCommands tc = new TagDbCommands())
+            using (TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands())
             {
-                Categories = new ObservableCollection<TagCategory>(tc.getAllCategories());              
-                Tags = new ObservableCollection<Tag>(tc.getAllTags());             
+                Categories = new ObservableCollection<TagCategory>(tagCategoryCommands.getAllCategories());    
+            }
+
+            using (TagDbCommands tagCommands = new TagDbCommands())
+            {                         
+                Tags = new ObservableCollection<Tag>(tagCommands.getAllTags());             
             }
 
             SelectTagCommand = new Command(new Action(selectTag));
@@ -204,11 +208,11 @@ namespace MediaViewer.MetaData
 
             tag.TagCategory = TagCategory;
 
-            using (var tc = new TagDbCommands())
+            using (var tagCommands = new TagDbCommands())
             {
                 try
                 {                   
-                    tag = tc.createTag(tag);
+                    tag = tagCommands.create(tag);
 
                     if (tag != null)
                     {
@@ -235,7 +239,7 @@ namespace MediaViewer.MetaData
         {
             if (SelectedTag == null) return;
           
-            using (var tc = new TagDbCommands())
+            using (var tagCommands = new TagDbCommands())
             {
                 try
                 {
@@ -250,7 +254,7 @@ namespace MediaViewer.MetaData
                         tag.ChildTags.Add(childTag);
                     }
                           
-                    tag = tc.updateTag(tag);
+                    tag = tagCommands.update(tag);
                     Tags.Remove(SelectedTag);
                     insertTagIntoTagsCollection(tag, true);                 
                 
@@ -379,13 +383,15 @@ namespace MediaViewer.MetaData
 
                 using (TagDbCommands tagCommands = new TagDbCommands())
                 {
+                    TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(tagCommands.Db);
+
                     try
                     {
                         List<Tag> result;
 
                         if (categoryFilter != null)
                         {
-                            result = tagCommands.getTagsByCategory(categoryFilter);
+                            result = tagCategoryCommands.getTagsByCategory(categoryFilter);
                         }
                         else
                         {
@@ -429,13 +435,13 @@ namespace MediaViewer.MetaData
         void createCategory()
         {
            
-            using (var tc = new TagDbCommands())
+            using (var tagCategoryCommands = new TagCategoryDbCommands())
             {
                 try
                 {
                     TagCategory newCategory = new TagCategory() { Name = NewCategoryName };
 
-                    newCategory = tc.createTagCategory(newCategory);
+                    newCategory = tagCategoryCommands.create(newCategory);
 
                     if (newCategory != null)
                     {
@@ -454,11 +460,11 @@ namespace MediaViewer.MetaData
         void deleteCategory()
         {
           
-            using (var tc = new TagDbCommands())
+            using (var tagCategoryCommands = new TagCategoryDbCommands())
             {
                 try
                 {
-                    tc.deleteTagCategory(SelectedCategory);
+                    tagCategoryCommands.delete(SelectedCategory);
                     Categories.Remove(SelectedCategory);
 
                     // update cached tags to reflect changes
@@ -483,13 +489,11 @@ namespace MediaViewer.MetaData
 
         void deleteTag()
         {
-            using (var tc = new TagDbCommands())
+            using (var tagCommands = new TagDbCommands())
             {
                 try
-                {
-                  
-
-                    tc.deleteTag(SelectedTag);
+                {                  
+                    tagCommands.delete(SelectedTag);
                     Tags.Remove(SelectedTag);
                 }
                 catch (Exception e)

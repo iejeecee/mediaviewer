@@ -3,6 +3,7 @@ using MediaViewer.Search;
 using MediaViewer.UserControls.Relation;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Core;
 using System.Data.Entity.Validation;
 using System.IO;
 using System.Linq;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
 {
-    class MediaDbCommands : DbCommands
+    class MediaDbCommands : DbCommands<Media>
     {
         public MediaDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
@@ -262,7 +263,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         }
 
     
-        public Media createMedia(Media media)
+        protected override Media createFunc(Media media)
         {
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
             {
@@ -318,11 +319,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (result == null)
                 {
-                    Tag newTag = tagCommands.createTag(tag);
+                    Tag newTag = tagCommands.create(tag);
+                    newTag.Used = 1;
                     newMedia.Tags.Add(newTag);
                 }
                 else
                 {
+                    result.Used += 1;
                     newMedia.Tags.Add(result);
                 }
             }
@@ -334,7 +337,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (newMedia);
         }
 
-        public Media updateMedia(Media media)
+        protected override Media updateFunc(Media media)
         {
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
             {
@@ -378,32 +381,46 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 updateMedia.Thumbnail = media.Thumbnail;
             }
 
-            updateMedia.Tags.Clear();
             TagDbCommands tagCommands = new TagDbCommands(Db);
 
+            // remove tags
+            for(int i = updateMedia.Tags.Count - 1; i >= 0; i--)
+            {
+                Tag tag = updateMedia.Tags.ElementAt(i);
+
+                if (!media.Tags.Contains(tag, EqualityComparer<Tag>.Default))
+                {                    
+                    updateMedia.Tags.Remove(tag);
+                    tag.Used -= 1;
+                }
+            }
+            
+            // add tags
             foreach (Tag tag in media.Tags)
             {
                 Tag result = tagCommands.getTagByName(tag.Name);
 
                 if (result == null)
                 {
-                    Tag newTag = tagCommands.createTag(tag);
-                    updateMedia.Tags.Add(newTag);
+                    result = tagCommands.create(tag);                  
                 }
-                else
+
+                if (!updateMedia.Tags.Contains(result, EqualityComparer<Tag>.Default))
                 {
                     updateMedia.Tags.Add(result);
+                    result.Used += 1;
                 }
             }
-
+                       
             Db.SaveChanges();
-
+                      
             updateMedia.IsImported = true;
 
             return (updateMedia);
         }
 
-        public void deleteMedia(Media media) {
+        protected override void deleteFunc(Media media)
+        {
 
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
             {
@@ -414,6 +431,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (deleteMedia == null)
             {
                 throw new DbEntityValidationException("Cannot delete non existing media: " + media.Location);
+            }
+
+            foreach (Tag tag in deleteMedia.Tags)
+            {
+                tag.Used -= 1;
             }
 
             if(deleteMedia.Thumbnail != null) {

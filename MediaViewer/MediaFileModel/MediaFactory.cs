@@ -242,7 +242,7 @@ namespace MediaViewer.MediaFileModel
             {
                 using (MediaDbCommands mediaCommands = new MediaDbCommands())
                 {
-                    media = mediaCommands.updateMedia(media);
+                    media = mediaCommands.update(media);
                 }
             }
             

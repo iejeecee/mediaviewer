@@ -245,6 +245,16 @@ namespace MediaViewer.MetaData
                         newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
                         newPath = newPath.TrimEnd('\\');
 
+                        if (state.ImportedEnabled == true)
+                        {
+                            if (item.Media.IsImported == true && state.IsImported == false)
+                            {
+                                ItemInfo = "Exporting: " + item.Location;
+                                MediaFileWatcher.Instance.MediaState.export(item, TokenSource.Token);
+                                InfoMessages.Add("Exported: " + item.Location);
+                            }
+                        }
+
                         MediaFileWatcher.Instance.MediaState.move(item, newPath + "\\" + newFilename + ext, this);
 
                         if (state.ImportedEnabled == true)
@@ -254,14 +264,7 @@ namespace MediaViewer.MetaData
                                 ItemInfo = "Importing: " + item.Location;
                                 MediaFileWatcher.Instance.MediaState.import(item, TokenSource.Token);
                                 InfoMessages.Add("Imported: " + item.Location);
-
-                            }
-                            else if (item.Media.IsImported == true && state.IsImported == false)
-                            {
-                                ItemInfo = "Exporting: " + item.Location;
-                                MediaFileWatcher.Instance.MediaState.export(item, TokenSource.Token);
-                                InfoMessages.Add("Exported: " + item.Location);
-                            }
+                            }                            
 
                         }
 

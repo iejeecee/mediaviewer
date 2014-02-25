@@ -27,7 +27,7 @@ namespace MediaViewer.MetaData
         public TagEditorView()
         {
          
-            InitializeComponent();
+            InitializeComponent();         
                       
         }
 
@@ -45,7 +45,9 @@ namespace MediaViewer.MetaData
         {
             TagEditorView control = (TagEditorView)o;
                     
-            control.tagListBox.ItemsSource = (ObservableCollection<Tag>)e.NewValue;                         
+            ObservableCollection<Tag> tags = (ObservableCollection<Tag>)e.NewValue;
+            control.tagListBox.ItemsSource = tags;
+      
         }
 
 
@@ -58,9 +60,7 @@ namespace MediaViewer.MetaData
         // Using a DependencyProperty as the backing store for AddLinkedTags.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty AddLinkedTagsProperty =
             DependencyProperty.Register("AddLinkedTags", typeof(bool), typeof(TagEditorView), new PropertyMetadata(true));
-
         
-
         private void addTag(string tagName)
         {
             if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;

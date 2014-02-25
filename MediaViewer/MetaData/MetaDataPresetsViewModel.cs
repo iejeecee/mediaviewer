@@ -339,12 +339,11 @@ namespace MediaViewer.MetaData
             preset.CreationDate = Creation;
             preset.IsCreationDateEnabled = CreationEnabled;
 
-            using (PresetMetadataDbCommands metaDataCommands = new PresetMetadataDbCommands())
+            using (PresetMetadataDbCommands presetMetaDataCommands = new PresetMetadataDbCommands())
             {
-
                 try
                 {
-                    PresetMetadata result = metaDataCommands.createPresetMetadata(preset);
+                    PresetMetadata result = presetMetaDataCommands.create(preset);
 
                     Utils.Misc.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
                 }
@@ -357,12 +356,12 @@ namespace MediaViewer.MetaData
 
         void deletePreset()
         {
-            using (PresetMetadataDbCommands metaDataCommands = new PresetMetadataDbCommands())
+            using (PresetMetadataDbCommands presetMetaDataCommands = new PresetMetadataDbCommands())
             {
 
                 try
                 {
-                     metaDataCommands.deletePresetMetadata(SelectedPreset);
+                     presetMetaDataCommands.delete(SelectedPreset);
                      MetadataPresets.Remove(SelectedPreset);
                      clear();
                    
@@ -392,12 +391,12 @@ namespace MediaViewer.MetaData
             preset.CreationDate = Creation;
             preset.IsCreationDateEnabled = CreationEnabled;
 
-            using (PresetMetadataDbCommands metaDataCommands = new PresetMetadataDbCommands())
+            using (PresetMetadataDbCommands presetMetaDataCommands = new PresetMetadataDbCommands())
             {
 
                 try
                 {
-                    PresetMetadata result = metaDataCommands.updatePresetMetadata(preset);
+                    PresetMetadata result = presetMetaDataCommands.update(preset);
                     MetadataPresets.Remove(SelectedPreset);
                     Utils.Misc.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
                    

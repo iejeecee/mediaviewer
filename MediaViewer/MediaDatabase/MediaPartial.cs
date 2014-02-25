@@ -1,4 +1,9 @@
-﻿using MediaViewer.Utils;
+﻿// Note that a custom SSDL to DDL script is used to generate timestamp columns for concurrency checks, see:
+// http://msdn.microsoft.com/en-us/library/vstudio/dd560887%28v=vs.100%29.aspx
+// http://www.undisciplinedbytes.com/2012/03/creating-a-timestamp-column-with-entity-framework/
+// the script location is: 
+// C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\Extensions\Microsoft\Entity Framework Tools\DBGen\SSDLToSQL10_CustomTimestamp.tt
+using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;

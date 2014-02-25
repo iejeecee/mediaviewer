@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 02/15/2014 19:56:08
+-- Date Created: 02/24/2014 18:19:14
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -97,14 +97,17 @@ GO
 CREATE TABLE [dbo].[TagSet] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [Name] nvarchar(max)  NOT NULL,
-    [TagCategoryId] int  NULL
+    [TagCategoryId] int  NULL,
+    [Used] bigint  NOT NULL,
+    [TimeStamp] TIMESTAMP  NOT NULL
 );
 GO
 
 -- Creating table 'TagCategorySet'
 CREATE TABLE [dbo].[TagCategorySet] (
     [Id] int IDENTITY(1,1) NOT NULL,
-    [Name] nvarchar(max)  NOT NULL
+    [Name] nvarchar(max)  NOT NULL,
+    [TimeStamp] TIMESTAMP  NOT NULL
 );
 GO
 
@@ -124,7 +127,8 @@ CREATE TABLE [dbo].[MediaSet] (
     [MimeType] nvarchar(max)  NOT NULL,
     [SizeBytes] bigint  NOT NULL,
     [Software] nvarchar(max)  NULL,
-    [SupportsXMPMetadata] bit  NOT NULL
+    [SupportsXMPMetadata] bit  NOT NULL,
+    [TimeStamp] TIMESTAMP  NOT NULL
 );
 GO
 
@@ -144,7 +148,8 @@ CREATE TABLE [dbo].[PresetMetadataSet] (
     [IsAuthorEnabled] bit  NOT NULL,
     [IsCopyrightEnabled] bit  NOT NULL,
     [CreationDate] datetime  NULL,
-    [IsCreationDateEnabled] bit  NOT NULL
+    [IsCreationDateEnabled] bit  NOT NULL,
+    [TimeStamp] TIMESTAMP  NOT NULL
 );
 GO
 

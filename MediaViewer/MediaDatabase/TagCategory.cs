@@ -21,6 +21,7 @@ namespace MediaViewer.MediaDatabase
     
         public int Id { get; set; }
         public string Name { get; set; }
+        public byte[] TimeStamp { get; set; }
     
         public virtual ICollection<Tag> Tag { get; set; }
     }

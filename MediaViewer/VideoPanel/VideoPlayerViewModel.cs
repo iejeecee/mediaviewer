@@ -16,6 +16,7 @@ namespace MediaViewer.VideoPanel
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public event EventHandler VideoOpened;
+        public event EventHandler VideoClosed;
 
         VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat;
 
@@ -874,7 +875,13 @@ namespace MediaViewer.VideoPanel
             seekPosition = 0;
 
             DurationSeconds = 0;
-            PositionSeconds = 0;  
+            PositionSeconds = 0;
+
+            if (VideoClosed != null)
+            {
+
+                VideoClosed(this, EventArgs.Empty);
+            }
            
         }
     }
