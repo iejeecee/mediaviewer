@@ -265,5 +265,24 @@ namespace MediaViewer.Search
                 NotifyPropertyChanged();
             }
         }
+
+        Nullable<double> ratingStart;
+
+        public Nullable<double> RatingStart
+        {
+            get { return ratingStart; }
+            set { ratingStart = value;
+            NotifyPropertyChanged();
+            }
+        }
+        Nullable<double> ratingEnd;
+
+        public Nullable<double> RatingEnd
+        {
+            get { return ratingEnd; }
+            set { ratingEnd = value;
+            NotifyPropertyChanged();
+            }
+        }
     }
 }

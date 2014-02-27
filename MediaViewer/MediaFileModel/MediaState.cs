@@ -86,6 +86,29 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
+        public void rename(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
+        {
+         
+            MediaCollection.EnterWriteLock();
+
+            try
+            {
+
+                bool success = MediaCollection.RenameRange(oldItems, newItems);
+               
+                fireEvents(NotifyCollectionChangedAction.Reset, null, false);
+
+                if (success == false)
+                {
+                    throw new MediaStateException("Cannot rename non-existing items");
+                }
+            }
+            finally
+            {
+                MediaCollection.ExitWriteLock();
+            }
+        }
+
         public void remove(IEnumerable<MediaFileItem> removeItems)
         {
             bool itemIsSelectedChanged = false;

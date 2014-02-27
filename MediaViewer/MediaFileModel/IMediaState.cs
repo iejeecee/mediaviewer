@@ -31,6 +31,7 @@ namespace MediaViewer.MediaFileModel
       
         void add(IEnumerable<MediaFileItem> items);
         void remove(IEnumerable<MediaFileItem> items);
+        void rename(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems);
 
         void delete(IEnumerable<MediaFileItem> items, CancellationToken token);
         void move(MediaFileItem item, String location, IProgress progress);

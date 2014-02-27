@@ -76,8 +76,8 @@ namespace MediaViewer.MediaFileModel.Watcher
             created = new List<MediaFileItem>();
             removed = new List<MediaFileItem>();
             changed = new List<MediaFileItem>();
-            renamedCreatedFiles = new List<MediaFileItem>();
-            renamedRemovedFiles = new List<MediaFileItem>();
+            renamedNewFiles = new List<MediaFileItem>();
+            renamedOldFiles = new List<MediaFileItem>();
 
             eventQueue = new ConcurrentQueue<FileSystemEventArgs>();
             timer = new DefaultTimer();
@@ -106,8 +106,8 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         List<MediaFileItem> created;
         List<MediaFileItem> removed;
-        List<MediaFileItem> renamedRemovedFiles;
-        List<MediaFileItem> renamedCreatedFiles;
+        List<MediaFileItem> renamedOldFiles;
+        List<MediaFileItem> renamedNewFiles;
         List<MediaFileItem> changed;
 
         void insertEvent(FileSystemEventArgs e)
@@ -157,7 +157,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                             }
                             else
                             {
-                                renamedRemovedFiles.Add(oldFile);
+                                removed.Add(oldFile);
                             }
                             
                         }
@@ -173,14 +173,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                             }
                             else
                             {
-                                renamedCreatedFiles.Add(newFile);
+                                created.Add(newFile);
                             }
 
                         }
                         else if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            renamedRemovedFiles.Add(new MediaFileItem(r.OldFullPath));
-                            renamedCreatedFiles.Add(new MediaFileItem(r.FullPath));
+                            renamedOldFiles.Add(new MediaFileItem(r.OldFullPath));
+                            renamedNewFiles.Add(new MediaFileItem(r.FullPath));
                         }
 
                         break;
@@ -208,12 +208,11 @@ namespace MediaViewer.MediaFileModel.Watcher
                 changed.Clear();
             }
 
-            if (renamedRemovedFiles.Count > 0 || renamedCreatedFiles.Count > 0)
+            if (renamedOldFiles.Count > 0 || renamedNewFiles.Count > 0)
             {
-                MediaFileWatcher.MediaState.remove(renamedRemovedFiles);
-                MediaFileWatcher.MediaState.add(renamedCreatedFiles);
-                renamedRemovedFiles.Clear();
-                renamedCreatedFiles.Clear();
+                MediaFileWatcher.MediaState.rename(renamedOldFiles, renamedNewFiles);
+                renamedOldFiles.Clear();
+                renamedNewFiles.Clear();
             }
         }
 

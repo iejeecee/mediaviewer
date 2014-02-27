@@ -263,7 +263,7 @@ namespace MediaViewer.MetaData
                             {
                                 ItemInfo = "Importing: " + item.Location;
                                 MediaFileWatcher.Instance.MediaState.import(item, TokenSource.Token);
-                                InfoMessages.Add("Imported: " + item.Location);
+                                InfoMessages.Add("Imported: " + item.Media.Location);
                             }                            
 
                         }

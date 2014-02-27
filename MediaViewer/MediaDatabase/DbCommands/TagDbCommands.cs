@@ -31,6 +31,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (tags);
         }
 
+        public List<Tag> getTagAutocompleteMatches(String name)
+        {
+            List<Tag> result = Db.TagSet.Where(t => t.Name.StartsWith(name)).OrderByDescending(t => t.Used).ToList();
+            return (result);
+        }
+
         public Tag getTagByName(String name)
         {
             List<Tag> result = (from b in Db.TagSet.Include("ChildTags").Include("TagCategory")

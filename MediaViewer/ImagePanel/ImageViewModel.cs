@@ -364,9 +364,7 @@ namespace MediaViewer.ImagePanel
                 media = await MediaFactory.readAsync((String)fileName, 
                     MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ, 
                     loadImageCTS.Token);
-
-                IsLoading = false;
-
+                
                 BitmapImage loadedImage = null;
 
                 if (media is ImageMedia && media.Data != null)
@@ -403,6 +401,8 @@ namespace MediaViewer.ImagePanel
                 }
 
                 Image = loadedImage;
+
+                IsLoading = false;
                 //setIdentityTransform();
 
             }

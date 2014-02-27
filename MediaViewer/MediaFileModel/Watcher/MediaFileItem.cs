@@ -184,8 +184,8 @@ namespace MediaViewer.MediaFileModel.Watcher
             // assign the results on the UI thread           
             DispatcherOperation task = Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                ItemState = result;
                 Media = media;
+                ItemState = result;               
             }));
 
         }
@@ -221,6 +221,9 @@ namespace MediaViewer.MediaFileModel.Watcher
             return (isImported);
         }
 
+
+      
+
         /// <summary>
         /// returns true if the moved item was a imported item otherwise false
         /// </summary>
@@ -235,18 +238,19 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 return (isImported);
             }
+          
+            // A subtle bug can occur when renaming files if updating Media in the database is done AFTER the file is renamed,
+            // Consider the following sequence of events:
+            // The file is renamed. A new file is "created" with it's new name. This file gets loaded, 
+            // but it's Media entity in the database is not yet updated to the new location.
+            // So it will be loaded as a non-imported file.
+            // To avoid this error, update Media in the database before it is moved. In case a move error occurs
+            // we change media back to it's old location
+            //updateMediaLocation(media, newLocation);
 
             FileUtils fileUtils = new FileUtils();
-
+           
             fileUtils.moveFile(Location, newLocation, progress);
-
-            // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
-            // If location is changed to it's new location it will not be be found. 
-            // So only update the location when mediafilewatcher is not active.
-            if (MediaFileWatcher.Instance.IsWatcherEnabled == false)
-            {
-                Location = newLocation;
-            }
 
             if (Media != null)
             {
@@ -258,10 +262,18 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         Media = mediaCommands.update(Media);
                     }
-                    isImported = true;
                 }
             }
 
+
+            // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
+            // If location is changed to it's new location it will not be be found in the current mediastate. 
+            // So only update the location when mediafilewatcher is not active.
+            if (MediaFileWatcher.Instance.IsWatcherEnabled == false)
+            {
+                Location = newLocation;
+            }
+            
             return (isImported);
         }
 

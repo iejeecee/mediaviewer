@@ -319,6 +319,40 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
+
+        public bool RenameRange(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
+        {
+           
+            rwLock.EnterWriteLock();
+            try
+            {
+                bool success = true;
+
+                int nrOldItems = oldItems.Count();
+                int nrNewItems = newItems.Count();
+
+                Debug.Assert(nrOldItems == nrNewItems);
+              
+                for (int i = 0; i < nrOldItems; i++)
+                {                   
+                    MediaFileItem oldItem = Find(oldItems.ElementAt(i));
+                    if (oldItem == null)
+                    {
+                        success = false;
+                        continue;
+                    }
+
+                    oldItem.Location = newItems.ElementAt(i).Location;                       
+                }
+
+                items.Sort();
+                return (success);
+            }
+            finally
+            {
+                rwLock.ExitWriteLock();
+            }
+        }
     }
 }
 

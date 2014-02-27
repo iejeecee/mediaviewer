@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:Pager="clr-namespace:MediaViewer.Pager"
              xmlns:Effects="clr-namespace:MediaViewer.Effects"
+             xmlns:gif="http://wpfanimatedgif.codeplex.com"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -26,15 +27,16 @@
                        ScrollViewer.CanContentScroll="True" 
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" 
                        ScrollViewer.VerticalScrollBarVisibility="Auto" 
-                       SnapsToDevicePixels="True">
+                       SnapsToDevicePixels="True" 
+                       >
                     <Image.Style>
                         <Style>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsLoading}" Value="true">
-                                    <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
+                                    <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{StaticResource loadingImage}" />                                  
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsLoading}" Value="false">
-                                    <Setter Property="Image.Source" Value="{Binding Image}" />
+                                    <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{Binding Image}" />                                  
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>

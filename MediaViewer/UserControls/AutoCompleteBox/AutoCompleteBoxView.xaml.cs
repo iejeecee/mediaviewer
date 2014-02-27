@@ -27,14 +27,19 @@ namespace MediaViewer.UserControls.AutoCompleteBox
             get { return this.Resources["viewModel"] as AutoCompleteBoxViewModel; }
         }
 
+        public MediaViewer.UserControls.AutoCompleteBox.AutoCompleteBoxViewModel.CustomFindMatchesDelegate CustomFindMatchesFunction
+        {
+            get { return ViewModel.CustomFindMatchesFunction; }
+            set { ViewModel.CustomFindMatchesFunction = value; }
+        }
+
         bool mouseOverPopup;
      
 
         public AutoCompleteBoxView()
         {
             InitializeComponent();
-           
-
+        
             ViewModel.Suggestions.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s,e) => {
 
                 if (ViewModel.Suggestions.Count > 0)
@@ -115,23 +120,7 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
             view.ViewModel.Text = e.NewValue as String;
         }
-
-
-        public IAutoCompleteBoxViewModel SearchViewModel
-        {
-            get { return (IAutoCompleteBoxViewModel)GetValue(SearchViewModelProperty); }
-            set { SetValue(SearchViewModelProperty, value); }
-        }
-
-        // Using a DependencyProperty as the backing store for SearchViewModel.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SearchViewModelProperty =
-            DependencyProperty.Register("SearchViewModel", typeof(IAutoCompleteBoxViewModel), typeof(AutoCompleteBoxView), new PropertyMetadata(null,new PropertyChangedCallback(searchViewModelChangedCallback)));
-
-        private static void searchViewModelChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-           
-        }
-               
+       
         void displaySuggestions()
         {
             popup.PlacementTarget = autoCompleteTextBox;

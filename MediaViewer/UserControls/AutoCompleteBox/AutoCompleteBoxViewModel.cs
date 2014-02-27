@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.AutoCompleteBox
 {
-    class AutoCompleteBoxViewModel : ObservableObject, IAutoCompleteBoxViewModel
+    public class AutoCompleteBoxViewModel : ObservableObject
     {
         TernaryTree tree;
 
@@ -17,6 +17,7 @@ namespace MediaViewer.UserControls.AutoCompleteBox
         {
             Suggestions = new ObservableRangeCollection<Object>();
             Items = null;
+            CustomFindMatchesFunction = null;
 
             SetSuggestionCommand = new Command<Object>(new Action<Object>((item) => {
 
@@ -100,16 +101,34 @@ namespace MediaViewer.UserControls.AutoCompleteBox
             }
         }
 
+        public delegate List<Object> CustomFindMatchesDelegate(String text);
+        CustomFindMatchesDelegate customFindMatchesFunction;
+
+        public CustomFindMatchesDelegate CustomFindMatchesFunction
+        {
+            get { return customFindMatchesFunction; }
+            set { customFindMatchesFunction = value; }
+        }
+
         private void findSuggestions()
         {
             
-            if (String.IsNullOrEmpty(Text) || Items == null)
+            if (String.IsNullOrEmpty(Text))
             {
                 Suggestions.Clear();
                 return;
             }
 
-            List<Object> matches = tree.AutoComplete(Text);
+            List<Object> matches;
+
+            if (CustomFindMatchesFunction != null)
+            {
+                matches = CustomFindMatchesFunction(Text);
+            }
+            else
+            {
+                matches = tree.AutoComplete(Text);
+            }
           
             Suggestions.ReplaceRange(matches.Take(Math.Min(MaxSuggestions, matches.Count)));
                                       

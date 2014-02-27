@@ -60,6 +60,21 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 result = result.Where(m => (m.CreationDate >= query.CreationStart.Value) && (m.CreationDate <= query.CreationEnd.Value));
             }
 
+            // rating
+
+            if (query.RatingStart != null && query.RatingEnd == null)
+            {
+                result = result.Where(m => m.Rating >= query.RatingStart.Value * 5);
+            }
+            else if (query.RatingStart == null && query.RatingEnd != null)
+            {
+                result = result.Where(m => m.Rating <= query.RatingEnd.Value * 5);
+            }
+            else if (query.RatingStart != null && query.RatingEnd != null)
+            {
+                result = result.Where(m => (m.Rating >= query.RatingStart.Value * 5) && (m.Rating <= query.RatingEnd.Value * 5));
+            }
+
             if (query.SearchType == MediaType.Video)
             {               
                 result = videoQueryFilter(result, query);

@@ -27,8 +27,19 @@ namespace MediaViewer.MetaData
         public TagEditorView()
         {
          
-            InitializeComponent();         
-                      
+            InitializeComponent();
+
+            addTagAutoCompleteBox.CustomFindMatchesFunction = new UserControls.AutoCompleteBox.AutoCompleteBoxViewModel.CustomFindMatchesDelegate((text) =>
+            {
+                List<Tag> results = new List<Tag>();
+
+                using (TagDbCommands tc = new TagDbCommands())
+                {
+                    results = tc.getTagAutocompleteMatches(text);
+                }
+
+                return (results.Cast<Object>().ToList());
+            });
         }
 
         public ObservableCollection<Tag> Tags
@@ -133,13 +144,7 @@ namespace MediaViewer.MetaData
            Tags.Remove(tag);
         }
 
-        private void addTagAutoCompleteBox_GotFocus(object sender, RoutedEventArgs e)
-        {
-            using (TagDbCommands tc = new TagDbCommands())
-            {               
-                addTagAutoCompleteBox.Items = tc.getAllTags();
-            }
-        }
+        
         
     }
 }

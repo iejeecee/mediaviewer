@@ -45,7 +45,7 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>        
-        <AutoCompleteBox:AutoCompleteBoxView  x:Name="addTagAutoCompleteBox" Grid.Row="0" Grid.Column="0" GotFocus="addTagAutoCompleteBox_GotFocus" PreviewKeyDown="addTagAutoCompleteBox_PreviewKeyDown"/>
+        <AutoCompleteBox:AutoCompleteBoxView  x:Name="addTagAutoCompleteBox" Grid.Row="0" Grid.Column="0" PreviewKeyDown="addTagAutoCompleteBox_PreviewKeyDown"/>
         <Button Grid.Row="0" Grid.Column="1" Name="addButton" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
 			ToolTip="Add Tag"/>
         <Button Grid.Row="0" Grid.Column="2" Name="clearButton" Content="Clear" HorizontalAlignment="Right" Width="50" Click="clearButton_Click"

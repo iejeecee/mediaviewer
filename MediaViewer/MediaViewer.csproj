@@ -126,6 +126,9 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WpfAnimatedGif">
+      <HintPath>..\packages\WpfAnimatedGif.1.4.4\lib\net\WpfAnimatedGif.dll</HintPath>
+    </Reference>
     <Reference Include="WPFToolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\WPFToolkit.dll</HintPath>
     </Reference>
@@ -175,7 +178,6 @@
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxViewModel.cs" />
-    <Compile Include="UserControls\AutoCompleteBox\IAutoCompleteBoxViewModel.cs" />
     <Compile Include="UserControls\AutoCompleteBox\TernaryTree.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePicker.xaml.cs">
       <DependentUpon>DateTimePicker.xaml</DependentUpon>
@@ -787,6 +789,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\info.ico" />
     <Resource Include="Resources\Icons\contrast.ico" />
     <Resource Include="Resources\Icons\brightness.ico" />
     <None Include="Shaders\BrightnessContrast.fx">
