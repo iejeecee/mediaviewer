@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MediaViewer.Utils;
 using System;
@@ -21,9 +22,11 @@ namespace MediaViewer.MediaFileModel
         public event EventHandler ItemIsSelectedChanged;
         public event EventHandler ItemPropertiesChanged;
 
+        // This collection contains all media that is currently visible/active in the user interface
         MediaLockedCollection mediaCollection;
+        // This collection contains all media that is scheduled for a operation (e.g. importing, updating etc)
         MediaLockedCollection busyItems;
-
+        
         public MediaLockedCollection MediaCollection
         {
             get { return mediaCollection; }
@@ -397,26 +400,58 @@ namespace MediaViewer.MediaFileModel
         public void import(IEnumerable<MediaFileItem> items, CancellationToken token)
         {      
             List<MediaFileItem> importedItems = new List<MediaFileItem>();
-
-            bool success = busyItems.AddRange(items);
-            if (success == false)
-            {
-                throw new MediaStateException("Cannot import items, items already in use");
-            }
-
+           
             try
             {
-                foreach (MediaFileItem item in items)
+                for (int i = 0; i < items.Count(); i++)
                 {
-                    if (token.IsCancellationRequested) return;
-                                 
-                    success = item.import();
-                    if (success)
-                    {
-                        importedItems.Add(item);
-                    }
+                    MediaFileItem item = items.ElementAt(i);
 
-                    busyItems.Remove(item);                                           
+                    if (token.IsCancellationRequested) return;
+
+                    MediaCollection.EnterReaderLock();
+                   
+                    try
+                    {                        
+                        // If the mediaitem is in the current mediacollection use that instance
+                        // to ensure changes are reflected in the user interface
+                        MediaFileItem insertItem = MediaCollection.Find(item);
+
+                        if (insertItem == null)
+                        {
+                            insertItem = item;
+                        }
+                       
+                        
+                        if (insertItem.Media == null)
+                        {
+                            readMetadata(insertItem, MediaFactory.ReadOptions.AUTO |
+                                    MediaFactory.ReadOptions.GENERATE_THUMBNAIL, token);
+                            if (insertItem.Media == null || insertItem.Media is UnknownMedia)
+                            {
+                                throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
+                            }
+                        }
+
+                        bool success = busyItems.Add(item);
+                        if (success == false)
+                        {
+                            throw new MediaStateException("Cannot import item, item already in use: " + item.Location);
+                        }
+
+                        success = insertItem.import();
+                        if (success)
+                        {
+                            importedItems.Add(insertItem);
+                        }
+
+                        item.Media = insertItem.Media;
+                    }
+                    finally
+                    {
+                        busyItems.Remove(item);
+                        MediaCollection.ExitReaderLock();
+                    }
                 }
               
             }
@@ -428,7 +463,6 @@ namespace MediaViewer.MediaFileModel
                         NotifyCollectionChangedAction.Add, importedItems));
                 }
 
-                busyItems.RemoveAll(items);
             }
         }
 

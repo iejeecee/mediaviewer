@@ -1,6 +1,4 @@
 // VideoLib.h
-
-#pragma once
 #include "VideoFrameGrabber.h"
 #include "VideoDecoder.h"
 #include "VideoFrame.h"

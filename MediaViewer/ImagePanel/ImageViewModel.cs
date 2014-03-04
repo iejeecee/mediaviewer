@@ -399,6 +399,7 @@ namespace MediaViewer.ImagePanel
 
                     log.Info("Image loaded: " + media.Location);
                 }
+                
 
                 Image = loadedImage;
 

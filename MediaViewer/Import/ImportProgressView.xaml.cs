@@ -17,18 +17,25 @@ namespace MediaViewer.Import
     /// <summary>
     /// Interaction logic for ImportView.xaml
     /// </summary>
-    public partial class ImportView : Window
+    public partial class ImportProgressView : Window
     {
-        public ImportView()
+      
+        public ImportProgressView()
         {
             InitializeComponent();
-            ImportViewModel vm = new ImportViewModel();
+            ImportProgressViewModel vm = new ImportProgressViewModel();
             DataContext = vm;
-
             vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
             {
                 this.Close();
             });
+
+            Closing += new System.ComponentModel.CancelEventHandler((s, e) =>
+            {
+                vm.CancelCommand.DoExecute();
+            });
         }
+
+        
     }
 }

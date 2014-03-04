@@ -5,7 +5,7 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="c86114a749be4989a46eaa85528e08cb" Name="Diagram1" >
-        <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="2.5" PointY="0.875" />
+        <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="2.25" PointY="0.875" />
         <EntityTypeShape EntityType="MediaDatabase.TagCategory" Width="1.5" PointX="0.625" PointY="0.875" />
         <AssociationConnector Association="MediaDatabase.TagCategoryTag" />
         <EntityTypeShape EntityType="MediaDatabase.Media" Width="1.5" PointX="4.125" PointY="0.875" />
@@ -17,7 +17,7 @@
         <AssociationConnector Association="MediaDatabase.MediaThumbnail" />
         <EntityTypeShape EntityType="MediaDatabase.ImageMedia" Width="1.5" PointX="5.875" PointY="2" />
         <InheritanceConnector EntityType="MediaDatabase.ImageMedia" />
-        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="4.125" PointY="4.875" />
+        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="4" PointY="5.25" />
         <InheritanceConnector EntityType="MediaDatabase.VideoMedia" />
         <EntityTypeShape EntityType="MediaDatabase.UnknownMedia" Width="1.5" PointX="5.875" PointY="0.875" />
         <InheritanceConnector EntityType="MediaDatabase.UnknownMedia" />

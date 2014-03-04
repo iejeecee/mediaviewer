@@ -28,7 +28,8 @@
         <ItemsControl.ItemTemplate>
             <DataTemplate>
                 <ToggleButton Name="toggleButton" IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="2" 
-                              IsEnabled="{Binding Path=ItemState, Converter={StaticResource negatedEnumToBooleanConverter}, ConverterParameter={x:Static local:MediaFileItemState.LOADING}}">
+                              IsEnabled="{Binding Path=ItemState, Converter={StaticResource negatedEnumToBooleanConverter}, ConverterParameter={x:Static local:MediaFileItemState.LOADING}}"
+                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch">
                     <ToggleButton.Style>
                         <Style>
                             <Style.Triggers>
@@ -41,54 +42,100 @@
                             </Style.Triggers>
                         </Style>
                     </ToggleButton.Style>
-                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ToolTip="{Binding Media.DefaultFormatCaption}" 
+                    <Grid Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}" 
+                          Height="{Binding Path=ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type ToggleButton}}}"
+                          ToolTip="{Binding Media.DefaultFormatCaption}" 
                           Tag="{Binding}">
                         <Grid.RowDefinitions>
-                            <RowDefinition MinHeight="{Binding ElementName=toggleButton,Path=ActualHeight,Converter={StaticResource mathConverter},ConverterParameter=(x*3)/4}"/>
-                            <RowDefinition MinHeight="{Binding ElementName=toggleButton,Path=ActualHeight,Converter={StaticResource mathConverter},ConverterParameter=x/4}"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="4*"/>
+                            <RowDefinition Height="1.3*"/>
                         </Grid.RowDefinitions>
-                        <Image HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0">
-                            <Image.Style>
+                        <TextBlock Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Location, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" TextAlignment="Center"/>
+                        <Border Grid.Row="1" BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="4" Direction="330" Color="Black" Opacity="0.5" BlurRadius="4"/>                                    
+                            </Border.Effect>
+                            <Border.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ItemState}" Value="LOADING">
-                                            <Setter Property="Image.Stretch" Value="None"/>
-                                            <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
-                                            <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="true">
+                                            <Setter Property="Border.BorderBrush" Value="Red" />
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding ItemState}" Value="ERROR">
-                                            <Setter Property="Image.Stretch" Value="None"/>
-                                            <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>
-                                            <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="false">
+                                            <Setter Property="Border.BorderBrush" Value="Black" />
                                         </DataTrigger>
+                                        <DataTrigger Binding="{Binding ItemState}" Value="EMPTY">                                       
+                                            <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
+                                        </DataTrigger>                                      
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Image HorizontalAlignment="Center" VerticalAlignment="Center" >
+                                <Image.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ItemState}" Value="LOADING">                                                
+                                                <Setter Property="Image.Stretch" Value="None"/>
+                                                <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
+                                                <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ItemState}" Value="ERROR">
+                                                <Setter Property="Image.Stretch" Value="None"/>
+                                                <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>
+                                                <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
+                                                <Setter Property="Image.Stretch" Value="Uniform"/>
+                                                <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}" />
+                                                <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ItemState}" Value="FILE_NOT_FOUND">
+                                                <Setter Property="Image.Stretch" Value="Uniform"/>
+                                                <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}" />
+                                                <Setter Property="Image.Effect" Value="{StaticResource grayscaleEffect}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                        </Border>                       
+                        <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                            <StackPanel.Style>
+                                <Style>
+                                    <Style.Triggers>
                                         <DataTrigger Binding="{Binding ItemState}" Value="LOADED">
-                                            <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}" />
-                                            <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                            <Setter Property="StackPanel.IsEnabled" Value="true"/>
+                                            <Setter Property="StackPanel.Visibility" Value="Visible"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding ItemState}" Value="FILE_NOT_FOUND">
-                                            <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}" />
-                                            <Setter Property="Image.Effect" Value="{StaticResource grayscaleEffect}"/>
+                                        <DataTrigger Binding="{Binding ItemState}" Value="LOADING">
+                                            <Setter Property="StackPanel.IsEnabled" Value="false"/>
+                                            <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
                                         </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Image.Style>                            
-                        </Image>
-                        <TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding Location, Converter={StaticResource pathToFileNameConverter}}" Grid.Row="1">
-                            <TextBlock.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Media.IsImported}" Value="true">
-                                            <Setter Property="TextBlock.Foreground" Value="{StaticResource importedImageTextColorBrush}" />
-                                        </DataTrigger>
-                                        <DataTrigger Binding="{Binding Media.IsImported}" Value="false">
-                                            <Setter Property="TextBlock.Foreground" Value="{StaticResource imageTextColorBrush}"/>
+                                        <DataTrigger Binding="{Binding ItemState}" Value="EMPTY">
+                                            <Setter Property="StackPanel.IsEnabled" Value="false"/>
+                                            <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                            </StackPanel.Style>
+                            <Image Source="pack://application:,,,/Resources/Icons/checked.ico" MaxHeight="11" Visibility="{Binding Media.IsImported, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Imported"/>
+                            <Image Source="pack://application:,,,/Resources/Icons/notsupported.ico" MaxHeight="11" ToolTip="Format does not support metadata">
+                                <Image.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Media.SupportsXMPMetadata}" Value="true">
+                                                <Setter Property="Image.Visibility" Value="Collapsed"/>                                                                                              
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Media.SupportsXMPMetadata}" Value="false">
+                                                <Setter Property="Image.Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Image.Style>
+                            </Image>
+                            <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->                               
+                        </StackPanel>
                         <Grid.ContextMenu>
                             <ContextMenu>
                                 <MenuItem Name="viewMenuItem" Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>

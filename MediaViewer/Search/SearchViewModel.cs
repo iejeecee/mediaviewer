@@ -38,9 +38,19 @@ namespace MediaViewer.Search
             RecurseSubDirectories = false;
             Query = new SearchQuery();      
 
-            searchCommand = new Command<SearchQuery>(new Action<SearchQuery>((query) =>
+            SearchCommand = new Command<SearchQuery>(new Action<SearchQuery>((query) =>
             {
                 doSearch(query);
+            }));
+
+            ClearRatingStartCommand = new Command(new Action(() =>
+            {
+                Query.RatingStart = null;
+            }));
+
+            ClearRatingEndCommand = new Command(new Action(() =>
+            {
+                Query.RatingEnd = null;
             }));
         }
 
@@ -76,6 +86,20 @@ namespace MediaViewer.Search
             }
         }
 
+        Command clearRatingStartCommand;
+
+        public Command ClearRatingStartCommand
+        {
+            get { return clearRatingStartCommand; }
+            set { clearRatingStartCommand = value; }
+        }
+        Command clearRatingEndCommand;
+
+        public Command ClearRatingEndCommand
+        {
+            get { return clearRatingEndCommand; }
+            set { clearRatingEndCommand = value; }
+        }
      
 
         bool recurseSubDirectories;
@@ -156,7 +180,7 @@ namespace MediaViewer.Search
             return (matches);
         }
 
-        void fileWalkerCallback(FileInfo info, Object state)
+        bool fileWalkerCallback(FileInfo info, Object state)
         {
             List<MediaFileItem> mediaItems = (List<MediaFileItem>)state;
 
@@ -172,6 +196,8 @@ namespace MediaViewer.Search
             {
                 mediaItems.Add(new MediaFileItem(info.FullName));
             }
+
+            return (true);
         }
 
         

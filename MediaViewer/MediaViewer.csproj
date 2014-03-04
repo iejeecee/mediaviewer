@@ -162,6 +162,9 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
+    <Compile Include="ImageGrid\ImageGridItemView.xaml.cs">
+      <DependentUpon>ImageGridItemView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ImageGrid\ThumbnailSelectorConverter.cs" />
     <Compile Include="ImagePanel\BrightnessView.xaml.cs">
       <DependentUpon>BrightnessView.xaml</DependentUpon>
@@ -173,6 +176,10 @@
       <DependentUpon>ExportView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Import\ExportViewModel.cs" />
+    <Compile Include="Import\ImportProgressViewModel.cs" />
+    <Compile Include="Import\ImportView.xaml.cs">
+      <DependentUpon>ImportView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
@@ -203,8 +210,8 @@
     <Compile Include="Converters\EnumConverter.cs" />
     <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
     <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
-    <Compile Include="Import\ImportView.xaml.cs">
-      <DependentUpon>ImportView.xaml</DependentUpon>
+    <Compile Include="Import\ImportProgressView.xaml.cs">
+      <DependentUpon>ImportProgressView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Import\ImportViewModel.cs" />
     <Compile Include="Input\InputViewModel.cs" />
@@ -428,6 +435,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ImageGrid\ImageGridItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ImagePanel\BrightnessView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -437,6 +448,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Import\ExportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Import\ImportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -464,7 +479,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Import\ImportView.xaml">
+    <Page Include="Import\ImportProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -789,6 +804,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\notsupported.ico" />
+    <Resource Include="Resources\Icons\checked.ico" />
+    <Resource Include="Resources\Icons\tag.ico" />
     <Resource Include="Resources\Icons\info.ico" />
     <Resource Include="Resources\Icons\contrast.ico" />
     <Resource Include="Resources\Icons\brightness.ico" />

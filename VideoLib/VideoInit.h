@@ -3,9 +3,17 @@
 #include <winbase.h>
 #include <msclr\marshal_cppstd.h>
 #include "ThreadSafeList.h"
-#define __STDC_CONSTANT_MACROS
+
 
 extern "C" {
+
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS
+#ifdef _STDINT_H
+#undef _STDINT_H
+#endif
+# include "stdint.h"
+#endif
 
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"

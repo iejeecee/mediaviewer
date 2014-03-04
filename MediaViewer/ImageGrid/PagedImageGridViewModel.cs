@@ -265,7 +265,7 @@ namespace MediaViewer.ImageGrid
                     }
                     else
                     {
-                        MediaPage[i] = null;
+                        MediaPage[i] = new MediaFileItem("");
                     }
                 }
 

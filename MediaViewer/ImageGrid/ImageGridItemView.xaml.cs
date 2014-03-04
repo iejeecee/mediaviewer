@@ -10,25 +10,19 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.Import
+namespace MediaViewer.ImageGrid
 {
     /// <summary>
-    /// Interaction logic for ImportView.xaml
+    /// Interaction logic for ImageGridItemView.xaml
     /// </summary>
-    public partial class ImportView : Window
+    public partial class ImageGridItemView : UserControl
     {
-        public ImportView()
+        public ImageGridItemView()
         {
             InitializeComponent();
-            ImportViewModel vm = new ImportViewModel();
-            DataContext = vm;
-
-            vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
-            {
-                this.Close();
-            });
         }
     }
 }

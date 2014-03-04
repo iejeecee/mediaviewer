@@ -402,7 +402,7 @@ namespace MediaViewer.Utils
 
 
 
-        public delegate void WalkDirectoryTreeDelegate(FileInfo info, Object state);
+        public delegate bool WalkDirectoryTreeDelegate(FileInfo info, Object state);
 
         public delegate void FileUtilsDelegate(System.Object sender, FileUtilsEventArgs e);
 
@@ -618,7 +618,11 @@ namespace MediaViewer.Utils
                     // want to open, delete or modify the file, then 
                     // a try-catch block is required here to handle the case 
                     // where the file has been deleted since the call to TraverseTree().
-                    callback.Invoke(info, state);
+                    bool cont = callback.Invoke(info, state);
+                    if (cont == false)
+                    {
+                        return;
+                    }
                 }
 
                 // Now find all the subdirectories under this directory.

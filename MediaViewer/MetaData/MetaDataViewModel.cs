@@ -120,6 +120,11 @@ namespace MediaViewer.MetaData
 
                 }));
 
+            clearRatingCommand = new Command(new Action(() =>
+                {
+                    Rating = null;
+                }));
+
             insertCounterCommand = new Command<int>(new Action<int>((startIndex) =>
             {
                 try
@@ -206,7 +211,15 @@ namespace MediaViewer.MetaData
             get { return writeMetaDataCommand; }
             set { writeMetaDataCommand = value; }
         }
-    
+
+        Command clearRatingCommand;
+
+        public Command ClearRatingCommand
+        {
+            get { return clearRatingCommand; }
+            set { clearRatingCommand = value; }
+        }
+
         string filename;
 
         public string Filename

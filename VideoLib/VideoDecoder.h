@@ -3,6 +3,8 @@
 #include "Video.h"
 #include "VideoLibException.h"
 
+
+
 typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
 
 class VideoDecoder : public Video {

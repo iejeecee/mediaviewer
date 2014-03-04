@@ -23,7 +23,8 @@ namespace MediaViewer.MediaFileModel
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
 
-            XMPLib.MetaData xmpMetaDataReader = new XMPLib.MetaData(errorCallbackDelegate, null);
+            //XMPLib.MetaData xmpMetaDataReader = new XMPLib.MetaData(errorCallbackDelegate, null);
+            XMPLib.MetaData xmpMetaDataReader = new XMPLib.MetaData(null, null);
 
             try
             {

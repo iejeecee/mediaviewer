@@ -290,7 +290,7 @@ namespace MediaViewer.DirectoryBrowser
 
         }
 
-        private void getFiles(FileInfo info, object state)
+        private bool getFiles(FileInfo info, object state)
         {
             List<MediaFileItem> items = (List<MediaFileItem>)state;
 
@@ -298,6 +298,8 @@ namespace MediaViewer.DirectoryBrowser
             {
                 items.Add(new MediaFileItem(info.FullName));
             }
+
+            return (true);
         }
 
         void insertIntoSortedCollection(ObservableCollection<PathModel> collection, PathModel item)

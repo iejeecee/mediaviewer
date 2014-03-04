@@ -58,6 +58,7 @@ namespace MediaViewer.VideoPanel
     using System.Threading.Tasks;
     using MediaViewer.Timers;
     using System.Windows;
+    using System.Windows.Threading;
 
 
     public class VideoRender : IScene
@@ -404,7 +405,7 @@ namespace MediaViewer.VideoPanel
                 {
                     device.PixelShader.SetShaderResource(j, textureView[j]);
                 }
-
+                               
                 device.DrawIndexed(nrIndices, 0, 0);
             }
         }

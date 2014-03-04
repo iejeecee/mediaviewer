@@ -73,6 +73,11 @@
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </inputtoolkit:Rating.LayoutTransform>
+                    <inputtoolkit:Rating.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="Clear" Command="{Binding ClearRatingStartCommand}" />
+                        </ContextMenu>
+                    </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
                 <Label Grid.Row="3" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
                 <inputtoolkit:Rating Grid.Row="3" Grid.Column="3" ItemCount="5" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
@@ -80,6 +85,11 @@
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </inputtoolkit:Rating.LayoutTransform>
+                    <inputtoolkit:Rating.ContextMenu>
+                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                            <MenuItem Header="Clear" Command="{Binding ClearRatingEndCommand}" />                    
+                        </ContextMenu>
+                   </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
                 <Label Grid.Row="4" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}"/>                
                 <DateTimePicker:DateTimePicker Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>

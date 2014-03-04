@@ -45,15 +45,13 @@ namespace MediaViewer.MediaFileBrowser
          
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
 
-            ImportSelectedItemsCommand = new Command(async () =>
+            ImportSelectedItemsCommand = new Command(() =>
             {
-                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItems();
-                if (selectedItems.Count == 0) return;
-
+          
                 ImportView import = new ImportView();
-                import.Show();
-                ImportViewModel vm = (ImportViewModel)import.DataContext;
-                await vm.importAsync(selectedItems);
+                import.ShowDialog();
+                //ImportViewModel vm = (ImportViewModel)import.DataContext;
+                //await vm.importAsync(selectedItems);
 
             });
 

@@ -3,6 +3,7 @@ using MediaViewer.Search;
 using MediaViewer.UserControls.Relation;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Validation;
 using System.IO;
@@ -289,6 +290,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 throw new DbEntityValidationException("Cannot create media with duplicate location: " + media.Location);
             }
+           
+
             Media newMedia = null;
             
             if (media is VideoMedia)
@@ -308,6 +311,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 newMedia = image;
             }
 
+          
+
             FileInfo info = new FileInfo(media.Location);
             info.Refresh();
             newMedia.LastModifiedDate = info.LastWriteTime;
@@ -321,15 +326,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 newMedia.Thumbnail.decodeImage();
             }
             else
-            {
+            {               
                 Db.ThumbnailSet.Add(media.Thumbnail);
-                newMedia.Thumbnail = media.Thumbnail;
-            }
+                newMedia.Thumbnail = media.Thumbnail;               
+            }          
 
             TagDbCommands tagCommands = new TagDbCommands(Db);
 
             foreach (Tag tag in media.Tags)
-            {
+            {               
                 Tag result = tagCommands.getTagByName(tag.Name);
 
                 if (result == null)
@@ -340,11 +345,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 }
                 else
                 {
-                    result.Used += 1;
+                    result.Used += 1;                   
                     newMedia.Tags.Add(result);
+                   
                 }
+               
             }
-       
+
             Db.SaveChanges();
 
             newMedia.IsImported = true;
@@ -447,7 +454,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 throw new DbEntityValidationException("Cannot delete non existing media: " + media.Location);
             }
-
+        
             foreach (Tag tag in deleteMedia.Tags)
             {
                 tag.Used -= 1;
@@ -465,7 +472,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (media.Thumbnail != null)
             {
                 media.Thumbnail.Id = 0;
+                // make sure there is no lingering connection to the removed media entity
+                // otherwise when we attach this thumbnail to a new entiy
+                // the framework will bring in the (cached?) dead entity and mess things up
+                media.Thumbnail.Media = null;
             }
+          
+
             media.IsImported = false;
         }
     }
