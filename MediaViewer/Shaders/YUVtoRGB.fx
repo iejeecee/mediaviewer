@@ -50,7 +50,7 @@ Texture2D<float> vTexture;
 SamplerState textureSampler
 {
     //Filter = MIN_MAG_MIP_LINEAR;
-	Filter = MIN_MAG_MIP_POINT;
+	Filter = MIN_MAG_MIP_LINEAR;//MIN_MAG_MIP_POINT;
     AddressU = Wrap;
     AddressV = Wrap;
 };

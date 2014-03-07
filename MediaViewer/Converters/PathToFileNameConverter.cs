@@ -15,10 +15,18 @@ namespace MediaViewer.Converters
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             String path = (string)value;
+            char[] dot = new char[] {'.'};
        
             if (!String.IsNullOrEmpty(path))
             {
-                return (Path.GetFileName(path));
+                if (parameter is string && parameter.Equals("ext"))
+                {
+                    return (Path.GetExtension(path).TrimStart(dot).ToUpper());
+                }
+                else
+                {
+                    return (Path.GetFileNameWithoutExtension(path));
+                }
             }
             else
             {

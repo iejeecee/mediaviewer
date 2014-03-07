@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,18 @@ namespace MediaViewer.ImageGrid
         public ImageGridItemView()
         {
             InitializeComponent();
+    
         }
+
+        public MediaFileItem MediaFileItem
+        {
+            get { return (MediaFileItem)GetValue(MediaFileItemProperty); }
+            set { SetValue(MediaFileItemProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MediaFileItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MediaFileItemProperty =
+            DependencyProperty.Register("MediaFileItem", typeof(MediaFileItem), typeof(ImageGridItemView), new PropertyMetadata(null));
+
     }
 }

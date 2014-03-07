@@ -16,6 +16,10 @@ namespace MediaViewer.MediaFileModel
 {
     public class MediaFactory
     {
+        static int maxConcurrentReads = 10;
+        static SemaphoreSlim concurrentReadsSemaphore = new SemaphoreSlim(maxConcurrentReads, maxConcurrentReads);
+       
+
         public enum ReadOptions
         {
             AUTO = 0x1,
@@ -247,6 +251,7 @@ namespace MediaViewer.MediaFileModel
             }
             
         }
+       
 
         /// <summary>
         /// Returns null when media does not exist
@@ -258,32 +263,49 @@ namespace MediaViewer.MediaFileModel
         /// <returns></returns>
         public static Media read(string location, ReadOptions options, CancellationToken token)
         {
-            // initialize media with a dummy in case of exceptions
-            Media media = null;
-                       
-            if (string.IsNullOrEmpty(location) || token.IsCancellationRequested == true)
-            {
-                return(media);
-            }
-            else if (FileUtils.isUrl(location))
-            {
-                media = readMediaFromWeb(location, options, token);
-            }
-            else
-            {
-                if(options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE)) {
 
-                    media = readMediaFromDatabase(location, options, token);                        
-                }                
+            concurrentReadsSemaphore.Wait(token);
+            try
+            {
+                // initialize media with a dummy in case of exceptions
+                Media media = null;
 
-                if ((media == null && options.HasFlag(ReadOptions.AUTO)) || 
-                    options.HasFlag(ReadOptions.READ_FROM_DISK))
+                if (string.IsNullOrEmpty(location) || token.IsCancellationRequested == true)
                 {
-                    media = readMediaFromFile(location, options, token);                       
-                }                                                          
+                    return (media);
+                }
+                else if (FileUtils.isUrl(location))
+                {
+                    media = readMediaFromWeb(location, options, token);
+                }
+                else
+                {
+                    if (options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE))
+                    {
+
+                        media = readMediaFromDatabase(location, options, token);
+                    }
+
+                    if ((media == null && options.HasFlag(ReadOptions.AUTO)) ||
+                        options.HasFlag(ReadOptions.READ_FROM_DISK))
+                    {
+                        media = readMediaFromFile(location, options, token);
+                    }
+                }
+
+
+                return (media);
+
             }
-                        
-            return (media);
+            catch (OperationCanceledException)
+            {
+                // convert operationcanceled to taskcanceled when the token aborts waiting for the semaphore
+                throw new TaskCanceledException();
+            }
+            finally
+            {
+                concurrentReadsSemaphore.Release();
+            }
         }
 
      

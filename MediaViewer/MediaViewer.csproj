@@ -405,6 +405,9 @@
     <Compile Include="UserControls\Relation\RelationView.xaml.cs">
       <DependentUpon>RelationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\TextBlock\AutoLengthTextBlock.xaml.cs">
+      <DependentUpon>AutoLengthTextBlock.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Utils\FileUtils.cs" />
     <Compile Include="Utils\FileUtilsEventArgs.cs" />
     <Compile Include="Utils\ImageUtils.cs" />
@@ -584,6 +587,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UserControls\Relation\RelationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TextBlock\AutoLengthTextBlock.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

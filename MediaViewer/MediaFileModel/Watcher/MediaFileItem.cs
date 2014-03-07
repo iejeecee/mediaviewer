@@ -144,7 +144,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             catch (TaskCanceledException)
             {
                 result = MediaFileItemState.CANCELLED;
-            }
+            }         
             catch (Exception e)
             {
                 result = MediaFileItemState.ERROR;
@@ -168,12 +168,12 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 media = await MediaFactory.readAsync(Location, options, token).ConfigureAwait(false);
 
-                result = getMediaState(media); 
+                result = getMediaState(media);
             }
             catch (TaskCanceledException)
             {
                 result = MediaFileItemState.CANCELLED;
-            }
+            }          
             catch (Exception e)
             {
                 result = MediaFileItemState.ERROR;

@@ -32,20 +32,12 @@ namespace MediaViewer.MediaFileModel
             get { return mediaCollection; }
             set { mediaCollection = value; }
         }
-
-        object nrLoadingItemsLock;
-        int nrLoadingItems;
-        // maximum concurrently loading items
-        const int maxLoadingItems = 25;
-
+       
         public MediaState()
         {
      
             mediaCollection = new MediaLockedCollection();
-            busyItems = new MediaLockedCollection();
-
-            nrLoadingItemsLock = new object();
-            nrLoadingItems = 0;          
+            busyItems = new MediaLockedCollection();             
 
         }
 
@@ -523,29 +515,12 @@ namespace MediaViewer.MediaFileModel
                 if (busyItems.Contains(MediaCollection.Items[start + i])) continue;
                 // don't reload already loaded items
                 if (MediaCollection.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
-
-                lock (nrLoadingItemsLock)
-                {
-                    while (nrLoadingItems == maxLoadingItems)
-                    {
-                        Monitor.Wait(nrLoadingItemsLock);
-                    }
-
-                    nrLoadingItems = nrLoadingItems + 1;
-                }
-
+                                            
                 MediaCollection.Items[start + i].readMetaDataAsync(
                     MediaFactory.ReadOptions.AUTO |
                     MediaFactory.ReadOptions.GENERATE_THUMBNAIL,
                     token).ContinueWith(finishedTask =>
-                    {
-                        lock (nrLoadingItemsLock)
-                        {
-                            nrLoadingItems = nrLoadingItems - 1;
-
-                            Monitor.PulseAll(nrLoadingItemsLock);
-                        }
-                    });
+                    {});
 
 
             }
@@ -641,25 +616,9 @@ namespace MediaViewer.MediaFileModel
                     {
                         throw new MediaStateException("Cannot read metadata for item, already in use by another operation");
                     }
-
-                    lock (nrLoadingItemsLock)
-                    {
-                        while (nrLoadingItems == maxLoadingItems)
-                        {
-                            Monitor.Wait(nrLoadingItemsLock);
-                        }
-
-                        nrLoadingItems = nrLoadingItems + 1;
-                    }
-
+                
                     item.readMetaData(options, token);
-
-                    lock (nrLoadingItemsLock)
-                    {
-                        nrLoadingItems = nrLoadingItems - 1;
-
-                        Monitor.PulseAll(nrLoadingItemsLock);
-                    }
+                
                 }
             }
             finally
