@@ -176,8 +176,8 @@
     <Property Name="NrChannels" Type="smallint" Nullable="true" />
     <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="false" />
     <Property Name="SamplesPerSecond" Type="int" Nullable="true" />
-    <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="false" />
-    <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="true" />
     <Property Name="AudioCodec" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
@@ -539,8 +539,8 @@
           <Property Type="Int16" Name="NrChannels" Nullable="true" />
           <Property Type="String" Name="PixelFormat" Nullable="false" />
           <Property Type="Int32" Name="SamplesPerSecond" Nullable="true" />
-          <Property Type="String" Name="VideoCodec" Nullable="false" />
-          <Property Type="String" Name="VideoContainer" Nullable="false" />
+          <Property Type="String" Name="VideoCodec" Nullable="true" />
+          <Property Type="String" Name="VideoContainer" Nullable="true" />
           <Property Type="String" Name="AudioCodec" Nullable="true" />
         </EntityType>
         <EntityType Name="UnknownMedia" BaseType="MediaDatabase.Media" />

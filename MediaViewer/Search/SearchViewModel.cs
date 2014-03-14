@@ -162,7 +162,8 @@ namespace MediaViewer.Search
 
             foreach (MediaFileItem item in mediaItems)
             {
-                item.readMetaData(MediaFactory.ReadOptions.READ_FROM_DISK, token);
+                Task task = item.readMetaDataAsync(MediaFactory.ReadOptions.READ_FROM_DISK, token);
+                task.Wait();
                 if (item.ItemState == MediaFileItemState.LOADED)
                 {
                     foreach (Tag tag in tags)

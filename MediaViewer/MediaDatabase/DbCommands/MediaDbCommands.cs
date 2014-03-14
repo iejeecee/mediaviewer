@@ -326,8 +326,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 newMedia.Thumbnail.decodeImage();
             }
             else
-            {               
-                Db.ThumbnailSet.Add(media.Thumbnail);
+            {
+                if (media.Thumbnail != null)
+                {
+                    Db.ThumbnailSet.Add(media.Thumbnail);
+                }
                 newMedia.Thumbnail = media.Thumbnail;               
             }          
 

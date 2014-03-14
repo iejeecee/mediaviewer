@@ -328,5 +328,18 @@ void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLi
 	}
 
 }
+
+int VideoPlayer::getAvFormatVersion() {
+
+	return(VideoInit::getAvFormatVersion());
+}
+
+String ^VideoPlayer::getAvFormatBuildInfo() {
+
+	std::string info = VideoInit::getBuildConfig();
+
+	return(marshal_as<String ^>(info));
+
+}
 }
 

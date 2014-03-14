@@ -48,10 +48,13 @@ namespace MediaViewer.MediaFileModel
 
         public void add(IEnumerable<MediaFileItem> items)
         {
-          
+
+            if (items.Count() == 0) return;
+
             bool itemIsSelectedChanged = false;
 
             MediaCollection.EnterWriteLock();
+            System.Diagnostics.Debug.WriteLine("begin add event: " + items.ElementAt(0).Location);
 
             try
             {
@@ -77,21 +80,24 @@ namespace MediaViewer.MediaFileModel
             }
             finally
             {
+                System.Diagnostics.Debug.WriteLine("end add event: " + items.ElementAt(0).Location);
                 MediaCollection.ExitWriteLock();
             }
         }
 
         public void rename(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
         {
-         
-            MediaCollection.EnterWriteLock();
 
+            if (oldItems.Count() == 0 || newItems.Count() == 0) return;
+
+            MediaCollection.EnterWriteLock();
+            System.Diagnostics.Debug.WriteLine("begin rename event " + oldItems.ElementAt(0).Location + " " + newItems.ElementAt(0).Location);
             try
             {
 
                 bool success = MediaCollection.RenameRange(oldItems, newItems);
                
-                fireEvents(NotifyCollectionChangedAction.Reset, null, false);
+                //fireEvents(NotifyCollectionChangedAction.Reset, null, false);
 
                 if (success == false)
                 {
@@ -100,15 +106,19 @@ namespace MediaViewer.MediaFileModel
             }
             finally
             {
+                System.Diagnostics.Debug.WriteLine("end rename event " + oldItems.ElementAt(0).Location + " " + newItems.ElementAt(0).Location);
                 MediaCollection.ExitWriteLock();
             }
         }
 
         public void remove(IEnumerable<MediaFileItem> removeItems)
         {
+            if (removeItems.Count() == 0) return;
+
             bool itemIsSelectedChanged = false;
 
             MediaCollection.EnterWriteLock();
+            System.Diagnostics.Debug.WriteLine("begin remove event: " + removeItems.ElementAt(0).Location);
 
             try
             {
@@ -130,6 +140,7 @@ namespace MediaViewer.MediaFileModel
             }
             finally
             {
+                System.Diagnostics.Debug.WriteLine("end remove event: " + removeItems.ElementAt(0).Location);
                 MediaCollection.ExitWriteLock();
             }
 
@@ -431,13 +442,13 @@ namespace MediaViewer.MediaFileModel
                             throw new MediaStateException("Cannot import item, item already in use: " + item.Location);
                         }
 
-                        success = insertItem.import();
+                        success = insertItem.import(token);
                         if (success)
                         {
                             importedItems.Add(insertItem);
                         }
 
-                        item.Media = insertItem.Media;
+                        //item.Media = insertItem.Media;
                     }
                     finally
                     {
@@ -482,7 +493,7 @@ namespace MediaViewer.MediaFileModel
                 {
                     if (token.IsCancellationRequested) return;
 
-                    success = item.export();
+                    success = item.export(token);
                     if (success)
                     {
                         exportedItems.Add(item);
@@ -515,13 +526,11 @@ namespace MediaViewer.MediaFileModel
                 if (busyItems.Contains(MediaCollection.Items[start + i])) continue;
                 // don't reload already loaded items
                 if (MediaCollection.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
-                                            
+
                 MediaCollection.Items[start + i].readMetaDataAsync(
                     MediaFactory.ReadOptions.AUTO |
                     MediaFactory.ReadOptions.GENERATE_THUMBNAIL,
-                    token).ContinueWith(finishedTask =>
-                    {});
-
+                    token).ContinueWith(finishedTask => { });
 
             }
 
@@ -617,7 +626,8 @@ namespace MediaViewer.MediaFileModel
                         throw new MediaStateException("Cannot read metadata for item, already in use by another operation");
                     }
                 
-                    item.readMetaData(options, token);
+                    Task task = item.readMetaDataAsync(options, token);
+                    task.Wait();
                 
                 }
             }

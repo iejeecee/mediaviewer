@@ -53,7 +53,7 @@ namespace XMPDLL {
 
 		virtual bool canPutXMP() = 0;
 		virtual void putXMP() = 0;
-
+		
 		virtual bool getProperty(const std::string &nameSpace, 
 			const std::string &propName, 
 			std::string &propValue) const = 0;
@@ -181,5 +181,7 @@ namespace XMPDLL {
 
 	EXTERN_C XMPDLL_API void WINAPI decodeFromBase64(const std::string &encodedStr,
 		std::string &rawStr); 
+
+	EXTERN_C XMPDLL_API void WINAPI getVersionInfo(XMP_VersionInfo *versionInfo);
 
 }

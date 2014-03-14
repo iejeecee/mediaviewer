@@ -13,7 +13,8 @@ namespace MediaViewer.About
 
         public AboutViewModel()
         {
-            AssemblyInfo = Assembly.GetEntryAssembly().GetName();           
+            AssemblyInfo = Assembly.GetEntryAssembly().GetName();       
+            getLibraryVersionsInfo();
         }
 
         AssemblyName assemblyInfo;
@@ -26,6 +27,38 @@ namespace MediaViewer.About
                 assemblyInfo = value;
                 NotifyPropertyChanged();
             }
+        }
+
+        String libraryVersionsInfo;
+
+        public String LibraryVersionsInfo
+        {
+            get { return libraryVersionsInfo; }
+            set { libraryVersionsInfo = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        void getLibraryVersionsInfo()
+        {
+            XMPLib.VersionInfo info = new XMPLib.VersionInfo();
+            XMPLib.MetaData.getVersionInfo(ref info);
+
+            StringBuilder sb = new StringBuilder();
+
+            String debug = info.isDebug ? "(Debug)" : "";
+
+            sb.AppendLine("XMPLib Version: " + info.major + "." + info.minor + "." + info.micro + " " + debug);
+            sb.AppendLine(info.message);
+
+            int version = VideoLib.VideoPlayer.getAvFormatVersion();
+            int major = version >> 16;
+            int minor = (version >> 8) & 0xFF;
+            int micro = version & 0xFF;
+
+            sb.AppendLine("FFmpeg Version: " + major + "." + minor + "." + micro);       
+
+            LibraryVersionsInfo = sb.ToString();
         }
     }
 }

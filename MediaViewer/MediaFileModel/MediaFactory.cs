@@ -308,7 +308,7 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-     
+/*     
         public static async Task<Media> readAsync(string location, ReadOptions options, CancellationToken token)
         {
 
@@ -316,6 +316,7 @@ namespace MediaViewer.MediaFileModel
            
 
         }
+ */ 
 
     }
 }

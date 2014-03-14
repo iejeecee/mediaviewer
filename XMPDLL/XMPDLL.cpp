@@ -57,6 +57,7 @@ namespace XMPDLL {
 
 		SXMPMeta meta;
 		SXMPFiles myFile;
+		
 	
 	public:
 
@@ -70,6 +71,8 @@ namespace XMPDLL {
 				
 				myFile.SetProgressCallback(progressProc, context, 1.0F, false);
 			}
+
+			
 		}
 	
 		bool open(const std::string &filename, XMP_OptionBits options) {
@@ -83,8 +86,7 @@ namespace XMPDLL {
 			{
 				return(false);
 			}
-			
-
+						
 			//XMP_OptionBits options = 0;
 
 			// Must initialize SXMPFiles before we use it
@@ -109,9 +111,7 @@ namespace XMPDLL {
 				opts = options | kXMPFiles_OpenUsePacketScanning;			
 				ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
 			}
-
 			
-
 			if(ok)
 			{			
 				myFile.GetXMP(&meta);
@@ -121,6 +121,8 @@ namespace XMPDLL {
 			myFile.CloseFile();
 			return(false);
 		}
+
+		
 
 		bool dumpToDisk(const std::string &filename) const {
 
@@ -427,5 +429,9 @@ namespace XMPDLL {
 		TXMPUtils<std::string>::DecodeFromBase64(encodedStr, &rawStr);
 	}
 
+	XMPDLL_API void WINAPI getVersionInfo(XMP_VersionInfo *versionInfo) {
+
+		SXMPMeta::GetVersionInfo(versionInfo);
+	}
 	
 }

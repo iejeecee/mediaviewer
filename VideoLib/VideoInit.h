@@ -27,7 +27,6 @@ protected:
 	static bool isAVlibInitialized;
 	static ThreadSafeList<CRITICAL_SECTION **> *criticalSections;
 
-
 public:
 
 	static bool initializeAVLib() {
@@ -36,7 +35,7 @@ public:
 
 			av_register_all();
 			avcodec_register_all();
-
+			
 			avformat_network_init();
 
 			isAVlibInitialized = true;	
@@ -50,6 +49,14 @@ public:
 		}		
 
 		return(isAVlibInitialized);
+	}
+
+	static int getAvFormatVersion() {
+		return(avformat_version());
+	}
+
+	static std::string getBuildConfig() {
+		return(avformat_configuration());
 	}
 
 	static void listAllRegisteredCodecs() {
@@ -154,4 +161,5 @@ public:
 
 bool VideoInit::isAVlibInitialized = false;
 ThreadSafeList<CRITICAL_SECTION **> *VideoInit::criticalSections = new ThreadSafeList<CRITICAL_SECTION **>();
+
 

@@ -15,11 +15,14 @@ namespace MediaViewer.MediaFileModel.Watcher
 {
     class MediaFileWatcher
     {
-             
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         MediaState mediaState;
         /// <summary>
         /// All the mediafiles that are currently being watched using a mediafilewatcher
         /// Several event's can be fired on changes to the file(s)
+        /// Note that mediafilewatcher becomes unstable if the program is slow or many events are happening at once
+        /// events will start missing and/or be send out of order.
         /// </summary>
         public MediaState MediaState
         {
@@ -61,10 +64,18 @@ namespace MediaViewer.MediaFileModel.Watcher
             watcher.Renamed += new System.IO.RenamedEventHandler(FileRenamed);
 
             fileWatcherQueue = new MediaFileWatcherQueue(this);
+
+            DebugOutput = false;
          
         }
 
-        bool isWatcherEnabled;
+        bool debugOutput;
+
+        public bool DebugOutput
+        {
+            get { return debugOutput; }
+            set { debugOutput = value; }
+        }
 
         public bool IsWatcherEnabled
         {
@@ -109,22 +120,42 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         private void FileChanged(System.Object sender, System.IO.FileSystemEventArgs e)
         {
-            fileWatcherQueue.EventQueue.Enqueue(e);
+            if (DebugOutput)
+            {
+                log.Info("Changed watcher event: " + e.FullPath);
+            }
+
+            fileWatcherQueue.EventItems.Add(e);
         }
 
         private void FileCreated(System.Object sender, System.IO.FileSystemEventArgs e)
         {
-            fileWatcherQueue.EventQueue.Enqueue(e);
+            if (DebugOutput)
+            {
+                log.Info("Created watcher event: " + e.FullPath);
+            }
+
+            fileWatcherQueue.EventItems.Add(e);
         }
 
         private void FileDeleted(System.Object sender, System.IO.FileSystemEventArgs e)
         {
-            fileWatcherQueue.EventQueue.Enqueue(e);
+            if (DebugOutput)
+            {
+                log.Info("Deleted watcher event: " + e.FullPath);
+            }
+
+            fileWatcherQueue.EventItems.Add(e);
         }
 
         private void FileRenamed(System.Object sender, System.IO.RenamedEventArgs e)
         {
-            fileWatcherQueue.EventQueue.Enqueue(e);
+            if (DebugOutput)
+            {
+                log.Info("Renamed watcher event: " + e.OldFullPath + " " + e.FullPath);
+            }
+
+            fileWatcherQueue.EventItems.Add(e);
         }
          
         public string Path

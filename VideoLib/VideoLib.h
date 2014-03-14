@@ -311,5 +311,7 @@ namespace VideoLib {
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,
 			bool onlyLogImportant);
 		
+		static int getAvFormatVersion();
+		static String ^getAvFormatBuildInfo();
 	};
 }

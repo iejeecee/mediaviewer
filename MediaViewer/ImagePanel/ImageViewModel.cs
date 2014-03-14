@@ -361,10 +361,10 @@ namespace MediaViewer.ImagePanel
             {
                 IsLoading = true;
 
-                media = await MediaFactory.readAsync((String)fileName, 
+                media = await Task<Media>.Run(() => MediaFactory.read((String)fileName, 
                     MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ, 
-                    loadImageCTS.Token);
-                
+                    loadImageCTS.Token), loadImageCTS.Token);
+          
                 BitmapImage loadedImage = null;
 
                 if (media is ImageMedia && media.Data != null)

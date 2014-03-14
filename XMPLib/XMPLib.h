@@ -27,6 +27,19 @@ namespace XMPLib {
 
 	};
 
+	public ref class VersionInfo
+	{
+	public:
+
+		int build;
+		int flags;
+		bool isDebug;
+		String ^message;
+		int major;
+		int micro;
+		int minor;
+	};
+
 	public ref class MetaData
 	{
 
@@ -134,5 +147,7 @@ namespace XMPLib {
 			String ^%rawStr); 
 
 		static void setLogCallback(LogCallbackDelegate ^callback);
+
+		static void getVersionInfo(VersionInfo ^%info);
 	};
 }

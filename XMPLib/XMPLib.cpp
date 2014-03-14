@@ -674,6 +674,22 @@ void MetaData::decodeFromBase64(String ^encodedStr,
 
 	rawStr = marshal_as<String ^>(temp);
 }
+
+void MetaData::getVersionInfo(VersionInfo ^%info) {
+
+	XMP_VersionInfo versionInfo;
+
+	XMPDLL::getVersionInfo(&versionInfo);
+
+	info->build = versionInfo.build;
+
+	info->flags = versionInfo.flags;
+	info->isDebug = versionInfo.isDebug == 0 ? false : true;
+	info->message =  marshal_as<String ^>(versionInfo.message);
+	info->major = versionInfo.major;
+	info->micro = versionInfo.micro;
+	info->minor = versionInfo.minor;
+}
 /*
 MetaDataTreeNode ^MetaData::parse() {
 

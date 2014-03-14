@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
@@ -40,18 +41,14 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         }
 
-        ConcurrentQueue<FileSystemEventArgs> eventQueue;
+        BlockingCollection<FileSystemEventArgs> eventItems;
 
-        public ConcurrentQueue<FileSystemEventArgs> EventQueue
+        public BlockingCollection<FileSystemEventArgs> EventItems
         {
-            get { return eventQueue; }
-            private set { eventQueue = value; }
+            get { return eventItems; }
+            private set { eventItems = value; }
         }
-
-        object processEventQueueLock;
-
-        DefaultTimer timer;
-
+ 
         MediaFileWatcher mediaFileWatcher;
 
         public MediaFileWatcher MediaFileWatcher
@@ -79,33 +76,26 @@ namespace MediaViewer.MediaFileModel.Watcher
             renamedNewFiles = new List<MediaFileItem>();
             renamedOldFiles = new List<MediaFileItem>();
 
-            eventQueue = new ConcurrentQueue<FileSystemEventArgs>();
-            timer = new DefaultTimer();
-            timer.Interval = 1000;
-            timer.Tick += processEvents;
-            timer.AutoReset = false;
-            timer.start();
+            eventItems = new BlockingCollection<FileSystemEventArgs>(new ConcurrentQueue<FileSystemEventArgs>());
+            Task.Run(() => processEvents());         
 
-            processEventQueueLock = new object();
-
-          
         }
 
-  
+/*
         public void clear()
         {
             lock (processEventQueueLock)
             {
                 FileSystemEventArgs e = null;
 
-                while (eventQueue.TryDequeue(out e))
+                while (eventItems.TryDequeue(out e))
                 {
 
                 }
             }
-            
-        }
 
+        }
+*/
         List<MediaFileItem> created;
         List<MediaFileItem> removed;
         List<MediaFileItem> renamedOldFiles;
@@ -150,7 +140,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         {
                             MediaFileItem oldFile = new MediaFileItem(r.OldFullPath);
 
-                            if (MediaFileWatcher.MediaState.isInUse(oldFile)) 
+                            if (Path.GetExtension(r.Name).Equals("._01_"))
                             {
                                 // Updating metadata on a mediafile will create a temporary copy of the mediafile
                                 // which causes several create/rename/delete events
@@ -161,13 +151,13 @@ namespace MediaViewer.MediaFileModel.Watcher
                             {
                                 removed.Add(oldFile);
                             }
-                            
+
                         }
                         else if (!Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
                             MediaFileItem newFile = new MediaFileItem(r.FullPath);
 
-                            if (MediaFileWatcher.MediaState.isInUse(newFile))
+                            if (Path.GetExtension(r.OldName).Equals("._00_"))
                             {
                                 // Updating metadata on a mediafile will create a temporary copy of the mediafile
                                 // which causes several create/rename/delete events
@@ -203,7 +193,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 MediaFileWatcher.MediaState.add(created);
                 created.Clear();
             }
-          
+
             if (changed.Count > 0)
             {
                 //MediaFileWatcher.MediaFiles.RemoveAll(removed);
@@ -218,97 +208,99 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        void processEvents(object sender, EventArgs arg)
+        void processEvents()
         {
-            lock (processEventQueueLock)
+            while (true)
             {
-                if (eventQueue.IsEmpty)
+                try
                 {
-                    timer.start();
-                    return;
+                    FileSystemEventArgs prevEvent = eventItems.Take();
+
+                    //allow the queue to fill before consuming it's items
+                    Thread.Sleep(100);
+
+                    FileSystemEventArgs e = prevEvent;
+
+                    do
+                    {
+                        switch (e.ChangeType)
+                        {
+                            case WatcherChangeTypes.Changed:
+                                {
+                                    if (prevEvent.ChangeType == WatcherChangeTypes.Changed)
+                                    {
+                                        insertEvent(e);
+                                    }
+                                    else
+                                    {
+                                        invokeEvents();
+                                        insertEvent(e);
+                                    }
+                                    break;
+                                }
+                            case WatcherChangeTypes.Created:
+                                {
+                                    if (prevEvent.ChangeType == WatcherChangeTypes.Created)
+                                    {
+                                        insertEvent(e);
+                                    }
+                                    else
+                                    {
+                                        invokeEvents();
+                                        insertEvent(e);
+                                    }
+                                    break;
+                                }
+                            case WatcherChangeTypes.Deleted:
+                                {
+                                    if (prevEvent.ChangeType == WatcherChangeTypes.Deleted)
+                                    {
+                                        insertEvent(e);
+                                    }
+                                    else
+                                    {
+                                        invokeEvents();
+                                        insertEvent(e);
+                                    }
+                                    break;
+                                }
+                            case WatcherChangeTypes.Renamed:
+                                {
+
+                                    // this isn't correct for complex rename operations 
+                                    // for example chained renames like a => b and then b => c 
+                                    // Because in mediafilestate all the removes happen first in a batch operation
+                                    // after which all the new items are added.
+                                    // These situations will seldomly happen though, and to fix it 
+                                    // more complex parsing of the rename events should be done
+                                    if (prevEvent.ChangeType == WatcherChangeTypes.Renamed)
+                                    {
+                                        insertEvent(e);
+                                    }
+                                    else
+                                    {
+                                        invokeEvents();
+                                        insertEvent(e);
+                                    }
+                                    break;
+                                }
+                        }
+
+                        prevEvent = e;
+
+                    } while (eventItems.TryTake(out e));
+
+
+                    invokeEvents();
+                }
+                catch (Exception e)
+                {
+                    log.Error("Exception in MediaFileWatcherQueue", e);
                 }
 
-                FileSystemEventArgs prevEvent = null;
-
-                eventQueue.TryDequeue(out prevEvent);
-                FileSystemEventArgs e = prevEvent;
-
-                do
-                {
-                    switch (e.ChangeType)
-                    {
-                        case WatcherChangeTypes.Changed:
-                            {
-                                if (prevEvent.ChangeType == WatcherChangeTypes.Changed)
-                                {
-                                    insertEvent(e);
-                                }
-                                else
-                                {
-                                    invokeEvents();
-                                    insertEvent(e);
-                                }
-                                break;
-                            }
-                        case WatcherChangeTypes.Created:
-                            {
-                                if (prevEvent.ChangeType == WatcherChangeTypes.Created)
-                                {
-                                    insertEvent(e);
-                                }
-                                else
-                                {
-                                    invokeEvents();
-                                    insertEvent(e);
-                                }
-                                break;
-                            }
-                        case WatcherChangeTypes.Deleted:
-                            {
-                                if (prevEvent.ChangeType == WatcherChangeTypes.Deleted)
-                                {
-                                    insertEvent(e);
-                                }
-                                else
-                                {
-                                    invokeEvents();
-                                    insertEvent(e);
-                                }
-                                break;
-                            }
-                        case WatcherChangeTypes.Renamed:
-                            {
-
-                                // this isn't correct for complex rename operations 
-                                // for example chained renames like a => b and then b => c 
-                                // Because in mediafilestate all the removes happen first in a batch operation
-                                // after which all the new items are added.
-                                // These situations will seldomly happen though, and to fix it 
-                                // more complex parsing of the rename events should be done
-                                if (prevEvent.ChangeType == WatcherChangeTypes.Renamed)
-                                {
-                                    insertEvent(e);
-                                }
-                                else
-                                {
-                                    invokeEvents();
-                                    insertEvent(e);
-                                }
-                                break;
-                            }
-                    }
-
-                    prevEvent = e;
-
-                } while (eventQueue.TryDequeue(out e));
-
-                invokeEvents();
-
-                timer.start();
             }
-        }
 
-        
+        }
 
     }
 }
