@@ -202,9 +202,9 @@ namespace MediaViewer.ImageGrid
              
             //int startIndex = CurrentPage * maxItemsPerPage;
             //int endIndex = startIndex + maxItemsPerPage;
-            int totalPages = (int)Math.Ceiling(MediaState.MediaCollection.Count / (float)MaxItemsPerPage);
+            int totalPages = (int)Math.Ceiling(MediaState.UIMediaCollection.Count / (float)MaxItemsPerPage);
 
-            if (MediaState.MediaCollection.Count == 0)
+            if (MediaState.UIMediaCollection.Count == 0)
             {
                 NrPages = 0;              
             }
@@ -253,7 +253,7 @@ namespace MediaViewer.ImageGrid
 
                 int startItem = (CurrentPage > 0 ? CurrentPage - 1 : CurrentPage) * MaxItemsPerPage;
 
-                int itemsInState = MediaState.MediaCollection.Items.Count;
+                int itemsInState = MediaState.UIMediaCollection.Items.Count;
 
                 int nrItems = startItem + maxItemsPerPage > itemsInState ? itemsInState - startItem : maxItemsPerPage;
 
@@ -261,11 +261,11 @@ namespace MediaViewer.ImageGrid
                 {
                     if (i < nrItems)
                     {
-                        MediaPage[i] = MediaState.MediaCollection.Items[startItem + i];
+                        MediaPage[i] = MediaState.UIMediaCollection.Items[startItem + i];
                     }
                     else
                     {
-                        MediaPage[i] = new MediaFileItem("");
+                        MediaPage[i] = MediaFileItem.Factory.EmptyItem;
                     }
                 }
 

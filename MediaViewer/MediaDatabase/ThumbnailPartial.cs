@@ -43,8 +43,9 @@ namespace MediaViewer.MediaDatabase
             this.Width = (short)source.PixelWidth;
             this.Height = (short)source.PixelHeight;
 
-            source.Freeze();
-            Image = source;        
+            source.Freeze();           
+            Image = source;
+           
         }
 
         public void decodeImage()
@@ -66,5 +67,7 @@ namespace MediaViewer.MediaDatabase
             Image = thumb;
            
         }
+
+     
     }
 }

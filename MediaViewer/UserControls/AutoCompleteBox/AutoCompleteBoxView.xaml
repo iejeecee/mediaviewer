@@ -6,30 +6,21 @@
              xmlns:Control="clr-namespace:MediaViewer.UserControls.AutoCompleteBox"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>
-        <Control:AutoCompleteBoxViewModel x:Key="viewModel"/>
+    <UserControl.Resources>       
         <Style x:Key="buttonStyle" TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">           
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
     </UserControl.Resources>
     <Grid>
-        <TextBox x:Name="autoCompleteTextBox" TextWrapping="Wrap" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown">
-            <TextBox.Text>
-                <Binding Source="{StaticResource viewModel}" Path="Text"
-                    UpdateSourceTrigger="PropertyChanged"/>
-            </TextBox.Text>
-        </TextBox>
+        <TextBox x:Name="autoCompleteTextBox" TextWrapping="Wrap" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown"/>                 
         <Popup x:Name="popup" StaysOpen="true" AllowsTransparency="True" Height="Auto" Width="Auto" MaxHeight="200" MouseEnter="popup_MouseEnter" MouseLeave="popup_MouseLeave" >
             <Border BorderBrush="Black" BorderThickness="1">
                 <ScrollViewer Name="scrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-                    <ItemsControl ItemsSource="{Binding Suggestions, Source={StaticResource viewModel}}">
+                    <ItemsControl Name="popupItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding}" 
-                                    Command="{Binding SetSuggestionCommand, Source={StaticResource viewModel}}" 
-                                    CommandParameter="{Binding}"
-                                    Style="{StaticResource buttonStyle}"/>
+                                <Button Name="suggestionButton" Tag="{Binding}" Content="{Binding}" Style="{StaticResource buttonStyle}" Click="suggestionButton_Click"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>

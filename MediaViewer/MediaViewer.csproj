@@ -184,15 +184,11 @@
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxViewModel.cs" />
     <Compile Include="UserControls\AutoCompleteBox\TernaryTree.cs" />
     <Compile Include="UserControls\DateTimePicker\DateTimePicker.xaml.cs">
       <DependentUpon>DateTimePicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\DateTimePicker\DateTimePickerBase.cs" />
-    <Compile Include="UserControls\DateTimePicker\DateTimePickerView.xaml.cs">
-      <DependentUpon>DateTimePickerView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
       <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
     </Compile>
@@ -326,10 +322,10 @@
     <Compile Include="MetaData\FormatMetaData.cs" />
     <Compile Include="MetaData\GeoTagCoordinate.cs" />
     <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
-    <Compile Include="MetaData\LinkedTagEditorView.xaml.cs">
-      <DependentUpon>LinkedTagEditorView.xaml</DependentUpon>
+    <Compile Include="MetaData\TagEditorView.xaml.cs">
+      <DependentUpon>TagEditorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MetaData\LinkedTagEditorViewModel.cs" />
+    <Compile Include="MetaData\TagEditorViewModel.cs" />
     <Compile Include="MetaData\MetaDataPresetsView.xaml.cs">
       <DependentUpon>MetaDataPresetsView.xaml</DependentUpon>
     </Compile>
@@ -339,8 +335,8 @@
     </Compile>
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
-    <Compile Include="MetaData\TagEditorView.xaml.cs">
-      <DependentUpon>TagEditorView.xaml</DependentUpon>
+    <Compile Include="UserControls\TagPicker\TagPickerView.xaml.cs">
+      <DependentUpon>TagPickerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\Tree\MetaDataTree.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeArray.cs" />
@@ -405,6 +401,13 @@
     <Compile Include="UserControls\Relation\RelationView.xaml.cs">
       <DependentUpon>RelationView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\TagTreePicker\CategoryItem.cs" />
+    <Compile Include="UserControls\TagTreePicker\TagTreePickerItem.cs" />
+    <Compile Include="UserControls\TagTreePicker\TagTreePickerView.xaml.cs">
+      <DependentUpon>TagTreePickerView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\TagTreePicker\TagTreePickerViewModel.cs" />
+    <Compile Include="UserControls\TagTreePicker\TagItem.cs" />
     <Compile Include="UserControls\TextBlock\AutoLengthTextBlock.xaml.cs">
       <DependentUpon>AutoLengthTextBlock.xaml</DependentUpon>
     </Compile>
@@ -466,10 +469,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="UserControls\DateTimePicker\DateTimePickerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="DirectoryBrowser\DirectoryBrowserControl2.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -510,7 +509,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MetaData\LinkedTagEditorView.xaml">
+    <Page Include="MetaData\TagEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -526,7 +525,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MetaData\TagEditorView.xaml">
+    <Page Include="UserControls\TagPicker\TagPickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -587,6 +586,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UserControls\Relation\RelationView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TagTreePicker\TagTreePickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

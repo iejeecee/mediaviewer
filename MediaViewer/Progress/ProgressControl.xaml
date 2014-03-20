@@ -25,7 +25,7 @@
         <Label Grid.Row="1" x:Name="progressLabel" Content="Finished 0 / 0" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center"/>
         <ProgressBar Grid.Row="2" x:Name="itemProgressBar" Height="18" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
         <Label Grid.Row="3" x:Name="itemLabel" Content="Progress" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center"/>
-        <TextBox Grid.Row="4" x:Name="infoTextBox" HorizontalAlignment="Stretch" Margin="10,10,10,10" IsReadOnly="True" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>
+        <TextBox Grid.Row="4" x:Name="infoTextBox" HorizontalAlignment="Stretch" Margin="10,10,10,10" IsReadOnly="True" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" UndoLimit="0"/>
         <Button Grid.Row="5" x:Name="okButton" Content="Ok" HorizontalAlignment="Center" Margin="5,5,80,5" VerticalAlignment="Top" Width="75"/>
         <Button Grid.Row="6" x:Name="cancelButton" Content="Cancel" HorizontalAlignment="Center" Margin="5,5,-80,5" VerticalAlignment="Top" Width="75"/>
     </Grid>

@@ -79,7 +79,7 @@ namespace MediaViewer
             {
                 if (mediaFileBrowser.Visibility == Visibility.Visible)
                 {
-                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItems();
+                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
                  
                     if (selected.Count > 0)
                     {

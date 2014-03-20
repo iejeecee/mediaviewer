@@ -22,18 +22,18 @@ namespace MediaViewer.MediaFileModel.Watcher
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         ReaderWriterLockSlim rwLock;
-        
-        public MediaFileItem(String location)
+  
+        protected MediaFileItem(String location, MediaFileItemState state = MediaFileItemState.EMPTY)
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
               
             Location = location;
             IsSelected = false;
             Media = null;
-            ItemState = MediaFileItemState.EMPTY;
+            ItemState = state;
             
         }
-
+       
         MediaFileItemState state;
 
         public MediaFileItemState ItemState
@@ -163,8 +163,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 MediaFileItemState result = MediaFileItemState.LOADED;
 
                 try
-                {
-                    System.Diagnostics.Debug.WriteLine("start reading metadata: " + Location);
+                {                  
 
                     ItemState = MediaFileItemState.LOADING;
 
@@ -196,7 +195,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 {
                     Media = media;
                     ItemState = result;
-                    System.Diagnostics.Debug.WriteLine("end reading metadata: " + Location);
+         
                     rwLock.ExitWriteLock();
                 }
 
@@ -421,6 +420,38 @@ namespace MediaViewer.MediaFileModel.Watcher
                 rwLock.ExitReadLock();
             }
 
+        }
+
+        public class Factory
+        {
+            public static MediaFileItem create(string location)
+            {
+                MediaFileWatcher.Instance.MediaState.UIMediaCollection.EnterReaderLock();
+                MediaFileWatcher.Instance.MediaState.BusyMediaCollection.EnterReaderLock();
+                try
+                {
+                    MediaFileItem item = MediaFileWatcher.Instance.MediaState.UIMediaCollection.Find(location);
+
+                    if (item == null)
+                    {
+                        item = MediaFileWatcher.Instance.MediaState.BusyMediaCollection.Find(location);
+                    }
+
+                    if (item == null)
+                    {
+                        item = new MediaFileItem(location, MediaFileItemState.LOADING);                      
+                    }
+
+                    return (item);
+                }
+                finally
+                {
+                    MediaFileWatcher.Instance.MediaState.BusyMediaCollection.ExitReaderLock();
+                    MediaFileWatcher.Instance.MediaState.UIMediaCollection.ExitReaderLock();                    
+                }
+            }
+
+            public static MediaFileItem EmptyItem = new MediaFileItem("");
         }
     }
 }

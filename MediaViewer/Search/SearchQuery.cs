@@ -44,6 +44,64 @@ namespace MediaViewer.Search
       
         }
 
+        public bool IsEmpty
+        {
+            get
+            {
+                if (!String.IsNullOrEmpty(Text) && !String.IsNullOrWhiteSpace(Text))
+                {
+                    return (false);
+                }
+
+                if (tags.Count > 0)
+                {
+                    return (false);
+                }
+
+                if (this.CreationEnd != null || this.CreationStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.DurationSecondsEnd != null || this.DurationSecondsStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.FramesPerSecondEnd != null || this.FramesPerSecondEnd != null)
+                {
+                    return (false);
+                }
+
+                if (this.ImageHeightEnd != null || this.ImageHeightStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.ImageWidthEnd != null || this.ImageWidthStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.RatingEnd != null || this.RatingStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.VideoHeightEnd != null || this.VideoHeightStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.VideoWidthEnd != null || this.VideoWidthStart != null)
+                {
+                    return (false);
+                }
+
+                return (true);
+            }
+        }
+
         ObservableCollection<Tag> tags;
 
         public ObservableCollection<Tag> Tags

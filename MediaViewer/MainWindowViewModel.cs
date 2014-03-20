@@ -87,8 +87,8 @@ namespace MediaViewer
 
             TagEditorCommand = new Command(() =>
                 {
-                    LinkedTagEditorView linkedTagEditor = new LinkedTagEditorView();
-                    linkedTagEditor.ShowDialog();
+                    TagEditorView tagEditor = new TagEditorView();
+                    tagEditor.ShowDialog();
                 });
 
             AboutCommand = new Command(() =>

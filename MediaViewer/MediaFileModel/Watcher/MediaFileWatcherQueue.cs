@@ -112,7 +112,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         if (Utils.MediaFormatConvert.isMediaFile(e.Name))
                         {
-                            changed.Add(new MediaFileItem(e.FullPath));
+                            changed.Add(MediaFileItem.Factory.create(e.FullPath));
                         }
                         break;
                     }
@@ -120,7 +120,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         if (Utils.MediaFormatConvert.isMediaFile(e.Name))
                         {
-                            created.Add(new MediaFileItem(e.FullPath));
+                            created.Add(MediaFileItem.Factory.create(e.FullPath));
                         }
                         break;
                     }
@@ -128,7 +128,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         if (Utils.MediaFormatConvert.isMediaFile(e.Name))
                         {
-                            removed.Add(new MediaFileItem(e.FullPath));
+                            removed.Add(MediaFileItem.Factory.create(e.FullPath));
                         }
                         break;
                     }
@@ -138,7 +138,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                         if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && !Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            MediaFileItem oldFile = new MediaFileItem(r.OldFullPath);
+                            MediaFileItem oldFile = MediaFileItem.Factory.create(r.OldFullPath);
 
                             if (Path.GetExtension(r.Name).Equals("._01_"))
                             {
@@ -155,7 +155,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         }
                         else if (!Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            MediaFileItem newFile = new MediaFileItem(r.FullPath);
+                            MediaFileItem newFile = MediaFileItem.Factory.create(r.FullPath);
 
                             if (Path.GetExtension(r.OldName).Equals("._00_"))
                             {
@@ -171,8 +171,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                         }
                         else if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            renamedOldFiles.Add(new MediaFileItem(r.OldFullPath));
-                            renamedNewFiles.Add(new MediaFileItem(r.FullPath));
+                            renamedOldFiles.Add(MediaFileItem.Factory.create(r.OldFullPath));
+                            renamedNewFiles.Add(MediaFileItem.Factory.create(r.FullPath));
                         }
 
                         break;
@@ -184,13 +184,13 @@ namespace MediaViewer.MediaFileModel.Watcher
         {
             if (removed.Count > 0)
             {
-                MediaFileWatcher.MediaState.remove(removed);
+                MediaFileWatcher.MediaState.removeUIState(removed);
                 removed.Clear();
             }
 
             if (created.Count > 0)
             {
-                MediaFileWatcher.MediaState.add(created);
+                MediaFileWatcher.MediaState.addUIState(created);
                 created.Clear();
             }
 
@@ -202,7 +202,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             if (renamedOldFiles.Count > 0 || renamedNewFiles.Count > 0)
             {
-                MediaFileWatcher.MediaState.rename(renamedOldFiles, renamedNewFiles);
+                MediaFileWatcher.MediaState.renameUIState(renamedOldFiles, renamedNewFiles);
                 renamedOldFiles.Clear();
                 renamedNewFiles.Clear();
             }

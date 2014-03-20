@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 03/08/2014 14:02:01
+-- Date Created: 03/15/2014 19:37:50
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -203,7 +203,7 @@ CREATE TABLE [dbo].[MediaSet_VideoMedia] (
     [DurationSeconds] int  NOT NULL,
     [FramesPerSecond] float  NOT NULL,
     [NrChannels] smallint  NULL,
-    [PixelFormat] nvarchar(max)  NOT NULL,
+    [PixelFormat] nvarchar(max)  NULL,
     [SamplesPerSecond] int  NULL,
     [VideoCodec] nvarchar(max)  NULL,
     [VideoContainer] nvarchar(max)  NULL,

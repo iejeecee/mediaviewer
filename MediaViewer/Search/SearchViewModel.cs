@@ -116,11 +116,11 @@ namespace MediaViewer.Search
         
         private void doSearch(SearchQuery searchQuery)
         {
-            if ((String.IsNullOrEmpty(searchQuery.Text) || String.IsNullOrWhiteSpace(searchQuery.Text)) && searchQuery.Tags.Count == 0) return;
+            if (searchQuery.IsEmpty) return;
        
             CancellationTokenSource tokenSource = new CancellationTokenSource();
                    
-            List<MediaFileItem> results = dbTagSearch(searchQuery);
+            List<MediaFileItem> results = dbSearch(searchQuery);
 
             foreach (MediaFileItem item in results)
             {
@@ -128,11 +128,11 @@ namespace MediaViewer.Search
             }
 
             MediaFileWatcher.Instance.IsWatcherEnabled = false;          
-            MediaFileWatcher.Instance.MediaState.clear();
-            MediaFileWatcher.Instance.MediaState.add(results);
+            MediaFileWatcher.Instance.MediaState.clearUIState();
+            MediaFileWatcher.Instance.MediaState.addUIState(results);
         }
 
-        public List<MediaFileItem> dbTagSearch(SearchQuery searchQuery)
+        public List<MediaFileItem> dbSearch(SearchQuery searchQuery)
         {
             MediaDbCommands mediaCommands = new MediaDbCommands();
 
@@ -141,7 +141,7 @@ namespace MediaViewer.Search
 
             foreach (Media result in results)
             {
-                items.Add(new MediaFileItem(result.Location));
+                items.Add(MediaFileItem.Factory.create(result.Location));
             }
 
             return (items);
@@ -187,15 +187,15 @@ namespace MediaViewer.Search
 
             if (SearchType == MediaType.All && MediaFormatConvert.isMediaFile(info.Name))
             {
-                mediaItems.Add(new MediaFileItem(info.FullName));
+                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
             }
             else if (SearchType == MediaType.Video && MediaFormatConvert.isVideoFile(info.Name))
             {
-                mediaItems.Add(new MediaFileItem(info.FullName));
+                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
             }
             else if (SearchType == MediaType.Images && MediaFormatConvert.isImageFile(info.Name))
             {
-                mediaItems.Add(new MediaFileItem(info.FullName));
+                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
             }
 
             return (true);

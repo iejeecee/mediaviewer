@@ -380,7 +380,7 @@ namespace MediaViewer.ImagePanel
 
                     imageFile = (ImageMedia)media;
 
-                    MediaState.MediaCollection.EnterReaderLock();
+                    MediaState.UIMediaCollection.EnterReaderLock();
 
                     int index = getImageFileIndex(imageFile.Location);
 
@@ -395,7 +395,7 @@ namespace MediaViewer.ImagePanel
                         CurrentImage = index + 1;
                     }
 
-                    MediaState.MediaCollection.ExitReaderLock();
+                    MediaState.UIMediaCollection.ExitReaderLock();
 
                     log.Info("Image loaded: " + media.Location);
                 }
@@ -480,7 +480,7 @@ namespace MediaViewer.ImagePanel
             {
                 if (value <= 0 || value > NrImages || IsPagingImagesEnabled == false) return;
 
-                MediaState.MediaCollection.EnterReaderLock();
+                MediaState.UIMediaCollection.EnterReaderLock();
 
                 String location = getImageFileByIndex(value - 1);
 
@@ -489,7 +489,7 @@ namespace MediaViewer.ImagePanel
                     GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
                 }
 
-                MediaState.MediaCollection.ExitReaderLock();
+                MediaState.UIMediaCollection.ExitReaderLock();
 
                 currentImage = value;
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -581,7 +581,7 @@ namespace MediaViewer.ImagePanel
         {           
             int count = 0;
 
-            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
+            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
             {                  
                 if (MediaFormatConvert.isImageFile(item.Location))
                 {
@@ -597,7 +597,7 @@ namespace MediaViewer.ImagePanel
 
             int i = 0;
 
-            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
+            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
             {
 
                 if (MediaFormatConvert.isImageFile(item.Location))
@@ -620,7 +620,7 @@ namespace MediaViewer.ImagePanel
 
             int i = 0;
 
-            foreach (MediaFileItem item in MediaState.MediaCollection.Items)
+            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
             {
 
                 if (MediaFormatConvert.isImageFile(item.Location))

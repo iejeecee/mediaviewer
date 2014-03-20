@@ -110,12 +110,12 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 if (MediaFormatConvert.isMediaFile(fileInfo[i].FullName))
                 {
-                    items.Add(new MediaFileItem(fileInfo[i].FullName));
+                    items.Add(MediaFileItem.Factory.create(fileInfo[i].FullName));
                 }
             }
 
-            mediaState.clear();
-            mediaState.add(items);
+            mediaState.clearUIState();
+            mediaState.addUIState(items);
         }
 
         private void FileChanged(System.Object sender, System.IO.FileSystemEventArgs e)

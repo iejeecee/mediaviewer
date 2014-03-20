@@ -18,20 +18,21 @@ namespace MediaViewer.MediaFileModel
         event EventHandler ItemIsSelectedChanged;
         event EventHandler ItemPropertiesChanged;
 
-        MediaLockedCollection MediaCollection
+        MediaLockedCollection UIMediaCollection
         {
             get;
         }
 
-        void clear();
+       
 
-        void selectAll();
-        void deselectAll();
-        List<MediaFileItem> getSelectedItems();
+        void selectAllUIState();
+        void deselectAllUIState();
+        List<MediaFileItem> getSelectedItemsUIState();
       
-        void add(IEnumerable<MediaFileItem> items);
-        void remove(IEnumerable<MediaFileItem> items);
-        void rename(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems);
+        void addUIState(IEnumerable<MediaFileItem> items);
+        void removeUIState(IEnumerable<MediaFileItem> items);
+        void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems);
+        void clearUIState();
 
         void delete(IEnumerable<MediaFileItem> items, CancellationToken token);
         void move(MediaFileItem item, String location, IProgress progress);

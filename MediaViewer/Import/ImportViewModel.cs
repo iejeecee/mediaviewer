@@ -30,7 +30,7 @@ namespace MediaViewer.Import
                 ImportProgressView progress = new ImportProgressView();
                 ImportProgressViewModel vm = progress.DataContext as ImportProgressViewModel;
                 progress.Show();
-                Task t = vm.importAsync(Locations);
+                Task t = vm.importAsync(IncludeLocations, ExcludeLocations);
                 OnClosingRequest();
                 await t;
             });
@@ -40,107 +40,198 @@ namespace MediaViewer.Import
                     OnClosingRequest();
                 });
           
-            Locations = new ObservableCollection<ImportExportLocation>();
+            IncludeLocations = new ObservableCollection<ImportExportLocation>();
 
-            Locations.Add(new ImportExportLocation(MediaFileWatcher.Instance.Path));
+            IncludeLocations.Add(new ImportExportLocation(MediaFileWatcher.Instance.Path));
 
-            addLocationCommand = new Command(new Action(() =>
+            AddIncludeLocationCommand = new Command(new Action(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
 
-                if (SelectedLocation == null)
+                if (SelectedIncludeLocation == null)
                 {
                     vm.MovePath = MediaFileWatcher.Instance.Path;
                 }
                 else
                 {
-                    vm.MovePath = SelectedLocation.Location;
+                    vm.MovePath = SelectedIncludeLocation.Location;
                 }
 
                 if (directoryPicker.ShowDialog() == true)
                 {
                     ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
-                    if (!Locations.Contains(newLocation))
+                    if (!IncludeLocations.Contains(newLocation))
                     {
-                        Locations.Add(newLocation);
+                        IncludeLocations.Add(newLocation);
                     }
                 }
 
-                if (Locations.Count > 0)
+                if (IncludeLocations.Count > 0)
                 {
                     OkCommand.CanExecute = true;
                 }
                
             }));
 
-            removeLocationCommand = new Command(new Action(() =>
+            RemoveIncludeLocationCommand = new Command(new Action(() =>
                 {
-                    for (int i = Locations.Count() - 1; i >= 0; i--)
+                    for (int i = IncludeLocations.Count() - 1; i >= 0; i--)
                     {
-                        if (Locations[i].IsSelected == true)
+                        if (IncludeLocations[i].IsSelected == true)
                         {
-                            Locations.RemoveAt(i);
+                            IncludeLocations.RemoveAt(i);
                         }
                     }
 
-                    if (Locations.Count == 0)
+                    if (IncludeLocations.Count == 0)
                     {
                         OkCommand.CanExecute = false;
                     }
                 }));
 
-            clearLocationsCommand = new Command(new Action(() =>
+            ClearIncludeLocationsCommand = new Command(new Action(() =>
             {
-                Locations.Clear();
+                IncludeLocations.Clear();
                 OkCommand.CanExecute = false;
+            }));
+
+            ExcludeLocations = new ObservableCollection<ImportExportLocation>();
+       
+            AddExcludeLocationCommand = new Command(new Action(() =>
+            {
+                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
+
+                if (SelectedExcludeLocation == null)
+                {
+                    vm.MovePath = MediaFileWatcher.Instance.Path;
+                }
+                else
+                {
+                    vm.MovePath = SelectedExcludeLocation.Location;
+                }
+
+                if (directoryPicker.ShowDialog() == true)
+                {
+                    ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
+                    if (!ExcludeLocations.Contains(newLocation))
+                    {
+                        ExcludeLocations.Add(newLocation);
+                    }
+                }
+          
+            }));
+
+            RemoveExcludeLocationCommand = new Command(new Action(() =>
+            {
+                for (int i = ExcludeLocations.Count() - 1; i >= 0; i--)
+                {
+                    if (ExcludeLocations[i].IsSelected == true)
+                    {
+                        ExcludeLocations.RemoveAt(i);
+                    }
+                }
+             
+            }));
+
+            ClearExcludeLocationsCommand = new Command(new Action(() =>
+            {
+                ExcludeLocations.Clear();             
             }));
         }
 
-        ObservableCollection<ImportExportLocation> locations;
+        ObservableCollection<ImportExportLocation> includeLocations;
 
-        public ObservableCollection<ImportExportLocation> Locations
+        public ObservableCollection<ImportExportLocation> IncludeLocations
         {
-            get { return locations; }
-            set { locations = value;
+            get { return includeLocations; }
+            set { includeLocations = value;
             NotifyPropertyChanged();
             }
         }
 
-        ImportExportLocation selectedLocation;
+        ImportExportLocation selectedIncludeLocation;
 
-        public ImportExportLocation SelectedLocation
+        public ImportExportLocation SelectedIncludeLocation
         {
-            get { return selectedLocation; }
-            set { selectedLocation = value;
+            get { return selectedIncludeLocation; }
+            set { selectedIncludeLocation = value;
             NotifyPropertyChanged();
             }
         }
 
-        Command addLocationCommand;
+        Command addIncludeLocationCommand;
 
-        public Command AddLocationCommand
+        public Command AddIncludeLocationCommand
         {
-            get { return addLocationCommand; }
-            set { addLocationCommand = value; }
+            get { return addIncludeLocationCommand; }
+            set { addIncludeLocationCommand = value; }
         }
 
-        Command removeLocationCommand;
+        Command removeIncludeLocationCommand;
 
-        public Command RemoveLocationCommand
+        public Command RemoveIncludeLocationCommand
         {
-            get { return removeLocationCommand; }
-            set { removeLocationCommand = value; }
+            get { return removeIncludeLocationCommand; }
+            set { removeIncludeLocationCommand = value; }
         }
 
-        Command clearLocationsCommand;
+        Command clearIncludeLocationsCommand;
 
-        public Command ClearLocationsCommand
+        public Command ClearIncludeLocationsCommand
         {
-            get { return clearLocationsCommand; }
-            set { clearLocationsCommand = value; }
+            get { return clearIncludeLocationsCommand; }
+            set { clearIncludeLocationsCommand = value; }
         }
-        
+
+        ObservableCollection<ImportExportLocation> excludeLocations;
+
+        public ObservableCollection<ImportExportLocation> ExcludeLocations
+        {
+            get { return excludeLocations; }
+            set
+            {
+                excludeLocations = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        ImportExportLocation selectedExcludeLocation;
+
+        public ImportExportLocation SelectedExcludeLocation
+        {
+            get { return selectedExcludeLocation; }
+            set
+            {
+                selectedExcludeLocation = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        Command addExcludeLocationCommand;
+
+        public Command AddExcludeLocationCommand
+        {
+            get { return addExcludeLocationCommand; }
+            set { addExcludeLocationCommand = value; }
+        }
+
+        Command removeExcludeLocationCommand;
+
+        public Command RemoveExcludeLocationCommand
+        {
+            get { return removeExcludeLocationCommand; }
+            set { removeExcludeLocationCommand = value; }
+        }
+
+        Command clearExcludeLocationsCommand;
+
+        public Command ClearExcludeLocationsCommand
+        {
+            get { return clearExcludeLocationsCommand; }
+            set { clearExcludeLocationsCommand = value; }
+        }
     
         Command okCommand;
 

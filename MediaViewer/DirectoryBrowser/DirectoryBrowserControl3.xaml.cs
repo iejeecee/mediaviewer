@@ -296,7 +296,7 @@ namespace MediaViewer.DirectoryBrowser
 
             if (Utils.MediaFormatConvert.isMediaFile(info.FullName))
             {
-                items.Add(new MediaFileItem(info.FullName));
+                items.Add(MediaFileItem.Factory.create(info.FullName));
             }
 
             return (true);

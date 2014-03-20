@@ -133,8 +133,7 @@ namespace MediaViewer.Progress
                         {
                             foreach (String message in e.NewItems)
                             {
-
-                                infoTextBox.Text += message + "\n";
+                                infoTextBox.AppendText(message + "\n");
                             }
 
                             infoTextBox.ScrollToEnd();
@@ -147,8 +146,7 @@ namespace MediaViewer.Progress
 
                             foreach (String message in e.NewItems)
                             {
-
-                                infoTextBox.Text += message + "\n";
+                                infoTextBox.AppendText(message + "\n");
                             }
                             infoTextBox.ScrollToEnd();
                             break;

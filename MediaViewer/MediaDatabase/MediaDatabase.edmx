@@ -174,7 +174,7 @@
     <Property Name="DurationSeconds" Type="int" Nullable="false" />
     <Property Name="FramesPerSecond" Type="float" Nullable="false" />
     <Property Name="NrChannels" Type="smallint" Nullable="true" />
-    <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="true" />
     <Property Name="SamplesPerSecond" Type="int" Nullable="true" />
     <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="true" />
     <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="true" />
@@ -537,7 +537,7 @@
           <Property Type="Int32" Name="DurationSeconds" Nullable="false" />
           <Property Type="Double" Name="FramesPerSecond" Nullable="false" />
           <Property Type="Int16" Name="NrChannels" Nullable="true" />
-          <Property Type="String" Name="PixelFormat" Nullable="false" />
+          <Property Type="String" Name="PixelFormat" Nullable="true" />
           <Property Type="Int32" Name="SamplesPerSecond" Nullable="true" />
           <Property Type="String" Name="VideoCodec" Nullable="true" />
           <Property Type="String" Name="VideoContainer" Nullable="true" />

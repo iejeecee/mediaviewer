@@ -8,6 +8,7 @@
              xmlns:ValidationRules="clr-namespace:MediaViewer.ValidationRules"
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:Relation="clr-namespace:MediaViewer.UserControls.Relation" 
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
+             xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData" x:Class="MediaViewer.Search.SearchView"
              xmlns:inputtoolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"           
              mc:Ignorable="d" 
@@ -65,8 +66,8 @@
                 <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" 
 					ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
                 <Label Grid.Row="2" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"/>
-                <MetaData:TagEditorView Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                        Tags="{Binding Query.Tags}" AddLinkedTags="false"/>
+                <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                        Tags="{Binding Query.Tags}" AddLinkedTags="false" AcceptOnlyExistingTags="true"/>
                 <Label Grid.Row="3" Grid.Column="0"  Content="Rating" Style="{StaticResource labelStyle}"/>
                 <inputtoolkit:Rating Grid.Row="3" Grid.Column="1" ItemCount="5"  SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
 					Value="{Binding Query.RatingStart, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">

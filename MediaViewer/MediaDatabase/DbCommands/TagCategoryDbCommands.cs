@@ -47,10 +47,28 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
+        public int getNrTagsInCategory(TagCategory category)
+        {
+            TagCategory c = getCategoryById(category.Id);
+
+            if (c == null)
+            {
+                throw new DbEntityValidationException("Category does not exist: " + category.Id);
+            }
+
+            return (c.Tag.Count);
+        }
+
         public TagCategory getCategoryById(int id)
         {
             TagCategory category = Db.TagCategorySet.FirstOrDefault<TagCategory>(c => c.Id == id);
             return (category);
+        }
+
+        public List<TagCategory> getCategoryAutocompleteMatches(String name)
+        {
+            List<TagCategory> result = Db.TagCategorySet.Where(t => t.Name.StartsWith(name)).OrderBy(t => t.Name).ToList();
+            return (result);
         }
 
         protected override TagCategory createFunc(TagCategory tagCategory)
@@ -78,6 +96,26 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             return (result);
         }
+
+        public override TagCategory update(TagCategory updateCategory)
+        {
+
+            TagCategory oldCategory = getCategoryById(updateCategory.Id);
+
+            if (oldCategory == null)
+            {
+                throw new DbEntityValidationException("Cannot update non-existing category with id: " + updateCategory.Id.ToString());
+            }
+
+            Db.Entry<TagCategory>(oldCategory).CurrentValues.SetValues(updateCategory);
+
+           
+            Db.SaveChanges();
+
+            return (oldCategory);
+        }
+
+       
 
         protected override void deleteFunc(TagCategory tagCategory)
         {

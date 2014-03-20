@@ -6,6 +6,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/wpf/2008/toolkit"
              xmlns:inputtoolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"           
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
+             xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"  x:Class="MediaViewer.MetaData.MetaDataView"
              mc:Ignorable="d" d:DesignWidth="300">
     <UserControl.Resources>
@@ -170,7 +171,7 @@
                 <Label Grid.Row="13" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
-                <MetaData:TagEditorView Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                <TagPicker:TagPickerView Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags, Source={StaticResource viewModel}}"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
@@ -178,14 +179,14 @@
                 <Label Grid.Row="14" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
-                <MetaData:TagEditorView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding AddTags, Source={StaticResource viewModel}}"                                       
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
 					Margin="5, 5, 5, 5"/>
                 <Label Grid.Row="15" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
-                <MetaData:TagEditorView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags, Source={StaticResource viewModel}}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
 					Margin="5, 5, 5, 5"/>               

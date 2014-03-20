@@ -57,7 +57,7 @@ namespace MediaViewer.MediaFileBrowser
 
             ExportSelectedItemsCommand = new Command(async () =>
             {
-                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItems();
+                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
                 if (selectedItems.Count == 0) return;
 
                 ExportView export = new ExportView();
@@ -154,7 +154,7 @@ namespace MediaViewer.MediaFileBrowser
         {
 
             CancellationTokenSource tokenSource = new CancellationTokenSource();
-            List<MediaFileItem> selected = MediaFileWatcher.Instance.MediaState.getSelectedItems();
+            List<MediaFileItem> selected = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
 
             if (selected.Count == 0) return;
            

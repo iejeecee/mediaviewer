@@ -8,6 +8,10 @@ namespace MediaViewer.MediaDatabase
 {
     partial class TagCategory : IEquatable<TagCategory>, IComparable<TagCategory>
     {
+        public override string ToString()
+        {
+            return Name;
+        }
 
         public bool Equals(TagCategory other)
         {

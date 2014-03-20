@@ -8,6 +8,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 {
     public enum MediaFileItemState
     {
+        DUMMY,
         EMPTY,
         LOADING,
         LOADED,

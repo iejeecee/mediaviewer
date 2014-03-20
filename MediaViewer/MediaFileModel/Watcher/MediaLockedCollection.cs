@@ -18,7 +18,9 @@ namespace MediaViewer.MediaFileModel.Watcher
     /// <typeparam name="MediaFileItem"></typeparam>
     public class MediaLockedCollection
     {
-        protected List<MediaFileItem> items;
+
+        // items in the current User Interface
+        List<MediaFileItem> items;
      
         public ReadOnlyCollection<MediaFileItem> Items
         {
@@ -222,7 +224,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 {
                     if (i < nrOldItems)
                     {
-                        MediaFileItem oldItem = Find(oldItems.ElementAt(i));
+                        MediaFileItem oldItem = Find(oldItems.ElementAt(i).Location);
                         if (!object.Equals(oldItem, default(MediaFileItem)))
                         {
                             items.Remove(oldItem);
@@ -232,7 +234,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                     if (i < nrNewItems)
                     {
-                        MediaFileItem newItem = Find(newItems.ElementAt(i));
+                        MediaFileItem newItem = Find(newItems.ElementAt(i).Location);
                         if (object.Equals(newItem, default(MediaFileItem)))
                         {
                             items.Add(newItems.ElementAt(i));
@@ -249,20 +251,20 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        public virtual MediaFileItem Find(MediaFileItem findItem)
+        public virtual MediaFileItem Find(String location)
         {
             rwLock.EnterReadLock();
             try
             {
                 foreach (MediaFileItem item in items)
                 {
-                    if (item.Equals(findItem))
+                    if (item.Location.Equals(location))
                     {
                         return (item);
                     }
                 }
 
-                return default(MediaFileItem);
+                return null;
             }
             finally
             {
@@ -335,7 +337,7 @@ namespace MediaViewer.MediaFileModel.Watcher
               
                 for (int i = 0; i < nrOldItems; i++)
                 {                   
-                    MediaFileItem oldItem = Find(oldItems.ElementAt(i));
+                    MediaFileItem oldItem = Find(oldItems.ElementAt(i).Location);
                     if (oldItem == null)
                     {
                         success = false;

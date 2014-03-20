@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -21,59 +22,40 @@ namespace MediaViewer.UserControls.AutoCompleteBox
     /// Interaction logic for AutoCompleteBoxView.xaml
     /// </summary>
     public partial class AutoCompleteBoxView : UserControl
-    {
-        private AutoCompleteBoxViewModel ViewModel
-        {
-            get { return this.Resources["viewModel"] as AutoCompleteBoxViewModel; }
-        }
-
-        public MediaViewer.UserControls.AutoCompleteBox.AutoCompleteBoxViewModel.CustomFindMatchesDelegate CustomFindMatchesFunction
-        {
-            get { return ViewModel.CustomFindMatchesFunction; }
-            set { ViewModel.CustomFindMatchesFunction = value; }
-        }
-
-        bool mouseOverPopup;
-     
-
+    {             
         public AutoCompleteBoxView()
         {
             InitializeComponent();
-        
-            ViewModel.Suggestions.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s,e) => {
 
-                if (ViewModel.Suggestions.Count > 0)
-                {
-                    displaySuggestions();
-                }
-                else if(ViewModel.Suggestions.Count == 0)
-                {
-                    popup.IsOpen = false;
-                }
-            
-            });
+            tree = new TernaryTree();
+            Suggestions = new ObservableRangeCollection<object>();
 
-            ViewModel.SetSuggestionCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler<object>((o, e) =>
-            {
-                popup.IsOpen = false;
-                autoCompleteTextBox.Focus();
-                autoCompleteTextBox.CaretIndex = autoCompleteTextBox.Text.Length;
-            });
+            autoCompleteTextBox.DataContext = this;
 
-            ViewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((o, e) =>
-            {
-                if (e.PropertyName.Equals("Text"))
-                {
-                    Text = ViewModel.Text;
-                }
-                else if (e.PropertyName.Equals("SelectedObject"))
-                {
-                    SelectedItem = ViewModel.SelectedObject;
-                }
-            });
+            Binding textBinding = new System.Windows.Data.Binding("Text");
+            textBinding.UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged;
+            textBinding.Mode = BindingMode.TwoWay;
+
+            autoCompleteTextBox.SetBinding(TextBox.TextProperty, textBinding);
+
+            popupItemsControl.DataContext = this;
+            popupItemsControl.SetBinding(ItemsControl.ItemsSourceProperty, new System.Windows.Data.Binding("Suggestions"));
 
             mouseOverPopup = false;
         }
+
+        TernaryTree tree;
+
+        public delegate List<Object> CustomFindMatchesDelegate(String text);
+        CustomFindMatchesDelegate customFindMatchesFunction;
+
+        public CustomFindMatchesDelegate CustomFindMatchesFunction
+        {
+            get { return customFindMatchesFunction; }
+            set { customFindMatchesFunction = value; }
+        }
+
+        bool mouseOverPopup;
 
         public IEnumerable<Object> Items
         {
@@ -83,16 +65,9 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
         // Using a DependencyProperty as the backing store for Items.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ItemsProperty =
-            DependencyProperty.Register("Items", typeof(IEnumerable<Object>), typeof(AutoCompleteBoxView), new PropertyMetadata(null,new PropertyChangedCallback(itemsChangedCallback)));
+            DependencyProperty.Register("Items", typeof(IEnumerable<Object>), typeof(AutoCompleteBoxView), new PropertyMetadata(null));
 
-        private static void itemsChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            AutoCompleteBoxView view = (AutoCompleteBoxView)d;
-
-            view.ViewModel.Items = e.NewValue as IEnumerable<Object>;
-        }
-
-
+     
         public object SelectedItem
         {
             get { return (object)GetValue(SelectedItemProperty); }
@@ -101,9 +76,27 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
         // Using a DependencyProperty as the backing store for SelectedItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty SelectedItemProperty =
-            DependencyProperty.Register("SelectedItem", typeof(object), typeof(AutoCompleteBoxView), new PropertyMetadata(null));
-        
+            DependencyProperty.Register("SelectedItem", typeof(object), typeof(AutoCompleteBoxView), new PropertyMetadata(null, new PropertyChangedCallback(selectedItemChangedCallback)));
 
+        private static void selectedItemChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            AutoCompleteBoxView view = (AutoCompleteBoxView)d;
+            Object item = e.NewValue;
+
+            if (item != null)
+            {
+                view.Text = item.ToString();
+            }
+            else
+            {              
+                view.Text = "";               
+            }
+
+            view.popup.IsOpen = false;
+            view.autoCompleteTextBox.Focus();
+            view.autoCompleteTextBox.CaretIndex = view.Text.Length;
+        }
+               
         public String Text
         {
             get { return (String)GetValue(TextProperty); }
@@ -112,15 +105,42 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
         // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty TextProperty =
-            DependencyProperty.Register("Text", typeof(String), typeof(AutoCompleteBoxView), new PropertyMetadata(null,new PropertyChangedCallback(textChangedCallback)));
+            DependencyProperty.Register("Text", typeof(String), typeof(AutoCompleteBoxView), new PropertyMetadata(null, new PropertyChangedCallback(textChangedCallback)));
 
         private static void textChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             AutoCompleteBoxView view = (AutoCompleteBoxView)d;
+            String text = (String)e.NewValue;
 
-            view.ViewModel.Text = e.NewValue as String;
+            if (!String.IsNullOrEmpty(text))
+            {
+                view.findSuggestions(text);
+                if (view.Suggestions.Count > 0)
+                {
+                    view.displaySuggestions();
+                }
+                else
+                {
+                    view.popup.IsOpen = false;
+                }
+                             
+            }
+            else
+            {
+                view.popup.IsOpen = false;
+            }
         }
        
+        public int MaxSuggestions
+        {
+            get { return (int)GetValue(MaxSuggestionsProperty); }
+            set { SetValue(MaxSuggestionsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MaxSuggestions.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MaxSuggestionsProperty =
+            DependencyProperty.Register("MaxSuggestions", typeof(int), typeof(AutoCompleteBoxView), new PropertyMetadata(50));
+
         void displaySuggestions()
         {
             popup.PlacementTarget = autoCompleteTextBox;
@@ -153,18 +173,64 @@ namespace MediaViewer.UserControls.AutoCompleteBox
         {
             if (e.Key == Key.Right)
             {
-                if (ViewModel.Suggestions.Count == 0)
+                if (Suggestions.Count == 0)
                 {
                     SystemSounds.Beep.Play();
                 }
                 else
                 {
-                    ViewModel.SetSuggestionCommand.DoExecute(ViewModel.Suggestions[0]);
+                    SelectedItem = Suggestions[0];
                 }
-            } 
-            
+            }
+            else if (e.Key == Key.Enter)
+            {
+                if (Suggestions.Count > 0 && Suggestions[0].ToString().Equals(Text))
+                {
+                    SelectedItem = Suggestions[0];
+                }
+            }
         }
 
+        ObservableRangeCollection<Object> suggestions;
+
+        public ObservableRangeCollection<Object> Suggestions
+        {
+            get { return suggestions; }
+            set
+            {
+                suggestions = value;          
+            }
+        }
+       
+        private void findSuggestions(String text)
+        {
+
+            if (String.IsNullOrEmpty(text))
+            {
+                Suggestions.Clear();
+                return;
+            }
+
+            List<Object> matches;
+
+            if (CustomFindMatchesFunction != null)
+            {
+                matches = CustomFindMatchesFunction(text);
+            }
+            else
+            {
+                matches = tree.AutoComplete(text);
+            }
+
+            Suggestions.ReplaceRange(matches.Take(Math.Min(MaxSuggestions, matches.Count)));
+
+        }
+
+        private void suggestionButton_Click(object sender, RoutedEventArgs e)
+        {
+            Button button = (Button)sender;
+            SelectedItem = button.Tag;
+        }
        
     }
 }

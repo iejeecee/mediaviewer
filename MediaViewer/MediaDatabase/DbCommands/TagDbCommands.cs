@@ -31,6 +31,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (tags);
         }
 
+        public int getNrTags()
+        {
+            return (Db.TagSet.Count());
+        }
+
         public List<Tag> getTagAutocompleteMatches(String name)
         {
             List<Tag> result = Db.TagSet.Where(t => t.Name.StartsWith(name)).OrderByDescending(t => t.Used).ToList();
@@ -56,7 +61,22 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (result.Count == 0) return (null);
             else return (result[0]);
         }
-     
+
+        public int getNrChildTags(Tag tag)
+        {
+            Tag result = Db.TagSet.FirstOrDefault(t => t.Id == tag.Id);
+
+            if (result == null)
+            {
+                throw new DbEntityValidationException("getNrChildTags error, tag does not exist");
+            }
+            else
+            {
+                return (result.ChildTags.Count);
+            }
+           
+        }
+
         protected override Tag createFunc(Tag tag)
         {
             if (String.IsNullOrEmpty(tag.Name) || String.IsNullOrWhiteSpace(tag.Name))
@@ -110,7 +130,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (deleteTag == null)
             {
-                throw new DbEntityValidationException("Cannot delete non-existing tag: " + tag.Id.ToString());
+                throw new DbEntityValidationException("Cannot delete non-existing tag with id: " + tag.Id.ToString());
             }
 
 
@@ -138,7 +158,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (tag == null)
             {
-                throw new DbEntityValidationException("Cannot update non-existing tag id: " + updateTag.Id.ToString());
+                throw new DbEntityValidationException("Cannot update non-existing tag with id: " + updateTag.Id.ToString());
             }
 
             Db.Entry<Tag>(tag).CurrentValues.SetValues(updateTag);

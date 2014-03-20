@@ -181,7 +181,7 @@ namespace MediaViewer.MetaData
 
             MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((s,e) =>
             {
-                ItemList = MediaFileWatcher.Instance.MediaState.getSelectedItems();
+                ItemList = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
             });
 
             FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
