@@ -38,7 +38,7 @@
                                             </ContextMenu>
                                         </Grid.ContextMenu>
                                         <tree:RowExpander Grid.Column="0"/>
-                                        <Image Grid.Column="1" Margin="2" Source="{Binding ImageUrl}"></Image>
+                                        <Image Grid.Column="1" Margin="2" Source="{Binding ImageUrl}"/>
                                         <TextBlock Grid.Column="2" Margin="2">
                                             <TextBlock.Text>                                               
                                                 <MultiBinding Converter="{StaticResource pathNameConverter}">
@@ -53,7 +53,6 @@
                         </GridViewColumn>
                         <GridViewColumn Header="Imported" Width="100" DisplayMemberBinding="{Binding NrImportedFiles, Converter={StaticResource nrImportedFilesConverter}}"/>
                         <GridViewColumn Header="Free Space" Width="100" DisplayMemberBinding="{Binding FreeSpaceBytes, Converter={StaticResource formatSizeBytesConverter}}"/>                      
-
                     </GridView.Columns>
                 </GridView>
             </tree:TreeList.View>

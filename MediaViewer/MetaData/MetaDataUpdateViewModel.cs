@@ -92,23 +92,23 @@ namespace MediaViewer.MetaData
         void writeMetaData(MetaDataUpdateViewModelAsyncState state)
         {
 
-            try
+            List<Counter> counters = new List<Counter>();
+            String oldPath = "", newPath = "";
+            String oldFilename = "", newFilename = "";
+
+            foreach (MediaFileItem item in state.ItemList)
             {
+                setWindowTitle();
+                if (CancellationToken.IsCancellationRequested) return;
 
-                List<Counter> counters = new List<Counter>();
-                String oldPath = "", newPath = "";
-                String oldFilename = "", newFilename = "";
+                ItemProgress = 0;
+                bool isModified = false;
 
-                foreach (MediaFileItem item in state.ItemList)
+                ItemInfo = "Opening: " + item.Location;
+
+                item.RWLock.EnterUpgradeableReadLock();
+                try
                 {
-                    setWindowTitle();
-                    if (CancellationToken.IsCancellationRequested) return;
-
-                    ItemProgress = 0;
-                    bool isModified = false;
-
-                    ItemInfo = "Opening: " + item.Location;
-
                     if (item.Media == null)
                     {
                         ItemInfo = "Loading MetaData: " + item.Location;
@@ -173,7 +173,7 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
-                        
+
 
                         if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
                         {
@@ -209,7 +209,7 @@ namespace MediaViewer.MetaData
                                     media.Tags.Remove(removeTag);
                                     removedTag = true;
                                 }
-                               
+
                             }
 
                             if (removedTag || addedTag)
@@ -264,7 +264,7 @@ namespace MediaViewer.MetaData
                                 ItemInfo = "Importing: " + item.Location;
                                 MediaFileWatcher.Instance.MediaState.import(item, TokenSource.Token);
                                 InfoMessages.Add("Imported: " + item.Media.Location);
-                            }                            
+                            }
 
                         }
 
@@ -294,33 +294,40 @@ namespace MediaViewer.MetaData
                     }
 
                 }
-
-                setWindowTitle();
-
-                if (!oldFilename.Equals(newFilename))
+                catch (Exception e)
                 {
-                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-
-                        Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.FilenameHistory, state.Filename);
-                    }));
+                    log.Error("Error writing metadata", e);
+                    MessageBox.Show("Error writing metadata", e.Message);
+                  
+                }
+                finally
+                {
+                    item.RWLock.ExitUpgradeableReadLock();
                 }
 
-                if (!oldPath.Equals(newPath))
-                {
-                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-
-                        Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, newPath);
-                    }));
-                }
             }
-            catch (Exception e)
+
+            setWindowTitle();
+
+            if (!oldFilename.Equals(newFilename))
             {
-                log.Error("Error writing metadata", e);
-                MessageBox.Show("Error writing metadata", e.Message);
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+
+                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.FilenameHistory, state.Filename);
+                }));
             }
-            
+
+            if (!oldPath.Equals(newPath))
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+
+                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, newPath);
+                }));
+            }
+
+
         }
 
         string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, Media media)
@@ -388,7 +395,9 @@ namespace MediaViewer.MetaData
                                 // increment counter
                                 counters[nrCounters - 1].value += 1;
                             }
-                        } else if(subString.StartsWith(resolutionMarker)) {
+                        }
+                        else if (subString.StartsWith(resolutionMarker))
+                        {
 
                             int width = 0;
                             int height = 0;
@@ -414,7 +423,7 @@ namespace MediaViewer.MetaData
 
                             if (media.CreationDate != null)
                             {
-                                dateString = media.CreationDate.Value.ToString(format);                                                              
+                                dateString = media.CreationDate.Value.ToString(format);
                             }
 
                             outputFileName += dateString;

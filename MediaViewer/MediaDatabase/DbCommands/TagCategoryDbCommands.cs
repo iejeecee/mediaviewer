@@ -36,14 +36,16 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 throw new DbEntityValidationException("Category does not exist: " + category.Id);
             }
+          
+            List<Tag> result = c.Tag.OrderBy(tag => tag.Name).ToList();
 
-            List<Tag> result = new List<Tag>();
+            return (result);
+        }
 
-            foreach (Tag tag in c.Tag)
-            {
-                result.Add(tag);
-            }
-
+        public List<Tag> getTagsWithoutCategory()
+        {
+            List<Tag> result = Db.TagSet.Where(tag => tag.TagCategory == null).OrderBy(tag => tag.Name).ToList();
+      
             return (result);
         }
 

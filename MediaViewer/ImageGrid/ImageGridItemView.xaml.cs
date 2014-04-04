@@ -1,6 +1,7 @@
 ﻿using MediaViewer.MediaFileModel.Watcher;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,5 +38,45 @@ namespace MediaViewer.ImageGrid
         public static readonly DependencyProperty MediaFileItemProperty =
             DependencyProperty.Register("MediaFileItem", typeof(MediaFileItem), typeof(ImageGridItemView), new PropertyMetadata(null));
 
+        private void viewMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;
+
+            GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Location);
+
+        }
+
+        private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
+            vm.MediaState.selectAllUIState();
+        }
+
+        private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
+            vm.MediaState.deselectAllUIState();
+
+        }
+
+        private void browseMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;
+
+            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+
+            GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_SetPath", location);
+        }
+
+        private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;
+
+            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+
+            Process.Start(location);
+        }
     }
 }

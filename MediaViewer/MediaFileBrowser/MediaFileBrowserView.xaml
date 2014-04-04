@@ -15,7 +15,7 @@
     </UserControl.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition />
+            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>

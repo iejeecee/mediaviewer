@@ -152,7 +152,7 @@ bool MetaData::open(String ^filename, Consts::OpenOptions options)
 
 	try {
 
-		result = xmpFile->open(marshal_as<std::string>(filename), (XMP_OptionBits)options);
+			result = xmpFile->open(marshal_as<std::string>(filename), (XMP_OptionBits)options);
 
 		
 	} catch(XMP_Error &e) {	

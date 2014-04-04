@@ -85,14 +85,9 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
             if (item != null)
             {
-                view.Text = item.ToString();
-            }
-            else
-            {              
-                view.Text = "";               
-            }
-
-            view.popup.IsOpen = false;
+                view.Text = item.ToString();            
+            } 
+            
             view.autoCompleteTextBox.Focus();
             view.autoCompleteTextBox.CaretIndex = view.Text.Length;
         }
@@ -118,17 +113,24 @@ namespace MediaViewer.UserControls.AutoCompleteBox
                 if (view.Suggestions.Count > 0)
                 {
                     view.displaySuggestions();
+
+                    foreach (Object suggestion in view.Suggestions)
+                    {
+                        if (text.Equals(suggestion.ToString()))
+                        {
+                            view.popup.IsOpen = false;
+                            view.SelectedItem = suggestion;
+                            return;
+                        }
+                    }
                 }
-                else
-                {
-                    view.popup.IsOpen = false;
-                }
-                             
             }
             else
             {
-                view.popup.IsOpen = false;
+                view.popup.IsOpen = false; 
             }
+            
+            view.SelectedItem = null;            
         }
        
         public int MaxSuggestions
@@ -182,13 +184,7 @@ namespace MediaViewer.UserControls.AutoCompleteBox
                     SelectedItem = Suggestions[0];
                 }
             }
-            else if (e.Key == Key.Enter)
-            {
-                if (Suggestions.Count > 0 && Suggestions[0].ToString().Equals(Text))
-                {
-                    SelectedItem = Suggestions[0];
-                }
-            }
+                                                                     
         }
 
         ObservableRangeCollection<Object> suggestions;

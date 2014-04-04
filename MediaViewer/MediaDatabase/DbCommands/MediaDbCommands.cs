@@ -402,7 +402,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     Db.ThumbnailSet.Remove(updateMedia.Thumbnail);
                 }
 
-                Db.ThumbnailSet.Add(media.Thumbnail);
+                if (media.Thumbnail != null)
+                {
+                    Db.ThumbnailSet.Add(media.Thumbnail);
+                }
+
                 updateMedia.Thumbnail = media.Thumbnail;
             }
 

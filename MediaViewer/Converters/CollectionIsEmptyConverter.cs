@@ -1,29 +1,25 @@
-﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel.Watcher;
-using System;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.Converters
 {
-    class ThumbnailSelectorConverter : IValueConverter
+    class CollectionIsEmptyConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            Media media = (Media)value;
-
-            if (media == null || media.Thumbnail == null) 
+            if ((value as ICollection).Count == 0)
             {
-                return (parameter);
+                return (parameter is String && parameter.Equals("invert") ? false : true);
+
+            } else {
+
+                return (parameter is String && parameter.Equals("invert") ? true : false);
             }
-            else
-            {               
-                return (media.Thumbnail.Image);
-            }
-            
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

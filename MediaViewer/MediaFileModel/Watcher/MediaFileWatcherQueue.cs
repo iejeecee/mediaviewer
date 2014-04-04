@@ -73,7 +73,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             created = new List<MediaFileItem>();
             removed = new List<MediaFileItem>();
             changed = new List<MediaFileItem>();
-            renamedNewFiles = new List<MediaFileItem>();
+            renamedNewLocations = new List<String>();
             renamedOldFiles = new List<MediaFileItem>();
 
             eventItems = new BlockingCollection<FileSystemEventArgs>(new ConcurrentQueue<FileSystemEventArgs>());
@@ -99,7 +99,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         List<MediaFileItem> created;
         List<MediaFileItem> removed;
         List<MediaFileItem> renamedOldFiles;
-        List<MediaFileItem> renamedNewFiles;
+        List<String> renamedNewLocations;
         List<MediaFileItem> changed;
 
         void insertEvent(FileSystemEventArgs e)
@@ -172,7 +172,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         else if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
                             renamedOldFiles.Add(MediaFileItem.Factory.create(r.OldFullPath));
-                            renamedNewFiles.Add(MediaFileItem.Factory.create(r.FullPath));
+                            renamedNewLocations.Add(r.FullPath);
                         }
 
                         break;
@@ -200,11 +200,11 @@ namespace MediaViewer.MediaFileModel.Watcher
                 changed.Clear();
             }
 
-            if (renamedOldFiles.Count > 0 || renamedNewFiles.Count > 0)
+            if (renamedOldFiles.Count > 0 || renamedNewLocations.Count > 0)
             {
-                MediaFileWatcher.MediaState.renameUIState(renamedOldFiles, renamedNewFiles);
+                MediaFileWatcher.MediaState.renameUIState(renamedOldFiles, renamedNewLocations);
                 renamedOldFiles.Clear();
-                renamedNewFiles.Clear();
+                renamedNewLocations.Clear();
             }
         }
 

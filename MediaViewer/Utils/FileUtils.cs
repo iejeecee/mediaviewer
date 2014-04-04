@@ -225,7 +225,7 @@ namespace MediaViewer.Utils
         public void moveFile(string source, string destination, IProgress progress)
         {
             if (progress.CancellationToken.IsCancellationRequested) return;
-
+            
             if (source.Equals(destination))
             {
                 return;
@@ -242,6 +242,12 @@ namespace MediaViewer.Utils
             }
             else
             {
+                FileInfo sourceFile = new FileInfo(source);
+                if (sourceFile.Attributes.HasFlag(FileAttributes.ReadOnly))
+                {
+                    throw new System.IO.IOException("Cannot move readonly file");
+                }
+
                 copyFile(source, destination, progress);
 
                 System.IO.File.Delete(source);

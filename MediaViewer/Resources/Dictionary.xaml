@@ -17,6 +17,7 @@
     <Converters:EnumConverter x:Key="enumConverter"/>
     <Converters:EnumToVisibilityConverter x:Key="enumToVisibilityConverter"/>
     <Converters:EmptyStringConverter x:Key="emptyStringConverter"/>
+    <Converters:CollectionIsEmptyConverter x:Key="collectionIsEmptyConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
@@ -47,6 +48,14 @@
     <!-- Label -->
     <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">        
         <Setter Property="Foreground" Value="Gray"/>
+    </Style>
+    
+    <Style TargetType="{x:Type TextBox}" x:Key="baseTextBoxStyle">
+        <Style.Triggers>         
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Background" Value="LightGray"/>
+            </Trigger>
+        </Style.Triggers>
     </Style>
     
     <!-- ComboBox -->

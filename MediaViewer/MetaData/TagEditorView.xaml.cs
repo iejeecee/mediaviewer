@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.UserControls.TagTreePicker;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,32 +29,16 @@ namespace MediaViewer.MetaData
             InitializeComponent();
             DataContext = tagEditorViewModel = new TagEditorViewModel();
 
-            categoryNameAutoCompleteBox.CustomFindMatchesFunction = new UserControls.AutoCompleteBox.AutoCompleteBoxView.CustomFindMatchesDelegate((text) =>
-            {
-                List<TagCategory> results = new List<TagCategory>();
-
-                using (TagCategoryDbCommands tc = new TagCategoryDbCommands())
-                {
-                    results = tc.getCategoryAutocompleteMatches(text);
-                }
-
-                return (results.Cast<Object>().ToList());
+            tagEditorViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s, e) =>
+            {                
+                this.Close();
             });
-
-            tagNameAutoCompleteBox.CustomFindMatchesFunction = 
-                new UserControls.AutoCompleteBox.AutoCompleteBoxView.CustomFindMatchesDelegate(tagAutoComplete);           
         }
 
-        List<Object> tagAutoComplete(String text)
+        private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            List<Tag> results = new List<Tag>();
-
-            using (TagDbCommands tc = new TagDbCommands())
-            {
-                results = tc.getTagAutocompleteMatches(text);
-            }
-
-            return (results.Cast<Object>().ToList());
+            tagTreePicker.unregisterMessages();          
         }
+       
     }
 }

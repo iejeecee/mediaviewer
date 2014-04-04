@@ -12,6 +12,7 @@ namespace MediaViewer
     {
 
         public static string[] Args;
+        public static SplashScreen SplashScreen;
 
         public App()
         {
@@ -27,7 +28,8 @@ namespace MediaViewer
         {
             Args = e.Args;
             MediaViewer.Settings.AppSettings.load();
-                  
+            SplashScreen = new SplashScreen("Resources/Images/splash.png");
+            SplashScreen.Show(false, true);                             
         }
 
         private void Application_Exit(object sender, EventArgs e)

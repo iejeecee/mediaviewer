@@ -49,8 +49,8 @@
         <Button Grid.Row="0" Grid.Column="1" Name="addButton" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
 			ToolTip="Add Tag"/>
         <Button Grid.Row="0" Grid.Column="2" Name="clearButton" Content="Clear" HorizontalAlignment="Right" Width="50" Click="clearButton_Click"
-			ToolTip="Remove Selected Tags"/>
-        <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+			ToolTip="Remove All Tags"/>
+        <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="contextMenu_ContextMenuOpening">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <WrapPanel/>
@@ -62,6 +62,13 @@
                             Click="tagButton_Click" Style="{StaticResource buttonStyle}"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
+            <ListBox.ContextMenu>
+                <ContextMenu Background="{StaticResource imageGridBackgroundColorBrush}">
+                    <MenuItem Name="contextMenuCut" Header="Cut" Click="contextMenuCut_Click"/>                                         
+                    <MenuItem Name="contextMenuCopy" Header="Copy" Click="contextMenuCopy_Click"/>                        
+                    <MenuItem Name="contextMenuPaste" Header="Paste" Click="contextMenuPaste_Click" />                        
+                </ContextMenu>
+            </ListBox.ContextMenu>
         </ListBox>        
     </Grid>
 </UserControl>

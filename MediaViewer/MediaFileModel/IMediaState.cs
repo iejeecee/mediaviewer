@@ -22,16 +22,14 @@ namespace MediaViewer.MediaFileModel
         {
             get;
         }
-
        
-
         void selectAllUIState();
         void deselectAllUIState();
         List<MediaFileItem> getSelectedItemsUIState();
       
         void addUIState(IEnumerable<MediaFileItem> items);
         void removeUIState(IEnumerable<MediaFileItem> items);
-        void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems);
+        void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations);
         void clearUIState();
 
         void delete(IEnumerable<MediaFileItem> items, CancellationToken token);
@@ -47,8 +45,6 @@ namespace MediaViewer.MediaFileModel
         void readMetadata(MediaFileItem item, MediaFactory.ReadOptions options, CancellationToken token);
         void readMetadata(IEnumerable<MediaFileItem> items, MediaFactory.ReadOptions options, CancellationToken token);
         void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, IProgress progress);
-        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, IProgress progress);
-
-        bool isInUse(MediaFileItem item);
+        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, IProgress progress);    
     }
 }

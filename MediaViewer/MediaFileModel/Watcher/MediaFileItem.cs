@@ -5,6 +5,7 @@ using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,14 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+
         ReaderWriterLockSlim rwLock;
+
+        public ReaderWriterLockSlim RWLock
+        {
+            get { return rwLock; }
+            set { rwLock = value; }
+        }
   
         protected MediaFileItem(String location, MediaFileItemState state = MediaFileItemState.EMPTY)
         {
@@ -31,20 +39,21 @@ namespace MediaViewer.MediaFileModel.Watcher
             IsSelected = false;
             Media = null;
             ItemState = state;
+            hasTags = false;
             
         }
        
-        MediaFileItemState state;
+        MediaFileItemState itemState;
 
         public MediaFileItemState ItemState
         {
-            get { return state; }
+            get { return itemState; }
             set
             {
                 rwLock.EnterWriteLock();
                 try
-                {
-                    state = value;
+                {                   
+                    itemState = value;
                     NotifyPropertyChanged();
                 }
                 finally
@@ -61,20 +70,40 @@ namespace MediaViewer.MediaFileModel.Watcher
             get { return location; }
             set
             {
+                String oldLocation = location;
+
                 rwLock.EnterWriteLock();
                 try
                 {
                     location = value;
-                    NotifyPropertyChanged();
+
+                    if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(location))
+                    {
+                        Factory.renameInDictionary(oldLocation, location);
+                    }
+
+                    NotifyPropertyChanged();                   
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
                 }
-                
+                               
             }
         }
-      
+
+        bool hasTags;
+
+        public bool HasTags
+        {
+            get { return hasTags; }
+            protected set
+            {              
+                hasTags = value;
+                NotifyPropertyChanged();              
+            }
+        }
+
         bool isSelected;
 
         public bool IsSelected
@@ -85,20 +114,20 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
             set
             {
-                rwLock.EnterWriteLock();
+               /* rwLock.EnterWriteLock();
                 try
-                {
+                {*/
                     isSelected = value;
                     NotifyPropertyChanged();
 
-                } finally
+                /*} finally
                 {
                     rwLock.ExitWriteLock();
-                }
+                }*/
                 
             }
         }
-
+  
         public void toggleSelected()
         {
             if (IsSelected == true)
@@ -133,47 +162,50 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         public void writeMetaData(MediaFactory.WriteOptions options, IProgress progress)
         {
-            rwLock.EnterReadLock();
+            // this can be a read lock since the mediafileitem instance is not modified during writing to disk.
+            // but we don't want multiple writes at the same time so we use the upgradablereadlock
+            rwLock.EnterUpgradeableReadLock();
             try
             {
                 if (media != null)
-                {
+                {               
                     MediaFactory.write(Media, options, progress);
+                    if (media.Tags.Count > 0)
+                    {
+                        HasTags = true;
+                    }
+                    else
+                    {
+                        HasTags = false;
+                    }
                 }
             }
             finally
-            {
-                rwLock.ExitReadLock();
+            {            
+                rwLock.ExitUpgradeableReadLock();
             }
 
         }
 
-     
-        public async Task readMetaDataAsync(MediaFactory.ReadOptions options, CancellationToken token)
+        public void readMetaData(MediaFactory.ReadOptions options, CancellationToken token)
         {
+            Media media = null;
+            MediaFileItemState result = MediaFileItemState.LOADED;
 
-            //http://msdn.microsoft.com/en-us/magazine/jj991977.aspx
-            //await mutex.WaitAsync().ConfigureAwait(false);
-
-            await Task.Run(() =>
+            rwLock.EnterWriteLock();            
+            try
             {
+                ItemState = MediaFileItemState.LOADING;
 
-                rwLock.EnterWriteLock();
-                Media media = null;
-                MediaFileItemState result = MediaFileItemState.LOADED;
+                media = MediaFactory.read(Location, options, token);
 
-                try
-                {                  
+                if (media == null || media is UnknownMedia)
+                {
+                    result = MediaFileItemState.ERROR;
+                }
+                else {
 
-                    ItemState = MediaFileItemState.LOADING;
-
-                    media = MediaFactory.read(Location, options, token);
-
-                    if (media == null || media is UnknownMedia)
-                    {
-                        result = MediaFileItemState.ERROR;
-                    }
-                    else if (media.MetadataReadError != null)
+                    if (media.MetadataReadError != null)
                     {
                         if (media.MetadataReadError is FileNotFoundException)
                         {
@@ -184,31 +216,42 @@ namespace MediaViewer.MediaFileModel.Watcher
                             result = MediaFileItemState.ERROR;
                         }
                     }
+              
+                    if (media.Tags.Count > 0)
+                    {
+                        HasTags = true;
+                    }
+                    else
+                    {
+                        HasTags = false;
+                    }
+                }
 
-                }
-                catch (Exception e)
-                {
-                    result = MediaFileItemState.ERROR;
-                    log.Info("Error loading image grid item:" + Location, e);
-                }
-                finally
-                {
-                    Media = media;
-                    ItemState = result;
-         
-                    rwLock.ExitWriteLock();
-                }
+            }
+            catch (Exception e)
+            {
+                result = MediaFileItemState.ERROR;
+                log.Info("Error loading image grid item:" + Location, e);
+            }
+            finally
+            {               
+                Media = media;
+                ItemState = result;             
+                rwLock.ExitWriteLock();
+            }
+        }
+
+     
+        public async Task readMetaDataAsync(MediaFactory.ReadOptions options, CancellationToken token)
+        {
+
+            //http://msdn.microsoft.com/en-us/magazine/jj991977.aspx
+            //await mutex.WaitAsync().ConfigureAwait(false);
+            await Task.Run(() =>
+            {
+                readMetaData(options, token);
 
             }).ConfigureAwait(false);
-
-/*
-            // assign the results on the UI thread           
-            DispatcherOperation task = Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                
-                ItemState = result;               
-            }));
- */
 
         }
 
@@ -230,7 +273,10 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                 FileUtils fileUtils = new FileUtils();
 
-                fileUtils.deleteFile(Location);
+                if (ItemState != MediaFileItemState.FILE_NOT_FOUND)
+                {
+                    fileUtils.deleteFile(Location);
+                }
 
                 if (Media != null && Media.IsImported)
                 {
@@ -243,6 +289,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 ItemState = MediaFileItemState.DELETED;
+                Factory.deleteFromDictionary(location);
+
                 return (isImported);
             }
             finally
@@ -251,10 +299,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
            
         }
-
-
       
-
         /// <summary>
         /// returns true if the moved item was a imported item otherwise false
         /// </summary>
@@ -266,25 +311,14 @@ namespace MediaViewer.MediaFileModel.Watcher
             rwLock.EnterUpgradeableReadLock();
             try
             {
-
-                System.Diagnostics.Debug.WriteLine("starting move: " + Location + " " + newLocation);
-
+                
                 bool isImported = false;
 
                 if (ItemState == MediaFileItemState.DELETED)
                 {
                     return (isImported);
                 }
-
-                // A subtle bug can occur when renaming files if updating Media in the database is done AFTER the file is renamed,
-                // Consider the following sequence of events:
-                // The file is renamed. A new file is "created" with it's new name. This file gets loaded, 
-                // but it's Media entity in the database is not yet updated to the new location.
-                // So it will be loaded as a non-imported file.
-                // To avoid this error, update Media in the database before it is moved. In case a move error occurs
-                // we change media back to it's old location
-                //updateMediaLocation(media, newLocation);
-
+        
                 FileUtils fileUtils = new FileUtils();
 
                 fileUtils.moveFile(Location, newLocation, progress);
@@ -424,34 +458,122 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         public class Factory
         {
+            public static MediaFileItem EmptyItem = new MediaFileItem("");
+
+            static ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
+            static Dictionary<String, WeakReference<MediaFileItem>> dictionary = new Dictionary<String, WeakReference<MediaFileItem>>();
+
             public static MediaFileItem create(string location)
-            {
-                MediaFileWatcher.Instance.MediaState.UIMediaCollection.EnterReaderLock();
-                MediaFileWatcher.Instance.MediaState.BusyMediaCollection.EnterReaderLock();
+            {                               
+                rwLock.EnterWriteLock();
                 try
-                {
-                    MediaFileItem item = MediaFileWatcher.Instance.MediaState.UIMediaCollection.Find(location);
+                {  
+                    WeakReference<MediaFileItem> reference = null;
+                    MediaFileItem item = null;
 
-                    if (item == null)
+                    bool success = dictionary.TryGetValue(location, out reference);
+
+                    if (success == true)
                     {
-                        item = MediaFileWatcher.Instance.MediaState.BusyMediaCollection.Find(location);
+                        bool exists = reference.TryGetTarget(out item);
+
+                        if (exists == false) {
+                      
+                            // item has been garbage collected, recreate
+                            item = new MediaFileItem(location, MediaFileItemState.LOADING);
+                            reference = new WeakReference<MediaFileItem>(item);
+                            dictionary.Remove(location);
+                            dictionary.Add(location, reference);                           
+                        }
                     }
-
-                    if (item == null)
+                    else
                     {
-                        item = new MediaFileItem(location, MediaFileItemState.LOADING);                      
+                        // item did not exist yet
+                        item = new MediaFileItem(location, MediaFileItemState.LOADING);
+                        reference = new WeakReference<MediaFileItem>(item);
+                        dictionary.Add(location, reference); 
                     }
 
                     return (item);
                 }
                 finally
                 {
-                    MediaFileWatcher.Instance.MediaState.BusyMediaCollection.ExitReaderLock();
-                    MediaFileWatcher.Instance.MediaState.UIMediaCollection.ExitReaderLock();                    
+                    rwLock.ExitWriteLock();                   
                 }
             }
 
-            public static MediaFileItem EmptyItem = new MediaFileItem("");
+            public static void renameInDictionary(String oldLocation, String newLocation)
+            {
+                rwLock.EnterWriteLock();
+                try
+                {
+                    WeakReference<MediaFileItem> reference = null;
+                    MediaFileItem item = null;
+
+                    bool potentialFailure = dictionary.TryGetValue(newLocation, out reference);
+
+                    if (potentialFailure == true)
+                    {
+                        if (reference.TryGetTarget(out item))
+                        {
+                            // there is a live mediafileitem in the hash clashing with the newly renamed item
+                            throw new InvalidOperationException("Trying to rename item to existing item in media dictionary: " + oldLocation + " to " + newLocation);
+                        }
+                        else
+                        {
+                            // the mediafileitem in the hash is already dead
+                            dictionary.Remove(newLocation);
+                        }
+                    }
+
+                    bool success = dictionary.TryGetValue(oldLocation, out reference);
+                    
+                    if (success == true)
+                    {
+                        bool exists = reference.TryGetTarget(out item);
+
+                        if (exists == false)
+                        {
+                            // item has been garbage collected, recreate
+                            dictionary.Remove(oldLocation);
+                            item = new MediaFileItem(newLocation, MediaFileItemState.LOADING);
+                            reference = new WeakReference<MediaFileItem>(item);
+
+                            dictionary.Add(newLocation, reference);
+                        }
+                        else
+                        {
+                            dictionary.Remove(oldLocation);
+                            dictionary.Add(newLocation, reference);
+                        }
+                    }
+                    else
+                    {
+                        // item does not exist
+                        throw new InvalidOperationException("Trying to rename non-existing item in media dictionary: " + oldLocation + " to " + newLocation);
+                       
+                    }
+                 
+                }
+                finally
+                {
+                    rwLock.ExitWriteLock();
+                }
+            }
+
+            public static void deleteFromDictionary(string location)
+            {
+                rwLock.EnterWriteLock();
+                try
+                {                 
+                    dictionary.Remove(location);                    
+                }
+                finally
+                {
+                    rwLock.ExitWriteLock();
+                }
+            }
         }
+              
     }
 }

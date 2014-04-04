@@ -20,12 +20,16 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Name="root">
-        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.MediaFileItem.IsSelected, ElementName=root, Mode=TwoWay}" 
-                      IsEnabled="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource negatedEnumToBooleanConverter}, ConverterParameter={x:Static local:MediaFileItemState.LOADING}}"
-                      >
+        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.MediaFileItem.IsSelected, ElementName=root, Mode=TwoWay}">
             <ToggleButton.Style>
                 <Style>
                     <Style.Triggers>
+                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
+                            <Setter Property="ToggleButton.IsEnabled" Value="false"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                            <Setter Property="ToggleButton.IsEnabled" Value="false"/>
+                        </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="true">
                             <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridSelectedColorBrush}" />
                         </DataTrigger>
@@ -105,12 +109,12 @@
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADED">
                                         <Setter Property="Image.Stretch" Value="Uniform"/>
-                                        <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}" />
+                                        <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}"/>
                                         <Setter Property="Image.Effect" Value="{x:Null}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="FILE_NOT_FOUND">
-                                        <Setter Property="Image.Stretch" Value="Uniform"/>
-                                        <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}" />
+                                        <Setter Property="Image.Stretch" Value="Uniform"/>                                    
+                                        <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>                                        
                                         <Setter Property="Image.Effect" Value="{StaticResource grayscaleEffect}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -118,7 +122,7 @@
                         </Image.Style>
                     </Image>
                 </Border>
-                <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal" Margin="3,0,0,0">
                     <StackPanel.Style>
                         <Style>
                             <Style.Triggers>
@@ -152,9 +156,21 @@
                             </Style>
                         </Image.Style>
                     </Image>
+                    <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Tagged"/>
                     <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->
                 </StackPanel>
             </Grid>
+            <ToggleButton.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="View" Click="viewMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Select All" Click="selectAllMenuItem_Click"/>
+                    <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Browse Location" Click="browseMenuItem_Click"/>
+                    <MenuItem Header="Open Location" Click="openInExplorerMenuItem_Click"/>
+                </ContextMenu>
+            </ToggleButton.ContextMenu>
         </ToggleButton>
     </Grid>
 </UserControl>

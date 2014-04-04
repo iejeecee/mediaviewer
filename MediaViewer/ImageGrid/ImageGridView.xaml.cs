@@ -32,46 +32,7 @@ namespace MediaViewer.ImageGrid
             InitializeComponent();                               
         }
         
-        private void viewMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem item = (MenuItem)e.OriginalSource;
-           
-            GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Tag);
-           
-        }
-
-        private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
-            vm.MediaState.selectAllUIState();
-        }
-
-        private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
-            ImageGridViewModel vm = (ImageGridViewModel)DataContext;
-            vm.MediaState.deselectAllUIState();          
-
-        }
-
-        private void browseMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem item = (MenuItem)e.OriginalSource;
-
-            String location = Utils.FileUtils.getPathWithoutFileName((string)item.Tag);
-
-            GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_SetPath", location);   
-        }
-
-        private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            MenuItem item = (MenuItem)e.OriginalSource;
-
-            String location = Utils.FileUtils.getPathWithoutFileName((string)item.Tag);
-
-            Process.Start(location);
-        }
+        
        
     }
 }

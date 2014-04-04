@@ -1,7 +1,8 @@
 ﻿<Window x:Name="AboutWindow1" x:Class="MediaViewer.AboutView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="About" Height="240" Width="320" ResizeMode="NoResize" Icon="/MediaViewer;component/Resources/Icons/birdsmall.ico">
+        Title="About" Height="450" Width="350" ResizeMode="NoResize" Icon="/MediaViewer;component/Resources/Icons/birdsmall.ico"
+        WindowStartupLocation="CenterScreen">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -9,40 +10,25 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
+    <Grid Background="#FF3125EA">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>         
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextWrapping="WrapWithOverflow" TextAlignment="Center" Margin="0,10,0,0">
+        <TextBlock Grid.Row="0" HorizontalAlignment="Center" Text="MediaViewer" VerticalAlignment="Top" FontSize="48" Foreground="White" Margin="0,40,0,0"/>
+        <TextBlock Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center" Foreground="LightGray">
             <TextBlock.Text>
-                <MultiBinding StringFormat="{}{0}, v{1} ({2})">
-                    <Binding Path="AssemblyInfo.Name"/>
+                <MultiBinding StringFormat="{}v{0} ({1})">                 
                     <Binding Path="AssemblyInfo.Version"/>
                     <Binding Path="AssemblyInfo.ProcessorArchitecture"/>
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
-        <Label Grid.Row="1" Content="(C) 2013/2014 IJC" HorizontalAlignment="Stretch" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
-        <Image Grid.Row="2" Name="aboutImage" HorizontalAlignment="Center" Height="48" VerticalAlignment="Center" Width="56" Source="/MediaViewer;component/Resources/Icons/bird.ico" RenderTransformOrigin="0.45,0.5">
-            <Image.RenderTransform>
-                <RotateTransform x:Name="aboutImageTransform"/>
-            </Image.RenderTransform>
-            <Image.Triggers>
-                <EventTrigger RoutedEvent="Image.MouseDown">
-                    <BeginStoryboard>
-                        <Storyboard>
-                            <DoubleAnimation Storyboard.TargetName="aboutImageTransform" Storyboard.TargetProperty="Angle" By="360.0" 
-                        		Duration="00:00:1"/>
-                        </Storyboard>
-                    </BeginStoryboard>
-                </EventTrigger>
-            </Image.Triggers>
-        </Image>
-        <TextBox Grid.Row="3" HorizontalAlignment="Center" Height="84" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True"/>
-        <Button Grid.Row="4" x:Name="OkButton" Content="Ok" HorizontalAlignment="Center" Margin="0,0,0,0" VerticalAlignment="Center" Width="74" RenderTransformOrigin="0.461,0.4" HorizontalContentAlignment="Center" Click="OkButton_Click" />
-    </Grid>
+        <TextBox Grid.Row="2" HorizontalAlignment="Center" Height="160" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True" Style="{StaticResource baseTextBoxStyle}"/>
+        <TextBlock Grid.Row="3" HorizontalAlignment="Center" Text="©2013/2014 IJC. All Rights Reserved" Foreground="LightGray" Margin="0,0,0,10"/>                
+        <Button Grid.Row="4" x:Name="OkButton" Content="Ok" HorizontalAlignment="Center" Margin="0,0,0,10" VerticalAlignment="Center" Width="74" HorizontalContentAlignment="Center" Click="OkButton_Click" />
+    </Grid>                         
 </Window>

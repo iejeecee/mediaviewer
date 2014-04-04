@@ -26,6 +26,8 @@ namespace MediaViewer.UserControls.TagPicker
     /// </summary>
     public partial class TagPickerView : UserControl
     {
+        const string tagClipboardDataFormat = "TagPickerView_TagNames";
+
         public TagPickerView()
         {
          
@@ -47,6 +49,7 @@ namespace MediaViewer.UserControls.TagPicker
             DependencyPropertyDescriptor.FromProperty(AutoCompleteBoxView.SelectedItemProperty, typeof(AutoCompleteBoxView)).AddValueChanged(addTagAutoCompleteBox, addTagAutoCompleteBox_SelectedItemChanged);
 
             addButton.IsEnabled = false;
+            clearButton.IsEnabled = false;
         }
       
         ~TagPickerView()
@@ -72,22 +75,11 @@ namespace MediaViewer.UserControls.TagPicker
             if (String.IsNullOrEmpty(addTagAutoCompleteBox.Text) || String.IsNullOrWhiteSpace(addTagAutoCompleteBox.Text))
             {
                 addButton.IsEnabled = false;
-
-            } else if(AcceptOnlyExistingTags == false) {
-
-                addButton.IsEnabled = true;
-            } else if(addTagAutoCompleteBox.SelectedItem != null && AcceptOnlyExistingTags == true)
+            } 
+            else if(AcceptOnlyExistingTags == false) 
             {
-                if ((addTagAutoCompleteBox.SelectedItem as Tag).Name.Equals(addTagAutoCompleteBox.Text))
-                {
-                    addButton.IsEnabled = true;
-                }
-                else
-                {
-                    addButton.IsEnabled = false;
-                }                
-            }
-                                   
+                addButton.IsEnabled = true;
+            }                                                
         }
 
         public ObservableCollection<Tag> Tags
@@ -105,8 +97,40 @@ namespace MediaViewer.UserControls.TagPicker
             TagPickerView control = (TagPickerView)o;
                     
             ObservableCollection<Tag> tags = (ObservableCollection<Tag>)e.NewValue;
+            
+            // WeakEventManager info:
+            // http://www.kolls.net/blog/?p=17
+            if (control.tagListBox.ItemsSource != null)
+            {
+                WeakEventManager<ObservableCollection<Tag>, NotifyCollectionChangedEventArgs>.RemoveHandler(
+                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tags_CollectionChanged);
+            }                                  
+
             control.tagListBox.ItemsSource = tags;
-                 
+
+            if (control.tagListBox.ItemsSource != null)
+            {            
+                WeakEventManager<ObservableCollection<Tag>, NotifyCollectionChangedEventArgs>.AddHandler(
+                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tags_CollectionChanged);
+            }
+        }
+
+        private void tags_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {           
+            ObservableCollection<Tag> tags = (ObservableCollection<Tag>)sender;
+
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (tags.Count == 0)
+                {
+
+                    clearButton.IsEnabled = false;
+                }
+                else
+                {
+                    clearButton.IsEnabled = true;
+                }
+            }));
         }
 
         public bool AddLinkedTags
@@ -133,11 +157,7 @@ namespace MediaViewer.UserControls.TagPicker
         
         private void addTag(string tagName)
         {
-            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;
-            if (AcceptOnlyExistingTags == true)
-            {
-                tagName = (addTagAutoCompleteBox.SelectedItem as Tag).Name;
-            }
+            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;          
 
             addTagAutoCompleteBox.Text = "";
 
@@ -162,8 +182,11 @@ namespace MediaViewer.UserControls.TagPicker
                 }
                 else
                 {
+                    if (AcceptOnlyExistingTags) return;
+                                        
                     tag = new Tag();
                     tag.Name = tagName;
+                    
                 }
               
                 if (!Tags.Contains(tag))
@@ -208,6 +231,66 @@ namespace MediaViewer.UserControls.TagPicker
            Tag tag = (sender as Button).Tag as Tag;
 
            Tags.Remove(tag);
+        }
+
+        private void contextMenuCut_Click(object sender, RoutedEventArgs e)
+        {
+            List<String> tagNames = new List<string>();
+
+            foreach (Tag tag in Tags)
+            {
+                tagNames.Add(tag.Name);
+            }
+
+            Clipboard.SetData(tagClipboardDataFormat, tagNames);
+            Tags.Clear();
+        }
+
+        private void contextMenuCopy_Click(object sender, RoutedEventArgs e)
+        {
+            List<String> tagNames = new List<string>();
+
+            foreach (Tag tag in Tags)
+            {
+                tagNames.Add(tag.Name);
+            }
+
+            Clipboard.SetData(tagClipboardDataFormat, tagNames);
+        }
+
+        private void contextMenuPaste_Click(object sender, RoutedEventArgs e)
+        {
+            List<String> tagNames = Clipboard.GetData(tagClipboardDataFormat) as List<String>;
+
+            if (tagNames == null) return;
+
+            foreach (String tagName in tagNames)
+            {
+                addTag(tagName);
+            }
+        }
+
+        private void contextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (Tags.Count > 0)
+            {
+                contextMenuCopy.IsEnabled = true;
+                contextMenuCut.IsEnabled = true;                
+            }
+            else
+            {
+                contextMenuCopy.IsEnabled = false;
+                contextMenuCut.IsEnabled = false;               
+            }
+
+            if (Clipboard.ContainsData(tagClipboardDataFormat))
+            {
+                contextMenuPaste.IsEnabled = true;
+            }
+            else
+            {
+                contextMenuPaste.IsEnabled = false;
+            }
         }
 
         

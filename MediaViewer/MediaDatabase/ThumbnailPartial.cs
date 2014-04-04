@@ -10,6 +10,7 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaDatabase
 {
+    [Serializable]
     partial class Thumbnail : ObservableObject
     {
         BitmapSource image;

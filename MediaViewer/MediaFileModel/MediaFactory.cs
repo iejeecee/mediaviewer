@@ -17,7 +17,7 @@ namespace MediaViewer.MediaFileModel
     public class MediaFactory
     {
         static int maxConcurrentReads = 10;
-        static SemaphoreSlim concurrentReadsSemaphore = new SemaphoreSlim(maxConcurrentReads, maxConcurrentReads);
+        static SemaphoreSlim limitConcurrentReadsSemaphore = new SemaphoreSlim(maxConcurrentReads, maxConcurrentReads);
        
 
         public enum ReadOptions
@@ -264,7 +264,7 @@ namespace MediaViewer.MediaFileModel
         public static Media read(string location, ReadOptions options, CancellationToken token)
         {
 
-            concurrentReadsSemaphore.Wait(token);
+            limitConcurrentReadsSemaphore.Wait(token);
             try
             {
                 // initialize media with a dummy in case of exceptions
@@ -304,7 +304,7 @@ namespace MediaViewer.MediaFileModel
             }
             finally
             {
-                concurrentReadsSemaphore.Release();
+                limitConcurrentReadsSemaphore.Release();
             }
         }
 

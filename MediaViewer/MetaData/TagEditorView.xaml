@@ -5,7 +5,7 @@
         xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
         xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
         xmlns:TagTreePicker="clr-namespace:MediaViewer.UserControls.TagTreePicker" xmlns:AutoCompleteBox="clr-namespace:MediaViewer.UserControls.AutoCompleteBox" x:Class="MediaViewer.MetaData.TagEditorView"
-        Title="Tag Editor" Height="490.667" Width="600" Icon="/MediaViewer;component/Resources/Icons/tag.ico">
+        Title="Tag Editor" Height="490.667" Width="600" Icon="/MediaViewer;component/Resources/Icons/tag.ico" Closing="window_Closing">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -23,14 +23,15 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>         
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TagTreePicker:TagTreePickerView Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
-			SelectedTag="{Binding SelectedTag, Mode=TwoWay}" 
-			SelectedCategory="{Binding SelectedCategory, Mode=TwoWay}"
+        <TagTreePicker:TagTreePickerView Grid.Row="0" Grid.Column="0" x:Name="tagTreePicker" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+			SelectedTags="{Binding SelectedTags, Mode=TwoWay}" 
+			SelectedCategories="{Binding SelectedCategories, Mode=TwoWay}"
 			Margin="5,5,5,0"/>
-        <Grid Grid.Row="0" Grid.Column="1">
+        <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
+        <Grid Grid.Row="0" Grid.Column="1" Margin="2,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
@@ -46,9 +47,9 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Name" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Style="{StaticResource labelStyle}" Width="60"/>
-                    <AutoCompleteBox:AutoCompleteBoxView Grid.Row="0" Grid.Column="1" x:Name="categoryNameAutoCompleteBox" Text="{Binding CategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5"/>
-                    <Button Grid.Row="1" Grid.Column="1" Content="Clear" ToolTip="Clear category" HorizontalAlignment="Right" Margin="5,5,60,5" VerticalAlignment="Top" Width="50" Command="{Binding ClearCategoryCommand}"/>
-                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Top" Width="50">
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="categoryNameAutoCompleteBox" Text="{Binding CategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5"
+                             Style="{StaticResource baseTextBoxStyle}" IsReadOnly="{Binding IsCategoryBatchMode}"/>                   
+                    <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="5,5,115,5" VerticalAlignment="Top" Width="50">
                         <Button.Style>
                             <Style TargetType="{x:Type Button}">
                                 <Setter Property="Content" Value="Create"/>
@@ -56,13 +57,13 @@
                                 <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.CanExecute}"/>
                                 <Setter Property="ToolTip" Value="Create a new category"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedCategory, Converter={StaticResource isNullConverter}}" Value="true">
+                                    <DataTrigger Binding="{Binding IsCategorySelected}" Value="false">
                                         <Setter Property="Content" Value="Create" />
                                         <Setter Property="Command" Value="{Binding CreateCategoryCommand}"/>
                                         <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.CanExecute}"/>
                                         <Setter Property="ToolTip" Value="Create a new category"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding SelectedCategory, Converter={StaticResource isNullConverter}}" Value="false">
+                                    <DataTrigger Binding="{Binding IsCategorySelected}" Value="true">
                                         <Setter Property="Content" Value="Update" />
                                         <Setter Property="Command" Value="{Binding UpdateCategoryCommand}"/>
                                         <Setter Property="IsEnabled" Value="{Binding UpdateCategoryCommand.CanExecute}"/>
@@ -72,6 +73,8 @@
                             </Style>
                         </Button.Style>
                     </Button>
+                    <Button Grid.Row="1" Grid.Column="1" Content="Delete" ToolTip="Delete category" HorizontalAlignment="Right" Margin="5,5,60,5" VerticalAlignment="Top" Width="50" Command="{Binding DeleteCategoryCommand}"/>
+                    <Button Grid.Row="1" Grid.Column="1" Content="Clear" ToolTip="Clear category" HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Top" Width="50" Command="{Binding ClearCategoryCommand}"/>
                 </Grid>
             </GroupBox>
             <GroupBox Header="Tag" Grid.Row="1">
@@ -79,19 +82,23 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Name" HorizontalAlignment="Right" Style="{StaticResource labelStyle}"/>
-                    <AutoCompleteBox:AutoCompleteBoxView Grid.Row="0" Grid.Column="1" x:Name="tagNameAutoCompleteBox" Text="{Binding TagName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" SelectedItem="{Binding SelectedTag, Mode=TwoWay}" HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5"/>
+                    <TextBox Grid.Row="0" Grid.Column="1" x:Name="tagNameAutoCompleteBox" Text="{Binding TagName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                             HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5" IsReadOnly="{Binding IsTagSelected}"
+                             Style="{StaticResource baseTextBoxStyle}"/>
                     <Label Grid.Row="1" Grid.Column="0" Content="Category" HorizontalAlignment="Right"  Style="{StaticResource labelStyle}"/>
                     <ComboBox Grid.Row="1" Grid.Column="1" DisplayMemberPath="Name" 
 						SelectedItem="{Binding TagCategory, ConverterParameter={x:Static MetaData:TagEditorViewModel.NullCategory}, Converter={StaticResource nullConverter}, Mode=TwoWay}" 
-						Margin="5,5,5,5" HorizontalAlignment="Stretch" Height="20"
+						Margin="5,5,5,5" HorizontalAlignment="Stretch" Height="20" IsEnabled="{Binding IsTagCategoryEnabled}"
 						Style="{StaticResource baseComboBoxStyle}">
                         <ComboBox.ItemsSource>
                             <CompositeCollection>
@@ -100,10 +107,14 @@
                             </CompositeCollection>
                         </ComboBox.ItemsSource>
                     </ComboBox>
-                    <Label Grid.Row="2" Grid.Column="0" Content="Child Tags" HorizontalAlignment="Right" Style="{StaticResource labelStyle}"/>
-                    <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Tags="{Binding ChildTags}" AcceptOnlyExistingTags="true"/>
-                    <Button Grid.Row="3" Grid.Column="1" Content="Clear" ToolTip="Clear tag" HorizontalAlignment="Right" Margin="5,5,60,5" VerticalAlignment="Top" Width="50" Command="{Binding ClearTagCommand}"/>
-                    <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Top" Width="50">
+                    <CheckBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Top" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}}" IsChecked="{Binding IsTagCategoryEnabled}"/>
+                    <Label Grid.Row="2" Grid.Column="0" Content="Child Tags" HorizontalAlignment="Right" Style="{StaticResource labelStyle}" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}, ConverterParameter=invert}"/>
+                    <TagPicker:TagPickerView Grid.Row="2" Grid.RowSpan="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Tags="{Binding ChildTags}" AcceptOnlyExistingTags="true" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}, ConverterParameter=invert}"/>
+                    <Label Grid.Row="2" Grid.Column="0" Content="Add" HorizontalAlignment="Right" Style="{StaticResource labelStyle}" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}}"/>
+                    <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Tags="{Binding AddChildTags}" AcceptOnlyExistingTags="true" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}}"/>
+                    <Label Grid.Row="3" Grid.Column="0" Content="Remove" HorizontalAlignment="Right" Style="{StaticResource labelStyle}" Visibility="{Binding IsTagBatchMode, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                    <TagPicker:TagPickerView Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Stretch" Tags="{Binding RemoveChildTags}" AcceptOnlyExistingTags="true" Visibility="{Binding IsTagBatchMode, Converter={StaticResource visibilityConverter}}"/>                   
+                    <Button Grid.Row="4" Grid.Column="1" HorizontalAlignment="Right" Margin="5,5,115,5" VerticalAlignment="Top" Width="50">
                         <Button.Style>
                             <Style TargetType="{x:Type Button}">
                                 <Setter Property="Content" Value="Create"/>
@@ -111,13 +122,13 @@
                                 <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.CanExecute}"/>
                                 <Setter Property="ToolTip" Value="Create a new tag"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedTag, Converter={StaticResource isNullConverter}}" Value="true">
+                                    <DataTrigger Binding="{Binding IsTagSelected}" Value="false">
                                         <Setter Property="Content" Value="Create" />
                                         <Setter Property="Command" Value="{Binding CreateTagCommand}"/>
                                         <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.CanExecute}"/>
                                         <Setter Property="ToolTip" Value="Create a new tag"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding SelectedTag, Converter={StaticResource isNullConverter}}" Value="false">
+                                    <DataTrigger Binding="{Binding IsTagSelected}" Value="true">
                                         <Setter Property="Content" Value="Update" />
                                         <Setter Property="Command" Value="{Binding UpdateTagCommand}"/>
                                         <Setter Property="IsEnabled" Value="{Binding UpdateTagCommand.CanExecute}"/>
@@ -126,10 +137,12 @@
                                 </Style.Triggers>
                             </Style>
                         </Button.Style>
-                    </Button>                   
+                    </Button>
+                    <Button Grid.Row="4" Grid.Column="1" Content="Delete" ToolTip="Clear tag" HorizontalAlignment="Right" Margin="5,5,60,5" VerticalAlignment="Top" Width="50" Command="{Binding DeleteTagCommand}"/>
+                    <Button Grid.Row="4" Grid.Column="1" Content="Clear" ToolTip="Clear tag" HorizontalAlignment="Right" Margin="5,5,5,5" VerticalAlignment="Top" Width="50" Command="{Binding ClearTagCommand}"/>
                 </Grid>
             </GroupBox>
         </Grid>
-        <Button Grid.Row="2" Grid.Column="1" Content="Close" Width="50" Margin="5,5,5,5" HorizontalAlignment="Right"/>
+        <Button Grid.Row="2" Grid.Column="1" Command="{Binding CloseCommand}" Content="Close" Width="50" Margin="5,5,5,5" HorizontalAlignment="Right"/>
     </Grid>
 </Window>

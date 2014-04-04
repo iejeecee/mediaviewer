@@ -111,6 +111,7 @@ namespace MediaViewer
                
             }
 
+            App.SplashScreen.Close(TimeSpan.FromSeconds(0.5));
            
 
            // VideoTestWindow test = new VideoTestWindow();

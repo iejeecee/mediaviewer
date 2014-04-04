@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
+    [Serializable]
     partial class TagCategory : IEquatable<TagCategory>, IComparable<TagCategory>
     {
         public override string ToString()

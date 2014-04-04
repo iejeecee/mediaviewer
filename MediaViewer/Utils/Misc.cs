@@ -156,24 +156,23 @@ namespace MediaViewer.Utils
             }
         }
 
-        public static void insertIntoSortedCollection<T>(ObservableCollection<T> list, T item) where T : IComparable<T>
+        public static void insertIntoSortedCollection<T>(IList<T> list, T item, int start, int end) 
         {
-
             if (list.Count == 0)
             {
                 list.Add(item);
                 return;
             }
 
-            int mid = 0;
-            int low = 0;
-            int high = list.Count - 1;         
+            int mid = start;
+            int low = start;
+            int high = end - 1;         
 
             while (low <= high)
             {
-                mid = (high + low) / 2;  
+                mid = (high + low) / 2;
 
-                int val = list[mid].CompareTo(item);
+                int val = item.ToString().CompareTo(list[mid].ToString());
                
                 if (val < 0)
                 {
@@ -190,7 +189,7 @@ namespace MediaViewer.Utils
 
             }
 
-            if (list[mid].CompareTo(item) >= 0)
+            if (item.ToString().CompareTo(list[mid].ToString()) >= 0)
             {
                 list.Insert(mid + 1, item);
             }
@@ -199,6 +198,14 @@ namespace MediaViewer.Utils
                 list.Insert(mid, item);
             }
 
+
+        }
+
+
+        public static void insertIntoSortedCollection<T>(IList<T> list, T item)
+        {
+
+            insertIntoSortedCollection<T>(list, item, 0, list.Count);
 
         }
     }

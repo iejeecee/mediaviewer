@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
+    [Serializable]
     partial class VideoMedia
     {
         public VideoMedia()

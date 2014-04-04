@@ -7,6 +7,7 @@ using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
+    [Serializable]
     partial class Media : ObservableObject
     {
         
@@ -22,9 +24,9 @@ namespace MediaViewer.MediaDatabase
         {
             Location = location;
             Data = data;
-            MimeType = MediaFormatConvert.fileNameToMimeType(location);
-
+            MimeType = MediaFormatConvert.fileNameToMimeType(location);            
             Tags = new HashSet<Tag>();
+           
             IsImported = false;
             metadataReadError = null;
         }

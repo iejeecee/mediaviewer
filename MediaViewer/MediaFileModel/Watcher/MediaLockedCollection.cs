@@ -107,14 +107,18 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             try {
 
-                if (Contains(newItems) == true)
-                {                    
-                    return (false);
-                }
+                bool newItemsAreUnique = true;
 
-                items.AddRange(newItems);
+                foreach (MediaFileItem item in newItems)
+                {
+                    if (Add(item) == false)
+                    {
+                        newItemsAreUnique = false;
+                    }
+                }
+             
                 items.Sort();
-                return (true);
+                return (newItemsAreUnique);
                         
             }
             finally
@@ -322,7 +326,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         }
 
 
-        public bool RenameRange(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
+        public bool RenameRange(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations)
         {
            
             rwLock.EnterWriteLock();
@@ -331,7 +335,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 bool success = true;
 
                 int nrOldItems = oldItems.Count();
-                int nrNewItems = newItems.Count();
+                int nrNewItems = newLocations.Count();
 
                 Debug.Assert(nrOldItems == nrNewItems);
               
@@ -344,7 +348,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         continue;
                     }
 
-                    oldItem.Location = newItems.ElementAt(i).Location;                       
+                    oldItem.Location = newLocations.ElementAt(i);                       
                 }
 
                 items.Sort();

@@ -3,34 +3,34 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:tree="clr-namespace:Aga.Controls.Tree;assembly=Aga.Controls"
+             xmlns:sd="http://icsharpcode.net/sharpdevelop/treeview"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <tree:TreeList Name="tagTreeList" SelectionChanged="tagTreeList_SelectionChanged">
-            <tree:TreeList.View>
-                <GridView>
+        <sd:SharpTreeView x:Name="treeView"
+                              AllowDrop="True"
+                              ShowAlternation="True"                           
+                              SelectionChanged="treeView_SelectionChanged">
+            <ListView.View>
+                <sd:SharpGridView>
                     <GridView.Columns>
-                        <GridViewColumn Width="190" Header="Tag">
+                        <GridViewColumn Header="Tag">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"></ColumnDefinition>
-                                            <ColumnDefinition Width="16"></ColumnDefinition>
-                                            <ColumnDefinition Width="*"></ColumnDefinition>
-                                        </Grid.ColumnDefinitions>                                        
-                                        <tree:RowExpander Grid.Column="0"/>
-                                        <Image Grid.Column="1" Margin="2" Source="{Binding ImageUrl}"/>
-                                        <TextBlock Grid.Column="2" Margin="2" Text="{Binding Name}"/>                                            
-                                    </Grid>
+                                    <sd:SharpTreeNodeView />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>
-                        <GridViewColumn Header="Used" Width="50" DisplayMemberBinding="{Binding Used}"/>                       
+                        <GridViewColumn Header="Used">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Used}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
                     </GridView.Columns>
-                </GridView>
-            </tree:TreeList.View>
-        </tree:TreeList>
+                </sd:SharpGridView>
+            </ListView.View>
+        </sd:SharpTreeView>
     </Grid>
 </UserControl>

@@ -32,10 +32,10 @@ namespace MediaViewer.ImageGrid
 
        
     
-        public ImageGridViewModel(IMediaState mediaFiles)
+        public ImageGridViewModel(IMediaState mediaState)
         {
 
-            this.mediaState = mediaFiles;
+            this.mediaState = mediaState;
           
             loadItemsCTS = new CancellationTokenSource();
             

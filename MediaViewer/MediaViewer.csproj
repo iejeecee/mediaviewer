@@ -70,6 +70,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="ICSharpCode.TreeView, Version=5.0.0.4053, Culture=neutral, PublicKeyToken=f829da5c02be14ee, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\SharpTreeView\Release\ICSharpCode.TreeView.dll</HintPath>
+    </Reference>
     <Reference Include="log4net">
       <HintPath>C:\game\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
@@ -150,6 +154,7 @@
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\EmptyStringConverter.cs" />
+    <Compile Include="Converters\CollectionIsEmptyConverter.cs" />
     <Compile Include="Converters\EnumToVisibilityConverter.cs" />
     <Compile Include="Converters\IsNullConverter.cs" />
     <Compile Include="Converters\MathConverter.cs" />
@@ -406,7 +411,7 @@
     <Compile Include="UserControls\TagTreePicker\TagTreePickerView.xaml.cs">
       <DependentUpon>TagTreePickerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\TagTreePicker\TagTreePickerViewModel.cs" />
+    <None Include="UserControls\TagTreePicker\TagTreePickerViewModel.cs" />
     <Compile Include="UserControls\TagTreePicker\TagItem.cs" />
     <Compile Include="UserControls\TextBlock\AutoLengthTextBlock.xaml.cs">
       <DependentUpon>AutoLengthTextBlock.xaml</DependentUpon>
@@ -814,6 +819,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Images\Splash.png" />
     <Resource Include="Resources\Icons\notsupported.ico" />
     <Resource Include="Resources\Icons\checked.ico" />
     <Resource Include="Resources\Icons\tag.ico" />

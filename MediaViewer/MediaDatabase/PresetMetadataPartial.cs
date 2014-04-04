@@ -6,16 +6,11 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase
 {
-    partial class PresetMetadata : IComparable<PresetMetadata>
+    partial class PresetMetadata 
     {
-        public int CompareTo(PresetMetadata other)
+        public override String ToString()
         {
-            if (other == null)
-            {
-                throw new ArgumentException();
-            }
-
-            return (other.Name.CompareTo(Name));
+            return (Name);         
         }
     }
 }

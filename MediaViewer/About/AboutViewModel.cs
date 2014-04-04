@@ -56,8 +56,11 @@ namespace MediaViewer.About
             int minor = (version >> 8) & 0xFF;
             int micro = version & 0xFF;
 
-            sb.AppendLine("FFmpeg Version: " + major + "." + minor + "." + micro);       
-
+            sb.AppendLine("FFmpeg Version: " + major + "." + minor + "." + micro);
+            sb.AppendLine();
+            sb.AppendLine("Warning this computer program is protected by copyright law and international treaties.");
+            sb.AppendLine("Unathorized reproduction or distribution of this program, or any portion of it, may result in severe criminal penalties, and will be prosecuted to the maximum extent possible under the law.");
+            
             LibraryVersionsInfo = sb.ToString();
         }
     }

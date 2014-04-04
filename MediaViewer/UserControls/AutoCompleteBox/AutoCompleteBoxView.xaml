@@ -13,7 +13,7 @@
         </Style>
     </UserControl.Resources>
     <Grid>
-        <TextBox x:Name="autoCompleteTextBox" TextWrapping="Wrap" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown"/>                 
+        <TextBox x:Name="autoCompleteTextBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown"/>                 
         <Popup x:Name="popup" StaysOpen="true" AllowsTransparency="True" Height="Auto" Width="Auto" MaxHeight="200" MouseEnter="popup_MouseEnter" MouseLeave="popup_MouseLeave" >
             <Border BorderBrush="Black" BorderThickness="1">
                 <ScrollViewer Name="scrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">

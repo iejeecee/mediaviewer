@@ -27,19 +27,7 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <ImageGrid:ImageGridItemView MediaFileItem="{Binding}" Padding="2">
-                    <ImageGrid:ImageGridItemView.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="View" Tag="{Binding Location}" Click="viewMenuItem_Click"/>
-                            <Separator/>
-                            <MenuItem Header="Select All" Click="selectAllMenuItem_Click"/>
-                            <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>
-                            <Separator/>
-                            <MenuItem Header="Browse Location" Tag="{Binding Location}" Click="browseMenuItem_Click"/>
-                            <MenuItem Header="Open Location" Tag="{Binding Location}" Click="openInExplorerMenuItem_Click"/>
-                        </ContextMenu>
-                    </ImageGrid:ImageGridItemView.ContextMenu>
-                </ImageGrid:ImageGridItemView>
+                <ImageGrid:ImageGridItemView MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}"/>                               
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>
