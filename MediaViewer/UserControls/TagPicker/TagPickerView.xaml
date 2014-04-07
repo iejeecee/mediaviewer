@@ -10,21 +10,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type ListBox}">
-                <Style.Resources>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="Transparent"/>
-                    <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="Transparent"/>
-                </Style.Resources>
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true">
-                        <Setter Property="Background" Value="White"/>
-                    </DataTrigger>
-                    <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false">
-                        <Setter Property="Background" Value="{StaticResource imageGridBackgroundColorBrush}"/>
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
+            </ResourceDictionary.MergedDictionaries>          
             <Style x:Key="buttonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
                 <Setter Property="Background" Value="White"/>               
                 <Style.Triggers>
@@ -53,7 +39,7 @@
         <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="contextMenu_ContextMenuOpening">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <WrapPanel/>
+                    <WrapPanel Style="{StaticResource baseWrapPanelStyle}"/>
                 </ItemsPanelTemplate>
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>

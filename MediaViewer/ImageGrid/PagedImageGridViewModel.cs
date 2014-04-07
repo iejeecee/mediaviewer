@@ -20,7 +20,7 @@ namespace MediaViewer.ImageGrid
             base(mediaFiles)
         {
 
-            maxItemsPerPage = 25;
+            maxItemsPerPage = 4 * 5;
             mediaPage = new ObservableCollection<MediaFileItem>();
             mediaPageLock = new Object();
             BindingOperations.EnableCollectionSynchronization(mediaPage, mediaPageLock);

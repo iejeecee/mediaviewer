@@ -19,10 +19,10 @@
             <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ItemsControl x:Name="itemsControl" ItemsSource="{Binding MediaPage}">
+    <ItemsControl x:Name="itemsControl" ItemsSource="{Binding MediaPage}" Background="{StaticResource imageGridBackgroundColor}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
-                <UniformGrid x:Name="mainGrid" Columns="5" Rows="5" />
+                <UniformGrid x:Name="mainGrid" Columns="4" Rows="5" />
             </ItemsPanelTemplate>
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>

@@ -15,14 +15,14 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>        
     </UserControl.Resources>
-    <Grid Name="mainGrid" Background="{StaticResource imageGridBackgroundColorBrush}">
+    <Grid Name="mainGrid" Background="{StaticResource appBackgroundColor}">
         <Grid.RowDefinitions>
             <RowDefinition />
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both">
             <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave"
-                  Background="{StaticResource imageGridBackgroundColorBrush}">
+                  Background="{StaticResource appBackgroundColor}">
                 <Image x:Name="pictureBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        ScrollViewer.CanContentScroll="True" 
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" 
@@ -33,7 +33,7 @@
                         <Style>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsLoading}" Value="true">
-                                    <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{StaticResource loadingImage}" />                                  
+                                    <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{StaticResource loadingImage}"/>                                  
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsLoading}" Value="false">
                                     <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{Binding Image}" />                                  

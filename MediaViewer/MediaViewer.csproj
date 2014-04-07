@@ -130,6 +130,7 @@
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsFormsIntegration" />
     <Reference Include="WpfAnimatedGif">
       <HintPath>..\packages\WpfAnimatedGif.1.4.4\lib\net\WpfAnimatedGif.dll</HintPath>
     </Reference>
@@ -669,6 +670,10 @@
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
       <Name>VideoLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VideoPlayerControl\VideoPlayerControl.csproj">
+      <Project>{68a8983c-f256-4b89-99c4-65fc81b7f0f5}</Project>
+      <Name>VideoPlayerControl</Name>
     </ProjectReference>
     <ProjectReference Include="..\XMPLib\XMPLib.vcxproj">
       <Project>{8722bebf-38ee-4b0d-98f1-413c840bafd7}</Project>

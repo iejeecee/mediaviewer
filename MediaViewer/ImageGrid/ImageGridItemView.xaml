@@ -31,10 +31,10 @@
                             <Setter Property="ToggleButton.IsEnabled" Value="false"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="true">
-                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridSelectedColorBrush}" />
+                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridItemSelectedBackgroundColor}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="false">
-                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridBackgroundColorBrush}" />
+                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridItemBackgroundColor}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
@@ -50,8 +50,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch"/>
-                    <TextBlock Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}, ConverterParameter='ext'}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right"/>
+                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}"/>
+                    <TextBlock Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}, ConverterParameter='ext'}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}"/>
                 </Grid>
                 <Border Grid.Row="1" BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border.Effect>

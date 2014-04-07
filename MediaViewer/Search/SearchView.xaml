@@ -36,7 +36,7 @@
             </ObjectDataProvider>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer>
+    <ScrollViewer Background="{StaticResource uiElementBackgroundColor}">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -53,7 +53,8 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="19.667"/>
+                    <RowDefinition Height="121.667"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -61,15 +62,15 @@
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Query" Style="{StaticResource labelStyle}"/>
                 <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" x:Name="queryTextBox" HorizontalAlignment="Stretch" Text="{Binding Query.Text}" 
-					ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,5,5" AllowDrop="True"/>
-                <Label Grid.Row="1" Grid.Column="0"  Content="Media Type" Style="{StaticResource labelStyle}"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" 
+					ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,5,4.667" AllowDrop="True"/>
+                <Label Grid.Row="1" Grid.Column="0"  Content="Media Type" Style="{StaticResource labelStyle}" Margin="0,0.333,0,0"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5.333,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" 
 					ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
-                <Label Grid.Row="2" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Grid.RowSpan="2"/>
                 <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                        Tags="{Binding Query.Tags}" AddLinkedTags="false" AcceptOnlyExistingTags="true"/>
-                <Label Grid.Row="3" Grid.Column="0"  Content="Rating" Style="{StaticResource labelStyle}"/>
-                <inputtoolkit:Rating Grid.Row="3" Grid.Column="1" ItemCount="5"  SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
+                                        Tags="{Binding Query.Tags}" AddLinkedTags="false" AcceptOnlyExistingTags="true" Grid.RowSpan="2"/>
+                <Label Grid.Row="4" Grid.Column="0"  Content="Rating" Style="{StaticResource labelStyle}"/>
+                <inputtoolkit:Rating Grid.Row="4" Grid.Column="1" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
 					Value="{Binding Query.RatingStart, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
@@ -80,25 +81,25 @@
                         </ContextMenu>
                     </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
-                <Label Grid.Row="3" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
-                <inputtoolkit:Rating Grid.Row="3" Grid.Column="3" ItemCount="5" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
+                <Label Grid.Row="4" Grid.Column="1"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,1.666,0,1.334"/>
+                <inputtoolkit:Rating Grid.Row="4" Grid.Column="3" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
 					Value="{Binding Query.RatingEnd, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </inputtoolkit:Rating.LayoutTransform>
                     <inputtoolkit:Rating.ContextMenu>
                         <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
-                            <MenuItem Header="Clear" Command="{Binding ClearRatingEndCommand}" />                    
+                            <MenuItem Header="Clear" Command="{Binding ClearRatingEndCommand}" />
                         </ContextMenu>
-                   </inputtoolkit:Rating.ContextMenu>
+                    </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
-                <Label Grid.Row="4" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}"/>                
-                <DateTimePicker:DateTimePicker Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>
-                <Label Grid.Row="4" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
-                <DateTimePicker:DateTimePicker Grid.Row="4" Grid.Column="3" HorizontalAlignment="Stretch" Margin="5,5,5,5" VerticalAlignment="Top" Value="{Binding Query.CreationEnd}" Min="{Binding Query.CreationStart}"/>                
-                <Button Grid.Row="5" Grid.Column="3" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
-					Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5" Content="Search">
-                </Button>     
+                <Label Grid.Row="4" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}" Margin="0,25.666,0,0" Grid.RowSpan="2"/>
+                <DateTimePicker:DateTimePicker Grid.Row="5" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>
+                <Label Grid.Row="5" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
+                <DateTimePicker:DateTimePicker Grid.Row="5" Grid.Column="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationEnd}" Min="{Binding Query.CreationStart}"/>
+                <Button Grid.Row="6" Grid.Column="3" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
+					Width="50" HorizontalAlignment="Right" Margin="5,5,5,5" Content="Search">
+                </Button>
             </Grid>
             <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Video}, Converter={StaticResource enumToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
@@ -160,7 +161,7 @@
                 <Label Grid.Row="3" Grid.Column="0"  Content="Height" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Query.ImageHeightStart}" Min="0" Max="{Binding Query.ImageHeightEnd}"  HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="3" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="3" Value="{Binding Query.ImageHeightEnd}" Min="{Binding Query.ImageHeightStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>               
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="3" Value="{Binding Query.ImageHeightEnd}" Min="{Binding Query.ImageHeightStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
             </Grid>
         </Grid>
     </ScrollViewer>

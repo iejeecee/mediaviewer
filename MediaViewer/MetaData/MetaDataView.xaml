@@ -36,7 +36,7 @@
             <MetaData:MetaDataViewModel x:Key="viewModel"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer>
+    <ScrollViewer Background="{StaticResource uiElementBackgroundColor}" Foreground="{StaticResource uiElementForegroundColor}">
         <Grid x:Name="mainGrid">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -112,7 +112,7 @@
                 </Button>
                 <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
                 <Label Grid.Row="5" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"/>
-                <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{Binding Source={StaticResource imageGridBackgroundColorBrush}}" Margin="5, 5, 5, 5"
+                <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
 					Value="{Binding Rating, Mode=TwoWay, Source={StaticResource viewModel}}"
 					IsEnabled="{Binding RatingEnabled, Source={StaticResource viewModel}}">
                     <inputtoolkit:Rating.ContextMenu>

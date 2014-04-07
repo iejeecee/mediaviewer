@@ -37,27 +37,56 @@
 
     <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->
     <SolidColorBrush x:Key="disabledColor" Color="#FFD4D0C8"/>
+    <SolidColorBrush x:Key="appBackgroundColor" Color="#FF293955"/>
+
+    <SolidColorBrush x:Key="toolBarBackgroundColor" Color="#FFD6DBE9"/>
+    <SolidColorBrush x:Key="menuBackgroundColor" Color="#FFD6DBE9"/>
+
+    <SolidColorBrush x:Key="imageGridBackgroundColor" Color="#FF989898"/>
+    <SolidColorBrush x:Key="imageGridItemBackgroundColor" Color="#FFD3D9DD"/>
+    <SolidColorBrush x:Key="imageGridItemSelectedBackgroundColor" Color="LightYellow"/>
+    <SolidColorBrush x:Key="imageGridItemTextColor" Color="Black"/>
+
+    <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
+    <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>
+    <SolidColorBrush x:Key="uiElementLabelColor" Color="#FF4D4D4D"/>
+    <SolidColorBrush x:Key="uiElementBorderColor" Color="#FF475B7E"/>
+    <SolidColorBrush x:Key="uiElementBorderTextColor" Color="White"/>
+
     <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
-    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
-    <SolidColorBrush x:Key="importedImageTextColorBrush" Color="Blue"/>
+    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>  
     <SolidColorBrush x:Key="imageTextColorBrush" Color="Black"/>
-    
+           
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
     
     <!-- Label -->
-    <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">        
-        <Setter Property="Foreground" Value="Gray"/>
+    <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">
+        <Setter Property="Foreground" Value="{StaticResource uiElementLabelColor}"/>
     </Style>
-    
+
+    <!-- TextBox -->
     <Style TargetType="{x:Type TextBox}" x:Key="baseTextBoxStyle">
         <Style.Triggers>         
             <Trigger Property="IsReadOnly" Value="True">
-                <Setter Property="Background" Value="LightGray"/>
+                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
             </Trigger>
         </Style.Triggers>
     </Style>
     
+    <!-- WrapPanel -->
+    <Style TargetType="{x:Type WrapPanel}" x:Key="baseWrapPanelStyle">
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="true">
+                <Setter Property="Background" Value="White"/>
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false">
+                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+
     <!-- ComboBox -->
     <Style TargetType="{x:Type ComboBox}" x:Key="baseComboBoxStyle">
         <Style.Triggers>

@@ -21,7 +21,7 @@
             <RowDefinition Height="40"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Menu Grid.Column="0" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0"  HorizontalContentAlignment="Stretch">
+        <Menu Grid.Column="0" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0" HorizontalContentAlignment="Stretch" Background="{StaticResource menuBackgroundColor}">
             <MenuItem Header="_File">
                 <MenuItem x:Name="OpenMenuItem" Header="_Open" Click="OpenMenuItem_Click"/>
                 <Separator/>
@@ -36,8 +36,8 @@
                 <MenuItem x:Name="AboutMenuItem" Header="_About" Command="{Binding AboutCommand}"/>
             </MenuItem>
         </Menu>
-        <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top">
-            <ToolBar>
+        <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top" Background="{StaticResource toolBarBackgroundColor}">
+            <ToolBar Background="{StaticResource toolBarBackgroundColor}">
                 <CheckBox x:Name="imageToolbarCheckBox" Height="16" Click="imageToolbarCheckBox_Click" ToolTip="View Image">
                     <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" />
                 </CheckBox>
@@ -48,7 +48,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="210">
+            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="210" Background="{StaticResource toolBarBackgroundColor}">
                 <xctk:DropDownButton Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -156,7 +156,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/contrast.ico"/>
                 </Button>
             </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-180,0,85.667,-0.333" Width="90">
+            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-180,0,85.667,-0.333" Width="90" Background="{StaticResource toolBarBackgroundColor}">
                 <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
                 </Button>

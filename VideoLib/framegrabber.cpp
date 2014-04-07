@@ -15,10 +15,6 @@
 int _tmain(int argc, char** argv)
 {
 
-	//std::string videoLocation("J:/Girls/Lucy Belle/Lucy Belle - Ass Traffic.wmv");
-	//std::string videoLocation("J:/Girls/Mandy Dee/Mandy Dee - Buttman's Bend Over Babes #7.mp4");
-	//std::string videoLocation("J:/Girls/Mandy Dee/Mandy Dee - From Russia With Lust.avi");	
-
 	std::string videoLocation;
 	std::string outputPath;
 	int frameWidth;
