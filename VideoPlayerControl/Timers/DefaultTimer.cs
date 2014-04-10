@@ -8,7 +8,7 @@ using System.Timers;
 
 namespace VideoPlayerControl.Timers
 {
-    public class DefaultTimer : HRTimer
+    public class DefaultTimer : HRTimer, IDisposable
     {
 
         System.Timers.Timer timer;
@@ -24,6 +24,23 @@ namespace VideoPlayerControl.Timers
 
             timer = new System.Timers.Timer();
             timer.Elapsed += new ElapsedEventHandler(defaultTimer_Elapsed);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (timer != null)
+                {
+                    timer.Dispose();
+                    timer = null;
+                }
+            }
         }
 
         public override ISynchronizeInvoke SynchronizingObject 
@@ -85,6 +102,8 @@ namespace VideoPlayerControl.Timers
             timer.Enabled = false;
         }
 
+
+        
     }
 
 }

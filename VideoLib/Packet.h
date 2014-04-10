@@ -26,10 +26,20 @@ namespace VideoLib {
 			avPacket->size = 0;
 		}
 		
-		~Packet() {
+		!Packet() {
 
 			free();
-			delete avPacket;
+
+			if(avPacket != NULL) {
+
+				delete avPacket;
+				avPacket = NULL;
+			}
+		}
+
+		~Packet() {
+
+			this->!Packet();					
 		}
 
 		void free() {

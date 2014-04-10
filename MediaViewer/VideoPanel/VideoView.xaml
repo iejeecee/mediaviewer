@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"  
+             xmlns:wfvpc="clr-namespace:VideoPlayerControl;assembly=VideoPlayerControl"
              xmlns:dpf="clr-namespace:MediaViewer.VideoPanel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
@@ -13,20 +14,44 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>       
     </UserControl.Resources>
-    <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource imageGridBackgroundColorBrush}">
+    <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Black">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="55"/>
         </Grid.RowDefinitions>
-        <dpf:DPFCanvas x:Name="VideoCanvas" Stretch="Fill" Margin="0,0,0,0"/>
-        <Button x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding PlayCommand}">
-            <Image Source="pack://application:,,,/Resources/Icons/ButtonPlay.ico"/>
-        </Button>
-        <Button x:Name="pauseButton" HorizontalAlignment="Left" Margin="43,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Command="{Binding PauseCommand}">
-            <Image Source="pack://application:,,,/Resources/Icons/ButtonPause.ico"/>
-        </Button>
-        <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="81,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
+        <WindowsFormsHost Grid.Row="0">
+            <wfvpc:VideoPlayer x:Name="videoPlayer"/>
+        </WindowsFormsHost>
+        <Grid Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
+        <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
+            <ToggleButton.Style>
+                <Style TargetType="ToggleButton">
+                    <Style.Triggers>                       
+                        <Trigger Property="IsChecked" Value="True">                         
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Image Source="pack://application:,,,/Resources/Icons/ButtonPause.ico"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="ToolTip" Value="Pause"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="False">                         
+                            <Setter Property="Content">
+                                <Setter.Value>
+                                    <Image Source="pack://application:,,,/Resources/Icons/ButtonPlay.ico"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter Property="ToolTip" Value="Play"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </ToggleButton.Style>                       
+        </ToggleButton>  
+        <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="45,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
             <Image Source="pack://application:,,,/Resources/Icons/ButtonClose.ico" />
+        </Button>
+        <Button x:Name="screenShotButton" HorizontalAlignment="Left" Margin="85,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}" CommandParameter="screenshot">
+            <Image Source="pack://application:,,,/Resources/Icons/screenshot.ico" />
         </Button>
         <Popup Name="timeLineSliderPopup" PlacementTarget ="{Binding ElementName=timeLineSlider}" 
             Placement="Relative" AllowsTransparency="True">
@@ -63,5 +88,6 @@
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
+        </Grid>
     </Grid>
 </UserControl>

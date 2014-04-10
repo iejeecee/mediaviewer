@@ -27,6 +27,7 @@ using MediaViewer.Utils.Windows;
 using System.Windows.Threading;
 using MediaViewer.MediaFileModel.Watcher;
 using System.IO;
+using VideoPlayerControl;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -213,9 +214,7 @@ namespace MediaViewer
         private void loadAndDisplayVideo(string location)
         {
             showVideoView(location);
-            VideoPlayerViewModel videoPlayerViewModel = (VideoPlayerViewModel)videoView.DataContext;
-            videoPlayerViewModel.open(location);
-            videoPlayerViewModel.PlayCommand.DoExecute();
+            videoView.openAndPlay(location);        
         }
      
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)

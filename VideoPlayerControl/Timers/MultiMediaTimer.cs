@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace VideoPlayerControl.Timers
 {
+    [Serializable]
     public class TimerStartException : ApplicationException
     {
 
@@ -44,17 +45,10 @@ namespace VideoPlayerControl.Timers
 
 
     //Represents the Windows multimedia timer.
-    public class MultiMediaTimer : HRTimer
+    public class MultiMediaTimer : HRTimer, IDisposable
     {
 
-        //Occurs when the Timer has started;
-        public event EventHandler Started;
-
-        //Occurs when the Timer has stopped;
-        public event EventHandler Stopped;
-
-        public event EventHandler Disposed;
-
+    
         // Represents the method that is called by Windows when a timer event occurs.
         delegate void TimeProc(int id, int msg, int user, int param1, int param2);
 
@@ -161,34 +155,7 @@ namespace VideoPlayerControl.Timers
             }
         }
 
-        // Raises the Disposed event.
-        void OnDisposed(EventArgs e)
-        {
-            if (Disposed != null)
-            {
-                Disposed(this, e);
-            }
-        }
-
-        // Raises the Started event.
-        void OnStarted(EventArgs e)
-        {
-            if (Started != null)
-            {
-                Started(this, e);
-            }
-        }
-
-        // Raises the Stopped event.
-        void OnStopped(EventArgs e)
-        {
-            if (Stopped != null)
-            {
-                Stopped(this, e);
-            }
-        }
-
-
+  
         //Initialize class.
         static MultiMediaTimer()
         {
@@ -205,27 +172,21 @@ namespace VideoPlayerControl.Timers
 
         ~MultiMediaTimer()
         {
-            if (IsRunning)
-            {
-                // Stop and destroy timer.
-                timeKillEvent(timerID);
-            }
+            Dispose(false);
         }
 
         //Frees timer resources.
         public void Dispose()
         {
-            if(disposed) {
-                return;
-            }
+            Dispose(true);        
+        }
 
-            if(IsRunning) {
-
+        protected virtual void Dispose(bool safe)
+        {
+            if (IsRunning)
+            {
                 stop();
             }
-
-            disposed = true;
-            OnDisposed(EventArgs.Empty);
         }
         
         //Starts the timer.
@@ -236,12 +197,7 @@ namespace VideoPlayerControl.Timers
         //The timer failed to start.
         //</exception>
         public override void start()
-        {
-            if (disposed)
-            {
-                throw new ObjectDisposedException("Timer");
-            }
-
+        {          
             if (IsRunning)
             {
                 return;
@@ -263,16 +219,7 @@ namespace VideoPlayerControl.Timers
             // If the timer was created successfully.
             if (timerID != 0)
             {
-                running = true;
-
-                if (SynchronizingObject != null && SynchronizingObject.InvokeRequired)
-                {
-                    SynchronizingObject.BeginInvoke(new EventRaiser(OnStarted), new Object[] { EventArgs.Empty });
-                }
-                else
-                {
-                    OnStarted(EventArgs.Empty);
-                }
+                running = true;            
             }
             else
             {
@@ -286,11 +233,7 @@ namespace VideoPlayerControl.Timers
         //</exception>
         public override void stop()
         {
-            if (disposed)
-            {
-                throw new ObjectDisposedException("Timer");
-            }
-
+         
             if (!running)
             {
                 return;
@@ -301,17 +244,7 @@ namespace VideoPlayerControl.Timers
 
             Debug.Assert(result == TIMERR_NOERROR);
             running = false;
-
-            if (SynchronizingObject != null && SynchronizingObject.InvokeRequired)
-            {
-                SynchronizingObject.BeginInvoke(
-                    new EventRaiser(OnStopped),
-                    new Object[] { EventArgs.Empty });
-            }
-            else
-            {
-                OnStopped(EventArgs.Empty);
-            }
+        
         }
 
 

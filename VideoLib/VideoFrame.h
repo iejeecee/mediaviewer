@@ -76,51 +76,135 @@ namespace VideoLib {
 */
 		}
 
-		~VideoFrame() {
+		!VideoFrame() {
 
-			if(hasAllocatedOwnBuffers) {
+			if(hasAllocatedOwnBuffers && avFrame != NULL) {
 
-				avpicture_free((AVPicture*)AVLibFrameData);
+				avpicture_free((AVPicture*)avFrame);
+				avFrame = NULL;
 			}
 		}
 
-		void copyFrameDataToSurface(Surface ^frame) {
+		~VideoFrame() {
+			
+			this->!VideoFrame();
+		}
 
-			Debug::Assert(frame != nullptr && frame->Description.Width == Width &&
-				frame->Description.Height == Height);
+	  static void copyBufferToSurface(cli::array<byte> ^buffer, Surface ^surface) {
+			
+			Debug::Assert(surface != nullptr);
+
+			int width = surface->Description.Width;
+			int height = surface->Description.Height;
+
+			Debug::Assert(buffer->Length == width * (height + height / 2));
+
+			SharpDX::Rectangle rect = SharpDX::Rectangle(0, 0, width, height);
+
+			SharpDX::DataRectangle ^stream = surface->LockRectangle(rect, LockFlags::None);
+
+			Byte *pict = (BYTE*)stream->DataPointer.ToPointer();
+
+			int Y = 0;
+			
+			for (int y = 0 ; y < height ; y++)
+			{
+				Marshal::Copy(buffer, Y, IntPtr(pict), width);
+				pict += stream->Pitch;				
+				Y += width;
+			}
+			for (int y = 0 ; y < height / 2 ; y++)
+			{
+				Marshal::Copy(buffer, Y, IntPtr(pict), width / 2);
+				pict += stream->Pitch / 2;			
+				Y += width / 2;
+			}
+			for (int y = 0 ; y < height / 2; y++)
+			{
+				Marshal::Copy(buffer, Y, IntPtr(pict), width / 2);
+				pict += stream->Pitch / 2;			
+				Y += width / 2;
+			}
+
+			surface->UnlockRectangle();
+		}
+
+		static void copySurfaceToBuffer(Surface ^surface, cli::array<byte> ^buffer) {
+			
+			Debug::Assert(surface != nullptr);
+
+			int width = surface->Description.Width;
+			int height = surface->Description.Height;
+
+			Debug::Assert(buffer->Length == width * (height + height / 2));
+
+			SharpDX::Rectangle rect = SharpDX::Rectangle(0, 0, width, height);
+
+			SharpDX::DataRectangle ^stream = surface->LockRectangle(rect, LockFlags::ReadOnly);
+
+			Byte *pict = (BYTE*)stream->DataPointer.ToPointer();
+
+			int Y = 0;
+			
+			for (int y = 0 ; y < height ; y++)
+			{
+				Marshal::Copy(IntPtr(pict), buffer, Y, width);
+				pict += stream->Pitch;				
+				Y += width;
+			}
+			for (int y = 0 ; y < height / 2 ; y++)
+			{
+				Marshal::Copy(IntPtr(pict), buffer, Y, width / 2);
+				pict += stream->Pitch / 2;			
+				Y += width / 2;
+			}
+			for (int y = 0 ; y < height / 2; y++)
+			{
+				Marshal::Copy(IntPtr(pict), buffer, Y, width / 2);
+				pict += stream->Pitch / 2;			
+				Y += width / 2;
+			}
+
+			surface->UnlockRectangle();
+		}
+
+		void copyFrameDataToSurface(Surface ^surface) {
+
+			Debug::Assert(surface != nullptr && surface->Description.Width == Width &&
+				surface->Description.Height == Height);
 
 			SharpDX::Rectangle rect = SharpDX::Rectangle(0, 0, Width, Height);
 
-			// copy raw frame data to bitmap
+			// copy raw surface data to bitmap
 
-			SharpDX::DataRectangle ^stream = frame->LockRectangle(rect, LockFlags::None);
+			SharpDX::DataRectangle ^stream = surface->LockRectangle(rect, LockFlags::None);
 
 			Byte *pict = (BYTE*)stream->DataPointer.ToPointer();
 
 			Byte *Y = AVLibFrameData->data[0];
 			Byte *U = AVLibFrameData->data[1];
 			Byte *V = AVLibFrameData->data[2];
-
+						
 			for (int y = 0 ; y < Height ; y++)
 			{
 				memcpy(pict, Y, Width);
-				pict += stream->Pitch;
+				pict += stream->Pitch;				
 				Y += Width;
 			}
 			for (int y = 0 ; y < Height / 2 ; y++)
 			{
 				memcpy(pict, V, Width / 2);
-				pict += stream->Pitch / 2;
+				pict += stream->Pitch / 2;			
 				V += Width / 2;
 			}
 			for (int y = 0 ; y < Height / 2; y++)
 			{
 				memcpy(pict, U, Width / 2);
-				pict += stream->Pitch / 2;
+				pict += stream->Pitch / 2;				
 				U += Width / 2;
 			}
 			
-			frame->UnlockRectangle();
+			surface->UnlockRectangle();
 		}
 		
 		void copyFrameDataTexture(cli::array<SharpDX::Direct3D10::Texture2D ^> ^texture) {

@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace VideoPlayerControl.Timers
 {
+    [Serializable]
 	public class TimerQueueTimerException : Exception
     {
 	
@@ -21,7 +22,7 @@ namespace VideoPlayerControl.Timers
         }
     };
 
-	public class TimerQueueTimer : HRTimer
+	public class TimerQueueTimer : HRTimer, IDisposable
     {
 		 	
 		delegate void WaitOrTimerDelegate(IntPtr lpParameter, bool timerOrWaitFired); 
@@ -87,9 +88,7 @@ namespace VideoPlayerControl.Timers
 
 			OnTick(EventArgs.Empty);
 		}
-
 	
-
         public TimerQueueTimer()
         {
      
@@ -101,12 +100,24 @@ namespace VideoPlayerControl.Timers
 			callback = new WaitOrTimerDelegate(timerOrWaitFired);
         }
 
-		~TimerQueueTimer() 
+        ~TimerQueueTimer()
+        {
+            Dispose(false);
+        }
+
+		public void Dispose() 
 		{
-			if(running == true) {
-				stop();
-			}
+            Dispose(true);
 		}
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (running == true)
+            {
+                stop();
+            }
+           
+        }
 
         public override void start() 
         {

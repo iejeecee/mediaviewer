@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using VideoLib;
 using D3D = SharpDX.Direct3D9;
 using System.Windows.Forms;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 
 
 namespace VideoPlayerControl
 {
 
-    class VideoRender
+    class VideoRender : IDisposable
     {
 
         public enum RenderMode
@@ -27,26 +29,37 @@ namespace VideoPlayerControl
         {
             direct3D = null;
             device = null;
-            this.owner = owner;
-            saveOffscreen = null;
+            this.owner = owner;       
             windowed = true;
             renderLock = new object();
+
+            backBuffer = null;
+            offscreen = null;
+            screenShot = null;
         }
 
-        ~VideoRender()
+        public void Dispose()
         {
             releaseResources();
 
-            removeAndDispose(ref saveOffscreen);
-            removeAndDispose(ref device);
-            removeAndDispose(ref direct3D);        
+            if (device != null)
+            {
+                device.Dispose();
+                device = null;
+            }
+            if (direct3D != null)
+            {
+                direct3D.Dispose();
+                direct3D = null;
+            }                 
         }
 
         D3D.Direct3D direct3D;
         D3D.Device device;
+        D3D.Surface backBuffer;
         D3D.Surface offscreen;
         D3D.Surface screenShot;
-        VideoFrame saveOffscreen;
+        byte[] offscreenBuffer;
 
         Object renderLock;
 
@@ -54,6 +67,13 @@ namespace VideoPlayerControl
         int videoHeight;
 
         bool windowed;
+
+        public bool Windowed
+        {
+            get { return windowed; }
+            protected set { windowed = value; }
+        }
+
         System.Windows.Forms.Control owner;
 
         static D3D.Format makeFourCC(int ch0, int ch1, int ch2, int ch3)
@@ -88,14 +108,14 @@ namespace VideoPlayerControl
             //We only need to set the Width/Height in full-screen mode
             if (!windowed)
             {
-                presentParams[0].BackBufferHeight = owner.Height;
-                presentParams[0].BackBufferWidth = owner.Width;
+                presentParams[0].BackBufferHeight = 1080;
+                presentParams[0].BackBufferWidth = 1920;
 
                 D3D.Format format = D3D.Format.X8R8G8B8;
 
                 //Choose a compatible 16-bit mode.
                 presentParams[0].BackBufferFormat = format;
-
+               
             }
             else
             {
@@ -110,33 +130,23 @@ namespace VideoPlayerControl
 
         void reset()
         {
-            lock (renderLock)
-            {
-                if (direct3D == null) return;
+           
+            if (direct3D == null) return;
 
-                releaseResources();
-          
-                //device.Reset(createPresentParams(windowed, owner));
+            VideoFrame.copySurfaceToBuffer(offscreen, offscreenBuffer);               
+            releaseResources();
 
-                removeAndDispose(ref device);
+            D3D.PresentParameters[] presentParams = createPresentParams(windowed, owner);
 
-                D3D.PresentParameters[] presentParams = createPresentParams(windowed, owner);
-
-                device = new D3D.Device(direct3D,
-                    0,
-                    D3D.DeviceType.Hardware,
-                    owner.Handle,
-                    D3D.CreateFlags.SoftwareVertexProcessing,
-                    presentParams);
-             
-                aquireResources();
-                D3D.Surface backBuffer = device.GetBackBuffer(0, 0);
-                                  
-            }
+            device.Reset(presentParams);
+                          
+            aquireResources();
+            VideoFrame.copyBufferToSurface(offscreenBuffer, offscreen);                                            
+            
         }
 
 
-        public void resetDevice()
+        void resetDevice()
         {
 
             if (owner.InvokeRequired)
@@ -153,71 +163,72 @@ namespace VideoPlayerControl
         void aquireResources()
         {
 
-            if (videoWidth != 0 && videoHeight != 0)
+            if (videoWidth == 0 || videoHeight == 0)
             {
-
-                D3D.Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
-
-                offscreen = D3D.Surface.CreateOffscreenPlain(device,
-                    videoWidth,
-                    videoHeight,
-                    pixelFormat,
-                    D3D.Pool.Default);
-
-                screenShot = D3D.Surface.CreateOffscreenPlain(device,
-                    videoWidth,
-                    videoHeight,
-                    D3D.Format.A8R8G8B8,
-                    D3D.Pool.Default);
+                throw new VideoPlayerException("Cannot instantiate D3D surface with a width or height of 0 pixels");
             }
+
+            D3D.Format pixelFormat = makeFourCC('Y', 'V', '1', '2');
+
+            offscreen = D3D.Surface.CreateOffscreenPlain(device,
+                videoWidth,
+                videoHeight,
+                pixelFormat,
+                D3D.Pool.Default);
+
+            screenShot = D3D.Surface.CreateOffscreenPlain(device,
+                videoWidth,
+                videoHeight,
+                D3D.Format.A8R8G8B8,
+                D3D.Pool.Default);
+
+            backBuffer = device.GetBackBuffer(0, 0);
+            
         }
 
         
         void releaseResources()
         {
-
-            if (offscreen != null)
-            {
-                removeAndDispose(ref offscreen);                       
-                offscreen = null;
-            }
-
-            if (screenShot != null)
-            {
-                removeAndDispose(ref screenShot);   
-                screenShot = null;
-            }
+            Utils.removeAndDispose(ref backBuffer); 
+            Utils.removeAndDispose(ref offscreen);                                 
+            Utils.removeAndDispose(ref screenShot);
+            
         }
 
         public void setWindowed()
-        {
-            windowed = true;
+        {           
+            lock (renderLock)
+            {               
+                if (device != null)
+                {
+                    windowed = true;
 
-            if (device != null)
-            {
-
-                device.Reset(createPresentParams(windowed, owner));
+                    resetDevice();
+                }
             }
         }
-
 
         public void setFullScreen()
         {
-            windowed = false;
-
-            if (device != null)
+            lock (renderLock)
             {
-                try
+                if (device != null)
                 {
-                    device.Reset(createPresentParams(windowed, owner));
-                }
-                catch (Exception e)
-                {
+                    windowed = false;
 
-                    //log.Error("Error setting fullscreen", e);
+                    resetDevice();
                 }
             }
         }
+
+        public void resize()
+        {
+            lock (renderLock)
+            {
+                resetDevice();
+            }
+        }
+
 
         public void initialize(int videoWidth, int videoHeight)
         {
@@ -251,33 +262,30 @@ namespace VideoPlayerControl
                         owner.Handle,
                         D3D.CreateFlags.SoftwareVertexProcessing,
                         presentParams);
-                                       
+              
                 }
 
                 releaseResources();
                 aquireResources();
-        
-            
+         
+                int sizeBytes = videoWidth * (videoHeight + videoHeight / 2);                           
+                offscreenBuffer = new Byte[sizeBytes];
+
                 //log.Info("Direct3D Initialized");
 
             }
             catch (SharpDX.SharpDXException e)
             {
-
-                //log.Error("Direct3D Initialization error", e);
-                MessageBox.Show(e.Message, "Direct3D Initialization error");
-
+                throw new VideoPlayerException("Direct3D Initialization error: " + e.Message, e);              
             }
 
-        }
+        }                                           
 
-        public void createScreenShot(String fileName)
+        public void createScreenShot(String screenShotLocation, String screenShotName, ImageFormat screenShotFormat)
         {
-
-            if (device == null) return;
-
-            try
+            lock (renderLock)
             {
+                if (device == null) return;
 
                 int width = offscreen.Description.Width;
                 int height = offscreen.Description.Height;
@@ -288,30 +296,27 @@ namespace VideoPlayerControl
                     screenShot, videoRect, D3D.TextureFilter.Linear);
 
                 SharpDX.DataRectangle stream = screenShot.LockRectangle(videoRect, D3D.LockFlags.ReadOnly);
+                try
+                {
+                    Bitmap image = new Bitmap(width, height, stream.Pitch,
+                        System.Drawing.Imaging.PixelFormat.Format32bppArgb, stream.DataPointer);
 
-                Bitmap image = new Bitmap(width, height, stream.Pitch,
-                    System.Drawing.Imaging.PixelFormat.Format32bppArgb, stream.DataPointer);
+                    screenShotName = System.IO.Path.GetFileNameWithoutExtension(screenShotName);
+                    screenShotName += "." + screenShotFormat.ToString();
 
-                /*
-                            String path = Util.getPathWithoutFileName(fileName);
-                            fileName = System.IO.Path.GetFileNameWithoutExtension(fileName);
-                            fileName += "." + Settings.getVar(Settings.VarName.VIDEO_SCREENSHOT_FILE_TYPE);
+                    screenShotName = Utils.getUniqueFileName(screenShotLocation + "\\" + screenShotName);
 
-                            fileName = FileUtils.getUniqueFileName(path + "\\" + fileName);
-
-                            image.Save(fileName);*/
-                image.Save("dummy.jpg");
-
-                screenShot.UnlockRectangle();
-
+                    image.Save(screenShotName);
+                }
+                catch (Exception e)
+                {
+                    throw new VideoPlayerException("Error creating screenshot: " + e.Message, e);
+                }
+                finally
+                {
+                    screenShot.UnlockRectangle();
+                }
             }
-            catch (Exception e)
-            {
-
-                //log.Error("Screenshot failed", e);
-                MessageBox.Show("Screenshot failed: " + e.Message, "Error");
-            }
-
         }
 
         SharpDX.Rectangle getVideoDestRect(D3D.Surface backBuffer)
@@ -333,10 +338,10 @@ namespace VideoPlayerControl
         {
             lock (renderLock)
             {
-                if (device == null) return;
+                if (device == null) return;          
 
                 SharpDX.Result deviceStatus = device.TestCooperativeLevel();
-
+          
                 if (deviceStatus.Success == true)
                 {
                     try
@@ -348,13 +353,12 @@ namespace VideoPlayerControl
 
                         if (mode == RenderMode.CLEAR_SCREEN)
                         {
-
                             device.Present();
                             return;
-                        }
+                        }           
 
                         device.BeginScene();
-
+                 
                         SharpDX.Rectangle videoSourceRect = new SharpDX.Rectangle();
 
                         if (mode == RenderMode.NORMAL)
@@ -371,19 +375,17 @@ namespace VideoPlayerControl
                             videoSourceRect = new SharpDX.Rectangle(0, 0, offscreen.Description.Width, offscreen.Description.Height);
 
                         }
-
-                        D3D.Surface backBuffer = device.GetBackBuffer(0, 0);
-
+                                          
                         SharpDX.Rectangle videoDestRect = getVideoDestRect(backBuffer);
 
                         device.StretchRectangle(offscreen, videoSourceRect,
                             backBuffer, videoDestRect, D3D.TextureFilter.Linear);
 
                         device.EndScene();
-                        device.Present();
+                        device.Present();                
 
                     }
-                    catch (SharpDX.SharpDXException e)
+                    catch (SharpDX.SharpDXException)
                     {
 
                         //log.Info("lost direct3d device", e);
@@ -399,29 +401,10 @@ namespace VideoPlayerControl
                 }
                 else if (deviceStatus.Code == D3D.ResultCode.DeviceNotReset.Result)
                 {
+                    
                     resetDevice();
                 }
             }
-        }
-
-        void removeAndDispose<TypeName>(ref TypeName resource) where TypeName : class
-        {
-            if (resource == null)
-                return;
-
-            IDisposable disposer = resource as IDisposable;
-            if (disposer != null)
-            {
-                try
-                {
-                    disposer.Dispose();
-                }
-                catch
-                {
-                }
-            }
-
-            resource = null;
-        }
+        }        
     }
 }

@@ -12,11 +12,10 @@ using System.Windows.Forms;
 namespace VideoPlayerControl
 {
 
-    public class AudioPlayer
+    public class AudioPlayer : IDisposable
     {
         public enum AudioState
         {
-
             START_PLAY_AFTER_NEXT_WRITE,
             PLAYING,
             STOPPED
@@ -46,13 +45,7 @@ namespace VideoPlayerControl
 
         void releaseResources()
         {
-
-            if (audioBuffer != null)
-            {
-
-                audioBuffer.Dispose();
-                audioBuffer = null;
-            }
+            Utils.removeAndDispose(ref audioBuffer);          
         }
 
         double pts;
@@ -68,7 +61,7 @@ namespace VideoPlayerControl
             this.owner = owner;
 
             audioBuffer = null;
-            volume = 1;
+            volume = 0;
             muted = false;
 
             pts = 0;
@@ -79,15 +72,26 @@ namespace VideoPlayerControl
             ptsLoops = 0;
         }
 
-        ~AudioPlayer()
+        public void Dispose()
         {
+            Dispose(true);                    
+        }
 
-            releaseResources();
-
-            if (directSound != null)
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
             {
+                if (audioBuffer != null)
+                {
+                    audioBuffer.Dispose();
+                    audioBuffer = null;
+                }
 
-                directSound.Dispose();
+                if (directSound != null)
+                {
+                    directSound.Dispose();
+                    directSound = null;
+                }
             }
         }
 
@@ -121,7 +125,6 @@ namespace VideoPlayerControl
 
         public void stop()
         {
-
             if (audioBuffer != null)
             {
                 audioBuffer.Stop();
@@ -171,10 +174,8 @@ namespace VideoPlayerControl
 
                 if (audioBuffer != null && muted == false)
                 {
-
-                    int min = DSBVOLUME_MIN - DSBVOLUME_MIN / 3;
-
-                    audioBuffer.Volume = (int)Utils.lerp(volume, min, DSBVOLUME_MAX); ;
+                 
+                    audioBuffer.Volume = (int)value;
 
                 }
                 else if (audioBuffer != null && muted == true)
@@ -244,22 +245,7 @@ namespace VideoPlayerControl
                     samplesPerSecond, nrChannels, averageBytesPerSecond, blockAlign, bytesPerSample * 8);
 
                 desc.Format = format;
-                //desc.Format.Encoding = WaveFormatEncoding.Pcm;
-                /*
-                            desc.Format.SampleRate = samplesPerSecond;
-                            desc.Format.BitsPerSample = bytesPerSample * 8;
-                            desc.Format.Channels = nrChannels;
-                            desc.Format.FormatTag = WaveFormatTag.Pcm;
-                            desc.Format.BlockAlign = (short)(format.Channels * (format.BitsPerSample / 8));
-                            desc.Format.AverageBytesPerSecond = format.SamplesPerSecond * format.BlockAlign;
-                */
-
-                /*desc.DeferLocation = true;
-                desc.GlobalFocus = true;
-                desc.ControlVolume = true;
-                desc.CanGetCurrentPosition = true;
-                desc.ControlFrequency = true;*/
-
+           
                 silence = new char[bufferSizeBytes];
                 Array.Clear(silence, 0, silence.Length);
 
@@ -275,18 +261,11 @@ namespace VideoPlayerControl
 
                 //log.Info("Direct Sound Initialized");
 
-            }
-            catch (SharpDX.SharpDXException e)
-            {
-
-                //log.Error("Error initializing Direct Sound", e);
-                MessageBox.Show("Error initializing Direct Sound: " + e.Message, "Direct Sound Error");
-
-            }
+            }       
             catch (Exception e)
             {
-
-                //log.Error("Error initializing Direct Sound", e);
+                throw new VideoPlayerException("Error initializing Direct Sound: " + e.Message, e);
+             
             }
         }
 
@@ -364,6 +343,8 @@ namespace VideoPlayerControl
 
         }
 
+
+       
     }
 
 }

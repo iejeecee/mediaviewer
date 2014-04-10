@@ -149,6 +149,7 @@ VideoPlayer::VideoPlayer() {
 VideoPlayer::~VideoPlayer() {
 
 	delete videoDecoder;
+	delete frameQueue;
 
 	if(gch.IsAllocated) {
 
@@ -318,7 +319,7 @@ void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLi
 
 	Video::setLogCallback(nativeLogCallback);
 
-	if(enableLibAVLogging = true) {
+	if(enableLibAVLogging == true) {
 
 		Video::enableLibAVLogging(onlyLogImportant);
 

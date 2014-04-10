@@ -8,7 +8,7 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
-	generic<typename T> public ref class ThreadSafeQueue
+	generic<typename T> public ref class ThreadSafeQueue 
 	{
 	public:
 
@@ -43,6 +43,21 @@ namespace VideoLib {
 			stopped = gcnew AutoResetEvent(false);
 		}
 
+		~ThreadSafeQueue() {
+
+			if(paused != nullptr) {
+
+				delete paused;
+				paused = nullptr;
+			}
+
+			if(stopped != nullptr) {
+
+				delete stopped;
+				stopped = nullptr;
+			}
+		}
+		
 		property AutoResetEvent ^Paused {
 
 			AutoResetEvent ^get() {
@@ -222,6 +237,8 @@ namespace VideoLib {
 				Monitor::Exit(queue);
 			}
 		}
+
+		
 
 	};
 }

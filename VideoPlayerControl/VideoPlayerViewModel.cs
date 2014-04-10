@@ -9,10 +9,11 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using VideoLib;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace VideoPlayerControl
 {
-   public class VideoPlayerViewModel : ObservableObject
+   public class VideoPlayerViewModel : ObservableObject, IDisposable
     {
         //protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -34,8 +35,46 @@ namespace VideoPlayerControl
         public VideoState VideoState
         {
             get { return videoState; }
-            set { videoState = value;
-            NotifyPropertyChanged();
+            set
+            {
+                videoState = value;
+                switch (videoState)
+                {
+                    case VideoState.OPEN:
+                        {
+                            playCommand.CanExecute = true;
+                            pauseCommand.CanExecute = false;
+                            screenShotCommand.CanExecute = false;
+                            closeCommand.CanExecute = true;
+                            break;
+                        }
+                    case VideoState.PLAYING:
+                        {
+                            playCommand.CanExecute = false;
+                            pauseCommand.CanExecute = true;
+                            screenShotCommand.CanExecute = true;
+                            closeCommand.CanExecute = true;
+                            break;
+                        }
+                    case VideoState.PAUSED:
+                        {
+                            playCommand.CanExecute = true;
+                            pauseCommand.CanExecute = false;
+                            screenShotCommand.CanExecute = true;
+                            closeCommand.CanExecute = true;
+                            break;
+                        }
+                    case VideoState.CLOSED:
+                        {
+                            playCommand.CanExecute = false;
+                            pauseCommand.CanExecute = false;
+                            screenShotCommand.CanExecute = false;
+                            closeCommand.CanExecute = false;
+                            break;
+                        }
+
+                }
+                NotifyPropertyChanged();
             }
         }
 
@@ -102,6 +141,13 @@ namespace VideoPlayerControl
         /// <summary>
         /// VIEWMODEL INTERFACE
         /// </summary>
+        Command<String> openCommand;
+
+        public Command<String> OpenCommand
+        {
+            get { return openCommand; }
+            set { openCommand = value; }
+        }
 
         Command playCommand;
 
@@ -123,6 +169,44 @@ namespace VideoPlayerControl
         {
             get { return closeCommand; }
             set { closeCommand = value; }
+        }
+
+        Command screenShotCommand;
+
+        public Command ScreenShotCommand
+        {
+            get { return screenShotCommand; }
+            set { screenShotCommand = value; }
+        }
+
+        string screenShotLocation;
+
+        public string ScreenShotLocation
+        {
+            get { return screenShotLocation; }
+            set { screenShotLocation = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        string screenShotName;
+
+        public string ScreenShotName
+        {
+            get { return screenShotName; }
+            set { screenShotName = value;
+            NotifyPropertyChanged();
+            }
+        }
+   
+        ImageFormat screenShotFormat;
+
+        public ImageFormat ScreenShotFormat
+        {
+            get { return screenShotFormat; }
+            set { screenShotFormat = value;
+            NotifyPropertyChanged();
+            }
         }
 
         int positionSeconds;
@@ -231,16 +315,63 @@ namespace VideoPlayerControl
             audioDiffAvgCoef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
 
             syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
-            VideoState = VideoState.CLOSED;
+           
+            OpenCommand = new Command<string>(open);
+            PlayCommand = new Command(startPlay, false);
+            PauseCommand = new Command(pausePlay, false);
+            CloseCommand = new Command(close, false);
 
-            playCommand = new Command(new Action(() => startPlay()));
-            pauseCommand = new Command(new Action(() => pausePlay()));
-            closeCommand = new Command(new Action(() => close()));
+            ScreenShotLocation = "";
+            ScreenShotName = "";
+            ScreenShotFormat = ImageFormat.Png;
+            ScreenShotCommand = new Command(() =>
+            {
+                videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat);
+            });
 
             DurationSeconds = 0;
             PositionSeconds = 0;
 
             owner.HandleDestroyed += new EventHandler((s,e) => close());
+
+            VideoState = VideoState.CLOSED;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (videoRender != null)
+                {
+                    videoRender.Dispose();
+                    videoRender = null;
+                }
+                if (audioPlayer != null)
+                {
+                    audioPlayer.Dispose();
+                    audioPlayer = null;
+                }
+                if (videoDecoder != null)
+                {
+                    videoDecoder.Dispose();
+                    videoDecoder = null;
+                }
+                if (demuxPacketsTask != null)
+                {
+                    demuxPacketsTask.Dispose();
+                    demuxPacketsTask = null;
+                }
+                if (demuxPacketsCancellationTokenSource != null)
+                {
+                    demuxPacketsCancellationTokenSource.Dispose();
+                    demuxPacketsCancellationTokenSource = null; 
+                }
+            }
         }
       
         void videoRefreshTimer_Tick(Object sender, EventArgs e)
@@ -723,7 +854,7 @@ restartvideo:
             }
         }
 
-        public void pausePlay()
+        void pausePlay()
         {
 
             if (VideoState == VideoState.PAUSED ||
@@ -746,7 +877,7 @@ restartvideo:
 
         }
 
-        public void startPlay()
+        void startPlay()
         {
 
             if (VideoState == VideoState.PLAYING ||
@@ -784,7 +915,7 @@ restartvideo:
             seekRequest = true;
         }
 
-        public void open(string location)
+        void open(string location)
         {
 
             try
@@ -795,7 +926,7 @@ restartvideo:
                 close();
                 //videoDebug.clear();
 
-                videoDecoder.open(location, decodedVideoFormat);
+                videoDecoder.open(location, decodedVideoFormat);                
                 videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
 
                 DurationSeconds = videoDecoder.DurationSeconds;
@@ -842,13 +973,12 @@ restartvideo:
 
                 //log.Error("Cannot open: " + location, e);
 
-                MessageBox.Show("Cannot open: " + location + "\n\n" +
-                    e.Message, "Video Error");
-
+                throw new VideoPlayerException("Cannot open: " + location + "\n\n" + e.Message, e);
+             
             }
         }
 
-        public void close()
+        void close()
         {
 
             if (VideoState == VideoState.CLOSED)
@@ -876,6 +1006,8 @@ restartvideo:
             DurationSeconds = 0;
             PositionSeconds = 0;
 
+            videoRender.display(null, Color.Black, VideoRender.RenderMode.CLEAR_SCREEN);
+
             if (VideoClosed != null)
             {
 
@@ -886,7 +1018,19 @@ restartvideo:
 
         public void resize()
         {
-            videoRender.resetDevice();           
+            videoRender.resize();           
+        }
+
+        public void toggleFullScreen()
+        {
+            if (videoRender.Windowed == true)
+            {
+                videoRender.setFullScreen();
+            }
+            else
+            {
+                videoRender.setWindowed();
+            }
         }
     }
 

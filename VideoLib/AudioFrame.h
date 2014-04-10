@@ -50,12 +50,25 @@ namespace VideoLib {
 			hasAllocatedOwnBuffers = true;
 		}
 
+		!AudioFrame() {
+
+			if(hasAllocatedOwnBuffers == true && avFrame->data[0] != NULL) {
+
+				av_free(avFrame->data[0]);
+				avFrame->data[0] = NULL;
+			}
+
+		}
+
 		~AudioFrame() {
 
-			if(hasAllocatedOwnBuffers == true) {
+			if(stream != nullptr) {
 
-				av_free(AVLibFrameData->data[0]);
+				delete stream;
+				stream = nullptr;
 			}
+
+			this->!AudioFrame();
 		}
 
 		property MemoryStream ^Stream {

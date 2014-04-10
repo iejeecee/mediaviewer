@@ -428,18 +428,7 @@
     <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
     <Compile Include="ValidationRules\FloatValidationRule.cs" />
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
-    <Compile Include="VideoPanel\AudioPlayer.cs" />
-    <Compile Include="VideoPanel\Disposer.cs" />
-    <Compile Include="VideoPanel\DPFCanvas.cs" />
-    <Compile Include="VideoPanel\DX10ImageSource.cs" />
-    <Compile Include="VideoPanel\IScene.cs" />
-    <Compile Include="VideoPanel\VideoRender.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
-    <Compile Include="VideoPanel\VideoPlayerViewModel.cs" />
-    <Compile Include="VideoPanel\VideoState.cs" />
-    <Compile Include="VideoPanel\VideoTestWindow.xaml.cs">
-      <DependentUpon>VideoTestWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -600,10 +589,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\TextBlock\AutoLengthTextBlock.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="VideoPanel\VideoTestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -824,6 +809,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\screenshot.ico" />
     <Resource Include="Resources\Images\Splash.png" />
     <Resource Include="Resources\Icons\notsupported.ico" />
     <Resource Include="Resources\Icons\checked.ico" />

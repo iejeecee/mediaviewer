@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using VideoPlayerControl;
 
 namespace MediaViewer.VideoPanel
 {
@@ -23,6 +25,7 @@ namespace MediaViewer.VideoPanel
     {
 
         bool updateTimeLineSlider;
+        VideoPlayerViewModel viewModel;
 
         public VideoView()
         {
@@ -35,14 +38,10 @@ namespace MediaViewer.VideoPanel
 
             timeLineSlider.AddHandler(Slider.MouseMoveEvent, new MouseEventHandler(timeLineSlider_MouseMoveEvent));
             timeLineSlider.AddHandler(Slider.MouseLeaveEvent, new MouseEventHandler(timeLineSlider_MouseLeaveEvent));
-
-            VideoRender videoRender = new VideoRender();
-
+           
             updateTimeLineSlider = true;
-
-            VideoCanvas.Scene = videoRender;
-            VideoPlayerViewModel viewModel = videoRender.VideoPlayerViewModel;
-            DataContext = viewModel;
+             
+            DataContext = viewModel = videoPlayer.ViewModel;
 
             viewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s, e) =>
             {
@@ -50,10 +49,51 @@ namespace MediaViewer.VideoPanel
                 if (e.PropertyName.Equals("PositionSeconds") && updateTimeLineSlider == true)
                 {
                     Application.Current.Dispatcher.BeginInvoke(new Action(updateTimeLine));
-                }               
+                } else if(e.PropertyName.Equals("VideoState")) {
+
+                    switch (viewModel.VideoState)
+                    {
+                        case VideoState.PLAYING:
+                            {
+                                if (playButton.IsChecked == false)
+                                {
+                                    playButton.IsChecked = true;
+                                }
+                            
+                                break;
+                            }
+                        case VideoState.CLOSED:
+                            {
+                                if (playButton.IsChecked == true)
+                                {
+                                    playButton.IsChecked = false;
+                                }
+                               
+                                break;
+                            }
+
+                    }
+
+                }
+       
 
             });
-            
+         
+        }
+
+        public void openAndPlay(String location)
+        {
+            try
+            {
+                viewModel.ScreenShotLocation = MediaFileWatcher.Instance.Path;
+                viewModel.ScreenShotName = System.IO.Path.GetFileName(location);
+                viewModel.OpenCommand.DoExecute(location);
+                viewModel.PlayCommand.DoExecute();
+            }
+            catch(Exception e)
+            {
+                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         void updateTimeLine()
@@ -107,6 +147,16 @@ namespace MediaViewer.VideoPanel
             videoPlayerViewModel.seek(sliderValue);
 
             updateTimeLineSlider = true;    
+        }
+
+        private void playButton_Checked(object sender, RoutedEventArgs e)
+        {
+            viewModel.PlayCommand.DoExecute();
+        }
+
+        private void playButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            viewModel.PauseCommand.DoExecute();
         }
 
              

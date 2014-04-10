@@ -144,7 +144,6 @@ namespace VideoLib {
 			}
 
 			freePackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets + maxAudioPackets);
-
 			videoPackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets);
 			audioPackets = gcnew ThreadSafeQueue<Packet ^>(maxAudioPackets);
 
@@ -167,6 +166,30 @@ namespace VideoLib {
 			for(int i = 0; i < packetData->Length; i++) {
 
 				delete packetData[i];
+			}
+
+			if(freePackets != nullptr) {
+
+				delete freePackets;
+				freePackets = nullptr;
+			}
+
+			if(videoPackets != nullptr) {
+
+				delete videoPackets;
+				videoPackets = nullptr;
+			}
+
+			if(audioPackets != nullptr) {
+
+				delete audioPackets;
+				audioPackets = nullptr;
+			}
+
+			if(videoFrameDecoded != nullptr) {
+
+				delete videoFrameDecoded;
+				videoFrameDecoded = nullptr;
 			}
 		}
 
@@ -320,7 +343,6 @@ namespace VideoLib {
 
 			videoPackets->flush();
 			audioPackets->flush();
-
 			freePackets->flush();
 
 			for(int i = 0; i < packetData->Length; i++) {

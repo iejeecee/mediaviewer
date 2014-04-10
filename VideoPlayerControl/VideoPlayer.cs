@@ -22,7 +22,7 @@ namespace VideoPlayerControl
         {
             InitializeComponent();
           
-            viewModel = new VideoPlayerViewModel(this,VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
+            viewModel = new VideoPlayerViewModel(this, VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
         }
 
         VideoPlayerViewModel viewModel;
@@ -36,6 +36,11 @@ namespace VideoPlayerControl
         private void videoPlayer_Resize(object sender, EventArgs e)
         {
             ViewModel.resize();
+        }
+
+        private void videoPlayer_DoubleClick(object sender, EventArgs e)
+        {
+            //ViewModel.toggleFullScreen();
         }
 
     }

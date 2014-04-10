@@ -12,7 +12,7 @@ namespace VideoLib {
 			VIDEO
 		};
 
-	private:
+	protected:
 
 		AVFrame *avFrame;
 
@@ -26,7 +26,7 @@ namespace VideoLib {
 			AVFrame *get() {
 
 				return(avFrame);
-			}
+			}			
 		}
 
 		Frame(FrameType frameType) {
@@ -41,9 +41,18 @@ namespace VideoLib {
 			pts = 0;
 		}
 
+		!Frame() {
+
+			if(avFrame != NULL) {
+
+				av_free(avFrame);
+				avFrame = NULL;
+			}
+		}
+
 		~Frame() {
 
-			av_free(avFrame);
+			this->!Frame();
 		}
 
 		property double Pts {

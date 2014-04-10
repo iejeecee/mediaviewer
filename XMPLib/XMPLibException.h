@@ -8,6 +8,7 @@ using namespace System::Runtime::InteropServices;
 
 namespace XMPLib {
 
+	[Serializable]
 	public ref class XMPLibException : public Exception
 	{
 	

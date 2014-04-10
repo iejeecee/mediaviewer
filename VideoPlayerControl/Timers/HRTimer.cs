@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace VideoPlayerControl.Timers
 {
 
-    public abstract class HRTimer
+    public abstract class HRTimer 
     {
         protected HRTimer()
         {
@@ -74,6 +74,8 @@ namespace VideoPlayerControl.Timers
             get { return tag; }
             set { tag = value; }
         }
+    
+       
     }
 
 }

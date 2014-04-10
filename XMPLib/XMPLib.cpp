@@ -402,7 +402,7 @@ void MetaData::getArrayItem(String ^nameSpace, String ^arrayName, int item, Stri
 		item, 
 		temp);
 
-	if(result = true) {
+	if(result == true) {
 
 		itemValue = marshal_as<String ^>(temp);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,26 @@ namespace VideoPlayerControl
 {
     class Utils
     {
+        public static void removeAndDispose<TypeName>(ref TypeName resource) where TypeName : class
+        {
+            if (resource == null)
+                return;
+
+            IDisposable disposer = resource as IDisposable;
+            if (disposer != null)
+            {
+                try
+                {
+                    disposer.Dispose();
+                }
+                catch
+                {
+                }
+            }
+
+            resource = null;
+        }
+
         public static T clamp<T>(T val, T min, T max) where T : IComparable
         {
 
@@ -43,6 +64,26 @@ namespace VideoPlayerControl
             if (string.IsNullOrEmpty(fileName)) return (fullPath);
 
             return (fullPath.Remove(fullPath.Length - fileName.Length - 1));
+        }
+
+        public static string getUniqueFileName(string fileName)
+        {
+
+            string uniqueName = fileName;
+            string dir = Path.GetDirectoryName(fileName);
+            string name = Path.GetFileNameWithoutExtension(fileName);
+            string ext = Path.GetExtension(fileName);
+
+            int i = 0;
+
+            while (File.Exists(uniqueName))
+            {
+
+                uniqueName = dir + "\\" + name + " (" + Convert.ToString(++i) + ")" + ext;
+
+            }
+
+            return (uniqueName);
         }
 
         public static Rectangle centerRectangle(Rectangle outer, Rectangle inner)
