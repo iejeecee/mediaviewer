@@ -17,7 +17,7 @@ using MediaViewer.MediaDatabase;
 
 namespace MediaViewer.ImagePanel
 {
-    class ImageViewModel : ObservableObject
+    public class ImageViewModel : ObservableObject, IPageable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -52,7 +52,7 @@ namespace MediaViewer.ImagePanel
 
                 if (imageFile == null)
                 {
-                    IsPagingImagesEnabled = false;
+                    IsPagingEnabled = false;
                     return;
                 }
 
@@ -60,39 +60,39 @@ namespace MediaViewer.ImagePanel
 
                 if (index == -1)
                 {
-                    IsPagingImagesEnabled = false;
+                    IsPagingEnabled = false;
                 }
                 else
                 {
-                    IsPagingImagesEnabled = true;
-                    NrImages = getNrImageFiles();
-                    CurrentImage = index + 1;
+                    IsPagingEnabled = true;
+                    NrPages = getNrImageFiles();
+                    CurrentPage = index + 1;
                 }                                                        
                 
             });
 
-            nextImageCommand = new Command(new Action(() =>
+            nextPageCommand = new Command(new Action(() =>
             {
 
-                CurrentImage += 1;
+                CurrentPage += 1;
 
             }));
 
-            prevImageCommand = new Command(new Action(() =>
+            prevPageCommand = new Command(new Action(() =>
             {
 
-                CurrentImage -= 1;
+                CurrentPage -= 1;
 
             }));
 
-            firstImageCommand = new Command(new Action(() =>
+            firstPageCommand = new Command(new Action(() =>
             {
-                CurrentImage = 1;
+                CurrentPage = 1;
             }));
 
-            lastImageCommand = new Command(new Action(() =>
+            lastPageCommand = new Command(new Action(() =>
             {
-                CurrentImage = NrImages;
+                CurrentPage = NrPages;
             }));
 
             resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
@@ -386,13 +386,13 @@ namespace MediaViewer.ImagePanel
 
                     if (index == -1)
                     {
-                        IsPagingImagesEnabled = false;
+                        IsPagingEnabled = false;
                     }
                     else
                     {
-                        IsPagingImagesEnabled = true;
-                        NrImages = getNrImageFiles();
-                        CurrentImage = index + 1;
+                        IsPagingEnabled = true;
+                        NrPages = getNrImageFiles();
+                        CurrentPage = index + 1;
                     }
 
                     MediaState.UIMediaCollection.ExitReaderLock();
@@ -429,22 +429,22 @@ namespace MediaViewer.ImagePanel
 
         }
 
-        bool isPagingImagesEnabled;
+        bool isPagingEnabled;
 
-        public bool IsPagingImagesEnabled
+        public bool IsPagingEnabled
         {
-            get { return isPagingImagesEnabled; }
+            get { return isPagingEnabled; }
             set
             {
-                isPagingImagesEnabled = value;
+                isPagingEnabled = value;
                 if (value == false)
                 {
                     App.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        NextImageCommand.CanExecute = false;
-                        PrevImageCommand.CanExecute = false;
-                        FirstImageCommand.CanExecute = false;
-                        LastImageCommand.CanExecute = false;
+                        NextPageCommand.CanExecute = false;
+                        PrevPageCommand.CanExecute = false;
+                        FirstPageCommand.CanExecute = false;
+                        LastPageCommand.CanExecute = false;
                     }));
 
                 }
@@ -453,32 +453,32 @@ namespace MediaViewer.ImagePanel
         }
 
 
-        int nrImages;
+        int nrPages;
 
-        public int NrImages
+        public int NrPages
         {
             get
             {
-                return nrImages;
+                return nrPages;
             }
             set
             {
-                nrImages = value;
+                nrPages = value;
                 NotifyPropertyChanged();
             }
         }
 
-        int currentImage;
+        int currentPage;
 
-        public int CurrentImage
+        public int CurrentPage
         {
             get
             {
-                return (currentImage);
+                return (currentPage);
             }
             set
             {
-                if (value <= 0 || value > NrImages || IsPagingImagesEnabled == false) return;
+                if (value <= 0 || value > NrPages || IsPagingEnabled == false) return;
 
                 MediaState.UIMediaCollection.EnterReaderLock();
 
@@ -486,34 +486,35 @@ namespace MediaViewer.ImagePanel
 
                 if (location != null && imageFile != null && !location.ToLower().Equals(imageFile.Location.ToLower()))
                 {
-                    GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
+                    //GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
+                    loadImageAsyncCommand.DoExecute(location);
                 }
 
                 MediaState.UIMediaCollection.ExitReaderLock();
 
-                currentImage = value;
+                currentPage = value;
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                   {
-                      if (CurrentImage + 1 <= NrImages)
+                      if (CurrentPage + 1 <= NrPages)
                       {
-                          nextImageCommand.CanExecute = true;
-                          lastImageCommand.CanExecute = true;
+                          nextPageCommand.CanExecute = true;
+                          lastPageCommand.CanExecute = true;
                       }
                       else
                       {
-                          nextImageCommand.CanExecute = false;
-                          lastImageCommand.CanExecute = false;
+                          nextPageCommand.CanExecute = false;
+                          lastPageCommand.CanExecute = false;
                       }
 
-                      if (CurrentImage - 1 > 0)
+                      if (CurrentPage - 1 > 0)
                       {
-                          prevImageCommand.CanExecute = true;
-                          firstImageCommand.CanExecute = true;
+                          prevPageCommand.CanExecute = true;
+                          firstPageCommand.CanExecute = true;
                       }
                       else
                       {
-                          prevImageCommand.CanExecute = false;
-                          firstImageCommand.CanExecute = false;
+                          prevPageCommand.CanExecute = false;
+                          firstPageCommand.CanExecute = false;
                       }
                   }));
 
@@ -521,59 +522,59 @@ namespace MediaViewer.ImagePanel
             }
         }
 
-        Command nextImageCommand;
+        Command nextPageCommand;
 
-        public Command NextImageCommand
+        public Command NextPageCommand
         {
             get
             {
-                return nextImageCommand;
+                return nextPageCommand;
             }
             set
             {
-                nextImageCommand = value;
+                nextPageCommand = value;
             }
         }
 
-        Command prevImageCommand;
+        Command prevPageCommand;
 
-        public Command PrevImageCommand
+        public Command PrevPageCommand
         {
             get
             {
-                return prevImageCommand;
+                return prevPageCommand;
             }
             set
             {
-                prevImageCommand = value;
+                prevPageCommand = value;
             }
         }
 
-        Command firstImageCommand;
+        Command firstPageCommand;
 
-        public Command FirstImageCommand
+        public Command FirstPageCommand
         {
             get
             {
-                return firstImageCommand;
+                return firstPageCommand;
             }
             set
             {
-                firstImageCommand = value;
+                firstPageCommand = value;
             }
         }
 
-        Command lastImageCommand;
+        Command lastPageCommand;
 
-        public Command LastImageCommand
+        public Command LastPageCommand
         {
             get
             {
-                return lastImageCommand;
+                return lastPageCommand;
             }
             set
             {
-                lastImageCommand = value;
+                lastPageCommand = value;
             }
         }
 

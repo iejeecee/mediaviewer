@@ -179,6 +179,10 @@
     <Property Name="VideoCodec" Type="nvarchar(max)" Nullable="true" />
     <Property Name="VideoContainer" Type="nvarchar(max)" Nullable="true" />
     <Property Name="AudioCodec" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="MajorBrand" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="MinorVersion" Type="int" Nullable="true" />
+    <Property Name="IsVariableBitRate" Type="bit" Nullable="true" />
+    <Property Name="WMFSDKVersion" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="MediaSet_UnknownMedia">
@@ -542,6 +546,10 @@
           <Property Type="String" Name="VideoCodec" Nullable="true" />
           <Property Type="String" Name="VideoContainer" Nullable="true" />
           <Property Type="String" Name="AudioCodec" Nullable="true" />
+          <Property Type="String" Name="MajorBrand" Nullable="true" />
+          <Property Type="Int32" Name="MinorVersion" Nullable="true" />
+          <Property Type="Boolean" Name="IsVariableBitRate" Nullable="true" />
+          <Property Type="String" Name="WMFSDKVersion" Nullable="true" />
         </EntityType>
         <EntityType Name="UnknownMedia" BaseType="MediaDatabase.Media" />
       </Schema>
@@ -636,6 +644,10 @@
           <ScalarProperty Name="VideoCodec" ColumnName="VideoCodec" />
           <ScalarProperty Name="VideoContainer" ColumnName="VideoContainer" />
           <ScalarProperty Name="AudioCodec" ColumnName="AudioCodec" />
+          <ScalarProperty Name="MajorBrand" ColumnName="MajorBrand" />
+          <ScalarProperty Name="MinorVersion" ColumnName="MinorVersion" />
+          <ScalarProperty Name="IsVariableBitRate" ColumnName="IsVariableBitRate" />
+          <ScalarProperty Name="WMFSDKVersion" ColumnName="WMFSDKVersion" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.UnknownMedia)">

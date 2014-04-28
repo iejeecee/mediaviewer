@@ -307,9 +307,10 @@ namespace VideoPlayerControl
                     screenShotName = Utils.getUniqueFileName(screenShotLocation + "\\" + screenShotName);
 
                     image.Save(screenShotName);
+                    System.Media.SystemSounds.Exclamation.Play();
                 }
                 catch (Exception e)
-                {
+                {                  
                     throw new VideoPlayerException("Error creating screenshot: " + e.Message, e);
                 }
                 finally

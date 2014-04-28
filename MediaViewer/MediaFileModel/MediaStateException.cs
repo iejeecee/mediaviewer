@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
+    [Serializable]
     class MediaStateException : Exception
     {
         public MediaStateException(string message)

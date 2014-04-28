@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace MediaViewer.MediaFileModel.Watcher
     /// Also makes sure the items in the collection are unique
     /// </summary>
     /// <typeparam name="MediaFileItem"></typeparam>
-    public class MediaLockedCollection
+    public class MediaLockedCollection : IDisposable
     {
 
         // items in the current User Interface
@@ -34,6 +35,23 @@ namespace MediaViewer.MediaFileModel.Watcher
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             items = new List<MediaFileItem>();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (rwLock != null)
+                {
+                    rwLock.Dispose();
+                    rwLock = null;
+                }
+            }
         }
 
         public void EnterReaderLock()
@@ -83,8 +101,11 @@ namespace MediaViewer.MediaFileModel.Watcher
                     return (false);
                 }
 
-                items.Add(newItem);
-                items.Sort();
+                Utils.Misc.insertIntoSortedCollection(items, newItem, (a, b) =>
+                {
+                   return(Path.GetFileName(a.Location).CompareTo(Path.GetFileName(b.Location)));
+                });      
+     
                 return (true);
 
             }
@@ -116,8 +137,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                         newItemsAreUnique = false;
                     }
                 }
-             
-                items.Sort();
+                          
                 return (newItemsAreUnique);
                         
             }

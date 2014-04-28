@@ -1,15 +1,22 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using AutoMapper;
+using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DataTransferObjects;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MediaFileModel.Watcher;
+using Microsoft.Win32;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Xml;
+using System.Xml.Serialization;
 
 //Add/Attach and Entity States
 //http://msdn.microsoft.com/en-us/data/jj592676.aspx
@@ -50,6 +57,9 @@ namespace MediaViewer.MetaData
 
             DeleteCategoryCommand = new Command(new Action(deleteCategory));
             DeleteCategoryCommand.CanExecute = false;
+
+            ImportCommand = new Command(new Action(import));
+            ExportCommand = new Command(new Action(export));
         
             TagName = "";
             CategoryName = "";
@@ -72,6 +82,65 @@ namespace MediaViewer.MetaData
             IsTagCategoryEnabled = true;
         }
 
+        private void export()
+        {
+            SaveFileDialog saveTagsDialog = Utils.Windows.FileDialog.createSaveTagsFileDialog();
+            if (saveTagsDialog.ShowDialog() == false) return;
+
+            XmlTextWriter outFile = null;
+            try
+            {
+                outFile = new XmlTextWriter(saveTagsDialog.FileName, Encoding.UTF8);
+                outFile.Formatting = Formatting.Indented;            
+                Type[] knownTypes = new Type[] {typeof(TagDTO),typeof(TagCategoryDTO)};
+
+                DataContractSerializer tagSerializer = new DataContractSerializer(typeof(List<TagDTO>), knownTypes);
+
+                using (var tagCommands = new TagDbCommands())                
+                {
+                    tagCommands.Db.Configuration.ProxyCreationEnabled = false;                   
+                    List<Tag> tags = tagCommands.getAllTags(true);
+                    List<TagDTO> tagsDTO = new List<TagDTO>();
+                   
+                    foreach (Tag tag in tags)
+                    {
+                        var tagDTO = Mapper.Map<Tag, TagDTO>(tag, new TagDTO());
+
+                        tagsDTO.Add(tagDTO);                                                              
+                    }
+
+                    tagSerializer.WriteObject(outFile, tagsDTO);   
+                }
+               
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Error exporting tags:\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                if (outFile != null)
+                {
+                    outFile.Dispose();
+                }
+            }
+          
+        }
+
+ 
+
+        private void import()
+        {
+            OpenFileDialog loadTagsDialog = Utils.Windows.FileDialog.createLoadTagsFileDialog();
+            if (loadTagsDialog.ShowDialog() == false) return;
+
+            TagEditorImportView importView = new TagEditorImportView();
+            TagEditorImportViewModel viewModel = (TagEditorImportViewModel)importView.DataContext;
+            Task.Run(() => viewModel.import(loadTagsDialog.FileName));
+            importView.ShowDialog();
+            
+        }
+
         private void selectedCategories_Changed(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             if (selectedCategories.Count == 0)
@@ -88,6 +157,8 @@ namespace MediaViewer.MetaData
             }
             else if (selectedCategories.Count == 1)
             {
+                if (selectedCategories[0] == null) return;
+
                 CategoryName = selectedCategories[0].Name;
                 CreateCategoryCommand.CanExecute = false;
                 UpdateCategoryCommand.CanExecute = true;
@@ -331,7 +402,7 @@ namespace MediaViewer.MetaData
             {
                 try
                 {
-                    TagEditorViewModel state = new TagEditorViewModel();                   
+                    TagEditorState state = new TagEditorState();                   
                     state.SelectedTags.AddRange(SelectedTags);
                     state.ChildTags.AddRange(ChildTags);
                     state.AddChildTags.AddRange(AddChildTags);
@@ -510,6 +581,8 @@ namespace MediaViewer.MetaData
                     newCategory = tagCategoryCommands.create(newCategory);
 
                     GlobalMessenger.Instance.NotifyColleagues("tagCategory_Created", newCategory);
+
+                    loadCategories();
                 }
                 catch (Exception e)
                 {
@@ -675,6 +748,84 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Command importCommand;
+
+        public Command ImportCommand
+        {
+            get { return importCommand; }
+            set { importCommand = value; }
+        }
+        Command exportCommand;
+
+        public Command ExportCommand
+        {
+            get { return exportCommand; }
+            set { exportCommand = value; }
+        }
        
+    }
+
+    class TagEditorState
+    {
+        public TagEditorState()
+        {
+            SelectedTags = new ObservableRangeCollection<Tag>();
+            ChildTags = new ObservableRangeCollection<Tag>();
+            AddChildTags = new ObservableRangeCollection<Tag>();
+            RemoveChildTags = new ObservableRangeCollection<Tag>();
+            TagCategory = null;
+            IsTagBatchMode = false;
+            isTagCategoryEnabled = false;
+        }
+
+        ObservableRangeCollection<Tag> selectedTags;
+
+        public ObservableRangeCollection<Tag> SelectedTags
+        {
+            get { return selectedTags; }
+            set { selectedTags = value; }
+        }
+        ObservableRangeCollection<Tag> childTags;
+
+        public ObservableRangeCollection<Tag> ChildTags
+        {
+            get { return childTags; }
+            set { childTags = value; }
+        }
+        ObservableRangeCollection<Tag> addChildTags;
+
+        public ObservableRangeCollection<Tag> AddChildTags
+        {
+            get { return addChildTags; }
+            set { addChildTags = value; }
+        }
+        ObservableRangeCollection<Tag> removeChildTags;
+
+        public ObservableRangeCollection<Tag> RemoveChildTags
+        {
+            get { return removeChildTags; }
+            set { removeChildTags = value; }
+        }
+        TagCategory tagCategory;
+
+        public TagCategory TagCategory
+        {
+            get { return tagCategory; }
+            set { tagCategory = value; }
+        }
+        bool isTagBatchMode;
+
+        public bool IsTagBatchMode
+        {
+            get { return isTagBatchMode; }
+            set { isTagBatchMode = value; }
+        }
+        bool isTagCategoryEnabled;
+
+        public bool IsTagCategoryEnabled
+        {
+            get { return isTagCategoryEnabled; }
+            set { isTagCategoryEnabled = value; }
+        }
     }
 }

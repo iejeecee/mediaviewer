@@ -26,7 +26,7 @@ namespace VideoPlayerControl.Timers
             timer.Elapsed += new ElapsedEventHandler(defaultTimer_Elapsed);
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(true);
         }

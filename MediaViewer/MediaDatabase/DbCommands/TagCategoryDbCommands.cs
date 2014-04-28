@@ -27,6 +27,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (categories);
 
         }
+     
 
         public List<Tag> getTagsByCategory(TagCategory category)
         {
@@ -59,6 +60,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
 
             return (c.Tag.Count);
+        }
+
+        public TagCategory getCategoryByName(String name)
+        {
+            TagCategory category = Db.TagCategorySet.FirstOrDefault<TagCategory>(c => c.Name.Equals(name));
+            return (category);
         }
 
         public TagCategory getCategoryById(int id)
@@ -142,7 +149,19 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             Db.SaveChanges();
         }
-       
-    
+
+
+        public override void clearAll()
+        {
+            String[] tableNames = new String[] { "TagCategorySet" };
+
+            for (int i = 0; i < tableNames.Count(); i++)
+            {
+                Db.Database.ExecuteSqlCommand("TRUNCATE TABLE [" + tableNames[i] + "]");
+            }
+
+        }
+
+
     }
 }

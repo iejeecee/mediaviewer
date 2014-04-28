@@ -22,7 +22,6 @@ using MediaViewer.About;
 using MediaViewer.DirectoryBrowser;
 using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.Timers;
 using MediaViewer.Utils.Windows;
 using System.Windows.Threading;
 using MediaViewer.MediaFileModel.Watcher;
@@ -72,6 +71,7 @@ namespace MediaViewer
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
        
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_PathSelected", new Action<String>(browsingDirectory_IsSelected));
+            GlobalMessenger.Instance.Register("ToggleFullScreen", new Action(toggleFullScreen));
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
@@ -92,8 +92,8 @@ namespace MediaViewer
                     }
                 }
             });
-        
-          
+
+           
         }
 
         private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -339,6 +339,36 @@ namespace MediaViewer
             mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
 
             setTitle(System.IO.Path.GetFileName(location));
+        }
+
+        WindowState oldWindowState;
+
+        void toggleFullScreen()
+        {            
+            if (mainMenu.Visibility == Visibility.Visible)
+            {
+                this.WindowStyle = System.Windows.WindowStyle.None;
+
+                if ((oldWindowState = this.WindowState) != System.Windows.WindowState.Maximized)
+                {
+                    this.WindowState = System.Windows.WindowState.Maximized;
+                }
+
+                mainMenu.Visibility = Visibility.Collapsed;
+                mainToolBarTray.Visibility = Visibility.Collapsed;
+            }
+            else
+            {        
+                this.WindowStyle = System.Windows.WindowStyle.SingleBorderWindow;
+
+                if (this.WindowState != oldWindowState)
+                {
+                    this.WindowState = oldWindowState;
+                }
+
+                mainMenu.Visibility = Visibility.Visible;
+                mainToolBarTray.Visibility = Visibility.Visible;
+            }
         }
 
         private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)

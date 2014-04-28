@@ -299,7 +299,7 @@ bool VideoPlayer::seek(double posSeconds) {
 void VideoPlayer::close() {
 
 	videoDecoder->close();
-	frameQueue->dispose();
+	frameQueue->release();
 }
 
 void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLibAVLogging,

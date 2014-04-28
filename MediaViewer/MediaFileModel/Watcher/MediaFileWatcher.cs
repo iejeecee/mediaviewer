@@ -13,7 +13,7 @@ using System.Windows.Data;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    class MediaFileWatcher
+    class MediaFileWatcher : IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -67,6 +67,32 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             DebugOutput = false;
          
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (fileWatcherQueue != null)
+                {
+                    fileWatcherQueue.Dispose();
+                }
+
+                if (watcher != null)
+                {
+                    watcher.Dispose();
+                }
+
+                if (mediaState != null)
+                {
+                    mediaState.Dispose();
+                }
+            }
         }
 
         bool debugOutput;

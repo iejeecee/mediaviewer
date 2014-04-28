@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MediaViewer.MediaDatabase
 {
-    [Serializable]
+   
     partial class TagCategory : IEquatable<TagCategory>, IComparable<TagCategory>
     {
         public override string ToString()
@@ -32,4 +35,6 @@ namespace MediaViewer.MediaDatabase
             return (other.Name.CompareTo(Name));
         }
     }
+  
+   
 }

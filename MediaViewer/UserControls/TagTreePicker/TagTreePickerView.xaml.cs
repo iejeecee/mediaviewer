@@ -135,8 +135,8 @@ namespace MediaViewer.UserControls.TagTreePicker
         {
             if (tag.TagCategory == null)
             {
-                Utils.Misc.insertIntoSortedCollection(treeView.Root.Children, new TagItem(tag), 
-                    getNrCategories(), treeView.Root.Children.Count); 
+                Utils.Misc.insertIntoSortedCollection(treeView.Root.Children, new TagItem(tag),
+                    compareTreeNodes, getNrCategories(), treeView.Root.Children.Count); 
              
             }
             else
@@ -146,7 +146,7 @@ namespace MediaViewer.UserControls.TagTreePicker
 
                 if (item != null && item.IsLoaded)
                 {
-                    Utils.Misc.insertIntoSortedCollection(item.Children, new TagItem(tag));                   
+                    Utils.Misc.insertIntoSortedCollection(item.Children, new TagItem(tag), compareTreeNodes);                   
                 }
             }
         }
@@ -172,7 +172,27 @@ namespace MediaViewer.UserControls.TagTreePicker
         private void addCategory(TagCategory category)
         {
             Utils.Misc.insertIntoSortedCollection(treeView.Root.Children, new CategoryItem(category),
-                    0, getNrCategories());             
+                    compareTreeNodes, 0, getNrCategories());             
+        }
+
+        private int compareTreeNodes(ICSharpCode.TreeView.SharpTreeNode a, ICSharpCode.TreeView.SharpTreeNode b)
+        {
+            if (a.GetType() == typeof(TagItem) && b.GetType() == typeof(CategoryItem))
+            {
+                return (1);
+            }
+
+            if (a.GetType() == typeof(CategoryItem) && b.GetType() == typeof(TagItem))
+            {
+                return (-1);
+            }
+
+            return(a.ToString().CompareTo(b.ToString()));
+        }
+
+        public void reloadAll()
+        {
+            treeView.Root = new CategoryItem(null);
         }
     }
 }

@@ -20,6 +20,8 @@ namespace VideoPlayerControl
         public event EventHandler VideoOpened;
         public event EventHandler VideoClosed;
 
+        Control owner;
+
         VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat;
 
         public VideoLib.VideoPlayer.DecodedVideoFormat DecodedVideoFormat
@@ -289,37 +291,44 @@ namespace VideoPlayerControl
             set { audioClock = value;
             NotifyPropertyChanged();
             }
-        }        
+        }
 
+        log4net.ILog log;
+
+        public log4net.ILog Log
+        {
+            get { return log; }
+            set { log = value; }
+        }
+   
         public VideoPlayerViewModel(Control owner, 
-            VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat)
-        {          
-            this.decodedVideoFormat = decodedVideoFormat;
+            VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat = VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
+        {
+            OpenCommand = new Command<string>(open);
+            PlayCommand = new Command(startPlay, false);
+            PauseCommand = new Command(pausePlay, false);
+            CloseCommand = new Command(close, false);
 
+            this.owner = owner;
+            this.decodedVideoFormat = decodedVideoFormat;            
+       
             videoDecoder = new VideoLib.VideoPlayer();
             videoDecoder.setLogCallback(videoDecoderLogCallback, true, true);
 
             audioPlayer = new AudioPlayer(owner);
             videoRender = new VideoRender(owner);
 
+            audioDiffAvgCoef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
+
+            syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
+            
             videoRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             videoRefreshTimer.Tick += new EventHandler(videoRefreshTimer_Tick);
-            //videoRefreshTimer.SynchronizingObject = this;
             videoRefreshTimer.AutoReset = false;
 
             audioRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             audioRefreshTimer.Tick += new EventHandler(audioRefreshTimer_Tick);
             audioRefreshTimer.AutoReset = false;
-            //audioRefreshTimer.SynchronizingObject = null;
-
-            audioDiffAvgCoef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
-
-            syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
-           
-            OpenCommand = new Command<string>(open);
-            PlayCommand = new Command(startPlay, false);
-            PauseCommand = new Command(pausePlay, false);
-            CloseCommand = new Command(close, false);
 
             ScreenShotLocation = "";
             ScreenShotName = "";
@@ -332,11 +341,11 @@ namespace VideoPlayerControl
             DurationSeconds = 0;
             PositionSeconds = 0;
 
-            owner.HandleDestroyed += new EventHandler((s,e) => close());
+            owner.HandleDestroyed += new EventHandler((s, e) => close());
 
-            VideoState = VideoState.CLOSED;
+            VideoState = VideoState.CLOSED;        
         }
-
+     
         public void Dispose()
         {
             Dispose(true);
@@ -371,6 +380,17 @@ namespace VideoPlayerControl
                     demuxPacketsCancellationTokenSource.Dispose();
                     demuxPacketsCancellationTokenSource = null; 
                 }
+                if (videoRefreshTimer != null)
+                {
+                    videoRefreshTimer.Dispose();
+                    videoRefreshTimer = null;
+                }
+                if (audioRefreshTimer != null)
+                {
+                    audioRefreshTimer.Dispose();
+                    audioRefreshTimer = null;
+                }
+                
             }
         }
       
@@ -760,22 +780,23 @@ restartvideo:
 
         void videoDecoderLogCallback(int level, string message)
         {
+            if (Log == null) return;
 
             if (level < 16)
             {
-                //log.Fatal(message);
+                Log.Fatal(message);
             }
             else if (level == 16)
             {
-                //log.Error(message);
+                Log.Error(message);
             }
             else if (level == 24)
             {
-                //log.Warn(message);
+                Log.Warn(message);
             }
             else
             {
-                //log.Info(message);
+                Log.Info(message);
             }
         }
 
@@ -878,8 +899,7 @@ restartvideo:
         }
 
         void startPlay()
-        {
-
+        {       
             if (VideoState == VideoState.PLAYING ||
                 VideoState == VideoState.CLOSED)
             {
@@ -916,8 +936,7 @@ restartvideo:
         }
 
         void open(string location)
-        {
-
+        {         
             try
             {
 
@@ -925,6 +944,13 @@ restartvideo:
 
                 close();
                 //videoDebug.clear();
+
+                if (videoDecoder == null)
+                {
+                    // initialize videodecoder here instead of the constructor to prevent visual studio's designer
+                    // choking on the dll's it attempts to load
+                   
+                }
 
                 videoDecoder.open(location, decodedVideoFormat);                
                 videoRender.initialize(videoDecoder.Width, videoDecoder.Height);

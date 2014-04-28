@@ -29,8 +29,6 @@ namespace MediaViewer.ImagePanel
         private Point mouseStartPosition;
         private Point scrollbarStartPosition;        
 
-        PropertyObserver<ImageViewModel> imageViewModelObserver;
-
         public ImageView()
         {
             InitializeComponent();
@@ -45,8 +43,8 @@ namespace MediaViewer.ImagePanel
                 {
                     ImageViewModel imageViewModel = (ImageViewModel)DataContext;
 
-                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, 
-                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage).Matrix));
+                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty,
+                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage, imageViewModel).Matrix));
                 }
 
             });
@@ -54,55 +52,58 @@ namespace MediaViewer.ImagePanel
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.OldValue != null) return;
+            if (!(e.NewValue is ImageViewModel)) return;
             
             ImageViewModel imageViewModel = (ImageViewModel)e.NewValue;
-            pager.DataContext = imageViewModel;
-         
+
+            WeakEventManager<ImageViewModel,  System.ComponentModel.PropertyChangedEventArgs>.RemoveHandler(
+                   imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+
+            WeakEventManager<ImageViewModel, System.ComponentModel.PropertyChangedEventArgs>.AddHandler(
+                   imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+                        
+        }
+
+        private void imageViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+
+            ImageViewModel imageViewModel = (ImageViewModel)sender;
+
             // Due to the device independent nature of WPF, images are 
             // scaled according to the dpi value stored in the image file.
             // But since nobody ever bothers to set this correctly 
             // undo the scaling and display the image at it's pixel by pixel size
-            imageViewModelObserver = new PropertyObserver<ImageViewModel>(imageViewModel);
-            imageViewModelObserver.RegisterHandler(m => m.Image,
-                m =>
-                {         
-                    if (m.Image != null)
-                    {
-
-                        pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
-                        scrollViewer.ScrollToHorizontalOffset(0);
-                        scrollViewer.ScrollToVerticalOffset(0);
-                    }
-                });
-
-            // everytime the transform matrix is updated in the imageviewmodel
-            // make sure to unscale the dpi as well
-            imageViewModelObserver.RegisterHandler(m => m.Transform,
-               m =>
-               {                
-                   if (m.Image != null)
-                   {
-                       pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
-                   }
-               });
-
-            // update image whenever scalemode is changed
-            imageViewModelObserver.RegisterHandler(m => m.SelectedScaleMode,
-               m =>
-               {
-                   if (m.Image != null)
-                   {
-                       pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(m.Transform * getScaleMatrix(m.Image).Matrix));
-                   }
-               });  
+            if (e.PropertyName.Equals("Image"))
+            {
+                if (imageViewModel.Image != null)
+                {
+                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
+                    scrollViewer.ScrollToHorizontalOffset(0);
+                    scrollViewer.ScrollToVerticalOffset(0);
+                }
+            }
+            else if (e.PropertyName.Equals("Transform"))
+            {
+                // everytime the transform matrix is updated in the imageviewmodel
+                // make sure to unscale the dpi as well
+                if (imageViewModel.Image != null)
+                {
+                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
+                }
+            }
+            else if (e.PropertyName.Equals("SelectedScaleMode"))
+            {
+                // update image whenever scalemode is changed
+                if (imageViewModel.Image != null)
+                {
+                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
+                }
+            }
         }
 
-        public MatrixTransform getScaleMatrix(BitmapImage image)
+        public MatrixTransform getScaleMatrix(BitmapImage image, ImageViewModel vm)
         {
-
-            ImageViewModel vm = (ImageViewModel)DataContext;
-
+          
             Matrix scaleMatrix = new Matrix();
 
             if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_HEIGHT)
@@ -130,8 +131,8 @@ namespace MediaViewer.ImagePanel
             }
             else if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.AUTO)
             {
-                double widthScale = scrollViewer.ActualWidth / image.Width;
-                double heightScale = scrollViewer.ActualHeight / image.Height;
+                double widthScale = (scrollViewer.ActualWidth - 3) / image.Width;
+                double heightScale = (scrollViewer.ActualHeight - 3) / image.Height;
 
                 double scale = Math.Min(widthScale, heightScale);
 
@@ -177,11 +178,18 @@ namespace MediaViewer.ImagePanel
 
         private void gridContainer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            isLeftMouseButtonDown = true;
-            mouseStartPosition = e.GetPosition(scrollViewer);
-            scrollbarStartPosition.X = scrollViewer.HorizontalOffset;
-            scrollbarStartPosition.Y = scrollViewer.VerticalOffset;
-            Mouse.OverrideCursor = Cursors.Hand;
+            if (e.ClickCount == 2)
+            {             
+                GlobalMessenger.Instance.NotifyColleagues("ToggleFullScreen");
+            }
+            else if (e.ClickCount == 1)
+            {
+                isLeftMouseButtonDown = true;
+                mouseStartPosition = e.GetPosition(scrollViewer);
+                scrollbarStartPosition.X = scrollViewer.HorizontalOffset;
+                scrollbarStartPosition.Y = scrollViewer.VerticalOffset;
+                Mouse.OverrideCursor = Cursors.Hand;
+            }
         }
 
         private void gridContainer_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)

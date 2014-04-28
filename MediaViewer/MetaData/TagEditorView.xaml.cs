@@ -33,6 +33,11 @@ namespace MediaViewer.MetaData
             {                
                 this.Close();
             });
+
+            tagEditorViewModel.ImportCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler((s,e) =>
+            {
+                tagTreePicker.reloadAll();
+            });
         }
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

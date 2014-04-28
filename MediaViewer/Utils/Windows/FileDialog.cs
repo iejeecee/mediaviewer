@@ -11,7 +11,6 @@ namespace MediaViewer.Utils.Windows
     {
         public static OpenFileDialog createOpenMediaFileDialog(bool imageOnly)
         {
-
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
             String imageFiles = "Image Files|";
@@ -45,6 +44,27 @@ namespace MediaViewer.Utils.Windows
             }
 
             openFileDialog.Filter = imageFiles + videoFiles + allFiles;
+            openFileDialog.FilterIndex = 1;
+
+            return (openFileDialog);
+        }
+
+        public static SaveFileDialog createSaveTagsFileDialog()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+
+            saveFileDialog.FileName = "tags.xml";
+            saveFileDialog.Filter = "XML Files|*.xml";
+            saveFileDialog.FilterIndex = 1;
+
+            return (saveFileDialog);
+        }
+
+        public static OpenFileDialog createLoadTagsFileDialog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+         
+            openFileDialog.Filter = "XML Files|*.xml";
             openFileDialog.FilterIndex = 1;
 
             return (openFileDialog);

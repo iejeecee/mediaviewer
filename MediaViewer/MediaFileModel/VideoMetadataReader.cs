@@ -13,6 +13,7 @@ namespace MediaViewer.MediaFileModel
     class VideoMetadataReader : MetadataReader
     {
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+       
 
         public override void readMetadata(Stream data, MediaFactory.ReadOptions options, Media media)
         {
@@ -58,7 +59,7 @@ namespace MediaViewer.MediaFileModel
                     }
 
 
-                    fsMetaData = videoPreview.MetaData;
+                    fsMetaData = videoPreview.MetaData;                   
 
                 }
                 catch (Exception e)
@@ -90,6 +91,8 @@ namespace MediaViewer.MediaFileModel
                 }
 
                 base.readMetadata(data, options, media);
+
+                parseFFMpegMetaData(fsMetaData, video);
             
             }
             finally
@@ -125,6 +128,75 @@ namespace MediaViewer.MediaFileModel
                  video.Thumbnail = null;
              }
            
+         }
+
+         static List<String> encoderMatch = new List<String>() { "encoder", "wm/toolname","encoded_with"};
+         static List<String> descriptionMatch = new List<string>() {"description","comment"};
+         static List<String> authorMatch = new List<string>() {"artist","album_artist"};
+
+         void parseFFMpegMetaData(List<string> fsMetaData, VideoMedia video)
+         {
+             if (fsMetaData == null) return;
+
+             foreach (String info in fsMetaData)
+             {
+                 string[] temp = info.Split(new char[] { ':' }, 2);
+
+                 if (temp != null)
+                 {
+                     String param = temp[0].ToLower();
+                     String value = temp[1].Trim();
+
+                     // Note that when setting the title like this, if the user clears the (XMP) title it will 
+                     // revert to the title stored in the ffmpeg metadata. This will be confusing for the user
+                     // and should probably be fixed.
+                     if (video.Title == null && param.Equals("title"))
+                     {
+                         video.Title = value;
+                     }
+                     else if (video.Description == null && descriptionMatch.Any(s => s.Equals(param)))
+                     {
+                         video.Description = value;
+                     }
+                     else if (video.Author == null && authorMatch.Any(s => s.Equals(param)))
+                     {
+                         video.Author = value;
+                     }
+                     else if (video.Copyright == null && param.Equals("copyright"))
+                     {
+                         video.Copyright = value;
+                     }
+                     else if (video.Software == null && encoderMatch.Any(s => s.Equals(param)))
+                     {
+                         video.Software = value;
+                     }
+                     else if (param.Equals("major_brand"))
+                     {
+                         video.MajorBrand = value;
+                     }
+                     else if (param.Equals("minor_version"))
+                     {
+                         int minorVersion;
+                         if(int.TryParse(value, out minorVersion)) {
+
+                            video.MinorVersion = minorVersion;
+                         }
+                     }
+                     else if (param.Equals("wmfsdkversion"))
+                     {
+                         video.WMFSDKVersion = value;
+                     }
+                     else if (param.Equals("isvbr"))
+                     {
+                         bool isVBR;
+                         if (bool.TryParse(value, out isVBR))
+                         {
+                             video.IsVariableBitRate = isVBR;
+                         }
+                     }
+                  
+                 }
+             }
          }
 
          private bool supportsXMPMetadata(VideoMedia video, List<string> fsMetaData)

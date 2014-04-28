@@ -453,6 +453,18 @@ public class FormatMetaData
     }
 
 
+    public static List<Tuple<String, String>> formatProperties(VideoMedia video)
+    {
+        List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
+       
+        addPropIfExists("Major Brand", video.MajorBrand, propList);
+        addPropIfExists("Minor Version", video.MinorVersion, propList);
+        addPropIfExists("WMF SDK Version", video.WMFSDKVersion, propList);
+        addPropIfExists("Variable Bitrate", video.IsVariableBitRate, propList);
+
+        return (propList);
+    }
+
     public static List<Tuple<String, String>> formatProperties(ImageMedia image)
     {
         // http://ptgmedia.pearsoncmg.com/images/art_evening_lrmetadata/elementLinks/fig04.jpg

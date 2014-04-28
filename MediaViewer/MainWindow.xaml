@@ -13,15 +13,13 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>      
     </Window.Resources>  
-    <Grid x:Name="MainGrid">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid x:Name="MainGrid">     
         <Grid.RowDefinitions>
-            <RowDefinition Height="40"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Menu Grid.Column="0" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0" HorizontalContentAlignment="Stretch" Background="{StaticResource menuBackgroundColor}">
+        <Menu x:Name="mainMenu" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0" HorizontalContentAlignment="Stretch" Background="{StaticResource menuBackgroundColor}">
             <MenuItem Header="_File">
                 <MenuItem x:Name="OpenMenuItem" Header="_Open" Click="OpenMenuItem_Click"/>
                 <Separator/>
@@ -36,7 +34,7 @@
                 <MenuItem x:Name="AboutMenuItem" Header="_About" Command="{Binding AboutCommand}"/>
             </MenuItem>
         </Menu>
-        <ToolBarTray Grid.Column="0" Grid.Row="0" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Margin="0,20,-0.333,0" VerticalAlignment="Top" Background="{StaticResource toolBarBackgroundColor}">
+        <ToolBarTray Grid.Row="1" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Background="{StaticResource toolBarBackgroundColor}">
             <ToolBar Background="{StaticResource toolBarBackgroundColor}">
                 <CheckBox x:Name="imageToolbarCheckBox" Height="16" Click="imageToolbarCheckBox_Click" ToolTip="View Image">
                     <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" />
@@ -168,8 +166,8 @@
                 </Button>           
             </ToolBar>
         </ToolBarTray>
-        <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>
-        <ImagePanel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Visible"/>
-        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="1" VerticalAlignment="Stretch" Visibility="Hidden"/>        
+        <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
+        <ImagePanel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Visible"/>
+        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>        
     </Grid>
 </Window>

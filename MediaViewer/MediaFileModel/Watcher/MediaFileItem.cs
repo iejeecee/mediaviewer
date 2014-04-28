@@ -17,7 +17,7 @@ using System.Windows.Threading;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>, IComparable<MediaFileItem>
+    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>, IComparable<MediaFileItem>, IDisposable
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -42,7 +42,24 @@ namespace MediaViewer.MediaFileModel.Watcher
             hasTags = false;
             
         }
-       
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (rwLock != null)
+                {
+                    rwLock.Dispose();
+                    rwLock = null;
+                }
+            }
+        }
+
         MediaFileItemState itemState;
 
         public MediaFileItemState ItemState
@@ -192,7 +209,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             Media media = null;
             MediaFileItemState result = MediaFileItemState.LOADED;
 
-            rwLock.EnterWriteLock();            
+            rwLock.EnterUpgradeableReadLock();           
             try
             {
                 ItemState = MediaFileItemState.LOADING;
@@ -237,7 +254,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             {               
                 Media = media;
                 ItemState = result;             
-                rwLock.ExitWriteLock();
+                rwLock.ExitUpgradeableReadLock();
             }
         }
 
@@ -404,8 +421,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
             
         }
-
-   
+       
         public bool Equals(MediaFileItem other)
         {
             if (other == null) return (false);

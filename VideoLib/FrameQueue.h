@@ -46,8 +46,6 @@ namespace VideoLib {
 		bool audioPacketsClosed;
 		bool videoPacketsClosed;
 
-		AutoResetEvent ^videoFrameDecoded;
-
 		double synchronizeVideo(int repeatFrame, __int64 dts) {
 
 			double pts;
@@ -155,13 +153,12 @@ namespace VideoLib {
 
 			audioPacketsClosed = false;
 			videoPacketsClosed = false;
-
-			videoFrameDecoded = gcnew AutoResetEvent(false);
+		
 		}
 
 		~FrameQueue() {
 
-			dispose();
+			release();
 
 			for(int i = 0; i < packetData->Length; i++) {
 
@@ -186,11 +183,6 @@ namespace VideoLib {
 				audioPackets = nullptr;
 			}
 
-			if(videoFrameDecoded != nullptr) {
-
-				delete videoFrameDecoded;
-				videoFrameDecoded = nullptr;
-			}
 		}
 
 		property int MaxVideoPackets {
@@ -228,7 +220,7 @@ namespace VideoLib {
 
 		void initialize() {
 
-			dispose();
+			release();
 
 			videoClock = 0;
 			audioClock = 0;
@@ -285,8 +277,8 @@ namespace VideoLib {
 
 		void stop() {
 
-			// stop each queue in turn and wait for the threads to actually stop
-			if(freePackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+			// stop each queue in turn and wait until the threads signal they have actually stopped
+			if(freePackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {				
 				freePackets->stop();
 				freePackets->Stopped->WaitOne();
 			}
@@ -315,7 +307,7 @@ namespace VideoLib {
 		
 		}
 
-		void dispose() {
+		void release() {
 
 			if(convertedVideoFrame != nullptr) {
 

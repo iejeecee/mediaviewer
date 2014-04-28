@@ -40,6 +40,7 @@
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,6 +59,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\wpftreelistview_src_original\Aga.Controls\bin\Debug\Aga.Controls.dll</HintPath>
     </Reference>
+    <Reference Include="AutoMapper">
+      <HintPath>..\packages\AutoMapper.3.2.0\lib\net40\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper.Net4">
+      <HintPath>..\packages\AutoMapper.3.2.0\lib\net40\AutoMapper.Net4.dll</HintPath>
+    </Reference>
     <Reference Include="DigitallyCreated.Utilities.Concurrency, Version=1.0.1.0, Culture=neutral, PublicKeyToken=79d801fe1e19f7f2, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\DigitallyCreated\bin\DigitallyCreated.Utilities.Concurrency.dll</HintPath>
@@ -74,8 +81,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\SharpTreeView\Release\ICSharpCode.TreeView.dll</HintPath>
     </Reference>
-    <Reference Include="log4net">
-      <HintPath>C:\game\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
+    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\mediaviewer external libs\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -186,7 +194,15 @@
     <Compile Include="Import\ImportView.xaml.cs">
       <DependentUpon>ImportView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MediaDatabase\DataTransferObjects\AutoMapperSetup.cs" />
+    <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
+    <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
+    <Compile Include="MetaData\TagEditorImportView.xaml.cs">
+      <DependentUpon>TagEditorImportView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MetaData\TagEditorImportViewModel.cs" />
+    <Compile Include="Pager\IPageable.cs" />
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>
@@ -395,12 +411,6 @@
     <Compile Include="TestWindow.xaml.cs">
       <DependentUpon>TestWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Timers\DefaultTimer.cs" />
-    <Compile Include="Timers\HRTimer.cs" />
-    <Compile Include="Timers\HRTimerTest.cs" />
-    <Compile Include="Timers\MultiMediaTimer.cs" />
-    <Compile Include="Timers\HRTimerFactory.cs" />
-    <Compile Include="Timers\TimerQueueTimer.cs" />
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
     <Compile Include="UserControls\Relation\RelationEnum.cs" />
@@ -412,7 +422,6 @@
     <Compile Include="UserControls\TagTreePicker\TagTreePickerView.xaml.cs">
       <DependentUpon>TagTreePickerView.xaml</DependentUpon>
     </Compile>
-    <None Include="UserControls\TagTreePicker\TagTreePickerViewModel.cs" />
     <Compile Include="UserControls\TagTreePicker\TagItem.cs" />
     <Compile Include="UserControls\TextBlock\AutoLengthTextBlock.xaml.cs">
       <DependentUpon>AutoLengthTextBlock.xaml</DependentUpon>
@@ -453,6 +462,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Import\ImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MetaData\TagEditorImportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -809,6 +822,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\gridview.ico" />
+    <Resource Include="Resources\Icons\contract.ico" />
+    <Resource Include="Resources\Icons\expand.ico" />
     <Resource Include="Resources\Icons\screenshot.ico" />
     <Resource Include="Resources\Images\Splash.png" />
     <Resource Include="Resources\Icons\notsupported.ico" />
@@ -833,6 +849,7 @@
     <Resource Include="Resources\Icons\circle.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\AutoMapper.3.2.0\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.2.0\tools\AutoMapper.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

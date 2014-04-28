@@ -16,14 +16,14 @@
     </UserControl.Resources>
     <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Black">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="55"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <WindowsFormsHost Grid.Row="0">
+        <WindowsFormsHost x:Name="wfHost"  Grid.Row="0" >
             <wfvpc:VideoPlayer x:Name="videoPlayer"/>
         </WindowsFormsHost>
-        <Grid Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
-        <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
+        <Grid x:Name="uiGrid" Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
+        <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,5" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
             <ToggleButton.Style>
                 <Style TargetType="ToggleButton">
                     <Style.Triggers>                       

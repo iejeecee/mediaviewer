@@ -47,7 +47,6 @@ namespace MediaViewer.MetaData
                 }
 
             });
-
            
         }
     

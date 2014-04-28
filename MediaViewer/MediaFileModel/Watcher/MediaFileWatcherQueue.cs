@@ -1,5 +1,4 @@
-﻿using MediaViewer.Timers;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    class MediaFileWatcherQueue
+    class MediaFileWatcherQueue : IDisposable
     {
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -79,6 +78,15 @@ namespace MediaViewer.MediaFileModel.Watcher
             eventItems = new BlockingCollection<FileSystemEventArgs>(new ConcurrentQueue<FileSystemEventArgs>());
             Task.Run(() => processEvents());         
 
+        }
+
+        public void Dispose()
+        {
+            if (eventItems != null)
+            {
+                eventItems.Dispose();
+                eventItems = null;
+            }
         }
 
 /*

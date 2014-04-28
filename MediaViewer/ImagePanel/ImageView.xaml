@@ -15,14 +15,12 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>        
     </UserControl.Resources>
-    <Grid Name="mainGrid" Background="{StaticResource appBackgroundColor}">
+    <Grid Name="mainGrid" Background="{StaticResource imageGridBackgroundColor}">
         <Grid.RowDefinitions>
-            <RowDefinition />
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>   
         </Grid.RowDefinitions>
         <ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both">
-            <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave"
-                  Background="{StaticResource appBackgroundColor}">
+            <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave">
                 <Image x:Name="pictureBox" HorizontalAlignment="Center" VerticalAlignment="Center" 
                        ScrollViewer.CanContentScroll="True" 
                        ScrollViewer.HorizontalScrollBarVisibility="Auto" 
@@ -49,10 +47,6 @@
                     </Image.Effect>
                 </Image>
             </Grid>
-        </ScrollViewer>
-        <Pager:PagerView x:Name="pager" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                         NrPages="{Binding NrImages}" CurrentPage="{Binding CurrentImage}" IsPagingEnabled="{Binding IsPagingImagesEnabled}"
-                         NextPageCommand="{Binding NextImageCommand}" PrevPageCommand="{Binding PrevImageCommand}" 
-                         FirstPageCommand="{Binding FirstImageCommand}" LastPageCommand="{Binding LastImageCommand}"/>
+        </ScrollViewer>        
     </Grid>
 </UserControl>

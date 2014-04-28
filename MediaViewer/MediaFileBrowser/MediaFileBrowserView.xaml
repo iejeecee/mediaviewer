@@ -3,27 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" xmlns:Pager="clr-namespace:MediaViewer.Pager" xmlns:MetaData="clr-namespace:MediaViewer.MetaData" xmlns:Search="clr-namespace:MediaViewer.Search" x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView" 
+             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
+             xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" 
+             xmlns:Pager="clr-namespace:MediaViewer.Pager" 
+             xmlns:MetaData="clr-namespace:MediaViewer.MetaData" 
+             xmlns:Search="clr-namespace:MediaViewer.Search" 
+             xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" 
+             xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel" 
+             xmlns:VideoPlayer="clr-namespace:VideoPlayerControl;assembly=VideoPlayerControl"
+             x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="403.333">
+             d:DesignHeight="300" d:DesignWidth="603.333">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+            <DataTemplate DataType="{x:Type ImageGrid:PagedImageGridViewModel}">
+               
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type ImagePanel:ImageViewModel}">
+                
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type VideoPlayer:VideoPlayerViewModel}">
+                <VideoPanel:VideoView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="{StaticResource appBackgroundColor}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Grid Background="{StaticResource appBackgroundColor}">     
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <TabControl Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{StaticResource uiElementBorderColor}">
+        <TabControl x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{StaticResource uiElementBorderColor}">
             <TabItem Header="Browse Path" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Column="0" SelectedPath="{Binding BrowsePath, Mode=TwoWay}"/>
             </TabItem>
@@ -32,17 +45,34 @@
             </TabItem>
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
-        <ImageGrid:ImageGridView x:Name="imageGrid" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="2,0,0,0"/>
+        <Grid x:Name="browserButtons" Grid.Column="1" Margin="2,0,0,0" Background="{StaticResource imageGridBackgroundColor}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <ImageGrid:ImageGridView x:Name="browserGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0"/>
+            <ImagePanel:ImageView x:Name="imageViewer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
+            <VideoPanel:VideoView x:Name="videoPlayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
+            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Media View" Margin="2,2,0,2" Command="{Binding ExpandCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/expand.ico"/>
+            </Button>
+            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Grid View" Margin="32,2,0,2" Command="{Binding ContractCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
+            </Button>
+            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Delete" Margin="62,2,0,2" Command="{Binding DeleteSelectedItemsCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
+            </Button>
+            <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" 
+			    NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
+			    NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
+			    LastPageCommand="{Binding LastPageCommand}"/>
+            <Grid/>
+        </Grid>
         <GridSplitter Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
-        <TabControl Grid.Column="2" BorderThickness="5" BorderBrush="{StaticResource uiElementBorderColor}" Margin="2,0,0,0">
+        <TabControl x:Name="metaDataTabControl" Grid.Column="2" BorderThickness="5" BorderBrush="{StaticResource uiElementBorderColor}" Margin="2,0,0,0">
             <TabItem Header="Metadata" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="2"/>
             </TabItem>
-        </TabControl>
-        <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" 
-			NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
-			NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
-			LastPageCommand="{Binding LastPageCommand}"/>
-        <Grid/>
+        </TabControl>       
     </Grid>
 </UserControl>

@@ -46,7 +46,7 @@ namespace VideoLib {
 		~ThreadSafeQueue() {
 
 			if(paused != nullptr) {
-
+			
 				delete paused;
 				paused = nullptr;
 			}
@@ -133,7 +133,7 @@ namespace VideoLib {
 
 			Monitor::Exit(queue);
 		}
-
+		// block threads attempting to remove elements from the queue
 		void pause() {
 
 			Monitor::Enter(queue);

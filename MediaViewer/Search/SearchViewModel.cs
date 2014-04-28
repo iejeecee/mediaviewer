@@ -38,9 +38,12 @@ namespace MediaViewer.Search
             RecurseSubDirectories = false;
             Query = new SearchQuery();      
 
-            SearchCommand = new Command<SearchQuery>(new Action<SearchQuery>((query) =>
+            SearchCommand = new Command<SearchQuery>(new Action<SearchQuery>(async (query) =>
             {
-                doSearch(query);
+                SearchCommand.CanExecute = false;
+                await Task.Run(() => doSearch(query));
+                SearchCommand.CanExecute = true;
+
             }));
 
             ClearRatingStartCommand = new Command(new Action(() =>

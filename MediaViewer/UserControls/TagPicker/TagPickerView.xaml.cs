@@ -188,6 +188,7 @@ namespace MediaViewer.UserControls.TagPicker
                     tag.Name = tagName;
                     
                 }
+               
               
                 if (!Tags.Contains(tag))
                 {

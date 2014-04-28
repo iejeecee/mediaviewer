@@ -25,5 +25,9 @@ namespace MediaViewer.MediaDatabase
         public string VideoCodec { get; set; }
         public string VideoContainer { get; set; }
         public string AudioCodec { get; set; }
+        public string MajorBrand { get; set; }
+        public Nullable<int> MinorVersion { get; set; }
+        public Nullable<bool> IsVariableBitRate { get; set; }
+        public string WMFSDKVersion { get; set; }
     }
 }

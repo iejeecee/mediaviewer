@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
-    public class MediaState : IMediaState
+    public class MediaState : IMediaState, IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -49,8 +49,24 @@ namespace MediaViewer.MediaFileModel
 
             uiMediaCollection = new MediaLockedCollection();
            
-
             debugOutput = false;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (uiMediaCollection != null)
+                {
+                    uiMediaCollection.Dispose();
+                    uiMediaCollection = null;
+                }
+            }
         }
 
   

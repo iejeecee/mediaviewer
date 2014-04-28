@@ -19,11 +19,12 @@
             }
             base.Dispose(disposing);
 
-            if (viewModel != null)
+          /*  if (viewModel != null)
             {
                 viewModel.Dispose();
                 viewModel = null;
-            }
+            }*/
+ 
         }
 
         #region Component Designer generated code
@@ -42,8 +43,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.MinimumSize = new System.Drawing.Size(64, 64);
             this.Name = "VideoPlayer";
-            this.Size = new System.Drawing.Size(64, 64);
-            this.DoubleClick += new System.EventHandler(this.videoPlayer_DoubleClick);
+            this.Size = new System.Drawing.Size(64, 64);          
             this.Resize += new System.EventHandler(this.videoPlayer_Resize);
             this.ResumeLayout(false);
 

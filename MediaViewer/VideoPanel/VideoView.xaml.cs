@@ -1,6 +1,7 @@
 ﻿using MediaViewer.MediaFileModel.Watcher;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,12 @@ namespace MediaViewer.VideoPanel
         bool updateTimeLineSlider;
         VideoPlayerViewModel viewModel;
 
+        public VideoPlayerViewModel ViewModel
+        {
+            get { return viewModel; }
+            private set { viewModel = value; }
+        }
+
         public VideoView()
         {
             InitializeComponent();
@@ -40,55 +47,70 @@ namespace MediaViewer.VideoPanel
             timeLineSlider.AddHandler(Slider.MouseLeaveEvent, new MouseEventHandler(timeLineSlider_MouseLeaveEvent));
            
             updateTimeLineSlider = true;
-             
+                                                     
+            videoPlayer.DoubleClick += videoPlayer_DoubleClick;
+
             DataContext = viewModel = videoPlayer.ViewModel;
 
-            viewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s, e) =>
+            viewModel.PropertyChanged += videoPlayerViewModel_PropertyChanged;
+        }
+        
+        private void videoPlayerViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("PositionSeconds") && updateTimeLineSlider == true)
+            {
+                Application.Current.Dispatcher.BeginInvoke(new Action(updateTimeLine));
+            }
+            else if (e.PropertyName.Equals("VideoState"))
             {
 
-                if (e.PropertyName.Equals("PositionSeconds") && updateTimeLineSlider == true)
+                switch (viewModel.VideoState)
                 {
-                    Application.Current.Dispatcher.BeginInvoke(new Action(updateTimeLine));
-                } else if(e.PropertyName.Equals("VideoState")) {
-
-                    switch (viewModel.VideoState)
-                    {
-                        case VideoState.PLAYING:
+                    case VideoState.PLAYING:
+                        {
+                            if (playButton.IsChecked == false)
                             {
-                                if (playButton.IsChecked == false)
-                                {
-                                    playButton.IsChecked = true;
-                                }
-                            
-                                break;
-                            }
-                        case VideoState.CLOSED:
-                            {
-                                if (playButton.IsChecked == true)
-                                {
-                                    playButton.IsChecked = false;
-                                }
-                               
-                                break;
+                                playButton.IsChecked = true;
                             }
 
-                    }
+                            break;
+                        }
+                    case VideoState.CLOSED:
+                        {
+                            if (playButton.IsChecked == true)
+                            {
+                                playButton.IsChecked = false;
+                            }
+
+                            break;
+                        }
 
                 }
-       
+            }
+        }
 
-            });
-         
+        private void videoPlayer_DoubleClick(object sender, EventArgs e)
+        {
+            if (uiGrid.Visibility == Visibility.Visible)
+            {
+                uiGrid.Visibility = Visibility.Collapsed;               
+            }
+            else
+            {
+                uiGrid.Visibility = Visibility.Visible;               
+            }
+
+            GlobalMessenger.Instance.NotifyColleagues("ToggleFullScreen");
         }
 
         public void openAndPlay(String location)
         {
             try
-            {
+            {                               
                 viewModel.ScreenShotLocation = MediaFileWatcher.Instance.Path;
                 viewModel.ScreenShotName = System.IO.Path.GetFileName(location);
                 viewModel.OpenCommand.DoExecute(location);
-                viewModel.PlayCommand.DoExecute();
+                viewModel.PlayCommand.DoExecute();               
             }
             catch(Exception e)
             {

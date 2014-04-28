@@ -28,7 +28,7 @@ namespace MediaViewer.MediaDatabase
             Tags = new HashSet<Tag>();
            
             IsImported = false;
-            metadataReadError = null;
+            metadataReadError = null;            
         }
 
         Stream data;
@@ -85,7 +85,6 @@ namespace MediaViewer.MediaDatabase
                 data = null;
             }
         }
-
       
     }
 }

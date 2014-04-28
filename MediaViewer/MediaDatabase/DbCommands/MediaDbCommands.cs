@@ -488,5 +488,17 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             media.IsImported = false;
         }
+
+        public override void clearAll()
+        {
+            String[] tableNames = new String[] {"ThumbnailSet", "MediaTag", "MediaSet_ImageMedia",
+                "MediaSet_VideoMedia","MediaSet_UnknownMedia","MediaSet"};
+
+            for (int i = 0; i < tableNames.Count(); i++)
+            {
+                Db.Database.ExecuteSqlCommand("TRUNCATE TABLE [" + tableNames[i] + "]");
+            }
+           
+        }
     }
 }

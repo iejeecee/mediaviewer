@@ -176,7 +176,7 @@ namespace VideoPlayerControl.Timers
         }
 
         //Frees timer resources.
-        public void Dispose()
+        public override void Dispose()
         {
             Dispose(true);        
         }

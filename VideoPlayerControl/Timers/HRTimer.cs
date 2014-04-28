@@ -8,7 +8,7 @@ using System.ComponentModel;
 namespace VideoPlayerControl.Timers
 {
 
-    public abstract class HRTimer 
+    public abstract class HRTimer : IDisposable
     {
         protected HRTimer()
         {
@@ -74,8 +74,9 @@ namespace VideoPlayerControl.Timers
             get { return tag; }
             set { tag = value; }
         }
-    
-       
+
+        public abstract void Dispose();
+      
     }
 
 }

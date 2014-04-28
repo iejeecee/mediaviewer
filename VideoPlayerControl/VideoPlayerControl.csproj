@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MvvmFoundation.Wpf">
-      <HintPath>..\..\..\Repos\mediaviewer\MediaViewer\bin\Debug\MvvmFoundation.Wpf.dll</HintPath>
+    <Reference Include="log4net">
+      <HintPath>..\..\mediaviewer external libs\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>..\..\..\Repos\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.dll</HintPath>
@@ -72,6 +72,7 @@
     <Compile Include="Timers\HRTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />
     <Compile Include="Timers\HRTimerTest.cs" />
+    <Compile Include="Timers\MicroStopwatch.cs" />
     <Compile Include="Timers\MultiMediaTimer.cs" />
     <Compile Include="Timers\TimerQueueTimer.cs" />
     <Compile Include="Utils.cs" />
@@ -94,6 +95,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MvvmFoundation\MvvmFoundation.Wpf\MvvmFoundation.Wpf.csproj">
+      <Project>{2e922430-eaac-4589-a8f4-f35fbb9799b8}</Project>
+      <Name>MvvmFoundation.Wpf</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
       <Name>VideoLib</Name>

@@ -46,15 +46,13 @@ namespace MediaViewer.ImageGrid
         {
 
             // cancel any previously loading items           
-            loadItemsCTS.Cancel();
+            loadItemsCTS.Cancel();          
             // create new cts for the items that need to be loaded
             loadItemsCTS = new CancellationTokenSource();
 
             MediaState.readMetadataRangeAsync(start, nrItems, loadItemsCTS.Token);
                     
         }
-              
-        
       
     }
 }

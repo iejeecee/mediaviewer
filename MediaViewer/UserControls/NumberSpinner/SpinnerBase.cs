@@ -12,13 +12,13 @@ namespace MediaViewer.UserControls.NumberSpinner
 {
     public abstract class SpinnerBase<T> : UserControl where T : struct, System.IComparable<T> 
     {
-        static Timers.DefaultTimer timer;
+        static VideoPlayerControl.Timers.DefaultTimer timer;
         const int initialRepeatDelayMS = 800;
         const int repeatDelayMS = 50;
 
         static SpinnerBase()
         {
-            timer = new Timers.DefaultTimer();
+            timer = new VideoPlayerControl.Timers.DefaultTimer();
             timer.Tick += timer_Tick;
             timer.AutoReset = true;
         }
@@ -68,7 +68,7 @@ namespace MediaViewer.UserControls.NumberSpinner
 
         static void timer_Tick(Object sender, EventArgs e)
         {
-           SpinnerBase<T> spinner = (SpinnerBase<T>)(sender as Timers.DefaultTimer).Tag;
+           SpinnerBase<T> spinner = (SpinnerBase<T>)(sender as VideoPlayerControl.Timers.DefaultTimer).Tag;
 
            spinner.Dispatcher.BeginInvoke(new Action(() =>
            {

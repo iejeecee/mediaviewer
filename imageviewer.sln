@@ -1,8 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imageviewer", "imageviewer\imageviewer.vcxproj", "{64F49906-EE08-4841-BE66-B08EB08E3F83}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VideoLib", "VideoLib\VideoLib.vcxproj", "{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XMPLib", "XMPLib\XMPLib.vcxproj", "{8722BEBF-38EE-4B0D-98F1-413C840BAFD7}"
@@ -27,16 +25,6 @@ Global
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Debug|Win32.ActiveCfg = Debug|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Debug|Win32.Build.0 = Debug|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Release|Any CPU.ActiveCfg = Release|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Release|Win32.ActiveCfg = Release|Win32
-		{64F49906-EE08-4841-BE66-B08EB08E3F83}.Release|Win32.Build.0 = Release|Win32
 		{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{5EA803DF-12D3-4DB5-95E0-08E4E4DA0AB8}.Debug|Mixed Platforms.Build.0 = Debug|Win32

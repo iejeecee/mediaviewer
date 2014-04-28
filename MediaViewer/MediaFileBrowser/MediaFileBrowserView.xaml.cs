@@ -20,6 +20,8 @@ using MediaViewer.Input;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils;
 using MediaViewer.Pager;
+using VideoPlayerControl;
+using MediaViewer.ImagePanel;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -31,31 +33,79 @@ namespace MediaViewer.MediaFileBrowser
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        PagedImageGridViewModel pagedImageGridViewModel;       
+        MediaFileBrowserViewModel mediaFileBrowserViewModel;
+        
      
         public MediaFileBrowserView()
         {
             InitializeComponent();
            
-            DataContext = new MediaFileBrowserViewModel();
+            DataContext = mediaFileBrowserViewModel = new MediaFileBrowserViewModel();
             directoryBrowser.DataContext = DataContext;
 
-            pagedImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
-            imageGrid.DataContext = pagedImageGridViewModel;
-            metaDataView.DataContext = pagedImageGridViewModel;
-            pager.DataContext = pagedImageGridViewModel;
+            imageViewer.DataContext = mediaFileBrowserViewModel.ImageViewModel;
+            
+            browserGrid.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
+            pager.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
            
-            // this is not the way it "should" be done, but fuck it
-            // There is not going to be a directorybrowser without these viewmodels
-            Loaded += new RoutedEventHandler((o,e) => {
+            metaDataView.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;      
 
-                MediaFileBrowserViewModel mediaFileBrowserViewModel = (MediaFileBrowserViewModel)DataContext;
-                if (mediaFileBrowserViewModel == null) return;             
-                mediaFileBrowserViewModel.PagedImageGridViewModel = pagedImageGridViewModel;
-                
-            });
+            GlobalMessenger.Instance.Register("ToggleFullScreen", mediaFileBrowser_ToggleFullScreen);
+            GlobalMessenger.Instance.Register("MediaFileBrowser_ShowBrowserGrid", mediaFileBrowser_ShowBrowserGrid);
+            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowVideo", mediaFileBrowser_ShowVideo);
+            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowImage", mediaFileBrowser_ShowImage);
           
         }
+
+        private void mediaFileBrowser_ShowBrowserGrid()
+        {
+            browserGrid.Visibility = Visibility.Visible;
+            imageViewer.Visibility = Visibility.Hidden;
+            videoPlayer.Visibility = Visibility.Hidden;
+            pager.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
+            videoPlayer.ViewModel.CloseCommand.DoExecute();
+        }
+
+        private void mediaFileBrowser_ShowImage(string location)
+        {
+            browserGrid.Visibility = Visibility.Hidden;
+            imageViewer.Visibility = Visibility.Visible;
+            videoPlayer.Visibility = Visibility.Hidden;
+            ImageViewModel viewModel = (ImageViewModel)imageViewer.DataContext;
+            viewModel.SelectedScaleMode = ImageViewModel.ScaleMode.AUTO;
+            viewModel.LoadImageAsyncCommand.DoExecute(location);
+            pager.DataContext = mediaFileBrowserViewModel.ImageViewModel;
+        }
+
+        private void mediaFileBrowser_ShowVideo(string location)
+        {
+            browserGrid.Visibility = Visibility.Hidden;
+            imageViewer.Visibility = Visibility.Hidden;
+            videoPlayer.Visibility = Visibility.Visible;
+            videoPlayer.ViewModel.OpenCommand.DoExecute(location);
+            videoPlayer.ViewModel.PlayCommand.DoExecute();
+        }
+
+        private void mediaFileBrowser_ToggleFullScreen()
+        {
+            Visibility mode;
+
+            if (pager.Visibility == System.Windows.Visibility.Visible)
+            {
+                mode = System.Windows.Visibility.Collapsed;
+            }
+            else
+            {
+                mode = System.Windows.Visibility.Visible;
+            }
+
+            pager.Visibility = mode;
+            browserButtons.Visibility = mode;
+            browserTabControl.Visibility = mode;
+            metaDataTabControl.Visibility = mode;
+        }
+   
+     
        
     }
         

@@ -58,7 +58,7 @@ namespace MediaViewer.MetaData
         {
             Tags = new ObservableCollection<Tag>();
             tagsLock = new Object();
-            BindingOperations.EnableCollectionSynchronization(Tags, tagsLock);
+            BindingOperations.EnableCollectionSynchronization(Tags, tagsLock);      
 
             AddTags = new ObservableCollection<Tag>();
             addTagsLock = new Object();
@@ -772,7 +772,7 @@ namespace MediaViewer.MetaData
             {
                 dynamicProperties.AddRange(FormatMetaData.formatProperties(media as ImageMedia));
             }
-
+            
             if (dynamicProperties.Count > nrProps)
             {
                 dynamicProperties.Insert(nrProps, new Tuple<string, string>("", "EXIF"));
@@ -789,11 +789,14 @@ namespace MediaViewer.MetaData
             p.Add(new Tuple<string, string>("", "VIDEO"));
             p.Add(new Tuple<string, string>("Video Container", video.VideoContainer));
             p.Add(new Tuple<string, string>("Video Codec", video.VideoCodec));
+
+            p.AddRange(FormatMetaData.formatProperties(video));
+
             p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
             p.Add(new Tuple<string, string>("Duration", Utils.Misc.formatTimeSeconds(video.DurationSeconds)));
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
-            p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString()));
-
+            p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString("0.##")));
+          
             if (!String.IsNullOrEmpty(video.AudioCodec))
             {
                 p.Add(new Tuple<string, string>("Audio Codec", video.AudioCodec));
@@ -801,6 +804,8 @@ namespace MediaViewer.MetaData
                 p.Add(new Tuple<string, string>("Samples Per Second", video.SamplesPerSecond.ToString()));
                 p.Add(new Tuple<string, string>("Nr Channels", video.NrChannels.ToString()));
             }
+
+       
 
             return (p);
 

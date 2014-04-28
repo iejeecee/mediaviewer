@@ -19,13 +19,24 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         }
          
-        public List<Tag> getAllTags()
+        public List<Tag> getAllTags(bool loadAllReferences = false)
         {
             List<Tag> tags = new List<Tag>();
 
-            foreach (Tag tag in Db.TagSet.OrderBy(x => x.Name))
+            if (loadAllReferences == true)
             {
-                tags.Add(tag);
+                foreach (Tag tag in Db.TagSet.Include("TagCategory").Include("ChildTags").Include("ParentTags").OrderBy(x => x.Name))
+                {
+                    tags.Add(tag);
+                }
+            }
+            else
+            {
+
+                foreach (Tag tag in Db.TagSet.OrderBy(x => x.Name))
+                {
+                    tags.Add(tag);
+                }
             }
 
             return (tags);
@@ -196,5 +207,82 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (tag);
         }
 
+        /// <summary>
+        /// If mergetag doesn't exist create it
+        /// If mergetag exists add mergetag children to tag and add it's category to mergetag
+        /// </summary>
+        /// <param name="mergeTag"></param>
+        public void merge(Tag mergeTag)
+        {
+             TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
+
+             if (mergeTag.TagCategory != null)
+             {
+                 TagCategory existingCategory = tagCategoryCommands.getCategoryByName(mergeTag.TagCategory.Name);
+
+                 if (existingCategory != null)
+                 {
+                     mergeTag.TagCategory = existingCategory;
+                 }
+                 else
+                 {
+                     mergeTag.TagCategory = tagCategoryCommands.create(mergeTag.TagCategory);
+                 }
+             }
+
+             Tag existingTag = getTagByName(mergeTag.Name);
+
+             if (existingTag == null)
+             {
+                 create(mergeTag);
+             }
+             else
+             {
+                 bool isModified = false;
+
+                 if (existingTag.TagCategory == null)
+                 {
+                     existingTag.TagCategory = mergeTag.TagCategory;
+                     isModified = true;
+                 }
+
+                 foreach (Tag newChildTag in mergeTag.ChildTags)
+                 {
+                     Tag existingChildTag = getTagByName(newChildTag.Name);
+
+                     if (existingChildTag == null)
+                     {
+                         newChildTag.ChildTags.Clear();
+                         newChildTag.TagCategory = null;
+
+                         existingTag.ChildTags.Add(create(newChildTag));
+
+                         isModified = true;
+                     }
+                     else if (!existingTag.ChildTags.Contains(existingChildTag, EqualityComparer<Tag>.Default))
+                     {
+                         existingTag.ChildTags.Add(existingChildTag);
+                         isModified = true;
+                     }
+                 }
+
+                 if (isModified)
+                 {
+                     Db.SaveChanges();
+                 }
+             }
+
+        }
+
+        public override void clearAll()
+        {
+            String[] tableNames = new String[] {"PresetMetadataTag", "MediaTag", "TagTag", "TagSet"};
+         
+            for (int i = 0; i < tableNames.Count(); i++)
+            {
+                Db.Database.ExecuteSqlCommand("TRUNCATE TABLE [" + tableNames[i] + "]");
+            }
+
+        }
     }
 }

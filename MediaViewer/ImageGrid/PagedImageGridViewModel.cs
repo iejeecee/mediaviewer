@@ -14,7 +14,7 @@ using System.Windows.Data;
 
 namespace MediaViewer.ImageGrid
 {
-    class PagedImageGridViewModel : ImageGridViewModel
+    class PagedImageGridViewModel : ImageGridViewModel, IPageable
     {
         public PagedImageGridViewModel(IMediaState mediaFiles) :
             base(mediaFiles)

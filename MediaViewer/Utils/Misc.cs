@@ -156,14 +156,14 @@ namespace MediaViewer.Utils
             }
         }
 
-        public static void insertIntoSortedCollection<T>(IList<T> list, T item, int start, int end) 
+        public static void insertIntoSortedCollection<T>(IList<T> list, T item, Func<T,T, int> compareFunc, int start, int end) 
         {
             if (list.Count == 0)
             {
                 list.Add(item);
                 return;
             }
-
+          
             int mid = start;
             int low = start;
             int high = end - 1;         
@@ -172,8 +172,8 @@ namespace MediaViewer.Utils
             {
                 mid = (high + low) / 2;
 
-                int val = item.ToString().CompareTo(list[mid].ToString());
-               
+                int val = compareFunc(item, list[mid]);
+                              
                 if (val < 0)
                 {
                     high = mid - 1;                                                         
@@ -189,7 +189,7 @@ namespace MediaViewer.Utils
 
             }
 
-            if (item.ToString().CompareTo(list[mid].ToString()) >= 0)
+            if (compareFunc(item, list[mid]) >= 0)
             {
                 list.Insert(mid + 1, item);
             }
@@ -202,10 +202,18 @@ namespace MediaViewer.Utils
         }
 
 
-        public static void insertIntoSortedCollection<T>(IList<T> list, T item)
+        public static void insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
         {
 
-            insertIntoSortedCollection<T>(list, item, 0, list.Count);
+            insertIntoSortedCollection<T>(list, item, compareFunc, 0, list.Count);
+
+        }
+
+        public static void insertIntoSortedCollection<T>(IList<T> list, T item)
+        {
+            insertIntoSortedCollection<T>(list, item, (a,b) => {
+                return (a.ToString().CompareTo(b.ToString()));
+            }, 0, list.Count);
 
         }
     }

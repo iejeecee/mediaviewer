@@ -25,7 +25,9 @@ namespace VideoPlayerControl.Timers
 	public class TimerQueueTimer : HRTimer, IDisposable
     {
 		 	
-		delegate void WaitOrTimerDelegate(IntPtr lpParameter, bool timerOrWaitFired); 
+		delegate void WaitOrTimerDelegate(IntPtr lpParameter, bool timerOrWaitFired);
+
+        private const int ERROR_IO_PENDING = 0x3E5;
 
 		enum Flag {
             WT_EXECUTEDEFAULT = 0x00000000,
@@ -38,7 +40,7 @@ namespace VideoPlayerControl.Timers
             //WT_TRANSFER_IMPERSONATION    = 0x00000100
         };
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool CreateTimerQueueTimer(
             out IntPtr timerHandle,          // timerHandle - Pointer to a handle; this is an out value
             IntPtr TimerQueue,              // TimerQueue - timer  queue handle. For the default timer queue, NULL
@@ -58,7 +60,7 @@ namespace VideoPlayerControl.Timers
                                             // WT_EXECUTEONLYONCE 	The timer will be set to the signaled state only once.
             );
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool DeleteTimerQueueTimer(
             IntPtr timerQueue,              // TimerQueue - A handle to the (default) timer queue
             IntPtr timer,                   // Timer - A handle to the timer
@@ -66,7 +68,7 @@ namespace VideoPlayerControl.Timers
             );
 
 
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool DeleteTimerQueue(IntPtr TimerQueue);
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -105,24 +107,22 @@ namespace VideoPlayerControl.Timers
             Dispose(false);
         }
 
-		public void Dispose() 
+		public override void Dispose() 
 		{
             Dispose(true);
 		}
 
         protected virtual void Dispose(bool safe)
-        {
-            if (running == true)
-            {
-                stop();
-            }
-           
+        {           
+            stop();                       
         }
 
         public override void start() 
         {
 
-			if(running == true) return;
+			if(running == true && AutoReset == true) return;
+
+            stop();
 
 			IntPtr pParameter = IntPtr.Zero;
 
@@ -156,6 +156,7 @@ namespace VideoPlayerControl.Timers
 			if(!success) {
                 
 				throw new TimerQueueTimerException("Error creating QueueTimer");
+
 			} else {
 
 				running = true;
@@ -164,7 +165,7 @@ namespace VideoPlayerControl.Timers
 
         public override void stop() 
         {
-			if(running == false) return;
+            if (timerHandle == IntPtr.Zero) return;
 
             //bool success = DeleteTimerQueue(IntPtr.Zero);
             bool success = DeleteTimerQueueTimer(
@@ -173,17 +174,22 @@ namespace VideoPlayerControl.Timers
 				IntPtr.Zero  // CompletionEvent - A handle to an optional event to be signaled when the function is successful and all callback functions have completed. Can be NULL.
                 );
 
-			//if(!success) {
-                
-			//	throw gcnew TimerQueueTimerException("Error deleting QueueTimer");
-				
-			//} else {
-
-				running = false;
-			//}
+            if (!success)
+            {
+                // if the error is ERROR_IO_PENDING a callback still has to complete
+                // the timer will be stopped after the callback finishes
+                int error = Marshal.GetLastWin32Error();
+                if (error != ERROR_IO_PENDING)
+                {
+                    throw new TimerQueueTimerException("Error deleting TimerQueueTimer");
+                }
+            }
+            
+            timerHandle = IntPtr.Zero;
+            running = false;
+            						
+            //CloseHandle(timerHandle);
 			
-           // CloseHandle(timerHandle);
-			int error = Marshal.GetLastWin32Error();
         }
 
 		public override ISynchronizeInvoke SynchronizingObject
@@ -232,7 +238,7 @@ namespace VideoPlayerControl.Timers
 			{			
 				this.interval = value;
 
-				if(IsRunning) {
+				if(IsRunning && AutoReset == false) {
 
 					stop();
 					start();

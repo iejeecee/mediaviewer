@@ -1,4 +1,5 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.MediaDatabase.DataTransferObjects;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,9 @@ namespace MediaViewer
             Args = e.Args;
             MediaViewer.Settings.AppSettings.load();
             SplashScreen = new SplashScreen("Resources/Images/splash.png");
-            SplashScreen.Show(false, true);                             
+            //SplashScreen.Show(false, true);
+
+            AutoMapperSetup.Run();
         }
 
         private void Application_Exit(object sender, EventArgs e)

@@ -68,6 +68,8 @@ namespace MediaViewer
 
             ViewMediaCommand = new Command(new Action<object>((location) =>
               {
+                  if (String.IsNullOrEmpty((string)location)) return;
+
                   String mimeType = MediaFormatConvert.fileNameToMimeType((string)location);
 
                   if (mimeType.StartsWith("image"))
@@ -123,7 +125,7 @@ namespace MediaViewer
 
                 });
 
-           
+            
         }
 
         Command viewMediaCommand;

@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 
 namespace MediaViewer.MediaDatabase
 {
-    [Serializable]
+  
     partial class Tag : IComparable<Tag>, IEquatable<Tag>
     {   
         public override string ToString()
         {
             return Name;
         }
-     
+        
         public int CompareTo(Tag other)
         {
             if (other == null)
@@ -28,10 +31,14 @@ namespace MediaViewer.MediaDatabase
         {
             if (other == null)
             {
-                throw new ArgumentException();
+                return (false);
             }
 
             return (other.Name.Equals(Name));
         }
+
+        
     }
+
+
 }

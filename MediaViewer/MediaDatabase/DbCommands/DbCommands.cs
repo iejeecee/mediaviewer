@@ -78,7 +78,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         protected virtual T updateFunc(T entity)
         {
-            return (default(T));
+            throw new NotImplementedException();        
         }
 
         public virtual T create(T entity)
@@ -109,7 +109,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         protected virtual T createFunc(T entity)
         {
-            return (default(T));
+            throw new NotImplementedException();     
         }
 
         public virtual void delete(T entity)
@@ -136,7 +136,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
   
         protected virtual void deleteFunc(T entity)
         {
-
+            throw new NotImplementedException();     
         }
 
         public void Dispose()
@@ -146,6 +146,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 Db.Dispose();
                 Db = null;
             }
+        }
+
+        public virtual void clearAll()
+        {
+            throw new NotImplementedException();  
         }
     }
 }

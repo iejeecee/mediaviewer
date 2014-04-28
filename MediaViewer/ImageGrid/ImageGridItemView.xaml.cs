@@ -22,10 +22,12 @@ namespace MediaViewer.ImageGrid
     /// </summary>
     public partial class ImageGridItemView : UserControl
     {
+    
+
         public ImageGridItemView()
         {
             InitializeComponent();
-    
+           
         }
 
         public MediaFileItem MediaFileItem
@@ -77,6 +79,31 @@ namespace MediaViewer.ImageGrid
             String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
 
             Process.Start(location);
+        }
+
+     
+
+        private void imageGridItem_Checked(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;
+
+            if (item.IsSelected == true) return;
+
+            if (Keyboard.Modifiers != ModifierKeys.Control)
+            {                     
+                ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
+                vm.MediaState.deselectAllUIState();                
+            }
+
+            item.IsSelected = true;
+         
+        }
+
+        private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;        
+
+            item.IsSelected = false;
         }
     }
 }

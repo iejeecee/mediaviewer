@@ -14,15 +14,18 @@ using SharpDX.Direct3D11;
 using SharpDX.DXGI;
 using SharpDX.Windows;
 
+//http://stackoverflow.com/questions/6036631/why-does-the-wpf-designer-fail-to-load-libraries-that-call-into-unmanaged-dlls
+
 namespace VideoPlayerControl
 {
     public partial class VideoPlayer: UserControl
     {
         public VideoPlayer()
-        {
+        {          
             InitializeComponent();
-          
+         
             viewModel = new VideoPlayerViewModel(this, VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
+                   
         }
 
         VideoPlayerViewModel viewModel;
@@ -30,18 +33,14 @@ namespace VideoPlayerControl
         public VideoPlayerViewModel ViewModel
         {
             get { return viewModel; }
-            set { viewModel = value; }
+            private set { viewModel = value; }
         }
 
         private void videoPlayer_Resize(object sender, EventArgs e)
-        {
+        {         
             ViewModel.resize();
         }
 
-        private void videoPlayer_DoubleClick(object sender, EventArgs e)
-        {
-            //ViewModel.toggleFullScreen();
-        }
 
     }
 }

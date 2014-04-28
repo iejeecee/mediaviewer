@@ -18,7 +18,7 @@
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
             <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
         </ResourceDictionary>
-    </UserControl.Resources>
+    </UserControl.Resources>   
     <ItemsControl x:Name="itemsControl" ItemsSource="{Binding MediaPage}" Background="{StaticResource imageGridBackgroundColor}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
@@ -27,7 +27,8 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
             <DataTemplate>
-                <ImageGrid:ImageGridItemView MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}"/>                               
+                <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
+                <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}"/>                               
             </DataTemplate>
         </ItemsControl.ItemTemplate>
     </ItemsControl>

@@ -18,7 +18,7 @@ using System.Windows;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataUpdateViewModel : CloseableObservableObject, IProgress
+    class MetaDataUpdateViewModel : CloseableObservableObject, IProgress, IDisposable
     {
         class Counter
         {
@@ -57,7 +57,6 @@ namespace MediaViewer.MetaData
 
             CancelCommand = new Command(() =>
             {
-
                 TokenSource.Cancel();
             });
 
@@ -70,6 +69,23 @@ namespace MediaViewer.MetaData
 
             OkCommand.CanExecute = false;
             setWindowTitle();
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (tokenSource != null)
+                {
+                    tokenSource.Dispose();
+                    tokenSource = null;
+                }
+            }
         }
 
         public async Task writeMetaDataAsync(MetaDataUpdateViewModelAsyncState state)

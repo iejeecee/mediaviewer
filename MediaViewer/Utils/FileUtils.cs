@@ -111,7 +111,10 @@ namespace MediaViewer.Utils
             GCHandle h = GCHandle.FromIntPtr(data);
             IProgress progress = (IProgress)h.Target;
 
-            progress.ItemProgress = fileProgress;
+            if (fileProgress != progress.ItemProgress)
+            {
+                progress.ItemProgress = fileProgress;
+            }
 
             CopyFileCallbackAction action = progress.CancellationToken.IsCancellationRequested ? CopyFileCallbackAction.CANCEL : CopyFileCallbackAction.CONTINUE;
 
@@ -466,6 +469,8 @@ namespace MediaViewer.Utils
                 fHandle = CreateFileW(filePath, desiredAccess, fileShare, IntPtr.Zero,
                     creationDisposition, fileAttributes, IntPtr.Zero);
 
+                errorCode = Marshal.GetLastWin32Error();
+
                 if (fHandle != IntPtr.Zero && fHandle.ToInt64() != -1L)
                 {
 
@@ -474,9 +479,7 @@ namespace MediaViewer.Utils
                     return new FileStream(handle, access);
 
                 }
-
-                errorCode = Marshal.GetLastWin32Error();
-
+               
                 if (errorCode != ERROR_SHARING_VIOLATION)
                     break;
                 if (timeoutMs >= 0 && (DateTime.Now - start).TotalMilliseconds > timeoutMs)

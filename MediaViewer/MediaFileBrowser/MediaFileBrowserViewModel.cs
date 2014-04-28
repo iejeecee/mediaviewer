@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.Import;
 using MediaViewer.Export;
+using MediaViewer.ImagePanel;
+using VideoPlayerControl;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -38,9 +40,43 @@ namespace MediaViewer.MediaFileBrowser
             set { pagedImageGridViewModel = value;                         
             }
         }
-      
+
+        ImageViewModel imageViewModel;
+
+        internal ImageViewModel ImageViewModel
+        {
+            get { return imageViewModel; }
+            set { imageViewModel = value; }
+        }
+
+        VideoPlayerViewModel videoViewModel;
+
+        public VideoPlayerViewModel VideoViewModel
+        {
+            get { return videoViewModel; }
+            set { videoViewModel = value; }
+        }
+
+        object currentViewModel;
+
+        public object CurrentViewModel
+        {
+            get { return currentViewModel; }
+            set { currentViewModel = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         public MediaFileBrowserViewModel() {
-         
+
+            ImageViewModel = new ImagePanel.ImageViewModel();
+            ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.AUTO;
+            PagedImageGridViewModel = new ImageGrid.PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
+
+            //VideoViewModel = new VideoPlayerViewModel();
+
+            CurrentViewModel = PagedImageGridViewModel;
+
             mediaFileWatcher = MediaFileWatcher.Instance;
          
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
@@ -67,10 +103,33 @@ namespace MediaViewer.MediaFileBrowser
 
             });
 
+            ExpandCommand = new Command(() =>
+            {
+                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                if(selectedItems.Count == 0) return;
+
+                String location = selectedItems[0].Location;
+
+                if (Utils.MediaFormatConvert.isImageFile(location))
+                {                 
+                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowImage", location);
+                }
+                else if (Utils.MediaFormatConvert.isVideoFile(location))
+                {
+                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowVideo", location);
+                }
+            });
+
+            ContractCommand = new Command(() =>
+                {
+                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowBrowserGrid");
+                });
+
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_SetPath", (location) =>
             {
                 BrowsePath = location;
             });
+
 
         }
 
@@ -148,6 +207,22 @@ namespace MediaViewer.MediaFileBrowser
         {
             get { return exportSelectedItemsCommand; }
             set { exportSelectedItemsCommand = value; }
+        }
+
+        Command expandCommand;
+
+        public Command ExpandCommand
+        {
+            get { return expandCommand; }
+            set { expandCommand = value; }
+        }
+
+        Command contractCommand;
+
+        public Command ContractCommand
+        {
+            get { return contractCommand; }
+            set { contractCommand = value; }
         }
 
         private void deleteSelectedItems()

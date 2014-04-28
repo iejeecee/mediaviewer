@@ -20,7 +20,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Name="root">
-        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.MediaFileItem.IsSelected, ElementName=root, Mode=TwoWay}">
+        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.MediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
             <ToggleButton.Style>
                 <Style>
                     <Style.Triggers>

@@ -13,8 +13,9 @@ namespace MediaViewer.MediaDatabase
     [Serializable]
     partial class Thumbnail : ObservableObject
     {
+        [NonSerialized]
         BitmapSource image;
-
+        
         public BitmapSource Image
         {
             get { return image; } 

@@ -19,6 +19,7 @@
     </Window.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -26,12 +27,18 @@
             <ColumnDefinition Width="*"/>         
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <TagTreePicker:TagTreePickerView Grid.Row="0" Grid.Column="0" x:Name="tagTreePicker" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+        <Menu x:Name="mainMenu" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Grid.ColumnSpan="2">
+            <MenuItem Header="_File">
+                <MenuItem x:Name="importMenuItem" Header="_Import Tags" Command="{Binding ImportCommand}"/>
+                <MenuItem x:Name="exportMenuItem" Header="_Export Tags" Command="{Binding ExportCommand}"/>
+            </MenuItem>
+        </Menu>
+        <TagTreePicker:TagTreePickerView Grid.Row="1" Grid.Column="0" x:Name="tagTreePicker" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
 			SelectedTags="{Binding SelectedTags, Mode=TwoWay}" 
 			SelectedCategories="{Binding SelectedCategories, Mode=TwoWay}"
 			Margin="5,5,5,0"/>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
-        <Grid Grid.Row="0" Grid.Column="1" Margin="2,0,0,0">
+        <Grid Grid.Row="1" Grid.Column="1" Margin="2,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
