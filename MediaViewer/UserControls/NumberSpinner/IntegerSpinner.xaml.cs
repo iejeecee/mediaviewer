@@ -89,9 +89,16 @@ namespace MediaViewer.UserControls.NumberSpinner
                     break;
                 }
             }
+           
+
         }
 
-          
+       
+
+
+        
+
+        
         
     }
 }

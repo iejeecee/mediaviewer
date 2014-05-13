@@ -122,6 +122,16 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 
 }
 
+List<BitmapSource ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset) 
+{
+
+	thumbs->Clear();
+
+	frameGrabber->grab(thumbWidth, captureInterval, nrThumbs, startOffset);
+
+	return(thumbs);
+}
+
 
 List<BitmapSource ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset) 
@@ -244,6 +254,7 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 	}
 
 }
+
 bool VideoPlayer::demuxPacket() {
 
 	if(videoDecoder->isClosed()) return(false);

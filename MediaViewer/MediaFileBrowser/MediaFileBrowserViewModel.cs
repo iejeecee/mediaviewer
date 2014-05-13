@@ -21,6 +21,7 @@ using MediaViewer.Import;
 using MediaViewer.Export;
 using MediaViewer.ImagePanel;
 using VideoPlayerControl;
+using MediaViewer.VideoPanel;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -43,15 +44,15 @@ namespace MediaViewer.MediaFileBrowser
 
         ImageViewModel imageViewModel;
 
-        internal ImageViewModel ImageViewModel
+        public ImageViewModel ImageViewModel
         {
             get { return imageViewModel; }
             set { imageViewModel = value; }
         }
 
-        VideoPlayerViewModel videoViewModel;
+        VideoViewModel videoViewModel;
 
-        public VideoPlayerViewModel VideoViewModel
+        public VideoViewModel VideoViewModel
         {
             get { return videoViewModel; }
             set { videoViewModel = value; }
@@ -67,28 +68,46 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
+        private double maxImageScale;
+
+        public double MaxImageScale
+        {
+            get { return maxImageScale; }
+            set { maxImageScale = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        private double minImageScale;
+
+        public double MinImageScale
+        {
+            get { return minImageScale; }
+            set { minImageScale = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+     
+   
         public MediaFileBrowserViewModel() {
 
             ImageViewModel = new ImagePanel.ImageViewModel();
-            ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.AUTO;
-            PagedImageGridViewModel = new ImageGrid.PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
-
-            //VideoViewModel = new VideoPlayerViewModel();
+            ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
+            ImageViewModel.IsEffectsEnabled = false;
+                
+            PagedImageGridViewModel = new ImageGrid.PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
 
             CurrentViewModel = PagedImageGridViewModel;
 
             mediaFileWatcher = MediaFileWatcher.Instance;
          
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
-
+      
             ImportSelectedItemsCommand = new Command(() =>
-            {
-          
+            {          
                 ImportView import = new ImportView();
-                import.ShowDialog();
-                //ImportViewModel vm = (ImportViewModel)import.DataContext;
-                //await vm.importAsync(selectedItems);
-
+                import.ShowDialog();          
             });
 
             ExportSelectedItemsCommand = new Command(async () =>
@@ -112,19 +131,29 @@ namespace MediaViewer.MediaFileBrowser
 
                 if (Utils.MediaFormatConvert.isImageFile(location))
                 {                 
-                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowImage", location);
+                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowImage", location);                   
+                    imageViewModel.LoadImageAsyncCommand.DoExecute(location);
                 }
                 else if (Utils.MediaFormatConvert.isVideoFile(location))
                 {
                     GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowVideo", location);
+                    videoViewModel.OpenCommand.DoExecute(location);
+                    videoViewModel.PlayCommand.DoExecute();
                 }
+
+                ContractCommand.CanExecute = true;
+                ExpandCommand.CanExecute = false;
             });
 
             ContractCommand = new Command(() =>
                 {
                     GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowBrowserGrid");
+                    ContractCommand.CanExecute = false;
+                    ExpandCommand.CanExecute = true;
                 });
+            ContractCommand.CanExecute = false;
 
+  
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_SetPath", (location) =>
             {
                 BrowsePath = location;
@@ -132,7 +161,7 @@ namespace MediaViewer.MediaFileBrowser
 
 
         }
-
+   
         public string BrowsePath
         {
 
@@ -224,7 +253,7 @@ namespace MediaViewer.MediaFileBrowser
             get { return contractCommand; }
             set { contractCommand = value; }
         }
-
+   
         private void deleteSelectedItems()
         {
 

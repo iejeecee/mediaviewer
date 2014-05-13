@@ -22,7 +22,7 @@ namespace MediaViewer.MediaFileModel
         public event NotifyCollectionChangedEventHandler NrItemsInStateChanged;
         public event NotifyCollectionChangedEventHandler NrImportedItemsChanged;
         public event EventHandler ItemIsSelectedChanged;
-        public event EventHandler ItemPropertiesChanged;
+        public event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
         MediaLockedCollection uiMediaCollection;
 
@@ -35,7 +35,16 @@ namespace MediaViewer.MediaFileModel
             set { uiMediaCollection = value; }
         }
 
-     
+        MediaLockedCollection uiSelectedMedia;
+        /// <summary>
+        /// Media currently selected in the user interface
+        /// </summary>
+        public MediaLockedCollection UISelectedMedia
+        {
+            get { return uiSelectedMedia; }
+            set { uiSelectedMedia = value; }
+        }
+
         bool debugOutput;
 
         public bool DebugOutput
@@ -48,6 +57,7 @@ namespace MediaViewer.MediaFileModel
         {
 
             uiMediaCollection = new MediaLockedCollection();
+            uiSelectedMedia = new MediaLockedCollection();
            
             debugOutput = false;
         }
@@ -66,6 +76,12 @@ namespace MediaViewer.MediaFileModel
                     uiMediaCollection.Dispose();
                     uiMediaCollection = null;
                 }
+
+                if (uiSelectedMedia != null)
+                {
+                    uiSelectedMedia.Dispose();
+                    uiSelectedMedia = null;
+                }
             }
         }
 
@@ -75,6 +91,7 @@ namespace MediaViewer.MediaFileModel
 
             if (items.Count() == 0) return;
 
+            bool success = false;
             bool itemIsSelectedChanged = false;
 
             UIMediaCollection.EnterWriteLock();
@@ -83,8 +100,7 @@ namespace MediaViewer.MediaFileModel
 
             try
             {
-
-                bool success = UIMediaCollection.AddRange(items);
+                success = UIMediaCollection.AddRange(items);
 
                 if (success == false)
                 {
@@ -97,11 +113,11 @@ namespace MediaViewer.MediaFileModel
                     if (item.IsSelected == true)
                     {
                         itemIsSelectedChanged = true;
+                        UISelectedMedia.Add(item);
                     }
 
                 }
-
-                fireEvents(NotifyCollectionChangedAction.Add, items.ToList(), itemIsSelectedChanged);
+               
             }
             finally
             {
@@ -109,6 +125,11 @@ namespace MediaViewer.MediaFileModel
                 if (DebugOutput) log.Info("end add event: " + items.ElementAt(0).Location);
 
                 UIMediaCollection.ExitWriteLock();
+
+                if (success)
+                {
+                    fireEvents(NotifyCollectionChangedAction.Add, items.ToList(), itemIsSelectedChanged);
+                }
             }
         }
 
@@ -117,26 +138,32 @@ namespace MediaViewer.MediaFileModel
 
             if (oldItems.Count() == 0 || newLocations.Count() == 0) return;
 
+            bool success = false;
+
             UIMediaCollection.EnterWriteLock();
             if (DebugOutput) log.Info("begin rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
 
             try
             {
 
-                bool success = UIMediaCollection.RenameRange(oldItems, newLocations);
+                success = UIMediaCollection.RenameRange(oldItems, newLocations);
 
                 if (success == false)
                 {
                     throw new MediaStateException("Cannot rename non-existing items");
                 }
-
-                // redraw the UI since sorting order might have changed
-                fireEvents(NotifyCollectionChangedAction.Reset, null, false);
+                
             }
             finally
             {
                 if (DebugOutput) log.Info("end rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
                 UIMediaCollection.ExitWriteLock();
+
+                if (success)
+                {
+                    // redraw the UI since sorting order might have changed
+                    fireEvents(NotifyCollectionChangedAction.Reset, null, false);
+                }
             }
         }
 
@@ -145,13 +172,14 @@ namespace MediaViewer.MediaFileModel
             if (removeItems.Count() == 0) return;
 
             bool itemIsSelectedChanged = false;
+            List<MediaFileItem> removed = new List<MediaFileItem>();
 
             UIMediaCollection.EnterWriteLock();
             if (DebugOutput) log.Info("begin remove event: " + removeItems.ElementAt(0).Location);
 
             try
             {
-                List<MediaFileItem> removed = UIMediaCollection.RemoveAll(removeItems);
+                removed = UIMediaCollection.RemoveAll(removeItems);
 
                 foreach (MediaFileItem item in removed)
                 {
@@ -160,17 +188,18 @@ namespace MediaViewer.MediaFileModel
                     if (item.IsSelected == true)
                     {
                         itemIsSelectedChanged = true;
+                        UISelectedMedia.Remove(item);
                     }
 
                 }
-
-                fireEvents(NotifyCollectionChangedAction.Remove, removed, itemIsSelectedChanged);
-
+               
             }
             finally
             {
                 if (DebugOutput) log.Info("end remove event: " + removeItems.ElementAt(0).Location);
                 UIMediaCollection.ExitWriteLock();
+
+                fireEvents(NotifyCollectionChangedAction.Remove, removed, itemIsSelectedChanged);
             }
 
         }
@@ -191,17 +220,18 @@ namespace MediaViewer.MediaFileModel
                     if (item.IsSelected == true)
                     {
                         itemIsSelectedChanged = true;
+                        UISelectedMedia.Remove(item);
                     }
 
                 }
 
-                UIMediaCollection.Clear();
-
-                fireEvents(NotifyCollectionChangedAction.Reset, null, itemIsSelectedChanged);
+                UIMediaCollection.Clear();                
             }
             finally
             {
                 UIMediaCollection.ExitWriteLock();
+
+                fireEvents(NotifyCollectionChangedAction.Reset, null, itemIsSelectedChanged);
             }
         }
 
@@ -322,42 +352,45 @@ namespace MediaViewer.MediaFileModel
 
         public void selectAllUIState()
         {
+            bool isSelectionChanged = false;
+
             UIMediaCollection.EnterReaderLock();
             try
             {
-                bool isSelectionChanged = false;
-
+               
                 foreach (MediaFileItem item in UIMediaCollection.Items)
                 {
                     item.PropertyChanged -= item_PropertyChanged;
                     if (item.IsSelected == false)
                     {
                         isSelectionChanged = true;
+                       
                     }
                     item.IsSelected = true;
                     item.PropertyChanged += item_PropertyChanged;
                 }
 
-                if (isSelectionChanged)
-                {
-                    OnItemIsSelectedChanged();
-                }
-
+                UISelectedMedia.AddRange(UIMediaCollection.Items);
+                
             }
             finally
             {
                 UIMediaCollection.ExitReaderLock();
+
+                if (isSelectionChanged)
+                {
+                    OnItemIsSelectedChanged();
+                }
             }
         }
 
         public void deselectAllUIState()
         {
+            bool isSelectionChanged = false;
 
             UIMediaCollection.EnterReaderLock();
             try
-            {
-                bool isSelectionChanged = false;
-
+            {               
                 foreach (MediaFileItem item in UIMediaCollection.Items)
                 {
                     item.PropertyChanged -= item_PropertyChanged;
@@ -369,15 +402,17 @@ namespace MediaViewer.MediaFileModel
                     item.PropertyChanged += item_PropertyChanged;
                 }
 
-                if (isSelectionChanged)
-                {
-                    OnItemIsSelectedChanged();
-                }
-
+                UISelectedMedia.Clear();
+                
             }
             finally
             {
                 UIMediaCollection.ExitReaderLock();
+
+                if (isSelectionChanged)
+                {
+                    OnItemIsSelectedChanged();
+                }
             }
 
         }
@@ -533,7 +568,21 @@ namespace MediaViewer.MediaFileModel
         {
             if (e.PropertyName.Equals("IsSelected"))
             {
+                MediaFileItem item = (MediaFileItem)sender;
+                if (item.IsSelected == true)
+                {
+                    UISelectedMedia.Add(item);
+                }
+                else
+                {
+                    UISelectedMedia.Remove(item);
+                }
                 OnItemIsSelectedChanged();
+            }
+
+            if (ItemPropertiesChanged != null)
+            {
+                ItemPropertiesChanged(sender, e);
             }
         }
 

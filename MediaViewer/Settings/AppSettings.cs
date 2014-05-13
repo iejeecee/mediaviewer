@@ -104,5 +104,13 @@ namespace MediaViewer.Settings
        
         }
 
+
+        String videoScreenShotLocation;
+
+        public String VideoScreenShotLocation
+        {
+            get { return videoScreenShotLocation; }
+            set { videoScreenShotLocation = value; }
+        }
     }
 }

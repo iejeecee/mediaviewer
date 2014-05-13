@@ -33,16 +33,28 @@ namespace MediaViewer.ImagePanel
             }
         }
 
+        MediaLockedCollection selectedMedia;
 
+        public MediaLockedCollection SelectedMedia
+        {
+            get { return selectedMedia; }
+            set { selectedMedia = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        public event EventHandler SetNormalScaleEvent;
+        public event EventHandler SetBestFitScaleEvent;
+     
         public ImageViewModel()
         {
 
             loadImageCTS = new CancellationTokenSource();
             isLoading = false;
 
-            loadImageAsyncCommand = new Command(new Action<object>((fileName) =>
+            loadImageAsyncCommand = new Command(new Action<object>(async (fileName) =>
             {
-                loadImageAsync((String)fileName);
+                await loadImageAsync((String)fileName);
 
             }));
 
@@ -56,62 +68,52 @@ namespace MediaViewer.ImagePanel
                     return;
                 }
 
-                int index = getImageFileIndex(imageFile.Location);
-
-                if (index == -1)
-                {
-                    IsPagingEnabled = false;
-                }
-                else
-                {
-                    IsPagingEnabled = true;
-                    NrPages = getNrImageFiles();
-                    CurrentPage = index + 1;
-                }                                                        
+                updatePaging();                                                   
                 
             });
 
-            nextPageCommand = new Command(new Action(() =>
+            nextPageCommand = new Command(() =>
             {
 
                 CurrentPage += 1;
 
-            }));
+            });
 
-            prevPageCommand = new Command(new Action(() =>
+            prevPageCommand = new Command(() =>
             {
 
                 CurrentPage -= 1;
 
-            }));
-
-            firstPageCommand = new Command(new Action(() =>
-            {
-                CurrentPage = 1;
-            }));
-
-            lastPageCommand = new Command(new Action(() =>
-            {
-                CurrentPage = NrPages;
-            }));
-
-            resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
-            resetScaleCommand = new Command(() => { CustomScale = 1; });
-
-            setIdentityTransform();
-            SelectedScaleMode = ScaleMode.NONE;
-            CustomScale = 1;
-            SelectedRotationMode = RotationMode.NONE;
-            CustomRotation = 0;
-                  
-            SetCustomScaleCommand = new Command(() => {
-
-                SelectedScaleMode = ScaleMode.CUSTOM;            
-                ScaleView custom = new ScaleView();
-                custom.DataContext = this;
-                custom.ShowDialog();
             });
 
+            firstPageCommand = new Command(() =>
+            {
+                CurrentPage = 1;
+            });
+
+            lastPageCommand = new Command(() =>
+            {
+                CurrentPage = NrPages;
+            });
+
+            rotate90DegreesCommand = new Command(() =>
+            {
+                RotationDegrees += 90;
+            });
+
+            rotateMinus90DegreesCommand = new Command(() =>
+            {
+                RotationDegrees -= 90;
+            });
+
+            resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
+      
+            setIdentityTransform();
+            SelectedScaleMode = ScaleMode.NONE;
+  
+            SelectedRotationMode = RotationMode.NONE;
+            CustomRotation = 0;
+                         
             SetCustomRotationCommand = new Command(() =>
             {
                 SelectedRotationMode = RotationMode.CUSTOM;
@@ -144,9 +146,54 @@ namespace MediaViewer.ImagePanel
                     Contrast = 1;
                 });
 
+            SetNormalScaleCommand = new Command(() =>
+            {
+                if (SetNormalScaleEvent != null)
+                {
+                    SetNormalScaleEvent(this, EventArgs.Empty);
+                }
+            });
+
+            SetBestFitScaleCommand = new Command(() =>
+            {
+                if (SetBestFitScaleEvent != null)
+                {
+                    SetBestFitScaleEvent(this, EventArgs.Empty);
+                }
+            });
 
             Brightness = 0;
             Contrast = 1;
+            minScale = 0;
+            maxScale = 1;
+
+            SelectedMedia = new MediaLockedCollection();
+
+            IsEffectsEnabled = true;
+            IsResetSettingsOnLoad = true;
+         
+        }
+
+        void resetSettings()
+        {
+            Brightness = 0;
+            Contrast = 1;
+            RotationDegrees = 0;
+            FlipX = false;
+            FlipY = false;
+
+            SelectedRotationMode = RotationMode.NONE;
+            CustomRotation = 0;
+        }
+
+        bool isEffectsEnabled;
+
+        public bool IsEffectsEnabled
+        {
+            get { return isEffectsEnabled; }
+            set { isEffectsEnabled = value;
+            NotifyPropertyChanged();
+            }
         }
 
         bool flipX;
@@ -222,6 +269,16 @@ namespace MediaViewer.ImagePanel
             set
             {
                 rotationDegrees = value;
+
+                if (rotationDegrees < 0)
+                {
+                    rotationDegrees = 360 + (rotationDegrees + Math.Floor(rotationDegrees / 360) * 360);
+                }
+                else if (rotationDegrees >= 360)
+                {
+                    rotationDegrees = rotationDegrees - Math.Floor(rotationDegrees / 360) * 360;
+                }
+
                 NotifyPropertyChanged();
                 updateTransform();
             }
@@ -272,6 +329,31 @@ namespace MediaViewer.ImagePanel
             }
         }
 
+        Command rotate90DegreesCommand;
+
+        public Command Rotate90DegreesCommand
+        {
+            get { return rotate90DegreesCommand; }
+            set { rotate90DegreesCommand = value; }
+        }
+        Command rotateMinus90DegreesCommand;
+
+        public Command RotateMinus90DegreesCommand
+        {
+            get { return rotateMinus90DegreesCommand; }
+            set { rotateMinus90DegreesCommand = value; }
+        }
+
+        bool isResetSettingsOnLoad;
+
+        public bool IsResetSettingsOnLoad
+        {
+            get { return isResetSettingsOnLoad; }
+            set { isResetSettingsOnLoad = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         double scale;
 
         public double Scale
@@ -279,7 +361,7 @@ namespace MediaViewer.ImagePanel
             get { return scale; }
             set
             {
-                scale = value;
+                scale = Utils.Misc.clamp(value,MinScale,MaxScale);
                 NotifyPropertyChanged();
                 updateTransform();
             }
@@ -304,18 +386,27 @@ namespace MediaViewer.ImagePanel
             }
         }
 
-        Command resetScaleCommand;
-
-        public Command ResetScaleCommand
-        {
-            get { return resetScaleCommand; }
-        }
-
         Command loadImageAsyncCommand;
 
         public Command LoadImageAsyncCommand
         {
             get { return loadImageAsyncCommand; }
+        }
+
+        Command setBestFitScaleCommand;
+
+        public Command SetBestFitScaleCommand
+        {
+            get { return setBestFitScaleCommand; }
+            set { setBestFitScaleCommand = value; }
+        }
+
+        Command setNormalScaleCommand;
+
+        public Command SetNormalScaleCommand
+        {
+            get { return setNormalScaleCommand; }
+            set { setNormalScaleCommand = value; }
         }
 
         void setIdentityTransform()
@@ -347,7 +438,33 @@ namespace MediaViewer.ImagePanel
             Transform = transformMatrix;
         }
 
-        private async void loadImageAsync(String fileName)
+        void updatePaging()
+        {
+            MediaState.UIMediaCollection.EnterReaderLock();
+            try
+            {
+                int index = getImageFileIndex(imageFile.Location);
+
+                if (index == -1)
+                {
+                    IsPagingEnabled = false;
+                }
+                else
+                {
+                    IsPagingEnabled = true;
+                    NrPages = getNrImageFiles();
+                    CurrentPage = index + 1;
+                }
+            }
+            finally
+            {
+                MediaState.UIMediaCollection.ExitReaderLock();
+            }
+        }
+
+       
+
+        private async Task loadImageAsync(String fileName)
         {
             // cancel previously running load requests          
             loadImageCTS.Cancel();
@@ -356,15 +473,19 @@ namespace MediaViewer.ImagePanel
             // async load media
 
             Media media = null;
+            SelectedMedia.Clear();
 
             try
             {
                 IsLoading = true;
 
-                media = await Task<Media>.Run(() => MediaFactory.read((String)fileName, 
-                    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ, 
-                    loadImageCTS.Token), loadImageCTS.Token);
-          
+                MediaFileItem item = MediaFileItem.Factory.create((String)fileName);
+                
+                await item.readMetaDataAsync(
+                    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, loadImageCTS.Token);
+
+                media = item.Media;
+
                 BitmapImage loadedImage = null;
 
                 if (media is ImageMedia && media.Data != null)
@@ -380,32 +501,24 @@ namespace MediaViewer.ImagePanel
 
                     imageFile = (ImageMedia)media;
 
-                    MediaState.UIMediaCollection.EnterReaderLock();
-
-                    int index = getImageFileIndex(imageFile.Location);
-
-                    if (index == -1)
-                    {
-                        IsPagingEnabled = false;
-                    }
-                    else
-                    {
-                        IsPagingEnabled = true;
-                        NrPages = getNrImageFiles();
-                        CurrentPage = index + 1;
-                    }
-
-                    MediaState.UIMediaCollection.ExitReaderLock();
+                    updatePaging();
 
                     log.Info("Image loaded: " + media.Location);
                 }
-                
+
+                if (IsResetSettingsOnLoad)
+                {
+                    resetSettings();
+                }
 
                 Image = loadedImage;
-
+          
                 IsLoading = false;
-                //setIdentityTransform();
+                
+                SelectedMedia.Add(item);
 
+                //setIdentityTransform();
+              
             }
             catch (TaskCanceledException)
             {
@@ -481,16 +594,21 @@ namespace MediaViewer.ImagePanel
                 if (value <= 0 || value > NrPages || IsPagingEnabled == false) return;
 
                 MediaState.UIMediaCollection.EnterReaderLock();
-
-                String location = getImageFileByIndex(value - 1);
-
-                if (location != null && imageFile != null && !location.ToLower().Equals(imageFile.Location.ToLower()))
+                try
                 {
-                    //GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
-                    loadImageAsyncCommand.DoExecute(location);
-                }
+                    String location = getImageFileByIndex(value - 1);
 
-                MediaState.UIMediaCollection.ExitReaderLock();
+                    if (location != null && imageFile != null && !location.ToLower().Equals(imageFile.Location.ToLower()))
+                    {
+                        //GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
+                        loadImageAsyncCommand.DoExecute(location);
+                    }
+
+                }
+                finally
+                {
+                    MediaState.UIMediaCollection.ExitReaderLock();
+                }
 
                 currentPage = value;
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -641,11 +759,11 @@ namespace MediaViewer.ImagePanel
 
         public enum ScaleMode
         {
-            NONE,
-            AUTO,
-            FIT_HEIGHT,
-            FIT_WIDTH,
-            CUSTOM
+            NONE,  // display the image in 1 to 1 pixel ratio       
+            RELATIVE,
+            AUTO, // automatically scale the image to fit it's surroundings
+            FIT_HEIGHT, 
+            FIT_WIDTH     
         }
 
         ScaleMode selectedScaleMode;
@@ -655,40 +773,11 @@ namespace MediaViewer.ImagePanel
             get { return selectedScaleMode; }
             set
             {
-                selectedScaleMode = value;
-
-                if (selectedScaleMode == ScaleMode.CUSTOM)
-                {
-                    Scale = CustomScale;
-                }
-                else
-                {
-                    Scale = 1;
-                }
-
+                selectedScaleMode = value;                                     
                 NotifyPropertyChanged();
             }
         }
-
-        float customScale;
-
-        public float CustomScale
-        {
-            get { return customScale; }
-            set { customScale = value;
-            Scale = customScale;
-            NotifyPropertyChanged();
-            }
-        }
-        
-        Command setCustomScaleCommand;
-
-        public Command SetCustomScaleCommand
-        {
-            get { return setCustomScaleCommand; }
-            set { setCustomScaleCommand = value; }
-        }
-
+       
         public enum RotationMode
         {
             NONE,
@@ -762,6 +851,29 @@ namespace MediaViewer.ImagePanel
             get { return setCustomRotationCommand; }
             set { setCustomRotationCommand = value; }
         }
+
+        double minScale;
+
+        public double MinScale
+        {
+            get { return minScale; }
+            set { minScale = value;
+            Scale = Utils.Misc.clamp(Scale, MinScale, MaxScale);
+            NotifyPropertyChanged();
+            }
+        }
+        double maxScale;
+
+        public double MaxScale
+        {
+            get { return maxScale; }
+            set { maxScale = value;
+            Scale = Utils.Misc.clamp(Scale, MinScale, MaxScale);
+            NotifyPropertyChanged();
+            }
+        }
+
+        
     }
 
 }

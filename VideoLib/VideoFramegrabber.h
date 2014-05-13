@@ -172,15 +172,29 @@ public:
 
 	}
 
-	void grab(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset)
-	{
-	
+	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset) {
+
 		if(getWidth() == 0 || getHeight() == 0) {
 
 			throw gcnew VideoLib::VideoLibException("invalid video stream");
 		}
+				
+		float scale = thumbWidth / (float)getWidth();				
 
+		this->thumbWidth = thumbWidth;
+		thumbHeight = round(getHeight() * scale);
+
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, true);
+	}
+
+	void grab(int maxThumbWidth, int maxThumbHeight, 
+			int captureInterval, int nrThumbs, double startOffset)
+	{
+		if(getWidth() == 0 || getHeight() == 0) {
+
+			throw gcnew VideoLib::VideoLibException("invalid video stream");
+		}
+		
 		float widthScale = 1;
 		float heightScale = 1;
 
@@ -196,6 +210,13 @@ public:
 
 		thumbWidth = round(getWidth() * std::min<float>(widthScale, heightScale));
 		thumbHeight = round(getHeight() * std::min<float>(widthScale, heightScale));
+
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset);
+	}
+
+	void startGrab(int thumbWidth, int thumbHeight, 
+			int captureInterval, int nrThumbs, double startOffset, bool suppressError = false)
+	{
 
 		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
 
@@ -237,7 +258,12 @@ public:
 
 					if(!frameOk) {
 
-						throw gcnew VideoLib::VideoLibException("could not decode any frames");
+						if(suppressError == false) {
+
+							throw gcnew VideoLib::VideoLibException("could not decode frame");
+						} else {
+							return;
+						}
 					}
 				}
 

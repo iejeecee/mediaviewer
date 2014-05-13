@@ -13,24 +13,24 @@
              xmlns:VideoPlayer="clr-namespace:VideoPlayerControl;assembly=VideoPlayerControl"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="603.333">
+             d:DesignHeight="300" d:DesignWidth="903.333">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <DataTemplate DataType="{x:Type ImageGrid:PagedImageGridViewModel}">
-               
+
             </DataTemplate>
             <DataTemplate DataType="{x:Type ImagePanel:ImageViewModel}">
-                
+
             </DataTemplate>
             <DataTemplate DataType="{x:Type VideoPlayer:VideoPlayerViewModel}">
                 <VideoPanel:VideoView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="{StaticResource appBackgroundColor}">     
+    <Grid Background="{StaticResource appBackgroundColor}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="4*"/>
@@ -45,7 +45,7 @@
             </TabItem>
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
-        <Grid x:Name="browserButtons" Grid.Column="1" Margin="2,0,0,0" Background="{StaticResource imageGridBackgroundColor}">
+        <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
@@ -53,26 +53,89 @@
             <ImageGrid:ImageGridView x:Name="browserGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0"/>
             <ImagePanel:ImageView x:Name="imageViewer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
             <VideoPanel:VideoView x:Name="videoPlayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
-            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Media View" Margin="2,2,0,2" Command="{Binding ExpandCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/expand.ico"/>
-            </Button>
-            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Grid View" Margin="32,2,0,2" Command="{Binding ContractCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
-            </Button>
-            <Button Grid.Row="1" HorizontalAlignment="Left" Width="30" Height="20" ToolTip="Delete" Margin="62,2,0,2" Command="{Binding DeleteSelectedItemsCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
-            </Button>
-            <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" 
-			    NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
-			    NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
-			    LastPageCommand="{Binding LastPageCommand}"/>
+            <Grid Grid.Row="1" Margin="2,2,2,2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Name="imageOptionsGrid" Visibility="Collapsed">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>                     
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Margin="0,2,2,2" Grid.Row="1" Height="20" Command="{Binding ImageViewModel.SetBestFitScaleCommand}" ToolTip="Fit Image">
+                        <Image Source="pack://application:,,,/Resources/Icons/old-zoom-best-fit.ico"/>
+                    </Button>
+                    <Button Grid.Column="1" Margin="0,2,2,2" Grid.Row="1" Height="20" Command="{Binding ImageViewModel.SetNormalScaleCommand}" ToolTip="Unscale Image">
+                        <Image Source="pack://application:,,,/Resources/Icons/old-zoom-original.ico"/>
+                    </Button>
+                    <Slider Grid.Column="2" Margin="0,2,2,2" Value="{Binding ImageViewModel.Scale, Mode=TwoWay}" Minimum="{Binding ImageViewModel.MinScale}" Maximum="{Binding ImageViewModel.MaxScale}" IsMoveToPointEnabled="True"/>
+                    <ToggleButton Grid.Column="3" Margin="0,2,2,2" Height="20" ToolTip="Flip Image Vertically" IsChecked="{Binding ImageViewModel.FlipX}">
+                        <Image Source="pack://application:,,,/Resources/Icons/object-flip-vertical.ico"/>
+                    </ToggleButton>
+                    <ToggleButton Grid.Column="4" Margin="0,2,2,2" Height="20" ToolTip="Flip Image Horizontally" IsChecked="{Binding ImageViewModel.FlipY}">
+                        <Image Source="pack://application:,,,/Resources/Icons/object-flip-horizontal.ico"/>
+                    </ToggleButton>
+                    <Button Grid.Column="5" Margin="0,2,2,2" Grid.Row="1" Height="20" Command="{Binding ImageViewModel.Rotate90DegreesCommand}" ToolTip="Rotate 90°">
+                        <Image Source="pack://application:,,,/Resources/Icons/object-rotate-right.ico"/>
+                    </Button>
+                    <Button Grid.Column="6" Margin="0,2,2,2" Grid.Row="1" Height="20" Command="{Binding ImageViewModel.RotateMinus90DegreesCommand}" ToolTip="Rotate -90°">
+                        <Image Source="pack://application:,,,/Resources/Icons/object-rotate-left.ico"/>
+                    </Button>
+                </Grid>
+                <Grid Grid.Row="1" Name="browserOptionsGrid">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>                        
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center" HorizontalAlignment="Center" 
+			        NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
+			        NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
+			        LastPageCommand="{Binding LastPageCommand}"/>
+                    <Button Grid.Column="0" Grid.Row="1" Width="30" Height="20">
+                        <Button.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ExpandCommand.CanExecute}" Value="true">
+                                        <Setter Property="Button.Command" Value="{Binding ExpandCommand}"/>
+                                        <Setter Property="Button.ToolTip" Value="Media View"/>
+                                        <Setter Property="Button.Content">
+                                            <Setter.Value>
+                                                <Image Source="pack://application:,,,/Resources/Icons/expand.ico"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ContractCommand.CanExecute}" Value="true">
+                                        <Setter Property="Button.Command" Value="{Binding ContractCommand}"/>
+                                        <Setter Property="Button.ToolTip" Value="Grid View"/>
+                                        <Setter Property="Button.Content">
+                                            <Setter.Value>
+                                                <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Name="deleteButton" Grid.Row="1" Grid.Column="2" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
+                        <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
+                    </Button>
+                </Grid>
+            </Grid>
             <Grid/>
         </Grid>
         <GridSplitter Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
         <TabControl x:Name="metaDataTabControl" Grid.Column="2" BorderThickness="5" BorderBrush="{StaticResource uiElementBorderColor}" Margin="2,0,0,0">
             <TabItem Header="Metadata" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
-                <MetaData:MetaDataView x:Name="metaDataView" Grid.Column="2"/>
+                <MetaData:MetaDataView x:Name="metaDataView" Media="{Binding SelectedMedia}" Grid.Column="2"/>
             </TabItem>
-        </TabControl>       
+        </TabControl>
     </Grid>
 </UserControl>

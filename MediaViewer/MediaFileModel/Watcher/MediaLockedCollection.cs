@@ -20,6 +20,8 @@ namespace MediaViewer.MediaFileModel.Watcher
     public class MediaLockedCollection : IDisposable
     {
 
+        public event EventHandler CollectionModified;
+
         // items in the current User Interface
         List<MediaFileItem> items;
      
@@ -91,29 +93,36 @@ namespace MediaViewer.MediaFileModel.Watcher
         }
         virtual public bool Add(MediaFileItem newItem)
         {
-            rwLock.EnterWriteLock();
+            bool isModified = false;
 
+            rwLock.EnterWriteLock();           
             try
             {
 
                 if (Contains(newItem) == true)
-                {
-                    return (false);
+                {                
+                    return (isModified = false);
                 }
 
                 Utils.Misc.insertIntoSortedCollection(items, newItem, (a, b) =>
                 {
                    return(Path.GetFileName(a.Location).CompareTo(Path.GetFileName(b.Location)));
-                });      
-     
-                return (true);
+                });
+                
+                return (isModified = true);
 
             }
             finally
             {
                 rwLock.ExitWriteLock();
-            }
 
+                if (isModified == true)
+                {
+                    OnCollectionModified();
+                }
+
+            }
+           
         }
         /// <summary>
         /// Returns true when all items are added.
@@ -161,12 +170,15 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {
                 rwLock.ExitWriteLock();
+                OnCollectionModified();
             }
 
         }
 
         virtual public void Remove(MediaFileItem removeItem)
         {
+            bool isModified = false;
+
             rwLock.EnterWriteLock();
             try
             {             
@@ -175,6 +187,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                     if (removeItem.Equals(item))
                     {
                         items.Remove(item);
+                        isModified = true;
                         break;
                     }
 
@@ -184,6 +197,11 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {
                 rwLock.ExitWriteLock();
+
+                if (isModified == true)
+                {
+                    OnCollectionModified();
+                }
             }
         }
 
@@ -219,62 +237,14 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {               
                 rwLock.ExitWriteLock();
-            }
-        }
 
-        /// <summary>
-        /// Remove oldItems and add newItems in a sequential order and a single operation
-        /// For example:
-        /// oldItem[0] is removed
-        /// newItem[0] is added
-        /// oldItem[1] is removed
-        /// newItem[1] is added.... etc
-        /// oldItems and newItems do not have to be of the same size
-        /// </summary>
-        /// <param name="oldItems"></param>
-        /// <param name="newItems"></param>
-        virtual public void ReplaceAll(IEnumerable<MediaFileItem> oldItems, IEnumerable<MediaFileItem> newItems)
-        {
-
-            rwLock.EnterWriteLock();
-            try
-            {
-                int nrOldItems = oldItems.Count();
-                int nrNewItems = newItems.Count();
-
-                int iterations = Math.Max(nrOldItems, nrNewItems);
-
-                for (int i = 0; i < iterations; i++)
+                if (removed.Count > 0)
                 {
-                    if (i < nrOldItems)
-                    {
-                        MediaFileItem oldItem = Find(oldItems.ElementAt(i).Location);
-                        if (!object.Equals(oldItem, default(MediaFileItem)))
-                        {
-                            items.Remove(oldItem);
-                        }
-
-                    }
-
-                    if (i < nrNewItems)
-                    {
-                        MediaFileItem newItem = Find(newItems.ElementAt(i).Location);
-                        if (object.Equals(newItem, default(MediaFileItem)))
-                        {
-                            items.Add(newItems.ElementAt(i));
-                        }
-                    }
-
+                    OnCollectionModified();
                 }
-
-                items.Sort();
-            }
-            finally
-            {
-                rwLock.ExitWriteLock();
             }
         }
-
+        
         public virtual MediaFileItem Find(String location)
         {
             rwLock.EnterReadLock();
@@ -377,6 +347,14 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {
                 rwLock.ExitWriteLock();
+            }
+        }
+
+        private void OnCollectionModified()
+        {
+            if (CollectionModified != null)
+            {
+                CollectionModified(this, EventArgs.Empty);
             }
         }
     }

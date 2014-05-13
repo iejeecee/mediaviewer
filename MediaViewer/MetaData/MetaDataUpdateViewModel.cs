@@ -286,6 +286,7 @@ namespace MediaViewer.MetaData
 
                         ItemProgress = 100;
                         TotalProgress++;
+                       
                     }
                     catch (Exception e)
                     {
@@ -297,15 +298,13 @@ namespace MediaViewer.MetaData
                         // reload metaData in metadataviewmodel
                         MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
                             MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
-
-                        item.IsSelected = false;
-                        item.IsSelected = true;
-
+                                            
                         ItemInfo = "Error updating file: " + item.Location;
                         InfoMessages.Add("Error updating file: " + item.Location + " " + e.Message);
                         log.Error("Error updating file: " + item.Location, e);
                         MessageBox.Show("Error updating file: " + item.Location + "\n\n" + e.Message,
                             "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        
                         return;
                     }
 
@@ -319,6 +318,8 @@ namespace MediaViewer.MetaData
                 finally
                 {
                     item.RWLock.ExitUpgradeableReadLock();
+
+                    GlobalMessenger.Instance.NotifyColleagues("MetaDataUpdateViewModel_UpdateComplete", item);
                 }
 
             }
@@ -612,7 +613,11 @@ namespace MediaViewer.MetaData
             DescriptionEnabled = vm.DescriptionEnabled;
             Filename = vm.Filename;
             isEnabled = vm.IsEnabled;
-            ItemList = new List<MediaFileItem>(vm.ItemList);
+
+            vm.Items.EnterReaderLock();         
+            ItemList = new List<MediaFileItem>(vm.Items.Items);
+            vm.Items.ExitReaderLock();
+
             Rating = vm.Rating;
             RatingEnabled = vm.RatingEnabled;
             Title = vm.Title;

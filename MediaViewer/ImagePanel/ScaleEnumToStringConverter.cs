@@ -26,11 +26,7 @@ namespace MediaViewer.ImagePanel
                 case ImageViewModel.ScaleMode.AUTO:
                     {
                         return ("Auto");
-                    }
-                case ImageViewModel.ScaleMode.CUSTOM:
-                    {
-                        return ("Custom");
-                    }
+                    }          
                 case ImageViewModel.ScaleMode.FIT_HEIGHT:
                     {
                         return ("Fit Height");

@@ -1,0 +1,8 @@
+﻿<Window x:Class="MediaViewer.Settings.SettingsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Height="300" Width="500">
+    <Grid>
+        <TreeView HorizontalAlignment="Left" Height="255" Margin="10,10,0,0" VerticalAlignment="Top" Width="167"/>
+    </Grid>
+</Window>

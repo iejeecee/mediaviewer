@@ -39,17 +39,31 @@ namespace MediaViewer.MetaData
 
             dynamicElements = new List<UIElement>();
             dynamicRows = new List<RowDefinition>();
-            ViewModel.PropertyChanged += new System.ComponentModel.PropertyChangedEventHandler((s,e) => {
-
-                if (e.PropertyName.Equals("ItemList"))
-                {
-                    displayDynamicProperties(ViewModel.DynamicProperties);
-                }
+            ViewModel.ItemsModified += new EventHandler((s,e) => {
+               
+                 displayDynamicProperties(ViewModel.DynamicProperties);                
 
             });
            
         }
-    
+
+        public MediaLockedCollection Media
+        {
+            get { return (MediaLockedCollection)GetValue(MediaProperty); }
+            set { SetValue(MediaProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Media.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MediaProperty =
+            DependencyProperty.Register("Media", typeof(MediaLockedCollection), typeof(MetaDataView), new PropertyMetadata(null, new PropertyChangedCallback(mediaPropertyChanged_Callback)));
+
+        private static void mediaPropertyChanged_Callback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MetaDataView view = (MetaDataView)d;
+            view.ViewModel.Items = (MediaLockedCollection)e.NewValue;
+        
+        }
+               
         List<RowDefinition> dynamicRows;
         List<UIElement> dynamicElements;
 

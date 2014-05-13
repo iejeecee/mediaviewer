@@ -22,12 +22,18 @@ namespace MediaViewer.ImagePanel
     /// </summary>
     public partial class ImageView : UserControl
     {
-    
+        const int MAX_IMAGE_SIZE_PIXELS = 8096;
+
         private bool isLeftMouseButtonDown;
         //private bool isModified;
 
         private Point mouseStartPosition;
-        private Point scrollbarStartPosition;        
+        private Point scrollbarStartPosition;
+
+        double fitHeightScale;
+        double fitWidthScale;    
+        double autoFitScale;  
+        double normalScale;
 
         public ImageView()
         {
@@ -36,18 +42,29 @@ namespace MediaViewer.ImagePanel
             DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
 
             pictureBox.Stretch = Stretch.None;
-   
-            scrollViewer.SizeChanged += new SizeChangedEventHandler((s, e) =>
-            {
-                if (pictureBox.Source != null)
-                {
-                    ImageViewModel imageViewModel = (ImageViewModel)DataContext;
 
-                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty,
-                        new MatrixTransform(imageViewModel.Transform * getScaleMatrix(pictureBox.Source as BitmapImage, imageViewModel).Matrix));
+            scrollViewer.SizeChanged += new SizeChangedEventHandler(scrollViewer_SizeChanged);
+
+           
+        }
+
+        private void scrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            if (pictureBox.Source != null)
+            {
+                ImageViewModel vm = (ImageViewModel)DataContext;
+
+                calcScale(pictureBox.Source as BitmapImage, vm);
+
+                if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.AUTO ||
+                    vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_HEIGHT ||
+                    vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_WIDTH ||
+                    vm.SelectedScaleMode == ImageViewModel.ScaleMode.RELATIVE) 
+                {
+                    setScale(vm, false);
                 }
 
-            });
+            }
         }
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -61,7 +78,31 @@ namespace MediaViewer.ImagePanel
 
             WeakEventManager<ImageViewModel, System.ComponentModel.PropertyChangedEventArgs>.AddHandler(
                    imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+
+            WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
+                 imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
+
+            WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
+                  imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
+
+            WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
+            imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);
+
+            WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
+                  imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);
                         
+        }
+
+        private void imageViewModel_SetBestFitScale(object sender, EventArgs e)
+        {
+            ImageViewModel imageViewModel = (ImageViewModel)sender;
+            imageViewModel.Scale = autoFitScale;
+        }
+
+        private void imageViewModel_SetNormalScale(object sender, EventArgs e)
+        {
+            ImageViewModel imageViewModel = (ImageViewModel)sender;
+            imageViewModel.Scale = normalScale;
         }
 
         private void imageViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -76,85 +117,95 @@ namespace MediaViewer.ImagePanel
             if (e.PropertyName.Equals("Image"))
             {
                 if (imageViewModel.Image != null)
-                {
-                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
+                {                   
                     scrollViewer.ScrollToHorizontalOffset(0);
                     scrollViewer.ScrollToVerticalOffset(0);
-                }
-            }
-            else if (e.PropertyName.Equals("Transform"))
-            {
-                // everytime the transform matrix is updated in the imageviewmodel
-                // make sure to unscale the dpi as well
-                if (imageViewModel.Image != null)
-                {
-                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
+
+                    calcScale(imageViewModel.Image, imageViewModel);
+                    setScale(imageViewModel, true);
                 }
             }
             else if (e.PropertyName.Equals("SelectedScaleMode"))
             {
-                // update image whenever scalemode is changed
-                if (imageViewModel.Image != null)
-                {
-                    pictureBox.SetCurrentValue(Image.LayoutTransformProperty, new MatrixTransform(imageViewModel.Transform * getScaleMatrix(imageViewModel.Image, imageViewModel).Matrix));
-                }
+                setScale(imageViewModel, true);
             }
+            
         }
-
-        public MatrixTransform getScaleMatrix(BitmapImage image, ImageViewModel vm)
+       
+        private void calcScale(BitmapImage image, ImageViewModel vm)
         {
-          
-            Matrix scaleMatrix = new Matrix();
+            // fitheightscale
+            if (image == null) return;
 
-            if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_HEIGHT)
+            fitHeightScale = fitWidthScale = 1;
+
+            double heightScale = scrollViewer.ActualHeight / image.Height;
+
+            if (image.Width * heightScale > scrollViewer.ActualWidth)
             {
-                double heightScale = scrollViewer.ActualHeight / image.Height;
-
-                if (image.Width * heightScale > scrollViewer.ActualWidth)
-                {
-                    heightScale = (scrollViewer.ActualHeight - SystemParameters.ScrollHeight) / image.Height; 
-                }
-
-                scaleMatrix.Scale(heightScale, heightScale);
-            }
-            else if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.FIT_WIDTH)
-            {
-                double widthScale = scrollViewer.ActualWidth / image.Width;
-
-                if (image.Height * widthScale > scrollViewer.ActualHeight)
-                {
-                    widthScale = (scrollViewer.ActualWidth - SystemParameters.ScrollWidth) / image.Width;
-                }
-
-                scaleMatrix.Scale(widthScale, widthScale);
-
-            }
-            else if (vm.SelectedScaleMode == ImageViewModel.ScaleMode.AUTO)
-            {
-                double widthScale = (scrollViewer.ActualWidth - 3) / image.Width;
-                double heightScale = (scrollViewer.ActualHeight - 3) / image.Height;
-
-                double scale = Math.Min(widthScale, heightScale);
-
-                scaleMatrix.Scale(scale, scale);
-
-            }
-            else
-            {
-                var source = PresentationSource.FromVisual(pictureBox);
-                Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
-                transformToDevice.Invert();
-                Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
-                double scale = actualSize.Width / image.Width;
-
-                scaleMatrix.Scale(scale, scale);
-
+                fitHeightScale = (scrollViewer.ActualHeight - SystemParameters.ScrollHeight) / image.Height;             
             }
 
-            return (new MatrixTransform(scaleMatrix));
+            // fitwidthscale
+            double widthScale = scrollViewer.ActualWidth / image.Width;
+
+            if (image.Height * fitWidthScale > scrollViewer.ActualHeight)
+            {
+                fitWidthScale = (scrollViewer.ActualWidth - SystemParameters.ScrollWidth) / image.Width;              
+            }
+
+            // autofitscale
+            widthScale = (scrollViewer.ActualWidth - 3) / image.Width;
+            heightScale = (scrollViewer.ActualHeight - 3) / image.Height;
+
+            autoFitScale = Math.Min(widthScale, heightScale);
+
+            // normalscale
+            var source = PresentationSource.FromVisual(pictureBox);
+            Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+            transformToDevice.Invert();
+            Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
+            normalScale = actualSize.Width / image.Width;
+
+            // max/minscale
+            double maxWidth = ((double)MAX_IMAGE_SIZE_PIXELS) / image.PixelWidth;
+            double maxHeight = ((double)MAX_IMAGE_SIZE_PIXELS) / image.PixelHeight;
+
+            vm.MinScale = Math.Min(autoFitScale, normalScale);
+            vm.MaxScale = normalScale * Math.Min(maxWidth, maxHeight);
         }
 
-
+        void setScale(ImageViewModel vm, bool init)
+        {
+            switch (vm.SelectedScaleMode)
+            {
+                case ImageViewModel.ScaleMode.NONE:
+                    if (init == true)
+                    {
+                        vm.Scale = normalScale;
+                    }
+                    break;
+                case ImageViewModel.ScaleMode.RELATIVE:                    
+                    if (init == true)
+                    {
+                        vm.Scale = autoFitScale;
+                    }                                                                                   
+                    break;
+                case ImageViewModel.ScaleMode.AUTO:
+                    vm.Scale = autoFitScale;
+                    break;
+                case ImageViewModel.ScaleMode.FIT_HEIGHT:
+                    vm.Scale = fitHeightScale;
+                    break;
+                case ImageViewModel.ScaleMode.FIT_WIDTH:
+                    vm.Scale = fitWidthScale;
+                    break;
+                default:
+                    break;
+            }
+        }
+   
+        
         private void gridContainer_PreviewMouseMove(object sender, MouseEventArgs e)
         {
            

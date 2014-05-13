@@ -160,6 +160,9 @@ namespace VideoLib {
 		void open(String ^videoLocation);
 		void close();
 
+		List<BitmapSource ^> ^grabThumbnails(int thumbWidth, 
+			int captureInterval, int nrThumbs, double startOffset);
+
 		List<BitmapSource ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset);
 

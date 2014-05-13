@@ -17,7 +17,7 @@
             <ColumnDefinition Width="*"/>                
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <TextBox Name="valueTextBox" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="NoWrap" VerticalAlignment="Top" TextAlignment="Right" LostFocus="valueTextBox_LostFocus" PreviewTextInput="valueTextBox_PreviewTextInput"/>
+        <TextBox Name="valueTextBox" Grid.Column="0" HorizontalAlignment="Stretch" TextWrapping="NoWrap" TextAlignment="Right" VerticalAlignment="Top" LostFocus="valueTextBox_LostFocus" PreviewTextInput="valueTextBox_PreviewTextInput"/>
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>

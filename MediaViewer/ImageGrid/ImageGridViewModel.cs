@@ -35,9 +35,16 @@ namespace MediaViewer.ImageGrid
         public ImageGridViewModel(IMediaState mediaState)
         {
 
+            if (mediaState == null)
+            {
+                throw new ArgumentException("mediaState cannot be null");
+            }
+
             this.mediaState = mediaState;
           
             loadItemsCTS = new CancellationTokenSource();
+
+       
             
         }
              
@@ -53,6 +60,10 @@ namespace MediaViewer.ImageGrid
             MediaState.readMetadataRangeAsync(start, nrItems, loadItemsCTS.Token);
                     
         }
-      
+       
+        public MediaLockedCollection SelectedMedia
+        {
+            get { return mediaState.UISelectedMedia; }            
+        }
     }
 }

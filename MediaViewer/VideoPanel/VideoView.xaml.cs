@@ -15,7 +15,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using VideoPlayerControl;
 
 namespace MediaViewer.VideoPanel
 {
@@ -26,9 +25,9 @@ namespace MediaViewer.VideoPanel
     {
 
         bool updateTimeLineSlider;
-        VideoPlayerViewModel viewModel;
+        VideoViewModel viewModel;
 
-        public VideoPlayerViewModel ViewModel
+        public VideoViewModel ViewModel
         {
             get { return viewModel; }
             private set { viewModel = value; }
@@ -37,6 +36,8 @@ namespace MediaViewer.VideoPanel
         public VideoView()
         {
             InitializeComponent();
+
+            DataContext = viewModel = new VideoViewModel(videoPlayer.ViewModel);
 
             timeLineSlider.AddHandler(Slider.MouseLeftButtonDownEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonDownEvent),
                  true);
@@ -49,9 +50,7 @@ namespace MediaViewer.VideoPanel
             updateTimeLineSlider = true;
                                                      
             videoPlayer.DoubleClick += videoPlayer_DoubleClick;
-
-            DataContext = viewModel = videoPlayer.ViewModel;
-
+           
             viewModel.PropertyChanged += videoPlayerViewModel_PropertyChanged;
         }
         
@@ -66,7 +65,7 @@ namespace MediaViewer.VideoPanel
 
                 switch (viewModel.VideoState)
                 {
-                    case VideoState.PLAYING:
+                    case VideoPlayerControl.VideoState.PLAYING:
                         {
                             if (playButton.IsChecked == false)
                             {
@@ -75,7 +74,7 @@ namespace MediaViewer.VideoPanel
 
                             break;
                         }
-                    case VideoState.CLOSED:
+                    case VideoPlayerControl.VideoState.CLOSED:
                         {
                             if (playButton.IsChecked == true)
                             {
@@ -119,8 +118,7 @@ namespace MediaViewer.VideoPanel
         }
 
         void updateTimeLine()
-        {
-            VideoPlayerViewModel viewModel = (VideoPlayerViewModel)DataContext;
+        {           
             timeLineSlider.Value = viewModel.PositionSeconds;
         }
 
@@ -163,16 +161,14 @@ namespace MediaViewer.VideoPanel
             var p = slider.Maximum * d;
 
             int sliderValue = (int)p;
-
-            VideoPlayerViewModel videoPlayerViewModel = (VideoPlayerViewModel)DataContext;
-
-            videoPlayerViewModel.seek(sliderValue);
+         
+            viewModel.SeekCommand.DoExecute(sliderValue);
 
             updateTimeLineSlider = true;    
         }
 
         private void playButton_Checked(object sender, RoutedEventArgs e)
-        {
+        {           
             viewModel.PlayCommand.DoExecute();
         }
 

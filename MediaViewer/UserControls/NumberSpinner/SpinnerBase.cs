@@ -197,7 +197,23 @@ namespace MediaViewer.UserControls.NumberSpinner
 
 
         protected abstract void subtractValue();
-                     
-    
+
+
+        public TextAlignment TextAlignment
+        {
+            get { return (TextAlignment)GetValue(TextAlignmentProperty); }
+            set { SetValue(TextAlignmentProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for TextAlignment.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty TextAlignmentProperty =
+            DependencyProperty.Register("TextAlignment", typeof(TextAlignment), typeof(SpinnerBase<T>), new PropertyMetadata(TextAlignment.Right, textAlignment_PropertyChangedCallback));
+
+        private static void textAlignment_PropertyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            SpinnerBase<T> control = (SpinnerBase<T>)d;
+            control.valueTextBoxBase.TextAlignment = (TextAlignment)e.NewValue;           
+        }
+
     }
 }

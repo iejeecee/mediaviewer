@@ -31,7 +31,7 @@ namespace MediaViewer.ImageGrid
 
             }
          
-            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChangedLocked);
+            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChanged);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -198,13 +198,16 @@ namespace MediaViewer.ImageGrid
             }));
         }
 
-        void pagedImageGridViewModel_StateChangedLocked(Object sender, NotifyCollectionChangedEventArgs e) {
-             
+        void pagedImageGridViewModel_StateChanged(Object sender, NotifyCollectionChangedEventArgs e) {
+
+            
+            int nrMediaItems = MediaState.UIMediaCollection.Count;
+
             //int startIndex = CurrentPage * maxItemsPerPage;
             //int endIndex = startIndex + maxItemsPerPage;
-            int totalPages = (int)Math.Ceiling(MediaState.UIMediaCollection.Count / (float)MaxItemsPerPage);
+            int totalPages = (int)Math.Ceiling(nrMediaItems / (float)MaxItemsPerPage);
 
-            if (MediaState.UIMediaCollection.Count == 0)
+            if (nrMediaItems == 0)
             {
                 NrPages = 0;              
             }

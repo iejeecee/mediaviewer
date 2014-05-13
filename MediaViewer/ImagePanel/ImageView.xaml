@@ -36,15 +36,22 @@
                                 <DataTrigger Binding="{Binding IsLoading}" Value="false">
                                     <Setter Property="gif:ImageBehavior.AnimatedSource" Value="{Binding Image}" />                                  
                                 </DataTrigger>
+                                <DataTrigger Binding="{Binding IsEffectsEnabled}" Value="false">
+                                    <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsEffectsEnabled}" Value="true">
+                                    <Setter Property="Image.Effect">
+                                        <Setter.Value>
+                                            <Effects:BrightnessContrastEffect Brightness="{Binding Brightness}" Contrast="{Binding Contrast}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Image.Style>
                     <Image.LayoutTransform>
                         <MatrixTransform Matrix="{Binding Transform}"/>
-                    </Image.LayoutTransform>
-                    <Image.Effect>
-                        <Effects:BrightnessContrastEffect Brightness="{Binding Brightness}" Contrast="{Binding Contrast}"/>
-                    </Image.Effect>
+                    </Image.LayoutTransform>                  
                 </Image>
             </Grid>
         </ScrollViewer>        

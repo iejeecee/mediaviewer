@@ -198,11 +198,15 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
+    <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportView.xaml.cs">
       <DependentUpon>TagEditorImportView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
+    <Compile Include="Settings\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>
@@ -441,6 +445,12 @@
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VideoPanel\VideoViewModel.cs" />
+    <Compile Include="VideoPreviewImage\GridImage.cs" />
+    <Compile Include="VideoPreviewImage\VideoPreviewImageView.xaml.cs">
+      <DependentUpon>VideoPreviewImageView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPreviewImage\VideoPreviewImageViewModel.cs" />
     <Page Include="About\AboutView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -466,6 +476,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MetaData\TagEditorImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Settings\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -606,6 +620,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VideoPreviewImage\VideoPreviewImageView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -822,6 +840,14 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\preview.ico" />
+    <Resource Include="Resources\Icons\object-rotate-left.ico" />
+    <Resource Include="Resources\Icons\object-rotate-right.ico" />
+    <Resource Include="Resources\Icons\object-flip-horizontal.ico" />
+    <Resource Include="Resources\Icons\object-flip-vertical.ico" />
+    <Resource Include="Resources\Icons\old-zoom-best-fit.ico" />
+    <Resource Include="Resources\Icons\old-zoom-original.ico" />
+    <Resource Include="Resources\Icons\Zoom.ico" />
     <Resource Include="Resources\Icons\gridview.ico" />
     <Resource Include="Resources\Icons\contract.ico" />
     <Resource Include="Resources\Icons\expand.ico" />

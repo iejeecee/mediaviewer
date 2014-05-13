@@ -34,29 +34,7 @@
         <GradientStop Color="#AAA" Offset="0.99" />
         <GradientStop Color="#888" Offset="1" />
     </LinearGradientBrush>
-
-    <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->
-    <SolidColorBrush x:Key="disabledColor" Color="#FFD4D0C8"/>
-    <SolidColorBrush x:Key="appBackgroundColor" Color="#FF293955"/>
-
-    <SolidColorBrush x:Key="toolBarBackgroundColor" Color="#FFD6DBE9"/>
-    <SolidColorBrush x:Key="menuBackgroundColor" Color="#FFD6DBE9"/>
-
-    <SolidColorBrush x:Key="imageGridBackgroundColor" Color="#FF989898"/>
-    <SolidColorBrush x:Key="imageGridItemBackgroundColor" Color="#FFD3D9DD"/>
-    <SolidColorBrush x:Key="imageGridItemSelectedBackgroundColor" Color="LightYellow"/>
-    <SolidColorBrush x:Key="imageGridItemTextColor" Color="Black"/>
-
-    <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
-    <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>
-    <SolidColorBrush x:Key="uiElementLabelColor" Color="#FF4D4D4D"/>
-    <SolidColorBrush x:Key="uiElementBorderColor" Color="#FF475B7E"/>
-    <SolidColorBrush x:Key="uiElementBorderTextColor" Color="White"/>
-
-    <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
-    <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>  
-    <SolidColorBrush x:Key="imageTextColorBrush" Color="Black"/>
-           
+              
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
     

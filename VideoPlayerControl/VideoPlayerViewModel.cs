@@ -13,13 +13,17 @@ using System.Drawing.Imaging;
 
 namespace VideoPlayerControl
 {
-   public class VideoPlayerViewModel : ObservableObject, IDisposable
+   public class VideoPlayerViewModel : IDisposable
     {
         //protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public event EventHandler VideoOpened;
         public event EventHandler VideoClosed;
-
+        public event EventHandler<VideoState> StateChanged;
+        public event EventHandler<int> PositionSecondsChanged;
+        public event EventHandler<int> DurationSecondsChanged;
+        public event EventHandler<bool> HasAudioChanged;
+   
         Control owner;
 
         VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat;
@@ -40,44 +44,20 @@ namespace VideoPlayerControl
             set
             {
                 videoState = value;
-                switch (videoState)
-                {
-                    case VideoState.OPEN:
-                        {
-                            playCommand.CanExecute = true;
-                            pauseCommand.CanExecute = false;
-                            screenShotCommand.CanExecute = false;
-                            closeCommand.CanExecute = true;
-                            break;
-                        }
-                    case VideoState.PLAYING:
-                        {
-                            playCommand.CanExecute = false;
-                            pauseCommand.CanExecute = true;
-                            screenShotCommand.CanExecute = true;
-                            closeCommand.CanExecute = true;
-                            break;
-                        }
-                    case VideoState.PAUSED:
-                        {
-                            playCommand.CanExecute = true;
-                            pauseCommand.CanExecute = false;
-                            screenShotCommand.CanExecute = true;
-                            closeCommand.CanExecute = true;
-                            break;
-                        }
-                    case VideoState.CLOSED:
-                        {
-                            playCommand.CanExecute = false;
-                            pauseCommand.CanExecute = false;
-                            screenShotCommand.CanExecute = false;
-                            closeCommand.CanExecute = false;
-                            break;
-                        }
 
+                if (StateChanged != null)
+                {
+                    StateChanged(this, value);
                 }
-                NotifyPropertyChanged();
             }
+        }
+
+        String videoLocation;
+
+        public String VideoLocation
+        {
+            get { return videoLocation; }
+            set { videoLocation = value; }
         }
 
         // no AV sync correction is done if below the AV sync threshold 
@@ -140,54 +120,13 @@ namespace VideoPlayerControl
         Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
 
-        /// <summary>
-        /// VIEWMODEL INTERFACE
-        /// </summary>
-        Command<String> openCommand;
-
-        public Command<String> OpenCommand
-        {
-            get { return openCommand; }
-            set { openCommand = value; }
-        }
-
-        Command playCommand;
-
-        public Command PlayCommand
-        {
-            get { return playCommand; }
-            set { playCommand = value; }
-        }
-        Command pauseCommand;
-
-        public Command PauseCommand
-        {
-            get { return pauseCommand; }
-            set { pauseCommand = value; }
-        }
-        Command closeCommand;
-
-        public Command CloseCommand
-        {
-            get { return closeCommand; }
-            set { closeCommand = value; }
-        }
-
-        Command screenShotCommand;
-
-        public Command ScreenShotCommand
-        {
-            get { return screenShotCommand; }
-            set { screenShotCommand = value; }
-        }
-
+        
         string screenShotLocation;
 
         public string ScreenShotLocation
         {
             get { return screenShotLocation; }
-            set { screenShotLocation = value;
-            NotifyPropertyChanged();
+            set { screenShotLocation = value;         
             }
         }
 
@@ -196,8 +135,7 @@ namespace VideoPlayerControl
         public string ScreenShotName
         {
             get { return screenShotName; }
-            set { screenShotName = value;
-            NotifyPropertyChanged();
+            set { screenShotName = value;        
             }
         }
    
@@ -206,8 +144,9 @@ namespace VideoPlayerControl
         public ImageFormat ScreenShotFormat
         {
             get { return screenShotFormat; }
-            set { screenShotFormat = value;
-            NotifyPropertyChanged();
+            set
+            {
+                screenShotFormat = value;
             }
         }
 
@@ -216,8 +155,14 @@ namespace VideoPlayerControl
         public int PositionSeconds
         {
             get { return positionSeconds; }
-            set { positionSeconds = value;
-            NotifyPropertyChanged();
+            set
+            {
+                positionSeconds = value;
+
+                if (PositionSecondsChanged != null)
+                {
+                    PositionSecondsChanged(this, positionSeconds);
+                }
             }
         }
 
@@ -226,8 +171,13 @@ namespace VideoPlayerControl
         public int DurationSeconds
         {
             get { return durationSeconds; }
-            set { durationSeconds = value;
-            NotifyPropertyChanged();
+            set
+            {
+                durationSeconds = value;
+                if (DurationSecondsChanged != null)
+                {
+                    DurationSecondsChanged(this, durationSeconds);
+                }
             }
         }
 
@@ -237,7 +187,7 @@ namespace VideoPlayerControl
             set
             {
                 audioPlayer.IsMuted = value;
-                NotifyPropertyChanged();
+             
             }
         }
 
@@ -251,7 +201,12 @@ namespace VideoPlayerControl
             set
             {
                 hasAudio = value;
-                NotifyPropertyChanged();
+
+                if (HasAudioChanged != null)
+                {
+                    HasAudioChanged(this, hasAudio);
+                }
+            
             }
         }
 
@@ -259,7 +214,7 @@ namespace VideoPlayerControl
         {
             get { return audioPlayer.Volume; }
             set { audioPlayer.Volume = value;
-            NotifyPropertyChanged();
+          
             }
         }
 
@@ -278,8 +233,7 @@ namespace VideoPlayerControl
         public double VideoClock
         {
             get { return videoClock; }
-            set { videoClock = value;
-            NotifyPropertyChanged();
+            set { videoClock = value;        
             }
         }
 
@@ -288,8 +242,7 @@ namespace VideoPlayerControl
         public double AudioClock
         {
             get { return audioClock; }
-            set { audioClock = value;
-            NotifyPropertyChanged();
+            set { audioClock = value;       
             }
         }
 
@@ -304,11 +257,7 @@ namespace VideoPlayerControl
         public VideoPlayerViewModel(Control owner, 
             VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat = VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
         {
-            OpenCommand = new Command<string>(open);
-            PlayCommand = new Command(startPlay, false);
-            PauseCommand = new Command(pausePlay, false);
-            CloseCommand = new Command(close, false);
-
+           
             this.owner = owner;
             this.decodedVideoFormat = decodedVideoFormat;            
        
@@ -333,19 +282,21 @@ namespace VideoPlayerControl
             ScreenShotLocation = "";
             ScreenShotName = "";
             ScreenShotFormat = ImageFormat.Png;
-            ScreenShotCommand = new Command(() =>
-            {
-                videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat);
-            });
-
+          
             DurationSeconds = 0;
             PositionSeconds = 0;
 
             owner.HandleDestroyed += new EventHandler((s, e) => close());
 
-            VideoState = VideoState.CLOSED;        
+            VideoState = VideoState.CLOSED;
+            VideoLocation = "";
         }
-     
+
+        public void createScreenShot()
+        {
+            videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat);
+        }
+
         public void Dispose()
         {
             Dispose(true);
@@ -875,7 +826,7 @@ restartvideo:
             }
         }
 
-        void pausePlay()
+        public void pausePlay()
         {
 
             if (VideoState == VideoState.PAUSED ||
@@ -898,12 +849,12 @@ restartvideo:
 
         }
 
-        void startPlay()
+        public void startPlay()
         {       
             if (VideoState == VideoState.PLAYING ||
                 VideoState == VideoState.CLOSED)
             {
-
+                
                 return;
             }
 
@@ -935,7 +886,7 @@ restartvideo:
             seekRequest = true;
         }
 
-        void open(string location)
+        public void open(string location)
         {         
             try
             {
@@ -945,12 +896,7 @@ restartvideo:
                 close();
                 //videoDebug.clear();
 
-                if (videoDecoder == null)
-                {
-                    // initialize videodecoder here instead of the constructor to prevent visual studio's designer
-                    // choking on the dll's it attempts to load
-                   
-                }
+                VideoLocation = location;
 
                 videoDecoder.open(location, decodedVideoFormat);                
                 videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
@@ -985,6 +931,7 @@ restartvideo:
                 }
 
                 VideoState = VideoState.OPEN;
+                
 
                 if(VideoOpened != null) {
 
@@ -1004,7 +951,7 @@ restartvideo:
             }
         }
 
-        void close()
+        public void close()
         {
 
             if (VideoState == VideoState.CLOSED)
@@ -1033,6 +980,8 @@ restartvideo:
             PositionSeconds = 0;
 
             videoRender.display(null, Color.Black, VideoRender.RenderMode.CLEAR_SCREEN);
+
+            VideoLocation = "";
 
             if (VideoClosed != null)
             {

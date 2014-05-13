@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.VideoPreviewImage;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -45,6 +46,16 @@ namespace MediaViewer.ImageGrid
             MediaFileItem item = (MediaFileItem)DataContext;
 
             GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Location);
+
+        }
+
+        private void createPreviewMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = (MediaFileItem)DataContext;
+
+            VideoPreviewImageView preview = new VideoPreviewImageView();
+            preview.ViewModel.Media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+            preview.ShowDialog();
 
         }
 

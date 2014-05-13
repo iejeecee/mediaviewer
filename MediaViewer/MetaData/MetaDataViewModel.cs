@@ -23,6 +23,8 @@ namespace MediaViewer.MetaData
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        public event EventHandler ItemsModified;
+
         void clear()
         {
             Filename = "";
@@ -102,7 +104,9 @@ namespace MediaViewer.MetaData
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
                 vm.MovePath = String.IsNullOrEmpty(Location) ? MediaFileWatcher.Instance.Path : Location;
-                vm.SelectedItems = ItemList;
+                Items.EnterReaderLock();
+                vm.SelectedItems = new List<MediaFileItem>(Items.Items);
+                Items.ExitReaderLock();
                 vm.MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
               
                 if (directoryPicker.ShowDialog() == true)
@@ -179,10 +183,25 @@ namespace MediaViewer.MetaData
 
             }));
 
-            MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((s,e) =>
+            GlobalMessenger.Instance.Register<MediaFileItem>("MetaDataUpdateViewModel_UpdateComplete", (item) =>
             {
-                ItemList = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                Items.EnterReaderLock();
+                try
+                {
+                    if (BatchMode == false && Items.Count > 0)
+                    {
+                        if (Items.Items[0].Equals(item))
+                        {
+                            grabData();
+                        }
+                    }
+                }
+                finally
+                {
+                    Items.ExitReaderLock();
+                }
             });
+          
 
             FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
 
@@ -190,18 +209,33 @@ namespace MediaViewer.MetaData
             
         }
 
-        List<MediaFileItem> itemList;
+        MediaLockedCollection items;
 
-        public List<MediaFileItem> ItemList
+        public MediaLockedCollection Items
         {
-            get { return itemList; }
+            get { return items; }
             set
             {
-                itemList = value;
+                if (items != null)
+                {
+                    items.CollectionModified -= items_Modified;
+                }
 
+                if (value != null)
+                {
+                    value.CollectionModified += items_Modified;
+                }
+
+                items = value;
+               
                 grabData();
-                NotifyPropertyChanged();
+              
             }
+        }
+
+        private void items_Modified(object sender, EventArgs e)
+        {
+            grabData();          
         }
 
         Command writeMetaDataCommand;
@@ -335,7 +369,7 @@ namespace MediaViewer.MetaData
                 }
                 else if (selectedMetaDataPreset.Id == -1)
                 {
-                    if (itemList != null && itemList.Count == 1 && dontGrabData == false)
+                    if (items != null && items.Count == 1 && dontGrabData == false)
                     {
                         grabData();
                     }
@@ -679,75 +713,99 @@ namespace MediaViewer.MetaData
         
 
         void grabData()
-        {
-                       
-            if (itemList.Count == 1 && ItemList[0].Media != null)
+        {        
+         /*   if (items == null)
             {
-                
-                Media media = ItemList[0].Media;
-                             
-                if (media.SupportsXMPMetadata == false)
+                clear();
+                return;
+            }*/
+
+            items.EnterReaderLock();
+
+            try
+            {
+
+                if (items.Count == 1 && Items.Items[0].Media != null)
                 {
-                    clear();
-                }
 
-                Filename = Path.GetFileNameWithoutExtension(media.Location);
-                Location = FileUtils.getPathWithoutFileName(media.Location);
+                    Media media = Items.Items[0].Media;
 
-                if (media is VideoMedia)
-                {
-                    dynamicProperties = getVideoProperties(media as VideoMedia);
-                }
-
-                Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
-                Title = media.Title;
-                Description = media.Description;
-                Author = media.Author;
-                Copyright = media.Copyright;
-                Creation = media.CreationDate;
-                IsImported = media.IsImported;
-
-                lock (tagsLock)
-                {
-                    Tags.Clear();
-
-                    foreach (Tag tag in media.Tags)
+                    if (media.SupportsXMPMetadata == false)
                     {
-                        Tags.Add(tag);
+                        clear();
                     }
-                }
 
-                getExifProperties(dynamicProperties, media);
-        
-                
-                SelectedMetaDataPreset = noPresetMetaData;
-                IsEnabled = true;
-                BatchMode = false;
+                    Filename = Path.GetFileNameWithoutExtension(media.Location);
+                    Location = FileUtils.getPathWithoutFileName(media.Location);
 
-            }
-            else if (itemList.Count > 1 && BatchMode == true)
-            {
-                
-                
-            }
-            else
-            {
-                if (itemList.Count > 1)
-                {
+                    if (media is VideoMedia)
+                    {
+                        dynamicProperties = getVideoProperties(media as VideoMedia);
+                    }
+                    else
+                    {
+                        dynamicProperties.Clear();
+                    }
+
+                    Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
+                    Title = media.Title;
+                    Description = media.Description;
+                    Author = media.Author;
+                    Copyright = media.Copyright;
+                    Creation = media.CreationDate;
+                    IsImported = media.IsImported;
+
+                    lock (tagsLock)
+                    {
+                        Tags.Clear();
+
+                        foreach (Tag tag in media.Tags)
+                        {
+                            Tags.Add(tag);
+                        }
+                    }
+
+                    getExifProperties(dynamicProperties, media);
+
+
+                    SelectedMetaDataPreset = noPresetMetaData;
                     IsEnabled = true;
-                    BatchMode = true;
-                    clear();
-                                   
-                } else if(itemList.Count == 0) {
-
                     BatchMode = false;
-                    IsEnabled = false;
-                    clear();
+
                 }
+                else if (items.Count > 1 && BatchMode == true)
+                {
 
-                              
+
+                }
+                else
+                {
+                    if (items.Count > 1)
+                    {
+                        IsEnabled = true;
+                        BatchMode = true;
+                        clear();
+
+                    }
+                    else if (items.Count == 0)
+                    {
+
+                        BatchMode = false;
+                        IsEnabled = false;
+                        clear();
+                    }
+
+                }
             }
+            finally
+            {
+                items.ExitReaderLock();
 
+                if (ItemsModified != null)
+                {
+                    ItemsModified(this, EventArgs.Empty);
+                }
+            }
 
         }
 

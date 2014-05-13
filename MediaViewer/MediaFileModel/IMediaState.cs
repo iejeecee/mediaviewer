@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -16,9 +17,14 @@ namespace MediaViewer.MediaFileModel
         event NotifyCollectionChangedEventHandler NrItemsInStateChanged;
         event NotifyCollectionChangedEventHandler NrImportedItemsChanged;
         event EventHandler ItemIsSelectedChanged;
-        event EventHandler ItemPropertiesChanged;
+        event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
         MediaLockedCollection UIMediaCollection
+        {
+            get;
+        }
+
+        MediaLockedCollection UISelectedMedia
         {
             get;
         }
