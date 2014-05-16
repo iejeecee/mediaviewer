@@ -8,15 +8,46 @@ using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::IO;
 using namespace System::Windows::Media::Imaging;
+using namespace System::Threading;
 
 namespace VideoLib {
+
+	public ref class VideoThumb 
+	{
+		BitmapSource ^thumb;
+		long positionSeconds;
+
+	public: 
+
+		VideoThumb(BitmapSource ^thumb, long positionSeconds);
+		
+		property BitmapSource ^Thumb {
+
+			BitmapSource ^get() {
+
+				return(thumb);
+			}
+		}
+		
+		property long PositionSeconds {
+
+			long get() {
+
+				return(positionSeconds);
+			}
+		}
+		
+	};
 
 
 	public ref class VideoPreview
 	{
+	public:
+
+		delegate void DecodedFrameProgressDelegate(VideoThumb ^thumb);
 
 	private:
-
+		
 		VideoFrameGrabber *frameGrabber;
 		System::Runtime::InteropServices::GCHandle gch;
 
@@ -26,7 +57,7 @@ namespace VideoLib {
 		void decodedFrameCallback(void *data, AVPacket *packet, 
 			AVFrame *frame, Video::FrameType type);
 
-		List<BitmapSource ^> ^thumbs;
+		List<VideoThumb ^> ^thumbs;
 
 		int durationSeconds;
 
@@ -47,8 +78,10 @@ namespace VideoLib {
 		int bytesPerSample;
 		int nrChannels;
 
-	public:
+		DecodedFrameProgressDelegate ^decodedFrameProgressCallback;
 
+	public:
+		
 		VideoPreview();
 		~VideoPreview();
 
@@ -160,10 +193,11 @@ namespace VideoLib {
 		void open(String ^videoLocation);
 		void close();
 
-		List<BitmapSource ^> ^grabThumbnails(int thumbWidth, 
-			int captureInterval, int nrThumbs, double startOffset);
+		List<VideoThumb ^> ^grabThumbnails(int thumbWidth, 
+			int captureInterval, int nrThumbs, double startOffset, 
+			System::Threading::CancellationToken ^cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
 
-		List<BitmapSource ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+		List<VideoThumb ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset);
 
 		

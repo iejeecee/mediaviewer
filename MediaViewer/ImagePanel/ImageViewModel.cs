@@ -122,6 +122,14 @@ namespace MediaViewer.ImagePanel
                 custom.ShowDialog();
             });
 
+            SetCustomScaleCommand = new Command(() =>
+            {
+                SelectedScaleMode = ScaleMode.CUSTOM;
+                ScaleView custom = new ScaleView();
+                custom.DataContext = this;
+                custom.ShowDialog();
+            });
+
             SetBrightnessCommand = new Command(() =>
                 {
                     BrightnessView brightnessView = new BrightnessView();
@@ -352,6 +360,14 @@ namespace MediaViewer.ImagePanel
             set { isResetSettingsOnLoad = value;
             NotifyPropertyChanged();
             }
+        }
+
+        Command setCustomScaleCommand;
+
+        public Command SetCustomScaleCommand
+        {
+            get { return setCustomScaleCommand; }
+            set { setCustomScaleCommand = value; }
         }
 
         double scale;
@@ -759,7 +775,8 @@ namespace MediaViewer.ImagePanel
 
         public enum ScaleMode
         {
-            NONE,  // display the image in 1 to 1 pixel ratio       
+            NONE,  // display the image in 1 to 1 pixel ratio   
+            CUSTOM,
             RELATIVE,
             AUTO, // automatically scale the image to fit it's surroundings
             FIT_HEIGHT, 

@@ -108,7 +108,7 @@ namespace MediaViewer.MediaFileModel
          public void generateThumbnail(VideoPreview videoPreview, VideoMedia video)
          {
 
-             List<BitmapSource> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
+             List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
                  MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025);
 
              if (thumbBitmaps.Count == 0)
@@ -121,7 +121,7 @@ namespace MediaViewer.MediaFileModel
 
              if (thumbBitmaps.Count > 0)
              {
-                 video.Thumbnail = new Thumbnail(thumbBitmaps[0]);
+                 video.Thumbnail = new Thumbnail(thumbBitmaps[0].Thumb);
              }
              else
              {

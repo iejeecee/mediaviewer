@@ -8,10 +8,12 @@ using System.Collections.ObjectModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using VideoLib;
 
 namespace MediaViewer.VideoPreviewImage
 {
@@ -29,18 +31,8 @@ namespace MediaViewer.VideoPreviewImage
 
         public VideoPreviewImageViewModel()
         {
-            videoPreview = new VideoLib.VideoPreview();
-            NrColumns = 4;
-            NrRows = 16;
-            MaxPreviewImageWidth = 1280;
-            IsCaptureIntervalSecondsEnabled = true;
-            CaptureIntervalSeconds = 30;
-            OutputPath = MediaFileWatcher.Instance.Path;
-            OutputPathHistory = new ObservableCollection<string>();
-            OutputPathHistory.Insert(0, OutputPath);
-            IsAddTags = true;
-            IsCommentEnabled = false;
-
+            setDefaults();
+            
             directoryPickerCommand = new Command(new Action(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
@@ -55,25 +47,43 @@ namespace MediaViewer.VideoPreviewImage
 
             }));
 
-            OkCommand = new Command(() =>
+            OkCommand = new Command(async () =>
             {
-                generatePreviews();
+                VideoPreviewImageProgressView progress = new VideoPreviewImageProgressView();
+                progress.ViewModel.AsyncState = this;
+                progress.Show();
+                Task task = progress.ViewModel.generatePreviews();
                 OnClosingRequest();
+                await task;
             });
             CancelCommand = new Command(() =>
             {
                 OnClosingRequest();
             });
+
+            DefaultsCommand = new Command(() =>
+                {
+                    setDefaults();
+                });
         }
 
-        VideoLib.VideoPreview videoPreview;
-
-        private VideoLib.VideoPreview VideoPreview
+        void setDefaults()
         {
-            get { return videoPreview; }
-            set { videoPreview = value; }
+            NrColumns = 4;
+            NrRows = 16;
+            MaxPreviewImageWidth = 1280;
+            IsCaptureIntervalSecondsEnabled = true;
+            CaptureIntervalSeconds = 30;
+            OutputPath = MediaFileWatcher.Instance.Path;
+            OutputPathHistory = new ObservableCollection<string>();
+            OutputPathHistory.Insert(0, OutputPath);
+            IsAddTags = true;
+            IsAddTimestamps = true;
+            IsCommentEnabled = false;
+            JpegQuality = 80;
+            IsAddHeader = true;
         }
-
+      
         int maxPreviewImageWidth;
 
         public int MaxPreviewImageWidth
@@ -113,6 +123,16 @@ namespace MediaViewer.VideoPreviewImage
                 }               
                 
                 NotifyPropertyChanged();
+            }
+        }
+
+        bool isAddHeader;
+
+        public bool IsAddHeader
+        {
+            get { return isAddHeader; }
+            set { isAddHeader = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -239,108 +259,25 @@ namespace MediaViewer.VideoPreviewImage
             set { cancelCommand = value; }
         }
 
-        void generatePreviews()
+        Command defaultsCommand;
+
+        public Command DefaultsCommand
         {
-
-            foreach (MediaFileItem item in Media)
-            {                              
-                generatePreview(item);                
-            }
-           
+            get { return defaultsCommand; }
+            set { defaultsCommand = value; }
         }
+        
+        bool isAddTimeStamps;
 
-        int calcNrRowsNrColumns(int nrFrames)
-        {           
-            if (nrFrames == 0)
+        public bool IsAddTimestamps {
+            get
             {
-                // make sure to grab atleast one frame
-                nrFrames = 1;
+                return isAddTimeStamps;
             }
-
-            if (nrFrames < nrColumns)
+            set
             {
-
-                nrColumns = nrFrames;
-            }
-
-            if (nrFrames % nrColumns != 0)
-            {
-
-                nrFrames -= (nrFrames % nrColumns);
-            }
-
-            nrRows = nrFrames / nrColumns;
-
-            return (nrFrames);
-        }
-
-        void generatePreview(MediaFileItem item)      
-        {
-
-            FileStream outputFile = null;
-
-            videoPreview.open(item.Location);
-            try
-            {
-
-                int nrFrames = 0;
-
-                if (IsCaptureIntervalSecondsEnabled == false)
-                {
-
-                    nrFrames = NrRows * NrColumns;
-
-                }
-                else
-                {
-                    nrFrames = videoPreview.DurationSeconds / CaptureIntervalSeconds;
-                    nrFrames = calcNrRowsNrColumns(nrFrames);
-                }
-
-                int thumbWidth = MaxPreviewImageWidth / NrColumns;
-
-                List<BitmapSource> thumbs = videoPreview.grabThumbnails(thumbWidth,
-                       IsCaptureIntervalSecondsEnabled ? CaptureIntervalSeconds : -1, nrFrames, 0.01);
-
-                if (thumbs.Count == 0) return;
-
-                nrFrames = Math.Min(thumbs.Count, nrFrames);
-
-                if (IsCaptureIntervalSecondsEnabled == true)
-                {
-                    nrFrames = calcNrRowsNrColumns(nrFrames);
-                }
-
-                GridImage gridImage = new GridImage(item.Media as VideoMedia,this, thumbs[0].PixelWidth * nrColumns,
-                    thumbs[0].PixelHeight * nrRows, nrRows, nrColumns);
-
-                for (int i = 0; i < nrFrames; i++)
-                {
-                    gridImage.addSubImage(thumbs[i], i);
-                }         
-
-                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
-               
-                encoder.Frames.Add(BitmapFrame.Create(gridImage.Image));
-
-                String outputFileName = Path.GetFileNameWithoutExtension(item.Location) + ".jpg";
-
-                outputFile = new FileStream(OutputPath + "/" + outputFileName, FileMode.Create);
-                encoder.Save(outputFile);
-
-            }
-            catch (Exception e)
-            {
-                log.Error("Error creating preview image for: " + item.Location, e);
-            }
-            finally
-            {
-                if (outputFile != null)
-                {
-                    outputFile.Close();
-                }
-
-                videoPreview.close();
+                isAddTimeStamps = value;
+                NotifyPropertyChanged();
             }
         }
     }

@@ -66,7 +66,8 @@ namespace MediaViewer
 
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
-            
+           
+            imagePagerView.DataContext = imageView.DataContext;
 
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
        
@@ -129,6 +130,7 @@ namespace MediaViewer
         void initializeImageView()
         {
             imageViewModel = new ImageViewModel();
+            imageViewModel.IsResetSettingsOnLoad = false;
             imageView.DataContext = imageViewModel;
 
             rotationView = new RotationView();
@@ -297,6 +299,7 @@ namespace MediaViewer
         {
 
             imageView.Visibility = Visibility.Hidden;
+            imagePagerView.Visibility = Visibility.Hidden;
             videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Visible;
          
@@ -313,6 +316,7 @@ namespace MediaViewer
         {
 
             imageView.Visibility = Visibility.Visible;
+            imagePagerView.Visibility = Visibility.Visible;
             videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Hidden;
 
@@ -329,6 +333,7 @@ namespace MediaViewer
         {
 
             imageView.Visibility = Visibility.Hidden;
+            imagePagerView.Visibility = Visibility.Hidden;
             videoView.Visibility = Visibility.Visible;
             mediaFileBrowser.Visibility = Visibility.Hidden;
 

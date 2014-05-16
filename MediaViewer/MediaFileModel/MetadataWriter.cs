@@ -132,19 +132,8 @@ namespace MediaViewer.MediaFileModel
             if (!string.IsNullOrEmpty(media.Copyright))
             {
 
-                if (xmpMetaDataWriter.doesArrayItemExist(Consts.XMP_NS_DC, "rights", 1))
-                {
-
-                    xmpMetaDataWriter.setArrayItem(Consts.XMP_NS_DC, "rights", 1, media.Copyright, 0);
-
-                }
-                else
-                {
-
-                    xmpMetaDataWriter.appendArrayItem(Consts.XMP_NS_DC, "rights",
-                        Consts.PropOptions.XMP_PropArrayIsOrdered, media.Copyright, 0);
-                }
-
+                xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "rights", "en", "en-US", media.Copyright);
+          
             }
 
             if (media.CreationDate != null)

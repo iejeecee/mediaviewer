@@ -22,7 +22,8 @@ namespace MediaViewer.ImagePanel
     /// </summary>
     public partial class ImageView : UserControl
     {
-        const int MAX_IMAGE_SIZE_PIXELS = 8096;
+        const int MAX_IMAGE_SIZE_PIXELS_X = 8096;
+        const int MAX_IMAGE_SIZE_PIXELS_Y = 16192;
 
         private bool isLeftMouseButtonDown;
         //private bool isModified;
@@ -168,8 +169,8 @@ namespace MediaViewer.ImagePanel
             normalScale = actualSize.Width / image.Width;
 
             // max/minscale
-            double maxWidth = ((double)MAX_IMAGE_SIZE_PIXELS) / image.PixelWidth;
-            double maxHeight = ((double)MAX_IMAGE_SIZE_PIXELS) / image.PixelHeight;
+            double maxWidth = ((double)MAX_IMAGE_SIZE_PIXELS_X) / image.PixelWidth;
+            double maxHeight = ((double)MAX_IMAGE_SIZE_PIXELS_Y) / image.PixelHeight;
 
             vm.MinScale = Math.Min(autoFitScale, normalScale);
             vm.MaxScale = normalScale * Math.Min(maxWidth, maxHeight);

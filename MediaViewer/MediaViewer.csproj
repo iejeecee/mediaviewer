@@ -447,6 +447,10 @@
     </Compile>
     <Compile Include="VideoPanel\VideoViewModel.cs" />
     <Compile Include="VideoPreviewImage\GridImage.cs" />
+    <Compile Include="VideoPreviewImage\VideoPreviewImageProgressView.xaml.cs">
+      <DependentUpon>VideoPreviewImageProgressView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPreviewImage\VideoPreviewImageProgressViewModel.cs" />
     <Compile Include="VideoPreviewImage\VideoPreviewImageView.xaml.cs">
       <DependentUpon>VideoPreviewImageView.xaml</DependentUpon>
     </Compile>
@@ -620,6 +624,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VideoPreviewImage\VideoPreviewImageProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

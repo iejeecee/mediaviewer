@@ -172,7 +172,7 @@ public:
 
 	}
 
-	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset) {
+	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken) {
 
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -184,7 +184,7 @@ public:
 		this->thumbWidth = thumbWidth;
 		thumbHeight = round(getHeight() * scale);
 
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, true);
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, true, cancellationToken);
 	}
 
 	void grab(int maxThumbWidth, int maxThumbHeight, 
@@ -215,7 +215,7 @@ public:
 	}
 
 	void startGrab(int thumbWidth, int thumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, bool suppressError = false)
+		int captureInterval, int nrThumbs, double startOffset, bool suppressError = false, System::Threading::CancellationToken ^cancellationToken = nullptr)
 	{
 
 		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
@@ -242,6 +242,10 @@ public:
 		double step = (duration - offset) / nrFrames;
 
 		for(frameNr = 0; frameNr < nrFrames; frameNr++) {
+
+			if(cancellationToken != nullptr && cancellationToken->IsCancellationRequested) {
+				return;
+			}
 
 			double pos = offset + frameNr * step;
 

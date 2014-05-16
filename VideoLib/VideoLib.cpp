@@ -13,6 +13,12 @@ namespace VideoLib {
 using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
 
+VideoThumb::VideoThumb(BitmapSource ^thumb, long positionSeconds) {
+
+	this->thumb = thumb;
+	this->positionSeconds = positionSeconds;
+}
+
 
 VideoPreview::VideoPreview() {
 
@@ -32,7 +38,7 @@ VideoPreview::VideoPreview() {
 
 	frameGrabber->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
-	thumbs = gcnew List<BitmapSource ^>();
+	thumbs = gcnew List<VideoThumb ^>();
 	
 }
 
@@ -98,42 +104,35 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 		sizeBytes,
 		frame->linesize[0]);
 		
-/*	
+	
+	long positionSeconds = packet->dts * av_q2d(frameGrabber->getVideoStream()->time_base);
 
-	BitmapFrame(frameGrabber->getThumbWidth(),
-	frameGrabber->getThumbHeight(), Drawing::Imaging::PixelFormat::Format24bppRgb);
+	VideoThumb ^thumb = gcnew VideoThumb(bitmap, positionSeconds);
 
-	Drawing::Rectangle rect = 
-		Drawing::Rectangle(0, 0, bitmap->Width, bitmap->Height);
+	thumbs->Add(thumb);
 
-	// copy raw frame data to bitmap
-	Drawing::Imaging::BitmapData ^bmpData = bitmap->LockBits(rect, Drawing::Imaging::ImageLockMode::WriteOnly,
-		Drawing::Imaging::PixelFormat::Format24bppRgb);
+	if(decodedFrameProgressCallback != nullptr) {
 
-	IntPtr dest = bmpData->Scan0;
-
-	int sizeBytes = bmpData->Height * bmpData->Stride;
-
-	memcpy(dest.ToPointer(), frame->data[0], sizeBytes);
-
-	bitmap->UnlockBits(bmpData);
-*/
-	thumbs->Add(bitmap);
+		decodedFrameProgressCallback(thumb);
+	}
 
 }
 
-List<BitmapSource ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset) 
+List<VideoThumb ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, 
+												 CancellationToken ^cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback) 
 {
+
+	this->decodedFrameProgressCallback = decodedFrameProgressCallback;
 
 	thumbs->Clear();
 
-	frameGrabber->grab(thumbWidth, captureInterval, nrThumbs, startOffset);
+	frameGrabber->grab(thumbWidth, captureInterval, nrThumbs, startOffset, cancellationToken);
 
 	return(thumbs);
 }
 
 
-List<BitmapSource ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+List<VideoThumb ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset) 
 {
 

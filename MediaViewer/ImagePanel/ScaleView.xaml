@@ -15,7 +15,7 @@
         </Grid.Background>
         <TextBox x:Name="scaleTextBox" HorizontalAlignment="Left" Height="23" Margin="45,38,0,0" VerticalAlignment="Top" Width="56" PreviewKeyDown="scaleTextBox_PreviewKeyDown" >
             <TextBox.Text>
-                <Binding Path="CustomScale" UpdateSourceTrigger="Explicit"
+                <Binding Path="Scale" UpdateSourceTrigger="Explicit"
                          Converter="{StaticResource scaleConverter}">
                     <Binding.ValidationRules>
                         <ExceptionValidationRule></ExceptionValidationRule>
@@ -23,7 +23,7 @@
                 </Binding>
             </TextBox.Text>
         </TextBox>
-        <Slider x:Name="scaleSlider" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="273" Minimum="0" Maximum="4" TickPlacement="TopLeft" TickFrequency="0.5" ToolTip="Slide To Adjust Scale" Value="{Binding Path=CustomScale}"/>
+        <Slider x:Name="scaleSlider" HorizontalAlignment="Left" Height="23" Margin="10,10,0,0" VerticalAlignment="Top" Width="273" Minimum="0" Maximum="4" TickPlacement="TopLeft" TickFrequency="0.5" ToolTip="Slide To Adjust Scale" Value="{Binding Path=Scale}"/>
         <CheckBox x:Name="clampScaleCheckBox" Content="Clamp" HorizontalAlignment="Left" Margin="238,43,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.903,-0.294" Click="clampScaleCheckBox_Click"/>
         <Label Content="Factor" HorizontalAlignment="Left" Margin="5,38,0,0" VerticalAlignment="Top"/>
         <Button x:Name="resetButton" Content="Reset" HorizontalAlignment="Left" Margin="106,38,0,0" VerticalAlignment="Top" Width="46" Command="{Binding ResetScaleCommand}" Height="23"/>

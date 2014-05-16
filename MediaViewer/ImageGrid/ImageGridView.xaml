@@ -18,7 +18,7 @@
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
             <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
         </ResourceDictionary>
-    </UserControl.Resources>   
+    </UserControl.Resources>
     <ItemsControl x:Name="itemsControl" ItemsSource="{Binding MediaPage}" Background="{StaticResource imageGridBackgroundColor}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>

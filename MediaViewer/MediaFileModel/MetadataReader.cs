@@ -76,8 +76,8 @@ namespace MediaViewer.MediaFileModel
 
             string copyright = "";
 
-            xmpMetaDataReader.getArrayItem(Consts.XMP_NS_DC, "rights", 1, ref copyright);
-          
+            xmpMetaDataReader.getLocalizedText(Consts.XMP_NS_DC, "rights", "en", "en-US", ref copyright);
+                     
             media.Copyright = copyright;
 
             string software = "";

@@ -136,7 +136,16 @@ namespace MediaViewer.UserControls.NumberSpinner
 
             Nullable<T> val = (Nullable<T>)baseValue;
             
-            return (coerceValue(val, max, min));
+            Nullable<T> result = coerceValue(val, max, min);
+
+            if(!result.Equals(val)) {
+                // Microsoft have decided that coercing a value happens AFTER updating the binding                
+                // So in order to not fuck up our datamodel we have to explicitly set our binding
+                // again, to it's correct value in case it's was coerced.
+                d.SetValue(ValueProperty, result);
+            }
+
+            return (result);
         }
 
         protected virtual void OnValueChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

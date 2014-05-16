@@ -38,7 +38,7 @@ namespace MediaViewer.UserControls.NumberSpinner
                 Value = Min == null ? 0 : Min;
             }
             else
-            {
+            {               
                 Value += 1;
             }          
         }
@@ -91,14 +91,7 @@ namespace MediaViewer.UserControls.NumberSpinner
             }
            
 
-        }
-
-       
-
-
-        
-
-        
+        }                     
         
     }
 }
