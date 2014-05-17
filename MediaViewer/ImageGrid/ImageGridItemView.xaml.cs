@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Torrent;
 using MediaViewer.VideoPreviewImage;
 using System;
 using System.Collections.Generic;
@@ -51,11 +52,18 @@ namespace MediaViewer.ImageGrid
 
         private void createPreviewMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)DataContext;
+           /* MediaFileItem item = (MediaFileItem)DataContext;
 
             VideoPreviewImageView preview = new VideoPreviewImageView();
             preview.ViewModel.Media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
             preview.ShowDialog();
+            */
+
+            TorrentCreationViewModel vm = new TorrentCreationViewModel();
+            vm.PathRoot = MediaFileWatcher.Instance.Path;
+            vm.Media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+            vm.Announce = new Uri("udp://tracker.openbittorrent.com:80/announce");
+            vm.createTorrent();
 
         }
 

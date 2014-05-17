@@ -88,20 +88,7 @@ namespace MediaViewer.MediaFileModel
 
             if (!string.IsNullOrEmpty(media.Description))
             {
-
-                if (xmpMetaDataWriter.doesArrayItemExist(Consts.XMP_NS_DC, "description", 1))
-                {
-
-                    xmpMetaDataWriter.setArrayItem(Consts.XMP_NS_DC, "description", 1, media.Description, 0);
-
-                }
-                else
-                {
-
-                    xmpMetaDataWriter.appendArrayItem(Consts.XMP_NS_DC, "description",
-                        Consts.PropOptions.XMP_PropArrayIsOrdered, media.Description, 0);
-                }
-
+                xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "description", "en", "en-US", media.Description);
             }
 
             if (!string.IsNullOrEmpty(media.Software))

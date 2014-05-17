@@ -3,6 +3,7 @@ using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -40,8 +41,11 @@ namespace MediaViewer
 
           
         }
-        
-       
+
+        public static String getAppInfoString()
+        {
+            return ("MediaViewer v" + Assembly.GetEntryAssembly().GetName().Version.ToString());
+        }
 
     }
 }

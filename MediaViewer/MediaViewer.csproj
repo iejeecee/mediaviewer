@@ -207,6 +207,8 @@
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Torrent\Bencoding.cs" />
+    <Compile Include="Torrent\TorrentCreationViewModel.cs" />
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
     </Compile>

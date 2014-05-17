@@ -163,7 +163,7 @@ namespace MediaViewer.VideoPreviewImage
 
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();
                 BitmapMetadata metaData = new BitmapMetadata("jpg");
-                metaData.ApplicationName = "MediaViewer v" + Assembly.GetEntryAssembly().GetName().Version.ToString();
+                metaData.ApplicationName = App.getAppInfoString();
                 //metaData.DateTaken = DateTime.Now.ToLongDateString();
 
                 if (item.Media.Tags.Count > 0)
