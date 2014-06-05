@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.DirectoryBrowser;
 using MediaViewer.ImageGrid;
 using MediaViewer.Input;
 using MediaViewer.MediaFileModel.Watcher;
@@ -42,7 +41,7 @@ namespace MediaViewer.MediaFileBrowser
            
             DataContext = mediaFileBrowserViewModel = new MediaFileBrowserViewModel();
             mediaFileBrowserViewModel.VideoViewModel = videoPlayer.ViewModel;
-            directoryBrowser.DataContext = DataContext;
+            directoryPicker.DataContext = DataContext;
 
             imageViewer.DataContext = mediaFileBrowserViewModel.ImageViewModel;            
                 
@@ -52,7 +51,21 @@ namespace MediaViewer.MediaFileBrowser
             GlobalMessenger.Instance.Register("MediaFileBrowser_ShowBrowserGrid", mediaFileBrowser_ShowBrowserGrid);
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowVideo", mediaFileBrowser_ShowVideo);
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowImage", mediaFileBrowser_ShowImage);
-          
+
+            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((o, e) =>
+            {              
+                List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+
+                if (selected.Count > 0)
+                {
+                    mediaFileBrowserViewModel.Title = mediaFileBrowserViewModel.BrowsePath + " - " + selected.Count.ToString() + " Item(s) Selected";
+                }
+                else
+                {
+                    mediaFileBrowserViewModel.Title = mediaFileBrowserViewModel.BrowsePath;
+                }
+              
+            });
         }
 
         private void mediaFileBrowser_ShowBrowserGrid()
@@ -66,6 +79,8 @@ namespace MediaViewer.MediaFileBrowser
             pager.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
             metaDataView.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
             videoPlayer.ViewModel.CloseCommand.DoExecute();
+
+            GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", mediaFileBrowserViewModel.Title);
         }
 
         private void mediaFileBrowser_ShowImage(string location)

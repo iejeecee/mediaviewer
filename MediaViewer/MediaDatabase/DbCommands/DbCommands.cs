@@ -141,7 +141,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public void Dispose()
         {
-            if (!UsingExistingContext)
+            if (!UsingExistingContext && Db != null)
             {
                 Db.Dispose();
                 Db = null;

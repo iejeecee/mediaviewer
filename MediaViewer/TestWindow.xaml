@@ -1,9 +1,0 @@
-﻿<Window
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" x:Class="MediaViewer.TestWindow"
-        Title="TestWindows" Height="300" Width="300">
-    <Grid>
-        <DirectoryBrowser:DirectoryBrowserControl3 HorizontalAlignment="Left" Margin="0,10,0,0" VerticalAlignment="Top"/>
-    </Grid>
-</Window>

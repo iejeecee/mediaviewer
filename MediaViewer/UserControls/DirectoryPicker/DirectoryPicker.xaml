@@ -1,0 +1,64 @@
+﻿<UserControl x:Class="MediaViewer.UserControls.DirectoryPicker.DirectoryPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sd="http://icsharpcode.net/sharpdevelop/treeview"
+             xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+    <ResourceDictionary>
+        <ResourceDictionary.MergedDictionaries>
+            <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>            
+        </ResourceDictionary.MergedDictionaries>
+        <DirectoryPicker:NrImportedFilesConverter x:Key="nrImportedFilesConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>
+        <sd:SharpTreeView x:Name="treeView"                            
+                              ShowAlternation="False"   
+                              ShowRoot="False"
+                              ShowLines="False"
+                              SelectionChanged="treeView_SelectionChanged"                         
+                              >
+            <ListView.View>
+                <sd:SharpGridView>
+                    <GridView.Columns>
+                        <GridViewColumn Header="Location" Width="240">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <sd:SharpTreeNodeView>
+                                        <sd:SharpTreeNodeView.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Refresh" Click="refreshDirectory_Click"/>
+                                                <Separator/>
+                                                <MenuItem Header="Create" />
+                                                <MenuItem Header="Rename" Click="renameDirectory_Click"/>
+                                                <MenuItem Header="Delete" Command="ApplicationCommands.Delete"/>
+                                            </ContextMenu>
+                                        </sd:SharpTreeNodeView.ContextMenu>
+                                    </sd:SharpTreeNodeView>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Imported">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding NrImported, Converter={StaticResource nrImportedFilesConverter}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Free Space">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding FreeSpaceBytes, Converter={StaticResource formatSizeBytesConverter}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView.Columns>
+                </sd:SharpGridView>
+            </ListView.View>
+        </sd:SharpTreeView>
+    </Grid>
+</UserControl>

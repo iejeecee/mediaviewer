@@ -186,6 +186,9 @@
     <Compile Include="ImagePanel\ContrastView.xaml.cs">
       <DependentUpon>ContrastView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImagePanel\ImageWithPagerView.xaml.cs">
+      <DependentUpon>ImageWithPagerView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Import\ExportView.xaml.cs">
       <DependentUpon>ExportView.xaml</DependentUpon>
     </Compile>
@@ -204,10 +207,21 @@
     </Compile>
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
+    <Compile Include="Progress\INonCancellableOperationProgress.cs" />
+    <Compile Include="Progress\NonCancellableOperationProgressView.xaml.cs">
+      <DependentUpon>NonCancellableOperationProgressView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Torrent\Bencoding.cs" />
+    <Compile Include="Torrent\TorrentCreationProgressView.xaml.cs">
+      <DependentUpon>TorrentCreationProgressView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Torrent\TorrentCreationProgressViewModel.cs" />
+    <Compile Include="Torrent\TorrentCreationView.xaml.cs">
+      <DependentUpon>TorrentCreationView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Torrent\TorrentCreationViewModel.cs" />
     <Compile Include="UserControls\AutoCompleteBox\AutoCompleteBoxView.xaml.cs">
       <DependentUpon>AutoCompleteBoxView.xaml</DependentUpon>
@@ -217,17 +231,6 @@
       <DependentUpon>DateTimePicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\DateTimePicker\DateTimePickerBase.cs" />
-    <Compile Include="DirectoryBrowser\DirectoryBrowserControl2.xaml.cs">
-      <DependentUpon>DirectoryBrowserControl2.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DirectoryBrowser\DirectoryBrowserControl3.xaml.cs">
-      <DependentUpon>DirectoryBrowserControl3.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="DirectoryBrowser\DirectoryBrowserViewModel.cs" />
-    <Compile Include="DirectoryBrowser\DirectoryPathModel.cs" />
-    <Compile Include="DirectoryBrowser\DrivePathModel.cs" />
-    <Compile Include="DirectoryBrowser\NrImportedFilesConverter.cs" />
-    <Compile Include="DirectoryBrowser\PathModel.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="GenericEventArgs\GEventArgs.cs" />
     <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
@@ -363,6 +366,14 @@
     </Compile>
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
+    <Compile Include="UserControls\DirectoryPicker\DirectoryLocation.cs" />
+    <Compile Include="UserControls\DirectoryPicker\DirectoryPicker.xaml.cs">
+      <DependentUpon>DirectoryPicker.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\DirectoryPicker\DriveLocation.cs" />
+    <Compile Include="UserControls\DirectoryPicker\Location.cs" />
+    <Compile Include="UserControls\DirectoryPicker\NrImportedFilesConverter.cs" />
+    <Compile Include="UserControls\DirectoryPicker\RootLocation.cs" />
     <Compile Include="UserControls\TagPicker\TagPickerView.xaml.cs">
       <DependentUpon>TagPickerView.xaml</DependentUpon>
     </Compile>
@@ -414,9 +425,6 @@
     <Compile Include="Settings\IsolatedStorageSettingsStore.cs" />
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\SettingsProvider.cs" />
-    <Compile Include="TestWindow.xaml.cs">
-      <DependentUpon>TestWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
     <Compile Include="UserControls\Relation\RelationEnum.cs" />
@@ -473,6 +481,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ImagePanel\ImageWithPagerView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Import\ExportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -485,7 +497,19 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Progress\NonCancellableOperationProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Settings\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Torrent\TorrentCreationProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Torrent\TorrentCreationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -494,14 +518,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\DateTimePicker\DateTimePicker.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DirectoryBrowser\DirectoryBrowserControl2.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="DirectoryBrowser\DirectoryBrowserControl3.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -550,6 +566,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MetaData\MetaDataView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\DirectoryPicker\DirectoryPicker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -602,10 +622,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Search\SearchView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -850,6 +866,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\folder_opening.ico" />
+    <Resource Include="Resources\Icons\torrent.ico" />
     <Resource Include="Resources\Icons\preview.ico" />
     <Resource Include="Resources\Icons\object-rotate-left.ico" />
     <Resource Include="Resources\Icons\object-rotate-right.ico" />

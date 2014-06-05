@@ -1,0 +1,19 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MediaViewer.ImagePanel" xmlns:Pager="clr-namespace:MediaViewer.Pager" x:Class="MediaViewer.ImagePanel.ImageWithPagerView" 
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid Background="{StaticResource imageGridBackgroundColor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <local:ImageView x:Name="imageView" Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+        <Pager:PagerView x:Name="imagePagerView" HorizontalAlignment="Center" Grid.Row="1" VerticalAlignment="Bottom" NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
+			        NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
+			        LastPageCommand="{Binding LastPageCommand}" Visibility="Visible"/>
+    </Grid>
+</UserControl>

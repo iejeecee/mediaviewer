@@ -96,7 +96,35 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                     if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(location))
                     {
+                        // update location in dictionary
                         Factory.renameInDictionary(oldLocation, location);
+
+                        // update location in the database
+                        if (Media != null)
+                        {
+                            Media.Location = location;
+
+                            if (Media.IsImported)
+                            {
+                                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                                {
+                                    Media = mediaCommands.update(Media);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                            {
+                                Media = mediaCommands.findMediaByLocation(oldLocation);
+                                if (Media != null)
+                                {
+                                    Media.Location = location;
+                                    Media = mediaCommands.update(Media);
+                                }
+                            }
+
+                        }
                     }
 
                     NotifyPropertyChanged();                   
@@ -322,6 +350,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         /// </summary>
         /// <param name="newLocation"></param>
         /// <param name="progress"></param>
+        /// <param name="updateLocationOnly">if true, don't physically move the item</param>
         /// <returns></returns>
         public bool move(String newLocation, IProgress progress)
         {
@@ -335,25 +364,12 @@ namespace MediaViewer.MediaFileModel.Watcher
                 {
                     return (isImported);
                 }
-        
+
+               
                 FileUtils fileUtils = new FileUtils();
 
                 fileUtils.moveFile(Location, newLocation, progress);
-
-                if (Media != null)
-                {
-                    Media.Location = newLocation;
-
-                    if (Media.IsImported)
-                    {
-                        using (MediaDbCommands mediaCommands = new MediaDbCommands())
-                        {
-                            Media = mediaCommands.update(Media);
-                        }
-                    }
-                }
-
-
+                           
                 // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
                 // If location is changed to it's new location it will not be be found in the current mediastate. 
                 // So only update the location when mediafilewatcher is not active.
@@ -370,6 +386,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
             
         }
+            
 
         public bool import(CancellationToken token)
         {

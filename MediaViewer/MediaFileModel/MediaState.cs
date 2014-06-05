@@ -27,7 +27,7 @@ namespace MediaViewer.MediaFileModel
         MediaLockedCollection uiMediaCollection;
 
         /// <summary>
-        /// All the media (potentially) visible to the user in the user interface
+        /// All (potentially) visible Media in the user interface
         /// </summary>
         public MediaLockedCollection UIMediaCollection
         {

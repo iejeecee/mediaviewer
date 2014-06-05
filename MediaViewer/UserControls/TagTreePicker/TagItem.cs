@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.TagTreePicker
 {
-    class TagItem : TagTreePickerItem, IComparable<TagItem>, IEquatable<TagItem>
+    public class TagItem : TagTreePickerItem, IComparable<TagItem>, IEquatable<TagItem>
     {
         Tag tag;
 

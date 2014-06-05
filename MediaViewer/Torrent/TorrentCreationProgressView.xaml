@@ -1,0 +1,14 @@
+﻿<Window x:Class="MediaViewer.Torrent.TorrentCreationProgressView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Progress="clr-namespace:MediaViewer.Progress"
+        Title="Torrent File Creation Progress" Height="350" Width="520" Icon="/MediaViewer;component/Resources/Icons/torrent.ico">
+    <Grid>
+        <Progress:ProgressControl HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                  TotalProgress="{Binding TotalProgress}" TotalProgressMax="{Binding TotalProgressMax}"
+                                  ItemProgress="{Binding ItemProgress}" ItemProgressMax="{Binding ItemProgressMax}" 
+                                  ItemInfo="{Binding ItemInfo}"
+                                  InfoMessages="{Binding InfoMessages}"
+                                  CancelCommand="{Binding CancelCommand}" OkCommand="{Binding OkCommand}"/>
+    </Grid>
+</Window>

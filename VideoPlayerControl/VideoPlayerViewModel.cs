@@ -270,6 +270,7 @@ namespace VideoPlayerControl
             audioDiffAvgCoef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
 
             syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
+            //syncMode = SyncMode.VIDEO_SYNCS_TO_AUDIO;
             
             videoRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             videoRefreshTimer.Tick += new EventHandler(videoRefreshTimer_Tick);

@@ -50,22 +50,6 @@ namespace MediaViewer.ImageGrid
 
         }
 
-        private void createPreviewMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-           /* MediaFileItem item = (MediaFileItem)DataContext;
-
-            VideoPreviewImageView preview = new VideoPreviewImageView();
-            preview.ViewModel.Media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
-            preview.ShowDialog();
-            */
-
-            TorrentCreationViewModel vm = new TorrentCreationViewModel();
-            vm.PathRoot = MediaFileWatcher.Instance.Path;
-            vm.Media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
-            vm.Announce = new Uri("udp://tracker.openbittorrent.com:80/announce");
-            vm.createTorrent();
-
-        }
 
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {

@@ -7,26 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.DirectoryBrowser
+namespace MediaViewer.UserControls.DirectoryPicker
 {
-    class DrivePathModel : PathModel
+    class DriveLocation : Location
     {
-
         static DriveIdleMonitor driveIdleMonitor = new DriveIdleMonitor();
 
-        DriveInfo info;
-
-        public DriveInfo DriveInfo
-        {
-            get { return info; }           
-        }
-
-        public DrivePathModel(DriveInfo info) : base(info.Name)         
-        {
-            this.info = info;
-            Parent = null;
-            Name = info.Name;
-                    
+        public DriveLocation(DriveInfo info)
+        {        
             switch (info.DriveType)
             {
                 case DriveType.CDRom:
@@ -78,10 +66,12 @@ namespace MediaViewer.DirectoryBrowser
                         VolumeLabel = "Unknown Drive";
                         break;
                     }
-              
             }
-        
-            if (driveIdleMonitor.DrivesMonitored.Contains(Name.Replace("\\","")))
+
+            Name = info.Name.TrimEnd(new char[] { '\\' });
+            FullName = info.Name;
+
+            if (driveIdleMonitor.DrivesMonitored.Contains(Name))
             {
                 FreeSpaceBytes = info.TotalFreeSpace;
                 driveIdleMonitor.DriveInUse += new EventHandler<string>(driveIdleMonitor_driveInUse);
@@ -91,38 +81,27 @@ namespace MediaViewer.DirectoryBrowser
                 FreeSpaceBytes = 0;
             }
 
-
-            MediaDbCommands mediaCommand = new MediaDbCommands();
-
-            NrImportedFiles = mediaCommand.getNrMediaInLocation(getFullPath());
-        }
-
-        long freeSpaceBytes;
-
-        override public long FreeSpaceBytes 
-        {
-            get { return freeSpaceBytes; }
-            set
+            using (MediaDbCommands mediaCommand = new MediaDbCommands())
             {
-                freeSpaceBytes = value;          
-                NotifyPropertyChanged();
+                NrImported = mediaCommand.getNrMediaInLocation(FullName);
             }
+
+            LazyLoading = true;
+
+
         }
-
-        string volumeLabel;
-
-        override public string VolumeLabel
-        {
-            get { return volumeLabel; }
-            set { volumeLabel = value;
-                NotifyPropertyChanged();
-            }
-        }
-
         private void driveIdleMonitor_driveInUse(object sender, string e)
         {
-            FreeSpaceBytes = info.TotalFreeSpace;
+            FreeSpaceBytes = new DriveInfo(Name).TotalFreeSpace;
         }
-               
+
+        public override bool ShowExpander
+        {
+            get
+            {
+
+                return (true);
+            }
+        }
     }
 }

@@ -1,5 +1,4 @@
-﻿using MediaViewer.DirectoryBrowser;
-using MediaViewer.ImageGrid;
+﻿using MediaViewer.ImageGrid;
 using MediaViewer.Input;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
@@ -22,6 +21,8 @@ using MediaViewer.Export;
 using MediaViewer.ImagePanel;
 using VideoPlayerControl;
 using MediaViewer.VideoPanel;
+using MediaViewer.VideoPreviewImage;
+using MediaViewer.Torrent;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -153,6 +154,36 @@ namespace MediaViewer.MediaFileBrowser
                 });
             ContractCommand.CanExecute = false;
 
+            CreateVideoPreviewImagesCommand = new Command(() =>
+                {
+                    List<MediaFileItem> media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    if (media.Count == 0) return;
+
+                    VideoPreviewImageView preview = new VideoPreviewImageView();
+                    
+                    preview.ViewModel.Media = media;
+                    preview.ShowDialog();
+                });
+
+            CreateTorrentFileCommand = new Command(() =>
+                {
+                    List<MediaFileItem> media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    if (media.Count == 0) return;
+
+                    try
+                    {
+                        TorrentCreationView torrent = new TorrentCreationView();
+
+                        torrent.ViewModel.Media = media;
+                        torrent.ViewModel.PathRoot = MediaFileWatcher.Instance.Path;
+
+                        torrent.ShowDialog();
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                });
   
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_SetPath", (location) =>
             {
@@ -167,6 +198,7 @@ namespace MediaViewer.MediaFileBrowser
 
             set
             {
+              
                 FileInfo fileInfo = new FileInfo(value);
 
                 string pathWithoutFileName;
@@ -191,7 +223,8 @@ namespace MediaViewer.MediaFileBrowser
                 }
 
                 mediaFileWatcher.Path = pathWithoutFileName;
-              
+
+                Title = value;
                 GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_PathSelected", value);
 
                 NotifyPropertyChanged();
@@ -213,7 +246,23 @@ namespace MediaViewer.MediaFileBrowser
         {
             
         }
-    
+
+        Command createVideoPreviewImagesCommand;
+
+        public Command CreateVideoPreviewImagesCommand
+        {
+            get { return createVideoPreviewImagesCommand; }
+            set { createVideoPreviewImagesCommand = value; }
+        }
+
+        Command createTorrentFileCommand;
+
+        public Command CreateTorrentFileCommand
+        {
+            get { return createTorrentFileCommand; }
+            set { createTorrentFileCommand = value; }
+        }
+
         Command deleteSelectedItemsCommand;
 
         public Command DeleteSelectedItemsCommand
@@ -375,6 +424,20 @@ namespace MediaViewer.MediaFileBrowser
 
             BrowsePath = e.FullPath;
             //}
+        }
+
+        string title;
+        public String Title {
+            get
+            {
+                return (title);
+            }
+            set
+            {
+                title = value;
+
+                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", value);
+            }
         }
     }
 }

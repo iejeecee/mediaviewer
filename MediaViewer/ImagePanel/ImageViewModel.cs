@@ -534,7 +534,8 @@ namespace MediaViewer.ImagePanel
                 SelectedMedia.Add(item);
 
                 //setIdentityTransform();
-              
+
+                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", item.Location);
             }
             catch (TaskCanceledException)
             {

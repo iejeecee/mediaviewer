@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.UserControls.TagTreePicker
 {
-    class TagTreePickerItem : SharpTreeNode, IComparable<TagTreePickerItem>, IEquatable<TagTreePickerItem>
+    public class TagTreePickerItem : SharpTreeNode, IComparable<TagTreePickerItem>, IEquatable<TagTreePickerItem>
     {
         protected TagTreePickerItem()
         {

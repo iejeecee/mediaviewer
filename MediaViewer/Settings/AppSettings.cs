@@ -23,6 +23,7 @@ namespace MediaViewer.Settings
             filenamePresets = new ObservableCollection<string>();
             filenameHistory = new ObservableCollection<string>();
             createDirectoryHistory = new ObservableCollection<string>();
+            torrentAnnounceHistory = new ObservableCollection<string>();
 
         }
 
@@ -95,12 +96,22 @@ namespace MediaViewer.Settings
             set { createDirectoryHistory = value; }
         }
 
+        ObservableCollection<String> torrentAnnounceHistory;
+
+        public ObservableCollection<String> TorrentAnnounceHistory
+        {
+            get { return torrentAnnounceHistory; }
+            set { torrentAnnounceHistory = value; }
+        }
+
+
         public void clearHistory()
         {
 
             FilenameHistory.Clear();
             MetaDataUpdateDirectoryHistory.Clear();
             CreateDirectoryHistory.Clear();
+            TorrentAnnounceHistory.Clear();
        
         }
 

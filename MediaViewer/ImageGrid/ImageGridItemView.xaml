@@ -162,8 +162,7 @@
             </Grid>
             <ToggleButton.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="View" Click="viewMenuItem_Click"/>
-                    <MenuItem Header="Create Preview" Click="createPreviewMenuItem_Click"/>
+                    <MenuItem Header="View" Click="viewMenuItem_Click"/>                   
                     <Separator/>
                     <MenuItem Header="Select All" Click="selectAllMenuItem_Click"/>
                     <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>

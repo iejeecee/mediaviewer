@@ -28,6 +28,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
+        public List<Media> getMediaInLocation(String location)
+        {
+            List<Media> result = Db.MediaSet.Where(m => m.Location.StartsWith(location)).ToList();
+
+            return (result);
+        }
+
         public Media findMediaByLocation(String location)
         {
             Media result = Db.MediaSet.Include("Tags").FirstOrDefault(m => m.Location.Equals(location));

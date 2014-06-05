@@ -421,6 +421,7 @@ namespace MediaViewer.Utils
 
         }
 
+
         public void deleteDirectory(String location)
         {
             StringCollection files = new StringCollection();

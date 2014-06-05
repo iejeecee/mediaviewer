@@ -201,12 +201,39 @@ namespace MediaViewer.MetaData
                     Items.ExitReaderLock();
                 }
             });
+
+            MediaFileWatcher.Instance.MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
           
 
             FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
 
             MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
             
+        }
+
+        private void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("Location"))
+            {
+                Items.EnterReaderLock();
+                try
+                {
+                    if (BatchMode == false && Items.Count > 0)
+                    {
+                        MediaFileItem modifiedItem = sender as MediaFileItem;
+
+                        if (Items.Items[0].Equals(modifiedItem))
+                        {
+                            Filename = Path.GetFileNameWithoutExtension(modifiedItem.Location);
+                            Location = FileUtils.getPathWithoutFileName(modifiedItem.Location);
+                        }
+                    }
+                }
+                finally
+                {
+                    Items.ExitReaderLock();
+                }
+            }
         }
 
         MediaLockedCollection items;

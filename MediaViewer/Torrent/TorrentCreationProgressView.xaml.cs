@@ -12,29 +12,29 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MediaViewer.VideoPreviewImage
+namespace MediaViewer.Torrent
 {
     /// <summary>
-    /// Interaction logic for VideoPreviewImageProgressView.xaml
+    /// Interaction logic for TorrentCreationProgressView.xaml
     /// </summary>
-    public partial class VideoPreviewImageProgressView : Window
+    public partial class TorrentCreationProgressView : Window
     {
-        VideoPreviewImageProgressViewModel viewModel;
+        TorrentCreationProgressViewModel viewModel;
 
-        public VideoPreviewImageProgressViewModel ViewModel
+        public TorrentCreationProgressViewModel ViewModel
         {
             get { return viewModel; }
             set { viewModel = value; }
         }
 
-        public VideoPreviewImageProgressView()
+        public TorrentCreationProgressView()
         {
             InitializeComponent();
-            DataContext = ViewModel = new VideoPreviewImageProgressViewModel();
+            DataContext = ViewModel = new TorrentCreationProgressViewModel();
 
             ViewModel.ClosingRequest += ViewModel_ClosingRequest;
         }
-
+     
         private void ViewModel_ClosingRequest(object sender, MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs e)
         {
             this.Close();

@@ -2,8 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:DirectoryBrowser="clr-namespace:MediaViewer.DirectoryBrowser" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"         
              xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" 
              xmlns:Pager="clr-namespace:MediaViewer.Pager" 
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData" 
@@ -11,6 +10,7 @@
              xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" 
              xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel" 
              xmlns:VideoPlayer="clr-namespace:VideoPlayerControl;assembly=VideoPlayerControl"
+             xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="903.333">
@@ -19,12 +19,8 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <DataTemplate DataType="{x:Type ImageGrid:PagedImageGridViewModel}">
-
-            </DataTemplate>
-            <DataTemplate DataType="{x:Type ImagePanel:ImageViewModel}">
-
-            </DataTemplate>
+            <DataTemplate DataType="{x:Type ImageGrid:PagedImageGridViewModel}"/>
+            <DataTemplate DataType="{x:Type ImagePanel:ImageViewModel}"/>
             <DataTemplate DataType="{x:Type VideoPlayer:VideoPlayerViewModel}">
                 <VideoPanel:VideoView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
             </DataTemplate>
@@ -38,11 +34,11 @@
         </Grid.ColumnDefinitions>
         <TabControl x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{StaticResource uiElementBorderColor}">
             <TabItem Header="Browse Path" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
-                <DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" Grid.Column="0" SelectedPath="{Binding BrowsePath, Mode=TwoWay}"/>
+                <DirectoryPicker:DirectoryPicker x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}"/>
             </TabItem>
             <TabItem Header="Search" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <Search:SearchView Grid.Column="0"/>
-            </TabItem>
+            </TabItem>            
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
@@ -58,13 +54,13 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Grid Grid.Row="0" Name="imageOptionsGrid" Visibility="Collapsed">
+                <Grid Grid.Row="0" x:Name="imageOptionsGrid" Visibility="Collapsed">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>                     
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
@@ -88,33 +84,33 @@
                         <Image Source="pack://application:,,,/Resources/Icons/object-rotate-left.ico"/>
                     </Button>
                 </Grid>
-                <Grid Grid.Row="1" Name="browserOptionsGrid">
+                <Grid Grid.Row="1" x:Name="browserOptionsGrid">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>                        
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Pager:PagerView x:Name="pager" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="5" VerticalAlignment="Center" HorizontalAlignment="Center" 
-			        NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
-			        NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
-			        LastPageCommand="{Binding LastPageCommand}"/>
+						NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
+						NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
+						LastPageCommand="{Binding LastPageCommand}"/>
                     <Button Grid.Column="0" Grid.Row="1" Width="30" Height="20">
                         <Button.Style>
                             <Style>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ExpandCommand.CanExecute}" Value="true">
-                                        <Setter Property="Button.Command" Value="{Binding ExpandCommand}"/>
-                                        <Setter Property="Button.ToolTip" Value="Media View"/>
-                                        <Setter Property="Button.Content">
+                                        <Setter Property="ButtonBase.Command" Value="{Binding ExpandCommand}"/>
+                                        <Setter Property="FrameworkElement.ToolTip" Value="Media View"/>
+                                        <Setter Property="ContentControl.Content">
                                             <Setter.Value>
                                                 <Image Source="pack://application:,,,/Resources/Icons/expand.ico"/>
                                             </Setter.Value>
                                         </Setter>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ContractCommand.CanExecute}" Value="true">
-                                        <Setter Property="Button.Command" Value="{Binding ContractCommand}"/>
-                                        <Setter Property="Button.ToolTip" Value="Grid View"/>
-                                        <Setter Property="Button.Content">
+                                        <Setter Property="ButtonBase.Command" Value="{Binding ContractCommand}"/>
+                                        <Setter Property="FrameworkElement.ToolTip" Value="Grid View"/>
+                                        <Setter Property="ContentControl.Content">
                                             <Setter.Value>
                                                 <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
                                             </Setter.Value>
@@ -124,7 +120,7 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <Button Name="deleteButton" Grid.Row="1" Grid.Column="2" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
+                    <Button x:Name="deleteButton" Grid.Row="1" Grid.Column="2" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
                         <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                     </Button>
                 </Grid>

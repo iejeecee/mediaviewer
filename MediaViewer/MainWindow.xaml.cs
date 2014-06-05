@@ -19,7 +19,6 @@ using Microsoft.Win32;
 using MediaViewer.ImagePanel;
 using System.ComponentModel;
 using MediaViewer.About;
-using MediaViewer.DirectoryBrowser;
 using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Utils.Windows;
@@ -66,35 +65,21 @@ namespace MediaViewer
 
             mainWindowViewModel = new MainWindowViewModel();
             DataContext = mainWindowViewModel;
-           
-            imagePagerView.DataContext = imageView.DataContext;
-
+                    
             mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
-       
-            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_PathSelected", new Action<String>(browsingDirectory_IsSelected));
+
+            GlobalMessenger.Instance.Register<String>("MainWindow_SetTitle", new Action<String>(mainWindow_SetTitle));            
             GlobalMessenger.Instance.Register("ToggleFullScreen", new Action(toggleFullScreen));
 
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
-            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((o,e) =>
-            {
-                if (mediaFileBrowser.Visibility == Visibility.Visible)
-                {
-                    List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
-                 
-                    if (selected.Count > 0)
-                    {
-                        setTitle(mediaFileBrowserViewModel.BrowsePath + " - " + selected.Count.ToString() + " Item(s) Selected");
-                    }
-                    else
-                    {
-                        setTitle(mediaFileBrowserViewModel.BrowsePath);
-                    }
-                }
-            });
+                
+        }
 
-           
+        private void mainWindow_SetTitle(string newTitle)
+        {
+            setTitle(newTitle);
         }
 
         private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
@@ -122,10 +107,7 @@ namespace MediaViewer
             //test.Activate();
         }
 
-        void browsingDirectory_IsSelected(String path)
-        {
-            setTitle(path);
-        }
+      
 
         void initializeImageView()
         {
@@ -298,8 +280,7 @@ namespace MediaViewer
         private void showMediaFileBrowser()
         {
 
-            imageView.Visibility = Visibility.Hidden;
-            imagePagerView.Visibility = Visibility.Hidden;
+            imageView.Visibility = Visibility.Hidden;        
             videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Visible;
          
@@ -315,8 +296,7 @@ namespace MediaViewer
         private void showImageView(string location)
         {
 
-            imageView.Visibility = Visibility.Visible;
-            imagePagerView.Visibility = Visibility.Visible;
+            imageView.Visibility = Visibility.Visible;    
             videoView.Visibility = Visibility.Hidden;
             mediaFileBrowser.Visibility = Visibility.Hidden;
 
@@ -331,9 +311,7 @@ namespace MediaViewer
 
         private void showVideoView(string location)
         {
-
             imageView.Visibility = Visibility.Hidden;
-            imagePagerView.Visibility = Visibility.Hidden;
             videoView.Visibility = Visibility.Visible;
             mediaFileBrowser.Visibility = Visibility.Hidden;
 

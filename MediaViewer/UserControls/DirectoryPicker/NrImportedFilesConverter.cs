@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MediaViewer.DirectoryBrowser
+namespace MediaViewer.UserControls.DirectoryPicker
 {
     class NrImportedFilesConverter : IValueConverter
     {
@@ -21,7 +21,7 @@ namespace MediaViewer.DirectoryBrowser
             {
                 return (nrImportedFiles.ToString());
             }
-           
+
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -30,3 +30,4 @@ namespace MediaViewer.DirectoryBrowser
         }
     }
 }
+

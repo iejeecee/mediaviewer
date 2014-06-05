@@ -46,7 +46,7 @@
                     <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
                 </CheckBox>
             </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="0,0,-31,-1.333" HorizontalAlignment="Right" Width="210" Background="{StaticResource toolBarBackgroundColor}">
+            <ToolBar x:Name="imageToolBar" Margin="-6.333,-1,62.333,0.667" HorizontalAlignment="Right" Width="200" Background="{StaticResource toolBarBackgroundColor}">
                 <xctk:DropDownButton x:Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
                     <xctk:DropDownButton.DropDownContent>
                         <StackPanel>
@@ -130,23 +130,23 @@
                     <Image Source="pack://application:,,,/Resources/Icons/contrast.ico"/>
                 </Button>
             </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-180,0,85.667,-0.333" Width="90" Background="{StaticResource toolBarBackgroundColor}">
+            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-430,0,0,0" Width="90" Background="{StaticResource toolBarBackgroundColor}">
                 <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
                 </Button>
                 <Button x:Name="exportButton" Height="16" ToolTip="Export" Command="{Binding ExportSelectedItemsCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
                 </Button>
-                <Button x:Name="deleteButton" Height="16" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
+                <Button Height="16" ToolTip="Create Video Preview Image(s)" Command="{Binding CreateVideoPreviewImagesCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/preview.ico"/>
+                </Button>
+                <Button Height="16" ToolTip="Create Torrent" Command="{Binding CreateTorrentFileCommand}">
+                    <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
                 </Button>
             </ToolBar>
         </ToolBarTray>
         <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
-        <ImagePanel:ImageView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,30" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Visible"/>
-        <Pager:PagerView x:Name="imagePagerView" HorizontalAlignment="Center" Grid.Row="2" VerticalAlignment="Bottom" NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
-			        NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
-			        LastPageCommand="{Binding LastPageCommand}" Visibility="Hidden"/>
-        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>        
+        <ImagePanel:ImageWithPagerView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Visible"/>       
+        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
     </Grid>
 </Window>
