@@ -281,7 +281,8 @@ namespace VideoPlayerControl
 
         }                                           
 
-        public void createScreenShot(String screenShotLocation, String screenShotName, ImageFormat screenShotFormat)
+        public void createScreenShot(String screenShotLocation, String screenShotName, ImageFormat screenShotFormat,
+            int positionSeconds, String videoLocation)
         {
             lock (renderLock)
             {
@@ -305,7 +306,7 @@ namespace VideoPlayerControl
                     screenShotName += "." + screenShotFormat.ToString();
 
                     screenShotName = Utils.getUniqueFileName(screenShotLocation + "\\" + screenShotName);
-
+                    
                     image.Save(screenShotName);
                     System.Media.SystemSounds.Exclamation.Play();
                 }

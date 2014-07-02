@@ -6,11 +6,15 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Data.Entity;
+using System.Data.Entity.Core;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
@@ -26,11 +30,19 @@ namespace MediaViewer.UserControls.TagPicker
     /// </summary>
     public partial class TagPickerView : UserControl
     {
-        const string tagClipboardDataFormat = "TagPickerView_TagNames";
+        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        static SolidColorBrush unselectedTagColor = new SolidColorBrush(Colors.White);
+        static SolidColorBrush parentSelectedTagColor = new SolidColorBrush(Colors.Red);
+        static SolidColorBrush childSelectedTagColor = new SolidColorBrush(Colors.Orange);
+
+        List<ToggleButton> selectedTags;
+        const string tagClipboardDataFormat = "TagPickerView_TagNames";
+        //TagPickerTagCollection tagPickerTags;
+      
         public TagPickerView()
         {
-         
+
             InitializeComponent();
 
             addTagAutoCompleteBox.CustomFindMatchesFunction = new UserControls.AutoCompleteBox.AutoCompleteBoxView.CustomFindMatchesDelegate((text) =>
@@ -45,11 +57,12 @@ namespace MediaViewer.UserControls.TagPicker
                 return (results.Cast<Object>().ToList());
             });
 
-            DependencyPropertyDescriptor.FromProperty(AutoCompleteBoxView.TextProperty, typeof(AutoCompleteBoxView)).AddValueChanged(addTagAutoCompleteBox,addTagAutoCompleteBox_TextChanged);
+            DependencyPropertyDescriptor.FromProperty(AutoCompleteBoxView.TextProperty, typeof(AutoCompleteBoxView)).AddValueChanged(addTagAutoCompleteBox, addTagAutoCompleteBox_TextChanged);
             DependencyPropertyDescriptor.FromProperty(AutoCompleteBoxView.SelectedItemProperty, typeof(AutoCompleteBoxView)).AddValueChanged(addTagAutoCompleteBox, addTagAutoCompleteBox_SelectedItemChanged);
 
             addButton.IsEnabled = false;
             clearButton.IsEnabled = false;
+            selectedTags = new List<ToggleButton>();
         }
       
         ~TagPickerView()
@@ -97,34 +110,41 @@ namespace MediaViewer.UserControls.TagPicker
             TagPickerView control = (TagPickerView)o;
                     
             ObservableCollection<Tag> tags = (ObservableCollection<Tag>)e.NewValue;
+            control.selectedTags.Clear();
             
             // WeakEventManager info:
             // http://www.kolls.net/blog/?p=17
-            if (control.tagListBox.ItemsSource != null)
+            if (e.OldValue != null)
             {
                 WeakEventManager<ObservableCollection<Tag>, NotifyCollectionChangedEventArgs>.RemoveHandler(
-                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tags_CollectionChanged);
-            }                                  
+                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tagPickerTags_CollectionChanged);
+            }
 
             control.tagListBox.ItemsSource = tags;
 
-            if (control.tagListBox.ItemsSource != null)
-            {            
+            if (e.NewValue != null)
+            {
                 WeakEventManager<ObservableCollection<Tag>, NotifyCollectionChangedEventArgs>.AddHandler(
-                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tags_CollectionChanged);
+                   control.tagListBox.ItemsSource as ObservableCollection<Tag>, "CollectionChanged", control.tagPickerTags_CollectionChanged);
             }
+
+            
         }
 
-        private void tags_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {           
+        private void tagPickerTags_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
             ObservableCollection<Tag> tags = (ObservableCollection<Tag>)sender;
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                selectedTags.Clear();
+            }
 
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (tags.Count == 0)
+                if (Tags.Count == 0)
                 {
-
-                    clearButton.IsEnabled = false;
+                    clearButton.IsEnabled = false;                   
                 }
                 else
                 {
@@ -154,7 +174,16 @@ namespace MediaViewer.UserControls.TagPicker
         public static readonly DependencyProperty AcceptOnlyExistingTagsProperty =
             DependencyProperty.Register("AcceptOnlyExistingTags", typeof(bool), typeof(TagPickerView), new PropertyMetadata(false));
 
-        
+        public bool EnableLinkingTags
+        {
+            get { return (bool)GetValue(EnableLinkingTagsProperty); }
+            set { SetValue(EnableLinkingTagsProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for EnableLinkingTags.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty EnableLinkingTagsProperty =
+            DependencyProperty.Register("EnableLinkingTags", typeof(bool), typeof(TagPickerView), new PropertyMetadata(false));
+              
         private void addTag(string tagName)
         {
             if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;          
@@ -188,8 +217,7 @@ namespace MediaViewer.UserControls.TagPicker
                     tag.Name = tagName;
                     
                 }
-               
-              
+                             
                 if (!Tags.Contains(tag))
                 {
                     Utils.Misc.insertIntoSortedCollection<Tag>(Tags, tag);
@@ -201,15 +229,7 @@ namespace MediaViewer.UserControls.TagPicker
         {
             addTag(addTagAutoCompleteBox.Text);
         }
-
-        private void removeButton_Click(object sender, RoutedEventArgs e)
-        {
-            while (tagListBox.SelectedItems.Count > 0)
-            {
-                Tags.Remove((Tag)tagListBox.SelectedItem);
-            }  
-        }
-
+   
         private void addTagAutoCompleteBox_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
@@ -224,38 +244,69 @@ namespace MediaViewer.UserControls.TagPicker
 
         private void clearButton_Click(object sender, RoutedEventArgs e)
         {
-            Tags.Clear();
+
+            if (selectedTags.Count == 0)
+            {
+                Tags.Clear();
+            }
+            else
+            {
+                for (int i = selectedTags.Count - 1; i >= 0; i--)
+                {
+                    Tags.Remove(selectedTags[i].Tag as Tag);
+                    selectedTags.RemoveAt(i);
+                }
+            }
+           
         }
-
-        private void tagButton_Click(object sender, RoutedEventArgs e)
-        {
-           Tag tag = (sender as Button).Tag as Tag;
-
-           Tags.Remove(tag);
-        }
-
+    
         private void contextMenuCut_Click(object sender, RoutedEventArgs e)
         {
             List<String> tagNames = new List<string>();
 
-            foreach (Tag tag in Tags)
+            if (selectedTags.Count == 0)
             {
-                tagNames.Add(tag.Name);
+                foreach (Tag tag in Tags)
+                {
+                    tagNames.Add(tag.Name);
+                }
+                Tags.Clear();
             }
+            else
+            {
+                for (int i = selectedTags.Count - 1; i >= 0; i--)
+                {
+                    tagNames.Add((selectedTags[i].Tag as Tag).Name);
+                    Tags.Remove(selectedTags[i].Tag as Tag);
+                    selectedTags.RemoveAt(i);
+                }
 
-            Clipboard.SetData(tagClipboardDataFormat, tagNames);
-            Tags.Clear();
+                tagNames.Reverse();
+            }
+                                     
+            Clipboard.SetData(tagClipboardDataFormat, tagNames);           
         }
 
         private void contextMenuCopy_Click(object sender, RoutedEventArgs e)
         {
             List<String> tagNames = new List<string>();
 
-            foreach (Tag tag in Tags)
+            if (selectedTags.Count == 0)
             {
-                tagNames.Add(tag.Name);
+                foreach (Tag tag in Tags)
+                {
+                    tagNames.Add(tag.Name);
+                }
             }
+            else
+            {
+                foreach (ToggleButton button in selectedTags)
+                {                   
+                    tagNames.Add((button.Tag as Tag).Name);                   
+                }
 
+            }
+            
             Clipboard.SetData(tagClipboardDataFormat, tagNames);
         }
 
@@ -273,6 +324,31 @@ namespace MediaViewer.UserControls.TagPicker
 
         private void contextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
+            if (selectedTags.Count == 0)
+            {
+                contextMenuUnselect.IsEnabled = false;
+            }
+            else
+            {
+                contextMenuUnselect.IsEnabled = true;
+            }
+
+            if (selectedTags.Count < 2 && EnableLinkingTags)
+            {
+                contextMenuLink.IsEnabled = false;
+            }
+            else
+            {
+                if (EnableLinkingTags)
+                {
+                    contextMenuLink.IsEnabled = true;
+                }
+                else
+                {
+                    contextMenuLink.Visibility = System.Windows.Visibility.Collapsed;
+                }
+            }
+
             if (Tags.Count > 0)
             {
                 contextMenuCopy.IsEnabled = true;
@@ -294,7 +370,152 @@ namespace MediaViewer.UserControls.TagPicker
             }
         }
 
-        
-        
+        void setSelectedTagColors()
+        {
+            for (int i = 0; i < selectedTags.Count; i++)
+            {
+                if (i == 0 && EnableLinkingTags)
+                {
+                    selectedTags[i].Background = parentSelectedTagColor;
+                }
+                else
+                {
+                    selectedTags[i].Background = childSelectedTagColor;
+                }
+            }
+        }
+
+        private void tag_Checked(object sender, RoutedEventArgs e)
+        {
+            ToggleButton button = sender as ToggleButton;
+
+            selectedTags.Add(button);
+            setSelectedTagColors();
+        }
+
+        private void tag_Unchecked(object sender, RoutedEventArgs e)
+        {
+            ToggleButton button = sender as ToggleButton;
+
+            selectedTags.Remove(button);
+
+            button.Background = unselectedTagColor;
+            setSelectedTagColors();
+        }
+
+        void unselectAllTags()
+        {
+            for (int i = selectedTags.Count - 1; i >= 0; i--)
+            {
+                selectedTags[i].IsChecked = false;
+            }
+        }
+    
+        void linkTags(TagDbCommands tagCommands)
+        {
+            Tag parent = tagCommands.getTagByName((selectedTags[0].Tag as Tag).Name);
+
+            if (parent == null)
+            {
+                parent = new Tag();
+                parent.Name = (selectedTags[0].Tag as Tag).Name;
+                tagCommands.Db.Entry(parent).State = EntityState.Added;
+            }
+            else
+            {
+                tagCommands.Db.Entry(parent).State = EntityState.Modified;
+            }
+
+            parent.ChildTags.Clear();
+
+            for (int i = 1; i < selectedTags.Count; i++)
+            {
+                Tag tag = tagCommands.getTagByName((selectedTags[i].Tag as Tag).Name);
+
+                if (tag == null)
+                {
+                    tag = new Tag();
+                    tag.Name = (selectedTags[0].Tag as Tag).Name;
+                    tagCommands.Db.Entry(tag).State = EntityState.Added;
+                }
+                else
+                {
+                    tagCommands.Db.Entry(tag).State = EntityState.Modified;
+                }
+
+                parent.ChildTags.Add(tag);
+            }
+
+            tagCommands.Db.SaveChanges();
+            
+        }
+
+        private void contextMenuLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedTags.Count < 2) return;         
+            int nrTries = 3;
+
+            using (TagDbCommands tagCommands = new TagDbCommands())
+            {
+                do
+                {
+                    try
+                    {
+                        linkTags(tagCommands);
+                        unselectAllTags();
+                        nrTries = 0;
+                    }
+                    catch (DbUpdateConcurrencyException ex)
+                    {                      
+                        if (nrTries > 0)
+                        {                           
+                            nrTries -= 1;                        
+                        }
+                        else
+                        {                     
+                            log.Error("Error linking tags", ex);
+                            MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error("Error linking tags", ex);
+                        MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+
+                } while (nrTries > 0);
+            }
+
+        }
+
+        private void contextMenuUnselect_Click(object sender, RoutedEventArgs e)
+        {
+            unselectAllTags();
+        }
+
+        private void tag_ToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            ToggleButton button = sender as ToggleButton;
+            String tooltip = (button.Tag as Tag).Name;
+
+            try
+            {
+                using (TagDbCommands tagCommands = new TagDbCommands())
+                {
+                    Tag tag = tagCommands.getTagByName((button.Tag as Tag).Name);
+                    if (tag == null) return;
+
+                    foreach (Tag child in tag.ChildTags)
+                    {
+                        tooltip += "\n" + child.Name;
+                    }
+                }
+            }
+            finally
+            {
+                button.ToolTip = tooltip;
+            }
+        }
+
     }
 }

@@ -109,7 +109,7 @@ namespace MediaViewer.Utils
             int fileProgress = (int)((100 * totalBytesTransferred) / totalFileSize);
 
             GCHandle h = GCHandle.FromIntPtr(data);
-            IProgress progress = (IProgress)h.Target;
+            ICancellableOperationProgress progress = (ICancellableOperationProgress)h.Target;
 
             if (fileProgress != progress.ItemProgress)
             {
@@ -122,7 +122,7 @@ namespace MediaViewer.Utils
 
         }
 
-        public bool copyFile(string source, string destination, IProgress progress)
+        public bool copyFile(string source, string destination, ICancellableOperationProgress progress)
         {
 
             GCHandle handle = GCHandle.Alloc(progress);
@@ -180,7 +180,7 @@ namespace MediaViewer.Utils
             }
         }
 
-        public void copy(StringCollection sourcePaths, StringCollection destPaths, IProgress progress)
+        public void copy(StringCollection sourcePaths, StringCollection destPaths, ICancellableOperationProgress progress)
         {
             if (sourcePaths.Count != destPaths.Count)
             {
@@ -225,7 +225,7 @@ namespace MediaViewer.Utils
 
         }
        
-        public void moveFile(string source, string destination, IProgress progress)
+        public void moveFile(string source, string destination, ICancellableOperationProgress progress)
         {
             if (progress.CancellationToken.IsCancellationRequested) return;
             
@@ -259,7 +259,7 @@ namespace MediaViewer.Utils
 
         }
 
-        public void move(StringCollection sourcePaths, StringCollection destPaths, IProgress progress)
+        public void move(StringCollection sourcePaths, StringCollection destPaths, ICancellableOperationProgress progress)
         {
 
             if (progress.CancellationToken.IsCancellationRequested) return;
@@ -495,43 +495,7 @@ namespace MediaViewer.Utils
 
             throw new IOException(e.Message, errorCode);
         }
-
-
-        /*
-            static FileStream openAndLockFile(string fileName, FileAccess fileAccess, FileShare fileShare, int maxAttempts, int timeoutMs, bool ignoreIOExceptions) {
-
-                int attempt = 0;
-
-                while(true) {
-
-                    try {
-
-                        return File.Open(fileName, FileMode.Open, fileAccess, fileShare); 
-
-                    } catch(IOException e) {
-
-                        if(!isFileLockedException(e)) {
-
-                            // file is not locked but some other exception happend
-                            // rethrow the exception
-
-                            if(ignoreIOExceptions == false) {
-                                throw;
-                            }
-                        }
-
-                        if(++attempt > maxAttempts) {
-
-                            // attempts to open file exceeded
-                            throw;
-                        }
-
-                        Thread.Sleep(timeoutMs);
-
-                    }
-                }
-            }
-        */
+       
         public static bool isFileLocked(string fileName, bool ignoreIOExceptions)
         {
 
@@ -588,6 +552,21 @@ namespace MediaViewer.Utils
 
                 uniqueName = dir + "\\" + name + " (" + Convert.ToString(++i) + ")" + ext;
 
+            }
+
+            return (uniqueName);
+        }
+
+        public static string getUniqueDirectoryName(string path)
+        {
+            string name = "New Folder";
+            string uniqueName = path + "\\" + name;
+           
+            int i = 1;
+
+            while (Directory.Exists(uniqueName))
+            {
+                uniqueName = path + "\\" + name + " (" + Convert.ToString(++i) + ")";
             }
 
             return (uniqueName);
@@ -708,6 +687,20 @@ namespace MediaViewer.Utils
             Regex r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
             return (r.Replace(fileName, replaceString));
 
+        }
+
+        public static bool containsIllegalFileNameChars(String text)
+        {
+            string illegalChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+
+            foreach (char c in text)
+            {
+                if(illegalChars.Contains(c)) {
+                    return(true);
+                }
+            }
+
+            return (false);
         }
 
         public static FileSystemRights getRights(string userName, string path)

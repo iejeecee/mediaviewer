@@ -1,5 +1,6 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -50,8 +51,10 @@ namespace MediaViewer.Torrent
 
             OkCommand = new Command(async () =>
                 {
-                    TorrentCreationProgressView progress = new TorrentCreationProgressView();
-                    Task task = progress.ViewModel.createTorrentAsync(this);
+                    CancellableOperationProgressView progress = new CancellableOperationProgressView();
+                    TorrentCreationProgressViewModel vm = new TorrentCreationProgressViewModel();
+                    progress.DataContext = vm;
+                    Task task = vm.createTorrentAsync(this);
                     progress.Show();                    
                     OnClosingRequest();
                     await task;

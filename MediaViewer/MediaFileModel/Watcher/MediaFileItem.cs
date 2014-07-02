@@ -30,16 +30,28 @@ namespace MediaViewer.MediaFileModel.Watcher
             get { return rwLock; }
             set { rwLock = value; }
         }
-  
+
+        Guid id;
+
+        /// <summary>
+        /// Unique mediafileitem identifier
+        /// </summary>
+        public Guid Id
+        {
+            get { return id; }
+        }
+
         protected MediaFileItem(String location, MediaFileItemState state = MediaFileItemState.EMPTY)
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-              
+
+            this.id = Id;
             Location = location;
             IsSelected = false;
             Media = null;
             ItemState = state;
             hasTags = false;
+            id = Guid.NewGuid();
             
         }
 
@@ -62,6 +74,9 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         MediaFileItemState itemState;
 
+        /// <summary>
+        /// Current state of the mediafileitem
+        /// </summary>
         public MediaFileItemState ItemState
         {
             get { return itemState; }
@@ -82,27 +97,33 @@ namespace MediaViewer.MediaFileModel.Watcher
        
         string location;
 
+        /// <summary>
+        /// Location on disk of the mediafileitem
+        /// </summary>
         public string Location
         {
             get { return location; }
             set
-            {
-                String oldLocation = location;
-
+            {                              
                 rwLock.EnterWriteLock();
                 try
                 {
-                    location = value;
+                    String oldLocation = location; 
+                    String newLocation = value;
+                    
 
-                    if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(location))
+                    if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(newLocation))
                     {
-                        // update location in dictionary
-                        Factory.renameInDictionary(oldLocation, location);
+                        // check if newLocation has changed
+                        if (oldLocation.Equals(newLocation)) return;
+                     
+                        // update newLocation in dictionary
+                        Factory.renameInDictionary(oldLocation, newLocation);
 
-                        // update location in the database
+                        // update newLocation in the database
                         if (Media != null)
                         {
-                            Media.Location = location;
+                            Media.Location = newLocation;
 
                             if (Media.IsImported)
                             {
@@ -119,14 +140,19 @@ namespace MediaViewer.MediaFileModel.Watcher
                                 Media = mediaCommands.findMediaByLocation(oldLocation);
                                 if (Media != null)
                                 {
-                                    Media.Location = location;
+                                    Media.Location = newLocation;
                                     Media = mediaCommands.update(Media);
                                 }
                             }
 
                         }
                     }
+                    else if (String.IsNullOrEmpty(newLocation) && !String.IsNullOrEmpty(oldLocation))
+                    {
+                        Factory.deleteFromDictionary(oldLocation);
+                    }
 
+                    location = newLocation;
                     NotifyPropertyChanged();                   
                 }
                 finally
@@ -205,7 +231,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        public void writeMetaData(MediaFactory.WriteOptions options, IProgress progress)
+        public void writeMetaData(MediaFactory.WriteOptions options, ICancellableOperationProgress progress)
         {
             // this can be a read lock since the mediafileitem instance is not modified during writing to disk.
             // but we don't want multiple writes at the same time so we use the upgradablereadlock
@@ -334,7 +360,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 ItemState = MediaFileItemState.DELETED;
-                Factory.deleteFromDictionary(location);
+                //Factory.deleteFromDictionary(location);
 
                 return (isImported);
             }
@@ -352,7 +378,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         /// <param name="progress"></param>
         /// <param name="updateLocationOnly">if true, don't physically move the item</param>
         /// <returns></returns>
-        public bool move(String newLocation, IProgress progress)
+        public bool move(String newLocation, ICancellableOperationProgress progress)
         {
             rwLock.EnterUpgradeableReadLock();
             try
@@ -373,11 +399,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
                 // If location is changed to it's new location it will not be be found in the current mediastate. 
                 // So only update the location when mediafilewatcher is not active.
-                if (MediaFileWatcher.Instance.IsWatcherEnabled == false)
-                {
-                    Location = newLocation;
-                }
-
+                Location = newLocation;
+                             
                 return (isImported);
             }
             finally
@@ -442,25 +465,9 @@ namespace MediaViewer.MediaFileModel.Watcher
         public bool Equals(MediaFileItem other)
         {
             if (other == null) return (false);
-
-            rwLock.EnterReadLock();
-            try
-            {
-                other.rwLock.EnterReadLock();
-                try
-                {
-                    return (Location.Equals(other.Location));
-                }
-                finally
-                {
-                    other.rwLock.ExitReadLock();
-                }
-            }
-            finally
-            {
-                rwLock.ExitReadLock();
-            }
-            
+          
+            return (Id.Equals(other.Id));
+                          
         }
 
         public int CompareTo(MediaFileItem other)
@@ -492,7 +499,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         public class Factory
         {
             public static MediaFileItem EmptyItem = new MediaFileItem("");
-
+          
             static ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
             static Dictionary<String, WeakReference<MediaFileItem>> dictionary = new Dictionary<String, WeakReference<MediaFileItem>>();
 
@@ -516,7 +523,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                             item = new MediaFileItem(location, MediaFileItemState.LOADING);
                             reference = new WeakReference<MediaFileItem>(item);
                             dictionary.Remove(location);
-                            dictionary.Add(location, reference);                           
+                            dictionary.Add(location, reference);
+                            
                         }
                     }
                     else
@@ -524,7 +532,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                         // item did not exist yet
                         item = new MediaFileItem(location, MediaFileItemState.LOADING);
                         reference = new WeakReference<MediaFileItem>(item);
-                        dictionary.Add(location, reference); 
+                        dictionary.Add(location, reference);
+                  
                     }
 
                     return (item);
@@ -572,7 +581,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                             item = new MediaFileItem(newLocation, MediaFileItemState.LOADING);
                             reference = new WeakReference<MediaFileItem>(item);
 
-                            dictionary.Add(newLocation, reference);
+                            dictionary.Add(newLocation, reference);                          
                         }
                         else
                         {
@@ -606,6 +615,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                     rwLock.ExitWriteLock();
                 }
             }
+         
         }
               
     }

@@ -15,14 +15,14 @@ namespace MediaViewer.MetaData
         public FilenamePresetsViewModel()
         {
             NewPreset = "";
-
+           
             filenamePresets = MediaViewer.Settings.AppSettings.Instance.FilenamePresets;
-          
+
             addNewPresetCommand = new Command(new Action(() =>
             {
                 if (String.IsNullOrEmpty(NewPreset) || String.IsNullOrWhiteSpace(NewPreset)) return;
 
-                filenamePresets.Add(NewPreset);           
+                filenamePresets.Add(NewPreset);
                 NewPreset = "";
             }));
 
@@ -48,21 +48,21 @@ namespace MediaViewer.MetaData
             counterValue = "0001";
 
             SelectCommand = new Command(new Action(() =>
-            {             
+            {
                 OnClosingRequest(new DialogEventArgs(DialogMode.SUBMIT));
             }));
 
             SelectCommand.CanExecute = false;
 
             DeleteCommand = new Command(new Action(() =>
-            {               
+            {
                 FilenamePresets.Remove(SelectedPreset);
-                            
+
             }));
 
             cancelCommand = new Command(new Action(() =>
                 {
-                   
+
                     OnClosingRequest(new DialogEventArgs(DialogMode.CANCEL));
                 }));
 
@@ -121,6 +121,21 @@ namespace MediaViewer.MetaData
 
             }));
 
+            insertReplaceCommand = new Command<int>(new Action<int>((startIndex) =>
+            {
+                try
+                {
+                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.replaceMarker + MatchString + ";" + ReplaceString + "\"");
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+
+            }));
+
+            MatchString = "";
+            ReplaceString = "";
 
         }
 
@@ -207,6 +222,62 @@ namespace MediaViewer.MetaData
             }
         }
 
+        String matchString;
+
+        public String MatchString
+        {
+            get { return matchString; }
+            set
+            {
+                matchString = value;
+
+                if (String.IsNullOrEmpty(matchString))
+                {
+                    InsertReplaceCommand.CanExecute = false;
+                    NotifyPropertyChanged();
+                    return;
+                }
+
+                if (Utils.FileUtils.containsIllegalFileNameChars(matchString) || Utils.FileUtils.containsIllegalFileNameChars(replaceString))
+                {
+                    InsertReplaceCommand.CanExecute = false;
+                    throw new ArgumentException("Filename string contains illegal characters");
+                }
+               
+                InsertReplaceCommand.CanExecute = true;
+              
+                NotifyPropertyChanged();
+            }
+        }
+
+        String replaceString;
+
+        public String ReplaceString
+        {
+            get { return replaceString; }
+            set
+            {
+                replaceString = value;
+
+                if (String.IsNullOrEmpty(matchString))
+                {
+                    InsertReplaceCommand.CanExecute = false;
+                    NotifyPropertyChanged();
+                    return;
+                }
+
+                if (Utils.FileUtils.containsIllegalFileNameChars(matchString) || Utils.FileUtils.containsIllegalFileNameChars(replaceString))
+                {
+                    InsertReplaceCommand.CanExecute = false;
+                    throw new ArgumentException("Filename string contains illegal characters");
+                }
+
+                InsertReplaceCommand.CanExecute = true;
+
+                NotifyPropertyChanged();                             
+            }
+        }
+
         Command addNewPresetCommand;
 
         public Command AddNewPresetCommand
@@ -269,6 +340,14 @@ namespace MediaViewer.MetaData
         {
             get { return insertResolutionCommand; }
             set { insertResolutionCommand = value; }
+        }
+
+        Command<int> insertReplaceCommand;
+
+        public Command<int> InsertReplaceCommand
+        {
+            get { return insertReplaceCommand; }
+            set { insertReplaceCommand = value; }
         }
     }
 }

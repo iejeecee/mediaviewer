@@ -222,7 +222,7 @@ namespace MediaViewer.MediaFileModel
             return (media);
         }
 
-        public static void write(Media media, WriteOptions options, IProgress progress)
+        public static void write(Media media, WriteOptions options, ICancellableOperationProgress progress)
         {
            
             if (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DISK))

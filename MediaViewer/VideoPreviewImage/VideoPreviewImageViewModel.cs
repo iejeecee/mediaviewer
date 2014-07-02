@@ -1,6 +1,7 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -49,10 +50,12 @@ namespace MediaViewer.VideoPreviewImage
 
             OkCommand = new Command(async () =>
             {
-                VideoPreviewImageProgressView progress = new VideoPreviewImageProgressView();
-                progress.ViewModel.AsyncState = this;
+                CancellableOperationProgressView progress = new CancellableOperationProgressView();
+                VideoPreviewImageProgressViewModel vm = new VideoPreviewImageProgressViewModel();
+                progress.DataContext = vm;
+                vm.AsyncState = this;
                 progress.Show();
-                Task task = progress.ViewModel.generatePreviews();
+                Task task = vm.generatePreviews();
                 OnClosingRequest();
                 await task;
             });
@@ -69,7 +72,7 @@ namespace MediaViewer.VideoPreviewImage
 
         void setDefaults()
         {
-            NrColumns = 4;
+            NrColumns = 3;
             NrRows = 16;
             MaxPreviewImageWidth = 1280;
             IsCaptureIntervalSecondsEnabled = true;

@@ -33,9 +33,9 @@
                                             <ContextMenu>
                                                 <MenuItem Header="Refresh" Click="refreshDirectory_Click"/>
                                                 <Separator/>
-                                                <MenuItem Header="Create" />
-                                                <MenuItem Header="Rename" Click="renameDirectory_Click"/>
-                                                <MenuItem Header="Delete" Command="ApplicationCommands.Delete"/>
+                                                <MenuItem Header="Create Directory" Click="createDirectory_Click"/>
+                                                <MenuItem Header="Rename Directory" Click="renameDirectory_Click"/>
+                                                <MenuItem Header="Delete Directory" Command="ApplicationCommands.Delete"/>
                                             </ContextMenu>
                                         </sd:SharpTreeNodeView.ContextMenu>
                                     </sd:SharpTreeNodeView>

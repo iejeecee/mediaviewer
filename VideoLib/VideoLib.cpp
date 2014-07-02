@@ -153,6 +153,8 @@ VideoPlayer::VideoPlayer() {
 	frameQueue = gcnew VideoLib::FrameQueue(videoDecoder);
 	videoLocation = "";
 
+	isFinalPacketAdded = false;
+
 }
 
 VideoPlayer::~VideoPlayer() {
@@ -254,15 +256,15 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 
 }
 
-bool VideoPlayer::demuxPacket() {
+VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 
-	if(videoDecoder->isClosed()) return(false);
+	if(videoDecoder->isClosed()) return(DemuxPacketsResult::STOPPED);
 
 	Packet ^packet;
 	bool success = frameQueue->getFreePacket(packet);
 	if(success == false) {
 
-		return(false);
+		return(DemuxPacketsResult::STOPPED);
 	}
 
 	int read = av_read_frame(videoDecoder->getFormatContext(), packet->AVLibPacketData);
@@ -271,9 +273,18 @@ bool VideoPlayer::demuxPacket() {
 		// end of the video
 		Video::writeToLog(AV_LOG_INFO, "end of stream reached");
 		frameQueue->addFreePacket(packet);
-		frameQueue->close();
-		return(false);
 
+		if(isFinalPacketAdded == false) {
+
+			frameQueue->addAudioPacket(Packet::finalPacket);
+			frameQueue->addVideoPacket(Packet::finalPacket);
+			isFinalPacketAdded = true;
+		}
+		return(DemuxPacketsResult::LAST_PACKET);
+
+	} else {
+
+		isFinalPacketAdded = false;
 	}
 
 	if(packet->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
@@ -297,7 +308,7 @@ bool VideoPlayer::demuxPacket() {
 		frameQueue->addFreePacket(packet);
 	}
 
-	return(true);
+	return(DemuxPacketsResult::SUCCESS);
 
 }
 

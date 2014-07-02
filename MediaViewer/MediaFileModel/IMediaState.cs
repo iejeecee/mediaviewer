@@ -39,8 +39,8 @@ namespace MediaViewer.MediaFileModel
         void clearUIState();
 
         void delete(IEnumerable<MediaFileItem> items, CancellationToken token);
-        void move(MediaFileItem item, String location, IProgress progress);
-        void move(IEnumerable<MediaFileItem> items, IEnumerable<String> locations, IProgress progress);
+        void move(MediaFileItem item, String location, ICancellableOperationProgress progress);
+        void move(IEnumerable<MediaFileItem> items, IEnumerable<String> locations, ICancellableOperationProgress progress);
 
         void import(MediaFileItem item, CancellationToken token);
         void import(IEnumerable<MediaFileItem> items, CancellationToken token);
@@ -50,7 +50,7 @@ namespace MediaViewer.MediaFileModel
         void readMetadataRangeAsync(int start, int nrItems, CancellationToken token);
         void readMetadata(MediaFileItem item, MediaFactory.ReadOptions options, CancellationToken token);
         void readMetadata(IEnumerable<MediaFileItem> items, MediaFactory.ReadOptions options, CancellationToken token);
-        void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, IProgress progress);
-        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, IProgress progress);    
+        void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, ICancellableOperationProgress progress);
+        void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, ICancellableOperationProgress progress);    
     }
 }

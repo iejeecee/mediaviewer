@@ -31,8 +31,11 @@ namespace MediaViewer
             Args = e.Args;
             MediaViewer.Settings.AppSettings.load();
             SplashScreen = new SplashScreen("Resources/Images/splash.png");
-            //SplashScreen.Show(false, true);
 
+            #if !DEBUG
+              SplashScreen.Show(false, true);
+            #endif
+       
             AutoMapperSetup.Run();
         }
 

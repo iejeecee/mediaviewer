@@ -16,7 +16,7 @@ using VideoLib;
 
 namespace MediaViewer.VideoPreviewImage
 {
-    public class VideoPreviewImageProgressViewModel : CloseableObservableObject, IProgress
+    public class VideoPreviewImageProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
 
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -33,6 +33,9 @@ namespace MediaViewer.VideoPreviewImage
 
         public VideoPreviewImageProgressViewModel()
         {
+            WindowTitle = "Video Preview Image";
+            WindowIcon = "pack://application:,,,/Resources/Icons/preview.ico";
+
             videoPreview = new VideoLib.VideoPreview();
 
             InfoMessages = new ObservableCollection<string>();
@@ -362,6 +365,36 @@ namespace MediaViewer.VideoPreviewImage
             set
             {
                 infoMessages = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowTitle;
+
+        public string WindowTitle
+        {
+            get
+            {
+                return (windowTitle);
+            }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
                 NotifyPropertyChanged();
             }
         }

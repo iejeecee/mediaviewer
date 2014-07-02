@@ -110,52 +110,40 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
         private void createDirectory_Click(object sender, RoutedEventArgs e)
         {
-            /*if (directoryTreeList.SelectedNode == null)
+            Location selectedNode = treeView.SelectedItem as Location;
+            if (selectedNode == null)
             {
                 return;
             }
-
-            PathModel parent = directoryTreeList.SelectedNode.Tag as PathModel;
-
-            InputView input = new InputView();
-            InputViewModel vm = (InputViewModel)input.DataContext;
-            vm.Title = "Create new subdirectory in: " + parent.getFullPath();
-            vm.InputHistory = MediaViewer.Settings.AppSettings.Instance.CreateDirectoryHistory;
-
-            if (input.ShowDialog() == true)
+                                                           
+            try                       
             {
-                if (String.IsNullOrEmpty(vm.InputText) || string.IsNullOrWhiteSpace(vm.InputText)) return;
+                String newFolder = FileUtils.getUniqueDirectoryName(selectedNode.FullName);
 
-                String newDirPath = parent.getFullPath() + "/" + vm.InputText;
+                DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
+               
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo);
+                Utils.Misc.insertIntoSortedCollection(selectedNode.Children, child);
 
-                try
-                {
-                    DirectoryInfo newDirectory = System.IO.Directory.CreateDirectory(newDirPath);
-
-                    DirectoryPathModel child = new DirectoryPathModel(parent, newDirectory);
-                    if (parent.Directories == null)
-                    {
-                        parent.Directories = new System.Collections.ObjectModel.ObservableCollection<PathModel>();
-                    }
-
-                    insertIntoSortedCollection(parent.Directories, child);
-                    directoryTreeList.SelectedNode.IsExpanded = true;
-
-                    Utils.Misc.insertIntoHistoryCollection(MediaViewer.Settings.AppSettings.Instance.CreateDirectoryHistory, vm.InputText);
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Error creating directory: " + newDirPath, ex);
-                    MessageBox.Show("Error creating directory: " + newDirPath + "\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                }
+                selectedNode.IsExpanded = true;
+                treeView.SelectedItem = child;
+                treeView.ScrollIntoView(child);
             }
-            */
+            catch (Exception ex)
+            {
+                log.Error("Error creating directory", ex);
+                MessageBox.Show("Error creating directory\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+                        
         }
 
         private void refreshDirectory_Click(object sender, RoutedEventArgs e)
         {      
             Location selectedNode = treeView.SelectedItem as Location;
+            if (selectedNode == null)
+            {
+                return;
+            }
 
             Location parent = selectedNode.Parent as Location;
             Location newNode;

@@ -3,12 +3,27 @@
 
 namespace VideoLib {
 
+	public enum class PacketType
+	{
+		NORMAL_PACKET,
+		LAST_PACKET
+	};
+
 	public ref class Packet 
 	{
 
 		AVPacket *avPacket;
+		PacketType type;
+
+		Packet(PacketType type) {
+
+			this->type = type;
+			avPacket = NULL;			
+		}
 
 	public:
+
+		static Packet ^finalPacket;
 
 		property AVPacket *AVLibPacketData
 		{
@@ -18,12 +33,27 @@ namespace VideoLib {
 			}
 		}
 		
+		property PacketType Type
+		{
+			PacketType get() {
+
+				return(type);
+			}
+		}
+		
+		static Packet() {
+
+			finalPacket = gcnew Packet(PacketType::LAST_PACKET);
+		}
+
 		Packet() {
 
 			avPacket = new AVPacket();
 			av_init_packet(avPacket);
 			avPacket->data = NULL;
 			avPacket->size = 0;
+
+			type = PacketType::NORMAL_PACKET;
 		}
 		
 		!Packet() {
@@ -44,7 +74,7 @@ namespace VideoLib {
 
 		void free() {
 
-			if(avPacket->data != NULL) {
+			if(avPacket != NULL && avPacket->data != NULL) {
 
 				av_free_packet(avPacket);
 				av_init_packet(avPacket);

@@ -43,7 +43,7 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -189,9 +189,6 @@
     <Compile Include="ImagePanel\ImageWithPagerView.xaml.cs">
       <DependentUpon>ImageWithPagerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Import\ExportView.xaml.cs">
-      <DependentUpon>ExportView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Import\ExportViewModel.cs" />
     <Compile Include="Import\ImportProgressViewModel.cs" />
     <Compile Include="Import\ImportView.xaml.cs">
@@ -202,22 +199,21 @@
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
-    <Compile Include="MetaData\TagEditorImportView.xaml.cs">
-      <DependentUpon>TagEditorImportView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
+    <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
+      <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Progress\INonCancellableOperationProgress.cs" />
     <Compile Include="Progress\NonCancellableOperationProgressView.xaml.cs">
       <DependentUpon>NonCancellableOperationProgressView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Progress\TotalProgressTextConverter.cs" />
+    <Compile Include="Progress\WindowTitleConverter.cs" />
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Torrent\Bencoding.cs" />
-    <Compile Include="Torrent\TorrentCreationProgressView.xaml.cs">
-      <DependentUpon>TorrentCreationProgressView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Torrent\TorrentCreationProgressViewModel.cs" />
     <Compile Include="Torrent\TorrentCreationView.xaml.cs">
       <DependentUpon>TorrentCreationView.xaml</DependentUpon>
@@ -237,9 +233,6 @@
     <Compile Include="Converters\EnumConverter.cs" />
     <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
     <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
-    <Compile Include="Import\ImportProgressView.xaml.cs">
-      <DependentUpon>ImportProgressView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Import\ImportViewModel.cs" />
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
@@ -361,9 +354,6 @@
       <DependentUpon>MetaDataPresetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\MetaDataPresetsViewModel.cs" />
-    <Compile Include="MetaData\MetaDataUpdateView.xaml.cs">
-      <DependentUpon>MetaDataUpdateView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
     <Compile Include="UserControls\DirectoryPicker\DirectoryLocation.cs" />
@@ -374,6 +364,9 @@
     <Compile Include="UserControls\DirectoryPicker\Location.cs" />
     <Compile Include="UserControls\DirectoryPicker\NrImportedFilesConverter.cs" />
     <Compile Include="UserControls\DirectoryPicker\RootLocation.cs" />
+    <Compile Include="UserControls\LogTextBox\LogTextBoxView.xaml.cs">
+      <DependentUpon>LogTextBoxView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\TagPicker\TagPickerView.xaml.cs">
       <DependentUpon>TagPickerView.xaml</DependentUpon>
     </Compile>
@@ -412,10 +405,7 @@
     <Compile Include="Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Progress\IProgress.cs" />
-    <Compile Include="Progress\ProgressControl.xaml.cs">
-      <DependentUpon>ProgressControl.xaml</DependentUpon>
-    </Compile>
+    <Compile Include="Progress\ICancellableOperationProgress.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Search\SearchViewModel.cs" />
     <Compile Include="Search\SearchView.xaml.cs">
@@ -457,9 +447,6 @@
     </Compile>
     <Compile Include="VideoPanel\VideoViewModel.cs" />
     <Compile Include="VideoPreviewImage\GridImage.cs" />
-    <Compile Include="VideoPreviewImage\VideoPreviewImageProgressView.xaml.cs">
-      <DependentUpon>VideoPreviewImageProgressView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="VideoPreviewImage\VideoPreviewImageProgressViewModel.cs" />
     <Compile Include="VideoPreviewImage\VideoPreviewImageView.xaml.cs">
       <DependentUpon>VideoPreviewImageView.xaml</DependentUpon>
@@ -485,15 +472,11 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Import\ExportView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Import\ImportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MetaData\TagEditorImportView.xaml">
+    <Page Include="Progress\CancellableOperationProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -502,10 +485,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\SettingsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Torrent\TorrentCreationProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -522,10 +501,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImageGrid\ImageGridView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Import\ImportProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -561,15 +536,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MetaData\MetaDataUpdateView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="MetaData\MetaDataView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\DirectoryPicker\DirectoryPicker.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\LogTextBox\LogTextBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -594,10 +569,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Pager\PagerView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Progress\ProgressControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -642,10 +613,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="VideoPreviewImage\VideoPreviewImageProgressView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -866,6 +833,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\frame.ico" />
     <Resource Include="Resources\Icons\folder_opening.ico" />
     <Resource Include="Resources\Icons\torrent.ico" />
     <Resource Include="Resources\Icons\preview.ico" />

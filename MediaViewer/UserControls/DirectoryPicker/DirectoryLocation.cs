@@ -93,6 +93,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             TotalProgress = 0;
             TotalProgressMax = 1;
             WindowTitle = "Renaming directory " + Name + " to " + newName;
+            WindowIcon = "pack://application:,,,/Resources/Icons/folder_open.ico";
             NonCancellableOperationProgressView progress = new NonCancellableOperationProgressView();
             progress.DataContext = this;
 
@@ -290,6 +291,21 @@ namespace MediaViewer.UserControls.DirectoryPicker
             {
                 windowTitle = value;
                 RaisePropertyChanged("WindowTitle");
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
+                RaisePropertyChanged("WindowIcon");
             }
         }
     }

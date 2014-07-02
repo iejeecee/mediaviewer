@@ -27,8 +27,9 @@ namespace MediaViewer.Import
             
             OkCommand = new Command(async () =>
             {
-                ImportProgressView progress = new ImportProgressView();
-                ImportProgressViewModel vm = progress.DataContext as ImportProgressViewModel;
+                CancellableOperationProgressView progress = new CancellableOperationProgressView();
+                ImportProgressViewModel vm = new ImportProgressViewModel();
+                progress.DataContext = vm;
                 progress.Show();
                 Task t = vm.importAsync(IncludeLocations, ExcludeLocations);
                 OnClosingRequest();

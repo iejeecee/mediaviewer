@@ -16,12 +16,15 @@ using System.Windows;
 
 namespace MediaViewer.Export
 {
-    class ExportViewModel : CloseableObservableObject, IProgress
+    class ExportViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public ExportViewModel()
         {
+            WindowTitle = "Exporting Media";
+            WindowIcon = "pack://application:,,,/Resources/Icons/export.ico";
+
             InfoMessages = new ObservableCollection<string>();
             ItemInfo = "";
 
@@ -226,7 +229,35 @@ namespace MediaViewer.Export
             }
         }
 
+        string windowTitle;
 
+        public string WindowTitle
+        {
+            get
+            {
+                return (windowTitle);
+            }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 
 

@@ -1,6 +1,12 @@
-﻿using System;
+﻿// Updating a entity:
+// http://stackoverflow.com/questions/15336248/entity-framework-5-updating-a-record
+// Debug generated SQL, add the following line
+// context.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
+
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,14 +70,23 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                     retry = false;
                 }
-                catch (OptimisticConcurrencyException e)
+                catch (DbUpdateConcurrencyException e)
                 {
-                    log.Warn("Optimistic concurrencyexception while updating entity: " + e.Message);
-
-                    retry = true;
+                    if (i == nrRetriesOnOptimisticConcurrencyException - 1)
+                    {
+                        log.Error("Concurrencyexception while updating entity, nr retries exhausted: " + e.Message);
+                        throw e;
+                    }
+                    else
+                    {
+                        log.Warn("Concurrencyexception while updating entity: " + e.Message);
+                        retry = true;
+                    }
+                   
                 }
 
             }
+                
 
             return (result);
         }
@@ -82,27 +97,20 @@ namespace MediaViewer.MediaDatabase.DbCommands
         }
 
         public virtual T create(T entity)
-        {
-            bool retry = true;
+        {            
             T result = default(T);
-
-            for (int i = 0; i < nrRetriesOnOptimisticConcurrencyException && retry == true; i++)
+        
+            try
             {
-                try
-                {
-                    result = createFunc(entity);
-
-                    retry = false;                    
-                }
-                catch (OptimisticConcurrencyException e)
-                {
-                    log.Warn("Optimistic concurrencyexception while creating entity: " + e.Message);
-
-                    retry = true;
-                }
-
+                result = createFunc(entity);                                   
             }
+            catch (DbUpdateConcurrencyException e)
+            {
+                log.Error("Concurrencyexception while creating entity: " + e.Message);
 
+                throw e;
+            }
+                           
             return (result);
         }
 
@@ -114,24 +122,19 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public virtual void delete(T entity)
         {
-            bool retry = true;
-
-            for (int i = 0; i < nrRetriesOnOptimisticConcurrencyException && retry == true; i++)
+                     
+            try
             {
-                try
-                {
-                    deleteFunc(entity);
-
-                    retry = false;
-                }
-                catch (OptimisticConcurrencyException e)
-                {
-                    log.Warn("Optimistic concurrencyexception while deleting entity: " + e.Message);
-
-                    retry = true;
-                }
-
+                deleteFunc(entity);              
             }
+            catch (DbUpdateConcurrencyException e)
+            {
+                log.Error("Concurrencyexception while deleting entity: " + e.Message);
+
+                throw e;
+            }
+
+            
         }
   
         protected virtual void deleteFunc(T entity)

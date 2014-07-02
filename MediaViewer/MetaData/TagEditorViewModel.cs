@@ -3,6 +3,7 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DataTransferObjects;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Progress;
 using Microsoft.Win32;
 using MvvmFoundation.Wpf;
 using System;
@@ -134,9 +135,10 @@ namespace MediaViewer.MetaData
             OpenFileDialog loadTagsDialog = Utils.Windows.FileDialog.createLoadTagsFileDialog();
             if (loadTagsDialog.ShowDialog() == false) return;
 
-            TagEditorImportView importView = new TagEditorImportView();
-            TagEditorImportViewModel viewModel = (TagEditorImportViewModel)importView.DataContext;
-            Task.Run(() => viewModel.import(loadTagsDialog.FileName));
+            CancellableOperationProgressView importView = new CancellableOperationProgressView();
+            TagEditorImportViewModel vm = new TagEditorImportViewModel();
+            importView.DataContext = vm;
+            Task.Run(() => vm.import(loadTagsDialog.FileName));
             importView.ShowDialog();
             
         }

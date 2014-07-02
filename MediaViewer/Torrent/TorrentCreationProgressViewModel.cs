@@ -14,7 +14,7 @@ using System.Windows;
 
 namespace MediaViewer.Torrent
 {
-    public class TorrentCreationProgressViewModel : CloseableObservableObject, IProgress
+    public class TorrentCreationProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -25,6 +25,9 @@ namespace MediaViewer.Torrent
 
         public TorrentCreationProgressViewModel()
         {
+            WindowTitle = "Torrent File";
+            WindowIcon = "pack://application:,,,/Resources/Icons/torrent.ico";
+
             pieceLength = (int)Math.Pow(2, 19); // 512kb
             createdBy = App.getAppInfoString();
             encoding = "UTF-8";
@@ -388,6 +391,35 @@ namespace MediaViewer.Torrent
             }
         }
 
-       
+        string windowTitle;
+
+        public string WindowTitle
+        {
+            get
+            {
+                return (windowTitle);
+            }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
+                NotifyPropertyChanged();
+            }
+        }
+
     }
 }

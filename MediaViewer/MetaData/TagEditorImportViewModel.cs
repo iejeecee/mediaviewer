@@ -18,10 +18,13 @@ using System.Xml;
 
 namespace MediaViewer.MetaData
 {
-    class TagEditorImportViewModel : CloseableObservableObject, IProgress
+    class TagEditorImportViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         public TagEditorImportViewModel()
         {
+            WindowTitle = "Importing Tags";
+            WindowIcon = "pack://application:,,,/Resources/Icons/tag.ico";
+
             TokenSource = new CancellationTokenSource();
 
             InfoMessages = new ObservableCollection<String>();
@@ -198,5 +201,36 @@ namespace MediaViewer.MetaData
             get;
             set;
         }
+
+        string windowTitle;
+
+        public string WindowTitle
+        {
+            get
+            {
+                return (windowTitle);
+            }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
+                NotifyPropertyChanged();
+            }
+        }
+
     }
 }

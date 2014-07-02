@@ -74,6 +74,15 @@ namespace MediaViewer.VideoPanel
 
                             break;
                         }
+                    case VideoPlayerControl.VideoState.PAUSED:
+                        {
+                            if (playButton.IsChecked == true)
+                            {
+                                playButton.IsChecked = false;
+                            }
+
+                            break;
+                        }
                     case VideoPlayerControl.VideoState.CLOSED:
                         {
                             if (playButton.IsChecked == true)
@@ -105,9 +114,7 @@ namespace MediaViewer.VideoPanel
         public void openAndPlay(String location)
         {
             try
-            {                               
-                viewModel.ScreenShotLocation = MediaFileWatcher.Instance.Path;
-                viewModel.ScreenShotName = System.IO.Path.GetFileName(location);
+            {                                      
                 viewModel.OpenCommand.DoExecute(location);
                 viewModel.PlayCommand.DoExecute();               
             }

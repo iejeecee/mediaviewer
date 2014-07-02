@@ -9,10 +9,8 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Progress
 {
-    public interface IProgress
-    {      
-       int TotalProgress { get; set; }
-       int TotalProgressMax { get; set; }
+    public interface ICancellableOperationProgress : INonCancellableOperationProgress
+    { 
        String ItemInfo { get; set; }
        int ItemProgress { get; set; }
        int ItemProgressMax { get; set; }

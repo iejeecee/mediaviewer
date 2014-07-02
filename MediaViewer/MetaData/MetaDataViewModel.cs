@@ -4,6 +4,7 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Progress;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
@@ -80,9 +81,10 @@ namespace MediaViewer.MetaData
             
             writeMetaDataCommand = new Command(new Action(async () =>
             {
-                MetaDataUpdateView metaDataUpdateView = new MetaDataUpdateView();
-                metaDataUpdateView.Show();
-                MetaDataUpdateViewModel vm = (MetaDataUpdateViewModel)metaDataUpdateView.DataContext;
+                CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
+                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel();
+                metaDataUpdateView.DataContext = vm;
+                metaDataUpdateView.Show();             
                 await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
 
             }));
@@ -135,6 +137,20 @@ namespace MediaViewer.MetaData
                 {                    
                     Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + 
                         MetaDataUpdateViewModel.defaultCounter + "\"");
+                }
+                catch (Exception e)
+                {
+                    log.Error(e);
+                }
+
+            }));
+
+            insertReplaceStringCommand = new Command<int>(new Action<int>((startIndex) =>
+            {
+                try
+                {
+                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.replaceMarker +
+                        ";\"");
                 }
                 catch (Exception e)
                 {
@@ -323,6 +339,14 @@ namespace MediaViewer.MetaData
         {
             get { return insertDateCommand; }
             set { insertDateCommand = value; }
+        }
+
+        Command<int> insertReplaceStringCommand;
+
+        public Command<int> InsertReplaceStringCommand
+        {
+            get { return insertReplaceStringCommand; }
+            set { insertReplaceStringCommand = value; }
         }
 
         String location;

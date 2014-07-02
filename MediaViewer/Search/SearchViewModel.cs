@@ -124,12 +124,12 @@ namespace MediaViewer.Search
             CancellationTokenSource tokenSource = new CancellationTokenSource();
                    
             List<MediaFileItem> results = dbSearch(searchQuery);
-
+/*
             foreach (MediaFileItem item in results)
             {
                 item.ItemState = MediaFileItemState.EMPTY;
             }
-
+*/
             MediaFileWatcher.Instance.IsWatcherEnabled = false;          
             MediaFileWatcher.Instance.MediaState.clearUIState();
             MediaFileWatcher.Instance.MediaState.addUIState(results);

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Validation;
+using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
 {
     class MediaDbCommands : DbCommands<Media>
     {
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
         public MediaDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
         {
@@ -317,12 +320,21 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 Db.Entry<ImageMedia>(image).CurrentValues.SetValues(media);
                 newMedia = image;
             }
-
           
-
             FileInfo info = new FileInfo(media.Location);
             info.Refresh();
-            newMedia.LastModifiedDate = info.LastWriteTime;
+
+            if (info.LastWriteTime < (DateTime)SqlDateTime.MinValue)
+            {
+
+                log.Warn("LastWriteTime for " + media.Location + " smaller as SqlDateTime.MinValue");
+                newMedia.LastModifiedDate = (DateTime)SqlDateTime.MinValue;
+
+            } else {
+
+                newMedia.LastModifiedDate =  info.LastWriteTime;
+            }
+            
            
             newMedia.Id = 0;
     

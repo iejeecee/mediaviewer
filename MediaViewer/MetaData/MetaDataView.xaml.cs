@@ -197,6 +197,21 @@ namespace MediaViewer.MetaData
 
         }
 
+        private void fileNameContextMenu_InsertReplaceString(object sender, RoutedEventArgs e)
+        {
+            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
+
+            ViewModel.InsertReplaceStringCommand.DoExecute(index);
+        }
+
        
         
     }

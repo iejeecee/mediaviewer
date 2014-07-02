@@ -53,6 +53,9 @@
         <Button x:Name="screenShotButton" HorizontalAlignment="Left" Margin="85,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}" CommandParameter="screenshot">
             <Image Source="pack://application:,,,/Resources/Icons/screenshot.ico" />
         </Button>
+        <Button x:Name="frameByFrameButton" HorizontalAlignment="Left" Margin="125,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
+            <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
+        </Button>
         <Popup Name="timeLineSliderPopup" PlacementTarget ="{Binding ElementName=timeLineSlider}" 
             Placement="Relative" AllowsTransparency="True">
             <TextBlock Name="timeLineSliderPopupText" Background="Yellow" TextWrapping="Wrap">00:00</TextBlock>

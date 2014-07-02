@@ -70,15 +70,16 @@ namespace VideoPlayerControl
         // we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
         const int AUDIO_DIFF_AVG_NB = 5;//20;
 
+        bool renderOneFrame;
+        double oldVolume;
+
         VideoLib.VideoPlayer videoDecoder;
         AudioPlayer audioPlayer;
         VideoRender videoRender;
 
-
         public int Width
         {
             get { return videoDecoder.Width; }
-
         }
 
         public int Height
@@ -89,10 +90,8 @@ namespace VideoPlayerControl
 
         enum SyncMode
         {
-
             AUDIO_SYNCS_TO_VIDEO,
             VIDEO_SYNCS_TO_AUDIO
-
         };
 
         SyncMode syncMode;
@@ -264,6 +263,11 @@ namespace VideoPlayerControl
             videoDecoder = new VideoLib.VideoPlayer();
             videoDecoder.setLogCallback(videoDecoderLogCallback, true, true);
 
+            videoDecoder.FrameQueue.Finished += new EventHandler((s,e) =>
+            {
+                owner.BeginInvoke(new Action(close));                
+            });
+
             audioPlayer = new AudioPlayer(owner);
             videoRender = new VideoRender(owner);
 
@@ -291,11 +295,15 @@ namespace VideoPlayerControl
 
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
+
+            renderOneFrame = false;
+            oldVolume = 0;
         }
 
         public void createScreenShot()
         {
-            videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat);
+            videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat,
+                PositionSeconds, VideoLocation);
         }
 
         public void Dispose()
@@ -362,7 +370,9 @@ restartvideo:
 
 				return;
 
-			} else if(VideoState == VideoState.PLAYING) {
+            }
+            else if (VideoState == VideoState.PLAYING && videoFrame != null)
+            {
 
 				videoPts = videoFrame.Pts;
 				videoPtsDrift = videoFrame.Pts + HRTimer.getTimestamp();
@@ -372,9 +382,18 @@ restartvideo:
 					videoRender.display(videoFrame, Color.Black, VideoRender.RenderMode.NORMAL);					
 				} 					
 
-				actualDelay = synchronizeVideo(videoPts);					
+				actualDelay = synchronizeVideo(videoPts);
 
-			} else if(VideoState == VideoState.PAUSED) {
+                if (renderOneFrame)
+                {
+                    owner.BeginInvoke(new Action(() => {
+                        pausePlay();
+                        Volume = oldVolume;
+                    }));
+                    renderOneFrame = false;
+                }
+
+			} else if(VideoState == VideoState.PAUSED || videoFrame == null) {
 
 				videoRender.display(null, Color.Black, VideoRender.RenderMode.PAUSED);			
 			}
@@ -467,7 +486,10 @@ restartvideo:
         restartaudio:
 
             VideoLib.AudioFrame audioFrame = videoDecoder.FrameQueue.getDecodedAudioFrame();
-            if (audioFrame == null) return;
+            if (audioFrame == null)
+            {
+                return;
+            }
 
             //videoDebug.AudioFrames = videoDebug.AudioFrames + 1;
             //videoDebug.AudioFrameLength = audioFrame.Length;
@@ -754,16 +776,16 @@ restartvideo:
 
         void fillFrameQueue()
         {
-            bool success = true;
+            VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
 
             while (videoDecoder.FrameQueue.AudioPacketsInQueue !=
                 videoDecoder.FrameQueue.MaxAudioPackets &&
                 videoDecoder.FrameQueue.VideoPacketsInQueue !=
                 videoDecoder.FrameQueue.MaxVideoPackets &&
-                success == true)
+                result == VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS)
             {
 
-                success = videoDecoder.demuxPacket();
+                result = videoDecoder.demuxPacket();
             }
 
         }
@@ -773,7 +795,7 @@ restartvideo:
         {
             audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
 
-            bool success = true;
+            VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
 
             // decode frames one by one, or handle seek requests
             do
@@ -808,10 +830,10 @@ restartvideo:
                 else
                 {
 
-                    success = videoDecoder.demuxPacket();
+                    result = videoDecoder.demuxPacket();
                 }
 
-            } while (success == true && !token.IsCancellationRequested);
+            } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
 
         }
 
@@ -882,9 +904,28 @@ restartvideo:
 
         public void seek(double seconds)
         {
-
             seekPosition = seconds;
             seekRequest = true;
+
+            if (VideoState == VideoPlayerControl.VideoState.PAUSED)
+            {
+                frameByFrame();
+            }
+        }
+
+        public void frameByFrame()
+        {         
+            if (VideoState == VideoPlayerControl.VideoState.PLAYING)
+            {
+                pausePlay();
+            }
+            else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
+            {              
+                renderOneFrame = true;
+                oldVolume = Volume;
+                Volume = MinVolume;
+                startPlay();
+            }
         }
 
         public void open(string location)
@@ -968,12 +1009,13 @@ restartvideo:
 
             demuxPacketsTask.Wait();
            
-            videoDecoder.close();
+            videoDecoder.close();      
             audioPlayer.flush();
 
             videoPts = 0;
             videoPtsDrift = 0;
 
+            renderOneFrame = false;
             seekRequest = false;
             seekPosition = 0;
 

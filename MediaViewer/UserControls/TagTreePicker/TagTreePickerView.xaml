@@ -10,7 +10,7 @@
         <sd:SharpTreeView x:Name="treeView"
                               AllowDrop="True"
                               ShowAlternation="True"                           
-                              SelectionChanged="treeView_SelectionChanged">
+                              SelectionChanged="treeView_SelectionChanged" ShowRoot="False">
             <ListView.View>
                 <sd:SharpGridView>
                     <GridView.Columns>

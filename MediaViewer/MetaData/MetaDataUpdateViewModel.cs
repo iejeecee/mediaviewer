@@ -18,7 +18,7 @@ using System.Windows;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataUpdateViewModel : CloseableObservableObject, IProgress, IDisposable
+    class MetaDataUpdateViewModel : CloseableObservableObject, ICancellableOperationProgress, IDisposable
     {
         class Counter
         {
@@ -36,6 +36,7 @@ namespace MediaViewer.MetaData
 
         public const string oldFilenameMarker = "filename";
         public const string counterMarker = "counter:";
+        public const string replaceMarker = "replace:";
         public const string defaultCounter = "0001";
         public const string resolutionMarker = "resolution";
         public const string dateMarker = "date:";
@@ -51,6 +52,8 @@ namespace MediaViewer.MetaData
 
         public MetaDataUpdateViewModel()
         {
+            WindowIcon = "pack://application:,,,/Resources/Icons/info.ico";
+
             InfoMessages = new ObservableCollection<string>();
             tokenSource = new CancellationTokenSource();
             CancellationToken = tokenSource.Token;
@@ -68,7 +71,7 @@ namespace MediaViewer.MetaData
             });
 
             OkCommand.CanExecute = false;
-            setWindowTitle();
+            WindowTitle = "Updating Metadata";          
         }
 
         public void Dispose()
@@ -92,8 +95,8 @@ namespace MediaViewer.MetaData
         {
 
             TotalProgressMax = state.ItemList.Count;
-            itemProgressMax = 100;
-            TotalProgress = 0;
+            ItemProgressMax = 100;
+            TotalProgress = 0;            
 
             await Task.Factory.StartNew(() =>
             {
@@ -113,15 +116,14 @@ namespace MediaViewer.MetaData
             String oldFilename = "", newFilename = "";
 
             foreach (MediaFileItem item in state.ItemList)
-            {
-                setWindowTitle();
+            {              
                 if (CancellationToken.IsCancellationRequested) return;
 
                 ItemProgress = 0;
                 bool isModified = false;
 
                 ItemInfo = "Opening: " + item.Location;
-
+         
                 item.RWLock.EnterUpgradeableReadLock();
                 try
                 {
@@ -296,15 +298,14 @@ namespace MediaViewer.MetaData
                         }
 
                         // reload metaData in metadataviewmodel
-                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
+                        item.readMetaData(MediaFactory.ReadOptions.AUTO |
                             MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
-                                            
+
                         ItemInfo = "Error updating file: " + item.Location;
                         InfoMessages.Add("Error updating file: " + item.Location + " " + e.Message);
                         log.Error("Error updating file: " + item.Location, e);
                         MessageBox.Show("Error updating file: " + item.Location + "\n\n" + e.Message,
-                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        
+                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);                                               
                         return;
                     }
 
@@ -317,15 +318,13 @@ namespace MediaViewer.MetaData
                 }
                 finally
                 {
-                    item.RWLock.ExitUpgradeableReadLock();
+                    item.RWLock.ExitUpgradeableReadLock();                
 
                     GlobalMessenger.Instance.NotifyColleagues("MetaDataUpdateViewModel_UpdateComplete", item);
                 }
 
             }
-
-            setWindowTitle();
-
+        
             if (!oldFilename.Equals(newFilename))
             {
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -353,6 +352,8 @@ namespace MediaViewer.MetaData
             {
                 return (oldFilename);
             }
+
+            List<Tuple<String, String>> replaceArgs = new List<Tuple<string, string>>();
 
             int nrCounters = 0;
             string outputFileName = "";
@@ -445,6 +446,19 @@ namespace MediaViewer.MetaData
 
                             outputFileName += dateString;
                         }
+                        else if (subString.StartsWith(replaceMarker))
+                        {
+                            String replaceString = subString.Substring(replaceMarker.Length);
+                            int index = replaceString.IndexOf(';');
+
+                            if (index == -1) continue;
+                            Tuple<String, String> args = new Tuple<string,string>(replaceString.Substring(0,index),replaceString.Substring(index + 1));
+
+                            if (String.IsNullOrEmpty(args.Item1) || String.IsNullOrWhiteSpace(args.Item1)) continue;
+                            if (args.Item2 == null) continue;                                                       
+
+                            replaceArgs.Add(args);
+                        }
                     }
 
                     if (newFilename[k].Equals('\"'))
@@ -456,6 +470,11 @@ namespace MediaViewer.MetaData
                 {
                     outputFileName += newFilename[i];
                 }
+            }
+
+            foreach (Tuple<String, String> arg in replaceArgs)
+            {
+                outputFileName = outputFileName.Replace(arg.Item1, arg.Item2);
             }
 
             outputFileName = Utils.FileUtils.removeIllegalCharsFromFileName(outputFileName, "-");
@@ -578,12 +597,7 @@ namespace MediaViewer.MetaData
                 NotifyPropertyChanged();
             }
         }
-
-        void setWindowTitle()
-        {
-            WindowTitle = "Updating Metadata - Completed: " + TotalProgress.ToString() + "/" + TotalProgressMax.ToString() + " file(s)";
-        }
-
+       
         String windowTitle;
 
         public String WindowTitle
@@ -592,6 +606,21 @@ namespace MediaViewer.MetaData
             set
             {
                 windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
                 NotifyPropertyChanged();
             }
         }
@@ -792,5 +821,7 @@ namespace MediaViewer.MetaData
             get { return importedEnabled; }
             set { importedEnabled = value; }
         }
+
+        
     }
 }

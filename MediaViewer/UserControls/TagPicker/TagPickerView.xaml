@@ -11,12 +11,12 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>          
-            <Style x:Key="buttonStyle" TargetType="{x:Type Button}" BasedOn="{StaticResource {x:Type Button}}">
+            <Style x:Key="buttonStyle" TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
                 <Setter Property="Background" Value="White"/>               
                 <Style.Triggers>
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter Property="Background" Value="Yellow"/>
-                    </Trigger>
+                    </Trigger>                   
                 </Style.Triggers>
             </Style>
         </ResourceDictionary>
@@ -35,7 +35,7 @@
         <Button Grid.Row="0" Grid.Column="1" Name="addButton" Content="Add" HorizontalAlignment="Right" Width="50" Click="addButton_Click"
 			ToolTip="Add Tag"/>
         <Button Grid.Row="0" Grid.Column="2" Name="clearButton" Content="Clear" HorizontalAlignment="Right" Width="50" Click="clearButton_Click"
-			ToolTip="Remove All Tags"/>
+			ToolTip="Remove Tag(s)"/>
         <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="tagListBox" HorizontalAlignment="Stretch" MinHeight="111" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ContextMenuOpening="contextMenu_ContextMenuOpening">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -44,12 +44,16 @@
             </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <Button VerticalAlignment="Center" Tag="{Binding}" Content="{Binding}" 
-                            Click="tagButton_Click" Style="{StaticResource buttonStyle}"/>
+                    <ToggleButton VerticalAlignment="Center" Tag="{Binding}" Content="{Binding Name}" 
+                                  Checked="tag_Checked" Unchecked="tag_Unchecked" Background="White"
+                                  ToolTip="dummy" ToolTipOpening="tag_ToolTipOpening" ToolTipService.InitialShowDelay="1000"/>
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ContextMenu>
                 <ContextMenu Background="{StaticResource imageGridBackgroundColorBrush}">
+                    <MenuItem Name="contextMenuLink" Header="Link" Click="contextMenuLink_Click"/>
+                    <MenuItem Name="contextMenuUnselect" Header="Deselect All" Click="contextMenuUnselect_Click"/>
+                    <Separator/>
                     <MenuItem Name="contextMenuCut" Header="Cut" Click="contextMenuCut_Click"/>                                         
                     <MenuItem Name="contextMenuCopy" Header="Copy" Click="contextMenuCopy_Click"/>                        
                     <MenuItem Name="contextMenuPaste" Header="Paste" Click="contextMenuPaste_Click" />                        

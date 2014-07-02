@@ -217,7 +217,16 @@ namespace VideoLib {
 
 		System::Runtime::InteropServices::GCHandle gch;
 
+		bool isFinalPacketAdded;
+
 	public:
+
+		enum class DemuxPacketsResult {
+			LAST_PACKET,
+			SUCCESS,
+			STOPPED
+		};
+
 
 		enum class DecodedVideoFormat {
 			YUV420P,
@@ -342,7 +351,7 @@ namespace VideoLib {
 
 		void open(String ^videoLocation, DecodedVideoFormat format);
 		bool seek(double posSeconds);
-		bool demuxPacket();
+		DemuxPacketsResult demuxPacket();
 		void close();
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,

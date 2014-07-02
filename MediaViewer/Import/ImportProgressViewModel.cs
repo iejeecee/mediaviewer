@@ -15,11 +15,14 @@ using System.Windows;
 
 namespace MediaViewer.Import
 {
-    class ImportProgressViewModel : CloseableObservableObject, IProgress
+    class ImportProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         
         public ImportProgressViewModel() {
+
+            WindowTitle = "Importing Media";
+            WindowIcon = "pack://application:,,,/Resources/Icons/import.ico";
 
             InfoMessages = new ObservableCollection<string>();
             ItemInfo = "";
@@ -310,6 +313,34 @@ namespace MediaViewer.Import
             }
         }
 
+        string windowTitle;
 
+        public string WindowTitle
+        {
+            get
+            {
+                return (windowTitle);
+            }
+            set
+            {
+                windowTitle = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        string windowIcon;
+
+        public string WindowIcon
+        {
+            get
+            {
+                return (windowIcon);
+            }
+            set
+            {
+                windowIcon = value;
+                NotifyPropertyChanged();
+            }
+        }
     }
 }

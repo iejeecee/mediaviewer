@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -67,6 +68,14 @@ namespace MediaViewer.MetaData
 
         }
 
+        private void insertReplace_Click(object sender, RoutedEventArgs e)
+        {
+            int index = presetTextBox.CaretIndex;
+            filenamePresetsViewModel.InsertReplaceCommand.DoExecute(index);
+
+        }
+           
+       
        
     }
 }

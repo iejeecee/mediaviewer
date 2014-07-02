@@ -38,6 +38,8 @@ namespace MediaViewer.VideoPanel
                 try
                 {
                     videoPlayer.open(location);
+                    ScreenShotLocation = MediaFileWatcher.Instance.Path;
+                    ScreenShotName = System.IO.Path.GetFileName(location);
                 }
                 catch (Exception e)
                 {
@@ -79,6 +81,7 @@ namespace MediaViewer.VideoPanel
             PauseCommand = new Command(videoPlayer.pausePlay, false);
             CloseCommand = new Command(videoPlayer.close, false);
             SeekCommand = new Command<double>(videoPlayer.seek, false);
+            FrameByFrameCommand = new Command(videoPlayer.frameByFrame, false);
 
             ScreenShotCommand = new Command(() => {
 
@@ -207,6 +210,7 @@ namespace MediaViewer.VideoPanel
                         screenShotCommand.CanExecute = false;
                         closeCommand.CanExecute = true;
                         seekCommand.CanExecute = false;
+                        frameByFrameCommand.CanExecute = false;
                         break;
                     }
                 case VideoState.PLAYING:
@@ -216,6 +220,7 @@ namespace MediaViewer.VideoPanel
                         screenShotCommand.CanExecute = true;
                         closeCommand.CanExecute = true;
                         seekCommand.CanExecute = true;
+                        frameByFrameCommand.CanExecute = true;
                         break;
                     }
                 case VideoState.PAUSED:
@@ -225,6 +230,7 @@ namespace MediaViewer.VideoPanel
                         screenShotCommand.CanExecute = true;
                         closeCommand.CanExecute = true;
                         seekCommand.CanExecute = true;
+                        frameByFrameCommand.CanExecute = true;
                         break;
                     }
                 case VideoState.CLOSED:
@@ -234,6 +240,7 @@ namespace MediaViewer.VideoPanel
                         screenShotCommand.CanExecute = false;
                         closeCommand.CanExecute = false;
                         seekCommand.CanExecute = false;
+                        frameByFrameCommand.CanExecute = false;
                         break;
                     }
             }
@@ -304,6 +311,14 @@ namespace MediaViewer.VideoPanel
         {
             get { return seekCommand; }
             set { seekCommand = value; }
+        }
+
+        Command frameByFrameCommand;
+
+        public Command FrameByFrameCommand
+        {
+            get { return frameByFrameCommand; }
+            set { frameByFrameCommand = value; }
         }
 
         public int MinVolume

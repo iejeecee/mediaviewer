@@ -28,6 +28,7 @@
                 <MenuItem Header="Insert Existing Filename" Click="fileNameContextMenu_InsertExistingFilename"/>
                 <MenuItem Header="Insert Resolution" Click="fileNameContextMenu_InsertResolution"/>
                 <MenuItem Header="Insert Date" Click="fileNameContextMenu_InsertDate"/>
+                <MenuItem Header="Insert Replace String" Click="fileNameContextMenu_InsertReplaceString"/>
                 <Separator/>
                 <MenuItem Command="ApplicationCommands.Copy" />
                 <MenuItem Command="ApplicationCommands.Cut" />
@@ -175,21 +176,21 @@
 					Tags="{Binding Tags, Source={StaticResource viewModel}}"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-					Margin="5, 5, 5, 5"/>
+					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>
                 <Label Grid.Row="14" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
                 <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding AddTags, Source={StaticResource viewModel}}"                                       
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-					Margin="5, 5, 5, 5"/>
+					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>
                 <Label Grid.Row="15" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
                        />
                 <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags, Source={StaticResource viewModel}}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-					Margin="5, 5, 5, 5"/>               
+					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>               
                 <Button Grid.Row="16" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Command="{Binding WriteMetaDataCommand, Source={StaticResource viewModel}}"

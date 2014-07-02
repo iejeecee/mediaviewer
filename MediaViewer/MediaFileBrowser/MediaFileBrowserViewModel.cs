@@ -23,6 +23,7 @@ using VideoPlayerControl;
 using MediaViewer.VideoPanel;
 using MediaViewer.VideoPreviewImage;
 using MediaViewer.Torrent;
+using MediaViewer.Progress;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -116,9 +117,10 @@ namespace MediaViewer.MediaFileBrowser
                 List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
                 if (selectedItems.Count == 0) return;
 
-                ExportView export = new ExportView();
-                export.Show();
-                ExportViewModel vm = (ExportViewModel)export.DataContext;
+                CancellableOperationProgressView export = new CancellableOperationProgressView();
+                ExportViewModel vm = new ExportViewModel();
+                export.DataContext = vm;
+                export.Show();            
                 await vm.exportAsync(selectedItems);
 
             });

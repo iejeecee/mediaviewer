@@ -13,15 +13,15 @@ namespace MediaViewer.MediaFileModel
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        private IProgress progress;
+        private ICancellableOperationProgress progress;
 
-        protected IProgress Progress
+        protected ICancellableOperationProgress Progress
         {
             get { return progress; }
             set { progress = value; }
         }
 
-        public virtual void writeMetadata(Media media, IProgress progress)
+        public virtual void writeMetadata(Media media, ICancellableOperationProgress progress)
         {
             Progress = progress;
 

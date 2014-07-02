@@ -8,7 +8,7 @@
 # include "stdint.h"
 #endif
 
-#include "ThreadSafeQueue.h"
+#include "PacketQueue.h"
 #include "VideoFrame.h"
 #include "AudioFrame.h"
 #include "Packet.h"
@@ -32,9 +32,9 @@ namespace VideoLib {
 		static const int maxVideoPackets = 300;
 		static const int maxAudioPackets = 300;
 
-		ThreadSafeQueue<Packet ^> ^freePackets;
-		ThreadSafeQueue<Packet ^> ^videoPackets;
-		ThreadSafeQueue<Packet ^> ^audioPackets;
+		PacketQueue ^freePackets;
+		PacketQueue ^videoPackets;
+		PacketQueue ^audioPackets;
 
 		array<WaitHandle ^> ^decodingPaused;
 	
@@ -94,27 +94,31 @@ namespace VideoLib {
 			return(pts);
 		}
 
-		void videoPackets_Closed(Object ^sender, EventArgs ^) {
+		void videoPackets_Finished(Object ^sender, EventArgs ^) {
 
 			videoPacketsClosed = true;
 			if(audioPacketsClosed == true) {
 
-				// send framequeue closed event when and only when both 
+				// send framequeue finished event when and only when both 
 				// audio and video packet queues are closed
-				Closed(this, EventArgs::Empty);
+				freePackets->stop();
+
+				Finished(this, EventArgs::Empty);
 				videoPacketsClosed = false;
 				audioPacketsClosed = false;
 			}
 		}
 
-		void audioPackets_Closed(Object ^sender, EventArgs ^) {
+		void audioPackets_Finished(Object ^sender, EventArgs ^) {
 
 			audioPacketsClosed = true;
 			if(videoPacketsClosed == true) {
 
-				// send framequeue closed event when and only when both 
+				// send framequeue finished event when and only when both 
 				// audio and video packet queues are closed
-				Closed(this, EventArgs::Empty);
+				freePackets->stop();
+
+				Finished(this, EventArgs::Empty);
 				videoPacketsClosed = false;
 				audioPacketsClosed = false;
 			}
@@ -122,7 +126,7 @@ namespace VideoLib {
 
 	public:
 
-		event EventHandler ^Closed;
+		event EventHandler ^Finished;
 
 		FrameQueue(VideoDecoder *videoDecoder) {
 
@@ -141,15 +145,15 @@ namespace VideoLib {
 				packetData[i] = gcnew Packet();
 			}
 
-			freePackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets + maxAudioPackets);
-			videoPackets = gcnew ThreadSafeQueue<Packet ^>(maxVideoPackets);
-			audioPackets = gcnew ThreadSafeQueue<Packet ^>(maxAudioPackets);
+			freePackets = gcnew PacketQueue(maxVideoPackets + maxAudioPackets);
+			videoPackets = gcnew PacketQueue(maxVideoPackets);
+			audioPackets = gcnew PacketQueue(maxAudioPackets);
 
 			decodingPaused = gcnew array<WaitHandle^> {
 				audioPackets->Paused, videoPackets->Paused}; 		
 
-			videoPackets->Closed += gcnew EventHandler(this, &FrameQueue::videoPackets_Closed);
-			audioPackets->Closed += gcnew EventHandler(this, &FrameQueue::audioPackets_Closed);
+			videoPackets->Finished += gcnew EventHandler(this, &FrameQueue::videoPackets_Finished);
+			audioPackets->Finished += gcnew EventHandler(this, &FrameQueue::audioPackets_Finished);
 
 			audioPacketsClosed = false;
 			videoPacketsClosed = false;
@@ -278,35 +282,21 @@ namespace VideoLib {
 		void stop() {
 
 			// stop each queue in turn and wait until the threads signal they have actually stopped
-			if(freePackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {				
-				freePackets->stop();
-				freePackets->Stopped->WaitOne();
+			if(freePackets->QueueState != PacketQueue::State::STOPPED) {						
+				freePackets->stop();				
+				freePackets->Stopped->WaitOne();			
 			}
-			if(videoPackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+			if(videoPackets->QueueState != PacketQueue::State::STOPPED) {				
 				videoPackets->stop();
-				videoPackets->Stopped->WaitOne();
+				videoPackets->Stopped->WaitOne();				
 			}
-			if(audioPackets->QueueState != ThreadSafeQueue<Packet ^>::State::STOPPED) {
+			if(audioPackets->QueueState != PacketQueue::State::STOPPED) {			
 				audioPackets->stop();
-				audioPackets->Stopped->WaitOne();
+				audioPackets->Stopped->WaitOne();			
 			}
 
 		}
-
-		// this function should only be called after the final packet has
-		// been read from the video stream to indicate the queue is winding down.
-		// A closed event will be fired once the video and audio queues are empty
-		void close() {
-
-			// set freePackets stopped autoreset event, since no new packets are produced anymore
-			// otherwise calling stop during queue winddown will block.
-			freePackets->Stopped->Set();
-		
-			videoPackets->close();					
-			audioPackets->close();
-		
-		}
-
+	
 		void release() {
 
 			if(convertedVideoFrame != nullptr) {
@@ -405,11 +395,11 @@ namespace VideoLib {
 
 			while(!frameFinished) {
 
-				Packet ^videoPacket;
+				Packet ^videoPacket = nullptr;
 
 				bool success = videoPackets->tryGet(videoPacket);
 				if(success == false) {
-
+			
 					return(nullptr);
 				}
 
@@ -455,7 +445,7 @@ namespace VideoLib {
 
 			while(!frameFinished) {
 
-				Packet ^audioPacket;
+				Packet ^audioPacket = nullptr;
 
 				bool success = audioPackets->tryGet(audioPacket);
 				if(success == false) {
