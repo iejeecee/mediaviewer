@@ -129,7 +129,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                     }
 
                     FullName = newFullName;
-                    Name = newName;
+                    Name = newName;                    
                     return (true); 
 
                 }
@@ -149,7 +149,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
             });
 
             WaitWithPumping(task);
-                                               
+
+            if (task.Result == true)
+            {
+                nodePropertyChanged(this);
+            }
             return (task.Result);
            
         }

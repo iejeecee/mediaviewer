@@ -3,8 +3,6 @@
 #include "Video.h"
 #include "VideoLibException.h"
 
-
-
 typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
 
 class VideoDecoder : public Video {
@@ -163,13 +161,22 @@ public:
 		return(formatContext->filename);
 	}
 
-	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	virtual void open(String ^location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+
+		// Convert location to UTF8 string *
+		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
+
+		// prevent GC moving the bytes around while this variable is on the stack
+		pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
+
+		// Call the function, typecast from byte* -> char* is required
+		char *locationUTF8 = reinterpret_cast<char*>(pinnedBytes);
 
 		int errorCode = 0;
 
-		if((errorCode = avformat_open_input(&formatContext, location.c_str(), NULL, NULL)) != 0)
-		{
-			throw gcnew VideoLib::VideoLibException("Unable to open the stream:");
+		if((errorCode = avformat_open_input(&formatContext, locationUTF8, NULL, NULL)) != 0)
+		{			
+			throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + errorToString(errorCode));
 		}
 
 		// generate pts?? -- from ffplay, not documented
@@ -177,8 +184,8 @@ public:
 		formatContext->flags |= AVFMT_FLAG_GENPTS;
 
 		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
-		{
-			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info");
+		{		
+			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + errorToString(errorCode));
 		}
 
 		videoStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO,
@@ -189,22 +196,22 @@ public:
 			videoStream = formatContext->streams[videoStreamIndex];
 		
 		} else {
-
+			
 			throw gcnew VideoLib::VideoLibException("Unable to find a video stream");
 		}
 
 		videoCodecContext = formatContext->streams[videoStreamIndex]->codec;
 		videoCodec = avcodec_find_decoder(videoCodecContext->codec_id);
 		if(videoCodec == NULL)
-		{
+		{		
 			throw gcnew VideoLib::VideoLibException("Unsupported videoCodec");
 		}
 
 		videoCodecContext->skip_frame = discardMode;
 
 		if ((errorCode = avcodec_open2(videoCodecContext, videoCodec, NULL)) != 0)
-		{
-			throw gcnew VideoLib::VideoLibException("Error opening the videoCodec");
+		{	
+			throw gcnew VideoLib::VideoLibException("Error opening the videoCodec: " + errorToString(errorCode));
 		}
 
 		audioStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
@@ -218,13 +225,13 @@ public:
 			audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
 
 			if(audioCodec == NULL) {
-
+				
 				throw gcnew VideoLib::VideoLibException("no suitable audio decoder found");
 			}
 
 			if ((errorCode = avcodec_open2(audioCodecContext, audioCodec, NULL)) != 0)
-			{
-				throw gcnew VideoLib::VideoLibException("Error opening the audioCodec");
+			{				
+				throw gcnew VideoLib::VideoLibException("Error opening the audioCodec: " + errorToString(errorCode));
 			}
 		}
 		
@@ -232,7 +239,7 @@ public:
 		frame = avcodec_alloc_frame();
 
 		if(frame == NULL)
-		{
+		{		
 			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
 		}
 
@@ -253,7 +260,7 @@ public:
 		}
 		
 		if(durationSeconds < 0) {
-
+		
 			throw gcnew VideoLib::VideoLibException("can't determine video duration");
 		}
 		

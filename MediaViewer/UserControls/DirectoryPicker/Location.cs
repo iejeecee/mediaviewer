@@ -207,6 +207,9 @@ namespace MediaViewer.UserControls.DirectoryPicker
             return frame;
         }
 
-        
+        protected virtual void nodePropertyChanged(Location location)
+        {
+            (Parent as Location).nodePropertyChanged(location);                        
+        }
     }
 }

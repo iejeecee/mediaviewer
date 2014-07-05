@@ -19,7 +19,7 @@ namespace MediaViewer.ImageGrid
         public PagedImageGridViewModel(IMediaState mediaFiles) :
             base(mediaFiles)
         {
-
+           
             maxItemsPerPage = 4 * 5;
             mediaPage = new ObservableCollection<MediaFileItem>();
             mediaPageLock = new Object();

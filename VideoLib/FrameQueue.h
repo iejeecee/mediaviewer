@@ -281,20 +281,26 @@ namespace VideoLib {
 
 		void stop() {
 
+			System::Diagnostics::Debug::Print("Frame Queue Stop called");
+
 			// stop each queue in turn and wait until the threads signal they have actually stopped
 			if(freePackets->QueueState != PacketQueue::State::STOPPED) {						
 				freePackets->stop();				
-				freePackets->Stopped->WaitOne();			
+				freePackets->Stopped->WaitOne();		
+				System::Diagnostics::Debug::Print("freePackets stopped");
 			}
 			if(videoPackets->QueueState != PacketQueue::State::STOPPED) {				
 				videoPackets->stop();
-				videoPackets->Stopped->WaitOne();				
+				videoPackets->Stopped->WaitOne();	
+				System::Diagnostics::Debug::Print("videoPackets stopped");
 			}
 			if(audioPackets->QueueState != PacketQueue::State::STOPPED) {			
 				audioPackets->stop();
-				audioPackets->Stopped->WaitOne();			
+				audioPackets->Stopped->WaitOne();		
+				System::Diagnostics::Debug::Print("audioPackets stopped");
 			}
 
+			System::Diagnostics::Debug::Print("Frame Queue Stop finished");
 		}
 	
 		void release() {

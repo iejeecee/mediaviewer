@@ -1008,8 +1008,10 @@ restartvideo:
             demuxPacketsCancellationTokenSource.Cancel();
 
             demuxPacketsTask.Wait();
-           
-            videoDecoder.close();      
+
+            System.Diagnostics.Debug.Print("Calling videodecoder close");
+            videoDecoder.close();
+            System.Diagnostics.Debug.Print("videodecoder close finished");
             audioPlayer.flush();
 
             videoPts = 0;

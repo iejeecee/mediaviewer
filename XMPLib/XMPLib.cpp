@@ -151,8 +151,16 @@ bool MetaData::open(String ^filename, Consts::OpenOptions options)
 	bool result = false;
 
 	try {
+			// Convert location to UTF8 string *
+		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(filename);
 
-			result = xmpFile->open(marshal_as<std::string>(filename), (XMP_OptionBits)options);
+		// prevent GC moving the bytes around while this variable is on the stack
+		pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
+
+		// Call the function, typecast from byte* -> char* is required
+		char *filenameUTF8 = reinterpret_cast<char*>(pinnedBytes);
+
+	    result = xmpFile->open(filenameUTF8, (XMP_OptionBits)options);
 
 		
 	} catch(XMP_Error &e) {	
@@ -227,7 +235,7 @@ void MetaData::getProperty(String ^nameSpace, String ^propName, String^ %propVal
 
 	if(result == true) {
 
-		propValue = marshal_as<String ^>(temp);
+		UTF8ToWString(temp, propValue);
 
 	} else {
 
@@ -369,9 +377,12 @@ void MetaData::setProperty_Date(String ^nameSpace, String ^propName, DateTime pr
 
 void MetaData::setProperty(String ^nameSpace, String ^propName, String ^propValue, Consts::PropOptions options) {
 
+	std::string propValueUTF8;
+	WStringToUTF8(propValue, propValueUTF8);
+
 	xmpFile->setProperty(marshal_as<std::string>(nameSpace),
 		marshal_as<std::string>(propName), 
-		marshal_as<std::string>(propValue),
+		propValueUTF8,
 		(XMP_OptionBits)options);
 }
 
@@ -402,10 +413,11 @@ void MetaData::getArrayItem(String ^nameSpace, String ^arrayName, int item, Stri
 		item, 
 		temp);
 
+	
 	if(result == true) {
-
-		itemValue = marshal_as<String ^>(temp);
-
+	
+		UTF8ToWString(temp, itemValue);
+	
 	} else {
 
 		itemValue = nullptr;
@@ -426,11 +438,14 @@ bool MetaData::doesArrayItemExist(String ^nameSpace, String ^arrayName, int item
 
 void MetaData::setArrayItem(String ^nameSpace, String ^arrayName, int item, String ^itemValue, Consts::PropOptions options)
 {
+	std::string itemValueUTF8;
+	WStringToUTF8(itemValue, itemValueUTF8);
+
 	xmpFile->setArrayItem(
 		marshal_as<std::string>(nameSpace), 
 		marshal_as<std::string>(arrayName), 
 		item,
-		marshal_as<std::string>(itemValue),
+		itemValueUTF8,
 		(XMP_OptionBits)options);
 
 }
@@ -439,12 +454,13 @@ void MetaData::setArrayItem(String ^nameSpace, String ^arrayName, int item, Stri
 void MetaData::appendArrayItem(String ^nameSpace, String ^arrayName, Consts::PropOptions arrayOptions, String ^itemValue, Consts::PropOptions options)
 {
 
+	std::string itemValueUTF8;
 	const char *temp = NULL;
-	marshal_context context;
 	
 	if(itemValue != nullptr) {
-
-		temp = context.marshal_as<const char*>(itemValue);
+		
+		WStringToUTF8(itemValue, itemValueUTF8);
+		temp = itemValueUTF8.c_str();
 	}
 
 	xmpFile->appendArrayItem(
@@ -453,9 +469,7 @@ void MetaData::appendArrayItem(String ^nameSpace, String ^arrayName, Consts::Pro
 		(XMP_OptionBits)arrayOptions, 
 		temp,
 		(XMP_OptionBits)options);
-
 	
-
 }
 
 void MetaData::deleteArrayItem(String ^nameSpace, String ^arrayName, int item)
@@ -479,9 +493,9 @@ void MetaData::getLocalizedText(String ^nameSpace, String ^textName, String ^gen
 		temp);
 
 	if(result == true) {
-
-		itemValue = marshal_as<String ^>(temp);
-
+	
+		UTF8ToWString(temp, itemValue);
+		
 	} else {
 
 		itemValue = nullptr;
@@ -491,13 +505,15 @@ void MetaData::getLocalizedText(String ^nameSpace, String ^textName, String ^gen
 
 void MetaData::setLocalizedText(String ^nameSpace, String ^textName, String ^genericLang, String ^specificLang, String ^itemValue) 
 {
+	std::string itemValueUTF8;
+	WStringToUTF8(itemValue, itemValueUTF8);
 
 	xmpFile->setLocalizedText(
 		marshal_as<std::string>(nameSpace), 
 		marshal_as<std::string>(textName), 
 		marshal_as<std::string>(genericLang), 
 		marshal_as<std::string>(specificLang), 
-		marshal_as<std::string>(itemValue));
+		itemValueUTF8);
 }
 
 void MetaData::iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%properties) {
@@ -572,7 +588,7 @@ bool MetaData::getStructField(String ^nameSpace, String ^structName, String ^fie
 		marshal_as<std::string>(fieldName), 
 		temp);
 
-	fieldValue = marshal_as<String ^>(temp);
+	UTF8ToWString(temp, fieldValue);
 
 	return(result);
 
@@ -582,12 +598,16 @@ void MetaData::setStructField(String ^nameSpace, String ^structName, String ^fie
 					String ^fieldName, String ^fieldValue, XMP_OptionBits options) 
 {
 
+	std::string fieldValueUTF8;
+
+	WStringToUTF8(fieldValue, fieldValueUTF8);
+
 	xmpFile->setStructField(
 		marshal_as<std::string>(nameSpace), 
 		marshal_as<std::string>(structName), 
 		marshal_as<std::string>(fieldNameSpace), 
 		marshal_as<std::string>(fieldName), 
-		marshal_as<std::string>(fieldValue),
+		fieldValueUTF8,
 		options);
 
 }
@@ -690,6 +710,38 @@ void MetaData::getVersionInfo(VersionInfo ^%info) {
 	info->micro = versionInfo.micro;
 	info->minor = versionInfo.minor;
 }
+
+void MetaData::WStringToUTF8(String ^input, std::string &output) {
+
+	// Convert location to UTF8 string *
+	array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(input);
+
+	// prevent GC moving the bytes around while this variable is on the stack
+	pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
+
+	// Call the function, typecast from byte* -> char* is required
+	char *utf8 = reinterpret_cast<char*>(pinnedBytes);
+
+	output.assign(utf8);
+}
+
+void MetaData::UTF8ToWString(const std::string &input, String ^%output) {
+		
+	// How long will the UTF-16 string be
+	int wstrlen = MultiByteToWideChar(CP_UTF8, 0, input.c_str(), input.length(), NULL, NULL );
+	
+	// allocate a buffer
+	wchar_t *buf = (wchar_t * ) malloc( wstrlen * 2 + 2 );
+	// convert to UTF-16
+	MultiByteToWideChar(CP_UTF8, 0, input.c_str(), input.length(), buf, wstrlen);
+	// null terminate
+	buf[wstrlen] = '\0';
+	
+	output = marshal_as<String ^>(buf);
+
+	delete buf;
+}
+
 /*
 MetaDataTreeNode ^MetaData::parse() {
 

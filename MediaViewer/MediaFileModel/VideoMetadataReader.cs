@@ -199,8 +199,9 @@ namespace MediaViewer.MediaFileModel
              }
          }
 
-         private bool supportsXMPMetadata(VideoMedia video, List<string> fsMetaData)
+         private bool supportsXMPMetadata(VideoMedia video, List<string> fsMetaData)                  
          {
+            
              // XMP Metadata does not support matroska
              if (video.MimeType.Equals("video/x-matroska"))
              {

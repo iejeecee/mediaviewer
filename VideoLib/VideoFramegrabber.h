@@ -103,7 +103,7 @@ public:
 
 	}
 
-	virtual void open(const std::string &location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	virtual void open(String ^location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
 
 		VideoDecoder::open(location, discardMode);
 

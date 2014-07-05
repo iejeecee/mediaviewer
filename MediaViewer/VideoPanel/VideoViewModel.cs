@@ -17,6 +17,7 @@ namespace MediaViewer.VideoPanel
 {
     public class VideoViewModel : ObservableObject, IPageable
     {
+        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         VideoPlayerViewModel videoPlayer;
 
@@ -28,6 +29,7 @@ namespace MediaViewer.VideoPanel
             }
 
             this.videoPlayer = videoPlayer;
+            //videoPlayer.Log = log;
 
             selectedMedia = new MediaLockedCollection();
 

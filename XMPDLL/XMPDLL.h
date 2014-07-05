@@ -46,7 +46,7 @@ namespace XMPDLL {
 	{
 	public:
 				
-		virtual bool open(const std::string &filename, XMP_OptionBits options) = 0;
+		virtual bool open(const char *filenameUTF8, XMP_OptionBits options) = 0;
 		virtual void release() = 0;
 
 		virtual bool dumpToDisk(const std::string &filename) const = 0;

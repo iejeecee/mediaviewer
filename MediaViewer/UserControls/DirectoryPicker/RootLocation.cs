@@ -11,6 +11,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
 {
     class RootLocation : Location
     {
+        public event EventHandler<Location> NodePropertyChanged;
+
         public RootLocation()
         {
             LazyLoading = true;          
@@ -54,6 +56,16 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
 
             return (drives);
+        }
+
+       
+
+        protected override void nodePropertyChanged(Location location)
+        {
+            if (NodePropertyChanged != null)
+            {
+                NodePropertyChanged(this, location);
+            }
         }
     }
 }

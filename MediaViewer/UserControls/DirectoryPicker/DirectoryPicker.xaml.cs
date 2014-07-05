@@ -31,12 +31,19 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
         public DirectoryPicker()
         {
-            InitializeComponent();         
-            treeView.Root = new RootLocation();
+            InitializeComponent();
+            RootLocation root = new RootLocation();
+            treeView.Root = root;
             treeView.IsVisibleChanged += treeView_IsVisibleChanged;
-
+            root.NodePropertyChanged += root_NodePropertyChanged;
+           
             scrollToNodeOnTreeViewVisible = null;
             //SharpTreeView temp;
+        }
+
+        void root_NodePropertyChanged(object sender, Location e)
+        {
+            SelectedLocation = e.FullName;
         }
 
         private void treeView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)

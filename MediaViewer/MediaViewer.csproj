@@ -198,6 +198,7 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
+    <Compile Include="MediaFileModel\Watcher\BinaryHeap.cs" />
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />

@@ -52,7 +52,8 @@ void VideoPreview::open(String ^videoLocation) {
 
 	try {
 
-		frameGrabber->open(marshal_as<std::string>(videoLocation), AVDISCARD_NONKEY);
+		
+		frameGrabber->open(videoLocation, AVDISCARD_NONKEY);
 
 		metaData = gcnew List<String ^>();
 
@@ -178,7 +179,7 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 
 		//
 
-		videoDecoder->open(marshal_as<std::string>(videoLocation));
+		videoDecoder->open(videoLocation);
 
 		AVPixelFormat convertToFormat = PIX_FMT_YUV420P;
 

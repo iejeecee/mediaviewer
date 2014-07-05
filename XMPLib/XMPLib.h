@@ -78,6 +78,9 @@ namespace XMPLib {
 		ErrorCallbackDelegate ^managedErrorCallback;
 		ProgressCallbackDelegate ^managedProgressCallback;
 
+		static void WStringToUTF8(String ^input, std::string &output);
+		static void UTF8ToWString(const std::string &input, String ^%output);
+
 	public:
 
 		static MetaData() {

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "stdafx.h"
 #include "VideoInit.h"
-
+#include <msclr\marshal.h>
 
 extern "C" {
 
@@ -121,6 +121,17 @@ protected:
 	
     }
 
+	System::String ^errorToString(int err)
+	{
+		char errbuf[128];
+		const char *errbuf_ptr = errbuf;
+
+		if (av_strerror(err, errbuf, sizeof(errbuf)) < 0)
+			errbuf_ptr = strerror(AVUNERROR(err));
+		
+		return(msclr::interop::marshal_as<System::String^>(errbuf_ptr));
+	}
+
 
 public:
 
@@ -229,6 +240,7 @@ public:
 
 		libAVLogOnlyImportant = logOnlyImportant;
 		av_log_set_callback(&Video::libAVLogCallback);
+		av_log_set_level(AV_LOG_VERBOSE); 
 			
 	}
 

@@ -75,9 +75,9 @@ namespace XMPDLL {
 			
 		}
 	
-		bool open(const std::string &filename, XMP_OptionBits options) {
+		bool open(const char *filenameUTF8, XMP_OptionBits options) {
 
-			if(filename.empty()) 
+			if(filenameUTF8 == NULL) 
 			{
 				return(false);
 			}
@@ -95,21 +95,19 @@ namespace XMPDLL {
 			{
 				return(false);
 			}
-
 			
-
 			// Options to open the file with - read only and use a file handler
 			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
 
-			bool ok;							
+			bool ok;									
 
 			// First we try and open the file
-			ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
+			ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
 			if(!ok)
 			{
 				// Now try using packet scanning
 				opts = options | kXMPFiles_OpenUsePacketScanning;			
-				ok = myFile.OpenFile(filename, kXMP_UnknownFile, opts);
+				ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
 			}
 			
 			if(ok)
