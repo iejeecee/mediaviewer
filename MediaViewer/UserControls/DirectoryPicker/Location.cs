@@ -16,13 +16,16 @@ using System.Windows.Media.Imaging;
 namespace MediaViewer.UserControls.DirectoryPicker
 {
    
-
     public class Location : SharpTreeNode
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        protected Location()
+        protected InfoGatherTask infoGatherTask;
+
+        protected Location(InfoGatherTask infoGatherTask)
         {
+            this.infoGatherTask = infoGatherTask;
+
             MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new NotifyCollectionChangedEventHandler(importStateChanged);
       
         }
@@ -77,7 +80,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 
         }
         
-        static List<SharpTreeNode> getDirectoryNodes(String fullName)
+        List<SharpTreeNode> getDirectoryNodes(String fullName)
         {
             List<SharpTreeNode> directories = new List<SharpTreeNode>();
 
@@ -92,7 +95,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                         continue;
                     }
 
-                    Location directory = new DirectoryLocation(dirInfo);
+                    Location directory = new DirectoryLocation(dirInfo, infoGatherTask);
 
                     directories.Add(directory);
                 }
@@ -153,10 +156,20 @@ namespace MediaViewer.UserControls.DirectoryPicker
         public virtual int NrImported
         {
             get { return nrImported; }
-            protected set
+            set
             {
                 nrImported = value;           
                 RaisePropertyChanged("NrImported");
+            }
+        }
+
+        Nullable<DateTime> creationDate;
+
+        public Nullable<DateTime> CreationDate
+        {
+            get { return creationDate; }
+            set { creationDate = value;
+            RaisePropertyChanged("CreationDate");
             }
         }
 

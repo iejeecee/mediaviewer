@@ -17,7 +17,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        const int nrRetriesOnOptimisticConcurrencyException = 3;
+        const int nrRetriesOnOptimisticConcurrencyException = 100;
 
         bool usingExistingContext;
 
@@ -79,6 +79,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     }
                     else
                     {
+                        foreach (DbEntityEntry conflictingEntity in e.Entries)
+                        {
+                            // reload the conflicting entity (database wins)
+                            conflictingEntity.Reload();
+                        }
+                                               
                         log.Warn("Concurrencyexception while updating entity: " + e.Message);
                         retry = true;
                     }

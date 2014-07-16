@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.DirectoryPicker
@@ -12,12 +13,13 @@ namespace MediaViewer.UserControls.DirectoryPicker
     class RootLocation : Location
     {
         public event EventHandler<Location> NodePropertyChanged;
-
-        public RootLocation()
-        {
-            LazyLoading = true;          
+        
+        public RootLocation(InfoGatherTask infoGatherTask) : base(infoGatherTask)
+        {            
+            LazyLoading = true;
+                      
         }
-
+        
         protected override void LoadChildren()
         {
             LoadingChildrenTask = Task.Run(() =>
@@ -36,7 +38,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             
         }
 
-        static List<SharpTreeNode> getDriveNodes()
+        List<SharpTreeNode> getDriveNodes()
         {
             List<SharpTreeNode> drives = new List<SharpTreeNode>();
 
@@ -45,7 +47,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 DriveInfo[] drivesArray = DriveInfo.GetDrives();
                 foreach (DriveInfo driveInfo in drivesArray)
                 {
-                    Location drive = new DriveLocation(driveInfo);
+                    Location drive = new DriveLocation(driveInfo, infoGatherTask);
 
                     drives.Add(drive);
                 }

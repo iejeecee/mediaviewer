@@ -151,16 +151,12 @@ bool MetaData::open(String ^filename, Consts::OpenOptions options)
 	bool result = false;
 
 	try {
-			// Convert location to UTF8 string *
-		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(filename);
 
-		// prevent GC moving the bytes around while this variable is on the stack
-		pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
+		std::string filenameUTF8;
 
-		// Call the function, typecast from byte* -> char* is required
-		char *filenameUTF8 = reinterpret_cast<char*>(pinnedBytes);
-
-	    result = xmpFile->open(filenameUTF8, (XMP_OptionBits)options);
+		WStringToUTF8(filename, filenameUTF8);
+	
+		result = xmpFile->open(filenameUTF8.c_str(), (XMP_OptionBits)options);
 
 		
 	} catch(XMP_Error &e) {	
@@ -529,7 +525,11 @@ void MetaData::iterate(Consts::IterOptions options, List<MetaDataProperty ^> ^%p
 		MetaDataProperty ^p = gcnew MetaDataProperty();
 		p->nameSpace = marshal_as<String ^>(propsTemp[i].schemaNS);
 		p->path = marshal_as<String ^>(propsTemp[i].propPath);
-		p->value = marshal_as<String ^>(propsTemp[i].propVal);
+
+		String ^propVal;
+		UTF8ToWString(propsTemp[i].propVal, propVal);
+
+		p->value = propVal;
 
 		properties->Add(p);
 
@@ -549,7 +549,11 @@ void MetaData::iterate(String ^nameSpace, Consts::IterOptions options, List<Meta
 		MetaDataProperty ^p = gcnew MetaDataProperty();
 		p->nameSpace = marshal_as<String ^>(propsTemp[i].schemaNS);
 		p->path = marshal_as<String ^>(propsTemp[i].propPath);
-		p->value = marshal_as<String ^>(propsTemp[i].propVal);
+		
+		String ^propVal;
+		UTF8ToWString(propsTemp[i].propVal, propVal);
+
+		p->value = propVal;
 
 		properties->Add(p);
 
@@ -569,7 +573,11 @@ void MetaData::iterate(String ^nameSpace, List<MetaDataProperty ^> ^%properties)
 		MetaDataProperty ^p = gcnew MetaDataProperty();
 		p->nameSpace = marshal_as<String ^>(propsTemp[i].schemaNS);
 		p->path = marshal_as<String ^>(propsTemp[i].propPath);
-		p->value = marshal_as<String ^>(propsTemp[i].propVal);
+		
+		String ^propVal;
+		UTF8ToWString(propsTemp[i].propVal, propVal);
+
+		p->value = propVal;
 
 		properties->Add(p);
 
@@ -634,7 +642,7 @@ DateTime MetaData::convertToDate(String ^dateString) {
 
 	} else {
 
-		date = DateTime::MinValue;
+		date = DateTime(DateTime::MinValue);
 	}
 
 	return(date);
@@ -711,6 +719,7 @@ void MetaData::getVersionInfo(VersionInfo ^%info) {
 	info->minor = versionInfo.minor;
 }
 
+// Convert wide String ^ to utf8 encoded std::string
 void MetaData::WStringToUTF8(String ^input, std::string &output) {
 
 	// Convert location to UTF8 string *
@@ -725,6 +734,7 @@ void MetaData::WStringToUTF8(String ^input, std::string &output) {
 	output.assign(utf8);
 }
 
+// Convert utf8 encoded std::string to wide String ^
 void MetaData::UTF8ToWString(const std::string &input, String ^%output) {
 		
 	// How long will the UTF-16 string be

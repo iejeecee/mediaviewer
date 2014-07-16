@@ -12,9 +12,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
     class DriveLocation : Location
     {
         static DriveIdleMonitor driveIdleMonitor = new DriveIdleMonitor();
-
-        public DriveLocation(DriveInfo info)
-        {        
+     
+        public DriveLocation(DriveInfo info, InfoGatherTask infoGatherTask)
+            : base(infoGatherTask)
+        {
+           
             switch (info.DriveType)
             {
                 case DriveType.CDRom:
@@ -81,11 +83,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 FreeSpaceBytes = 0;
             }
 
-            using (MediaDbCommands mediaCommand = new MediaDbCommands())
-            {
-                NrImported = mediaCommand.getNrMediaInLocation(FullName);
-            }
-
+            infoGatherTask.addLocation(this);
+          
             LazyLoading = true;
 
 

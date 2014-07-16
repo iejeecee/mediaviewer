@@ -13,6 +13,7 @@
             <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>            
         </ResourceDictionary.MergedDictionaries>
         <DirectoryPicker:NrImportedFilesConverter x:Key="nrImportedFilesConverter"/>
+        <DirectoryPicker:CreationDateConverter x:Key="creationDateConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -53,6 +54,13 @@
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding FreeSpaceBytes, Converter={StaticResource formatSizeBytesConverter}}" />
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                        <GridViewColumn Header="Creation Date" Width="130">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CreationDate, Converter={StaticResource creationDateConverter}}" />
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

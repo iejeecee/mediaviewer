@@ -30,8 +30,7 @@ namespace MediaViewer.ImageGrid
 
         CancellationTokenSource loadItemsCTS;
 
-       
-    
+           
         public ImageGridViewModel(IMediaState mediaState)
         {
 
@@ -43,9 +42,7 @@ namespace MediaViewer.ImageGrid
             this.mediaState = mediaState;
           
             loadItemsCTS = new CancellationTokenSource();
-
-       
-            
+                   
         }
              
              

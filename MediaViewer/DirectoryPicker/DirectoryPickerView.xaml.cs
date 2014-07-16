@@ -41,8 +41,13 @@ namespace MediaViewer.DirectoryPicker
                 {
                     this.DialogResult = true;
                 }
-
+               
                 this.Close();
+            });
+
+            Closing += new System.ComponentModel.CancelEventHandler((s, e) =>
+            {
+                directoryBrowser.stopDirectoryPickerInfoGatherTask();
             });
           
         }

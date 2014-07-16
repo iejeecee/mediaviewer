@@ -28,17 +28,29 @@ namespace MediaViewer.UserControls.DirectoryPicker
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         SharpTreeNode scrollToNodeOnTreeViewVisible;
+        InfoGatherTask infoGatherTask;
+        CancellationTokenSource cancelInfoGatherTaskTokenSource;
 
         public DirectoryPicker()
         {
             InitializeComponent();
-            RootLocation root = new RootLocation();
+
+            cancelInfoGatherTaskTokenSource = new CancellationTokenSource();
+
+            infoGatherTask = new InfoGatherTask(cancelInfoGatherTaskTokenSource.Token);
+            RootLocation root = new RootLocation(infoGatherTask);
             treeView.Root = root;
             treeView.IsVisibleChanged += treeView_IsVisibleChanged;
             root.NodePropertyChanged += root_NodePropertyChanged;
            
             scrollToNodeOnTreeViewVisible = null;
             //SharpTreeView temp;
+            
+        }
+
+        public void stopDirectoryPickerInfoGatherTask()
+        {
+            cancelInfoGatherTaskTokenSource.Cancel();
         }
 
         void root_NodePropertyChanged(object sender, Location e)
@@ -128,8 +140,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 String newFolder = FileUtils.getUniqueDirectoryName(selectedNode.FullName);
 
                 DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
-               
-                DirectoryLocation child = new DirectoryLocation(newFolderInfo);
+
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask);
                 Utils.Misc.insertIntoSortedCollection(selectedNode.Children, child);
 
                 selectedNode.IsExpanded = true;
@@ -157,12 +169,12 @@ namespace MediaViewer.UserControls.DirectoryPicker
             parent.Children.Remove(selectedNode);
 
             if (selectedNode is DriveLocation)
-            {                
-                newNode = new DriveLocation(new DriveInfo(selectedNode.FullName));                           
+            {
+                newNode = new DriveLocation(new DriveInfo(selectedNode.FullName), infoGatherTask);                           
             }
             else
             {
-                newNode = new DirectoryLocation(new DirectoryInfo(selectedNode.FullName));
+                newNode = new DirectoryLocation(new DirectoryInfo(selectedNode.FullName), infoGatherTask);
             }
 
             Utils.Misc.insertIntoSortedCollection(parent.Children, newNode);

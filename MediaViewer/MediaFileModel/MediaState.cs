@@ -531,20 +531,24 @@ namespace MediaViewer.MediaFileModel
         public void readMetadataRangeAsync(int start, int nrItems, CancellationToken token)
         {
             UIMediaCollection.EnterReaderLock();
+            try
+            {
+                for (int i = 0; i < nrItems; i++)
+                {
+                    // don't reload already loaded items
+                    if (UIMediaCollection.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
 
-            for (int i = 0; i < nrItems; i++)
-            {               
-                // don't reload already loaded items
-                if (UIMediaCollection.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
+                    UIMediaCollection.Items[start + i].readMetaDataAsync(
+                        MediaFactory.ReadOptions.AUTO |
+                        MediaFactory.ReadOptions.GENERATE_THUMBNAIL,
+                        token).ContinueWith(finishedTask => { });
 
-                UIMediaCollection.Items[start + i].readMetaDataAsync(
-                    MediaFactory.ReadOptions.AUTO |
-                    MediaFactory.ReadOptions.GENERATE_THUMBNAIL,
-                    token).ContinueWith(finishedTask => { });
-
+                }
             }
-
-            UIMediaCollection.ExitReaderLock();
+            finally
+            {
+                UIMediaCollection.ExitReaderLock();
+            }
         }
 
         public void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, ICancellableOperationProgress progress)

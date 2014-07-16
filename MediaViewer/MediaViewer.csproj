@@ -198,7 +198,6 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
-    <Compile Include="MediaFileModel\Watcher\BinaryHeap.cs" />
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
@@ -357,11 +356,13 @@
     <Compile Include="MetaData\MetaDataPresetsViewModel.cs" />
     <Compile Include="MetaData\MetaDataUpdateViewModel.cs" />
     <Compile Include="MetaData\MetaDataViewModel.cs" />
+    <Compile Include="UserControls\DirectoryPicker\CreationDateConverter.cs" />
     <Compile Include="UserControls\DirectoryPicker\DirectoryLocation.cs" />
     <Compile Include="UserControls\DirectoryPicker\DirectoryPicker.xaml.cs">
       <DependentUpon>DirectoryPicker.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\DirectoryPicker\DriveLocation.cs" />
+    <Compile Include="UserControls\DirectoryPicker\InfoGatherTask.cs" />
     <Compile Include="UserControls\DirectoryPicker\Location.cs" />
     <Compile Include="UserControls\DirectoryPicker\NrImportedFilesConverter.cs" />
     <Compile Include="UserControls\DirectoryPicker\RootLocation.cs" />

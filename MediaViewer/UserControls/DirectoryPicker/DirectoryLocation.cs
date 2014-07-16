@@ -20,19 +20,21 @@ namespace MediaViewer.UserControls.DirectoryPicker
 {
     class DirectoryLocation : Location, INonCancellableOperationProgress
     {
-        public DirectoryLocation(DirectoryInfo info)
-        {
-            
+
+        public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask)
+            : base(infoGatherTask)
+        {        
             Name = info.Name;
+            CreationDate = info.CreationTime;
            
             FullName = info.FullName;
             VolumeLabel = "";
 
-            using (MediaDbCommands mediaCommand = new MediaDbCommands())
-            {
-                NrImported = mediaCommand.getNrMediaInLocation(FullName);
-            }
-                     
+            //ImageUrl = "pack://application:,,,/Resources/Icons/mediafolder.ico";
+            NrImported = 0;
+
+            infoGatherTask.addLocation(this);
+                                           
             LazyLoading = true;                     
         }
 
@@ -62,8 +64,9 @@ namespace MediaViewer.UserControls.DirectoryPicker
         }
 
         public override int NrImported
-        {           
-            protected set
+        {
+            get { return (base.NrImported); }
+            set
             {              
                 if (value > 0)
                 {
