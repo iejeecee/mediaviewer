@@ -12,12 +12,34 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
-    interface IMediaState
+    public enum MediaStateType
     {
-        event NotifyCollectionChangedEventHandler NrItemsInStateChanged;
-        event NotifyCollectionChangedEventHandler NrImportedItemsChanged;
+        Directory,
+        SearchResult,
+        Other
+    }
+
+    interface IMediaState : INotifyPropertyChanged
+    {
+        event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
+        event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;
         event EventHandler ItemIsSelectedChanged;
         event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
+
+        MediaStateType MediaStateType
+        {
+            get;
+        }
+
+        String MediaStateInfo
+        {
+            get;
+        }
+
+        DateTime MediaStateDateTime
+        {
+            get;
+        }
 
         MediaLockedCollection UIMediaCollection
         {
@@ -36,7 +58,7 @@ namespace MediaViewer.MediaFileModel
         void addUIState(IEnumerable<MediaFileItem> items);
         void removeUIState(IEnumerable<MediaFileItem> items);
         void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations);
-        void clearUIState();
+        void clearUIState(String stateInfo, DateTime stateDateTime, MediaStateType stateType);
 
         void delete(IEnumerable<MediaFileItem> items, CancellationToken token);
         void move(MediaFileItem item, String location, ICancellableOperationProgress progress);

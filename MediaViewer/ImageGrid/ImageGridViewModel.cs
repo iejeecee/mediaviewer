@@ -15,6 +15,23 @@ using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer.ImageGrid
 {
+    enum FilterMode
+    {
+        All,
+        Video,
+        Images
+    }
+
+    enum SortMode
+    {
+        Name,
+        Size,
+        Rating,
+        Imported,
+        Tags,
+        CreationDate
+    }
+
     class ImageGridViewModel : ObservableObject
     {
 
@@ -30,8 +47,8 @@ namespace MediaViewer.ImageGrid
 
         CancellationTokenSource loadItemsCTS;
 
-           
-        public ImageGridViewModel(IMediaState mediaState)
+                  
+        protected ImageGridViewModel(IMediaState mediaState)
         {
 
             if (mediaState == null)
@@ -42,9 +59,36 @@ namespace MediaViewer.ImageGrid
             this.mediaState = mediaState;
           
             loadItemsCTS = new CancellationTokenSource();
-                   
+
+            IsScrollBarEnabled = true;
+            NrGridRows = 0;
+            NrGridColumns = 4;
+
+            Media = new ObservableCollection<MediaFileItem>();
+            MediaLock = new Object();
+            BindingOperations.EnableCollectionSynchronization(Media, MediaLock);
+
+            filterMode = ImageGrid.FilterMode.All;
+            sortMode = ImageGrid.SortMode.Name;
         }
-             
+
+        String imageGridInfo;
+
+        public String ImageGridInfo
+        {
+            get { return imageGridInfo; }
+            set { imageGridInfo = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        DateTime imageGridInfoDateTime;
+
+        public DateTime ImageGridInfoDateTime
+        {
+            get { return imageGridInfoDateTime; }
+            set { imageGridInfoDateTime = value; }
+        }
              
         public void loadItemRangeAsync(int start, int nrItems)
         {
@@ -62,5 +106,94 @@ namespace MediaViewer.ImageGrid
         {
             get { return mediaState.UISelectedMedia; }            
         }
+
+        ObservableCollection<MediaFileItem> media;
+
+        public ObservableCollection<MediaFileItem> Media
+        {
+            get { return media; }
+            set { media = value; }
+        }
+
+        object mediaLock;
+
+        protected object MediaLock
+        {
+            get { return mediaLock; }
+            set { mediaLock = value; }
+        }
+
+        int nrGridRows;
+
+        public int NrGridRows
+        {
+            get { return nrGridRows; }
+            set { nrGridRows = value;
+            NotifyPropertyChanged();
+            }
+        }
+        int nrGridColumns;
+
+        public int NrGridColumns
+        {
+            get { return nrGridColumns; }
+            set { nrGridColumns = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        bool isScrollBarEnabled;
+
+        public bool IsScrollBarEnabled
+        {
+            get { return isScrollBarEnabled; }
+            set { isScrollBarEnabled = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        FilterMode filterMode;
+
+        public virtual FilterMode FilterMode
+        {
+            get { return filterMode; }
+            set { filterMode = value;
+            deselectAll();
+            NotifyPropertyChanged();
+            }
+        }
+
+        SortMode sortMode;
+
+        public virtual SortMode SortMode
+        {
+            get { return sortMode; }
+            set { sortMode = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        public void selectAll()
+        {
+            lock (mediaLock)
+            {
+                foreach (MediaFileItem item in Media)
+                {
+                    item.IsSelected = true;
+                }
+            }
+        }
+
+        public void deselectAll()
+        {
+            lock (mediaLock)
+            {
+                foreach (MediaFileItem item in Media)
+                {
+                    item.IsSelected = false;
+                }
+            }
+        }
+
     }
 }

@@ -50,8 +50,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}"/>
-                    <TextBlock Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}, ConverterParameter='ext'}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}"/>
+                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
+                    <TextBlock Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}, ConverterParameter='ext'}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
                 </Grid>
                 <Border Grid.Row="1" BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border.Effect>
@@ -122,7 +122,7 @@
                         </Image.Style>
                     </Image>
                 </Border>
-                <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal" Margin="3,0,0,0">
+                <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal" Margin="3,5,0,0">
                     <StackPanel.Style>
                         <Style>
                             <Style.Triggers>

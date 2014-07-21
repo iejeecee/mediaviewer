@@ -16,22 +16,20 @@ namespace MediaViewer.ImageGrid
 {
     class PagedImageGridViewModel : ImageGridViewModel, IPageable
     {
-        public PagedImageGridViewModel(IMediaState mediaFiles) :
-            base(mediaFiles)
+        public PagedImageGridViewModel(IMediaState mediaState) :
+            base(mediaState)
         {
-           
-            maxItemsPerPage = 4 * 5;
-            mediaPage = new ObservableCollection<MediaFileItem>();
-            mediaPageLock = new Object();
-            BindingOperations.EnableCollectionSynchronization(mediaPage, mediaPageLock);
+            NrGridColumns = 4;
+            NrGridRows = 5;
 
+            MaxItemsPerPage = NrGridColumns * NrGridRows;
+           
             for (int i = 0; i < maxItemsPerPage; i++)
             {
-                mediaPage.Add(null);
-
+                Media.Add(null);
             }
-         
-            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler(pagedImageGridViewModel_StateChanged);
+
+            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>(pagedImageGridViewModel_StateChanged);
 
             nextPageCommand = new Command(new Action(() =>
             {
@@ -63,8 +61,8 @@ namespace MediaViewer.ImageGrid
             CurrentPage = 0;
             NrPages = 0;
             isPagingEnabled = false;
-
-           
+            IsScrollBarEnabled = false;
+                  
         }
 
         int maxItemsPerPage;
@@ -159,16 +157,6 @@ namespace MediaViewer.ImageGrid
             set { lastPageCommand = value; }
         }
 
-        ObservableCollection<MediaFileItem> mediaPage;
-
-        public ObservableCollection<MediaFileItem> MediaPage
-        {
-            get { return mediaPage; }
-            set { mediaPage = value; }
-        }
-
-        object mediaPageLock;
-
         void setExecuteState()
         {
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
@@ -198,7 +186,8 @@ namespace MediaViewer.ImageGrid
             }));
         }
 
-        void pagedImageGridViewModel_StateChanged(Object sender, NotifyCollectionChangedEventArgs e) {
+        void pagedImageGridViewModel_StateChanged(Object sender, MediaStateChangedEventArgs e)
+        {
 
             
             int nrMediaItems = MediaState.UIMediaCollection.Count;
@@ -251,7 +240,7 @@ namespace MediaViewer.ImageGrid
         void loadItemsAsync()
         {
 
-            lock (mediaPageLock)
+            lock (MediaLock)
             {
 
                 int startItem = (CurrentPage > 0 ? CurrentPage - 1 : CurrentPage) * MaxItemsPerPage;
@@ -264,11 +253,11 @@ namespace MediaViewer.ImageGrid
                 {
                     if (i < nrItems)
                     {
-                        MediaPage[i] = MediaState.UIMediaCollection.Items[startItem + i];
+                        Media[i] = MediaState.UIMediaCollection.Items[startItem + i];
                     }
                     else
                     {
-                        MediaPage[i] = MediaFileItem.Factory.EmptyItem;
+                        Media[i] = MediaFileItem.Factory.EmptyItem;
                     }
                 }
 

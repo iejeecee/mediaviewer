@@ -19,7 +19,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
             else
             {
-                return (creationDate.Value.ToString("dd MMM yyyy HH:mm:ss"));
+                return (creationDate.Value.ToString("MMM d, yyyy"));
             }
 
         }

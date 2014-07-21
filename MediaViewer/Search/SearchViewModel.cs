@@ -131,7 +131,7 @@ namespace MediaViewer.Search
             }
 */
             MediaFileWatcher.Instance.IsWatcherEnabled = false;          
-            MediaFileWatcher.Instance.MediaState.clearUIState();
+            MediaFileWatcher.Instance.MediaState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
             MediaFileWatcher.Instance.MediaState.addUIState(results);
         }
 

@@ -140,8 +140,9 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
             }
 
-            mediaState.clearUIState();
+            mediaState.clearUIState(imageDirInfo.Name, imageDirInfo.CreationTime, MediaStateType.Directory);
             mediaState.addUIState(items);
+       
         }
 
         private void FileChanged(System.Object sender, System.IO.FileSystemEventArgs e)

@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.TreeView;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Utils.Windows;
 using MvvmFoundation.Wpf;
@@ -26,11 +27,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
         {
             this.infoGatherTask = infoGatherTask;
 
-            MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new NotifyCollectionChangedEventHandler(importStateChanged);
+            MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
       
         }
-                     
-        protected virtual void importStateChanged(object sender, NotifyCollectionChangedEventArgs e)
+
+        protected virtual void importStateChanged(object sender, MediaStateChangedEventArgs e)
         {
 
             if (e.NewItems != null)

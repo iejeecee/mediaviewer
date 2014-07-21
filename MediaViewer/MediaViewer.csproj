@@ -161,6 +161,7 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
+    <Compile Include="Converters\BooleanToScrollBarVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
     <Compile Include="Converters\EmptyStringConverter.cs" />
     <Compile Include="Converters\CollectionIsEmptyConverter.cs" />
@@ -176,6 +177,10 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
+    <Compile Include="ImageGrid\MediaStateInfoView.xaml.cs">
+      <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageGrid\FlatImageGridViewModel.cs" />
     <Compile Include="ImageGrid\ImageGridItemView.xaml.cs">
       <DependentUpon>ImageGridItemView.xaml</DependentUpon>
     </Compile>
@@ -198,7 +203,9 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
+    <Compile Include="MediaFileModel\MediaStateChangedEventArgs.cs" />
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
+    <Compile Include="MediaFileModel\Watcher\MediaFileItemLoader.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
@@ -455,6 +462,10 @@
     </Compile>
     <Compile Include="VideoPreviewImage\VideoPreviewImageViewModel.cs" />
     <Page Include="About\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImageGrid\MediaStateInfoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -742,9 +753,6 @@
     <Resource Include="Resources\Icons\Folder_Back.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons\folder_open.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Resources\Icons\Network_Drive.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -835,6 +843,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\folder_open2.ico" />
+    <Resource Include="Resources\Icons\folder_open.ico" />
     <Resource Include="Resources\Icons\frame.ico" />
     <Resource Include="Resources\Icons\folder_opening.ico" />
     <Resource Include="Resources\Icons\torrent.ico" />

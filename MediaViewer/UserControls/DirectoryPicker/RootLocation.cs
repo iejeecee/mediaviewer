@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.MediaFileModel;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -33,7 +34,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
         }
 
-        protected override void importStateChanged(object sender, NotifyCollectionChangedEventArgs e)
+        protected override void importStateChanged(object sender, MediaStateChangedEventArgs e)
         {
             
         }

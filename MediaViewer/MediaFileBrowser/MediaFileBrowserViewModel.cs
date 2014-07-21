@@ -35,12 +35,12 @@ namespace MediaViewer.MediaFileBrowser
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);       
 
-        PagedImageGridViewModel pagedImageGridViewModel;
+        ImageGridViewModel imageGridViewModel;
 
-        public PagedImageGridViewModel PagedImageGridViewModel
+        public ImageGridViewModel ImageGridViewModel
         {
-            get { return pagedImageGridViewModel; }
-            set { pagedImageGridViewModel = value;                         
+            get { return imageGridViewModel; }
+            set { imageGridViewModel = value;                         
             }
         }
 
@@ -98,9 +98,10 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
                 
-            PagedImageGridViewModel = new ImageGrid.PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
+            //ImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
+            ImageGridViewModel = new FlatImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
 
-            CurrentViewModel = PagedImageGridViewModel;
+            CurrentViewModel = ImageGridViewModel;
 
             mediaFileWatcher = MediaFileWatcher.Instance;
          

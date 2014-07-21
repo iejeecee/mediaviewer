@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvvmFoundation.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -12,14 +13,17 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
+
     /// <summary>
     /// Concurrent Collection that supports multiple readers and a single writer
     /// Also makes sure the items in the collection are unique
     /// </summary>
     /// <typeparam name="MediaFileItem"></typeparam>
-    public class MediaLockedCollection : IDisposable
+    public class MediaLockedCollection : ObservableObject, IDisposable
     {
 
+        MediaFileItemLoader itemLoader;
+        
         public event EventHandler CollectionModified;
 
         // items in the current User Interface
@@ -33,10 +37,26 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         protected ReaderWriterLockSlim rwLock;
 
-        public MediaLockedCollection()
+        public MediaLockedCollection(bool autoLoadItems = true)
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             items = new List<MediaFileItem>();
+
+            itemLoader = new MediaFileItemLoader();
+           
+            Task.Factory.StartNew(() => itemLoader.loadLoop());
+            this.autoLoadItems = autoLoadItems;
+
+            
+        }
+
+        
+        bool autoLoadItems;
+
+        public bool AutoLoadItems
+        {
+            get { return autoLoadItems; }
+            set { autoLoadItems = value; }
         }
 
         public void Dispose()
@@ -91,6 +111,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
             }
         }
+
         virtual public bool Add(MediaFileItem newItem)
         {
             bool isModified = false;
@@ -98,17 +119,16 @@ namespace MediaViewer.MediaFileModel.Watcher
             rwLock.EnterWriteLock();           
             try
             {
-
                 if (Contains(newItem) == true)
                 {                
                     return (isModified = false);
                 }
 
-                Utils.Misc.insertIntoSortedCollection(items, newItem, (a, b) =>
-                {
-                   return(Path.GetFileName(a.Location).CompareTo(Path.GetFileName(b.Location)));
-                });
-                
+                items.Add(newItem);
+        
+
+                if(AutoLoadItems) itemLoader.add(newItem);
+
                 return (isModified = true);
 
             }
@@ -146,13 +166,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                         newItemsAreUnique = false;
                     }
                 }
-                          
+               
                 return (newItemsAreUnique);
                         
             }
             finally
             {
                 rwLock.ExitWriteLock();
+               
             }
 
         }
@@ -165,11 +186,13 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             try
             {
-                items.Clear();             
+                items.Clear();
+
+                if(AutoLoadItems) itemLoader.clear();
             }
             finally
             {
-                rwLock.ExitWriteLock();
+                rwLock.ExitWriteLock();               
                 OnCollectionModified();
             }
 
@@ -188,6 +211,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         items.Remove(item);
                         isModified = true;
+
+                        if (AutoLoadItems) itemLoader.remove(item);
                         break;
                     }
 
@@ -223,8 +248,10 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         if (removeItem.Equals(item))
                         {                            
-                            items.Remove(item);
+                            items.Remove(item);                            
                             removed.Add(item);
+
+                            if (AutoLoadItems) itemLoader.remove(item);
                             break;
                         }
 
@@ -357,6 +384,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 CollectionModified(this, EventArgs.Empty);
             }
         }
+
+        
     }
 }
 

@@ -55,14 +55,14 @@ namespace MediaViewer.ImageGrid
         {
 
             ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-            vm.MediaState.selectAllUIState();
+            vm.selectAll();
         }
 
         private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
 
             ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-            vm.MediaState.deselectAllUIState();
+            vm.deselectAll();
 
         }
 

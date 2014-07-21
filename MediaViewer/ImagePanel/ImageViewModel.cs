@@ -59,7 +59,7 @@ namespace MediaViewer.ImagePanel
             }));
 
 
-            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler((s, e) =>
+            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>((s, e) =>
             {
 
                 if (imageFile == null)

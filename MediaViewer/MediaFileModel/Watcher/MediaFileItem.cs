@@ -86,11 +86,12 @@ namespace MediaViewer.MediaFileModel.Watcher
                 try
                 {                   
                     itemState = value;
-                    NotifyPropertyChanged();
+                   
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -152,12 +153,12 @@ namespace MediaViewer.MediaFileModel.Watcher
                         Factory.deleteFromDictionary(oldLocation);
                     }
 
-                    location = newLocation;
-                    NotifyPropertyChanged();                   
+                    location = newLocation;                                  
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
+                    NotifyPropertyChanged();    
                 }
                                
             }
@@ -221,12 +222,13 @@ namespace MediaViewer.MediaFileModel.Watcher
                 rwLock.EnterWriteLock();
                 try
                 {
-                    media = value;
-                    NotifyPropertyChanged();
+                    media = value;                    
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
+
+                    NotifyPropertyChanged();
                 }
             }
         }
@@ -254,6 +256,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             finally
             {            
                 rwLock.ExitUpgradeableReadLock();
+                NotifyPropertyChanged("Media");
             }
 
         }
@@ -558,8 +561,16 @@ namespace MediaViewer.MediaFileModel.Watcher
                     {
                         if (reference.TryGetTarget(out item))
                         {
-                            // there is a live mediafileitem in the hash clashing with the newly renamed item
-                            throw new InvalidOperationException("Trying to rename item to existing item in media dictionary: " + oldLocation + " to " + newLocation);
+                            if (item.itemState == MediaFileItemState.DELETED)
+                            {
+                                // the mediafileitem in the hash has been deleted on disk
+                                dictionary.Remove(newLocation);
+                            }
+                            else
+                            {
+                                // there is a live mediafileitem in the hash clashing with the newly renamed item
+                                throw new InvalidOperationException("Trying to rename item to existing item in media dictionary: " + oldLocation + " to " + newLocation);
+                            }
                         }
                         else
                         {

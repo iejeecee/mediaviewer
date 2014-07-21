@@ -2,9 +2,11 @@
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MediaViewer.Utils;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
@@ -15,12 +17,12 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
-    public class MediaState : IMediaState, IDisposable
+    public class MediaState : ObservableObject, IMediaState, IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public event NotifyCollectionChangedEventHandler NrItemsInStateChanged;
-        public event NotifyCollectionChangedEventHandler NrImportedItemsChanged;
+        public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
+        public event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;
         public event EventHandler ItemIsSelectedChanged;
         public event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
@@ -57,9 +59,13 @@ namespace MediaViewer.MediaFileModel
         {
 
             uiMediaCollection = new MediaLockedCollection();
-            uiSelectedMedia = new MediaLockedCollection();
+            uiSelectedMedia = new MediaLockedCollection(false);
            
             debugOutput = false;
+
+            MediaStateInfo = "MediaStateInfo Not Set";
+            MediaStateDateTime = DateTime.MinValue;
+            MediaStateType = MediaStateType.Directory;
         }
 
         public void Dispose()
@@ -128,7 +134,7 @@ namespace MediaViewer.MediaFileModel
 
                 if (success)
                 {
-                    fireEvents(NotifyCollectionChangedAction.Add, items.ToList(), itemIsSelectedChanged);
+                    fireEvents(MediaStateChangedAction.Add, items, itemIsSelectedChanged);
                 }
             }
         }
@@ -155,7 +161,7 @@ namespace MediaViewer.MediaFileModel
                 //if (success)
                 //{
                     // redraw the UI since sorting order might have changed
-                    fireEvents(NotifyCollectionChangedAction.Reset, null, false);
+                fireEvents(MediaStateChangedAction.Modified, null, false);                    
                 //}
             }
         }
@@ -192,14 +198,14 @@ namespace MediaViewer.MediaFileModel
                 if (DebugOutput) log.Info("end remove event: " + removeItems.ElementAt(0).Location);
                 UIMediaCollection.ExitWriteLock();
 
-                fireEvents(NotifyCollectionChangedAction.Remove, removed, itemIsSelectedChanged);
+                fireEvents(MediaStateChangedAction.Remove, removed, itemIsSelectedChanged);
             }
 
         }
 
-        public void clearUIState()
+        public void clearUIState(String stateInfo, DateTime stateDateTime, MediaStateType stateType) 
         {
-
+        
             bool itemIsSelectedChanged = false;
 
             UIMediaCollection.EnterWriteLock();
@@ -218,13 +224,19 @@ namespace MediaViewer.MediaFileModel
 
                 }
 
-                UIMediaCollection.Clear();                
+                UIMediaCollection.Clear();
+
+                MediaStateInfo = stateInfo;
+                MediaStateDateTime = stateDateTime;
+                MediaStateType = stateType;
+              
             }
             finally
             {
                 UIMediaCollection.ExitWriteLock();
 
-                fireEvents(NotifyCollectionChangedAction.Reset, null, itemIsSelectedChanged);
+                fireEvents(MediaStateChangedAction.Clear, null, itemIsSelectedChanged);
+                
             }
         }
 
@@ -264,8 +276,8 @@ namespace MediaViewer.MediaFileModel
 
                 if (deletedImportedItems.Count > 0)
                 {
-                    OnNrImportedItemsChanged(new NotifyCollectionChangedEventArgs(
-                        NotifyCollectionChangedAction.Remove, deletedImportedItems));
+                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
+                        MediaStateChangedAction.Remove, deletedImportedItems));
                 }
              
             }
@@ -330,17 +342,17 @@ namespace MediaViewer.MediaFileModel
             {
                 if (deletedImportedItems.Count > 0)
                 {
-                    OnNrImportedItemsChanged(new NotifyCollectionChangedEventArgs(
-                        NotifyCollectionChangedAction.Replace, addedImportedItems, deletedImportedItems, 0));
+                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
+                        MediaStateChangedAction.Replace, addedImportedItems, deletedImportedItems));
                 }
 
             }
 
         }
 
-        void fireEvents(NotifyCollectionChangedAction action, List<MediaFileItem> files, bool itemIsSelectedChanged)
+        void fireEvents(MediaStateChangedAction action, IEnumerable<MediaFileItem> files, bool itemIsSelectedChanged)
         {
-            NotifyCollectionChangedEventArgs args = new NotifyCollectionChangedEventArgs(action, files);
+            MediaStateChangedEventArgs args = new MediaStateChangedEventArgs(action, files);
 
             OnNrItemsInStateChanged(args);
 
@@ -484,8 +496,8 @@ namespace MediaViewer.MediaFileModel
             {
                 if (importedItems.Count > 0)
                 {
-                    OnNrImportedItemsChanged(new NotifyCollectionChangedEventArgs(
-                        NotifyCollectionChangedAction.Add, importedItems));
+                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
+                        MediaStateChangedAction.Add, importedItems));
                 }          
             }
         }
@@ -521,8 +533,8 @@ namespace MediaViewer.MediaFileModel
             {
                 if (exportedItems.Count > 0)
                 {
-                    OnNrImportedItemsChanged(new NotifyCollectionChangedEventArgs(
-                        NotifyCollectionChangedAction.Remove, exportedItems));
+                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
+                        MediaStateChangedAction.Remove, exportedItems));
                 }             
             }
         }
@@ -591,7 +603,7 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        void OnNrItemsInStateChanged(NotifyCollectionChangedEventArgs args)
+        void OnNrItemsInStateChanged(MediaStateChangedEventArgs args)
         {
             if (NrItemsInStateChanged != null && args != null)
             {
@@ -607,7 +619,7 @@ namespace MediaViewer.MediaFileModel
             }
         }
 
-        void OnNrImportedItemsChanged(NotifyCollectionChangedEventArgs args)
+        void OnNrImportedItemsChanged(MediaStateChangedEventArgs args)
         {
             if (NrImportedItemsChanged != null)
             {
@@ -642,6 +654,42 @@ namespace MediaViewer.MediaFileModel
         public void writeMetadata(IEnumerable<MediaFileItem> items)
         {
             throw new NotImplementedException();
+        }
+
+        MediaStateType mediaStateType;
+
+        public MediaStateType MediaStateType
+        {
+            get { return mediaStateType; }
+            set
+            {                               
+                mediaStateType = value;             
+                NotifyPropertyChanged();                
+            }
+        }
+
+        String mediaStateInfo;
+
+        public String MediaStateInfo
+        {
+            get { return mediaStateInfo; }
+            set
+            {              
+                mediaStateInfo = value;
+                NotifyPropertyChanged();                                   
+            }
+        }
+
+        DateTime mediaStateDateTime;
+
+        public DateTime MediaStateDateTime
+        {
+            get { return mediaStateDateTime; }
+            set
+            {                
+                mediaStateDateTime = value;
+                NotifyPropertyChanged();                 
+            }
         }
     }
 }

@@ -45,7 +45,11 @@ namespace MediaViewer.MediaFileBrowser
 
             imageViewer.DataContext = mediaFileBrowserViewModel.ImageViewModel;            
                 
-            metaDataView.DataContext = pager.DataContext = browserGrid.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;      
+            metaDataView.DataContext = browserGrid.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
+            if (mediaFileBrowserViewModel.ImageGridViewModel is PagedImageGridViewModel)
+            {
+                pager.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
+            }
 
             GlobalMessenger.Instance.Register("ToggleFullScreen", mediaFileBrowser_ToggleFullScreen);
             GlobalMessenger.Instance.Register("MediaFileBrowser_ShowBrowserGrid", mediaFileBrowser_ShowBrowserGrid);
@@ -76,8 +80,8 @@ namespace MediaViewer.MediaFileBrowser
        
             imageOptionsGrid.Visibility = Visibility.Collapsed;        
 
-            pager.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
-            metaDataView.DataContext = mediaFileBrowserViewModel.PagedImageGridViewModel;
+            pager.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
+            metaDataView.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
             videoPlayer.ViewModel.CloseCommand.DoExecute();
 
             GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", mediaFileBrowserViewModel.Title);

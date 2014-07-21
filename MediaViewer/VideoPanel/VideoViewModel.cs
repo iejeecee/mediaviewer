@@ -103,7 +103,7 @@ namespace MediaViewer.VideoPanel
             videoPlayer.DurationSecondsChanged += videoPlayer_DurationSecondsChanged;
             videoPlayer.HasAudioChanged += videoPlayer_HasAudioChanged;
 
-            MediaState.NrItemsInStateChanged += new NotifyCollectionChangedEventHandler((s, e) =>
+            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>((s, e) =>
             {
                 updatePaging();
 
