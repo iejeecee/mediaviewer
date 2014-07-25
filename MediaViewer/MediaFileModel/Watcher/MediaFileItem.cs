@@ -52,7 +52,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             ItemState = state;
             hasTags = false;
             id = Guid.NewGuid();
-            
+                      
         }
 
         public void Dispose()
@@ -199,7 +199,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 
             }
         }
-  
+     
         public void toggleSelected()
         {
             if (IsSelected == true)

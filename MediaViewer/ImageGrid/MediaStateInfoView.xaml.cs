@@ -21,6 +21,8 @@ namespace MediaViewer.ImageGrid
     /// </summary>
     public partial class MediaStateInfoView : UserControl
     {
+        
+
         public MediaStateInfoView()
         {
             InitializeComponent();
@@ -92,9 +94,56 @@ namespace MediaViewer.ImageGrid
             }
         }
 
+        public int NrItemsInState
+        {
+            get { return (int)GetValue(NrItemsInStateProperty); }
+            set { SetValue(NrItemsInStateProperty, value); }
+        }
 
-        
-        
+        // Using a DependencyProperty as the backing store for NrItemsInState.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NrItemsInStateProperty =
+            DependencyProperty.Register("NrItemsInState", typeof(int), typeof(MediaStateInfoView), new PropertyMetadata(0, mediaStateInfoView_NrItemsInStateChangedCallback));
+
+        private static void mediaStateInfoView_NrItemsInStateChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaStateInfoView infoView = d as MediaStateInfoView;
+            int nrItemsInState = (int)e.NewValue;
+            infoView.setNrItemsInStateLabel(infoView.NrLoadedItemsInState, nrItemsInState);
+        }
+
+        public int NrLoadedItemsInState
+        {
+            get { return (int)GetValue(NrLoadedItemsInStateProperty); }
+            set { SetValue(NrLoadedItemsInStateProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for NrItemsInState.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NrLoadedItemsInStateProperty =
+            DependencyProperty.Register("NrLoadedItemsInState", typeof(int), typeof(MediaStateInfoView), new PropertyMetadata(0, mediaStateInfoView_NrLoadedItemsInStateChangedCallback));
+
+        private static void mediaStateInfoView_NrLoadedItemsInStateChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaStateInfoView infoView = d as MediaStateInfoView;
+            int nrLoadedItemsInState = (int)e.NewValue;
+            infoView.setNrItemsInStateLabel(nrLoadedItemsInState, infoView.NrItemsInState);
+            
+        }
+
+        void setNrItemsInStateLabel(int nrLoadedItemsInState, int nrItemsInState)
+        {
+            String prefix = "";
+
+            if (NrLoadedItemsInState != nrItemsInState)
+            {
+                prefix = nrLoadedItemsInState.ToString() + "/";
+            }
+
+            nrItemsLabel.Content = prefix + nrItemsInState.ToString() + " item";
+            if (nrItemsInState != 1)
+            {
+                nrItemsLabel.Content += "s";
+            }
+        }
         
     }
 }

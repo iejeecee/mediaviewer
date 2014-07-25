@@ -51,6 +51,23 @@ namespace MediaViewer.ImageGrid
         }
 
 
+
+        public SortMode ExtraInfoType
+        {
+            get { return (SortMode)GetValue(ExtraInfoTypeProperty); }
+            set { SetValue(ExtraInfoTypeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ExtraInfoType.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ExtraInfoTypeProperty =
+            DependencyProperty.Register("ExtraInfoType", typeof(SortMode), typeof(ImageGridItemView), new PropertyMetadata(SortMode.Name, imageGridItemView_ExtraInfoTypeChangedCallback));
+
+        private static void imageGridItemView_ExtraInfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ImageGridItemView view = d as ImageGridItemView;
+            view.extraInfo.InfoType = (SortMode)e.NewValue;
+        }
+        
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
 

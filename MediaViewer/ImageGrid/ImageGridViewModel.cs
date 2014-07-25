@@ -15,14 +15,14 @@ using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer.ImageGrid
 {
-    enum FilterMode
+    public enum FilterMode
     {
         All,
         Video,
         Images
     }
 
-    enum SortMode
+    public enum SortMode
     {
         Name,
         Size,
@@ -31,7 +31,7 @@ namespace MediaViewer.ImageGrid
         Tags,
         CreationDate
     }
-
+    
     class ImageGridViewModel : ObservableObject
     {
 

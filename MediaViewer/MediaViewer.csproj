@@ -177,6 +177,9 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
+    <Compile Include="ImageGrid\ExtraItemInfoView.xaml.cs">
+      <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ImageGrid\MediaStateInfoView.xaml.cs">
       <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
     </Compile>
@@ -373,6 +376,7 @@
     <Compile Include="UserControls\DirectoryPicker\Location.cs" />
     <Compile Include="UserControls\DirectoryPicker\NrImportedFilesConverter.cs" />
     <Compile Include="UserControls\DirectoryPicker\RootLocation.cs" />
+    <Compile Include="UserControls\Layout\VirtualizingTilePanel.cs" />
     <Compile Include="UserControls\LogTextBox\LogTextBoxView.xaml.cs">
       <DependentUpon>LogTextBoxView.xaml</DependentUpon>
     </Compile>
@@ -462,6 +466,10 @@
     </Compile>
     <Compile Include="VideoPreviewImage\VideoPreviewImageViewModel.cs" />
     <Page Include="About\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImageGrid\ExtraItemInfoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

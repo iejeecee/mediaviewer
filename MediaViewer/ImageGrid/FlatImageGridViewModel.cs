@@ -21,7 +21,7 @@ namespace MediaViewer.ImageGrid
             base(mediaState)
         {
 
-            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>(flatImageGridViewModel_StateChanged);
+            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>(flatImageGridViewModel_NrItemsInStateChanged);
             MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
 
             IsScrollBarEnabled = true;
@@ -50,7 +50,7 @@ namespace MediaViewer.ImageGrid
            }
        }
 
-       private void flatImageGridViewModel_StateChanged(object sender, MediaStateChangedEventArgs e)
+       private void flatImageGridViewModel_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
        {
            lock (MediaLock)
            {
@@ -67,7 +67,7 @@ namespace MediaViewer.ImageGrid
                    case MediaStateChangedAction.Remove:
                        foreach (MediaFileItem item in e.OldItems)
                        {
-                           Media.Remove(item);
+                           remove(item);
                        }
                        break;
                    case MediaStateChangedAction.Modified:
@@ -275,7 +275,8 @@ namespace MediaViewer.ImageGrid
            lock (MediaLock)
            {
                Utils.Misc.insertIntoSortedCollection<MediaFileItem>(Media, item, getSortFunction(), 0, sortedItemEnd);
-               sortedItemEnd++;
+               
+               sortedItemEnd++;               
            }
 
        }

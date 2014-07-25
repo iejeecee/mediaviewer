@@ -58,14 +58,17 @@ namespace MediaViewer.MediaFileModel
         public MediaState()
         {
 
-            uiMediaCollection = new MediaLockedCollection();
-            uiSelectedMedia = new MediaLockedCollection(false);
+            uiMediaCollection = new MediaLockedCollection(true);
+            uiSelectedMedia = new MediaLockedCollection();
            
             debugOutput = false;
 
             MediaStateInfo = "MediaStateInfo Not Set";
             MediaStateDateTime = DateTime.MinValue;
             MediaStateType = MediaStateType.Directory;
+
+            NrItemsInState = 0;
+            NrLoadedItemsInState = 0;
         }
 
         public void Dispose()
@@ -123,7 +126,8 @@ namespace MediaViewer.MediaFileModel
                     }
 
                 }
-               
+
+                NrItemsInState = UIMediaCollection.Count;
             }
             finally
             {
@@ -191,7 +195,8 @@ namespace MediaViewer.MediaFileModel
                     }
 
                 }
-               
+
+                NrItemsInState = UIMediaCollection.Count;
             }
             finally
             {
@@ -229,6 +234,9 @@ namespace MediaViewer.MediaFileModel
                 MediaStateInfo = stateInfo;
                 MediaStateDateTime = stateDateTime;
                 MediaStateType = stateType;
+
+                NrItemsInState = 0;
+                NrLoadedItemsInState = 0;
               
             }
             finally
@@ -690,6 +698,30 @@ namespace MediaViewer.MediaFileModel
                 mediaStateDateTime = value;
                 NotifyPropertyChanged();                 
             }
+        }
+
+        int nrLoadedItemsInState;
+
+        public int NrLoadedItemsInState
+        {
+            protected set
+            {
+                nrLoadedItemsInState = value;
+                NotifyPropertyChanged();
+            }
+            get { return (nrLoadedItemsInState); }
+        }
+
+        int nrItemsInState;
+
+        public int NrItemsInState
+        {
+            protected set
+            {
+                nrItemsInState = value;
+                NotifyPropertyChanged();
+            }
+            get { return (nrItemsInState); }
         }
     }
 }

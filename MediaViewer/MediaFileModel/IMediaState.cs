@@ -50,6 +50,16 @@ namespace MediaViewer.MediaFileModel
         {
             get;
         }
+
+        int NrLoadedItemsInState
+        {
+            get;
+        }
+
+        int NrItemsInState
+        {
+            get;
+        }
        
         void selectAllUIState();
         void deselectAllUIState();

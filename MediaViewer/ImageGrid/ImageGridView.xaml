@@ -1,14 +1,14 @@
 ﻿<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView"        
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView"
              xmlns:local="clr-namespace:MediaViewer.MediaFileModel.Watcher"
              xmlns:effects="clr-namespace:MediaViewer.Effects"
-             xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"  
+             xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
-             mc:Ignorable="d" 
+             mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -38,20 +38,20 @@
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" Height="40">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>              
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>                
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <ImageGrid:MediaStateInfoView x:Name="collectionInfo" Grid.Column="0" MediaStateType="{Binding MediaStateType}" MediaStateDateTime="{Binding MediaStateDateTime}" MediaStateInfo="{Binding MediaStateInfo}"/>
+            <ImageGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
             <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-					ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
+ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
             <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-					ItemsSource="{Binding Source={StaticResource sortModeEnum}}" SelectedItem="{Binding SortMode}"/>            
+ItemsSource="{Binding Source={StaticResource sortModeEnum}}" SelectedItem="{Binding SortMode}"/>
         </Grid>
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="{Binding IsScrollBarEnabled, Converter={StaticResource booleanToScrollBarVisibilityConverter}}" HorizontalScrollBarVisibility="Disabled" IsEnabled="{Binding IsScrollBarEnabled}">
             <ItemsControl x:Name="itemsControl" ItemsSource="{Binding Media}" Background="{StaticResource imageGridBackgroundColor}">

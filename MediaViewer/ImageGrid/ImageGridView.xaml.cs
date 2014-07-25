@@ -30,21 +30,9 @@ namespace MediaViewer.ImageGrid
         public ImageGridView()
         {           
             InitializeComponent();
-
-            this.DataContextChanged += ImageGridView_DataContextChanged;
+            
         }
 
-        void ImageGridView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.NewValue is ImageGridViewModel)
-            {
-                ImageGridViewModel vm = e.NewValue as ImageGridViewModel;
-
-                collectionInfo.DataContext = vm.MediaState;
-            }
-        }
-        
-        
-       
+                           
     }
 }

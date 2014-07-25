@@ -122,43 +122,50 @@
                         </Image.Style>
                     </Image>
                 </Border>
-                <StackPanel VerticalAlignment="Center" Grid.Row="2" HorizontalAlignment="Stretch" Orientation="Horizontal" Margin="3,5,0,0">
-                    <StackPanel.Style>
-                        <Style>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADED">
-                                    <Setter Property="StackPanel.IsEnabled" Value="true"/>
-                                    <Setter Property="StackPanel.Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                                    <Setter Property="StackPanel.IsEnabled" Value="false"/>
-                                    <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
-                                    <Setter Property="StackPanel.IsEnabled" Value="false"/>
-                                    <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <Image Source="pack://application:,,,/Resources/Icons/checked.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.Media.IsImported, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Imported"/>
-                    <Image Source="pack://application:,,,/Resources/Icons/notsupported.ico" MaxHeight="11" ToolTip="Format does not support metadata">
-                        <Image.Style>
+                <Grid Grid.Row="2" Margin="3,5,3,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
+                        <StackPanel.Style>
                             <Style>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="true">
-                                        <Setter Property="Image.Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADED">
+                                        <Setter Property="StackPanel.IsEnabled" Value="true"/>
+                                        <Setter Property="StackPanel.Visibility" Value="Visible"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="false">
-                                        <Setter Property="Image.Visibility" Value="Visible"/>
+                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                        <Setter Property="StackPanel.IsEnabled" Value="false"/>
+                                        <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
+                                        <Setter Property="StackPanel.IsEnabled" Value="false"/>
+                                        <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
-                        </Image.Style>
-                    </Image>
-                    <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Tagged"/>
-                    <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->
-                </StackPanel>
+                        </StackPanel.Style>
+                        <Image Source="pack://application:,,,/Resources/Icons/checked.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.Media.IsImported, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Imported"/>
+                        <Image Source="pack://application:,,,/Resources/Icons/notsupported.ico" MaxHeight="11" ToolTip="Format does not support metadata">
+                            <Image.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="true">
+                                            <Setter Property="Image.Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="false">
+                                            <Setter Property="Image.Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                        <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Tagged"/>
+                        <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->
+                    </StackPanel>
+                    <ImageGrid:ExtraItemInfoView x:Name="extraInfo" Grid.Column="1" HorizontalAlignment="Stretch"/>
+                </Grid>
             </Grid>
             <ToggleButton.ContextMenu>
                 <ContextMenu>

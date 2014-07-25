@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MvvmFoundation.Wpf;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,22 +10,25 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    class MediaFileItemLoader
+    class MediaFileItemLoader : ObservableObject
     {
         List<MediaFileItem> items;
         int maxLoadingTasks;
         int nrLoadingTasks;
         CancellationTokenSource tokenSource = new CancellationTokenSource();
 
+        public event EventHandler ItemFinishedLoading;
+
         public MediaFileItemLoader()
         {
             items = new List<MediaFileItem>();
             maxLoadingTasks = 5;
             nrLoadingTasks = 0;
-
+            
             tokenSource = new CancellationTokenSource();
+           
         }
-
+       
         public void addRange(IEnumerable<MediaFileItem> itemList)
         {
             Monitor.Enter(items);
@@ -77,7 +81,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 items.Clear();
                 tokenSource.Cancel();
-                tokenSource = new CancellationTokenSource();
+                tokenSource = new CancellationTokenSource();               
             }
             finally
             {
@@ -103,7 +107,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                     // don't reload already loaded items
                     if (item.ItemState == MediaFileItemState.LOADED) continue;
-
+              
                     while(nrLoadingTasks == maxLoadingTasks)
                     {
                         Monitor.Wait(items);
@@ -119,9 +123,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                     }).ContinueWith((result) =>
                     {                        
                         Monitor.Enter(items);
-                        nrLoadingTasks--;
+                        nrLoadingTasks--;               
                         Monitor.PulseAll(items);
                         Monitor.Exit(items);
+
+                        if (ItemFinishedLoading != null)
+                        {
+                            ItemFinishedLoading(this, EventArgs.Empty);
+                        }
 
                     }).ConfigureAwait(false);
                 }

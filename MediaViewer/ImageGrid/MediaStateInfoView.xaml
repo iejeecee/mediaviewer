@@ -7,7 +7,7 @@
              d:DesignHeight="300" d:DesignWidth="400">
     <UserControl.Resources>
         <ResourceDictionary>        
-            <BitmapImage x:Key="folder" UriSource="/Resources/Icons/folder_open.ico"/>
+            <BitmapImage x:Key="folder" UriSource="/Resources/Icons/folder_open2.ico"/>
             <BitmapImage x:Key="search" UriSource="/Resources/Icons/folder_opening.ico"/>        
         </ResourceDictionary>
     </UserControl.Resources>
@@ -17,13 +17,18 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Image Name="infoImage" Grid.Column="0" Stretch="Uniform"/>
+            <Image Name="infoImage" Grid.Column="0" Stretch="Uniform" Margin="2,2,2,2"/>
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Label Name="infoLabel" Grid.Row="0"/>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Name="infoLabel" Grid.Row="0" Grid.Column="0"/>
+                <Label Name="nrItemsLabel" Grid.Row="0" Grid.Column="1"/>
                 <Label Name="dateTimeLabel" Grid.Row="1" FontSize="8" FontWeight="Bold"/>
             </Grid>
         </Grid>

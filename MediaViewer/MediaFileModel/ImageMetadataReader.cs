@@ -18,6 +18,7 @@ namespace MediaViewer.MediaFileModel
         public override void readMetadata(Stream data, MediaFactory.ReadOptions options, Media media)
         {
             ImageMedia image = media as ImageMedia;
+            media.SizeBytes = data.Length;
 
             BitmapDecoder bitmapDecoder = null;
          

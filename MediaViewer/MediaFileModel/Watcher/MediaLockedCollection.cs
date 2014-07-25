@@ -37,17 +37,37 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         protected ReaderWriterLockSlim rwLock;
 
-        public MediaLockedCollection(bool autoLoadItems = true)
+        public MediaLockedCollection(bool autoLoadItems = false)
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             items = new List<MediaFileItem>();
-
-            itemLoader = new MediaFileItemLoader();
            
-            Task.Factory.StartNew(() => itemLoader.loadLoop());
-            this.autoLoadItems = autoLoadItems;
+            if (autoLoadItems == true)
+            {
+                itemLoader = new MediaFileItemLoader();
+                Task.Factory.StartNew(() => itemLoader.loadLoop());
 
+                itemLoader.ItemFinishedLoading += itemLoader_ItemFinishedLoading;
+            }
+
+            this.autoLoadItems = autoLoadItems;
             
+        }
+
+        void itemLoader_ItemFinishedLoading(object sender, EventArgs e)
+        {
+            Interlocked.Increment(ref nrLoadedItems);
+            NotifyPropertyChanged("NrLoadedItems");
+        }
+
+        int nrLoadedItems;
+
+        public int NrLoadedItems
+        {
+            get { return nrLoadedItems; }
+            protected set { nrLoadedItems = value;
+            NotifyPropertyChanged();
+            }
         }
 
         
@@ -55,8 +75,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         public bool AutoLoadItems
         {
-            get { return autoLoadItems; }
-            set { autoLoadItems = value; }
+            get { return autoLoadItems; }           
         }
 
         public void Dispose()
@@ -125,9 +144,18 @@ namespace MediaViewer.MediaFileModel.Watcher
                 }
 
                 items.Add(newItem);
-        
 
-                if(AutoLoadItems) itemLoader.add(newItem);
+                if (AutoLoadItems)
+                {
+                    if (newItem.ItemState == MediaFileItemState.LOADED)
+                    {
+                        NrLoadedItems++;
+                    }
+                    else
+                    {
+                        itemLoader.add(newItem);
+                    }
+                }
 
                 return (isModified = true);
 
@@ -188,7 +216,11 @@ namespace MediaViewer.MediaFileModel.Watcher
             {
                 items.Clear();
 
-                if(AutoLoadItems) itemLoader.clear();
+                if (AutoLoadItems)
+                {
+                    NrLoadedItems = 0;
+                    itemLoader.clear();
+                }
             }
             finally
             {
@@ -212,7 +244,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                         items.Remove(item);
                         isModified = true;
 
-                        if (AutoLoadItems) itemLoader.remove(item);
+                        if (AutoLoadItems)
+                        {
+                            if (item.ItemState == MediaFileItemState.LOADED)
+                            {
+                                NrLoadedItems--;
+                            }
+                            itemLoader.remove(item);
+                        }
                         break;
                     }
 
@@ -251,7 +290,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                             items.Remove(item);                            
                             removed.Add(item);
 
-                            if (AutoLoadItems) itemLoader.remove(item);
+                            if (AutoLoadItems)
+                            {
+                                if (item.ItemState == MediaFileItemState.LOADED)
+                                {
+                                    NrLoadedItems--;
+                                }
+                                itemLoader.remove(item);
+                            }
                             break;
                         }
 
