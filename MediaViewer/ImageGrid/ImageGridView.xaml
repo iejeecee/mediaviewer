@@ -8,6 +8,7 @@
              xmlns:effects="clr-namespace:MediaViewer.Effects"
              xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              mc:Ignorable="d"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -29,6 +30,20 @@
                     <x:Type TypeName="ImageGrid:SortMode"/>
                 </ObjectDataProvider.MethodParameters>
             </ObjectDataProvider>
+            <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                <Setter Property="Background" Value="{StaticResource imageGridBackgroundColor}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ItemsControl}">
+                            <ScrollViewer CanContentScroll="True">
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
@@ -48,25 +63,24 @@
             <ImageGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
             <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
+                ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
             <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-ItemsSource="{Binding Source={StaticResource sortModeEnum}}" SelectedItem="{Binding SortMode}"/>
+                ItemsSource="{Binding Source={StaticResource sortModeEnum}}" SelectedItem="{Binding SortMode}"/>
         </Grid>
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="{Binding IsScrollBarEnabled, Converter={StaticResource booleanToScrollBarVisibilityConverter}}" HorizontalScrollBarVisibility="Disabled" IsEnabled="{Binding IsScrollBarEnabled}">
-            <ItemsControl x:Name="itemsControl" ItemsSource="{Binding Media}" Background="{StaticResource imageGridBackgroundColor}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <UniformGrid x:Name="mainGrid" Columns="{Binding NrGridColumns}" Rows="{Binding NrGridRows}" VerticalAlignment="Top" />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                        <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}" MaxHeight="150"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
+        <ItemsControl x:Name="itemsControl" Grid.Row="1" ItemsSource="{Binding Media}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded"/>
+                        <!--<UniformGrid Columns="{Binding NrGridColumns}" Rows="{Binding NrGridRows}" VerticalAlignment="Top" />-->
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
+                    <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}" MaxHeight="150" ExtraInfoType="{Binding DataContext.SortMode, ElementName=itemsControl}"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>           
+        </ItemsControl>     
     </Grid>
 </UserControl>

@@ -287,6 +287,8 @@ namespace MediaViewer.ImageGrid
            {
                Media.Clear();
                sortedItemEnd = 0;
+
+               OnCleared();
            }
        }
     }

@@ -6,7 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Collections.Specialized;
 
-namespace MediaViewer.UserControls.Layout
+namespace yournamespace
 {
     /// <summary>
     /// Implements a virtualized panel for 
@@ -145,7 +145,6 @@ namespace MediaViewer.UserControls.Layout
 
             // Note: this could be deferred to idle time for efficiency
             CleanUpItems(firstVisibleItemIndex, lastVisibleItemIndex);
-         
 
             return availableSize;
         }
@@ -273,7 +272,7 @@ namespace MediaViewer.UserControls.Layout
                 //Get the width of each child.
                 double childWidth = CalculateChildWidth(_extent);
 
-                firstVisibleItemIndex = (int)Math.Floor(_offset.Y / this.ChildHeight) * this.Columns;
+                firstVisibleItemIndex = (int)Math.Floor(_offset.Y / childWidth) * this.Columns;
                 lastVisibleItemIndex = (int)Math.Ceiling((_offset.Y + _viewport.Height) / this.ChildHeight) * this.Columns - 1;
 
                 ItemsControl itemsControl = ItemsControl.GetItemsOwner(this);
@@ -290,7 +289,7 @@ namespace MediaViewer.UserControls.Layout
         /// <returns>The size of each child.</returns>
         Size GetChildSize(Size availableSize)
         {
-            return new Size((Tile) ? this.ChildHeight :
+            return new Size((Tile) ? this.ChildHeight : 
                 CalculateChildWidth(availableSize), this.ChildHeight);
         }
 
@@ -309,7 +308,7 @@ namespace MediaViewer.UserControls.Layout
                 int row = itemIndex / childrenPerRow;
                 int column = itemIndex % childrenPerRow;
 
-                child.Arrange(new Rect(column * this.ChildHeight, row * this.ChildHeight,
+                child.Arrange(new Rect(column * this.ChildHeight, row * this.ChildHeight, 
                     this.ChildHeight, this.ChildHeight));
             }
             else
@@ -320,7 +319,7 @@ namespace MediaViewer.UserControls.Layout
                 int row = itemIndex / this.Columns;
                 int column = itemIndex % this.Columns;
 
-                child.Arrange(new Rect(column * childWidth, row * this.ChildHeight,
+                child.Arrange(new Rect(column * childWidth, row * this.ChildHeight, 
                     childWidth, this.ChildHeight));
             }
         }
@@ -656,4 +655,3 @@ namespace MediaViewer.UserControls.Layout
         #endregion
     }
 }
-

@@ -195,5 +195,15 @@ namespace MediaViewer.ImageGrid
             }
         }
 
+        public event EventHandler Cleared;
+
+        protected void OnCleared() {
+
+            if (Cleared != null)
+            {
+                Cleared(this, EventArgs.Empty);
+            }
+        }
+
     }
 }

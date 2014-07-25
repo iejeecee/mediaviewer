@@ -19,6 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Utils.WPF;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.UserControls.Layout;
 
 namespace MediaViewer.ImageGrid
 {
@@ -27,9 +28,38 @@ namespace MediaViewer.ImageGrid
     /// </summary>
     public partial class ImageGridView : UserControl
     {
+        VirtualizingTilePanel panel;
+
         public ImageGridView()
         {           
             InitializeComponent();
+
+            panel = null;
+
+            DataContextChanged += ImageGridView_DataContextChanged;
+        }
+
+        void ImageGridView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue is ImageGridViewModel)
+            {
+                ImageGridViewModel imageGridViewModel = e.NewValue as ImageGridViewModel;
+                WeakEventManager<ImageGridViewModel,EventArgs>.AddHandler(imageGridViewModel,"Cleared",imageGridViewModel_Cleared);               
+            } 
+
+        }
+
+        void imageGridViewModel_Cleared(object sender, EventArgs e)
+        {
+            if (panel != null)
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() => panel.ScrollOwner.ScrollToVerticalOffset(0)));
+            }
+        }
+
+        private void virtualizingTilePanel_Loaded(object sender, RoutedEventArgs e)
+        {
+            panel = sender as VirtualizingTilePanel;
             
         }
 
