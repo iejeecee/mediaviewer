@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 04/13/2014 01:46:21
+-- Date Created: 07/30/2014 00:08:50
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -128,7 +128,10 @@ CREATE TABLE [dbo].[MediaSet] (
     [SizeBytes] bigint  NOT NULL,
     [Software] nvarchar(max)  NULL,
     [SupportsXMPMetadata] bit  NOT NULL,
-    [TimeStamp] TIMESTAMP  NOT NULL
+    [TimeStamp] TIMESTAMP  NOT NULL,
+    [Latitude] nvarchar(max)  NULL,
+    [Longitude] nvarchar(max)  NULL,
+    [FileDate] datetime  NOT NULL
 );
 GO
 

@@ -472,9 +472,14 @@ public class FormatMetaData
         List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
            
         propList.Add(new Tuple<string, string>("Size", image.Width + " x " + image.Height));
-                     
-        addPropIfExists("ExposureTime", image.ExposureTime, propList);
+
+        if (image.ExposureTime.HasValue)
+        {
+            propList.Add(new Tuple<string,string>("Exposure Time", "1/" + 1/image.ExposureTime.Value + "s"));
+        }
+       
         addPropIfExists("FNumber", image.FNumber, propList, "ƒ");
+        addPropIfExists("ISOSpeedRating", image.ISOSpeedRating, propList, "ISO Speed Rating");
         addPropIfExists("ExposureBiasValue", image.ExposureBiasValue, propList, "Exposure Bias");
         addPropIfExists("FlashFired", image.FlashFired, propList, "Flash");
 

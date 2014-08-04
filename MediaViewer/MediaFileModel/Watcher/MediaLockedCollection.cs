@@ -51,13 +51,44 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
 
             this.autoLoadItems = autoLoadItems;
+            IsLoading = false;
             
         }
 
         void itemLoader_ItemFinishedLoading(object sender, EventArgs e)
         {
-            Interlocked.Increment(ref nrLoadedItems);
-            NotifyPropertyChanged("NrLoadedItems");
+            rwLock.EnterWriteLock();
+            try
+            {
+                // check to make sure the loaded item is actually in the current state
+                if(Items.Contains(sender as MediaFileItem)) {
+                    NrLoadedItems++;
+
+                    if (NrLoadedItems == Items.Count)
+                    {
+                        IsLoading = false;
+                    }
+                    else
+                    {
+                        IsLoading = true;
+                    }
+                }                             
+            }
+            finally
+            {
+                rwLock.ExitWriteLock();
+            }
+           
+        }
+
+        bool isLoading;
+
+        public bool IsLoading
+        {
+            get { return isLoading; }
+            set { isLoading = value;
+            NotifyPropertyChanged();
+            }
         }
 
         int nrLoadedItems;
@@ -246,7 +277,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                         if (AutoLoadItems)
                         {
-                            if (item.ItemState == MediaFileItemState.LOADED)
+                            if (item.ItemState != MediaFileItemState.LOADING)
                             {
                                 NrLoadedItems--;
                             }
@@ -292,7 +323,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                             if (AutoLoadItems)
                             {
-                                if (item.ItemState == MediaFileItemState.LOADED)
+                                if (item.ItemState != MediaFileItemState.LOADING)
                                 {
                                     NrLoadedItems--;
                                 }

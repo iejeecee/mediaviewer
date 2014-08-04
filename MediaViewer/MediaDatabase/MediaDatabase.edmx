@@ -100,6 +100,9 @@
     <Property Name="Software" Type="nvarchar(max)" Nullable="true" />
     <Property Name="SupportsXMPMetadata" Type="bit" Nullable="false" DefaultValue="true" />
     <Property Name="TimeStamp" Type="varbinary(max)" StoreGeneratedPattern="Computed" Nullable="false" />
+    <Property Name="Latitude" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Longitude" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="FileDate" Type="datetime" Nullable="false" />
   </EntityType>
   <EntityType Name="PresetMetadataSet">
     <Key>
@@ -441,6 +444,9 @@
           <Property Type="String" Name="Software" Nullable="true" />
           <Property Type="Boolean" Name="SupportsXMPMetadata" Nullable="false" DefaultValue="true" />
           <Property Type="Binary" Name="TimeStamp" Nullable="false" ConcurrencyMode="Fixed" annotation:StoreGeneratedPattern="Computed" />
+          <Property Type="String" Name="Latitude" Nullable="true" />
+          <Property Type="String" Name="Longitude" Nullable="true" />
+          <Property Type="DateTime" Name="FileDate" Nullable="false" />
         </EntityType>
         <Association Name="MediaTag">
           <End Type="MediaDatabase.Media" Role="Media" Multiplicity="*" />
@@ -597,6 +603,9 @@
           <ScalarProperty Name="Software" ColumnName="Software" />
           <ScalarProperty Name="SupportsXMPMetadata" ColumnName="SupportsXMPMetadata" />
           <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+          <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+          <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+          <ScalarProperty Name="FileDate" ColumnName="FileDate" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.ImageMedia)">

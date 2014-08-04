@@ -13,7 +13,7 @@ namespace MediaViewer.MediaFileModel
         Remove,
         Clear,
         Modified,
-        Replace
+        Replace   
     }
 
     public class MediaStateChangedEventArgs : EventArgs

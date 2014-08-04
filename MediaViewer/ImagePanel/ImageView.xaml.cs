@@ -108,29 +108,32 @@ namespace MediaViewer.ImagePanel
 
         private void imageViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-
-            ImageViewModel imageViewModel = (ImageViewModel)sender;
-
-            // Due to the device independent nature of WPF, images are 
-            // scaled according to the dpi value stored in the image file.
-            // But since nobody ever bothers to set this correctly 
-            // undo the scaling and display the image at it's pixel by pixel size
-            if (e.PropertyName.Equals("Image"))
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (imageViewModel.Image != null)
-                {                   
-                    scrollViewer.ScrollToHorizontalOffset(0);
-                    scrollViewer.ScrollToVerticalOffset(0);
 
-                    calcScale(imageViewModel.Image, imageViewModel);
+                ImageViewModel imageViewModel = (ImageViewModel)sender;
+
+                // Due to the device independent nature of WPF, images are 
+                // scaled according to the dpi value stored in the image file.
+                // But since nobody ever bothers to set this correctly 
+                // undo the scaling and display the image at it's pixel by pixel size
+                if (e.PropertyName.Equals("Image"))
+                {
+                    if (imageViewModel.Image != null)
+                    {
+                        scrollViewer.ScrollToHorizontalOffset(0);
+                        scrollViewer.ScrollToVerticalOffset(0);
+
+                        calcScale(imageViewModel.Image, imageViewModel);
+                        setScale(imageViewModel, true);
+                    }
+                }
+                else if (e.PropertyName.Equals("SelectedScaleMode"))
+                {
                     setScale(imageViewModel, true);
                 }
-            }
-            else if (e.PropertyName.Equals("SelectedScaleMode"))
-            {
-                setScale(imageViewModel, true);
-            }
-            
+
+            }));
         }
        
         private void calcScale(BitmapImage image, ImageViewModel vm)

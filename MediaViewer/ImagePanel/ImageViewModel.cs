@@ -14,6 +14,7 @@ using MediaViewer.Pager;
 using MediaViewer.Utils;
 using System.Collections.Specialized;
 using MediaViewer.MediaDatabase;
+using System.Collections.ObjectModel;
 
 namespace MediaViewer.ImagePanel
 {
@@ -33,9 +34,9 @@ namespace MediaViewer.ImagePanel
             }
         }
 
-        MediaLockedCollection selectedMedia;
+        ObservableCollection<MediaFileItem> selectedMedia;
 
-        public MediaLockedCollection SelectedMedia
+        public ObservableCollection<MediaFileItem> SelectedMedia
         {
             get { return selectedMedia; }
             set { selectedMedia = value;
@@ -54,7 +55,11 @@ namespace MediaViewer.ImagePanel
 
             loadImageAsyncCommand = new Command(new Action<object>(async (fileName) =>
             {
-                await loadImageAsync((String)fileName);
+                // cancel previously running load requests          
+                loadImageCTS.Cancel();
+                loadImageCTS = new CancellationTokenSource();
+
+                await Task.Factory.StartNew(() => loadImage((String)fileName), loadImageCTS.Token);
 
             }));
 
@@ -175,7 +180,7 @@ namespace MediaViewer.ImagePanel
             minScale = 0;
             maxScale = 1;
 
-            SelectedMedia = new MediaLockedCollection();
+            SelectedMedia = new ObservableCollection<MediaFileItem>();
 
             IsEffectsEnabled = true;
             IsResetSettingsOnLoad = true;
@@ -480,14 +485,9 @@ namespace MediaViewer.ImagePanel
 
        
 
-        private async Task loadImageAsync(String fileName)
+        private void loadImage(String fileName)
         {
-            // cancel previously running load requests          
-            loadImageCTS.Cancel();
-            loadImageCTS = new CancellationTokenSource();
-
-            // async load media
-
+                    
             Media media = null;
             SelectedMedia.Clear();
 
@@ -497,8 +497,10 @@ namespace MediaViewer.ImagePanel
 
                 MediaFileItem item = MediaFileItem.Factory.create((String)fileName);
                 
-                await item.readMetaDataAsync(
+                item.readMetaData(
                     MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, loadImageCTS.Token);
+
+                if (loadImageCTS.IsCancellationRequested) return;
 
                 media = item.Media;
 
@@ -532,9 +534,7 @@ namespace MediaViewer.ImagePanel
                 IsLoading = false;
                 
                 SelectedMedia.Add(item);
-
-                //setIdentityTransform();
-
+             
                 GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", item.Location);
             }
             catch (TaskCanceledException)
@@ -552,7 +552,7 @@ namespace MediaViewer.ImagePanel
             {
                 if (media != null)
                 {
-                    media.close();
+                    //media.close();
                 }
                 IsLoading = false;
             }

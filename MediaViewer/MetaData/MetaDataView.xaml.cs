@@ -47,20 +47,20 @@ namespace MediaViewer.MetaData
            
         }
 
-        public MediaLockedCollection Media
+        public ObservableCollection<MediaFileItem> Media
         {
-            get { return (MediaLockedCollection)GetValue(MediaProperty); }
+            get { return (ObservableCollection<MediaFileItem>)GetValue(MediaProperty); }
             set { SetValue(MediaProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for Media.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MediaProperty =
-            DependencyProperty.Register("Media", typeof(MediaLockedCollection), typeof(MetaDataView), new PropertyMetadata(null, new PropertyChangedCallback(mediaPropertyChanged_Callback)));
+            DependencyProperty.Register("Media", typeof(ObservableCollection<MediaFileItem>), typeof(MetaDataView), new PropertyMetadata(null, new PropertyChangedCallback(mediaPropertyChanged_Callback)));
 
         private static void mediaPropertyChanged_Callback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             MetaDataView view = (MetaDataView)d;
-            view.ViewModel.Items = (MediaLockedCollection)e.NewValue;
+            view.ViewModel.Items = (ObservableCollection<MediaFileItem>)e.NewValue;
         
         }
                

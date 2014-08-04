@@ -11,6 +11,7 @@
              xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel" 
              xmlns:VideoPlayer="clr-namespace:VideoPlayerControl;assembly=VideoPlayerControl"
              xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
+             xmlns:MediaDataGrid="clr-namespace:MediaViewer.UserControls.MediaDataGrid"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="903.333">
@@ -19,7 +20,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <DataTemplate DataType="{x:Type ImageGrid:PagedImageGridViewModel}"/>
+            <DataTemplate DataType="{x:Type ImageGrid:ImageGridViewModel}"/>
             <DataTemplate DataType="{x:Type ImagePanel:ImageViewModel}"/>
             <DataTemplate DataType="{x:Type VideoPlayer:VideoPlayerViewModel}">
                 <VideoPanel:VideoView HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
@@ -33,14 +34,17 @@
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <TabControl x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{StaticResource uiElementBorderColor}">
-            <TabItem Header="Browse Path" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
+            <TabItem Header="Browse" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <DirectoryPicker:DirectoryPicker x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}"/>
             </TabItem>
             <TabItem Header="Search" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <Search:SearchView Grid.Column="0"/>
-            </TabItem>            
+            </TabItem>
+            <TabItem Header="Selection" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
+                <MediaDataGrid:MediaDataGridView Media="{Binding ImageGridViewModel.SelectedMedia}" RowDoubleClick="selectedMediaDataGridView_RowDoubleClick"/>
+            </TabItem>
         </TabControl>
-        <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
+        <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>        
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
@@ -49,7 +53,7 @@
             <ImageGrid:ImageGridView x:Name="browserGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0"/>
             <ImagePanel:ImageView x:Name="imageViewer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
             <VideoPanel:VideoView x:Name="videoPlayer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="0" Visibility="Hidden"/>
-            <Grid Grid.Row="1" Margin="2,2,2,2">
+            <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -84,7 +88,8 @@
                         <Image Source="pack://application:,,,/Resources/Icons/object-rotate-left.ico"/>
                     </Button>
                 </Grid>
-                <Grid Grid.Row="1" x:Name="browserOptionsGrid">
+                <Border Grid.Row="1" BorderThickness="1" Background="{StaticResource imageGridBorderColor2}" BorderBrush="{StaticResource imageGridBorderColor}">
+                <Grid  x:Name="browserOptionsGrid">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -94,12 +99,13 @@
 						NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
 						NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
 						LastPageCommand="{Binding LastPageCommand}"/>
-                    <Button Grid.Column="0" Grid.Row="1" Width="30" Height="20">
+                    <Button Grid.Column="0" Grid.Row="1" Width="30" Height="20" Margin="2,0,0,0">
                         <Button.Style>
                             <Style>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ExpandCommand.CanExecute}" Value="true">
                                         <Setter Property="ButtonBase.Command" Value="{Binding ExpandCommand}"/>
+                                        <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
                                         <Setter Property="FrameworkElement.ToolTip" Value="Media View"/>
                                         <Setter Property="ContentControl.Content">
                                             <Setter.Value>
@@ -120,12 +126,13 @@
                             </Style>
                         </Button.Style>
                     </Button>
-                    <Button x:Name="deleteButton" Grid.Row="1" Grid.Column="2" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}">
+                    <Button x:Name="deleteButton" Grid.Row="1" Grid.Column="2" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}" Margin="0,0,2,0">
                         <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                     </Button>
                 </Grid>
-            </Grid>
-            <Grid/>
+                </Border>
+            </Grid>          
+                <Grid/>
         </Grid>
         <GridSplitter Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
         <TabControl x:Name="metaDataTabControl" Grid.Column="2" BorderThickness="5" BorderBrush="{StaticResource uiElementBorderColor}" Margin="2,0,0,0">

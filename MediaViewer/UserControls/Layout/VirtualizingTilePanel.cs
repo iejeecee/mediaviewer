@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls.Primitives;
+﻿//http://www.codeproject.com/Articles/158060/Dan-Crevier-s-VirtualizingTilePanel-Mod
+using System.Windows.Controls.Primitives;
 using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Media;
@@ -14,6 +15,8 @@ namespace MediaViewer.UserControls.Layout
     /// </summary>
     public class VirtualizingTilePanel : VirtualizingPanel, IScrollInfo
     {
+        const int lineStepSizePixels = 20;
+
         /// <summary>
         /// Default Constructor.
         /// </summary>
@@ -483,7 +486,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void LineUp()
         {
-            SetVerticalOffset(this.VerticalOffset - 10);
+            SetVerticalOffset(this.VerticalOffset - lineStepSizePixels);
         }
 
         /// <summary>
@@ -491,7 +494,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void LineDown()
         {
-            SetVerticalOffset(this.VerticalOffset + 10);
+            SetVerticalOffset(this.VerticalOffset + lineStepSizePixels);
         }
 
         /// <summary>
@@ -515,7 +518,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void MouseWheelUp()
         {
-            SetVerticalOffset(this.VerticalOffset - 10);
+            SetVerticalOffset(this.VerticalOffset - lineStepSizePixels);
         }
 
         /// <summary>
@@ -523,7 +526,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void MouseWheelDown()
         {
-            SetVerticalOffset(this.VerticalOffset + 10);
+            SetVerticalOffset(this.VerticalOffset + lineStepSizePixels);
         }
 
         /// <summary>
@@ -564,7 +567,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void MouseWheelLeft()
         {
-            throw new InvalidOperationException();
+            //throw new InvalidOperationException();
         }
 
         /// <summary>
@@ -574,7 +577,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void MouseWheelRight()
         {
-            throw new InvalidOperationException();
+           // throw new InvalidOperationException();
         }
 
         /// <summary>
@@ -584,7 +587,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void PageLeft()
         {
-            throw new InvalidOperationException();
+            //throw new InvalidOperationException();
         }
 
         /// <summary>
@@ -594,18 +597,48 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void PageRight()
         {
-            throw new InvalidOperationException();
+            //throw new InvalidOperationException();
         }
 
         /// <summary>
-        /// Set the horizontal offset value of the viewer.
-        /// This method is not implemented and will throw
-        /// and exception if called.
+        /// Offset is negative infinity when the user presses the home key
+        /// and positive inifinity when user types the end key
         /// </summary>
-        /// <param name="offset">The new horizontal offset value.</param>
+        /// <param name="offset"></param>
         public void SetHorizontalOffset(double offset)
         {
-            throw new InvalidOperationException();
+            if (offset == double.NegativeInfinity)
+            {
+                // scroll to the start
+                _offset.Y = 0;
+
+                if (_owner != null)
+                    _owner.InvalidateScrollInfo();
+
+                _trans.Y = 0;
+
+                // Force us to realize the correct children
+                InvalidateMeasure();
+            }
+            else if (offset == double.PositiveInfinity)
+            {
+                // scroll to the end
+                offset = _extent.Height - _viewport.Height;
+                if (offset < 0) offset = 0;
+
+                _offset.Y = offset;
+
+                if (_owner != null)
+                    _owner.InvalidateScrollInfo();
+
+                _trans.Y = -offset;
+
+                // Force us to realize the correct children
+                InvalidateMeasure();
+                            
+            }
+
+            //throw new InvalidOperationException();
         }
 
         /// <summary>

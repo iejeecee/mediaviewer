@@ -28,12 +28,17 @@ namespace MediaViewer.MediaFileModel
 
             try
             {
-               
+                FileInfo info = new FileInfo(media.Location);
+                info.Refresh();
+                media.LastModifiedDate = info.LastWriteTime < sqlMinDate ? sqlMinDate : info.LastWriteTime;
+                media.FileDate = info.CreationTime < sqlMinDate ? sqlMinDate : info.CreationTime;
+
                 if (media.SupportsXMPMetadata == false) return;
 
                 xmpMetaDataReader.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForRead);
                                     
                 readXMPMetadata(xmpMetaDataReader, media);
+                
             }
             catch (Exception e)
             {
@@ -113,7 +118,7 @@ namespace MediaViewer.MediaFileModel
             {
                 media.CreationDate = date;
             }
-
+          
             xmpMetaDataReader.getProperty_Date(Consts.XMP_NS_XMP, "ModifyDate", ref date);
             if (date != null && date < sqlMinDate)
             {
@@ -123,22 +128,17 @@ namespace MediaViewer.MediaFileModel
             {
                 media.MetadataModifiedDate = date;
             }
+
+            string longitude = null;
+            string latitude = null;
+
+            xmpMetaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLatitude", ref latitude);
+            xmpMetaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLongitude", ref longitude);
+
+            media.Longitude = longitude;
+            media.Latitude = latitude;
+       
 /*
-            if (metaDataReader.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLatitude") && metaDataReader.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLongitude"))
-            {
-                string latitude = "";
-                string longitude = "";
-
-                metaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLatitude", ref latitude);
-                metaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLongitude", ref longitude);
-
-                geoTag.Longitude.Coord = longitude;
-                geoTag.Latitude.Coord = latitude;
-
-                hasGeoTag = true;
-
-            }
-
             List<MetaDataProperty> tiffProps = new List<MetaDataProperty>();
 
             metaDataReader.iterate(Consts.XMP_NS_TIFF, Consts.IterOptions.XMP_IterProperties, ref tiffProps);

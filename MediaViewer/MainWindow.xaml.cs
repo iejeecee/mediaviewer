@@ -74,7 +74,8 @@ namespace MediaViewer
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
-                
+            Plugin.LoadPlugins loadPlugins = new Plugin.LoadPlugins();
+            loadPlugins.load();
         }
 
         private void mainWindow_SetTitle(string newTitle)

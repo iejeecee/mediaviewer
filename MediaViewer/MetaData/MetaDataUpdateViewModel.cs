@@ -191,8 +191,6 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
-
-
                         if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
                         {
                             media.Tags.Clear();
@@ -643,10 +641,11 @@ namespace MediaViewer.MetaData
             Filename = vm.Filename;
             isEnabled = vm.IsEnabled;
 
-            vm.Items.EnterReaderLock();         
-            ItemList = new List<MediaFileItem>(vm.Items.Items);
-            vm.Items.ExitReaderLock();
-
+            lock (vm.Items)
+            {
+                ItemList = new List<MediaFileItem>(vm.Items);
+            }
+           
             Rating = vm.Rating;
             RatingEnabled = vm.RatingEnabled;
             Title = vm.Title;

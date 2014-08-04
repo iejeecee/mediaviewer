@@ -8,7 +8,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
         <TextBlock x:Name="infoTextBlock" HorizontalAlignment="Stretch" TextAlignment="Right" VerticalAlignment="Center" FontSize="10" Foreground="Purple" Visibility="Visible"/>
-        <inputtoolkit:Rating x:Name="rating" ItemCount="5" Visibility="Hidden" IsReadOnly="True" Background="{x:Null}" HorizontalContentAlignment="Right" HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <inputtoolkit:Rating x:Name="rating" ItemCount="5" Visibility="Hidden" IsReadOnly="True" Background="{x:Null}" HorizontalContentAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="Center">
             <inputtoolkit:Rating.LayoutTransform>
                 <ScaleTransform ScaleX="0.6" ScaleY="0.6"/>
             </inputtoolkit:Rating.LayoutTransform>

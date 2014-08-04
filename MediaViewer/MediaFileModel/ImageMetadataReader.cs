@@ -242,6 +242,22 @@ namespace MediaViewer.MediaFileModel
                 image.SubjectDistanceRange = (short)intVal;
             }
 
+            string isoSpeedRating = "";
+
+            int nrSpeedRatings = xmpMetaDataReader.countArrayItems(Consts.XMP_NS_EXIF, "ISOSpeedRatings");
+            if (nrSpeedRatings > 0)
+            {
+                xmpMetaDataReader.getArrayItem(Consts.XMP_NS_EXIF, "ISOSpeedRatings", 1, ref isoSpeedRating);  
+                int value = 0;
+                if(int.TryParse(isoSpeedRating, out value)) {
+                    image.ISOSpeedRating = value;           
+                }
+            }
+            else
+            {
+                image.ISOSpeedRating = null;
+            }
+
             xmpMetaDataReader.getProperty_Int(Consts.XMP_NS_EXIF, "WhiteBalance", ref intVal);
             if (intVal == null)
             {

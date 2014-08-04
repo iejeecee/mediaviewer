@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaDatabaseTest", "MediaD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoPlayerControl", "VideoPlayerControl\VideoPlayerControl.csproj", "{68A8983C-F256-4B89-99C4-65FC81B7F0F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginTest", "PluginTest\PluginTest.csproj", "{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +96,16 @@ Global
 		{68A8983C-F256-4B89-99C4-65FC81B7F0F5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{68A8983C-F256-4B89-99C4-65FC81B7F0F5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{68A8983C-F256-4B89-99C4-65FC81B7F0F5}.Release|Win32.ActiveCfg = Release|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -165,6 +165,7 @@ namespace MediaViewer.Import
             }
 
             TotalProgressMax = items.Count;
+            ItemProgressMax = 100;
 
             foreach (String item in items)
             {

@@ -52,7 +52,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             ItemState = state;
             hasTags = false;
             id = Guid.NewGuid();
-                      
+    
         }
 
         public void Dispose()
@@ -185,18 +185,10 @@ namespace MediaViewer.MediaFileModel.Watcher
                 return (isSelected);
             }
             set
-            {
-               /* rwLock.EnterWriteLock();
-                try
-                {*/
-                    isSelected = value;
-                    NotifyPropertyChanged();
-
-                /*} finally
-                {
-                    rwLock.ExitWriteLock();
-                }*/
-                
+            {         
+                // note that boolean assignment is atomic
+                isSelected = value;
+                NotifyPropertyChanged();                
             }
         }
      

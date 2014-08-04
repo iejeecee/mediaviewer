@@ -23,7 +23,6 @@ namespace MediaViewer.MediaFileModel
     {
         event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
         event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;
-        event EventHandler ItemIsSelectedChanged;
         event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
         MediaStateType MediaStateType
@@ -46,11 +45,6 @@ namespace MediaViewer.MediaFileModel
             get;
         }
 
-        MediaLockedCollection UISelectedMedia
-        {
-            get;
-        }
-
         int NrLoadedItemsInState
         {
             get;
@@ -60,9 +54,7 @@ namespace MediaViewer.MediaFileModel
         {
             get;
         }
-       
-        void selectAllUIState();
-        void deselectAllUIState();
+            
         List<MediaFileItem> getSelectedItemsUIState();
       
         void addUIState(IEnumerable<MediaFileItem> items);

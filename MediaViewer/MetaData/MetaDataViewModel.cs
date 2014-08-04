@@ -106,9 +106,10 @@ namespace MediaViewer.MetaData
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
                 vm.MovePath = String.IsNullOrEmpty(Location) ? MediaFileWatcher.Instance.Path : Location;
-                Items.EnterReaderLock();
-                vm.SelectedItems = new List<MediaFileItem>(Items.Items);
-                Items.ExitReaderLock();
+                lock (Items)
+                {
+                    vm.SelectedItems = new List<MediaFileItem>(Items);
+                }
                 vm.MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
               
                 if (directoryPicker.ShowDialog() == true)
@@ -201,21 +202,17 @@ namespace MediaViewer.MetaData
 
             GlobalMessenger.Instance.Register<MediaFileItem>("MetaDataUpdateViewModel_UpdateComplete", (item) =>
             {
-                Items.EnterReaderLock();
-                try
+                lock(Items)             
                 {
                     if (BatchMode == false && Items.Count > 0)
                     {
-                        if (Items.Items[0].Equals(item))
+                        if (Items[0].Equals(item))
                         {
                             grabData();
                         }
                     }
                 }
-                finally
-                {
-                    Items.ExitReaderLock();
-                }
+                
             });
 
             MediaFileWatcher.Instance.MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
@@ -231,42 +228,38 @@ namespace MediaViewer.MetaData
         {
             if (e.PropertyName.Equals("Location"))
             {
-                Items.EnterReaderLock();
-                try
+                lock(Items)
                 {
                     if (BatchMode == false && Items.Count > 0)
                     {
                         MediaFileItem modifiedItem = sender as MediaFileItem;
 
-                        if (Items.Items[0].Equals(modifiedItem))
+                        if (Items[0].Equals(modifiedItem))
                         {
                             Filename = Path.GetFileNameWithoutExtension(modifiedItem.Location);
                             Location = FileUtils.getPathWithoutFileName(modifiedItem.Location);
                         }
                     }
                 }
-                finally
-                {
-                    Items.ExitReaderLock();
-                }
+                
             }
         }
 
-        MediaLockedCollection items;
+        ObservableCollection<MediaFileItem> items;
 
-        public MediaLockedCollection Items
+        public ObservableCollection<MediaFileItem> Items
         {
             get { return items; }
             set
             {
                 if (items != null)
                 {
-                    items.CollectionModified -= items_Modified;
+                    items.CollectionChanged -= items_Modified;
                 }
 
                 if (value != null)
                 {
-                    value.CollectionModified += items_Modified;
+                    value.CollectionChanged += items_Modified;
                 }
 
                 items = value;
@@ -771,15 +764,13 @@ namespace MediaViewer.MetaData
                 return;
             }*/
 
-            items.EnterReaderLock();
-
-            try
+            lock(Items)        
             {
 
-                if (items.Count == 1 && Items.Items[0].Media != null)
+                if (items.Count == 1 && Items[0].Media != null)
                 {
 
-                    Media media = Items.Items[0].Media;
+                    Media media = Items[0].Media;
 
                     if (media.SupportsXMPMetadata == false)
                     {
@@ -848,15 +839,11 @@ namespace MediaViewer.MetaData
 
                 }
             }
-            finally
+           
+            if (ItemsModified != null)
             {
-                items.ExitReaderLock();
-
-                if (ItemsModified != null)
-                {
-                    ItemsModified(this, EventArgs.Empty);
-                }
-            }
+                ItemsModified(this, EventArgs.Empty);
+            }           
 
         }
 

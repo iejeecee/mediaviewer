@@ -46,30 +46,15 @@ namespace MediaViewer.MediaFileBrowser
             imageViewer.DataContext = mediaFileBrowserViewModel.ImageViewModel;            
                 
             metaDataView.DataContext = browserGrid.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
-            if (mediaFileBrowserViewModel.ImageGridViewModel is PagedImageGridViewModel)
-            {
-                pager.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
-            }
+            
+            pager.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
+            
 
             GlobalMessenger.Instance.Register("ToggleFullScreen", mediaFileBrowser_ToggleFullScreen);
             GlobalMessenger.Instance.Register("MediaFileBrowser_ShowBrowserGrid", mediaFileBrowser_ShowBrowserGrid);
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowVideo", mediaFileBrowser_ShowVideo);
             GlobalMessenger.Instance.Register<String>("MediaFileBrowser_ShowImage", mediaFileBrowser_ShowImage);
-
-            MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.ItemIsSelectedChanged += new EventHandler((o, e) =>
-            {              
-                List<MediaFileItem> selected = MediaFileModel.Watcher.MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
-
-                if (selected.Count > 0)
-                {
-                    mediaFileBrowserViewModel.Title = mediaFileBrowserViewModel.BrowsePath + " - " + selected.Count.ToString() + " Item(s) Selected";
-                }
-                else
-                {
-                    mediaFileBrowserViewModel.Title = mediaFileBrowserViewModel.BrowsePath;
-                }
-              
-            });
+          
         }
 
         private void mediaFileBrowser_ShowBrowserGrid()
@@ -94,6 +79,7 @@ namespace MediaViewer.MediaFileBrowser
             videoPlayer.Visibility = Visibility.Collapsed;
 
             imageOptionsGrid.Visibility = Visibility.Visible;
+            videoPlayer.ViewModel.CloseCommand.DoExecute();
                       
             metaDataView.DataContext = pager.DataContext = imageViewer.DataContext;      
         }
@@ -103,7 +89,9 @@ namespace MediaViewer.MediaFileBrowser
             browserGrid.Visibility = Visibility.Collapsed;
             imageViewer.Visibility = Visibility.Collapsed;
             videoPlayer.Visibility = Visibility.Visible;
-     
+
+            imageOptionsGrid.Visibility = Visibility.Collapsed;
+
             metaDataView.DataContext = pager.DataContext = videoPlayer.DataContext;       
         }
 
@@ -124,9 +112,14 @@ namespace MediaViewer.MediaFileBrowser
             browserButtons.Visibility = mode;
             browserTabControl.Visibility = mode;
             metaDataTabControl.Visibility = mode;
+            //imageOptionsGrid.Visibility = mode;
         }
-   
-     
+
+        private void selectedMediaDataGridView_RowDoubleClick(object sender, MediaFileItem e)
+        {
+            mediaFileBrowserViewModel.ExpandCommand.DoExecute(e);
+        }
+        
        
     }
         

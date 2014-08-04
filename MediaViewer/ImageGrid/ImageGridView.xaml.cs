@@ -20,6 +20,7 @@ using System.Windows.Shapes;
 using MediaViewer.Utils.WPF;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.UserControls.Layout;
+using MvvmFoundation.Wpf;
 
 namespace MediaViewer.ImageGrid
 {
@@ -44,9 +45,46 @@ namespace MediaViewer.ImageGrid
             if (e.NewValue is ImageGridViewModel)
             {
                 ImageGridViewModel imageGridViewModel = e.NewValue as ImageGridViewModel;
-                WeakEventManager<ImageGridViewModel,EventArgs>.AddHandler(imageGridViewModel,"Cleared",imageGridViewModel_Cleared);               
+                WeakEventManager<ImageGridViewModel,EventArgs>.AddHandler(imageGridViewModel,"Cleared",imageGridViewModel_Cleared);
+
+                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.LastPageCommand, "Executed", imageGridViewModel_LastPageCommand);
+                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.FirstPageCommand, "Executed", imageGridViewModel_FirstPageCommand);
+                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.NextPageCommand, "Executed", imageGridViewModel_NextPageCommand);
+                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.PrevPageCommand, "Executed", imageGridViewModel_PrevPageCommand);
             } 
 
+        }
+
+        private void imageGridViewModel_PrevPageCommand(object sender, EventArgs e)
+        {
+            if (panel != null)
+            {
+                panel.PageUp();
+            }
+        }
+
+        private void imageGridViewModel_NextPageCommand(object sender, EventArgs e)
+        {
+            if (panel != null)
+            {
+                panel.PageDown();
+            }
+        }
+
+        private void imageGridViewModel_FirstPageCommand(object sender, EventArgs e)
+        {
+            if (panel != null)
+            {
+                panel.SetHorizontalOffset(double.NegativeInfinity);
+            }
+        }
+
+        private void imageGridViewModel_LastPageCommand(object sender, EventArgs e)
+        {
+            if (panel != null)
+            {
+                panel.SetHorizontalOffset(double.PositiveInfinity);
+            }
         }
 
         void imageGridViewModel_Cleared(object sender, EventArgs e)

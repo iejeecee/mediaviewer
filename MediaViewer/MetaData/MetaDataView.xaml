@@ -190,7 +190,7 @@
                 <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags, Source={StaticResource viewModel}}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}, Source={StaticResource viewModel}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>               
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false"/>               
                 <Button Grid.Row="16" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled, Source={StaticResource viewModel}}"
 					Command="{Binding WriteMetaDataCommand, Source={StaticResource viewModel}}"

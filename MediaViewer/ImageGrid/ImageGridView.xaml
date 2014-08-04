@@ -37,7 +37,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ItemsControl}">
-                            <ScrollViewer CanContentScroll="True">
+                            <ScrollViewer CanContentScroll="True"><!--IsDeferredScrollingEnabled="True"-->
                                 <ItemsPresenter/>
                             </ScrollViewer>
                         </ControlTemplate>
@@ -51,7 +51,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0" Height="40">
+        <Border Grid.Row="0" BorderThickness="1,1,1,1" BorderBrush="{StaticResource imageGridBorderColor}" Background="{StaticResource imageGridBorderColor2}">
+            <Grid Height="40">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -59,26 +60,30 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            </Grid.ColumnDefinitions>          
             <ImageGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
-            <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
+                <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
                 ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
-            <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
+                <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                ItemsSource="{Binding Source={StaticResource sortModeEnum}}" SelectedItem="{Binding SortMode}"/>
+                ItemsSource="{Binding SortModes}" SelectedItem="{Binding SortMode, Mode=TwoWay}"/>          
         </Grid>
+        </Border>
         <ItemsControl x:Name="itemsControl" Grid.Row="1" ItemsSource="{Binding Media}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded"/>
+                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>
                         <!--<UniformGrid Columns="{Binding NrGridColumns}" Rows="{Binding NrGridRows}" VerticalAlignment="Top" />-->
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                    <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" Tag="{Binding ElementName=itemsControl}" MaxHeight="150" ExtraInfoType="{Binding DataContext.SortMode, ElementName=itemsControl}"/>
+                    <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" 
+                                                 Tag="{Binding ElementName=itemsControl}" MaxHeight="150" 
+                                                 ExtraInfoType="{Binding DataContext.SortMode, ElementName=itemsControl}"
+                                                 IsGridLoaded="{Binding DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=itemsControl}"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>           
         </ItemsControl>     

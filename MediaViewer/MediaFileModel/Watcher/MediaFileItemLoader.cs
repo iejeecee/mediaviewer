@@ -129,7 +129,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
                         if (ItemFinishedLoading != null)
                         {
-                            ItemFinishedLoading(this, EventArgs.Empty);
+                            ItemFinishedLoading(item, EventArgs.Empty);
                         }
 
                     }).ConfigureAwait(false);

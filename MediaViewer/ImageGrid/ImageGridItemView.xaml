@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="MediaViewer.ImageGrid.ImageGridItemView"
+﻿<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -8,6 +8,7 @@
              xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid" 
              xmlns:TextBlock="clr-namespace:MediaViewer.UserControls.TextBlock"  
              xmlns:Media="clr-namespace:System.Windows.Media;assembly=PresentationCore" 
+             xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" x:Class="MediaViewer.ImageGrid.ImageGridItemView" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -17,29 +18,41 @@
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
             <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
+            <ImageGrid:NotLoadingConverter x:Key="notLoadingConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Name="root">
+    <Grid x:Name="root">
         <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.MediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
             <ToggleButton.Style>
                 <Style>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
-                            <Setter Property="ToggleButton.IsEnabled" Value="false"/>
+                            <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                            <Setter Property="ToggleButton.IsEnabled" Value="false"/>
+                            <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="true">
-                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridItemSelectedBackgroundColor}" />
+                            <Setter Property="Control.Background" Value="{StaticResource imageGridItemSelectedBackgroundColor}" />
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="false">
-                            <Setter Property="ToggleButton.Background" Value="{StaticResource imageGridItemBackgroundColor}" />
+                            <Setter Property="Control.Background" Value="{StaticResource imageGridItemBackgroundColor}" />
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
             </ToggleButton.Style>
-            <Grid ToolTip="{Binding Parent.MediaFileItem.Media.DefaultFormatCaption, ElementName=root}">           
+            <ToggleButton.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="View" Click="viewMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem x:Name="selectAllMenuItem" Header="Select All" Click="selectAllMenuItem_Click"/>
+                    <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Browse Location" Click="browseMenuItem_Click"/>
+                    <MenuItem Header="Open Location" Click="openInExplorerMenuItem_Click"/>
+                </ContextMenu>
+            </ToggleButton.ContextMenu>
+            <Grid ToolTip="{Binding Parent.MediaFileItem.Media.DefaultFormatCaption, ElementName=root}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="4*"/>
@@ -50,8 +63,8 @@
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
-                    <TextBlock Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ElementName=root, Converter={StaticResource pathToFileNameConverter}, ConverterParameter='ext'}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
+                    <TextBlock:AutoLengthTextBlock Grid.Column="0" AutoPadding="{Binding ActualWidth, ElementName=extension}" Text="{Binding Parent.MediaFileItem.Location, Converter={StaticResource pathToFileNameConverter}, ElementName=root}" FontSize="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="extension" Grid.Column="1" Text="{Binding Parent.MediaFileItem.Location, ConverterParameter=ext, Converter={StaticResource pathToFileNameConverter}, ElementName=root}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
                 </Grid>
                 <Border Grid.Row="1" BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border.Effect>
@@ -67,117 +80,111 @@
                                     <Setter Property="Border.BorderBrush" Value="Black" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
-                                    <Setter Property="Border.Visibility" Value="Collapsed"/>
+                                    <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                                    <Setter Property="Border.BorderBrush" Value="{x:Null}"/>                                   
+                                    <Setter Property="Border.BorderBrush" Value="{x:Null}"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </Border.Style>
-                    <Image Name="image" RenderTransformOrigin="0.5,0.5">
-                        <Image.RenderTransform>
-                            <RotateTransform x:Name="imageRotateTransform"/>                                                      
-                        </Image.RenderTransform>
+                    <Grid>
+                        <Loading:LoadingView HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Loading:LoadingView.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="0.7" ScaleY="0.7"/>                                  
+                                </TransformGroup>
+                            </Loading:LoadingView.RenderTransform>
+                            <Loading:LoadingView.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                            <Setter Property="Loading:LoadingView.Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource notLoadingConverter}}" Value="true">
+                                            <Setter Property="Loading:LoadingView.Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Loading:LoadingView.Style>
+                        </Loading:LoadingView>
+                        <Image x:Name="image">
                         <Image.Style>
                             <Style>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                                        <Setter Property="Image.Stretch" Value="None"/>
-                                        <Setter Property="Image.Source" Value="{StaticResource loadingImage}" />
-                                        <Setter Property="Image.Effect" Value="{x:Null}"/>
-                                        <DataTrigger.EnterActions>
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(Media:RotateTransform.Angle)" By="360.0" 
-                        		                        RepeatBehavior="Forever" Duration="00:00:4"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </DataTrigger.EnterActions>
-                                        <DataTrigger.ExitActions>
-                                            <BeginStoryboard>
-                                                <Storyboard>
-                                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(Media:RotateTransform.Angle)" To="0" Duration="00:00:00"/>
-                                                </Storyboard>
-                                            </BeginStoryboard>
-                                        </DataTrigger.ExitActions>
+                                        <Setter Property="Image.Visibility" Value="Hidden"/>
+                                        <Setter Property="Image.Source" Value="{x:Null}"/>                        
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="ERROR">
+                                        <Setter Property="Image.Visibility" Value="Visible"/>
                                         <Setter Property="Image.Stretch" Value="None"/>
-                                        <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>
-                                        <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                        <Setter Property="Image.Source" Value="{Binding Media, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                        <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADED">
+                                        <Setter Property="Image.Visibility" Value="Visible"/>
                                         <Setter Property="Image.Stretch" Value="Uniform"/>
                                         <Setter Property="Image.Source" Value="{Binding Media.Thumbnail.Image}"/>
-                                        <Setter Property="Image.Effect" Value="{x:Null}"/>
+                                        <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="FILE_NOT_FOUND">
-                                        <Setter Property="Image.Stretch" Value="Uniform"/>                                    
-                                        <Setter Property="Image.Source" Value="{Binding Media, Converter={StaticResource thumbnailSelector}, ConverterParameter={StaticResource errorImage}}"/>                                        
-                                        <Setter Property="Image.Effect" Value="{StaticResource grayscaleEffect}"/>
+                                        <Setter Property="Image.Visibility" Value="Visible"/>
+                                        <Setter Property="Image.Stretch" Value="Uniform"/>
+                                        <Setter Property="Image.Source" Value="{Binding Media, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                        <Setter Property="UIElement.Effect" Value="{StaticResource grayscaleEffect}"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </Image.Style>
                     </Image>
+                    </Grid>
                 </Border>
                 <Grid Grid.Row="2" Margin="3,5,3,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Stretch" Orientation="Horizontal">
                         <StackPanel.Style>
                             <Style>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADED">
-                                        <Setter Property="StackPanel.IsEnabled" Value="true"/>
-                                        <Setter Property="StackPanel.Visibility" Value="Visible"/>
+                                        <Setter Property="UIElement.IsEnabled" Value="true"/>
+                                        <Setter Property="UIElement.Visibility" Value="Visible"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                                        <Setter Property="StackPanel.IsEnabled" Value="false"/>
-                                        <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
+                                        <Setter Property="UIElement.IsEnabled" Value="false"/>
+                                        <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
-                                        <Setter Property="StackPanel.IsEnabled" Value="false"/>
-                                        <Setter Property="StackPanel.Visibility" Value="Collapsed"/>
+                                        <Setter Property="UIElement.IsEnabled" Value="false"/>
+                                        <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <Image Source="pack://application:,,,/Resources/Icons/checked.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.Media.IsImported, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Imported"/>
+                        <Image Source="pack://application:,,,/Resources/Icons/checked.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.Media.IsImported, Converter={StaticResource booleanToVisibilityConverter}, ElementName=root}" ToolTip="Imported"/>
                         <Image Source="pack://application:,,,/Resources/Icons/notsupported.ico" MaxHeight="11" ToolTip="Format does not support metadata">
                             <Image.Style>
                                 <Style>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="true">
-                                            <Setter Property="Image.Visibility" Value="Collapsed"/>
+                                            <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Parent.MediaFileItem.Media.SupportsXMPMetadata, ElementName=root}" Value="false">
-                                            <Setter Property="Image.Visibility" Value="Visible"/>
+                                            <Setter Property="UIElement.Visibility" Value="Visible"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
                             </Image.Style>
                         </Image>
-                        <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, ElementName=root, Converter={StaticResource booleanToVisibilityConverter}}" ToolTip="Tagged"/>
+                        <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, Converter={StaticResource booleanToVisibilityConverter}, ElementName=root}" ToolTip="Tagged"/>
                         <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->
                     </StackPanel>
                     <ImageGrid:ExtraItemInfoView x:Name="extraInfo" Grid.Column="1" HorizontalAlignment="Stretch"/>
                 </Grid>
             </Grid>
-            <ToggleButton.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="View" Click="viewMenuItem_Click"/>                   
-                    <Separator/>
-                    <MenuItem Header="Select All" Click="selectAllMenuItem_Click"/>
-                    <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>
-                    <Separator/>
-                    <MenuItem Header="Browse Location" Click="browseMenuItem_Click"/>
-                    <MenuItem Header="Open Location" Click="openInExplorerMenuItem_Click"/>
-                </ContextMenu>
-            </ToggleButton.ContextMenu>
-        </ToggleButton>
+        </ToggleButton>        
     </Grid>
 </UserControl>

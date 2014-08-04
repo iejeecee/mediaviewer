@@ -29,7 +29,8 @@ namespace MediaViewer.ImageGrid
         public ImageGridItemView()
         {
             InitializeComponent();
-           
+            selectAllMenuItem.IsEnabled = false;        
+            
         }
 
         public MediaFileItem MediaFileItem
@@ -50,8 +51,6 @@ namespace MediaViewer.ImageGrid
 
         }
 
-
-
         public SortMode ExtraInfoType
         {
             get { return (SortMode)GetValue(ExtraInfoTypeProperty); }
@@ -66,6 +65,24 @@ namespace MediaViewer.ImageGrid
         {
             ImageGridItemView view = d as ImageGridItemView;
             view.extraInfo.InfoType = (SortMode)e.NewValue;
+        }
+
+        public bool IsGridLoaded
+        {
+            get { return (bool)GetValue(IsGridLoadedProperty); }
+            set { SetValue(IsGridLoadedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsGridLoaded.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsGridLoadedProperty =
+            DependencyProperty.Register("IsGridLoaded", typeof(bool), typeof(ImageGridItemView), new PropertyMetadata(true, isGridLoadedChangedCallback));
+
+        private static void isGridLoadedChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            ImageGridItemView item = d as ImageGridItemView;
+
+            item.selectAllMenuItem.IsEnabled = !(bool)e.NewValue;
+           
         }
         
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
@@ -112,7 +129,7 @@ namespace MediaViewer.ImageGrid
             if (Keyboard.Modifiers != ModifierKeys.Control)
             {                     
                 ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-                vm.MediaState.deselectAllUIState();                
+                vm.deselectAll();          
             }
 
             item.IsSelected = true;

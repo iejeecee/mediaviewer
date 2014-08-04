@@ -5,6 +5,7 @@ using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text;
@@ -31,7 +32,7 @@ namespace MediaViewer.VideoPanel
             this.videoPlayer = videoPlayer;
             //videoPlayer.Log = log;
 
-            selectedMedia = new MediaLockedCollection();
+            selectedMedia = new ObservableCollection<MediaFileItem>();
 
             OpenCommand = new Command<string>(async (location) => {
 
@@ -60,7 +61,7 @@ namespace MediaViewer.VideoPanel
 
                 if (VideoState == VideoPlayerControl.VideoState.CLOSED && selectedMedia.Count == 1)
                 {
-                    String location = selectedMedia.Items[0].Location;
+                    String location = selectedMedia[0].Location;
 
                     try
                     {
@@ -248,9 +249,9 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        MediaLockedCollection selectedMedia;
+        ObservableCollection<MediaFileItem> selectedMedia;
 
-        public MediaLockedCollection SelectedMedia
+        public ObservableCollection<MediaFileItem> SelectedMedia
         {
             get { return selectedMedia; }
             set { selectedMedia = value;

@@ -22,8 +22,7 @@ namespace MediaViewer.MediaFileModel
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
-        public event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;
-        public event EventHandler ItemIsSelectedChanged;
+        public event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;        
         public event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
         MediaLockedCollection uiMediaCollection;
@@ -36,17 +35,7 @@ namespace MediaViewer.MediaFileModel
             get { return uiMediaCollection; }
             set { uiMediaCollection = value; }
         }
-
-        MediaLockedCollection uiSelectedMedia;
-        /// <summary>
-        /// Media currently selected in the user interface
-        /// </summary>
-        public MediaLockedCollection UISelectedMedia
-        {
-            get { return uiSelectedMedia; }
-            set { uiSelectedMedia = value; }
-        }
-
+     
         bool debugOutput;
 
         public bool DebugOutput
@@ -59,8 +48,7 @@ namespace MediaViewer.MediaFileModel
         {
 
             uiMediaCollection = new MediaLockedCollection(true);
-            uiSelectedMedia = new MediaLockedCollection();
-           
+                   
             debugOutput = false;
 
             MediaStateInfo = "MediaStateInfo Not Set";
@@ -85,12 +73,7 @@ namespace MediaViewer.MediaFileModel
                     uiMediaCollection.Dispose();
                     uiMediaCollection = null;
                 }
-
-                if (uiSelectedMedia != null)
-                {
-                    uiSelectedMedia.Dispose();
-                    uiSelectedMedia = null;
-                }
+          
             }
         }
 
@@ -100,8 +83,7 @@ namespace MediaViewer.MediaFileModel
 
             if (items.Count() == 0) return;
 
-            bool success = false;
-            bool itemIsSelectedChanged = false;
+            bool success = false;  
 
             UIMediaCollection.EnterWriteLock();
 
@@ -118,13 +100,7 @@ namespace MediaViewer.MediaFileModel
 
                 foreach (MediaFileItem item in items)
                 {
-                    item.PropertyChanged += new PropertyChangedEventHandler(item_PropertyChanged);
-                    if (item.IsSelected == true)
-                    {
-                        itemIsSelectedChanged = true;
-                        UISelectedMedia.Add(item);
-                    }
-
+                    item.PropertyChanged += new PropertyChangedEventHandler(item_PropertyChanged);             
                 }
 
                 NrItemsInState = UIMediaCollection.Count;
@@ -138,7 +114,7 @@ namespace MediaViewer.MediaFileModel
 
                 if (success)
                 {
-                    fireEvents(MediaStateChangedAction.Add, items, itemIsSelectedChanged);
+                    fireEvents(MediaStateChangedAction.Add, items);
                 }
             }
         }
@@ -165,7 +141,7 @@ namespace MediaViewer.MediaFileModel
                 //if (success)
                 //{
                     // redraw the UI since sorting order might have changed
-                fireEvents(MediaStateChangedAction.Modified, null, false);                    
+                fireEvents(MediaStateChangedAction.Modified, null);                    
                 //}
             }
         }
@@ -173,8 +149,7 @@ namespace MediaViewer.MediaFileModel
         public void removeUIState(IEnumerable<MediaFileItem> removeItems)
         {
             if (removeItems.Count() == 0) return;
-
-            bool itemIsSelectedChanged = false;
+        
             List<MediaFileItem> removed = new List<MediaFileItem>();
 
             UIMediaCollection.EnterWriteLock();
@@ -187,13 +162,7 @@ namespace MediaViewer.MediaFileModel
                 foreach (MediaFileItem item in removed)
                 {
                     item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(item_PropertyChanged);
-
-                    if (item.IsSelected == true)
-                    {
-                        itemIsSelectedChanged = true;
-                        UISelectedMedia.Remove(item);
-                    }
-
+             
                 }
 
                 NrItemsInState = UIMediaCollection.Count;
@@ -203,16 +172,14 @@ namespace MediaViewer.MediaFileModel
                 if (DebugOutput) log.Info("end remove event: " + removeItems.ElementAt(0).Location);
                 UIMediaCollection.ExitWriteLock();
 
-                fireEvents(MediaStateChangedAction.Remove, removed, itemIsSelectedChanged);
+                fireEvents(MediaStateChangedAction.Remove, removed);
             }
 
         }
 
         public void clearUIState(String stateInfo, DateTime stateDateTime, MediaStateType stateType) 
         {
-        
-            bool itemIsSelectedChanged = false;
-
+                   
             UIMediaCollection.EnterWriteLock();
 
             try
@@ -223,8 +190,7 @@ namespace MediaViewer.MediaFileModel
 
                     if (item.IsSelected == true)
                     {
-                        itemIsSelectedChanged = true;
-                        UISelectedMedia.Remove(item);
+                        item.IsSelected = false;
                     }
 
                 }
@@ -243,7 +209,7 @@ namespace MediaViewer.MediaFileModel
             {
                 UIMediaCollection.ExitWriteLock();
 
-                fireEvents(MediaStateChangedAction.Clear, null, itemIsSelectedChanged);
+                fireEvents(MediaStateChangedAction.Clear, null);
                 
             }
         }
@@ -358,85 +324,15 @@ namespace MediaViewer.MediaFileModel
 
         }
 
-        void fireEvents(MediaStateChangedAction action, IEnumerable<MediaFileItem> files, bool itemIsSelectedChanged)
+        void fireEvents(MediaStateChangedAction action, IEnumerable<MediaFileItem> files)
         {
             MediaStateChangedEventArgs args = new MediaStateChangedEventArgs(action, files);
 
             OnNrItemsInStateChanged(args);
 
-            if (itemIsSelectedChanged)
-            {
-                OnItemIsSelectedChanged();
-            }
-
         }
 
-        public void selectAllUIState()
-        {
-            bool isSelectionChanged = false;
-
-            UIMediaCollection.EnterReaderLock();
-            try
-            {
-               
-                foreach (MediaFileItem item in UIMediaCollection.Items)
-                {
-                    item.PropertyChanged -= item_PropertyChanged;
-                    if (item.IsSelected == false)
-                    {
-                        isSelectionChanged = true;
-                       
-                    }
-                    item.IsSelected = true;
-                    item.PropertyChanged += item_PropertyChanged;
-                }
-
-                UISelectedMedia.AddRange(UIMediaCollection.Items);
-                
-            }
-            finally
-            {
-                UIMediaCollection.ExitReaderLock();
-
-                if (isSelectionChanged)
-                {
-                    OnItemIsSelectedChanged();
-                }
-            }
-        }
-
-        public void deselectAllUIState()
-        {
-            bool isSelectionChanged = false;
-
-            UIMediaCollection.EnterReaderLock();
-            try
-            {               
-                foreach (MediaFileItem item in UIMediaCollection.Items)
-                {
-                    item.PropertyChanged -= item_PropertyChanged;
-                    if (item.IsSelected == true)
-                    {
-                        isSelectionChanged = true;
-                    }
-                    item.IsSelected = false;
-                    item.PropertyChanged += item_PropertyChanged;
-                }
-
-                UISelectedMedia.Clear();
-                
-            }
-            finally
-            {
-                UIMediaCollection.ExitReaderLock();
-
-                if (isSelectionChanged)
-                {
-                    OnItemIsSelectedChanged();
-                }
-            }
-
-        }
+    
 
         public List<MediaFileItem> getSelectedItemsUIState()
         {
@@ -590,21 +486,7 @@ namespace MediaViewer.MediaFileModel
         }
 
         void item_PropertyChanged(Object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName.Equals("IsSelected"))
-            {
-                MediaFileItem item = (MediaFileItem)sender;
-                if (item.IsSelected == true)
-                {
-                    UISelectedMedia.Add(item);
-                }
-                else
-                {
-                    UISelectedMedia.Remove(item);
-                }
-                OnItemIsSelectedChanged();
-            }
-
+        {        
             if (ItemPropertiesChanged != null)
             {
                 ItemPropertiesChanged(sender, e);
@@ -618,14 +500,7 @@ namespace MediaViewer.MediaFileModel
                 NrItemsInStateChanged(this, args);
             }
         }
-
-        void OnItemIsSelectedChanged()
-        {
-            if (ItemIsSelectedChanged != null)
-            {
-                ItemIsSelectedChanged(this, EventArgs.Empty);
-            }
-        }
+      
 
         void OnNrImportedItemsChanged(MediaStateChangedEventArgs args)
         {

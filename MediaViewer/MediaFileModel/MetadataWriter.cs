@@ -152,6 +152,16 @@ namespace MediaViewer.MediaFileModel
                 xmpMetaDataWriter.appendArrayItem(Consts.XMP_NS_DC, "subject",
                     Consts.PropOptions.XMP_PropArrayIsUnordered, tag.Name, 0);
             }
+
+            if (media.Latitude != null)
+            {
+                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", media.Latitude, 0);
+            }
+
+            if (media.Longitude != null)
+            {
+                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", media.Longitude, 0);
+            }
 /*
             if (HasGeoTag == true)
             {

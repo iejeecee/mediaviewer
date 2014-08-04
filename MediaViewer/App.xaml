@@ -14,6 +14,8 @@
         <SolidColorBrush x:Key="imageGridItemBackgroundColor" Color="#FFD3D9DD"/>
         <SolidColorBrush x:Key="imageGridItemSelectedBackgroundColor" Color="LightYellow"/>
         <SolidColorBrush x:Key="imageGridItemTextColor" Color="Black"/>
+        <SolidColorBrush x:Key="imageGridBorderColor" Color="#FFDCE0EC"/>
+        <SolidColorBrush x:Key="imageGridBorderColor2" Color="#FFB8B8B8"/>
 
         <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
         <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>

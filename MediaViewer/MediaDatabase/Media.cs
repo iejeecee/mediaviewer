@@ -36,6 +36,9 @@ namespace MediaViewer.MediaDatabase
         public string Software { get; set; }
         public bool SupportsXMPMetadata { get; set; }
         public byte[] TimeStamp { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public System.DateTime FileDate { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
         public virtual Thumbnail Thumbnail { get; set; }

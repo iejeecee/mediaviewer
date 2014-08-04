@@ -40,7 +40,8 @@ namespace MediaViewer.MediaFileBrowser
         public ImageGridViewModel ImageGridViewModel
         {
             get { return imageGridViewModel; }
-            set { imageGridViewModel = value;                         
+            set { imageGridViewModel = value;
+            NotifyPropertyChanged();     
             }
         }
 
@@ -49,7 +50,9 @@ namespace MediaViewer.MediaFileBrowser
         public ImageViewModel ImageViewModel
         {
             get { return imageViewModel; }
-            set { imageViewModel = value; }
+            set { imageViewModel = value;
+            NotifyPropertyChanged();  
+            }
         }
 
         VideoViewModel videoViewModel;
@@ -57,7 +60,9 @@ namespace MediaViewer.MediaFileBrowser
         public VideoViewModel VideoViewModel
         {
             get { return videoViewModel; }
-            set { videoViewModel = value; }
+            set { videoViewModel = value;
+            NotifyPropertyChanged();  
+            }
         }
 
         object currentViewModel;
@@ -97,9 +102,8 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel = new ImagePanel.ImageViewModel();
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
-                
-            //ImageGridViewModel = new PagedImageGridViewModel(MediaFileWatcher.Instance.MediaState);
-            ImageGridViewModel = new FlatImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
+                           
+            ImageGridViewModel = new ImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
 
             CurrentViewModel = ImageGridViewModel;
 
@@ -126,12 +130,21 @@ namespace MediaViewer.MediaFileBrowser
 
             });
 
-            ExpandCommand = new Command(() =>
+            ExpandCommand = new Command<MediaFileItem>((item) =>
             {
-                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
-                if(selectedItems.Count == 0) return;
+                String location;
 
-                String location = selectedItems[0].Location;
+                if (item == null)
+                {
+                    List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    if (selectedItems.Count == 0) return;
+
+                    location = selectedItems[0].Location;
+                }
+                else
+                {
+                    location = item.Location;
+                }
 
                 if (Utils.MediaFormatConvert.isImageFile(location))
                 {                 
@@ -290,9 +303,9 @@ namespace MediaViewer.MediaFileBrowser
             set { exportSelectedItemsCommand = value; }
         }
 
-        Command expandCommand;
+        Command<MediaFileItem> expandCommand;
 
-        public Command ExpandCommand
+        public Command<MediaFileItem> ExpandCommand
         {
             get { return expandCommand; }
             set { expandCommand = value; }
