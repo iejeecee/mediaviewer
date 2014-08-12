@@ -99,10 +99,10 @@
                                 <Style>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
-                                            <Setter Property="Loading:LoadingView.Visibility" Value="Visible"/>
+                                            <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Visible"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource notLoadingConverter}}" Value="true">
-                                            <Setter Property="Loading:LoadingView.Visibility" Value="Collapsed"/>
+                                            <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Collapsed"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>

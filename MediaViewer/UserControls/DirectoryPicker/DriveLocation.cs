@@ -71,8 +71,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
 
             Name = info.Name.TrimEnd(new char[] { '\\' });
-            FullName = info.Name;
-
+          
             if (driveIdleMonitor.DrivesMonitored.Contains(Name))
             {
                 FreeSpaceBytes = info.TotalFreeSpace;

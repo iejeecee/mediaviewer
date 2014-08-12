@@ -118,7 +118,6 @@ namespace VideoPlayerControl
 
         Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
-
         
         string screenShotLocation;
 

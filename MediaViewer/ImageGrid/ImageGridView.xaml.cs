@@ -37,29 +37,44 @@ namespace MediaViewer.ImageGrid
 
             panel = null;
 
-            DataContextChanged += ImageGridView_DataContextChanged;
         }
 
         void ImageGridView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
+            if (e.OldValue is ImageGridViewModel)
+            {
+                ImageGridViewModel imageGridViewModel = e.OldValue as ImageGridViewModel;
+
+                WeakEventManager<ImageGridViewModel, EventArgs>.RemoveHandler(imageGridViewModel, "Cleared", imageGridViewModel_Cleared);
+
+                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.LastPageCommand, "Executed", imageGridViewModel_LastPageCommand);
+                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.FirstPageCommand, "Executed", imageGridViewModel_FirstPageCommand);
+                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.NextPageCommand, "Executed", imageGridViewModel_NextPageCommand);
+                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.PrevPageCommand, "Executed", imageGridViewModel_PrevPageCommand);
+            }
+
             if (e.NewValue is ImageGridViewModel)
             {
                 ImageGridViewModel imageGridViewModel = e.NewValue as ImageGridViewModel;
+
                 WeakEventManager<ImageGridViewModel,EventArgs>.AddHandler(imageGridViewModel,"Cleared",imageGridViewModel_Cleared);
 
                 WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.LastPageCommand, "Executed", imageGridViewModel_LastPageCommand);
                 WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.FirstPageCommand, "Executed", imageGridViewModel_FirstPageCommand);
                 WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.NextPageCommand, "Executed", imageGridViewModel_NextPageCommand);
                 WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.PrevPageCommand, "Executed", imageGridViewModel_PrevPageCommand);
-            } 
-
+            }
+            
         }
+
+
 
         private void imageGridViewModel_PrevPageCommand(object sender, EventArgs e)
         {
             if (panel != null)
             {
                 panel.PageUp();
+              
             }
         }
 

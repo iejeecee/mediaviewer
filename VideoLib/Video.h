@@ -142,6 +142,7 @@ public:
 
 	virtual ~Video() {
 
+		disableLibAVLogging();
 		close();
 	}
 

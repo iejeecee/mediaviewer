@@ -213,9 +213,12 @@
     <Compile Include="MetaData\ObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
-    <Compile Include="Plugin\IUploadMedia.cs" />
-    <Compile Include="Plugin\IUploadMediaData.cs" />
-    <Compile Include="Plugin\LoadPlugins.cs" />
+    <Compile Include="Plugin\IGeoTagViewModel.cs" />
+    <Compile Include="Plugin\IPluginMetadata.cs" />
+    <Compile Include="Plugin\PluginWindowViewModel.cs" />
+    <Compile Include="Plugin\PluginWindow.xaml.cs">
+      <DependentUpon>PluginWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
       <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
     </Compile>
@@ -504,6 +507,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Import\ImportView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Plugin\PluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -869,6 +876,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\geotag.ico" />
     <Resource Include="Resources\Icons\folder_open2.ico" />
     <Resource Include="Resources\Icons\folder_open.ico" />
     <Resource Include="Resources\Icons\frame.ico" />

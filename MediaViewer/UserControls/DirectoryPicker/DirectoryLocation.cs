@@ -26,14 +26,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
         {        
             Name = info.Name;
             CreationDate = info.CreationTime;
-           
-            FullName = info.FullName;
+                     
             VolumeLabel = "";
 
             //ImageUrl = "pack://application:,,,/Resources/Icons/mediafolder.ico";
-            NrImported = 0;
-
-            infoGatherTask.addLocation(this);
+            NrImported = 0;                    
                                            
             LazyLoading = true;                     
         }
@@ -130,8 +127,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                         TotalProgress++;
                     }
-
-                    FullName = newFullName;
+              
                     Name = newName;                    
                     return (true); 
 

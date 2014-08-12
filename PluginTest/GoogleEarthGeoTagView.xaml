@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:PluginTest"
+    x:Class="PluginTest.GoogleEarthGeoTagView">
+    <DataTemplate DataType="{x:Type local:GoogleEarthGeoTagViewModel}">
+        <ContentControl Content="{Binding WebBrowser}"/>      
+    </DataTemplate>
+</ResourceDictionary>

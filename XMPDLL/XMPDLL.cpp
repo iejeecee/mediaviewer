@@ -100,7 +100,7 @@ namespace XMPDLL {
 			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
 
 			bool ok;									
-
+		
 			// First we try and open the file
 			ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
 			if(!ok)

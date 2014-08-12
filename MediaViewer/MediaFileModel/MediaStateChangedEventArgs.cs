@@ -30,16 +30,22 @@ namespace MediaViewer.MediaFileModel
             else if (action == MediaStateChangedAction.Remove)
             {
                 OldItems = items;
-            }      
-           
+            }
         }
 
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaFileItem> newItems, IEnumerable<MediaFileItem> oldItems)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<String> locations)
+        {
+            this.action = action;
+           
+            OldLocations = locations;            
+        }
+   
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaFileItem> newItems, IEnumerable<String> oldLocations)
         {
             this.action = action;
 
             this.newItems = newItems;
-            this.oldItems = oldItems;
+            this.oldLocations = oldLocations;
 
         }
 
@@ -49,6 +55,14 @@ namespace MediaViewer.MediaFileModel
         {
             get { return action; }
             private set { action = value; }
+        }
+      
+        IEnumerable<String> oldLocations;
+
+        public IEnumerable<String> OldLocations
+        {
+            get { return oldLocations; }
+            private set { oldLocations = value; }
         }
 
         IEnumerable<MediaFileItem> oldItems;

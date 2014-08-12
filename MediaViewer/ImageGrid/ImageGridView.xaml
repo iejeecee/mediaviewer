@@ -10,6 +10,7 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              mc:Ignorable="d"
+             DataContextChanged="ImageGridView_DataContextChanged"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>

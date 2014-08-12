@@ -39,14 +39,8 @@ namespace MediaViewer.ImagePanel
         public ImageView()
         {
             InitializeComponent();
-
-            DataContextChanged += new DependencyPropertyChangedEventHandler(imageView_DataContextChanged);
-
-            pictureBox.Stretch = Stretch.None;
-
-            scrollViewer.SizeChanged += new SizeChangedEventHandler(scrollViewer_SizeChanged);
-
-           
+          
+            pictureBox.Stretch = Stretch.None;                   
         }
 
         private void scrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -70,28 +64,33 @@ namespace MediaViewer.ImagePanel
 
         void imageView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (!(e.NewValue is ImageViewModel)) return;
-            
-            ImageViewModel imageViewModel = (ImageViewModel)e.NewValue;
+            if (e.OldValue is ImageViewModel)
+            {
+                ImageViewModel imageViewModel = (ImageViewModel)e.OldValue;
 
-            WeakEventManager<ImageViewModel,  System.ComponentModel.PropertyChangedEventArgs>.RemoveHandler(
-                   imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+                WeakEventManager<ImageViewModel, System.ComponentModel.PropertyChangedEventArgs>.RemoveHandler(
+                    imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
 
-            WeakEventManager<ImageViewModel, System.ComponentModel.PropertyChangedEventArgs>.AddHandler(
-                   imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+                WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
+                    imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
+          
+                WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
+                    imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);           
+            }
 
-            WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
-                 imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
+            if (e.NewValue is ImageViewModel)
+            {
+                ImageViewModel imageViewModel = (ImageViewModel)e.NewValue;
+             
+                WeakEventManager<ImageViewModel, System.ComponentModel.PropertyChangedEventArgs>.AddHandler(
+                    imageViewModel, "PropertyChanged", imageViewModel_PropertyChanged);
+     
+                WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
+                    imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
 
-            WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
-                  imageViewModel, "SetNormalScaleEvent", imageViewModel_SetNormalScale);
-
-            WeakEventManager<ImageViewModel, EventArgs>.RemoveHandler(
-            imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);
-
-            WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
-                  imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);
-                        
+                WeakEventManager<ImageViewModel, EventArgs>.AddHandler(
+                    imageViewModel, "SetBestFitScaleEvent", imageViewModel_SetBestFitScale);
+            }
         }
 
         private void imageViewModel_SetBestFitScale(object sender, EventArgs e)
@@ -166,10 +165,13 @@ namespace MediaViewer.ImagePanel
 
             // normalscale
             var source = PresentationSource.FromVisual(pictureBox);
-            Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
-            transformToDevice.Invert();
-            Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
-            normalScale = actualSize.Width / image.Width;
+            if (source != null)
+            {
+                Matrix transformToDevice = source.CompositionTarget.TransformToDevice;
+                transformToDevice.Invert();
+                Size actualSize = (Size)transformToDevice.Transform(new Vector(image.PixelWidth, image.PixelHeight));
+                normalScale = actualSize.Width / image.Width;
+            }
 
             // max/minscale
             double maxWidth = ((double)MAX_IMAGE_SIZE_PIXELS_X) / image.PixelWidth;

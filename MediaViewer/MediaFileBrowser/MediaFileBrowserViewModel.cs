@@ -24,6 +24,7 @@ using MediaViewer.VideoPanel;
 using MediaViewer.VideoPreviewImage;
 using MediaViewer.Torrent;
 using MediaViewer.Progress;
+using MediaViewer.Plugin;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -102,7 +103,9 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel = new ImagePanel.ImageViewModel();
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
-                           
+
+            VideoViewModel = new VideoPanel.VideoViewModel();
+
             ImageGridViewModel = new ImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
 
             CurrentViewModel = ImageGridViewModel;
@@ -147,13 +150,15 @@ namespace MediaViewer.MediaFileBrowser
                 }
 
                 if (Utils.MediaFormatConvert.isImageFile(location))
-                {                 
-                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowImage", location);                   
-                    imageViewModel.LoadImageAsyncCommand.DoExecute(location);
+                {
+                    CurrentViewModel = ImageViewModel;
+                    ImageViewModel.LoadImageAsyncCommand.DoExecute(location);
                 }
                 else if (Utils.MediaFormatConvert.isVideoFile(location))
                 {
-                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowVideo", location);
+                    CurrentViewModel = VideoViewModel;
+
+                    //GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowVideo", location);
                     videoViewModel.OpenCommand.DoExecute(location);
                     videoViewModel.PlayCommand.DoExecute();
                 }
@@ -163,8 +168,9 @@ namespace MediaViewer.MediaFileBrowser
             });
 
             ContractCommand = new Command(() =>
-                {
-                    GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowBrowserGrid");
+                {                  
+                    CurrentViewModel = ImageGridViewModel;
+                  
                     ContractCommand.CanExecute = false;
                     ExpandCommand.CanExecute = true;
                 });
@@ -180,6 +186,12 @@ namespace MediaViewer.MediaFileBrowser
                     preview.ViewModel.Media = media;
                     preview.ShowDialog();
                 });
+
+            GeoTagCommand = new Command(() =>
+            {
+                PluginWindow pluginWindow = new PluginWindow();
+                pluginWindow.Show();
+            });
 
             CreateTorrentFileCommand = new Command(() =>
                 {
@@ -317,6 +329,14 @@ namespace MediaViewer.MediaFileBrowser
         {
             get { return contractCommand; }
             set { contractCommand = value; }
+        }
+
+        Command geoTagCommand;
+
+        public Command GeoTagCommand
+        {
+            get { return geoTagCommand; }
+            set { geoTagCommand = value; }
         }
    
         private void deleteSelectedItems()

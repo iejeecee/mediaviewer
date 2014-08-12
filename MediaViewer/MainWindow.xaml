@@ -147,6 +147,14 @@
         </ToolBarTray>
         <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
         <ImagePanel:ImageWithPagerView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Visible"/>       
-        <VideoPanel:VideoView  x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
+        <VideoPanel:VideoView   x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"
+                                OpenCommand="{Binding OpenCommand}" CloseCommand="{Binding CloseCommand}"
+                                PauseCommand="{Binding PauseCommand}" PlayCommand="{Binding PlayCommand}"
+                                IsMuted="{Binding IsMuted}" HasAudio="{Binding HasAudio}" PositionSeconds="{Binding PositionSeconds}"
+                                ScreenShotCommand="{Binding ScreenShotCommand}" FrameByFrameCommand="{Binding FrameByFrameCommand}"
+                                VideoState="{Binding VideoState}" SeekCommand="{Binding SeekCommand}"
+                                MaxVolume="{Binding MaxVolume}" MinVolume="{Binding MinVolume}" DurationSeconds="{Binding DurationSeconds}"
+                                Volume="{Binding Volume}"
+            />
     </Grid>
 </Window>

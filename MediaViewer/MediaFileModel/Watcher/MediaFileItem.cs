@@ -352,6 +352,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                     }
 
                     Media = null;
+
+                    isImported = true;
                 }
 
                 ItemState = MediaFileItemState.DELETED;
@@ -396,7 +398,7 @@ namespace MediaViewer.MediaFileModel.Watcher
                 // So only update the location when mediafilewatcher is not active.
                 Location = newLocation;
                              
-                return (isImported);
+                return (isImported = Media.IsImported);
             }
             finally
             {

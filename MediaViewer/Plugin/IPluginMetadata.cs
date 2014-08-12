@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Plugin
 {
-    public interface IUploadMediaData
+    public interface IPluginMetadata
     {
-        String Info
-        {
-            get;
-        }
+        String Name {get;}
+        String Version {get;}
     }
 }

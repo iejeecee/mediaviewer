@@ -141,8 +141,9 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                 DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
 
-                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask);
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask);           
                 Utils.Misc.insertIntoSortedCollection(selectedNode.Children, child);
+                infoGatherTask.addLocation(child);
 
                 selectedNode.IsExpanded = true;
                 treeView.SelectedItem = child;
@@ -166,18 +167,20 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
             Location parent = selectedNode.Parent as Location;
             Location newNode;
+            string fullName = selectedNode.FullName;
             parent.Children.Remove(selectedNode);
 
             if (selectedNode is DriveLocation)
             {
-                newNode = new DriveLocation(new DriveInfo(selectedNode.FullName), infoGatherTask);                           
+                newNode = new DriveLocation(new DriveInfo(fullName), infoGatherTask);                           
             }
             else
             {
-                newNode = new DirectoryLocation(new DirectoryInfo(selectedNode.FullName), infoGatherTask);
+                newNode = new DirectoryLocation(new DirectoryInfo(fullName), infoGatherTask);
             }
 
             Utils.Misc.insertIntoSortedCollection(parent.Children, newNode);
+            infoGatherTask.addLocation(newNode);
             newNode.IsExpanded = selectedNode.IsExpanded;
             treeView.SelectedItem = newNode;
                   

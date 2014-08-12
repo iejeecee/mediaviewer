@@ -58,9 +58,9 @@
     </Storyboard>
 </UserControl.Resources>
 <UserControl.Triggers>
-    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+    <!--<EventTrigger RoutedEvent="FrameworkElement.Loaded">
         <BeginStoryboard Storyboard="{StaticResource Storyboard1}"/>
-    </EventTrigger>
+    </EventTrigger>-->
 </UserControl.Triggers>
 <Grid x:Name="LayoutRoot">
     <Grid>

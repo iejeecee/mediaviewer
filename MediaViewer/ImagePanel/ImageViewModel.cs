@@ -552,7 +552,7 @@ namespace MediaViewer.ImagePanel
             {
                 if (media != null)
                 {
-                    //media.close();
+                    media.close();
                 }
                 IsLoading = false;
             }

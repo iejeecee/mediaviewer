@@ -26,6 +26,7 @@ using System.Windows.Threading;
 using MediaViewer.MediaFileModel.Watcher;
 using System.IO;
 using VideoPlayerControl;
+using MediaViewer.Plugin;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
 
@@ -60,6 +61,7 @@ namespace MediaViewer
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
 
+            initializeVideoView();
             initializeImageView();      
             initializeMediaFileBrowser();
 
@@ -74,8 +76,8 @@ namespace MediaViewer
             mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
-            Plugin.LoadPlugins loadPlugins = new Plugin.LoadPlugins();
-            loadPlugins.load();
+         
+
         }
 
         private void mainWindow_SetTitle(string newTitle)
@@ -108,6 +110,11 @@ namespace MediaViewer
             //test.Activate();
         }
 
+        void initializeVideoView()
+        {
+            VideoViewModel vm = new VideoViewModel();
+            videoView.DataContext = vm;
+        }
       
 
         void initializeImageView()

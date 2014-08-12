@@ -216,7 +216,7 @@ namespace MediaViewer.MediaFileModel
 
         public void delete(IEnumerable<MediaFileItem> removeItems, CancellationToken token)
         {
-            List<MediaFileItem> deletedImportedItems = new List<MediaFileItem>();
+            List<String> deletedImportedLocations = new List<String>();
             List<MediaFileItem> deletedItems = new List<MediaFileItem>();
            
             try
@@ -233,7 +233,7 @@ namespace MediaViewer.MediaFileModel
 
                     if (isImported)
                     {
-                        deletedImportedItems.Add(item);
+                        deletedImportedLocations.Add(item.Location);
                     }
                   
                     deletedItems.Add(item);
@@ -248,10 +248,10 @@ namespace MediaViewer.MediaFileModel
                     removeUIState(deletedItems);
                 }
 
-                if (deletedImportedItems.Count > 0)
+                if (deletedImportedLocations.Count > 0)
                 {
                     OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Remove, deletedImportedItems));
+                        MediaStateChangedAction.Remove, deletedImportedLocations));
                 }
              
             }
@@ -272,7 +272,7 @@ namespace MediaViewer.MediaFileModel
             ICancellableOperationProgress progress)
         {
            
-            List<MediaFileItem> deletedImportedItems = new List<MediaFileItem>();
+            List<String> deletedImportedLocations = new List<String>();
             List<MediaFileItem> addedImportedItems = new List<MediaFileItem>();
    
             try
@@ -291,7 +291,9 @@ namespace MediaViewer.MediaFileModel
                     String location = locationsEnum.Current;
              
                     if (!item.Location.Equals(location))
-                    {                        
+                    {
+                        String oldLocation = item.Location;
+
                         bool isImported = item.move(location, progress);
                         if (MediaFileWatcher.Instance.IsWatcherEnabled &&
                             !FileUtils.getPathWithoutFileName(location).Equals(MediaFileWatcher.Instance.Path))
@@ -304,8 +306,8 @@ namespace MediaViewer.MediaFileModel
                         
                         if (isImported)
                         {
-                            deletedImportedItems.Add(item);
-                            addedImportedItems.Add(MediaFileItem.Factory.create(location));
+                            deletedImportedLocations.Add(oldLocation);
+                            addedImportedItems.Add(item);
                         }
                     }
              
@@ -314,10 +316,10 @@ namespace MediaViewer.MediaFileModel
             }
             finally
             {
-                if (deletedImportedItems.Count > 0)
+                if (deletedImportedLocations.Count > 0)
                 {
                     OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Replace, addedImportedItems, deletedImportedItems));
+                        MediaStateChangedAction.Replace, addedImportedItems, deletedImportedLocations));
                 }
 
             }

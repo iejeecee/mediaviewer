@@ -35,7 +35,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 Location location = locationQueue.Take(token);
 
                 using (MediaDbCommands mediaCommand = new MediaDbCommands())
-                {
+                {                                   
                     location.NrImported = mediaCommand.getNrMediaInLocation(location.FullName);
                 }
             }

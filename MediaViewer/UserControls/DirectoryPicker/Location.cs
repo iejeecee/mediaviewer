@@ -28,9 +28,9 @@ namespace MediaViewer.UserControls.DirectoryPicker
             this.infoGatherTask = infoGatherTask;
 
             MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
-      
+                     
         }
-
+      
         protected virtual void importStateChanged(object sender, MediaStateChangedEventArgs e)
         {
 
@@ -38,19 +38,19 @@ namespace MediaViewer.UserControls.DirectoryPicker
             {
                 foreach (MediaFileItem item in e.NewItems)
                 {
-                    if (item.Location.StartsWith(fullName))
+                    if (item.Location.StartsWith(FullName))
                     {
                         NrImported++;
                     }
                 }
             }
 
-            if (e.OldItems != null)
+            if (e.OldLocations != null)
             {
 
-                foreach (MediaFileItem item in e.OldItems)
+                foreach (String location in e.OldLocations)
                 {
-                    if (item.Location.StartsWith(fullName))
+                    if (location.StartsWith(FullName))
                     {
 
                         NrImported--;
@@ -71,23 +71,29 @@ namespace MediaViewer.UserControls.DirectoryPicker
         protected override void LoadChildren()
         {       
             LoadingChildrenTask = Task.Run(() =>
-            {
-                List<SharpTreeNode> nodes = getDirectoryNodes(FullName);
+            {                          
+                List<SharpTreeNode> directories = createDirectoryNodes(FullName);
+
                 App.Current.Dispatcher.Invoke(() =>
                 {
-                    Children.AddRange(nodes);                   
+                    Children.AddRange(directories);
                 });
+
+                foreach (SharpTreeNode directory in directories)
+                {
+                    ((Location)directory).infoGatherTask.addLocation((Location)directory);
+                }
             });
                 
         }
         
-        List<SharpTreeNode> getDirectoryNodes(String fullName)
+        List<SharpTreeNode> createDirectoryNodes(String location)
         {
             List<SharpTreeNode> directories = new List<SharpTreeNode>();
 
             try
-            {
-                IEnumerable<DirectoryInfo> dirInfos = new DirectoryInfo(fullName).EnumerateDirectories();
+            {                
+                IEnumerable<DirectoryInfo> dirInfos = new DirectoryInfo(location).EnumerateDirectories();
 
                 foreach (DirectoryInfo dirInfo in dirInfos)
                 {
@@ -95,7 +101,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                     {
                         continue;
                     }
-
+                    
                     Location directory = new DirectoryLocation(dirInfo, infoGatherTask);
 
                     directories.Add(directory);
@@ -129,15 +135,25 @@ namespace MediaViewer.UserControls.DirectoryPicker
             RaisePropertyChanged("Icon");
             }
         }
-
-        String fullName;
-
+      
         public String FullName
         {
-          get { return fullName; }
-          set { fullName = value;
-          RaisePropertyChanged("FullName");
+          get {
+
+              String fullName = this is DriveLocation ? Name + "\\" : Name;
+              Location parent = Parent as Location;
+       
+              while (parent != null && !parent.IsRoot)
+              {
+                  fullName = parent.Name + "\\" + fullName;
+
+                  parent = parent.Parent as Location;           
+              }
+
+              return (fullName);
+          
           }
+          
         }
 
         String name;
