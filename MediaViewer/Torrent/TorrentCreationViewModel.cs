@@ -11,20 +11,31 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
 
 namespace MediaViewer.Torrent
 {
     public class TorrentCreationViewModel : CloseableObservableObject
     {
+   
+        AppSettings Settings
+        {
+            get;
+            set;
+        }
+
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public TorrentCreationViewModel()
-        {           
+        public TorrentCreationViewModel(AppSettings settings)
+        {
+            Settings = settings;
+
             IsPrivate = false;                     
             IsCommentEnabled = false;
 
             OutputPathHistory = new ObservableCollection<string>();
-            AnnounceURLHistory = Settings.AppSettings.Instance.TorrentAnnounceHistory;
+            AnnounceURLHistory = settings.TorrentAnnounceHistory;
             if (AnnounceURLHistory.Count > 0)
             {
                 AnnounceURL = AnnounceURLHistory[0];
@@ -52,7 +63,7 @@ namespace MediaViewer.Torrent
             OkCommand = new Command(async () =>
                 {
                     CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                    TorrentCreationProgressViewModel vm = new TorrentCreationProgressViewModel();
+                    TorrentCreationProgressViewModel vm = new TorrentCreationProgressViewModel(Settings);
                     progress.DataContext = vm;
                     Task task = vm.createTorrentAsync(this);
                     progress.Show();                    

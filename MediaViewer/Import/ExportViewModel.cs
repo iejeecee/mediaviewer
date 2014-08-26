@@ -7,6 +7,7 @@ using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -16,12 +17,22 @@ using System.Windows;
 
 namespace MediaViewer.Export
 {
+
     class ExportViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public ExportViewModel()
+     
+        MediaState MediaState
         {
+            get;
+            set;
+        }
+      
+        public ExportViewModel(MediaState mediaState)
+        {
+
+            MediaState = mediaState;
+
             WindowTitle = "Exporting Media";
             WindowIcon = "pack://application:,,,/Resources/Icons/export.ico";
 
@@ -75,7 +86,7 @@ namespace MediaViewer.Export
                     {
                         ItemInfo = "Reading Metadata: " + item.Location;
 
-                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO, CancellationToken);
+                        MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO, CancellationToken);
                         if (item.Media is UnknownMedia)
                         {
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
@@ -94,7 +105,7 @@ namespace MediaViewer.Export
 
                     ItemInfo = "Exporting: " + item.Location;
 
-                    MediaFileWatcher.Instance.MediaState.export(item, CancellationToken);
+                    MediaState.export(item, CancellationToken);
 
                     ItemProgress = 100;
                     TotalProgress++;

@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaFileModel
 {
+ 
     public class MediaState : ObservableObject, IMediaState, IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -46,13 +48,12 @@ namespace MediaViewer.MediaFileModel
 
         public MediaState()
         {
-
             uiMediaCollection = new MediaLockedCollection(true);
                    
             debugOutput = false;
 
-            MediaStateInfo = "MediaStateInfo Not Set";
-            MediaStateDateTime = DateTime.MinValue;
+            MediaStateInfo = "Empty";
+            MediaStateDateTime = DateTime.Now;
             MediaStateType = MediaStateType.Directory;
 
             NrItemsInState = 0;

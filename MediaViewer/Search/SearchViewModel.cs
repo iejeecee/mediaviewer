@@ -6,6 +6,7 @@ using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -32,9 +33,13 @@ namespace MediaViewer.Search
             }
         }
 
-        public SearchViewModel()
+        MediaFileWatcher mediaFileWatcher;
+
+      
+        public SearchViewModel(MediaFileWatcher mediaFileWatcher)
         {
-            
+            this.mediaFileWatcher = mediaFileWatcher;
+
             RecurseSubDirectories = false;
             Query = new SearchQuery();      
 
@@ -130,9 +135,9 @@ namespace MediaViewer.Search
                 item.ItemState = MediaFileItemState.EMPTY;
             }
 */
-            MediaFileWatcher.Instance.IsWatcherEnabled = false;          
-            MediaFileWatcher.Instance.MediaState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
-            MediaFileWatcher.Instance.MediaState.addUIState(results);
+            mediaFileWatcher.IsWatcherEnabled = false;
+            mediaFileWatcher.MediaState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
+            mediaFileWatcher.MediaState.addUIState(results);
         }
 
         public List<MediaFileItem> dbSearch(SearchQuery searchQuery)
@@ -154,7 +159,7 @@ namespace MediaViewer.Search
         public List<MediaFileItem> diskTagSearch(List<Tag> tags, bool recurseSubDirectories, CancellationToken token)
         {
 
-            String searchPath = MediaFileWatcher.Instance.Path;
+            String searchPath = mediaFileWatcher.Path;
 
             List<MediaFileItem> mediaItems = new List<MediaFileItem>();
             List<MediaFileItem> matches = new List<MediaFileItem>();

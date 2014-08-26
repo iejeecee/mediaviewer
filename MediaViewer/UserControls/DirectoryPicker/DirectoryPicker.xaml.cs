@@ -38,7 +38,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             cancelInfoGatherTaskTokenSource = new CancellationTokenSource();
 
             infoGatherTask = new InfoGatherTask(cancelInfoGatherTaskTokenSource.Token);
-            RootLocation root = new RootLocation(infoGatherTask);
+            RootLocation root = new RootLocation(infoGatherTask, MediaFileWatcher.Instance.MediaState);
             treeView.Root = root;
             treeView.IsVisibleChanged += treeView_IsVisibleChanged;
             root.NodePropertyChanged += root_NodePropertyChanged;
@@ -141,7 +141,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                 DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
 
-                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask);           
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask, MediaFileWatcher.Instance.MediaState);           
                 Utils.Misc.insertIntoSortedCollection(selectedNode.Children, child);
                 infoGatherTask.addLocation(child);
 
@@ -172,11 +172,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
             if (selectedNode is DriveLocation)
             {
-                newNode = new DriveLocation(new DriveInfo(fullName), infoGatherTask);                           
+                newNode = new DriveLocation(new DriveInfo(fullName), infoGatherTask, MediaFileWatcher.Instance.MediaState);                           
             }
             else
             {
-                newNode = new DirectoryLocation(new DirectoryInfo(fullName), infoGatherTask);
+                newNode = new DirectoryLocation(new DirectoryInfo(fullName), infoGatherTask, MediaFileWatcher.Instance.MediaState);
             }
 
             Utils.Misc.insertIntoSortedCollection(parent.Children, newNode);

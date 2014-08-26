@@ -24,25 +24,28 @@ using MediaViewer.VideoPanel;
 using MediaViewer.VideoPreviewImage;
 using MediaViewer.Torrent;
 using MediaViewer.Progress;
-using MediaViewer.Plugin;
+using System.ComponentModel.Composition;
+using Microsoft.Practices.Prism.Regions;
+using MediaViewer.MetaData;
 
 namespace MediaViewer.MediaFileBrowser
 {
-    class MediaFileBrowserViewModel : ObservableObject
+   
+    public class MediaFileBrowserViewModel : ObservableObject
     {
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-      
+           
         private MediaFileWatcher mediaFileWatcher;
-        private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);       
+        private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
+             
+        object currentViewModel;
 
-        ImageGridViewModel imageGridViewModel;
-
-        public ImageGridViewModel ImageGridViewModel
+        public object CurrentViewModel
         {
-            get { return imageGridViewModel; }
-            set { imageGridViewModel = value;
-            NotifyPropertyChanged();     
+            get { return currentViewModel; }
+            set { currentViewModel = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -51,8 +54,8 @@ namespace MediaViewer.MediaFileBrowser
         public ImageViewModel ImageViewModel
         {
             get { return imageViewModel; }
-            set { imageViewModel = value;
-            NotifyPropertyChanged();  
+            private set { imageViewModel = value;
+            NotifyPropertyChanged();
             }
         }
 
@@ -62,16 +65,16 @@ namespace MediaViewer.MediaFileBrowser
         {
             get { return videoViewModel; }
             set { videoViewModel = value;
-            NotifyPropertyChanged();  
+            NotifyPropertyChanged();
             }
         }
 
-        object currentViewModel;
+        ImageGridViewModel imageGridViewModel;
 
-        public object CurrentViewModel
+        public ImageGridViewModel ImageGridViewModel
         {
-            get { return currentViewModel; }
-            set { currentViewModel = value;
+            get { return imageGridViewModel; }
+            set { imageGridViewModel = value;
             NotifyPropertyChanged();
             }
         }
@@ -96,22 +99,20 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-     
-   
-        public MediaFileBrowserViewModel() {
+        IRegionManager regionManager;
+          
+        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager) {
 
-            ImageViewModel = new ImagePanel.ImageViewModel();
+            this.mediaFileWatcher = mediaFileWatcher;
+            this.regionManager = regionManager;
+
+            ImageViewModel = new ImagePanel.ImageViewModel(mediaFileWatcher.MediaState);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            VideoViewModel = new VideoPanel.VideoViewModel();
+            VideoViewModel = new VideoPanel.VideoViewModel(mediaFileWatcher);
+            ImageGridViewModel = new ImageGrid.ImageGridViewModel(mediaFileWatcher.MediaState, regionManager);
 
-            ImageGridViewModel = new ImageGridViewModel(MediaFileWatcher.Instance.MediaState);     
-
-            CurrentViewModel = ImageGridViewModel;
-
-            mediaFileWatcher = MediaFileWatcher.Instance;
-         
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
       
             ImportSelectedItemsCommand = new Command(() =>
@@ -122,11 +123,11 @@ namespace MediaViewer.MediaFileBrowser
 
             ExportSelectedItemsCommand = new Command(async () =>
             {
-                List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                List<MediaFileItem> selectedItems = mediaFileWatcher.MediaState.getSelectedItemsUIState();
                 if (selectedItems.Count == 0) return;
 
                 CancellableOperationProgressView export = new CancellableOperationProgressView();
-                ExportViewModel vm = new ExportViewModel();
+                ExportViewModel vm = new ExportViewModel(mediaFileWatcher.MediaState);
                 export.DataContext = vm;
                 export.Show();            
                 await vm.exportAsync(selectedItems);
@@ -139,7 +140,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 if (item == null)
                 {
-                    List<MediaFileItem> selectedItems = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    List<MediaFileItem> selectedItems = mediaFileWatcher.MediaState.getSelectedItemsUIState();
                     if (selectedItems.Count == 0) return;
 
                     location = selectedItems[0].Location;
@@ -151,34 +152,29 @@ namespace MediaViewer.MediaFileBrowser
 
                 if (Utils.MediaFormatConvert.isImageFile(location))
                 {
-                    CurrentViewModel = ImageViewModel;
-                    ImageViewModel.LoadImageAsyncCommand.DoExecute(location);
+
+                    navigateToImageView(location);
+              
                 }
                 else if (Utils.MediaFormatConvert.isVideoFile(location))
                 {
-                    CurrentViewModel = VideoViewModel;
-
-                    //GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_ShowVideo", location);
-                    videoViewModel.OpenCommand.DoExecute(location);
-                    videoViewModel.PlayCommand.DoExecute();
+                    navigateToVideoView(location);
                 }
 
-                ContractCommand.CanExecute = true;
-                ExpandCommand.CanExecute = false;
+                
             });
 
             ContractCommand = new Command(() =>
-                {                  
-                    CurrentViewModel = ImageGridViewModel;
-                  
-                    ContractCommand.CanExecute = false;
-                    ExpandCommand.CanExecute = true;
+                {
+                    navigateToImageGrid();
+
                 });
+
             ContractCommand.CanExecute = false;
 
             CreateVideoPreviewImagesCommand = new Command(() =>
                 {
-                    List<MediaFileItem> media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    List<MediaFileItem> media = mediaFileWatcher.MediaState.getSelectedItemsUIState();
                     if (media.Count == 0) return;
 
                     VideoPreviewImageView preview = new VideoPreviewImageView();
@@ -187,15 +183,11 @@ namespace MediaViewer.MediaFileBrowser
                     preview.ShowDialog();
                 });
 
-            GeoTagCommand = new Command(() =>
-            {
-                PluginWindow pluginWindow = new PluginWindow();
-                pluginWindow.Show();
-            });
+      
 
             CreateTorrentFileCommand = new Command(() =>
                 {
-                    List<MediaFileItem> media = MediaFileWatcher.Instance.MediaState.getSelectedItemsUIState();
+                    List<MediaFileItem> media = mediaFileWatcher.MediaState.getSelectedItemsUIState();
                     if (media.Count == 0) return;
 
                     try
@@ -203,7 +195,7 @@ namespace MediaViewer.MediaFileBrowser
                         TorrentCreationView torrent = new TorrentCreationView();
 
                         torrent.ViewModel.Media = media;
-                        torrent.ViewModel.PathRoot = MediaFileWatcher.Instance.Path;
+                        torrent.ViewModel.PathRoot = mediaFileWatcher.Path;
 
                         torrent.ShowDialog();
                     }
@@ -265,15 +257,7 @@ namespace MediaViewer.MediaFileBrowser
         }
      
 
-        private void metaDataToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-           
-        }
-
-        private void geoTagToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-            
-        }
+      
 
         Command createVideoPreviewImagesCommand;
 
@@ -330,15 +314,7 @@ namespace MediaViewer.MediaFileBrowser
             get { return contractCommand; }
             set { contractCommand = value; }
         }
-
-        Command geoTagCommand;
-
-        public Command GeoTagCommand
-        {
-            get { return geoTagCommand; }
-            set { geoTagCommand = value; }
-        }
-   
+      
         private void deleteSelectedItems()
         {
 
@@ -368,91 +344,73 @@ namespace MediaViewer.MediaFileBrowser
 
         }
 
-        private void renameImageToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
+        public void navigateToMetaData()
         {
+            Uri MetaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
 
-
-        }
-        private void selectAllToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-
-           // imageGrid.setSelectedForAllImages(true);
-        }
-        private void deselectAllToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-
-            //imageGrid.setSelectedForAllImages(false);
-        }
-        private void cutToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-
-            
-        }
-        private void copyToolStripMenuItem_MouseDown(System.Object sender, ImageGridMouseEventArgs e)
-        {
-
+            regionManager.RequestNavigate(RegionNames.MediaFileBrowserRightTabRegion, MetaDataViewUri, (result) =>
+            {
            
+            });
+
         }
 
-
-        private void moveButton_Click(System.Object sender, System.EventArgs e)
+        public void navigateToImageGrid()
         {
-            /*
-                             List<MediaPreviewAsyncState > images = imageGrid.getSelectedImageData();	
-                             if(images.Count == 0) return;
+            Uri ImageGridViewUri = new Uri(typeof(ImageGridView).FullName, UriKind.Relative);
 
-                             FolderBrowserDialog dialog = new FolderBrowserDialog();
+            NavigationParameters navigationParams = new NavigationParameters();        
+            navigationParams.Add("viewModel", ImageGridViewModel);
 
-                             dialog.RootFolder = Environment.SpecialFolder.MyComputer;
-                             dialog.SelectedPath = mediaFileWatcher.Path;
-                             dialog.Description = L"Move " + Convert.ToString(images.Count) + L" image(s) to";
+            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageGridViewUri, (result) =>
+            {
+                CurrentViewModel = ImageGridViewModel;
 
-                             if(dialog.ShowDialog() == DialogResult.OK) {
+                ContractCommand.CanExecute = false;
+                ExpandCommand.CanExecute = true;
+            }, navigationParams);
 
-                                 for(int i = 0; i < images.Count; i++) {
-
-                                     string fileName = Path.GetFileName(images[i].ImageLocation);
-                                     string destFileName = dialog.SelectedPath + "\\" + fileName;
-
-                                     if(File.Exists(destFileName)) {
-
-                                         DialogResult result = MessageBox.Show(destFileName + L"\n already exists, do you want to overwrite?", "Overwrite File?",
-                                             MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-
-                                         if(result == DialogResult.Yes) {
-
-                                             File.Delete(destFileName);
-
-                                         } else if(result == DialogResult.No) {
-
-                                             continue;
-
-                                         } else if(result == DialogResult.Cancel) {
-
-                                             break;
-                                         }
-
-                                     }
-
-                                     File.Move(images[i].ImageLocation, destFileName);
-
-                                 }
-
-                             }
-             */
+               
         }
-    
 
-        private void imageGrid_MouseEnter(System.Object sender, System.EventArgs e)
+        public void navigateToVideoView(string location)
         {
+            Uri VideoViewUri = new Uri(typeof(VideoView).FullName, UriKind.Relative);
 
+            NavigationParameters navigationParams = new NavigationParameters();
+            navigationParams.Add("location", location);          
+            navigationParams.Add("viewModel", VideoViewModel);
+
+            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>
+            {
+                CurrentViewModel = VideoViewModel;
+
+                ContractCommand.CanExecute = true;
+                ExpandCommand.CanExecute = false;
+
+            }, navigationParams);
 
         }
-        private void directoryBrowser_MouseEnter(System.Object sender, System.EventArgs e)
+
+        public void navigateToImageView(string location)
         {
+            Uri ImageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
 
+            NavigationParameters navigationParams = new NavigationParameters();
+            navigationParams.Add("location", location);
+            navigationParams.Add("viewModel", ImageViewModel);
+           
+            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageViewUri, (result) =>
+            {
+                CurrentViewModel = ImageViewModel;
+
+                ContractCommand.CanExecute = true;
+                ExpandCommand.CanExecute = false;
+
+            }, navigationParams);
 
         }
+                   
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
         {
 

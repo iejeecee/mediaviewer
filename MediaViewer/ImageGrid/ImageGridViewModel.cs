@@ -14,6 +14,9 @@ using System.Collections.Specialized;
 using MediaViewer.MediaFileModel.Watcher;
 using System.ComponentModel;
 using MediaViewer.MediaDatabase;
+using Microsoft.Practices.Prism.Regions;
+using System.Windows.Input;
+using MediaViewer.Pager;
 
 namespace MediaViewer.ImageGrid
 {
@@ -57,7 +60,7 @@ namespace MediaViewer.ImageGrid
         ISOSpeedRating
     }
     
-    class ImageGridViewModel : ObservableObject
+    public class ImageGridViewModel : ObservableObject, IPageable
     {
 
         IMediaState mediaState;
@@ -69,10 +72,17 @@ namespace MediaViewer.ImageGrid
                 return (mediaState);
             }
         }
+
+        IRegionManager regionManager;
+
+        public IRegionManager RegionManager
+        {
+            get { return regionManager; }            
+        }
     
         int sortedItemEnd;
                   
-        public ImageGridViewModel(IMediaState mediaState)
+        public ImageGridViewModel(IMediaState mediaState, IRegionManager regionManager)
         {
             if (mediaState == null)
             {
@@ -80,12 +90,12 @@ namespace MediaViewer.ImageGrid
             }
 
             this.mediaState = mediaState;
+            this.regionManager = regionManager;
                       
             NrGridColumns = 4;
 
-            Media = new ObservableCollection<MediaFileItem>();
-            MediaLock = new Object();
-            BindingOperations.EnableCollectionSynchronization(Media, MediaLock);
+            Media = new ObservableCollection<MediaFileItem>();      
+            BindingOperations.EnableCollectionSynchronization(Media, Media);
 
             filterMode = ImageGrid.FilterMode.All;
             sortMode = ImageGrid.SortMode.Name;
@@ -140,16 +150,7 @@ namespace MediaViewer.ImageGrid
             set { selectedMedia = value; }
             get { return selectedMedia; }
         }
-
-        object mediaLock;
-
-        protected object MediaLock
-        {
-            get { return mediaLock; }
-            set { mediaLock = value; }
-        }
-
-     
+          
         int nrGridColumns;
 
         public int NrGridColumns
@@ -247,7 +248,7 @@ namespace MediaViewer.ImageGrid
 
         public void selectAll()
         {
-            lock (mediaLock)
+            lock (Media)
             {
                 foreach (MediaFileItem item in Media)
                 {
@@ -261,7 +262,7 @@ namespace MediaViewer.ImageGrid
 
         public void deselectAll()
         {
-            lock (mediaLock)
+            lock (Media)
             {
                 foreach (MediaFileItem item in Media)
                 {
@@ -744,7 +745,7 @@ namespace MediaViewer.ImageGrid
 
        private void ImageGridViewModel_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
        {
-           lock (MediaLock)
+           lock (Media)
            {
                switch (e.Action)
                {
@@ -784,7 +785,7 @@ namespace MediaViewer.ImageGrid
          
        void reSort(MediaFileItem item)
        {
-           lock (MediaLock)
+           lock (Media)
            {
                remove(item);
                add(item);
@@ -793,7 +794,7 @@ namespace MediaViewer.ImageGrid
 
        void remove(MediaFileItem item, bool selectedMediaOnly = false)
        {
-           lock (MediaLock)
+           lock (Media)
            {
                if (selectedMediaOnly == false)
                {
@@ -818,7 +819,7 @@ namespace MediaViewer.ImageGrid
 
        void add(MediaFileItem item)
        {
-           lock (MediaLock)
+           lock (Media)
            {
                switch (FilterMode)
                {
@@ -845,7 +846,7 @@ namespace MediaViewer.ImageGrid
        
        void insertSorted(MediaFileItem item, bool insertInSelectedMediaOnly = false) {
 
-           lock (MediaLock)
+           lock (Media)
            {
                if (insertInSelectedMediaOnly == false)
                {
@@ -871,7 +872,7 @@ namespace MediaViewer.ImageGrid
 
        void clearMedia()
        {
-           lock (MediaLock)
+           lock (Media)
            {
                Media.Clear();
                sortedItemEnd = 0;

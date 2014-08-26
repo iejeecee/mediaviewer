@@ -22,47 +22,62 @@ using MediaViewer.Pager;
 using VideoPlayerControl;
 using MediaViewer.ImagePanel;
 using System.ComponentModel;
+using System.ComponentModel.Composition;
+using Microsoft.Practices.Prism.Regions;
+using Microsoft.Practices.Prism.Mvvm;
+using MediaViewer.MetaData;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.GlobalEvents;
+using Microsoft.Practices.ServiceLocation;
 
 namespace MediaViewer.MediaFileBrowser
 {
     /// <summary>
     /// Interaction logic for MediaFileBrowserControl.xaml
     /// </summary>
-    public partial class MediaFileBrowserView : UserControl
+    [Export]
+    public partial class MediaFileBrowserView : UserControl, IRegionMemberLifetime, INavigationAware
     {
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        MediaFileBrowserViewModel mediaFileBrowserViewModel;
-        
-     
-        public MediaFileBrowserView()
+        MediaFileBrowserViewModel MediaFileBrowserViewModel
         {
-            InitializeComponent();
-           
-            DataContext = mediaFileBrowserViewModel = new MediaFileBrowserViewModel();         
-            directoryPicker.DataContext = DataContext;
-                                     
-            metaDataView.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
-            
-            pager.DataContext = mediaFileBrowserViewModel.ImageGridViewModel;
+            get;
+            set;
+        }
+    
+        [ImportingConstructor]
+        public MediaFileBrowserView(IRegionManager regionManager, IEventAggregator eventAggregator)
+        {
+            Microsoft.Practices.Prism.Regions.RegionManager.SetRegionManager(this, regionManager);
 
-            PropertyChangedEventManager.AddHandler(mediaFileBrowserViewModel, selectedViewModelChanged, "CurrentViewModel");
-                               
+            InitializeComponent();
+
+            //MediaFileBrowserViewModel = new MediaFileBrowserViewModel(MediaFileWatcher.Instance, regionManager);
+            
+            //DataContext = MediaFileBrowserViewModel;
+
+            /*this.Loaded += (s, e) =>
+            {
+                MediaFileBrowserViewModel.navigateToMetaData();
+                MediaFileBrowserViewModel.navigateToImageGrid();
+            };*/
+                                      
         }
 
         private void selectedViewModelChanged(object sender, PropertyChangedEventArgs e)
         {
-            pager.DataContext = mediaFileBrowserViewModel.CurrentViewModel;
-            metaDataView.DataContext = mediaFileBrowserViewModel.CurrentViewModel;
+            //pager.DataContext = mediaFileBrowserViewModel.CurrentViewModel;
+            //metaDataView.DataContext = mediaFileBrowserViewModel.CurrentViewModel;
 
         }
 
         private void mediaFileBrowser_ToggleFullScreen()
         {
-            Visibility mode;
+            /*Visibility mode;
 
-            if (pager.Visibility == System.Windows.Visibility.Visible)
+           if (pager.Visibility == System.Windows.Visibility.Visible)
             {
                 mode = System.Windows.Visibility.Collapsed;
             }
@@ -76,14 +91,41 @@ namespace MediaViewer.MediaFileBrowser
             browserTabControl.Visibility = mode;
             metaDataTabControl.Visibility = mode;
             //imageOptionsGrid.Visibility = mode;
+             */
         }
 
         private void selectedMediaDataGridView_RowDoubleClick(object sender, MediaFileItem e)
         {
-            mediaFileBrowserViewModel.ExpandCommand.DoExecute(e);
+            MediaFileBrowserViewModel.ExpandCommand.DoExecute(e);
         }
-        
-       
+
+        public bool KeepAlive
+        {
+            get { return (true); }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return (true);
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            MediaFileBrowserViewModel = (MediaFileBrowserViewModel)navigationContext.Parameters["viewModel"];
+            DataContext = MediaFileBrowserViewModel;
+
+            if (MediaFileBrowserViewModel.CurrentViewModel == null)
+            {
+                MediaFileBrowserViewModel.navigateToMetaData();
+                MediaFileBrowserViewModel.navigateToImageGrid();
+            }
+
+        }
     }
         
 }

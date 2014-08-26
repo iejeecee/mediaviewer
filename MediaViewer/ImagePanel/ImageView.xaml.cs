@@ -14,13 +14,19 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.ComponentModel.Composition;
+using Microsoft.Practices.Prism.Regions;
+using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.MediaFileBrowser;
 
 namespace MediaViewer.ImagePanel
 {
     /// <summary>
     /// Interaction logic for ImageView.xaml
     /// </summary>
-    public partial class ImageView : UserControl
+    [Export]
+    [PartCreationPolicy(CreationPolicy.NonShared)]
+    public partial class ImageView : UserControl, IRegionMemberLifetime, INavigationAware
     {
         const int MAX_IMAGE_SIZE_PIXELS_X = 8096;
         const int MAX_IMAGE_SIZE_PIXELS_Y = 16192;
@@ -36,11 +42,15 @@ namespace MediaViewer.ImagePanel
         double autoFitScale;  
         double normalScale;
 
+        ImageViewModel ViewModel { get; set; }
+
         public ImageView()
         {
             InitializeComponent();
           
-            pictureBox.Stretch = Stretch.None;                   
+            pictureBox.Stretch = Stretch.None;
+
+        
         }
 
         private void scrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -261,6 +271,34 @@ namespace MediaViewer.ImagePanel
             Mouse.OverrideCursor = null;
         }
 
-      
+        public bool KeepAlive
+        {
+            get { return (true); }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return (true);
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            ViewModel = (ImageViewModel)navigationContext.Parameters["viewModel"];
+            DataContext = ViewModel;
+                      
+            String location = (String)navigationContext.Parameters["location"];
+
+            if (!String.IsNullOrEmpty(location))
+            {
+                ViewModel.LoadImageAsyncCommand.DoExecute(location);
+            }
+
+              
+        }
     }
 }

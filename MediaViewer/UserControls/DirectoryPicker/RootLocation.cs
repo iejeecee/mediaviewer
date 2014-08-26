@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.TreeView;
 using MediaViewer.MediaFileModel;
+using MediaViewer.MediaFileModel.Watcher;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -15,7 +16,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
     {
         public event EventHandler<Location> NodePropertyChanged;
         
-        public RootLocation(InfoGatherTask infoGatherTask) : base(infoGatherTask)
+        public RootLocation(InfoGatherTask infoGatherTask, MediaState mediaState) : base(infoGatherTask, mediaState)
         {            
             LazyLoading = true;
                       
@@ -48,7 +49,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 DriveInfo[] drivesArray = DriveInfo.GetDrives();
                 foreach (DriveInfo driveInfo in drivesArray)
                 {
-                    Location drive = new DriveLocation(driveInfo, infoGatherTask);
+                    Location drive = new DriveLocation(driveInfo, infoGatherTask, MediaFileWatcher.Instance.MediaState);
 
                     drives.Add(drive);
                 }

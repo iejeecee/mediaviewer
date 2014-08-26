@@ -9,6 +9,7 @@ using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -18,17 +19,18 @@ using System.Windows;
 
 namespace MediaViewer.Import
 {
+   
     class ImportViewModel : CloseableObservableObject
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public ImportViewModel()
+  
+        public ImportViewModel(MediaFileWatcher mediaFileWatcher)
         {
             
             OkCommand = new Command(async () =>
             {
                 CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                ImportProgressViewModel vm = new ImportProgressViewModel();
+                ImportProgressViewModel vm = new ImportProgressViewModel(mediaFileWatcher.MediaState);
                 progress.DataContext = vm;
                 progress.Show();
                 Task t = vm.importAsync(IncludeLocations, ExcludeLocations);
@@ -43,7 +45,7 @@ namespace MediaViewer.Import
           
             IncludeLocations = new ObservableCollection<ImportExportLocation>();
 
-            IncludeLocations.Add(new ImportExportLocation(MediaFileWatcher.Instance.Path));
+            IncludeLocations.Add(new ImportExportLocation(mediaFileWatcher.Path));
 
             AddIncludeLocationCommand = new Command(new Action(() =>
             {
@@ -52,7 +54,7 @@ namespace MediaViewer.Import
 
                 if (SelectedIncludeLocation == null)
                 {
-                    vm.MovePath = MediaFileWatcher.Instance.Path;
+                    vm.MovePath = mediaFileWatcher.Path;
                 }
                 else
                 {
@@ -106,7 +108,7 @@ namespace MediaViewer.Import
 
                 if (SelectedExcludeLocation == null)
                 {
-                    vm.MovePath = MediaFileWatcher.Instance.Path;
+                    vm.MovePath = mediaFileWatcher.Path;
                 }
                 else
                 {

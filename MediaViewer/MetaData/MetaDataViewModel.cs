@@ -16,12 +16,15 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
+using Microsoft.Practices.Prism.Regions;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataViewModel : ObservableObject
-    {
 
+    class MetaDataViewModel : ObservableObject
+    {             
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public event EventHandler ItemsModified;
@@ -57,8 +60,15 @@ namespace MediaViewer.MetaData
             
         }
 
-        public MetaDataViewModel()
+        public override string ToString()
         {
+            return ("Metadata");
+        }
+     
+        public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
+        {            
+            //Items = new ObservableCollection<MediaFileItem>();
+
             Tags = new ObservableCollection<Tag>();
             tagsLock = new Object();
             BindingOperations.EnableCollectionSynchronization(Tags, tagsLock);      
@@ -82,7 +92,7 @@ namespace MediaViewer.MetaData
             writeMetaDataCommand = new Command(new Action(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
-                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel();
+                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher);
                 metaDataUpdateView.DataContext = vm;
                 metaDataUpdateView.Show();             
                 await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
@@ -105,12 +115,12 @@ namespace MediaViewer.MetaData
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = String.IsNullOrEmpty(Location) ? MediaFileWatcher.Instance.Path : Location;
+                vm.MovePath = String.IsNullOrEmpty(Location) ? mediaFileWatcher.Path : Location;
                 lock (Items)
                 {
                     vm.SelectedItems = new List<MediaFileItem>(Items);
                 }
-                vm.MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
+                vm.MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
               
                 if (directoryPicker.ShowDialog() == true)
                 {                    
@@ -215,12 +225,13 @@ namespace MediaViewer.MetaData
                 
             });
 
-            MediaFileWatcher.Instance.MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+            mediaFileWatcher.MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
           
+            FilenameHistory = settings.FilenameHistory;           
 
-            FilenameHistory = Settings.AppSettings.Instance.FilenameHistory;           
+            MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
 
-            MovePathHistory = Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory;
+            
             
         }
 
@@ -263,9 +274,11 @@ namespace MediaViewer.MetaData
                 }
 
                 items = value;
-               
-                grabData();
-              
+
+                if (items != null)
+                {
+                    grabData();
+                }
             }
         }
 

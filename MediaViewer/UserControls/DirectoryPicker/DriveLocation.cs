@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel;
 using MediaViewer.Utils.Windows;
 using System;
 using System.Collections.Generic;
@@ -13,8 +14,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
     {
         static DriveIdleMonitor driveIdleMonitor = new DriveIdleMonitor();
      
-        public DriveLocation(DriveInfo info, InfoGatherTask infoGatherTask)
-            : base(infoGatherTask)
+        public DriveLocation(DriveInfo info, InfoGatherTask infoGatherTask, MediaState mediaState)
+            : base(infoGatherTask, mediaState)
         {
            
             switch (info.DriveType)

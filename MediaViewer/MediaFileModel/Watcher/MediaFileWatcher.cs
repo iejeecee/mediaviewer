@@ -10,10 +10,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using MediaViewer.ImageGrid;
 using System.Windows.Data;
+using System.ComponentModel.Composition;
 
 namespace MediaViewer.MediaFileModel.Watcher
 {
-    class MediaFileWatcher : IDisposable
+ 
+    public class MediaFileWatcher : IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -41,9 +43,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         FileSystemWatcher watcher;
         MediaFileWatcherQueue fileWatcherQueue;
 
-        static MediaFileWatcher instance = null;
-
-        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]
+        [PermissionSet(SecurityAction.Demand, Name = "FullTrust")]  
         protected MediaFileWatcher()
         {
             watcher = new FileSystemWatcher();
@@ -67,6 +67,22 @@ namespace MediaViewer.MediaFileModel.Watcher
 
             DebugOutput = false;
          
+        }
+
+        static MediaFileWatcher instance;
+
+        public static MediaFileWatcher Instance
+        {
+
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new MediaFileWatcher();
+                }
+
+                return (instance);
+            }
         }
 
         public void Dispose()
@@ -108,21 +124,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             get { return watcher.EnableRaisingEvents; }
             set { watcher.EnableRaisingEvents = value; }
         }
-
-        public static MediaFileWatcher Instance
-        {
-
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new MediaFileWatcher();
-                }
-
-                return (instance);
-            }
-        }
-        
+            
         private void listMediaFiles(string path)
         {
 

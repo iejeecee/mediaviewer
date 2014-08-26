@@ -1,25 +1,14 @@
-﻿<Window
+﻿<Window x:Class="MediaViewer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MediaViewer" xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser" xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel"
-        xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
-        xmlns:Search="clr-namespace:MediaViewer.Search" xmlns:Pager="clr-namespace:MediaViewer.Pager" x:Name="mainWindow" x:Class="MediaViewer.MainWindow"
-        Title="{Binding WindowTitle}" Closing="mainWindow_Closing" WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
+        Title="MainWindow" Height="350" Width="525">    
     <Grid x:Name="MainGrid">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Menu x:Name="mainMenu" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0" HorizontalContentAlignment="Stretch" Background="{StaticResource menuBackgroundColor}">
+        <!--<Menu x:Name="mainMenu" Grid.Row="0" Height="20" VerticalAlignment="Top" HorizontalAlignment="Stretch" Margin="0,0,0.333,0" HorizontalContentAlignment="Stretch" Background="{StaticResource menuBackgroundColor}">
             <MenuItem Header="_File">
                 <MenuItem x:Name="OpenMenuItem" Header="_Open" Click="OpenMenuItem_Click"/>
                 <Separator/>
@@ -33,128 +22,6 @@
             <MenuItem Header="_Help">
                 <MenuItem x:Name="AboutMenuItem" Header="_About" Command="{Binding AboutCommand}"/>
             </MenuItem>
-        </Menu>
-        <ToolBarTray Grid.Row="1" x:Name="mainToolBarTray" HorizontalAlignment="Stretch" Height="20" Background="{StaticResource toolBarBackgroundColor}">
-            <ToolBar Background="{StaticResource toolBarBackgroundColor}">
-                <CheckBox x:Name="imageToolbarCheckBox" Height="16" Click="imageToolbarCheckBox_Click" ToolTip="View Image">
-                    <Image Source="pack://application:,,,/Resources/Icons/Pictures.ico" />
-                </CheckBox>
-                <CheckBox x:Name="videoToolbarCheckBox" Height="16" Click="videoToolbarCheckBox_Click" ToolTip="View Video">
-                    <Image Source="pack://application:,,,/Resources/Icons/video.ico"/>
-                </CheckBox>
-                <CheckBox x:Name="mediaFileBrowserToolbarCheckBox" Height="16" Click="mediaFileBrowserToolbarCheckBox_Click" ToolTip="Browse Media Files">
-                    <Image Source="pack://application:,,,/Resources/Icons/browser.ico"/>
-                </CheckBox>
-            </ToolBar>
-            <ToolBar x:Name="imageToolBar" Margin="-6.333,-1,62.333,0.667" HorizontalAlignment="Right" Width="200" Background="{StaticResource toolBarBackgroundColor}">
-                <xctk:DropDownButton x:Name="scaleDropDownButton" ToolTip="Scale Mode" Height="16">
-                    <xctk:DropDownButton.DropDownContent>
-                        <StackPanel>
-                            <RadioButton GroupName="Scale" Content="None"
-								IsChecked="{Binding SelectedScaleMode, ConverterParameter=NONE, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Scale" Content="Auto" 
-								IsChecked="{Binding SelectedScaleMode, ConverterParameter=AUTO, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Scale" Content="Fit Height"
-								IsChecked="{Binding SelectedScaleMode, ConverterParameter=FIT_HEIGHT, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Scale" Content="Fit Width"
-								IsChecked="{Binding SelectedScaleMode, ConverterParameter=FIT_WIDTH, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <Separator/>
-                            <RadioButton GroupName="Scale"
-								IsChecked="{Binding SelectedScaleMode, ConverterParameter=CUSTOM, Converter={StaticResource enumConverter}, Mode=TwoWay}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Custom" VerticalAlignment="Center"/>
-                                    <Button Grid.Column="1" Content="{Binding Scale, Converter={StaticResource scaleConverter}}" Command="{Binding SetCustomScaleCommand}"
-										ToolTip="Change Scale"/>
-                                </Grid>
-                            </RadioButton>
-                        </StackPanel>
-                    </xctk:DropDownButton.DropDownContent>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Grid.Column="0" Source="pack://application:,,,/Resources/Icons/ruler.ico" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Margin="2,0,0,0" Text="{Binding SelectedScaleMode, Converter={StaticResource scaleEnumToStringConverter}}" VerticalAlignment="Center"/>
-                    </Grid>
-                </xctk:DropDownButton>
-                <xctk:DropDownButton x:Name="rotateDropDownButton" ToolTip="Rotation Mode" Height="16">
-                    <xctk:DropDownButton.DropDownContent>
-                        <StackPanel>
-                            <RadioButton GroupName="Rotation" Content="None"
-								IsChecked="{Binding SelectedRotationMode, ConverterParameter=NONE, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Rotation" Content="90°" 
-								IsChecked="{Binding SelectedRotationMode, ConverterParameter=CW_90, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Rotation" Content="180°"
-								IsChecked="{Binding SelectedRotationMode, ConverterParameter=CW_180, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <RadioButton GroupName="Rotation" Content="-90°"
-								IsChecked="{Binding SelectedRotationMode, ConverterParameter=CCW_90, Converter={StaticResource enumConverter}, Mode=TwoWay}"  />
-                            <Separator/>
-                            <RadioButton GroupName="Rotation"
-								IsChecked="{Binding SelectedRotationMode, ConverterParameter=CUSTOM, Converter={StaticResource enumConverter}, Mode=TwoWay}">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Text="Custom" VerticalAlignment="Center"/>
-                                    <Button Grid.Column="1" Content="{Binding CustomRotation, Converter={StaticResource degreesConverter}}" Command="{Binding SetCustomRotationCommand}"
-										ToolTip="Change Rotation"/>
-                                </Grid>
-                            </RadioButton>
-                        </StackPanel>
-                    </xctk:DropDownButton.DropDownContent>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <Image Grid.Column="0" Source="pack://application:,,,/Resources/Icons/rotate.ico" VerticalAlignment="Center"/>
-                        <TextBlock Grid.Column="1" Margin="2,0,0,0" Text="{Binding SelectedRotationMode, Converter={StaticResource rotationEnumToStringConverter}}" VerticalAlignment="Center"/>
-                    </Grid>
-                </xctk:DropDownButton>
-                <CheckBox x:Name="flipImageHorizontalCheckBox" Height="16" ToolTip="Flip Image Horizontally" IsChecked="{Binding FlipX}">
-                    <Image Source="pack://application:,,,/Resources/Icons/FlipHorizontal.ico"/>
-                </CheckBox>
-                <CheckBox x:Name="flipImageVerticalCheckBox" Height="16" ToolTip="Flip Image Vertically" IsChecked="{Binding FlipY}">
-                    <Image Source="pack://application:,,,/Resources/Icons/FlipVertical.ico"/>
-                </CheckBox>
-                <Button x:Name="brightnessButton" Height="16" ToolTip="Brightness" Command="{Binding SetBrightnessCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/brightness.ico"/>
-                </Button>
-                <Button x:Name="contrastButton" Height="16" ToolTip="Contrast" Command="{Binding SetContrastCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/contrast.ico"/>
-                </Button>
-            </ToolBar>
-            <ToolBar x:Name="mediaFileBrowserToolBar" Margin="-430,0,0,0" Width="90" Background="{StaticResource toolBarBackgroundColor}">
-                <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/Import.ico"/>
-                </Button>
-                <Button x:Name="exportButton" Height="16" ToolTip="Export" Command="{Binding ExportSelectedItemsCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
-                </Button>
-                <Button Height="16" ToolTip="Create Video Preview Image(s)" Command="{Binding CreateVideoPreviewImagesCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/preview.ico"/>
-                </Button>
-                <Button Height="16" ToolTip="Create Torrent" Command="{Binding CreateTorrentFileCommand}">
-                    <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
-                </Button>
-            </ToolBar>
-        </ToolBarTray>
-        <MediaFileBrowser:MediaFileBrowserView x:Name="mediaFileBrowser" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"/>
-        <ImagePanel:ImageWithPagerView  x:Name="imageView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Visible"/>       
-        <VideoPanel:VideoView   x:Name="videoView" HorizontalAlignment="Stretch" Margin="0,0,0,0" Grid.Row="2" VerticalAlignment="Stretch" Visibility="Hidden"
-                                OpenCommand="{Binding OpenCommand}" CloseCommand="{Binding CloseCommand}"
-                                PauseCommand="{Binding PauseCommand}" PlayCommand="{Binding PlayCommand}"
-                                IsMuted="{Binding IsMuted}" HasAudio="{Binding HasAudio}" PositionSeconds="{Binding PositionSeconds}"
-                                ScreenShotCommand="{Binding ScreenShotCommand}" FrameByFrameCommand="{Binding FrameByFrameCommand}"
-                                VideoState="{Binding VideoState}" SeekCommand="{Binding SeekCommand}"
-                                MaxVolume="{Binding MaxVolume}" MinVolume="{Binding MinVolume}" DurationSeconds="{Binding DurationSeconds}"
-                                Volume="{Binding Volume}"
-            />
+        </Menu>       -->
     </Grid>
 </Window>

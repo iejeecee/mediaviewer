@@ -148,8 +148,8 @@ namespace MediaViewer.UserControls.Layout
 
             // Note: this could be deferred to idle time for efficiency
             CleanUpItems(firstVisibleItemIndex, lastVisibleItemIndex);
-         
 
+         
             return availableSize;
         }
 

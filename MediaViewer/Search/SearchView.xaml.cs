@@ -1,4 +1,5 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +27,7 @@ namespace MediaViewer.Search
         public SearchView()
         {
             InitializeComponent();
-            SearchViewModel viewModel = new SearchViewModel();
+            SearchViewModel viewModel = new SearchViewModel(MediaFileWatcher.Instance);
             DataContext = viewModel;
             firstFocus = true;
         }

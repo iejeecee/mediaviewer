@@ -1,8 +1,12 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.ImagePanel;
+using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Torrent;
+using MediaViewer.VideoPanel;
 using MediaViewer.VideoPreviewImage;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -23,14 +27,11 @@ namespace MediaViewer.ImageGrid
     /// Interaction logic for ImageGridItemView.xaml
     /// </summary>
     public partial class ImageGridItemView : UserControl
-    {
-    
-
+    {             
         public ImageGridItemView()
         {
             InitializeComponent();
-            selectAllMenuItem.IsEnabled = false;        
-            
+            selectAllMenuItem.IsEnabled = false;                       
         }
 
         public MediaFileItem MediaFileItem
@@ -45,9 +46,18 @@ namespace MediaViewer.ImageGrid
 
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
+            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
+
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", item.Location);
+            if (Utils.MediaFormatConvert.isImageFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToImageView(item.Location);                
+            }
+            else if (Utils.MediaFormatConvert.isVideoFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToVideoView(item.Location);      
+            }
 
         }
 
@@ -142,5 +152,7 @@ namespace MediaViewer.ImageGrid
 
             item.IsSelected = false;
         }
+
+ 
     }
 }

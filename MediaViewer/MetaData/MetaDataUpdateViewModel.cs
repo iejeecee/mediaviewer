@@ -15,11 +15,25 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataUpdateViewModel : CloseableObservableObject, ICancellableOperationProgress, IDisposable
     {
+        AppSettings Settings
+        {
+            get;
+            set;
+        }
+      
+        MediaState MediaState
+        {
+            get;
+            set;
+        }
+
         class Counter
         {
             public Counter(int value, int nrDigits)
@@ -50,8 +64,11 @@ namespace MediaViewer.MetaData
             set { tokenSource = value; }
         }
 
-        public MetaDataUpdateViewModel()
+        public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher)
         {
+            Settings = settings;
+            MediaState = mediaFileWatcher.MediaState;
+
             WindowIcon = "pack://application:,,,/Resources/Icons/info.ico";
 
             InfoMessages = new ObservableCollection<string>();
@@ -131,7 +148,7 @@ namespace MediaViewer.MetaData
                     {
                         ItemInfo = "Loading MetaData: " + item.Location;
 
-                        MediaFileWatcher.Instance.MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
+                        MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
                             MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
 
                         if (item.Media is UnknownMedia)
@@ -243,7 +260,7 @@ namespace MediaViewer.MetaData
                         {
                             // Save metadata changes
                             ItemInfo = "Saving MetaData: " + item.Location;
-                            MediaFileWatcher.Instance.MediaState.writeMetadata(item, MediaFactory.WriteOptions.AUTO, this);
+                            MediaState.writeMetadata(item, MediaFactory.WriteOptions.AUTO, this);
 
                             InfoMessages.Add("Completed updating Metadata for: " + item.Location);
                         }
@@ -266,19 +283,19 @@ namespace MediaViewer.MetaData
                             if (item.Media.IsImported == true && state.IsImported == false)
                             {
                                 ItemInfo = "Exporting: " + item.Location;
-                                MediaFileWatcher.Instance.MediaState.export(item, TokenSource.Token);
+                                MediaState.export(item, TokenSource.Token);
                                 InfoMessages.Add("Exported: " + item.Location);
                             }
                         }
 
-                        MediaFileWatcher.Instance.MediaState.move(item, newPath + "\\" + newFilename + ext, this);
+                        MediaState.move(item, newPath + "\\" + newFilename + ext, this);
 
                         if (state.ImportedEnabled == true)
                         {
                             if (item.Media.IsImported == false && state.IsImported == true)
                             {
                                 ItemInfo = "Importing: " + item.Location;
-                                MediaFileWatcher.Instance.MediaState.import(item, TokenSource.Token);
+                                MediaState.import(item, TokenSource.Token);
                                 InfoMessages.Add("Imported: " + item.Media.Location);
                             }
 
@@ -328,7 +345,7 @@ namespace MediaViewer.MetaData
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.FilenameHistory, state.Filename);
+                    Utils.Misc.insertIntoHistoryCollection(Settings.FilenameHistory, state.Filename);
                 }));
             }
 
@@ -337,7 +354,7 @@ namespace MediaViewer.MetaData
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.MetaDataUpdateDirectoryHistory, newPath);
+                    Utils.Misc.insertIntoHistoryCollection(Settings.MetaDataUpdateDirectoryHistory, newPath);
                 }));
             }
 

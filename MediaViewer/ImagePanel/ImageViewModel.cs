@@ -15,9 +15,11 @@ using MediaViewer.Utils;
 using System.Collections.Specialized;
 using MediaViewer.MediaDatabase;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 
 namespace MediaViewer.ImagePanel
 {
+  
     public class ImageViewModel : ObservableObject, IPageable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -26,11 +28,17 @@ namespace MediaViewer.ImagePanel
 
         ImageMedia imageFile;
 
+        MediaState mediaState;
+     
         MediaState MediaState
         {
+            set
+            {
+                mediaState = value;
+            }
             get
             {
-                return (MediaFileWatcher.Instance.MediaState);
+                return (mediaState);
             }
         }
 
@@ -46,9 +54,11 @@ namespace MediaViewer.ImagePanel
 
         public event EventHandler SetNormalScaleEvent;
         public event EventHandler SetBestFitScaleEvent;
-     
-        public ImageViewModel()
+          
+        public ImageViewModel(MediaState state)
         {
+
+            this.MediaState = state;
 
             loadImageCTS = new CancellationTokenSource();
             isLoading = false;

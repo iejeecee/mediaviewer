@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +31,7 @@ namespace MediaViewer.Torrent
         public TorrentCreationView()
         {
             InitializeComponent();
-            DataContext = ViewModel = new TorrentCreationViewModel();
+            DataContext = ViewModel = new TorrentCreationViewModel(AppSettings.Instance);
 
             ViewModel.ClosingRequest += ViewModel_ClosingRequest;
         }

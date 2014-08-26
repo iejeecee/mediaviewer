@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MediaFileModel.Watcher;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,8 +31,8 @@ namespace MediaViewer.VideoPreviewImage
         public VideoPreviewImageView()
         {
             InitializeComponent();
-            
-            DataContext = viewModel = new VideoPreviewImageViewModel();
+
+            DataContext = viewModel = new VideoPreviewImageViewModel(MediaFileWatcher.Instance);
 
             viewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s, e) =>
                 {

@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.TreeView;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MediaViewer.Utils;
@@ -12,7 +13,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -21,8 +21,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
     class DirectoryLocation : Location, INonCancellableOperationProgress
     {
 
-        public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask)
-            : base(infoGatherTask)
+        public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask, MediaState state)
+            : base(infoGatherTask, state)
         {        
             Name = info.Name;
             CreationDate = info.CreationTime;
@@ -203,7 +203,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 {
                     FileUtils.walkDirectoryTree(new DirectoryInfo(location.FullName), getFiles, mediaFilesToDelete, true);
 
-                    MediaFileWatcher.Instance.MediaState.delete(mediaFilesToDelete, tokenSource.Token);
+                    MediaState.delete(mediaFilesToDelete, tokenSource.Token);
 
                     FileUtils fileUtils = new FileUtils();
                     fileUtils.deleteDirectory(location.FullName);

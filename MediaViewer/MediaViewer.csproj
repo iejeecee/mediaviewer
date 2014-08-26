@@ -85,6 +85,31 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Practices.Prism.Composition">
+      <HintPath>..\packages\Prism.Composition.5.0.0\lib\NET45\Microsoft.Practices.Prism.Composition.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.Interactivity">
+      <HintPath>..\packages\Prism.Interactivity.5.0.0\lib\NET45\Microsoft.Practices.Prism.Interactivity.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.MefExtensions">
+      <HintPath>..\packages\Prism.MEFExtensions.5.0.0\lib\NET45\Microsoft.Practices.Prism.MefExtensions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.Mvvm">
+      <HintPath>..\packages\Prism.Mvvm.1.0.0\lib\net45\Microsoft.Practices.Prism.Mvvm.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.Mvvm.Desktop">
+      <HintPath>..\packages\Prism.Mvvm.1.0.0\lib\net45\Microsoft.Practices.Prism.Mvvm.Desktop.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.PubSubEvents">
+      <HintPath>..\packages\Prism.PubSubEvents.1.0.0\lib\portable-sl4+wp7+windows8+net40\Microsoft.Practices.Prism.PubSubEvents.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.Prism.SharedInterfaces">
+      <HintPath>..\packages\Prism.Mvvm.1.0.0\lib\net45\Microsoft.Practices.Prism.SharedInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Practices.ServiceLocation, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\CommonServiceLocator.1.2\lib\portable-windows8+net40+sl5+windowsphone8\Microsoft.Practices.ServiceLocation.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.dll</HintPath>
@@ -160,7 +185,6 @@
       <DependentUpon>AboutView.xaml</DependentUpon>
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
-    <Compile Include="App.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToScrollBarVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
@@ -175,11 +199,23 @@
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
     <Compile Include="Converters\PathToFileNameConverter.cs" />
+    <Compile Include="Converters\ToStringConverter.cs" />
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
+    <Compile Include="GlobalEvents\MediaFileBrowserViewModelEvent.cs" />
     <Compile Include="ImageGrid\ExtraItemInfoView.xaml.cs">
       <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImagePanel\ImageToolbarView.xaml.cs">
+      <DependentUpon>ImageToolbarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaFileBrowser\MediaFileBrowserToolbarView.xaml.cs">
+      <DependentUpon>MediaFileBrowserToolbarView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaFileBrowser\ImageOptionsVisibilityConverter.cs" />
+    <Compile Include="MediaFileBrowser\MediaFileBrowserNavigationItemView.xaml.cs">
+      <DependentUpon>MediaFileBrowserNavigationItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageGrid\MediaStateInfoView.xaml.cs">
       <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
@@ -194,6 +230,9 @@
     </Compile>
     <Compile Include="ImagePanel\ContrastView.xaml.cs">
       <DependentUpon>ContrastView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImagePanel\ImageNavigationItemView.xaml.cs">
+      <DependentUpon>ImageNavigationItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImagePanel\ImageWithPagerView.xaml.cs">
       <DependentUpon>ImageWithPagerView.xaml</DependentUpon>
@@ -210,15 +249,10 @@
     <Compile Include="MediaFileModel\MediaStateChangedEventArgs.cs" />
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItemLoader.cs" />
+    <Compile Include="MediaViewerBootstrapper.cs" />
     <Compile Include="MetaData\ObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
-    <Compile Include="Plugin\IGeoTagViewModel.cs" />
-    <Compile Include="Plugin\IPluginMetadata.cs" />
-    <Compile Include="Plugin\PluginWindowViewModel.cs" />
-    <Compile Include="Plugin\PluginWindow.xaml.cs">
-      <DependentUpon>PluginWindow.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
       <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
     </Compile>
@@ -228,9 +262,14 @@
     </Compile>
     <Compile Include="Progress\TotalProgressTextConverter.cs" />
     <Compile Include="Progress\WindowTitleConverter.cs" />
+    <Compile Include="RegionNames.cs" />
     <Compile Include="Settings\SettingsView.xaml.cs">
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Shell.xaml.cs">
+      <DependentUpon>Shell.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ShellViewModel.cs" />
     <Compile Include="Torrent\Bencoding.cs" />
     <Compile Include="Torrent\TorrentCreationProgressViewModel.cs" />
     <Compile Include="Torrent\TorrentCreationView.xaml.cs">
@@ -468,6 +507,9 @@
     <Compile Include="ValidationRules\FloatValidationRule.cs" />
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
+    <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
+      <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -483,6 +525,18 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImageGrid\ExtraItemInfoView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImagePanel\ImageToolbarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MediaFileBrowser\MediaFileBrowserToolbarView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MediaFileBrowser\MediaFileBrowserNavigationItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -502,15 +556,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ImagePanel\ImageNavigationItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ImagePanel\ImageWithPagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Import\ImportView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Plugin\PluginWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -523,6 +577,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Settings\SettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Shell.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -655,6 +713,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\TextBlock\AutoLengthTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VideoPanel\VideoNavigationItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

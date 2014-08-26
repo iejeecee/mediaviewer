@@ -1,0 +1,27 @@
+﻿<Window x:Class="MediaViewer.Shell"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:regions="http://www.codeplex.com/CompositeWPF"
+        Title="MediaViewer" Height="300" Width="300"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized" Icon="Resources/Icons/birdsmall.ico">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>      
+        <ToolBarPanel Grid.Row="1" Background="{StaticResource menuBackgroundColor}" Orientation="Horizontal">
+            <ToolBar>
+                <ItemsControl regions:RegionManager.RegionName="MainNavigationToolBarRegion" Background="{StaticResource menuBackgroundColor}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </ToolBar>
+            <ContentControl regions:RegionManager.RegionName="MainOptionalToolBarRegion"/>            
+        </ToolBarPanel>
+        <ContentControl Grid.Row="2" regions:RegionManager.RegionName="MainContentRegion" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+    </Grid>
+</Window>

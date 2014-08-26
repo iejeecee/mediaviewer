@@ -1,11 +1,13 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaDatabase;
+using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -18,6 +20,7 @@ using VideoLib;
 
 namespace MediaViewer.VideoPreviewImage
 {
+ 
     class VideoPreviewImageViewModel : CloseableObservableObject
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -30,9 +33,9 @@ namespace MediaViewer.VideoPreviewImage
             set { media = value; }
         }
 
-        public VideoPreviewImageViewModel()
+        public VideoPreviewImageViewModel(MediaFileWatcher mediaFileWatcher)
         {
-            setDefaults();
+            setDefaults(mediaFileWatcher);
             
             directoryPickerCommand = new Command(new Action(() =>
             {
@@ -66,18 +69,18 @@ namespace MediaViewer.VideoPreviewImage
 
             DefaultsCommand = new Command(() =>
                 {
-                    setDefaults();
+                    setDefaults(mediaFileWatcher);
                 });
         }
 
-        void setDefaults()
+        void setDefaults(MediaFileWatcher mediaFileWatcher)
         {
             NrColumns = 3;
             NrRows = 16;
             MaxPreviewImageWidth = 1280;
             IsCaptureIntervalSecondsEnabled = true;
             CaptureIntervalSeconds = 30;
-            OutputPath = MediaFileWatcher.Instance.Path;
+            OutputPath = mediaFileWatcher.Path;
             OutputPathHistory = new ObservableCollection<string>();
             OutputPathHistory.Insert(0, OutputPath);
             IsAddTags = true;

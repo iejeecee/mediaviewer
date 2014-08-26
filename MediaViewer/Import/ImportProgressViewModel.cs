@@ -6,6 +6,7 @@ using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -15,11 +16,20 @@ using System.Windows;
 
 namespace MediaViewer.Import
 {
+
     class ImportProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        
-        public ImportProgressViewModel() {
+     
+        MediaState MediaState
+        {
+            get;
+            set;
+        }
+     
+        public ImportProgressViewModel(MediaState mediaState) {
+
+            MediaState = mediaState;
 
             WindowTitle = "Importing Media";
             WindowIcon = "pack://application:,,,/Resources/Icons/import.ico";
@@ -178,7 +188,7 @@ namespace MediaViewer.Import
 
                     ItemInfo = "Importing: " + mediaFile.Location;
 
-                    MediaFileWatcher.Instance.MediaState.import(mediaFile, CancellationToken);
+                    MediaState.import(mediaFile, CancellationToken);
 
                     ItemProgress = 100;
                     TotalProgress++;

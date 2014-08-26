@@ -26,7 +26,7 @@ namespace MediaViewer.Pager
             InitializeComponent();
            
         }
-
+       
         private void currentPageTextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)

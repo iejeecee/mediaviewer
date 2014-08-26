@@ -12,12 +12,21 @@ using MediaViewer.Logging;
 using MediaViewer.ImagePanel;
 using MediaViewer.Import;
 using MediaViewer.MediaFileModel.Watcher;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
 
 namespace MediaViewer
 {
     class MainWindowViewModel : ObservableObject
     {
+           
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        AppSettings Settings
+        {
+            get;
+            set;
+        }
 
         string currentImageLocation;
 
@@ -54,8 +63,9 @@ namespace MediaViewer
             }
         }
 
-        public MainWindowViewModel()
+        public MainWindowViewModel(AppSettings settings)
         {
+            Settings = settings;
 
             WindowTitle = "MediaViewer";
 
@@ -120,7 +130,7 @@ namespace MediaViewer
 
                     if (MessageBox.Show("Clear all history?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        MediaViewer.Settings.AppSettings.Instance.clearHistory();
+                        Settings.clearHistory();
                     }
 
                 });

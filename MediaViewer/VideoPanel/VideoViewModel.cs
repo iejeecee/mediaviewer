@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -18,15 +19,18 @@ using VideoPlayerControl;
 
 namespace MediaViewer.VideoPanel
 {
+   
     public class VideoViewModel : ObservableObject, IPageable, IDisposable
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
 
-        public VideoViewModel()
+        public VideoViewModel(MediaFileWatcher mediaFileWatcher)
         {
             IsInitialized = false;
+
+            MediaState = mediaFileWatcher.MediaState;
 
             commandQueue = new ConcurrentQueue<Tuple<ICommand, Object>>();
 
@@ -41,7 +45,7 @@ namespace MediaViewer.VideoPanel
                 try
                 {
                     videoPlayer.open(location);
-                    ScreenShotLocation = MediaFileWatcher.Instance.Path;
+                    ScreenShotLocation = mediaFileWatcher.Path;
                     ScreenShotName = System.IO.Path.GetFileName(location);
                 }
                 catch (Exception e)
@@ -189,9 +193,7 @@ namespace MediaViewer.VideoPanel
             MaxVolume = videoPlayer.MaxVolume;
             videoPlayer.IsMuted = IsMuted;
             videoPlayer.Volume = Volume;
-
-            IsInitialized = true;
-            
+                        
             // execute queued commands
             Tuple<ICommand, Object> tuple;
 
@@ -202,6 +204,8 @@ namespace MediaViewer.VideoPanel
 
                 command.Execute(arg);
             }
+
+            IsInitialized = true;
         }
 
         bool addCommandToQueue(ICommand command, Object argument)
@@ -503,11 +507,17 @@ namespace MediaViewer.VideoPanel
             }
         }
 
+        MediaState mediaState;
+
         MediaState MediaState
         {
+            set
+            {
+                mediaState = value;
+            }
             get
             {
-                return (MediaFileWatcher.Instance.MediaState);
+                return (mediaState);
             }
         }
 

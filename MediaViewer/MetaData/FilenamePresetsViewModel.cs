@@ -1,22 +1,34 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.Settings;
+using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.Composition;
 
 namespace MediaViewer.MetaData
 {
     class FilenamePresetsViewModel : CloseableObservableObject
     {
+      
+        AppSettings Settings
+        {
+            get;
+            set;
+        }
+
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public FilenamePresetsViewModel()
+        public FilenamePresetsViewModel(AppSettings settings)
         {
+
+            Settings = settings;
+
             NewPreset = "";
            
-            filenamePresets = MediaViewer.Settings.AppSettings.Instance.FilenamePresets;
+            filenamePresets = Settings.FilenamePresets;
 
             addNewPresetCommand = new Command(new Action(() =>
             {

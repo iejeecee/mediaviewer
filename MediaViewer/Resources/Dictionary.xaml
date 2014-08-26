@@ -19,6 +19,7 @@
     <Converters:EnumToVisibilityConverter x:Key="enumToVisibilityConverter"/>
     <Converters:EmptyStringConverter x:Key="emptyStringConverter"/>
     <Converters:CollectionIsEmptyConverter x:Key="collectionIsEmptyConverter"/>
+    <Converters:ToStringConverter x:Key="toStringConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 

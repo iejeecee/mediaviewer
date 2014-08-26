@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,22 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.Logging;
-using MediaViewer.Utils;
-using Microsoft.Win32;
-using MediaViewer.ImagePanel;
-using System.ComponentModel;
-using MediaViewer.About;
-using MediaViewer.VideoPanel;
-using MediaViewer.MediaFileBrowser;
-using MediaViewer.Utils.Windows;
-using System.Windows.Threading;
-using MediaViewer.MediaFileModel.Watcher;
-using System.IO;
-using VideoPlayerControl;
-using MediaViewer.Plugin;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config",Watch=true)]
+
 
 namespace MediaViewer
 {
@@ -37,218 +22,56 @@ namespace MediaViewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        private RotationView rotationView;
-        private ScaleView scaleView;
-
-        private ImageViewModel imageViewModel;
-        private MainWindowViewModel mainWindowViewModel;
-        private MediaFileBrowserViewModel mediaFileBrowserViewModel;    
-    
+            
         public MainWindow()
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
+            Close();
+
+            //AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
        
             InitializeComponent();
           
-            Version version = Assembly.GetEntryAssembly().GetName().Version;
+            /*Version version = Assembly.GetEntryAssembly().GetName().Version;
             log.Info("Starting MediaViewer v" + version.ToString());
 
             AppDomain currentDomain = AppDomain.CurrentDomain;
             PrintLoadedAssemblies(currentDomain);
             currentDomain.AssemblyLoad += new AssemblyLoadEventHandler(assemblyLoadEventHandler);
 
-            XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
+          
 
-            initializeVideoView();
-            initializeImageView();      
-            initializeMediaFileBrowser();
+            Settings = AppSettings.Instance;
+             */
+        
+           // initializeVideoView();
+           // initializeImageView();      
+            //initializeMediaFileBrowser();
 
-            mainWindowViewModel = new MainWindowViewModel();
-            DataContext = mainWindowViewModel;
+            //mainWindowViewModel = new MainWindowViewModel(Settings);
+            //DataContext = mainWindowViewModel;
                     
-            mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
+            //mainWindowViewModel.PropertyChanged += new PropertyChangedEventHandler(mainWindowViewModel_PropertyChanged);
 
-            GlobalMessenger.Instance.Register<String>("MainWindow_SetTitle", new Action<String>(mainWindow_SetTitle));            
-            GlobalMessenger.Instance.Register("ToggleFullScreen", new Action(toggleFullScreen));
+           // GlobalMessenger.Instance.Register<String>("MainWindow_SetTitle", new Action<String>(mainWindow_SetTitle));            
+            //GlobalMessenger.Instance.Register("ToggleFullScreen", new Action(toggleFullScreen));
 
-            mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
+            //mediaFileBrowser.Loaded += new RoutedEventHandler(mediaFileBrowser_Loaded);
 
             //MediaDatabase.Test.test();
          
 
         }
 
-        private void mainWindow_SetTitle(string newTitle)
-        {
-            setTitle(newTitle);
-        }
-
-        private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());            
-        }
-
-    
-        void mediaFileBrowser_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (App.Args.Length != 0)
-            {               
-            
-                loadAndDisplayMedia(App.Args[0]);               
-                mediaFileBrowserViewModel.BrowsePath = App.Args[0];          
-               
-            }
-
-            App.SplashScreen.Close(TimeSpan.FromSeconds(0.5));
-           
-
-           // VideoTestWindow test = new VideoTestWindow();
-
-            //test.Show();
-            //test.Activate();
-        }
-
-        void initializeVideoView()
-        {
-            VideoViewModel vm = new VideoViewModel();
-            videoView.DataContext = vm;
-        }
-      
-
-        void initializeImageView()
-        {
-            imageViewModel = new ImageViewModel();
-            imageViewModel.IsResetSettingsOnLoad = false;
-            imageView.DataContext = imageViewModel;
-
-            rotationView = new RotationView();
-            rotationView.Closing += new CancelEventHandler((sender, e) =>
-            {
-                e.Cancel = true;
-                ((Window)sender).Hide();              
-            });
-            rotationView.DataContext = imageViewModel;
-
-            scaleView = new ScaleView();
-            scaleView.Closing += new CancelEventHandler((sender, e) =>
-            {
-                e.Cancel = true;
-                ((Window)sender).Hide();               
-            });
-            scaleView.DataContext = imageViewModel;
-
-            imageToolBar.DataContext = imageViewModel;
-           
-        }   
-
-        void initializeMediaFileBrowser()
-        {
-            mediaFileBrowserViewModel = (MediaFileBrowserViewModel)mediaFileBrowser.DataContext;
-
-            mediaFileBrowserToolBar.DataContext = mediaFileBrowserViewModel;
-        }
-
-        void mainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (e.PropertyName.Equals("CurrentImageLocation"))
-            {
-                if (mainWindowViewModel.CurrentImageLocation != null)
-                {
-                    loadAndDisplayImage(mainWindowViewModel.CurrentImageLocation);
-                }
-            }
-            else if (e.PropertyName.Equals("CurrentVideoLocation"))
-            {
-                if (mainWindowViewModel.CurrentVideoLocation != null)
-                {
-                    loadAndDisplayVideo(mainWindowViewModel.CurrentVideoLocation);
-                }
-            }
-
-        }
-
-        void setTitle(string info = "")
-        {
-            if (string.IsNullOrEmpty(info))
-            {
-                mainWindowViewModel.WindowTitle = "MediaViewer";
-            }
-            else
-            {
-                mainWindowViewModel.WindowTitle = info + " - MediaViewer";
-            }
-        }
-
-        private void loadAndDisplayMedia(string media)
-        {
-            if (Utils.MediaFormatConvert.isImageFile(media))
-            {
-                mainWindowViewModel.CurrentImageLocation = media;
-                //loadAndDisplayImage(media);
-
-            }
-            else if (Utils.MediaFormatConvert.isVideoFile(media))
-            {
-                mainWindowViewModel.CurrentVideoLocation = media;
-                //loadAndDisplayVideo(media);
-            }
-
-        }
-
-        private void loadAndDisplayImage(string location)
-        {
-            showImageView(location);
-            imageViewModel.LoadImageAsyncCommand.DoExecute(location);
-        }
-
-        private void loadAndDisplayVideo(string location)
-        {
-            showVideoView(location);
-            videoView.openAndPlay(location);        
-        }
-     
-        private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)
-        {
-
-            switch (level)
-            {
-
-                case XMPLib.MetaData.LogLevel.ERROR:
-                    {
-                        log.Error(message);
-                        break;
-                    }
-                case XMPLib.MetaData.LogLevel.WARNING:
-                    {
-
-                        log.Warn(message);
-                        break;
-                    }
-                case XMPLib.MetaData.LogLevel.INFO:
-                    {
-
-                        log.Info(message);
-                        break;
-                    }
-                default:
-                    {
-                        System.Diagnostics.Debug.Assert(false);
-                        break;
-                    }
-            }
-        }
-
+   
         private void OpenMenuItem_Click(object sender, RoutedEventArgs e)
         {
-             OpenFileDialog openFileDialog = Utils.Windows.FileDialog.createOpenMediaFileDialog(false);
+             //OpenFileDialog openFileDialog = Utils.Windows.FileDialog.createOpenMediaFileDialog(false);
 
-             if (openFileDialog.ShowDialog() == true)
-             {
+             //if (openFileDialog.ShowDialog() == true)
+             //{
 
-                 imageViewModel.LoadImageAsyncCommand.DoExecute(openFileDialog.FileName);
-             }
+                 //imageViewModel.LoadImageAsyncCommand.DoExecute(openFileDialog.FileName);
+             //}
         
 
         }
@@ -261,121 +84,24 @@ namespace MediaViewer
         }
        
 
-        private void mainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            MediaViewer.Settings.AppSettings.save();        
-            Dispatcher.InvokeShutdown();
-        }
+       
 
         private void imageToolBarButton_Click(object sender, RoutedEventArgs e)
         {
            
         }
 
-        static void PrintLoadedAssemblies(AppDomain domain)
-        {          
-            foreach (Assembly a in domain.GetAssemblies())
-            {
-                log.Info("Assembly loaded: " + a.FullName);               
-            }        
-        }
-
-        static void assemblyLoadEventHandler(object sender, AssemblyLoadEventArgs args)
-        {
-            log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);           
-        }
+        
       
-        private void showMediaFileBrowser()
-        {
+        
 
-            imageView.Visibility = Visibility.Hidden;        
-            videoView.Visibility = Visibility.Hidden;
-            mediaFileBrowser.Visibility = Visibility.Visible;
-         
-            videoToolbarCheckBox.IsChecked = false;
-            imageToolbarCheckBox.IsChecked = false;
 
-            imageToolBar.Visibility = Visibility.Hidden;
-            mediaFileBrowserToolBar.Visibility = Visibility.Visible;
-         
-            setTitle(mediaFileBrowserViewModel.BrowsePath);
-        }
 
-        private void showImageView(string location)
-        {
+       
 
-            imageView.Visibility = Visibility.Visible;    
-            videoView.Visibility = Visibility.Hidden;
-            mediaFileBrowser.Visibility = Visibility.Hidden;
+    
 
-            videoToolbarCheckBox.IsChecked = false;
-            mediaFileBrowserToolbarCheckBox.IsChecked = false;
-
-            imageToolBar.Visibility = Visibility.Visible;
-            mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
-
-            setTitle(System.IO.Path.GetFileName(location));
-        }
-
-        private void showVideoView(string location)
-        {
-            imageView.Visibility = Visibility.Hidden;
-            videoView.Visibility = Visibility.Visible;
-            mediaFileBrowser.Visibility = Visibility.Hidden;
-
-            imageToolbarCheckBox.IsChecked = false;
-            mediaFileBrowserToolbarCheckBox.IsChecked = false;
-
-            imageToolBar.Visibility = Visibility.Hidden;
-            mediaFileBrowserToolBar.Visibility = Visibility.Hidden;
-
-            setTitle(System.IO.Path.GetFileName(location));
-        }
-
-        WindowState oldWindowState;
-
-        void toggleFullScreen()
-        {            
-            if (mainMenu.Visibility == Visibility.Visible)
-            {
-                this.WindowStyle = System.Windows.WindowStyle.None;
-
-                if ((oldWindowState = this.WindowState) != System.Windows.WindowState.Maximized)
-                {
-                    this.WindowState = System.Windows.WindowState.Maximized;
-                }
-
-                mainMenu.Visibility = Visibility.Collapsed;
-                mainToolBarTray.Visibility = Visibility.Collapsed;
-            }
-            else
-            {        
-                this.WindowStyle = System.Windows.WindowStyle.SingleBorderWindow;
-
-                if (this.WindowState != oldWindowState)
-                {
-                    this.WindowState = oldWindowState;
-                }
-
-                mainMenu.Visibility = Visibility.Visible;
-                mainToolBarTray.Visibility = Visibility.Visible;
-            }
-        }
-
-        private void videoToolbarCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            showVideoView(mainWindowViewModel.CurrentVideoLocation);
-        }
-
-        private void imageToolbarCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            showImageView(mainWindowViewModel.CurrentImageLocation);
-        }
-
-        private void mediaFileBrowserToolbarCheckBox_Click(object sender, RoutedEventArgs e)
-        {
-            showMediaFileBrowser();
-        }
+ 
 
         
     }

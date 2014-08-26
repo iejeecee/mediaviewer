@@ -20,50 +20,49 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.ExtensionMethods;
 using System.Windows.Threading;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
+using Microsoft.Practices.Prism.Regions;
 
 namespace MediaViewer.MetaData
 {
     /// <summary>
     /// Interaction logic for MetaDataView.xaml
     /// </summary>
-    public partial class MetaDataView : UserControl
+    [Export]
+    public partial class MetaDataView : UserControl, IRegionMemberLifetime
     {
-        private MetaDataViewModel ViewModel
-        {
-            get { return this.Resources["viewModel"] as MetaDataViewModel; }
-        }
 
+        MetaDataViewModel MetaDataViewModel
+        {
+            get;
+            set;
+        }
+       
         public MetaDataView()
         {
             InitializeComponent();
 
-            dynamicElements = new List<UIElement>();
-            dynamicRows = new List<RowDefinition>();
-            ViewModel.ItemsModified += new EventHandler((s,e) => {
-               
-                 displayDynamicProperties(ViewModel.DynamicProperties);                
+            MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
+                
+            MetaDataViewModel.ItemsModified += new EventHandler((s, e) =>
+            {
+
+                displayDynamicProperties(MetaDataViewModel.DynamicProperties);
 
             });
-           
-        }
+            
+            dynamicElements = new List<UIElement>();
+            dynamicRows = new List<RowDefinition>();
 
-        public ObservableCollection<MediaFileItem> Media
-        {
-            get { return (ObservableCollection<MediaFileItem>)GetValue(MediaProperty); }
-            set { SetValue(MediaProperty, value); }
-        }
+            DataContext = MetaDataViewModel;
 
-        // Using a DependencyProperty as the backing store for Media.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MediaProperty =
-            DependencyProperty.Register("Media", typeof(ObservableCollection<MediaFileItem>), typeof(MetaDataView), new PropertyMetadata(null, new PropertyChangedCallback(mediaPropertyChanged_Callback)));
-
-        private static void mediaPropertyChanged_Callback(DependencyObject d, DependencyPropertyChangedEventArgs e)
-        {
-            MetaDataView view = (MetaDataView)d;
-            view.ViewModel.Items = (ObservableCollection<MediaFileItem>)e.NewValue;
-        
+            RegionContext.GetObservableContext(this).PropertyChanged += (s, e) =>
+            {
+                MetaDataViewModel.Items = RegionContext.GetObservableContext(this).Value as ObservableCollection<MediaFileItem>;
+            };
         }
-               
+                  
         List<RowDefinition> dynamicRows;
         List<UIElement> dynamicElements;
 
@@ -147,7 +146,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            ViewModel.InsertCounterCommand.DoExecute(index);
+            MetaDataViewModel.InsertCounterCommand.DoExecute(index);
         }
 
         private void fileNameContextMenu_InsertExistingFilename(object sender, RoutedEventArgs e)
@@ -162,7 +161,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            ViewModel.InsertExistingFilenameCommand.DoExecute(index);
+            MetaDataViewModel.InsertExistingFilenameCommand.DoExecute(index);
         }
 
         private void fileNameContextMenu_InsertResolution(object sender, RoutedEventArgs e)
@@ -177,7 +176,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            ViewModel.InsertResolutionCommand.DoExecute(index);
+            MetaDataViewModel.InsertResolutionCommand.DoExecute(index);
 
         }
 
@@ -193,7 +192,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            ViewModel.InsertDateCommand.DoExecute(index);
+            MetaDataViewModel.InsertDateCommand.DoExecute(index);
 
         }
 
@@ -209,10 +208,14 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            ViewModel.InsertReplaceStringCommand.DoExecute(index);
+            MetaDataViewModel.InsertReplaceStringCommand.DoExecute(index);
+        }
+
+        public bool KeepAlive
+        {
+            get { return (true); }
         }
 
        
-        
     }
 }

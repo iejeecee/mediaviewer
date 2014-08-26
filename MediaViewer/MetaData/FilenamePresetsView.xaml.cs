@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Media;
@@ -25,7 +26,7 @@ namespace MediaViewer.MetaData
         public FilenamePresetsView()
         {
             InitializeComponent();
-            DataContext = filenamePresetsViewModel = new FilenamePresetsViewModel();
+            DataContext = filenamePresetsViewModel = new FilenamePresetsViewModel(AppSettings.Instance);
 
             filenamePresetsViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s, e) =>
             {

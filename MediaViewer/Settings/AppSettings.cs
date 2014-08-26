@@ -8,26 +8,25 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.ComponentModel.Composition;
 
 //https://github.com/JakeGinnivan/SettingsProvider.net
 namespace MediaViewer.Settings
 {
-
-    class AppSettings
+   
+    public class AppSettings
     {
-
         public AppSettings()
-        {
-            instance = null;
+        {            
             metaDataUpdateDirectoryHistory = new ObservableCollection<string>();
             filenamePresets = new ObservableCollection<string>();
             filenameHistory = new ObservableCollection<string>();
             createDirectoryHistory = new ObservableCollection<string>();
             torrentAnnounceHistory = new ObservableCollection<string>();
-
+         
         }
 
-        public static void load()
+        protected static void load()
         {
             var settingsProvider = new SettingsProvider(); //By default uses IsolatedStorage for storage
             instance = settingsProvider.GetSettings<AppSettings>();
@@ -38,7 +37,7 @@ namespace MediaViewer.Settings
 
         }
 
-        public static void save()
+        public void save()
         {
             if (instance == null)
             {
@@ -56,6 +55,10 @@ namespace MediaViewer.Settings
         {
             get
             {
+                if (instance == null)
+                {
+                    load();
+                }
 
                 return (instance);
             }

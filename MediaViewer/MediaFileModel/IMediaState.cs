@@ -19,7 +19,7 @@ namespace MediaViewer.MediaFileModel
         Other
     }
 
-    interface IMediaState : INotifyPropertyChanged
+    public interface IMediaState : INotifyPropertyChanged
     {
         event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
         event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;

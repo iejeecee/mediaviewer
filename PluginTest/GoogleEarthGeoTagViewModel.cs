@@ -1,6 +1,6 @@
 ﻿using HtmlAgilityPack;
+using MediaViewer.MediaFileBrowser;
 using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.Plugin;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -16,15 +16,14 @@ using System.Windows.Resources;
 
 namespace PluginTest
 {
-    [Export(typeof(IGeoTagViewModel))]
-    [ExportMetadata("Name", "GoogleEarthGeoTagViewModel")]
-    [ExportMetadata("Version", "1.0")]
-    public class GoogleEarthGeoTagViewModel : ObservableObject, IGeoTagViewModel, IDisposable
+    [Export]
+    public class GoogleEarthGeoTagViewModel : ObservableObject, IDisposable
     {
+       
         GeoTagScriptInterface script;
-
+      
         [ImportingConstructor]
-        public GoogleEarthGeoTagViewModel([Import("GeoTagItems")]List<MediaFileItem> items)
+        public GoogleEarthGeoTagViewModel(MediaFileBrowserView mediaFileBrowserView)
         {
             WebBrowser = new System.Windows.Controls.WebBrowser();
        
@@ -62,22 +61,24 @@ namespace PluginTest
             WebBrowser.NavigateToStream(stream);
 
             List<GeoTagFileData> geoTagFileItems = new List<GeoTagFileData>();
-
+/*
             foreach (MediaFileItem item in items)
             {
                 GeoTagFileData geoTagFileItem = new GeoTagFileData(item);
                 geoTagFileItems.Add(geoTagFileItem);
             }
-
+*/
             script = new GeoTagScriptInterface(WebBrowser, geoTagFileItems);
 
             WebBrowser.ObjectForScripting = script;
 
             script.Initialized += script_Initialized;
 
-            lookAt = new Command<string>((location) =>
+            searchCommand = new Command(() =>
             {
-                script.flyTo(location);
+                if (String.IsNullOrEmpty(searchText) || String.IsNullOrWhiteSpace(searchText)) return;
+
+                script.flyTo(searchText);
             });
         }
 
@@ -111,15 +112,25 @@ namespace PluginTest
 
         public event EventHandler Loaded;
 
-        Command<String> lookAt;
+        String searchText;
 
-        public Command<String> LookAt {
+        public String SearchText
+        {
+            get { return searchText; }
+            set { searchText = value;
+            NotifyPropertyChanged();
+            }
+        }
+
+        Command searchCommand;
+
+        public Command SearchCommand {
 
             set {
 
             }
             get {
-                return (lookAt);
+                return (searchCommand);
             }
         }
         
@@ -135,14 +146,6 @@ namespace PluginTest
             }
         }
 
-        Command IGeoTagViewModel.AddGeoTag
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        Command IGeoTagViewModel.RemoveGeoTag
-        {
-            get { throw new NotImplementedException(); }
-        }
+   
     }
 }

@@ -11,24 +11,30 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.ComponentModel.Composition;
+using MediaViewer.MediaFileModel.Watcher;
 
 namespace MediaViewer.Import
 {
     /// <summary>
     /// Interaction logic for ImportView.xaml
     /// </summary>
+    [Export]
     public partial class ImportView : Window
     {
+      
         public ImportView()
         {
             InitializeComponent();
-            ImportViewModel vm = new ImportViewModel();
-            DataContext = vm;
+
+            ImportViewModel vm = new ImportViewModel(MediaFileWatcher.Instance);
 
             vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
             {
                 this.Close();
             });
+
+            DataContext = vm;     
         }
     }
 }

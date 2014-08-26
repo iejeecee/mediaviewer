@@ -11,20 +11,31 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.ComponentModel.Composition;
+using MediaViewer.Settings;
 
 namespace MediaViewer.Torrent
 {
     public class TorrentCreationProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
     {
+             
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        AppSettings Settings
+        {
+            get;
+            set;
+        }
 
         CancellationTokenSource tokenSource;
         String createdBy;
         String encoding;
         int pieceLength;
 
-        public TorrentCreationProgressViewModel()
+        public TorrentCreationProgressViewModel(AppSettings settings)
         {
+            Settings = settings;
+
             WindowTitle = "Torrent File";
             WindowIcon = "pack://application:,,,/Resources/Icons/torrent.ico";
 
@@ -61,7 +72,7 @@ namespace MediaViewer.Torrent
 
                     App.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        Utils.Misc.insertIntoHistoryCollection(Settings.AppSettings.Instance.TorrentAnnounceHistory, vm.AnnounceURL);
+                        Utils.Misc.insertIntoHistoryCollection(Settings.TorrentAnnounceHistory, vm.AnnounceURL);
                     }));
                     
                 }

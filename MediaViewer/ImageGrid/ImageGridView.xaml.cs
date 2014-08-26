@@ -21,21 +21,40 @@ using MediaViewer.Utils.WPF;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.UserControls.Layout;
 using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Regions;
+using System.ComponentModel.Composition;
+using MediaViewer.MediaFileBrowser;
 
 namespace MediaViewer.ImageGrid
 {
     /// <summary>
     /// Interaction logic for ImageGridControl.xaml
     /// </summary>
-    public partial class ImageGridView : UserControl
+    [Export]
+    public partial class ImageGridView : UserControl, IRegionMemberLifetime, INavigationAware
     {
         VirtualizingTilePanel panel;
 
+        ImageGridViewModel ViewModel
+        {
+            get;
+            set;
+        }
+
         public ImageGridView()
+        {
+            InitializeComponent();
+        }
+
+        [ImportingConstructor]
+        public ImageGridView(IRegionManager regionManager)
         {           
             InitializeComponent();
 
             panel = null;
+
+            //ViewModel = new ImageGridViewModel(MediaFileWatcher.Instance.MediaState, regionManager);
+            //DataContext = ViewModel;
 
         }
 
@@ -116,6 +135,26 @@ namespace MediaViewer.ImageGrid
             
         }
 
-                           
+        public bool KeepAlive
+        {
+            get { return(true); }
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return (true);
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            ViewModel = (ImageGridViewModel)navigationContext.Parameters["viewModel"];
+
+            DataContext = ViewModel;
+        }
     }
 }

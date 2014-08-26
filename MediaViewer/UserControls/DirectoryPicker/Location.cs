@@ -22,12 +22,14 @@ namespace MediaViewer.UserControls.DirectoryPicker
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         protected InfoGatherTask infoGatherTask;
+        protected MediaState MediaState { get; set; }
 
-        protected Location(InfoGatherTask infoGatherTask)
+        protected Location(InfoGatherTask infoGatherTask, MediaState state)
         {
+            MediaState = state;
             this.infoGatherTask = infoGatherTask;
 
-            MediaFileWatcher.Instance.MediaState.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
+            state.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
                      
         }
       
@@ -102,7 +104,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                         continue;
                     }
                     
-                    Location directory = new DirectoryLocation(dirInfo, infoGatherTask);
+                    Location directory = new DirectoryLocation(dirInfo, infoGatherTask, MediaState);
 
                     directories.Add(directory);
                 }
