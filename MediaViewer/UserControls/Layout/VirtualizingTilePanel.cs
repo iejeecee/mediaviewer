@@ -24,6 +24,7 @@ namespace MediaViewer.UserControls.Layout
         {
             // For use in the IScrollInfo implementation
             this.RenderTransform = _trans;
+          
         }
 
         /// <summary>
@@ -536,7 +537,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void LineLeft()
         {
-            throw new InvalidOperationException();
+           
         }
 
         /// <summary>
@@ -546,7 +547,7 @@ namespace MediaViewer.UserControls.Layout
         /// </summary>
         public void LineRight()
         {
-            throw new InvalidOperationException();
+           
         }
 
         /// <summary>

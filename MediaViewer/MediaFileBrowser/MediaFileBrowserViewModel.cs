@@ -27,6 +27,10 @@ using MediaViewer.Progress;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.MetaData;
+using Microsoft.Practices.Prism.Commands;
+using System.Windows.Input;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.GlobalEvents;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -39,9 +43,9 @@ namespace MediaViewer.MediaFileBrowser
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
              
-        object currentViewModel;
+        ISelectedMedia currentViewModel;
 
-        public object CurrentViewModel
+        public ISelectedMedia CurrentViewModel
         {
             get { return currentViewModel; }
             set { currentViewModel = value;
@@ -99,13 +103,16 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-        IRegionManager regionManager;
-          
-        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager) {
+        IRegionManager RegionManager {get;set;}
+        IEventAggregator EventAggregator { get; set; }
+
+        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
+        {
 
             this.mediaFileWatcher = mediaFileWatcher;
-            this.regionManager = regionManager;
-
+            RegionManager = regionManager;
+            EventAggregator = eventAggregator;
+            
             ImageViewModel = new ImagePanel.ImageViewModel(mediaFileWatcher.MediaState);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
@@ -166,8 +173,7 @@ namespace MediaViewer.MediaFileBrowser
 
             ContractCommand = new Command(() =>
                 {
-                    navigateToImageGrid();
-
+                    NavigateBackCommand.Execute(null);
                 });
 
             ContractCommand.CanExecute = false;
@@ -209,9 +215,16 @@ namespace MediaViewer.MediaFileBrowser
             {
                 BrowsePath = location;
             });
+           
+            NavigateToImageGridCommand = new Command(navigateToImageGrid);
+            NavigateToImageViewCommand = new Command<String>(navigateToImageView);
+            NavigateToVideoViewCommand = new Command<String>(navigateToVideoView);
 
-
+            NavigateBackCommand = NavigateToImageGridCommand;
+  
         }
+
+      
    
         public string BrowsePath
         {
@@ -255,65 +268,20 @@ namespace MediaViewer.MediaFileBrowser
                 return (mediaFileWatcher.Path);
             }
         }
-     
 
-      
 
-        Command createVideoPreviewImagesCommand;
+        public Command CreateVideoPreviewImagesCommand {get;set;}
+        public Command CreateTorrentFileCommand { get; set; }
+        public Command DeleteSelectedItemsCommand { get; set; }
+        public Command ImportSelectedItemsCommand { get; set; }
+        public Command ExportSelectedItemsCommand { get; set; }
+        public Command<MediaFileItem> ExpandCommand { get; set; }
+        public Command ContractCommand { get; set; }
+        public Command NavigateToImageGridCommand { get; set; }
+        public Command<String> NavigateToImageViewCommand { get; set; }
+        public Command<String> NavigateToVideoViewCommand { get; set; }
+        public ICommand NavigateBackCommand { get; set; }
 
-        public Command CreateVideoPreviewImagesCommand
-        {
-            get { return createVideoPreviewImagesCommand; }
-            set { createVideoPreviewImagesCommand = value; }
-        }
-
-        Command createTorrentFileCommand;
-
-        public Command CreateTorrentFileCommand
-        {
-            get { return createTorrentFileCommand; }
-            set { createTorrentFileCommand = value; }
-        }
-
-        Command deleteSelectedItemsCommand;
-
-        public Command DeleteSelectedItemsCommand
-        {
-            get { return deleteSelectedItemsCommand; }
-            set { deleteSelectedItemsCommand = value; }
-        }
-
-        Command importSelectedItemsCommand;
-
-        public Command ImportSelectedItemsCommand
-        {
-            get { return importSelectedItemsCommand; }
-            set { importSelectedItemsCommand = value; }
-        }
-
-        Command exportSelectedItemsCommand;
-
-        public Command ExportSelectedItemsCommand
-        {
-            get { return exportSelectedItemsCommand; }
-            set { exportSelectedItemsCommand = value; }
-        }
-
-        Command<MediaFileItem> expandCommand;
-
-        public Command<MediaFileItem> ExpandCommand
-        {
-            get { return expandCommand; }
-            set { expandCommand = value; }
-        }
-
-        Command contractCommand;
-
-        public Command ContractCommand
-        {
-            get { return contractCommand; }
-            set { contractCommand = value; }
-        }
       
         private void deleteSelectedItems()
         {
@@ -348,7 +316,7 @@ namespace MediaViewer.MediaFileBrowser
         {
             Uri MetaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
 
-            regionManager.RequestNavigate(RegionNames.MediaFileBrowserRightTabRegion, MetaDataViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserRightTabRegion, MetaDataViewUri, (result) =>
             {
            
             });
@@ -362,15 +330,17 @@ namespace MediaViewer.MediaFileBrowser
             NavigationParameters navigationParams = new NavigationParameters();        
             navigationParams.Add("viewModel", ImageGridViewModel);
 
-            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageGridViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageGridViewUri, (result) =>
             {
                 CurrentViewModel = ImageGridViewModel;
-
-                ContractCommand.CanExecute = false;
-                ExpandCommand.CanExecute = true;
+           
             }, navigationParams);
 
-               
+            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+            options.FilterMode = FilterMode.All;
+            options.IsHidden = true;
+
+            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToVideoView(string location)
@@ -381,15 +351,17 @@ namespace MediaViewer.MediaFileBrowser
             navigationParams.Add("location", location);          
             navigationParams.Add("viewModel", VideoViewModel);
 
-            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>
             {
                 CurrentViewModel = VideoViewModel;
-
-                ContractCommand.CanExecute = true;
-                ExpandCommand.CanExecute = false;
-
+          
             }, navigationParams);
 
+            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+            options.FilterMode = FilterMode.Video;
+            options.IsHidden = false;
+
+            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToImageView(string location)
@@ -400,15 +372,17 @@ namespace MediaViewer.MediaFileBrowser
             navigationParams.Add("location", location);
             navigationParams.Add("viewModel", ImageViewModel);
            
-            regionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageViewUri, (result) =>
             {
                 CurrentViewModel = ImageViewModel;
-
-                ContractCommand.CanExecute = true;
-                ExpandCommand.CanExecute = false;
-
+       
             }, navigationParams);
 
+            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+            options.FilterMode = FilterMode.Images;
+            options.IsHidden = false;
+
+            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
         }
                    
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
@@ -433,5 +407,7 @@ namespace MediaViewer.MediaFileBrowser
                 GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", value);
             }
         }
+
+       
     }
 }

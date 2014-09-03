@@ -1,5 +1,4 @@
-﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.MediaFileModel.Watcher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,14 +8,15 @@ using System.Windows.Data;
 
 namespace MediaViewer.ImageGrid
 {
-    class NotLoadingConverter : IValueConverter
+    class IsLoadingConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             MediaFileItemState state = (MediaFileItemState)value;
 
-            if (state != MediaFileItemState.LOADING) return (true);
-            else return (false);
+            bool isLoading = state == MediaFileItemState.LOADING || state == MediaFileItemState.TIMED_OUT;
+
+            return (isLoading);  
 
         }
 

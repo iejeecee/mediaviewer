@@ -51,6 +51,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             Media = null;
             ItemState = state;
             hasTags = false;
+            hasGeoTag = false;
             id = Guid.NewGuid();
     
         }
@@ -164,6 +165,17 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
+        bool hasGeoTag;
+
+        public bool HasGeoTag
+        {
+            get { return hasGeoTag; }
+            protected set { hasGeoTag = value;
+            NotifyPropertyChanged();     
+            }
+        }
+
+
         bool hasTags;
 
         public bool HasTags
@@ -235,14 +247,8 @@ namespace MediaViewer.MediaFileModel.Watcher
                 if (media != null)
                 {               
                     MediaFactory.write(Media, options, progress);
-                    if (media.Tags.Count > 0)
-                    {
-                        HasTags = true;
-                    }
-                    else
-                    {
-                        HasTags = false;
-                    }
+
+                    checkVariables(media);
                 }
             }
             finally
@@ -282,17 +288,14 @@ namespace MediaViewer.MediaFileModel.Watcher
                             result = MediaFileItemState.ERROR;
                         }
                     }
-              
-                    if (media.Tags.Count > 0)
-                    {
-                        HasTags = true;
-                    }
-                    else
-                    {
-                        HasTags = false;
-                    }
+
+                    checkVariables(media);
                 }
 
+            }
+            catch(TimeoutException) {
+
+                result = MediaFileItemState.TIMED_OUT;              
             }
             catch (Exception e)
             {
@@ -307,7 +310,29 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-     
+
+        void checkVariables(Media media)
+        {
+            if (media.Tags.Count > 0)
+            {
+                HasTags = true;
+            }
+            else
+            {
+                HasTags = false;
+            }
+
+            if (media.Longitude != null && media.Latitude != null)
+            {
+                HasGeoTag = true;
+            }
+            else
+            {
+                HasGeoTag = false;
+            }
+
+        }
+
         public async Task readMetaDataAsync(MediaFactory.ReadOptions options, CancellationToken token)
         {
 

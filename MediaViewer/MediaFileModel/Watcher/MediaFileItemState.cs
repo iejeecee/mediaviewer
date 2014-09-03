@@ -13,6 +13,7 @@ namespace MediaViewer.MediaFileModel.Watcher
         LOADING,
         LOADED,
         CANCELLED,
+        TIMED_OUT,
         FILE_NOT_FOUND,
         DELETED,
         ERROR

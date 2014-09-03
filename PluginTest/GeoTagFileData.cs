@@ -50,7 +50,7 @@ namespace PluginTest
 
         public GeoTagFileData(MediaFileItem item)
         {
-            this.item = item;
+            this.mediaFileItem = item;
             fileName = System.IO.Path.GetFileName(item.Location);
             fileUrl = "file:///" + item.Location.Replace('\\', '/');
 
@@ -72,11 +72,11 @@ namespace PluginTest
            
         }
 
-        MediaFileItem item;
+        MediaFileItem mediaFileItem;
 
-        public MediaFileItem Item
+        public MediaFileItem MediaFileItem
         {
-            get { return item; }
+            get { return mediaFileItem; }
            
         }
 

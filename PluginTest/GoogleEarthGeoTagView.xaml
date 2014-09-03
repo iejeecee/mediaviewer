@@ -6,19 +6,61 @@
              xmlns:local="clr-namespace:PluginTest"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid>
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>                            
         </Grid.RowDefinitions>
-        <ContentControl Grid.Row="0" Content="{Binding WebBrowser}"/>   
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="0" Background="#FFD6DBE9">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" TextWrapping="NoWrap" Text="{Binding SearchText}" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
-            <Button Grid.Column="1" Width="70" Content="Search" Command="{Binding SearchCommand}"/>
+            <TextBox Grid.Column="0" TextWrapping="NoWrap" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" HorizontalAlignment="Stretch" PreviewKeyDown="searchTextBox_PreviewKeyDown" Margin="2,2,2,2"/>
+            <Button Grid.Column="1" Width="50" Content="Search" Command="{Binding SearchCommand}" Margin="2,2,2,2"/>
+            <CheckBox Grid.Column="2" IsChecked="{Binding DrawBorders}" Content="Borders" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,2,2,2"/>
+            <CheckBox Grid.Column="3" IsChecked="{Binding DrawRoads}" Content="Roads"  VerticalAlignment="Center" HorizontalAlignment="Center" Margin="2,2,2,2"/>
+        </Grid>
+        <ContentControl Grid.Row="1" Content="{Binding WebBrowser}" Background="#FFD6DBE9"/>
+        <Grid Grid.Row="2" Background="#FFD6DBE9">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Location" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding GeoTagLocation}" IsReadOnly="True" Margin="2,2,2,2"/>
+            <Label Grid.Column="2" Content="Lat" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="3" VerticalAlignment="Center" Text="{Binding Latitude}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
+            <Label Grid.Column="4" Content="Lon" VerticalAlignment="Center"/>
+            <TextBox Grid.Column="5" VerticalAlignment="Center" Text="{Binding Longitude}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
+            <Button Grid.Column="6" Width="50" Margin="2,2,2,2">
+                <Button.Style>
+                    <Style>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding CreateGeoTagCommand.CanExecute}" Value="true">
+                                <Setter Property="ButtonBase.Command" Value="{Binding CreateGeoTagCommand}"/>
+                                <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
+                                <Setter Property="FrameworkElement.ToolTip" Value="Create Geotag"/>
+                                <Setter Property="ButtonBase.Content" Value="Create"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding DeleteGeoTagCommand.CanExecute}" Value="true">
+                                <Setter Property="ButtonBase.Command" Value="{Binding DeleteGeoTagCommand}"/>
+                                <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
+                                <Setter Property="FrameworkElement.ToolTip" Value="Delete Geotag"/>
+                                <Setter Property="ButtonBase.Content" Value="Delete"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
         </Grid>
     </Grid>
 </UserControl>

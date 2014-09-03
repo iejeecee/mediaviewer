@@ -9,6 +9,7 @@ namespace MediaViewer
     public static class RegionNames
     {
         public const String MainContentRegion = "MainContentRegion";
+        public const String MainMediaSelectionRegion = "MainMediaSelectionRegion";
         public const String MainNavigationToolBarRegion = "MainNavigationToolBarRegion";
         public const String MainOptionalToolBarRegion = "MainOptionalToolBarRegion";
         

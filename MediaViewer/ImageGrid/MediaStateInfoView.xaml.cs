@@ -43,7 +43,7 @@ namespace MediaViewer.ImageGrid
         private static void collectionInfoView_MediaStateInfoChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             MediaStateInfoView infoView = d as MediaStateInfoView;
-            infoView.infoLabel.Content = (String)e.NewValue;
+            infoView.infoLabelTextBlock.Text = (String)e.NewValue;
         }
 
         public DateTime MediaStateDateTime
@@ -144,6 +144,37 @@ namespace MediaViewer.ImageGrid
                 nrItemsLabel.Content += "s";
             }
         }
+
+        public bool IsFlatMode
+        {
+            get { return (bool)GetValue(IsFlatModeProperty); }
+            set { SetValue(IsFlatModeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsFlatMode.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsFlatModeProperty =
+            DependencyProperty.Register("IsFlatMode", typeof(bool), typeof(MediaStateInfoView), new PropertyMetadata(false,isFlatModeChangedCallback));
+
+        private static void isFlatModeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaStateInfoView infoView = d as MediaStateInfoView;
+
+            if ((bool)e.NewValue == true)
+            {
+                infoView.dateTimeLabel.SetValue(Grid.RowProperty, 0);
+                infoView.dateTimeLabel.SetValue(Grid.ColumnProperty, 2);
+                infoView.dateTimeLabel.FontWeight = FontWeights.Normal;
+                infoView.dateTimeLabel.FontSize = infoView.infoLabel.FontSize;
+            }
+            else
+            {
+                infoView.dateTimeLabel.SetValue(Grid.RowProperty, 1);
+                infoView.dateTimeLabel.SetValue(Grid.ColumnProperty, 0);
+                infoView.dateTimeLabel.FontWeight = FontWeights.Bold;
+                infoView.dateTimeLabel.FontSize = 8;
+            }
+
+        }        
         
     }
 }

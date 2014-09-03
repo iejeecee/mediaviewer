@@ -876,10 +876,20 @@ namespace MediaViewer.MetaData
             {
                 dynamicProperties.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
             }
-           
+                      
             if (media is ImageMedia)
             {
                 dynamicProperties.AddRange(FormatMetaData.formatProperties(media as ImageMedia));
+            }
+
+            if (media.Latitude != null)
+            {
+                dynamicProperties.Add(new Tuple<string, string>("GPS Latitude", media.Latitude));
+            }
+
+            if (media.Longitude != null)
+            {
+                dynamicProperties.Add(new Tuple<string, string>("GPS Longitude", media.Longitude));
             }
             
             if (dynamicProperties.Count > nrProps)

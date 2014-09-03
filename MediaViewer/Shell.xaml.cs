@@ -18,6 +18,7 @@ using MediaViewer.ImagePanel;
 using MediaViewer.VideoPanel;
 using MediaViewer.MediaFileModel.Watcher;
 using System.Reflection;
+using Microsoft.Practices.Prism.PubSubEvents;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -33,6 +34,9 @@ namespace MediaViewer
 
         [Import(AllowRecomposition = false)]
         public IRegionManager RegionManager;
+
+        [Import(AllowRecomposition = false)]
+        public IEventAggregator EventAggregator;
 
         public static ShellViewModel ShellViewModel { get; set; }
 
@@ -53,7 +57,7 @@ namespace MediaViewer
 
         public void OnImportsSatisfied()
         {
-            ShellViewModel = new ShellViewModel(MediaFileWatcher.Instance, RegionManager);
+            ShellViewModel = new ShellViewModel(MediaFileWatcher.Instance, RegionManager, EventAggregator);
 
             DataContext = ShellViewModel;
 
@@ -62,6 +66,8 @@ namespace MediaViewer
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(MediaFileBrowserNavigationItemView));
          
             String location = App.Args.Count() > 0 ? App.Args[0] : "";
+
+            ShellViewModel.navigateToMediaStackPanelView();
 
             if (Utils.MediaFormatConvert.isImageFile(location))
             {

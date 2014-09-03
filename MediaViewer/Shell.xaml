@@ -9,6 +9,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>           
         </Grid.RowDefinitions>      
         <ToolBarPanel Grid.Row="1" Background="{StaticResource menuBackgroundColor}" Orientation="Horizontal">
             <ToolBar>
@@ -22,6 +23,7 @@
             </ToolBar>
             <ContentControl regions:RegionManager.RegionName="MainOptionalToolBarRegion"/>            
         </ToolBarPanel>
-        <ContentControl Grid.Row="2" regions:RegionManager.RegionName="MainContentRegion" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
+        <ContentControl Grid.Row="2" regions:RegionManager.RegionName="MainContentRegion" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>        
+        <ContentControl Grid.Row="3" regions:RegionManager.RegionName="MainMediaSelectionRegion" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"/>
     </Grid>
 </Window>

@@ -17,6 +17,7 @@ using MediaViewer.MediaDatabase;
 using Microsoft.Practices.Prism.Regions;
 using System.Windows.Input;
 using MediaViewer.Pager;
+using MediaViewer.MetaData;
 
 namespace MediaViewer.ImageGrid
 {
@@ -60,7 +61,7 @@ namespace MediaViewer.ImageGrid
         ISOSpeedRating
     }
     
-    public class ImageGridViewModel : ObservableObject, IPageable
+    public class ImageGridViewModel : ObservableObject, IPageable, ISelectedMedia
     {
 
         IMediaState mediaState;

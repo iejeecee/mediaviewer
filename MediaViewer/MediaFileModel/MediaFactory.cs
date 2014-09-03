@@ -39,8 +39,8 @@ namespace MediaViewer.MediaFileModel
         // 60 seconds
         const int HTTP_TIMEOUT_MS = 60 * 1000;
         const int HTTP_READ_BUFFER_SIZE_BYTES = 8096;
-        // 1 hour
-        const int FILE_OPEN_ASYNC_TIMEOUT_MS = 60 * 60 * 1000;
+        // 5 seconds
+        const int FILE_OPEN_ASYNC_TIMEOUT_MS = 5 * 1000;
         // 5 seconds
         const int FILE_OPEN_SYNC_TIMEOUT_MS = 5 * 1000;
 

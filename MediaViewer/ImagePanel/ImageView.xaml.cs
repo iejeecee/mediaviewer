@@ -18,6 +18,8 @@ using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.MediaFileBrowser;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.GlobalEvents;
 
 namespace MediaViewer.ImagePanel
 {
@@ -43,13 +45,16 @@ namespace MediaViewer.ImagePanel
         double normalScale;
 
         ImageViewModel ViewModel { get; set; }
+        IEventAggregator EventAggregator { get; set; }
 
-        public ImageView()
+        [ImportingConstructor]
+        public ImageView(IEventAggregator eventAggregator)
         {
+            EventAggregator = eventAggregator;
+
             InitializeComponent();
           
             pictureBox.Stretch = Stretch.None;
-
         
         }
 
@@ -283,7 +288,7 @@ namespace MediaViewer.ImagePanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            
+            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Unsubscribe(mediaBrowser_SelectedEvent);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -298,7 +303,13 @@ namespace MediaViewer.ImagePanel
                 ViewModel.LoadImageAsyncCommand.DoExecute(location);
             }
 
+            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Subscribe(mediaBrowser_SelectedEvent, ThreadOption.UIThread);
               
+        }
+
+        private void mediaBrowser_SelectedEvent(MediaFileItem item)
+        {
+            ViewModel.LoadImageAsyncCommand.DoExecute(item.Location);
         }
     }
 }

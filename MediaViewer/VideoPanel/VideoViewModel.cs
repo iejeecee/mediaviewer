@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaFileModel;
 using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.MetaData;
 using MediaViewer.Pager;
 using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
@@ -19,8 +20,8 @@ using VideoPlayerControl;
 
 namespace MediaViewer.VideoPanel
 {
-   
-    public class VideoViewModel : ObservableObject, IPageable, IDisposable
+
+    public class VideoViewModel : ObservableObject, IPageable, IDisposable, ISelectedMedia
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 

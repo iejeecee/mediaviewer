@@ -16,11 +16,12 @@ using System.Collections.Specialized;
 using MediaViewer.MediaDatabase;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
+using MediaViewer.MetaData;
 
 namespace MediaViewer.ImagePanel
 {
-  
-    public class ImageViewModel : ObservableObject, IPageable
+
+    public class ImageViewModel : ObservableObject, IPageable, ISelectedMedia
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -69,7 +70,14 @@ namespace MediaViewer.ImagePanel
                 loadImageCTS.Cancel();
                 loadImageCTS = new CancellationTokenSource();
 
-                await Task.Factory.StartNew(() => loadImage((String)fileName), loadImageCTS.Token);
+                try
+                {
+                    await Task.Factory.StartNew(() => loadImage((String)fileName), loadImageCTS.Token);
+                }
+                catch (TaskCanceledException)
+                {
+                
+                }
 
             }));
 

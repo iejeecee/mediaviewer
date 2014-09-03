@@ -27,8 +27,9 @@ using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.Prism.Mvvm;
 using MediaViewer.MetaData;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.GlobalEvents;
 using Microsoft.Practices.ServiceLocation;
+using MediaViewer.VideoPanel;
+using MediaViewer.GlobalEvents;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -41,11 +42,14 @@ namespace MediaViewer.MediaFileBrowser
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        MediaFileBrowserViewModel MediaFileBrowserViewModel
+        public MediaFileBrowserViewModel MediaFileBrowserViewModel
         {
             get;
-            set;
+            private set;
         }
+
+        IRegionManager RegionManager { get; set; }
+        IEventAggregator EventAggregator { get; set; }
     
         [ImportingConstructor]
         public MediaFileBrowserView(IRegionManager regionManager, IEventAggregator eventAggregator)
@@ -54,16 +58,48 @@ namespace MediaViewer.MediaFileBrowser
 
             InitializeComponent();
 
-            //MediaFileBrowserViewModel = new MediaFileBrowserViewModel(MediaFileWatcher.Instance, regionManager);
-            
-            //DataContext = MediaFileBrowserViewModel;
+            RegionManager = regionManager;
+            EventAggregator = eventAggregator;
 
-            /*this.Loaded += (s, e) =>
+            RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigating += mediaFileBrowserContentRegion_Navigating;
+            RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigated += mediaFileBrowserContentRegion_Navigated;
+                                                            
+        }
+
+        private void mediaFileBrowserContentRegion_Navigating(object sender, RegionNavigationEventArgs e)
+        {
+            if (MediaFileBrowserViewModel == null || RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Journal.CurrentEntry == null) return;
+
+            Uri currentUri = RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Journal.CurrentEntry.Uri;
+
+            if (currentUri.ToString().StartsWith(typeof(VideoView).FullName))
             {
-                MediaFileBrowserViewModel.navigateToMetaData();
-                MediaFileBrowserViewModel.navigateToImageGrid();
-            };*/
-                                      
+                MediaFileBrowserViewModel.NavigateBackCommand = MediaFileBrowserViewModel.NavigateToVideoViewCommand;
+            }
+            else if (currentUri.ToString().StartsWith(typeof(ImageView).FullName))
+            {
+                MediaFileBrowserViewModel.NavigateBackCommand = MediaFileBrowserViewModel.NavigateToImageViewCommand;
+            }
+            else
+            {
+                MediaFileBrowserViewModel.NavigateBackCommand = MediaFileBrowserViewModel.NavigateToImageGridCommand;
+            }
+        }
+
+        private void mediaFileBrowserContentRegion_Navigated(object sender, RegionNavigationEventArgs e)
+        {
+            if (MediaFileBrowserViewModel == null) return;
+          
+            if (e.Uri.ToString().StartsWith(typeof(ImageGridView).FullName))
+            {
+                MediaFileBrowserViewModel.ExpandCommand.CanExecute = true;
+                MediaFileBrowserViewModel.ContractCommand.CanExecute = false;
+            }
+            else
+            {
+                MediaFileBrowserViewModel.ExpandCommand.CanExecute = false;
+                MediaFileBrowserViewModel.ContractCommand.CanExecute = true;
+            }
         }
 
         private void selectedViewModelChanged(object sender, PropertyChangedEventArgs e)
@@ -123,6 +159,28 @@ namespace MediaViewer.MediaFileBrowser
             {
                 MediaFileBrowserViewModel.navigateToMetaData();
                 MediaFileBrowserViewModel.navigateToImageGrid();
+            }
+            else
+            {
+                MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+
+                if (MediaFileBrowserViewModel.CurrentViewModel is ImageGridViewModel)
+                {                    
+                    options.FilterMode = FilterMode.All;
+                    options.IsHidden = true;                    
+                }
+                else if(MediaFileBrowserViewModel.CurrentViewModel is ImageViewModel)
+                {
+                    options.FilterMode = FilterMode.Images;
+                    options.IsHidden = false;
+                }
+                else if (MediaFileBrowserViewModel.CurrentViewModel is VideoViewModel)
+                {
+                    options.FilterMode = FilterMode.Video;
+                    options.IsHidden = false;
+                }
+                
+                EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
             }
 
         }

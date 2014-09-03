@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -16,18 +17,20 @@ namespace PluginTest
     public class GeoTagScriptInterface {
 	
 	    WebBrowser browser;
-        List<GeoTagFileData> geoTagData;
 
-        public List<GeoTagFileData> GeoTagData
+        List<GeoTagFileData> geoTagFileItems;
+
+        public List<GeoTagFileData> GeoTagFileItems
         {
-            get { return geoTagData; }          
+            private set { geoTagFileItems = value; }
+            get { return geoTagFileItems; }          
         }
 
 	    GeoTagFileData getGeoTagFileData(int placeMarkIndex) {
 
 		    GeoTagFileData data = null;
 
-		    foreach(GeoTagFileData image in GeoTagData) {
+		    foreach(GeoTagFileData image in GeoTagFileItems) {
 
 			    if(image.PlaceMarkIndex == placeMarkIndex) {
 
@@ -44,33 +47,49 @@ namespace PluginTest
 	    public event EventHandler<GeoTagFileData> PlaceMarkMoved;
 	    public event EventHandler<GeoTagFileData> EndPlaceMarkMoved;
 	    public event EventHandler<String> AddressUpdate;
-	
-	    public GeoTagScriptInterface(WebBrowser browser, List<GeoTagFileData> geoTagFileItems) {
+
+        public SemaphoreSlim initializing = new SemaphoreSlim(0, 1);   
+
+	    public GeoTagScriptInterface(WebBrowser browser) {
 
 		    this.browser = browser;
-
-            geoTagData = geoTagFileItems;
-		               	    
+            GeoTagFileItems = new List<GeoTagFileData>();
+         		
+           	    
 	    }
 
 	    public void initialize()
-        {
-		    foreach(GeoTagFileData image in geoTagData) {
-
-			    if(image.HasGeoTag) {
-
-				    createPlaceMark(image, false);
-			    }
-		    }
-
+        {		 
             setBorders(false);
             setRoads(false);
             setTerrain(false);
+
+            initializing.Release();
 
             if (Initialized != null)
             {
                 Initialized(this, EventArgs.Empty);
             }
+        }
+
+        public void addGeoTagItem(GeoTagFileData item)
+        {
+            if (item.HasGeoTag)
+            {
+                createPlaceMark(item, false);
+            }
+
+            GeoTagFileItems.Add(item);
+        }
+
+        public void clearAll()
+        {
+            foreach (GeoTagFileData item in GeoTagFileItems)
+            {
+                deletePlaceMark(item);
+            }
+
+            GeoTagFileItems.Clear();
         }
 
 	    public void failure(String errorString) {

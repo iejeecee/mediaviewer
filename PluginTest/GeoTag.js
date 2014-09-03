@@ -98,17 +98,20 @@ function createPlaceMark(latitude, longitude, placemarkName, imagePath, imageNam
 
         // prevent the default balloon from popping up
         event.preventDefault();
-        /*
+/*        
         var balloon = ge.createHtmlStringBalloon('');
         balloon.setFeature(event.getTarget());
-        balloon.setMaxWidth(300);
-
-        // Google logo.
-        balloon.setContentString(
-             '<img src="' + imagePath + '" alt="' + imageName + '" width="256">');
+        balloon.setCloseButtonEnabled(true);
+        //balloon.setMaxWidth(400);
+        
+        var content =
+            imageName + '<br>' +
+            '<img src="' + imagePath + '" alt="' + imageName + '" width="400">';
+       
+        balloon.setContentString(content);
 
         ge.setBalloon(balloon);
-        */
+*/      
         var placeMarkId = parseInt(event.getTarget().getId());
         //stylePlaceMark(placeMarkId);
         window.external.placeMarkClicked(placeMarkId);

@@ -1,7 +1,10 @@
-﻿using MediaViewer.ImagePanel;
+﻿using MediaViewer.GlobalEvents;
+using MediaViewer.ImageGrid;
+using MediaViewer.ImagePanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.MediaFileModel.Watcher;
 using MediaViewer.VideoPanel;
+using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
 using MvvmFoundation.Wpf;
 using System;
@@ -14,7 +17,8 @@ namespace MediaViewer
 {
     public class ShellViewModel : ObservableObject
     {
-        IRegionManager RegionManager { get; set; }
+        public IRegionManager RegionManager { get; set; }
+        public IEventAggregator EventAggregator { get; set; }
 
         ImageViewModel imageViewModel;
 
@@ -47,20 +51,30 @@ namespace MediaViewer
             }
         }
 
-        public ShellViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager)
+        public ShellViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
         {
             RegionManager = regionManager;
+            EventAggregator = eventAggregator;
 
             ImageViewModel = new ImagePanel.ImageViewModel(mediaFileWatcher.MediaState);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
             ImageViewModel.IsEffectsEnabled = false;
 
             VideoViewModel = new VideoPanel.VideoViewModel(mediaFileWatcher);
-            MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager);
+            MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator);
 
         }
 
+        public void navigateToMediaStackPanelView()
+        {
+            Uri ImageViewUri = new Uri(typeof(ImageStackPanelView).FullName, UriKind.Relative);
 
+            NavigationParameters navigationParams = new NavigationParameters();
+
+            navigationParams.Add("viewModel", MediaFileBrowserViewModel.ImageGridViewModel);
+
+            RegionManager.RequestNavigate(RegionNames.MainMediaSelectionRegion, ImageViewUri, navigationParams);
+        }
 
 
         public void navigateToImageView(String location = null)
@@ -78,6 +92,12 @@ namespace MediaViewer
 
             RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, ImageToolbarViewUri, navigationParams);
 
+            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+          
+            options.FilterMode = FilterMode.Images;
+            options.IsHidden = true;
+        
+            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToMediaFileBrowser()
@@ -105,6 +125,13 @@ namespace MediaViewer
             navigationParams.Add("location", location);
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, VideoViewUri, navigationParams);
+
+            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+
+            options.FilterMode = FilterMode.Video;
+            options.IsHidden = true;
+
+            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
             
         }
     }

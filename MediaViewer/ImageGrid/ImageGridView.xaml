@@ -75,8 +75,7 @@
         <ItemsControl x:Name="itemsControl" Grid.Row="1" ItemsSource="{Binding Media}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>
-                    <!--<UniformGrid Columns="{Binding NrGridColumns}" Rows="{Binding NrGridRows}" VerticalAlignment="Top" />-->
+                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
@@ -85,7 +84,7 @@
                     <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" 
                                                  Tag="{Binding ElementName=itemsControl}" MaxHeight="150" 
                                                  ExtraInfoType="{Binding DataContext.SortMode, ElementName=itemsControl}"
-                                                 IsGridLoaded="{Binding DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=itemsControl}"/>
+                                                 IsGridLoaded="{Binding DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=itemsControl}"/>                    
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

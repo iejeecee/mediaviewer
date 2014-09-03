@@ -203,10 +203,18 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
-    <Compile Include="GlobalEvents\MediaFileBrowserViewModelEvent.cs" />
+    <Compile Include="GlobalEvents\MediaBrowserEvent.cs" />
+    <Compile Include="ImageGrid\ExportingConstructor.cs" />
     <Compile Include="ImageGrid\ExtraItemInfoView.xaml.cs">
       <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ImageGrid\ImageGridItemBasicView.xaml.cs">
+      <DependentUpon>ImageGridItemBasicView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageGrid\ImageStackPanelView.xaml.cs">
+      <DependentUpon>ImageStackPanelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ImageGrid\IsLoadingConverter.cs" />
     <Compile Include="ImagePanel\ImageToolbarView.xaml.cs">
       <DependentUpon>ImageToolbarView.xaml</DependentUpon>
     </Compile>
@@ -223,7 +231,6 @@
     <Compile Include="ImageGrid\ImageGridItemView.xaml.cs">
       <DependentUpon>ImageGridItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ImageGrid\NotLoadingConverter.cs" />
     <Compile Include="ImageGrid\ThumbnailSelectorConverter.cs" />
     <Compile Include="ImagePanel\BrightnessView.xaml.cs">
       <DependentUpon>BrightnessView.xaml</DependentUpon>
@@ -233,9 +240,6 @@
     </Compile>
     <Compile Include="ImagePanel\ImageNavigationItemView.xaml.cs">
       <DependentUpon>ImageNavigationItemView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ImagePanel\ImageWithPagerView.xaml.cs">
-      <DependentUpon>ImageWithPagerView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Import\ExportViewModel.cs" />
     <Compile Include="Import\ImportProgressViewModel.cs" />
@@ -250,6 +254,7 @@
     <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
     <Compile Include="MediaFileModel\Watcher\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
+    <Compile Include="MetaData\ISelectedMedia.cs" />
     <Compile Include="MetaData\ObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
@@ -528,6 +533,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="ImageGrid\ImageGridItemBasicView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ImageGrid\ImageStackPanelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="ImagePanel\ImageToolbarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -557,10 +570,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ImageNavigationItemView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanel\ImageWithPagerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -978,6 +987,7 @@
     <Resource Include="Resources\Icons\text.ico" />
     <Resource Include="Resources\Icons\circle.ico" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\AutoMapper.3.2.0\tools\AutoMapper.targets" Condition="Exists('..\packages\AutoMapper.3.2.0\tools\AutoMapper.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -19,7 +19,7 @@ namespace MediaViewer.MediaFileModel.Watcher
     /// Also makes sure the items in the collection are unique
     /// </summary>
     /// <typeparam name="MediaFileItem"></typeparam>
-    public class MediaLockedCollection : ObservableObject, IDisposable
+    public class MediaLockedCollection : ObservableObject, IDisposable, IEnumerable<MediaFileItem>
     {
 
         MediaFileItemLoader itemLoader;
@@ -462,7 +462,15 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
         }
 
-        
+        public IEnumerator<MediaFileItem> GetEnumerator()
+        {
+            return(items.GetEnumerator());
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return (items.GetEnumerator());
+        }
     }
 }
 

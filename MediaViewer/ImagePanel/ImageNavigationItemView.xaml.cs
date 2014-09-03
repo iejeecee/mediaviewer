@@ -30,6 +30,7 @@ namespace MediaViewer.ImagePanel
         public ImageNavigationItemView()
         {
             InitializeComponent();
+    
         }
 
         private void navigationButton_Click(object sender, RoutedEventArgs e)

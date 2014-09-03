@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Pager
 {
-    interface IPageable
+    public interface IPageable
     {
         int NrPages { get; set; }
         int CurrentPage { get; set; }

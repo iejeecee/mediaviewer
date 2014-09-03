@@ -39,5 +39,13 @@ namespace PluginTest
         {
             get { return (true); }
         }
+
+        private void searchTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                ViewModel.SearchCommand.DoExecute();
+            }
+        }
     }
 }

@@ -12,7 +12,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 {
     class MediaFileItemLoader : ObservableObject
     {
-        List<MediaFileItem> items;
+        List<MediaFileItem> queuedItems;
         int maxLoadingTasks;
         int nrLoadingTasks;
         CancellationTokenSource tokenSource = new CancellationTokenSource();
@@ -21,7 +21,7 @@ namespace MediaViewer.MediaFileModel.Watcher
 
         public MediaFileItemLoader()
         {
-            items = new List<MediaFileItem>();
+            queuedItems = new List<MediaFileItem>();
             maxLoadingTasks = 5;
             nrLoadingTasks = 0;
             
@@ -31,86 +31,87 @@ namespace MediaViewer.MediaFileModel.Watcher
        
         public void addRange(IEnumerable<MediaFileItem> itemList)
         {
-            Monitor.Enter(items);
+            Monitor.Enter(queuedItems);
             try
             {
                 foreach (MediaFileItem item in itemList)
                 {
-                    items.Add(item);
+                    queuedItems.Add(item);
                 }
-                Monitor.PulseAll(items);
+                Monitor.PulseAll(queuedItems);
             }
             finally
             {
-                Monitor.Exit(items);
+                Monitor.Exit(queuedItems);
             }
         }
 
         public void add(MediaFileItem item)
         {
-            Monitor.Enter(items);
+            Monitor.Enter(queuedItems);
             try
             {
-                items.Add(item);
-                Monitor.PulseAll(items);
+                queuedItems.Add(item);
+                Monitor.PulseAll(queuedItems);
             }
             finally
             {
-                Monitor.Exit(items);
+                Monitor.Exit(queuedItems);
             }
         }
 
         public void remove(MediaFileItem item)
         {
-            Monitor.Enter(items);
+            Monitor.Enter(queuedItems);
             try
             {
-                items.Remove(item);
+                queuedItems.Remove(item);
             }
             finally
             {
-                Monitor.Exit(items);
+                Monitor.Exit(queuedItems);
             }
         }
 
         public void clear()
         {
 
-            Monitor.Enter(items);
+            Monitor.Enter(queuedItems);
             try
             {
-                items.Clear();
+                queuedItems.Clear();
                 tokenSource.Cancel();
                 tokenSource = new CancellationTokenSource();               
             }
             finally
             {
-                Monitor.Exit(items);
+                Monitor.Exit(queuedItems);
             }
             
         }
 
         public void loadLoop()
         {
-            Monitor.Enter(items);
+            Monitor.Enter(queuedItems);
             try
             {
                 while (true)
                 {
-                    while(items.Count == 0)
+                    while(queuedItems.Count == 0)
                     {
-                        Monitor.Wait(items);
+                        Monitor.Wait(queuedItems);
                     }
 
-                    MediaFileItem item = items[0];
-                    items.RemoveAt(0);
+                    MediaFileItem item = queuedItems[0];
+                    queuedItems.RemoveAt(0);
 
                     // don't reload already loaded items
                     if (item.ItemState == MediaFileItemState.LOADED) continue;
               
+                    // wait until we have a thread available to load the item
                     while(nrLoadingTasks == maxLoadingTasks)
                     {
-                        Monitor.Wait(items);
+                        Monitor.Wait(queuedItems);
                     }
 
                     nrLoadingTasks++;
@@ -121,13 +122,20 @@ namespace MediaViewer.MediaFileModel.Watcher
                                 MediaFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
 
                     }).ContinueWith((result) =>
-                    {                        
-                        Monitor.Enter(items);
-                        nrLoadingTasks--;               
-                        Monitor.PulseAll(items);
-                        Monitor.Exit(items);
+                    {                                                
+                        Monitor.Enter(queuedItems);
+                        nrLoadingTasks--;
 
-                        if (ItemFinishedLoading != null)
+                        if (item.ItemState == MediaFileItemState.TIMED_OUT)
+                        {
+                            // the item timed out, try loading it again later
+                            queuedItems.Add(item);
+                        }
+
+                        Monitor.PulseAll(queuedItems);
+                        Monitor.Exit(queuedItems);
+
+                        if (ItemFinishedLoading != null && item.ItemState != MediaFileItemState.TIMED_OUT)
                         {
                             ItemFinishedLoading(item, EventArgs.Empty);
                         }
@@ -137,7 +145,7 @@ namespace MediaViewer.MediaFileModel.Watcher
             }
             finally
             {
-                Monitor.Exit(items);
+                Monitor.Exit(queuedItems);
             }
         
         }

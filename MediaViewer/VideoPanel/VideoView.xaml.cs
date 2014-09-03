@@ -1,6 +1,8 @@
-﻿using MediaViewer.ImageGrid;
+﻿using MediaViewer.GlobalEvents;
+using MediaViewer.ImageGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.MediaFileModel.Watcher;
+using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
 using MvvmFoundation.Wpf;
 using System;
@@ -33,15 +35,13 @@ namespace MediaViewer.VideoPanel
 
         bool updateTimeLineSlider;
 
-        VideoViewModel viewModel;
 
-        public VideoViewModel ViewModel
-        {
-            get { return viewModel; }
-            set { viewModel = value; }
-        }
+        public VideoViewModel ViewModel { get; set; }
+      
+        IEventAggregator EventAggregator {get;set;}
 
-        public VideoView()
+        [ImportingConstructor]
+        public VideoView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
 
@@ -49,9 +49,7 @@ namespace MediaViewer.VideoPanel
 
             updateTimeLineSlider = true;
 
-            //ViewModel = new VideoViewModel(MediaFileWatcher.Instance);
-
-            //DataContext = ViewModel;
+            EventAggregator = eventAggregator;
                  
         }
 
@@ -103,7 +101,7 @@ namespace MediaViewer.VideoPanel
             else if (e.PropertyName.Equals("VideoState"))
             {
 
-                switch (viewModel.VideoState)
+                switch (ViewModel.VideoState)
                 {
                     case VideoPlayerControl.VideoState.PLAYING:
                         {
@@ -166,8 +164,8 @@ namespace MediaViewer.VideoPanel
 
         void updateTimeLine()
         {
-            timeLineSlider.Value = viewModel.PositionSeconds;
-            timeLineSlider.Maximum = viewModel.DurationSeconds;
+            timeLineSlider.Value = ViewModel.PositionSeconds;
+            timeLineSlider.Maximum = ViewModel.DurationSeconds;
         }
 
         private void timeLineSlider_MouseMoveEvent(object sender, MouseEventArgs e)
@@ -210,7 +208,7 @@ namespace MediaViewer.VideoPanel
 
             int sliderValue = (int)p;
 
-            viewModel.SeekCommand.DoExecute(sliderValue);
+            ViewModel.SeekCommand.DoExecute(sliderValue);
 
             updateTimeLineSlider = true;
         }
@@ -236,12 +234,13 @@ namespace MediaViewer.VideoPanel
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-           
+        {           
             if(navigationContext.Uri.Equals(new Uri(typeof(ImageGridView).FullName,UriKind.Relative))) {
 
                 ViewModel.CloseCommand.DoExecute();
             }
+
+            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Unsubscribe(mediaBrowser_SelectedEvent);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -255,7 +254,15 @@ namespace MediaViewer.VideoPanel
             {
                 ViewModel.OpenCommand.DoExecute(location);
                 ViewModel.PlayCommand.DoExecute();
-            }                       
+            }
+
+            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Subscribe(mediaBrowser_SelectedEvent, ThreadOption.UIThread);
+        }
+
+        private void mediaBrowser_SelectedEvent(MediaFileItem item)
+        {
+            ViewModel.OpenCommand.DoExecute(item.Location);
+            ViewModel.PlayCommand.DoExecute();
         }
     }
 }

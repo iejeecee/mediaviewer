@@ -480,20 +480,25 @@ namespace MediaViewer.Utils
                     return new FileStream(handle, access);
 
                 }
-               
+
                 if (errorCode != ERROR_SHARING_VIOLATION)
-                    break;
-                if (timeoutMs >= 0 && (DateTime.Now - start).TotalMilliseconds > timeoutMs)
-                    break;
-                if (token != null && token.IsCancellationRequested == true)
-                    break;
+                {
+                    Win32Exception e = new System.ComponentModel.Win32Exception(errorCode);
+
+                    throw new IOException(e.Message, errorCode);
+                }
+                else if (timeoutMs >= 0 && (DateTime.Now - start).TotalMilliseconds > timeoutMs)
+                {
+                    throw new TimeoutException("Timed out waiting for file access: " + filePath);
+                }
+                else if (token != null && token.IsCancellationRequested == true) {
+
+                    return(null);
+                }
+
                 Thread.Sleep(100);
             }
-
-
-            Win32Exception e = new System.ComponentModel.Win32Exception(errorCode);
-
-            throw new IOException(e.Message, errorCode);
+           
         }
        
         public static bool isFileLocked(string fileName, bool ignoreIOExceptions)

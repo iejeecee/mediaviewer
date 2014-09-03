@@ -29,7 +29,7 @@ namespace MediaViewer.MediaFileModel
                   BitmapCacheOption.OnDemand);
 
                 BitmapFrame frame = bitmapDecoder.Frames[0];
-
+           
                 image.Width = frame.PixelWidth;
                 image.Height = frame.PixelHeight;
 

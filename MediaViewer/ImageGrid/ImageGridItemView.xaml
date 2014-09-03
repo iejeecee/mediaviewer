@@ -18,7 +18,7 @@
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
             <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
-            <ImageGrid:NotLoadingConverter x:Key="notLoadingConverter"/>
+            <ImageGrid:IsLoadingConverter x:Key="isLoadingConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="root">
@@ -29,7 +29,7 @@
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
                             <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                             <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding Parent.MediaFileItem.IsSelected, ElementName=root}" Value="true">
@@ -82,7 +82,7 @@
                                 <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="EMPTY">
                                     <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                     <Setter Property="Border.BorderBrush" Value="{x:Null}"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -98,10 +98,10 @@
                             <Loading:LoadingView.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                             <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Visible"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource notLoadingConverter}}" Value="true">
+                                        <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="false">
                                             <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Collapsed"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -112,7 +112,7 @@
                         <Image.Style>
                             <Style>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                         <Setter Property="Image.Visibility" Value="Hidden"/>
                                         <Setter Property="Image.Source" Value="{x:Null}"/>                        
                                     </DataTrigger>
@@ -153,7 +153,7 @@
                                         <Setter Property="UIElement.IsEnabled" Value="true"/>
                                         <Setter Property="UIElement.Visibility" Value="Visible"/>
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root}" Value="LOADING">
+                                    <DataTrigger Binding="{Binding Parent.MediaFileItem.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                         <Setter Property="UIElement.IsEnabled" Value="false"/>
                                         <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                                     </DataTrigger>
@@ -180,6 +180,7 @@
                             </Image.Style>
                         </Image>
                         <Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasTags, Converter={StaticResource booleanToVisibilityConverter}, ElementName=root}" ToolTip="Tagged"/>
+                        <Image Source="pack://application:,,,/Resources/Icons/geotag.ico" MaxHeight="11" Visibility="{Binding Parent.MediaFileItem.HasGeoTag, Converter={StaticResource booleanToVisibilityConverter}, ElementName=root}" ToolTip="Geotagged"/>
                         <!--<Image Source="pack://application:,,,/Resources/Icons/tag.ico" MaxHeight="11"/>-->
                     </StackPanel>
                     <ImageGrid:ExtraItemInfoView x:Name="extraInfo" Grid.Column="1" HorizontalAlignment="Stretch"/>
