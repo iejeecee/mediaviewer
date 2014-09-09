@@ -1,8 +1,8 @@
-﻿using MediaViewer.GlobalEvents;
+﻿using MediaViewer.Model.GlobalEvents;
 using MediaViewer.ImageGrid;
 using MediaViewer.ImagePanel;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.VideoPanel;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaViewer.Model.Media.State.CollectionView;
 
 namespace MediaViewer
 {
@@ -94,10 +95,10 @@ namespace MediaViewer
 
             MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
           
-            options.FilterMode = FilterMode.Images;
+            options.FilterMode = MediaStateFilterMode.Images;
             options.IsHidden = true;
         
-            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToMediaFileBrowser()
@@ -128,10 +129,10 @@ namespace MediaViewer
 
             MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
 
-            options.FilterMode = FilterMode.Video;
+            options.FilterMode = MediaStateFilterMode.Video;
             options.IsHidden = true;
 
-            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
             
         }
     }

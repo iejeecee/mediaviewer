@@ -2,10 +2,9 @@
 using MediaViewer.ImageGrid;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;
-using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -19,6 +18,8 @@ using System.Windows.Data;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using Microsoft.Practices.Prism.Regions;
+using MediaViewer.Model.Media.Metadata;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.MetaData
 {
@@ -783,7 +784,7 @@ namespace MediaViewer.MetaData
                 if (items.Count == 1 && Items[0].Media != null)
                 {
 
-                    Media media = Items[0].Media;
+                    BaseMedia media = Items[0].Media;
 
                     if (media.SupportsXMPMetadata == false)
                     {
@@ -860,7 +861,7 @@ namespace MediaViewer.MetaData
 
         }
 
-        private void getExifProperties(List<Tuple<string, string>> dynamicProperties, Media media)
+        private void getExifProperties(List<Tuple<string, string>> dynamicProperties, BaseMedia media)
         {
             int nrProps = dynamicProperties.Count;
            
@@ -912,7 +913,7 @@ namespace MediaViewer.MetaData
             p.AddRange(FormatMetaData.formatProperties(video));
 
             p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
-            p.Add(new Tuple<string, string>("Duration", Utils.Misc.formatTimeSeconds(video.DurationSeconds)));
+            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
             p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString("0.##")));
           

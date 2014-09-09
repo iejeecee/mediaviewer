@@ -1,6 +1,6 @@
 ﻿using MediaViewer.ImageGrid;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData.Tree;
 using System;
 using System.Collections.Generic;

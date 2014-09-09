@@ -12,7 +12,7 @@ namespace MediaViewer.MediaDatabase
     using System;
     using System.Collections.Generic;
     
-    public partial class VideoMedia : Media
+    public partial class VideoMedia : BaseMedia
     {
         public int Width { get; set; }
         public int Height { get; set; }

@@ -24,7 +24,9 @@ namespace MediaViewer.UserControls.TextBlock
         public AutoLengthTextBlock()
         {
             InitializeComponent();
-            fullText = null;
+            FullText = null;
+            
+           
         }
 
         private void root_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -32,14 +34,35 @@ namespace MediaViewer.UserControls.TextBlock
             setText();
         }
 
-        String fullText;
+        Size FullTextSize { get; set; }
 
-        String FullText
-        {
-          get { return fullText; }
-          set { fullText = value; }
+        string fullText;
+
+        String FullText {
+
+            get
+            {
+                return (fullText);
+            }
+
+            set
+            {               
+                fullText = value;
+
+                // measure length of the full string whenever it is changed
+                if (value == null || String.IsNullOrEmpty(value))
+                {
+                    FullTextSize = new Size(0, 0);
+                }
+                else
+                {
+                    FullTextSize = MeasureString(value);
+                }
+
+            }
+        
         }
-
+    
         public String Text
           {
             get { return (String)GetValue(TextProperty); }
@@ -66,37 +89,40 @@ namespace MediaViewer.UserControls.TextBlock
                 return;
             }
 
-            Size size = MeasureString(FullText);
-
-            if(size.Width + AutoPadding <= textBlock.ActualWidth) {
+            if (FullTextSize.Width + AutoPadding <= textBlock.ActualWidth)
+            {
                
                textBlock.Padding = new Thickness(AutoPadding, 0, 0, 0);
                textBlock.Text = FullText;
 
-            } else if(size.Width + 5 <= textBlock.ActualWidth) {
+            }
+            else if (FullTextSize.Width + 5 <= textBlock.ActualWidth)
+            {
 
-               textBlock.Padding = new Thickness(textBlock.ActualWidth - (size.Width + 5), 0, 0, 0);
+               textBlock.Padding = new Thickness(textBlock.ActualWidth - (FullTextSize.Width + 5), 0, 0, 0);
                textBlock.Text = FullText;
 
             } else {
 
                textBlock.Padding = new Thickness(0, 0, 0, 0);
 
-               String shortText = FullText;
-               while(shortText.Length > 0) {
+               //calculate average length a character in the string
+               double avgCharLength = FullTextSize.Width / FullText.Length;
+               // length of added dots with a little extra buffer
+               double dotsLength = avgCharLength * 4.5;
 
-                   shortText = shortText.Substring(0, shortText.Length - 1);
+                // calculate how many characters need to be dropped to fit the string into the available space
+               int x = (int)Math.Ceiling(((FullTextSize.Width + dotsLength) - textBlock.ActualWidth) / avgCharLength);
 
-                   Size shortSize = MeasureString(shortText + "...");
+               int newLength = FullText.Length - x;
 
-                   if(shortSize.Width <= textBlock.ActualWidth) {
-
-                       textBlock.Text = shortText + "...";
-                       return;
-                   }
+               if (newLength <= 0)
+               {
+                   textBlock.Text = "";
+                   return;
                }
-
-               textBlock.Text = shortText + "...";
+                           
+               textBlock.Text = FullText.Substring(0, newLength) + "...";
               
             }
 

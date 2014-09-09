@@ -1,6 +1,6 @@
 ﻿using HtmlAgilityPack;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
 using MediaViewer.Pager;
 using Microsoft.Practices.Prism.Regions;
@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Resources;
+using MediaViewer.Model.Media.File;
 
 namespace PluginTest
 {
@@ -339,7 +340,7 @@ namespace PluginTest
 
             SelectedMedia.Clear();
 
-            for (int i = 0; i < MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel.SelectedMedia.Count; i++)
+            /*for (int i = 0; i < MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel.SelectedMedia.Count; i++)
             {
                 MediaFileItem item = MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel.SelectedMedia[i];
 
@@ -350,7 +351,7 @@ namespace PluginTest
                 {
                     selectPlaceMark(geoTagItem);
                 }
-            }
+            }*/
            
             MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel = this;
 

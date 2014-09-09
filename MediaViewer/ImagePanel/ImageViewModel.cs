@@ -5,18 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using MediaViewer.MediaFileModel;
+using MediaViewer.Model.Media.File;
 using MvvmFoundation.Wpf;
 using System.Windows;
 using System.Threading;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Pager;
-using MediaViewer.Utils;
 using System.Collections.Specialized;
 using MediaViewer.MediaDatabase;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using MediaViewer.MetaData;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.ImagePanel
 {
@@ -400,7 +401,7 @@ namespace MediaViewer.ImagePanel
             get { return scale; }
             set
             {
-                scale = Utils.Misc.clamp(value,MinScale,MaxScale);
+                scale = MiscUtils.clamp(value,MinScale,MaxScale);
                 NotifyPropertyChanged();
                 updateTransform();
             }
@@ -506,7 +507,7 @@ namespace MediaViewer.ImagePanel
         private void loadImage(String fileName)
         {
                     
-            Media media = null;
+            BaseMedia media = null;
             SelectedMedia.Clear();
 
             try
@@ -894,7 +895,7 @@ namespace MediaViewer.ImagePanel
         {
             get { return minScale; }
             set { minScale = value;
-            Scale = Utils.Misc.clamp(Scale, MinScale, MaxScale);
+            Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);
             NotifyPropertyChanged();
             }
         }
@@ -904,7 +905,7 @@ namespace MediaViewer.ImagePanel
         {
             get { return maxScale; }
             set { maxScale = value;
-            Scale = Utils.Misc.clamp(Scale, MinScale, MaxScale);
+            Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);
             NotifyPropertyChanged();
             }
         }

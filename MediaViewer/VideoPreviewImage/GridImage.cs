@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -119,8 +120,8 @@ namespace MediaViewer.VideoPreviewImage
                 if (labels == true) sb.AppendLine("Audio Codec: "); else sb.AppendLine(video.AudioCodec + ", " + video.NrChannels + "chan" + ", " + video.SamplesPerSecond + "hz, " + video.BitsPerSample + "bit");
             }
 
-            if (labels == true) sb.AppendLine("Duration: "); else sb.AppendLine(Utils.Misc.formatTimeSeconds(video.DurationSeconds));
-            if (labels == true) sb.AppendLine("Size: "); else sb.AppendLine(Utils.Misc.formatSizeBytes(video.SizeBytes));
+            if (labels == true) sb.AppendLine("Duration: "); else sb.AppendLine(MiscUtils.formatTimeSeconds(video.DurationSeconds));
+            if (labels == true) sb.AppendLine("Size: "); else sb.AppendLine(MiscUtils.formatSizeBytes(video.SizeBytes));
 
             if (video.Tags.Count > 0 && vm.IsAddTags)
             {
@@ -225,7 +226,7 @@ namespace MediaViewer.VideoPreviewImage
 
             if (vm.IsAddTimestamps == false) return;
 
-            FormattedText timeStamp = createFormattedText(Utils.Misc.formatTimeSeconds(thumb.PositionSeconds),
+            FormattedText timeStamp = createFormattedText(MiscUtils.formatTimeSeconds(thumb.PositionSeconds),
                 "Consolas", 12, Colors.White, FontWeights.Normal);
 
             double timeStampPosX = x + subImage.PixelWidth - subImageMargin * 2 - timeStamp.Width - timeStampMargin;

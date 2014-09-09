@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File;
+using MediaViewer.Model.GlobalEvents;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.ImageGrid
 {
@@ -43,7 +45,7 @@ namespace MediaViewer.ImageGrid
 
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            Shell.ShellViewModel.EventAggregator.GetEvent<GlobalEvents.MediaBrowserSelectedEvent>().Publish(item);            
+            Shell.ShellViewModel.EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Publish(item);            
 
         }
          
@@ -84,7 +86,7 @@ namespace MediaViewer.ImageGrid
         {
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+            String location = FileUtils.getPathWithoutFileName(item.Location);
 
             GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_SetPath", location);
         }
@@ -93,7 +95,7 @@ namespace MediaViewer.ImageGrid
         {
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+            String location = FileUtils.getPathWithoutFileName(item.Location);
 
             Process.Start(location);
         }

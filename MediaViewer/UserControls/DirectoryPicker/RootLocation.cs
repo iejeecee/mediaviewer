@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.TreeView;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;

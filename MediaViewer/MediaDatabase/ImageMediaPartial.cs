@@ -1,4 +1,4 @@
-﻿using MediaViewer.Utils;
+﻿using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -48,7 +48,7 @@ namespace MediaViewer.MediaDatabase
                 sb.AppendLine();
 
                 sb.AppendLine("Size:");
-                sb.Append(Misc.formatSizeBytes(SizeBytes));
+                sb.Append(MiscUtils.formatSizeBytes(SizeBytes));
 
                 return (sb.ToString());
             }

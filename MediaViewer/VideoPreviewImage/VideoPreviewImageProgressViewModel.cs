@@ -1,5 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
@@ -68,14 +70,14 @@ namespace MediaViewer.VideoPreviewImage
                     MediaFileItem item = asyncState.Media[TotalProgress];
 
                     if (CancellationToken.IsCancellationRequested) return;
-                    if (!Utils.MediaFormatConvert.isVideoFile(item.Location))
+                    if (!MediaFormatConvert.isVideoFile(item.Location))
                     {
                         InfoMessages.Add("Skipping: " + item.Location + " is not a video file.");
                         continue;
                     }
                     if (item.Media == null)
                     {
-                        item.readMetaData(MediaFileModel.MediaFactory.ReadOptions.AUTO, CancellationToken);
+                        item.readMetaData(MediaFactory.ReadOptions.AUTO, CancellationToken);
                         if (item.ItemState != MediaFileItemState.LOADED)
                         {
                             InfoMessages.Add("Skipping: " + item.Location + " could not read metadata.");

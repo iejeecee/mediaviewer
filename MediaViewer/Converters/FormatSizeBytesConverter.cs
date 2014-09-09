@@ -19,7 +19,7 @@ namespace MediaViewer.Converters
             }
             else
             {
-                return (Utils.Misc.formatSizeBytes(sizeBytes));
+                return (MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(sizeBytes));
             }
             
         }

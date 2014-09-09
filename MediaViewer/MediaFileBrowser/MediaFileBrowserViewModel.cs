@@ -1,11 +1,10 @@
 ﻿using MediaViewer.ImageGrid;
 using MediaViewer.Input;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.DirectoryPicker;
 using MediaViewer.Pager;
 using MediaViewer.Search;
-using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -30,7 +29,9 @@ using MediaViewer.MetaData;
 using Microsoft.Practices.Prism.Commands;
 using System.Windows.Input;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.GlobalEvents;
+using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -42,10 +43,10 @@ namespace MediaViewer.MediaFileBrowser
            
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
-             
-        ISelectedMedia currentViewModel;
 
-        public ISelectedMedia CurrentViewModel
+        Object currentViewModel;
+
+        public Object CurrentViewModel
         {
             get { return currentViewModel; }
             set { currentViewModel = value;
@@ -118,7 +119,7 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel.IsEffectsEnabled = false;
 
             VideoViewModel = new VideoPanel.VideoViewModel(mediaFileWatcher);
-            ImageGridViewModel = new ImageGrid.ImageGridViewModel(mediaFileWatcher.MediaState, regionManager);
+            ImageGridViewModel = new ImageGrid.ImageGridViewModel(mediaFileWatcher.MediaState);
 
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
       
@@ -157,13 +158,13 @@ namespace MediaViewer.MediaFileBrowser
                     location = item.Location;
                 }
 
-                if (Utils.MediaFormatConvert.isImageFile(location))
+                if (MediaFormatConvert.isImageFile(location))
                 {
 
                     navigateToImageView(location);
               
                 }
-                else if (Utils.MediaFormatConvert.isVideoFile(location))
+                else if (MediaFormatConvert.isVideoFile(location))
                 {
                     navigateToVideoView(location);
                 }
@@ -337,10 +338,10 @@ namespace MediaViewer.MediaFileBrowser
             }, navigationParams);
 
             MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
-            options.FilterMode = FilterMode.All;
+            options.FilterMode = MediaStateFilterMode.All;
             options.IsHidden = true;
 
-            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToVideoView(string location)
@@ -358,10 +359,10 @@ namespace MediaViewer.MediaFileBrowser
             }, navigationParams);
 
             MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
-            options.FilterMode = FilterMode.Video;
+            options.FilterMode = MediaStateFilterMode.Video;
             options.IsHidden = false;
 
-            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
         }
 
         public void navigateToImageView(string location)
@@ -379,10 +380,10 @@ namespace MediaViewer.MediaFileBrowser
             }, navigationParams);
 
             MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
-            options.FilterMode = FilterMode.Images;
+            options.FilterMode = MediaStateFilterMode.Images;
             options.IsHidden = false;
 
-            EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
         }
                    
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)

@@ -1,5 +1,5 @@
 ﻿using MediaViewer.DirectoryPicker;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
@@ -203,7 +203,7 @@ namespace MediaViewer.Torrent
                 return;
             }
 
-            pathRoot = Utils.FileUtils.getPathWithoutFileName(Media[0].Location);
+            pathRoot = MediaViewer.Model.Utils.FileUtils.getPathWithoutFileName(Media[0].Location);
 
             for (int i = 1; i < Media.Count; i++)
             {

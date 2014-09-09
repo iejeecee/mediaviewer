@@ -8,26 +8,18 @@
   <EntityContainer Name="MediaDatabaseStoreContainer">
     <EntitySet Name="TagSet" EntityType="MediaDatabase.Store.TagSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="TagCategorySet" EntityType="MediaDatabase.Store.TagCategorySet" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MediaSet" EntityType="MediaDatabase.Store.MediaSet" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMediaSet" EntityType="MediaDatabase.Store.BaseMediaSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.Store.PresetMetadataSet" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="ThumbnailSet" EntityType="MediaDatabase.Store.ThumbnailSet" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MediaSet_ImageMedia" EntityType="MediaDatabase.Store.MediaSet_ImageMedia" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MediaSet_VideoMedia" EntityType="MediaDatabase.Store.MediaSet_VideoMedia" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MediaSet_UnknownMedia" EntityType="MediaDatabase.Store.MediaSet_UnknownMedia" store:Type="Tables" Schema="dbo" />
-    <EntitySet Name="MediaTag" EntityType="MediaDatabase.Store.MediaTag" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMediaSet_ImageMedia" EntityType="MediaDatabase.Store.BaseMediaSet_ImageMedia" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMediaSet_VideoMedia" EntityType="MediaDatabase.Store.BaseMediaSet_VideoMedia" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMediaSet_UnknownMedia" EntityType="MediaDatabase.Store.BaseMediaSet_UnknownMedia" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataTag" EntityType="MediaDatabase.Store.PresetMetadataTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="TagTag" EntityType="MediaDatabase.Store.TagTag" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMediaTag" EntityType="MediaDatabase.Store.BaseMediaTag" store:Type="Tables" Schema="dbo" />
     <AssociationSet Name="TagCategoryTag" Association="MediaDatabase.Store.TagCategoryTag">
       <End Role="TagCategory" EntitySet="TagCategorySet" />
       <End Role="Tag" EntitySet="TagSet" />
-    </AssociationSet>
-    <AssociationSet Name="FK_MediaTag_Media" Association="MediaDatabase.Store.FK_MediaTag_Media">
-      <End Role="Media" EntitySet="MediaSet" />
-      <End Role="MediaTag" EntitySet="MediaTag" />
-    </AssociationSet>
-    <AssociationSet Name="FK_MediaTag_Tag" Association="MediaDatabase.Store.FK_MediaTag_Tag">
-      <End Role="Tag" EntitySet="TagSet" />
-      <End Role="MediaTag" EntitySet="MediaTag" />
     </AssociationSet>
     <AssociationSet Name="FK_PresetMetadataTag_PresetMetadata" Association="MediaDatabase.Store.FK_PresetMetadataTag_PresetMetadata">
       <End Role="PresetMetadata" EntitySet="PresetMetadataSet" />
@@ -45,21 +37,29 @@
       <End Role="Tag1" EntitySet="TagSet" />
       <End Role="TagTag" EntitySet="TagTag" />
     </AssociationSet>
-    <AssociationSet Name="MediaThumbnail" Association="MediaDatabase.Store.MediaThumbnail">
-      <End Role="Media" EntitySet="MediaSet" />
+    <AssociationSet Name="FK_BaseMediaTag_BaseMedia" Association="MediaDatabase.Store.FK_BaseMediaTag_BaseMedia">
+      <End Role="BaseMedia" EntitySet="BaseMediaSet" />
+      <End Role="BaseMediaTag" EntitySet="BaseMediaTag" />
+    </AssociationSet>
+    <AssociationSet Name="FK_BaseMediaTag_Tag" Association="MediaDatabase.Store.FK_BaseMediaTag_Tag">
+      <End Role="Tag" EntitySet="TagSet" />
+      <End Role="BaseMediaTag" EntitySet="BaseMediaTag" />
+    </AssociationSet>
+    <AssociationSet Name="BaseMediaThumbnail" Association="MediaDatabase.Store.BaseMediaThumbnail">
+      <End Role="BaseMedia" EntitySet="BaseMediaSet" />
       <End Role="Thumbnail" EntitySet="ThumbnailSet" />
     </AssociationSet>
-    <AssociationSet Name="FK_ImageMedia_inherits_Media" Association="MediaDatabase.Store.FK_ImageMedia_inherits_Media">
-      <End Role="Media" EntitySet="MediaSet" />
-      <End Role="ImageMedia" EntitySet="MediaSet_ImageMedia" />
+    <AssociationSet Name="FK_ImageMedia_inherits_BaseMedia" Association="MediaDatabase.Store.FK_ImageMedia_inherits_BaseMedia">
+      <End Role="BaseMedia" EntitySet="BaseMediaSet" />
+      <End Role="ImageMedia" EntitySet="BaseMediaSet_ImageMedia" />
     </AssociationSet>
-    <AssociationSet Name="FK_VideoMedia_inherits_Media" Association="MediaDatabase.Store.FK_VideoMedia_inherits_Media">
-      <End Role="Media" EntitySet="MediaSet" />
-      <End Role="VideoMedia" EntitySet="MediaSet_VideoMedia" />
+    <AssociationSet Name="FK_VideoMedia_inherits_BaseMedia" Association="MediaDatabase.Store.FK_VideoMedia_inherits_BaseMedia">
+      <End Role="BaseMedia" EntitySet="BaseMediaSet" />
+      <End Role="VideoMedia" EntitySet="BaseMediaSet_VideoMedia" />
     </AssociationSet>
-    <AssociationSet Name="FK_UnknownMedia_inherits_Media" Association="MediaDatabase.Store.FK_UnknownMedia_inherits_Media">
-      <End Role="Media" EntitySet="MediaSet" />
-      <End Role="UnknownMedia" EntitySet="MediaSet_UnknownMedia" />
+    <AssociationSet Name="FK_UnknownMedia_inherits_BaseMedia" Association="MediaDatabase.Store.FK_UnknownMedia_inherits_BaseMedia">
+      <End Role="BaseMedia" EntitySet="BaseMediaSet" />
+      <End Role="UnknownMedia" EntitySet="BaseMediaSet_UnknownMedia" />
     </AssociationSet>
   </EntityContainer>
   <EntityType Name="TagSet">
@@ -80,7 +80,7 @@
     <Property Name="Name" Type="nvarchar(max)" Nullable="false" />
     <Property Name="TimeStamp" Type="varbinary(max)" StoreGeneratedPattern="Computed" Nullable="false" />
   </EntityType>
-  <EntityType Name="MediaSet">
+  <EntityType Name="BaseMediaSet">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
@@ -133,9 +133,9 @@
     <Property Name="ImageData" Type="varbinary(max)" Nullable="false" />
     <Property Name="Width" Type="smallint" Nullable="false" />
     <Property Name="Height" Type="smallint" Nullable="false" />
-    <Property Name="Media_Id" Type="int" Nullable="false" />
+    <Property Name="BaseMedia_Id" Type="int" Nullable="false" />
   </EntityType>
-  <EntityType Name="MediaSet_ImageMedia">
+  <EntityType Name="BaseMediaSet_ImageMedia">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
@@ -167,7 +167,7 @@
     <Property Name="Contrast" Type="smallint" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
-  <EntityType Name="MediaSet_VideoMedia">
+  <EntityType Name="BaseMediaSet_VideoMedia">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
@@ -188,19 +188,11 @@
     <Property Name="WMFSDKVersion" Type="nvarchar(max)" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
-  <EntityType Name="MediaSet_UnknownMedia">
+  <EntityType Name="BaseMediaSet_UnknownMedia">
     <Key>
       <PropertyRef Name="Id" />
     </Key>
     <Property Name="Id" Type="int" Nullable="false" />
-  </EntityType>
-  <EntityType Name="MediaTag">
-    <Key>
-      <PropertyRef Name="Media_Id" />
-      <PropertyRef Name="Tags_Id" />
-    </Key>
-    <Property Name="Media_Id" Type="int" Nullable="false" />
-    <Property Name="Tags_Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PresetMetadataTag">
     <Key>
@@ -218,6 +210,14 @@
     <Property Name="ParentTags_Id" Type="int" Nullable="false" />
     <Property Name="ChildTags_Id" Type="int" Nullable="false" />
   </EntityType>
+  <EntityType Name="BaseMediaTag">
+    <Key>
+      <PropertyRef Name="BaseMedias_Id" />
+      <PropertyRef Name="Tags_Id" />
+    </Key>
+    <Property Name="BaseMedias_Id" Type="int" Nullable="false" />
+    <Property Name="Tags_Id" Type="int" Nullable="false" />
+  </EntityType>
   <Association Name="TagCategoryTag">
     <End Role="TagCategory" Type="MediaDatabase.Store.TagCategorySet" Multiplicity="0..1" />
     <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="*" />
@@ -230,39 +230,15 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="MediaThumbnail">
-    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1" />
+  <Association Name="BaseMediaThumbnail">
+    <End Role="BaseMedia" Type="MediaDatabase.Store.BaseMediaSet" Multiplicity="1" />
     <End Role="Thumbnail" Type="MediaDatabase.Store.ThumbnailSet" Multiplicity="*" />
     <ReferentialConstraint>
-      <Principal Role="Media">
+      <Principal Role="BaseMedia">
         <PropertyRef Name="Id" />
       </Principal>
       <Dependent Role="Thumbnail">
-        <PropertyRef Name="Media_Id" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_MediaTag_Media">
-    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1" />
-    <End Role="MediaTag" Type="MediaDatabase.Store.MediaTag" Multiplicity="*" />
-    <ReferentialConstraint>
-      <Principal Role="Media">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="MediaTag">
-        <PropertyRef Name="Media_Id" />
-      </Dependent>
-    </ReferentialConstraint>
-  </Association>
-  <Association Name="FK_MediaTag_Tag">
-    <End Role="MediaTag" Type="MediaDatabase.Store.MediaTag" Multiplicity="*" />
-    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
-    <ReferentialConstraint>
-      <Principal Role="Tag">
-        <PropertyRef Name="Id" />
-      </Principal>
-      <Dependent Role="MediaTag">
-        <PropertyRef Name="Tags_Id" />
+        <PropertyRef Name="BaseMedia_Id" />
       </Dependent>
     </ReferentialConstraint>
   </Association>
@@ -314,13 +290,37 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="FK_ImageMedia_inherits_Media">
-    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+  <Association Name="FK_BaseMediaTag_BaseMedia">
+    <End Role="BaseMedia" Type="MediaDatabase.Store.BaseMediaSet" Multiplicity="1" />
+    <End Role="BaseMediaTag" Type="MediaDatabase.Store.BaseMediaTag" Multiplicity="*" />
+    <ReferentialConstraint>
+      <Principal Role="BaseMedia">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="BaseMediaTag">
+        <PropertyRef Name="BaseMedias_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_BaseMediaTag_Tag">
+    <End Role="BaseMediaTag" Type="MediaDatabase.Store.BaseMediaTag" Multiplicity="*" />
+    <End Role="Tag" Type="MediaDatabase.Store.TagSet" Multiplicity="1" />
+    <ReferentialConstraint>
+      <Principal Role="Tag">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="BaseMediaTag">
+        <PropertyRef Name="Tags_Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_ImageMedia_inherits_BaseMedia">
+    <End Role="BaseMedia" Type="MediaDatabase.Store.BaseMediaSet" Multiplicity="1">
       <OnDelete Action="Cascade" />
     </End>
-    <End Role="ImageMedia" Type="MediaDatabase.Store.MediaSet_ImageMedia" Multiplicity="0..1" />
+    <End Role="ImageMedia" Type="MediaDatabase.Store.BaseMediaSet_ImageMedia" Multiplicity="0..1" />
     <ReferentialConstraint>
-      <Principal Role="Media">
+      <Principal Role="BaseMedia">
         <PropertyRef Name="Id" />
       </Principal>
       <Dependent Role="ImageMedia">
@@ -328,13 +328,13 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="FK_VideoMedia_inherits_Media">
-    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+  <Association Name="FK_VideoMedia_inherits_BaseMedia">
+    <End Role="BaseMedia" Type="MediaDatabase.Store.BaseMediaSet" Multiplicity="1">
       <OnDelete Action="Cascade" />
     </End>
-    <End Role="VideoMedia" Type="MediaDatabase.Store.MediaSet_VideoMedia" Multiplicity="0..1" />
+    <End Role="VideoMedia" Type="MediaDatabase.Store.BaseMediaSet_VideoMedia" Multiplicity="0..1" />
     <ReferentialConstraint>
-      <Principal Role="Media">
+      <Principal Role="BaseMedia">
         <PropertyRef Name="Id" />
       </Principal>
       <Dependent Role="VideoMedia">
@@ -342,13 +342,13 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="FK_UnknownMedia_inherits_Media">
-    <End Role="Media" Type="MediaDatabase.Store.MediaSet" Multiplicity="1">
+  <Association Name="FK_UnknownMedia_inherits_BaseMedia">
+    <End Role="BaseMedia" Type="MediaDatabase.Store.BaseMediaSet" Multiplicity="1">
       <OnDelete Action="Cascade" />
     </End>
-    <End Role="UnknownMedia" Type="MediaDatabase.Store.MediaSet_UnknownMedia" Multiplicity="0..1" />
+    <End Role="UnknownMedia" Type="MediaDatabase.Store.BaseMediaSet_UnknownMedia" Multiplicity="0..1" />
     <ReferentialConstraint>
-      <Principal Role="Media">
+      <Principal Role="BaseMedia">
         <PropertyRef Name="Id" />
       </Principal>
       <Dependent Role="UnknownMedia">
@@ -367,11 +367,7 @@
             <End Role="TagCategory" EntitySet="TagCategorySet" />
             <End Role="Tag" EntitySet="TagSet" />
           </AssociationSet>
-          <EntitySet Name="MediaSet" EntityType="MediaDatabase.Media" />
-          <AssociationSet Name="MediaTag" Association="MediaDatabase.MediaTag">
-            <End Role="Media" EntitySet="MediaSet" />
-            <End Role="Tag" EntitySet="TagSet" />
-          </AssociationSet>
+          <EntitySet Name="BaseMediaSet" EntityType="MediaDatabase.BaseMedia" />
           <EntitySet Name="PresetMetadataSet" EntityType="MediaDatabase.PresetMetadata" />
           <AssociationSet Name="PresetMetadataTag" Association="MediaDatabase.PresetMetadataTag">
             <End Role="PresetMetadata" EntitySet="PresetMetadataSet" />
@@ -382,8 +378,12 @@
             <End Role="Tag1" EntitySet="TagSet" />
           </AssociationSet>
           <EntitySet Name="ThumbnailSet" EntityType="MediaDatabase.Thumbnail" />
-          <AssociationSet Name="MediaThumbnail" Association="MediaDatabase.MediaThumbnail">
-            <End Role="Media" EntitySet="MediaSet" />
+          <AssociationSet Name="BaseMediaTag" Association="MediaDatabase.BaseMediaTag">
+            <End Role="BaseMedia" EntitySet="BaseMediaSet" />
+            <End Role="Tag" EntitySet="TagSet" />
+          </AssociationSet>
+          <AssociationSet Name="BaseMediaThumbnail" Association="MediaDatabase.BaseMediaThumbnail">
+            <End Role="BaseMedia" EntitySet="BaseMediaSet" />
             <End Role="Thumbnail" EntitySet="ThumbnailSet" />
           </AssociationSet>
         </EntityContainer>
@@ -395,11 +395,11 @@
           <Property Type="String" Name="Name" Nullable="false" MaxLength="Max" Unicode="true" FixedLength="false" />
           <NavigationProperty Name="TagCategory" Relationship="MediaDatabase.TagCategoryTag" FromRole="Tag" ToRole="TagCategory" />
           <Property Type="Int32" Name="TagCategoryId" Nullable="true" />
-          <NavigationProperty Name="Media" Relationship="MediaDatabase.MediaTag" FromRole="Tag" ToRole="Media" />
           <NavigationProperty Name="ChildTags" Relationship="MediaDatabase.TagTag" FromRole="Tag" ToRole="Tag1" />
           <NavigationProperty Name="ParentTags" Relationship="MediaDatabase.TagTag" FromRole="Tag1" ToRole="Tag" />
           <Property Type="Int64" Name="Used" Nullable="false" DefaultValue="0" ConcurrencyMode="None" />
           <Property Type="Binary" Name="TimeStamp" Nullable="false" annotation:StoreGeneratedPattern="Computed" ConcurrencyMode="Fixed" />
+          <NavigationProperty Name="BaseMedias" Relationship="MediaDatabase.BaseMediaTag" FromRole="Tag" ToRole="BaseMedia" />
         </EntityType>
         <EntityType Name="TagCategory">
           <Key>
@@ -422,7 +422,7 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Media" Abstract="true">
+        <EntityType Name="BaseMedia" Abstract="true">
           <Key>
             <PropertyRef Name="Id" />
           </Key>
@@ -433,10 +433,8 @@
           <Property Type="String" Name="Description" Nullable="true" />
           <Property Type="String" Name="Author" Nullable="true" />
           <Property Type="String" Name="Copyright" Nullable="true" />
-          <NavigationProperty Name="Tags" Relationship="MediaDatabase.MediaTag" FromRole="Media" ToRole="Tag" />
           <Property Type="DateTime" Name="LastModifiedDate" Nullable="false" />
           <Property Type="DateTime" Name="CreationDate" Nullable="true" />
-          <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.MediaThumbnail" FromRole="Media" ToRole="Thumbnail" />
           <Property Type="DateTime" Name="MetadataModifiedDate" Nullable="true" />
           <Property Type="DateTime" Name="MetadataDate" Nullable="true" />
           <Property Type="String" Name="MimeType" Nullable="false" />
@@ -447,11 +445,9 @@
           <Property Type="String" Name="Latitude" Nullable="true" />
           <Property Type="String" Name="Longitude" Nullable="true" />
           <Property Type="DateTime" Name="FileDate" Nullable="false" />
+          <NavigationProperty Name="Tags" Relationship="MediaDatabase.BaseMediaTag" FromRole="BaseMedia" ToRole="Tag" />
+          <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.BaseMediaThumbnail" FromRole="BaseMedia" ToRole="Thumbnail" />
         </EntityType>
-        <Association Name="MediaTag">
-          <End Type="MediaDatabase.Media" Role="Media" Multiplicity="*" />
-          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
-        </Association>
         <EntityType Name="PresetMetadata">
           <Key>
             <PropertyRef Name="Id" />
@@ -490,12 +486,8 @@
           <Property Type="Binary" Name="ImageData" Nullable="false" />
           <Property Type="Int16" Name="Width" Nullable="false" />
           <Property Type="Int16" Name="Height" Nullable="false" />
-          <NavigationProperty Name="Media" Relationship="MediaDatabase.MediaThumbnail" FromRole="Thumbnail" ToRole="Media" />
+          <NavigationProperty Name="BaseMedia" Relationship="MediaDatabase.BaseMediaThumbnail" FromRole="Thumbnail" ToRole="BaseMedia" />
         </EntityType>
-        <Association Name="MediaThumbnail">
-          <End Type="MediaDatabase.Media" Role="Media" Multiplicity="1" />
-          <End Type="MediaDatabase.Thumbnail" Role="Thumbnail" Multiplicity="0..1" />
-        </Association>
         <ComplexType Name="ImageProps" >
           <Property Type="Int32" Name="Width" Nullable="true" />
           <Property Type="Int32" Name="Height" Nullable="true" />
@@ -512,7 +504,7 @@
           <Property Type="Int16" Name="NrChannels" Nullable="true" />
           <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
         </ComplexType>
-        <EntityType Name="ImageMedia" BaseType="MediaDatabase.Media" >
+        <EntityType Name="ImageMedia" BaseType="MediaDatabase.BaseMedia" >
           <Property Type="Int32" Name="Width" Nullable="false" />
           <Property Type="Int32" Name="Height" Nullable="false" />
           <Property Type="Int16" Name="LightSource" Nullable="true" />
@@ -540,7 +532,7 @@
           <Property Type="Int32" Name="ISOSpeedRating" Nullable="true" />
           <Property Type="Int16" Name="Contrast" Nullable="true" />
         </EntityType>
-        <EntityType Name="VideoMedia" BaseType="MediaDatabase.Media" >
+        <EntityType Name="VideoMedia" BaseType="MediaDatabase.BaseMedia" >
           <Property Type="Int32" Name="Width" Nullable="false" />
           <Property Type="Int32" Name="Height" Nullable="false" />
           <Property Type="Int16" Name="BitsPerSample" Nullable="true" />
@@ -557,7 +549,15 @@
           <Property Type="Boolean" Name="IsVariableBitRate" Nullable="true" />
           <Property Type="String" Name="WMFSDKVersion" Nullable="true" />
         </EntityType>
-        <EntityType Name="UnknownMedia" BaseType="MediaDatabase.Media" />
+        <EntityType Name="UnknownMedia" BaseType="MediaDatabase.BaseMedia" />
+        <Association Name="BaseMediaTag">
+          <End Type="MediaDatabase.BaseMedia" Role="BaseMedia" Multiplicity="*" />
+          <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
+        </Association>
+        <Association Name="BaseMediaThumbnail">
+          <End Type="MediaDatabase.BaseMedia" Role="BaseMedia" Multiplicity="1" />
+          <End Type="MediaDatabase.Thumbnail" Role="Thumbnail" Multiplicity="0..1" />
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -584,9 +584,9 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <EntitySetMapping Name="MediaSet">
-      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.Media)">
-        <MappingFragment StoreEntitySet="MediaSet">
+    <EntitySetMapping Name="BaseMediaSet">
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.BaseMedia)">
+        <MappingFragment StoreEntitySet="BaseMediaSet">
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Location" ColumnName="Location" />
           <ScalarProperty Name="Title" ColumnName="Title" />
@@ -609,7 +609,7 @@
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.ImageMedia)">
-        <MappingFragment StoreEntitySet="MediaSet_ImageMedia">
+        <MappingFragment StoreEntitySet="BaseMediaSet_ImageMedia">
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Width" ColumnName="Width" />
           <ScalarProperty Name="Height" ColumnName="Height" />
@@ -640,7 +640,7 @@
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.VideoMedia)">
-        <MappingFragment StoreEntitySet="MediaSet_VideoMedia">
+        <MappingFragment StoreEntitySet="BaseMediaSet_VideoMedia">
           <ScalarProperty Name="Id" ColumnName="Id" />
           <ScalarProperty Name="Width" ColumnName="Width" />
           <ScalarProperty Name="Height" ColumnName="Height" />
@@ -660,7 +660,7 @@
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.UnknownMedia)">
-        <MappingFragment StoreEntitySet="MediaSet_UnknownMedia">
+        <MappingFragment StoreEntitySet="BaseMediaSet_UnknownMedia">
           <ScalarProperty Name="Id" ColumnName="Id" />
         </MappingFragment>
       </EntityTypeMapping>
@@ -697,14 +697,6 @@
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>
-    <AssociationSetMapping Name="MediaTag" TypeName="MediaDatabase.MediaTag" StoreEntitySet="MediaTag">
-      <EndProperty Name="Media">
-        <ScalarProperty Name="Id" ColumnName="Media_Id" />
-      </EndProperty>
-      <EndProperty Name="Tag">
-        <ScalarProperty Name="Id" ColumnName="Tags_Id" />
-      </EndProperty>
-    </AssociationSetMapping>
     <AssociationSetMapping Name="PresetMetadataTag" TypeName="MediaDatabase.PresetMetadataTag" StoreEntitySet="PresetMetadataTag">
       <EndProperty Name="PresetMetadata">
         <ScalarProperty Name="Id" ColumnName="PresetMetadataTag_Tag_Id" />
@@ -721,9 +713,17 @@
         <ScalarProperty Name="Id" ColumnName="ChildTags_Id" />
       </EndProperty>
     </AssociationSetMapping>
-    <AssociationSetMapping Name="MediaThumbnail" TypeName="MediaDatabase.MediaThumbnail" StoreEntitySet="ThumbnailSet">
-      <EndProperty Name="Media">
-        <ScalarProperty Name="Id" ColumnName="Media_Id" />
+    <AssociationSetMapping Name="BaseMediaTag" TypeName="MediaDatabase.BaseMediaTag" StoreEntitySet="BaseMediaTag">
+      <EndProperty Name="BaseMedia">
+        <ScalarProperty Name="Id" ColumnName="BaseMedias_Id" />
+      </EndProperty>
+      <EndProperty Name="Tag">
+        <ScalarProperty Name="Id" ColumnName="Tags_Id" />
+      </EndProperty>
+    </AssociationSetMapping>
+    <AssociationSetMapping Name="BaseMediaThumbnail" TypeName="MediaDatabase.BaseMediaThumbnail" StoreEntitySet="ThumbnailSet">
+      <EndProperty Name="BaseMedia">
+        <ScalarProperty Name="Id" ColumnName="BaseMedia_Id" />
       </EndProperty>
       <EndProperty Name="Thumbnail">
         <ScalarProperty Name="Id" ColumnName="Id" />

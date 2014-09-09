@@ -1,7 +1,8 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;

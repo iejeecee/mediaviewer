@@ -1,9 +1,8 @@
 ﻿using MediaViewer.ImageGrid;
 using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;
-using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections;
@@ -17,6 +16,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.MetaData
 {
@@ -164,7 +165,7 @@ namespace MediaViewer.MetaData
                     if (item.Media != null && !(item.Media is UnknownMedia))
                     {
 
-                        Media media = item.Media;
+                        BaseMedia media = item.Media;
 
                         if (state.RatingEnabled)
                         {
@@ -345,7 +346,7 @@ namespace MediaViewer.MetaData
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    Utils.Misc.insertIntoHistoryCollection(Settings.FilenameHistory, state.Filename);
+                    MiscUtils.insertIntoHistoryCollection(Settings.FilenameHistory, state.Filename);
                 }));
             }
 
@@ -354,14 +355,14 @@ namespace MediaViewer.MetaData
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    Utils.Misc.insertIntoHistoryCollection(Settings.MetaDataUpdateDirectoryHistory, newPath);
+                    MiscUtils.insertIntoHistoryCollection(Settings.MetaDataUpdateDirectoryHistory, newPath);
                 }));
             }
 
 
         }
 
-        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, Media media)
+        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, BaseMedia media)
         {
             if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
             {
@@ -492,7 +493,7 @@ namespace MediaViewer.MetaData
                 outputFileName = outputFileName.Replace(arg.Item1, arg.Item2);
             }
 
-            outputFileName = Utils.FileUtils.removeIllegalCharsFromFileName(outputFileName, "-");
+            outputFileName = FileUtils.removeIllegalCharsFromFileName(outputFileName, "-");
 
             return (outputFileName);
         }

@@ -1,7 +1,7 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;

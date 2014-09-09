@@ -1,4 +1,4 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Search;
 using MediaViewer.UserControls.Relation;
 using System;
@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
 {
-    class MediaDbCommands : DbCommands<Media>
+    class MediaDbCommands : DbCommands<BaseMedia>
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -26,34 +26,34 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public int getNrMediaInLocation(String location)
         {
-            int result = Db.MediaSet.Where(m => m.Location.StartsWith(location)).Count();
+            int result = Db.BaseMediaSet.Where(m => m.Location.StartsWith(location)).Count();
 
             return (result);
         }
 
-        public List<Media> getMediaInLocation(String location)
+        public List<BaseMedia> getMediaInLocation(String location)
         {
-            List<Media> result = Db.MediaSet.Where(m => m.Location.StartsWith(location)).ToList();
+            List<BaseMedia> result = Db.BaseMediaSet.Where(m => m.Location.StartsWith(location)).ToList();
 
             return (result);
         }
 
-        public Media findMediaByLocation(String location)
-        {
-            Media result = Db.MediaSet.Include("Tags").FirstOrDefault(m => m.Location.Equals(location));
+        public BaseMedia findMediaByLocation(String location)
+        {            
+            BaseMedia result = Db.BaseMediaSet.Include("Tags").FirstOrDefault(m => m.Location.Equals(location));
            
             return (result);
         }
 
-        public List<Media> findMediaByQuery(SearchQuery query)
+        public List<BaseMedia> findMediaByQuery(SearchQuery query)
         {
-            IQueryable<Media> result = textQuery(query);
+            IQueryable<BaseMedia> result = textQuery(query);
 
             result = tagQuery(result, query);
 
             if (result == null)
             {
-                return (new List<Media>());
+                return (new List<BaseMedia>());
             }
 
             // creation
@@ -98,9 +98,9 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return(result.ToList());
         }
 
-        IQueryable<Media> textQuery(SearchQuery query)
+        IQueryable<BaseMedia> textQuery(SearchQuery query)
         {
-            IQueryable<Media> result = null;
+            IQueryable<BaseMedia> result = null;
 
             if (String.IsNullOrEmpty(query.Text) || String.IsNullOrWhiteSpace(query.Text))
             {
@@ -110,7 +110,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (query.SearchType == MediaType.All)
             {
 
-                result = Db.MediaSet.Include("Tags").Where(m =>
+                result = Db.BaseMediaSet.Include("Tags").Where(m =>
                        (m.Location.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -121,7 +121,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else if (query.SearchType == MediaType.Images)
             {
-                result = Db.MediaSet.Include("Tags").OfType<ImageMedia>().Where(m =>
+                result = Db.BaseMediaSet.Include("Tags").OfType<ImageMedia>().Where(m =>
                        (m.Location.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -135,7 +135,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else if (query.SearchType == MediaType.Video)
             {              
-                result = Db.MediaSet.Include("Tags").OfType<VideoMedia>().Where(m =>
+                result = Db.BaseMediaSet.Include("Tags").OfType<VideoMedia>().Where(m =>
                         (m.Location.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -152,7 +152,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
-        IQueryable<Media> tagQuery(IQueryable<Media> result, SearchQuery query)
+        IQueryable<BaseMedia> tagQuery(IQueryable<BaseMedia> result, SearchQuery query)
         {
             if (query.Tags.Count == 0)
             {
@@ -168,15 +168,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 if (query.SearchType == MediaType.All)
                 {
-                    result = Db.MediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMediaSet.Include("Tags").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
                 else if (query.SearchType == MediaType.Video)
                 {
-                    result = Db.MediaSet.Include("Tags").OfType<VideoMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMediaSet.Include("Tags").OfType<VideoMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
                 else if (query.SearchType == MediaType.Images)
                 {
-                    result = Db.MediaSet.Include("Tags").OfType<ImageMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMediaSet.Include("Tags").OfType<ImageMedia>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
             }
             else
@@ -188,7 +188,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         }
 
 
-        IQueryable<Media> imageQueryFilter(IQueryable<Media> result, SearchQuery query)
+        IQueryable<BaseMedia> imageQueryFilter(IQueryable<BaseMedia> result, SearchQuery query)
         {
             // width
 
@@ -223,7 +223,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
-        IQueryable<Media> videoQueryFilter(IQueryable<Media> result, SearchQuery query)
+        IQueryable<BaseMedia> videoQueryFilter(IQueryable<BaseMedia> result, SearchQuery query)
         {
             // duration
 
@@ -289,25 +289,25 @@ namespace MediaViewer.MediaDatabase.DbCommands
         }
 
     
-        protected override Media createFunc(Media media)
+        protected override BaseMedia createFunc(BaseMedia media)
         {
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
             {
                 throw new DbEntityValidationException("Error creating media, location cannot be null, empty or whitespace");
             }
 
-            if (Db.MediaSet.Any(t => t.Location == media.Location))
+            if (Db.BaseMediaSet.Any(t => t.Location == media.Location))
             {
                 throw new DbEntityValidationException("Cannot create media with duplicate location: " + media.Location);
             }
            
 
-            Media newMedia = null;
+            BaseMedia newMedia = null;
             
             if (media is VideoMedia)
             {
                 VideoMedia video = new VideoMedia(media.Location, null);
-                Db.MediaSet.Add(video);
+                Db.BaseMediaSet.Add(video);
 
                 Db.Entry<VideoMedia>(video).CurrentValues.SetValues(media);
                 newMedia = video;
@@ -315,7 +315,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             else
             {
                 ImageMedia image = new ImageMedia(media.Location, null);
-                Db.MediaSet.Add(image);
+                Db.BaseMediaSet.Add(image);
 
                 Db.Entry<ImageMedia>(image).CurrentValues.SetValues(media);
                 newMedia = image;
@@ -381,14 +381,14 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (newMedia);
         }
 
-        protected override Media updateFunc(Media media)
+        protected override BaseMedia updateFunc(BaseMedia media)
         {
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
             {
                 throw new DbEntityValidationException("Error updating media, location cannot be null, empty or whitespace");
             }
             
-            Media updateMedia = Db.MediaSet.FirstOrDefault(t => t.Id == media.Id);
+            BaseMedia updateMedia = Db.BaseMediaSet.FirstOrDefault(t => t.Id == media.Id);
             if (updateMedia == null)
             {
                 throw new DbEntityValidationException("Cannot update non existing media: " + media.Id.ToString());
@@ -467,7 +467,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (updateMedia);
         }
 
-        protected override void deleteFunc(Media media)
+        protected override void deleteFunc(BaseMedia media)
         {
 
             if (String.IsNullOrEmpty(media.Location) || String.IsNullOrWhiteSpace(media.Location))
@@ -475,7 +475,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Error deleting media, location cannot be null, empty or whitespace");
             }
 
-            Media deleteMedia = findMediaByLocation(media.Location);
+            BaseMedia deleteMedia = findMediaByLocation(media.Location);
             if (deleteMedia == null)
             {
                 throw new DbEntityValidationException("Cannot delete non existing media: " + media.Location);
@@ -491,7 +491,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 deleteMedia.Thumbnail = null;
             }
 
-            Db.MediaSet.Remove(deleteMedia);
+            Db.BaseMediaSet.Remove(deleteMedia);
             Db.SaveChanges();
 
             media.Id = 0;
@@ -501,7 +501,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 // make sure there is no lingering connection to the removed media entity
                 // otherwise when we attach this thumbnail to a new entiy
                 // the framework will bring in the (cached?) dead entity and mess things up
-                media.Thumbnail.Media = null;
+                media.Thumbnail.BaseMedia = null;
             }
           
 
@@ -511,7 +511,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         public override void clearAll()
         {
             String[] tableNames = new String[] {"ThumbnailSet", "MediaTag", "MediaSet_ImageMedia",
-                "MediaSet_VideoMedia","MediaSet_UnknownMedia","MediaSet"};
+                "MediaSet_VideoMedia","MediaSet_UnknownMedia","BaseMediaSet"};
 
             for (int i = 0; i < tableNames.Count(); i++)
             {

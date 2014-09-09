@@ -16,9 +16,10 @@ using Microsoft.Practices.Prism.Regions;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.ImagePanel;
 using MediaViewer.VideoPanel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using System.Reflection;
 using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.Model.Utils;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -69,15 +70,15 @@ namespace MediaViewer
 
             ShellViewModel.navigateToMediaStackPanelView();
 
-            if (Utils.MediaFormatConvert.isImageFile(location))
+            if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(location))
             {
                 ShellViewModel.navigateToImageView(location);
-                MediaFileWatcher.Instance.Path = Utils.FileUtils.getPathWithoutFileName(location);
+                MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
             }
-            else if (Utils.MediaFormatConvert.isVideoFile(location))
+            else if (MediaFormatConvert.isVideoFile(location))
             {
                 ShellViewModel.navigateToVideoView(location);
-                MediaFileWatcher.Instance.Path = Utils.FileUtils.getPathWithoutFileName(location);
+                MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
             }
             else
             {

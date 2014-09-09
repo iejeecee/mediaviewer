@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.MetaData.Tree;
 using System.Threading;
+using MediaViewer.Model.Media.Metadata;
 
 
 namespace MediaViewer.MetaData

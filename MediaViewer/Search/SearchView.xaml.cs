@@ -1,4 +1,4 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File.Watcher;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;

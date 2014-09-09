@@ -1,6 +1,8 @@
 ﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
@@ -87,7 +89,7 @@ namespace MediaViewer.Import
             {
                 case Search.MediaType.All:
                     {
-                        if (Utils.MediaFormatConvert.isMediaFile(info.Name))
+                        if (MediaViewer.Model.Utils.MediaFormatConvert.isMediaFile(info.Name))
                         {
                             addItem = info.FullName;
                         }
@@ -95,7 +97,7 @@ namespace MediaViewer.Import
                     }
                 case Search.MediaType.Images:
                     {
-                        if (Utils.MediaFormatConvert.isImageFile(info.Name))
+                        if (MediaFormatConvert.isImageFile(info.Name))
                         {
                             addItem = info.FullName;
                         }
@@ -103,7 +105,7 @@ namespace MediaViewer.Import
                     }
                 case Search.MediaType.Video:
                     {
-                        if (Utils.MediaFormatConvert.isVideoFile(info.Name))
+                        if (MediaFormatConvert.isVideoFile(info.Name))
                         {
                             addItem = info.FullName;
                         }
@@ -113,7 +115,7 @@ namespace MediaViewer.Import
 
             if (addItem != null)
             {
-                String path = Utils.FileUtils.getPathWithoutFileName(addItem);
+                String path = FileUtils.getPathWithoutFileName(addItem);
 
                 bool excluded = false;
 
@@ -124,8 +126,8 @@ namespace MediaViewer.Import
                         if (path.StartsWith(excludeLocation.Location))
                         {
                             if (excludeLocation.MediaType == Search.MediaType.All ||
-                                (excludeLocation.MediaType == Search.MediaType.Images && Utils.MediaFormatConvert.isImageFile(addItem)) ||
-                                 (excludeLocation.MediaType == Search.MediaType.Video && Utils.MediaFormatConvert.isVideoFile(addItem)))
+                                (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
+                                 (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
                             {
                                 excluded = true;
                                 break;
@@ -137,8 +139,8 @@ namespace MediaViewer.Import
                         if(path.Equals(excludeLocation.Location)) 
                         {
                             if (excludeLocation.MediaType == Search.MediaType.All ||
-                                (excludeLocation.MediaType == Search.MediaType.Images && Utils.MediaFormatConvert.isImageFile(addItem)) ||
-                                 (excludeLocation.MediaType == Search.MediaType.Video && Utils.MediaFormatConvert.isVideoFile(addItem)))
+                                (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
+                                 (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
                             {
                                 excluded = true;
                                 break;
@@ -168,7 +170,7 @@ namespace MediaViewer.Import
                 Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>> state = 
                     new Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>(location, excludeLocations, items);
 
-                Utils.FileUtils.walkDirectoryTree(new DirectoryInfo(location.Location),
+                FileUtils.walkDirectoryTree(new DirectoryInfo(location.Location),
                     getMediaFiles, state, location.IsRecursive);
 
                 InfoMessages.Add("Completed searching files in: " + location.Location);

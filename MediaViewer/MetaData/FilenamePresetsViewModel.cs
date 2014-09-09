@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.Composition;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.MetaData
 {
@@ -250,7 +251,7 @@ namespace MediaViewer.MetaData
                     return;
                 }
 
-                if (Utils.FileUtils.containsIllegalFileNameChars(matchString) || Utils.FileUtils.containsIllegalFileNameChars(replaceString))
+                if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
                 {
                     InsertReplaceCommand.CanExecute = false;
                     throw new ArgumentException("Filename string contains illegal characters");
@@ -278,7 +279,7 @@ namespace MediaViewer.MetaData
                     return;
                 }
 
-                if (Utils.FileUtils.containsIllegalFileNameChars(matchString) || Utils.FileUtils.containsIllegalFileNameChars(replaceString))
+                if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
                 {
                     InsertReplaceCommand.CanExecute = false;
                     throw new ArgumentException("Filename string contains illegal characters");

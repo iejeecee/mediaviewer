@@ -1,4 +1,4 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Linq;
 using System.Text;
@@ -12,7 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.MediaFileModel;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State;
 
 namespace MediaViewer.ImageGrid
 {

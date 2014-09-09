@@ -15,6 +15,8 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Media.State.CollectionView;
 
 namespace MediaViewer.ImageGrid
 {
@@ -24,6 +26,8 @@ namespace MediaViewer.ImageGrid
     [Export]
     public partial class ImageStackPanelView : UserControl, INavigationAware
     {
+        DefaultMediaStateCollectionView MediaCollectionView;
+
         ImageGridViewModel ViewModel { get; set; }
 
         [ImportingConstructor]
@@ -33,10 +37,30 @@ namespace MediaViewer.ImageGrid
 
             itemsControl.Height = itemsControl.Height + SystemParameters.HorizontalScrollBarHeight;
 
-            eventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Subscribe(imageStackPanelView_DisplayEvent, ThreadOption.UIThread);
+            eventAggregator.GetEvent<MediaBrowserDisplayEvent>().Subscribe(imageStackPanelView_DisplayEvent, ThreadOption.UIThread);
         }
 
-        private void imageStackPanelView_DisplayEvent(GlobalEvents.MediaBrowserDisplayOptions options)
+        private void imageStackPanelView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is ImageGridViewModel)
+            {
+                ImageGridViewModel imageGridViewModel = e.OldValue as ImageGridViewModel;
+
+                MediaCollectionView.detachFromMediaState();
+            }
+
+            if (e.NewValue is ImageGridViewModel)
+            {
+                ImageGridViewModel imageGridViewModel = e.NewValue as ImageGridViewModel;
+
+                MediaCollectionView = new DefaultMediaStateCollectionView(imageGridViewModel.MediaState);
+                itemsControl.ItemsSource = MediaCollectionView.Media;          
+                sortComboBox.ItemsSource = MediaCollectionView.SortModes;
+
+            }
+        }
+
+        private void imageStackPanelView_DisplayEvent(MediaBrowserDisplayOptions options)
         {
             if (options.IsHidden == true)
             {
@@ -53,7 +77,9 @@ namespace MediaViewer.ImageGrid
                 }
             }
 
-            ViewModel.FilterMode = options.FilterMode;
+            MediaCollectionView.FilterModes.MoveCurrentTo(options.FilterMode);
+
+            //ViewModel.FilterMode = options.FilterMode;
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -82,5 +108,7 @@ namespace MediaViewer.ImageGrid
         {
             collapseableGrid.Visibility = Visibility.Visible;
         }
+
+      
     }
 }

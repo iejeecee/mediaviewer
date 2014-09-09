@@ -185,6 +185,14 @@
       <DependentUpon>AboutView.xaml</DependentUpon>
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
+    <Compile Include="MediaDatabase\BaseMedia.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Model\GlobalEvents\MediaSelectionEvent.cs" />
+    <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
+    <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
+    <Compile Include="Model\Media\State\CollectionView\MediaStateFilterFunctions.cs" />
+    <Compile Include="Model\Media\State\CollectionView\MediaStateSortFunctions.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToScrollBarVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
@@ -203,7 +211,7 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
-    <Compile Include="GlobalEvents\MediaBrowserEvent.cs" />
+    <Compile Include="Model\GlobalEvents\MediaBrowserEvent.cs" />
     <Compile Include="ImageGrid\ExportingConstructor.cs" />
     <Compile Include="ImageGrid\ExtraItemInfoView.xaml.cs">
       <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
@@ -215,6 +223,8 @@
       <DependentUpon>ImageStackPanelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageGrid\IsLoadingConverter.cs" />
+    <Compile Include="ImageGrid\LockableListCollectionView.cs" />
+    <Compile Include="ImageGrid\MediaComparers.cs" />
     <Compile Include="ImagePanel\ImageToolbarView.xaml.cs">
       <DependentUpon>ImageToolbarView.xaml</DependentUpon>
     </Compile>
@@ -250,12 +260,10 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
-    <Compile Include="MediaFileModel\MediaStateChangedEventArgs.cs" />
-    <Compile Include="MediaFileModel\Watcher\LockableObservableCollection.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileItemLoader.cs" />
+    <Compile Include="Model\Media\State\MediaStateChangedEventArgs.cs" />
+    <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
     <Compile Include="MetaData\ISelectedMedia.cs" />
-    <Compile Include="MetaData\ObservableCollection.cs" />
     <Compile Include="MetaData\TagEditorImportViewModel.cs" />
     <Compile Include="Pager\IPageable.cs" />
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
@@ -306,9 +314,6 @@
     <Compile Include="MediaDatabase\ImageProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
-    <Compile Include="MediaDatabase\Media.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\MediaDatabase.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -324,7 +329,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>
     </Compile>
-    <Compile Include="MediaDatabase\MediaPartial.cs" />
+    <Compile Include="MediaDatabase\BaseMediaPartial.cs" />
     <Compile Include="MediaDatabase\PresetMetadata.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -354,18 +359,18 @@
     <Compile Include="MediaDatabase\VideoProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
-    <Compile Include="MediaFileModel\ImageMetadataReader.cs" />
-    <Compile Include="MediaFileModel\ImageMetadataWriter.cs" />
-    <Compile Include="MediaFileModel\MediaState.cs" />
-    <Compile Include="MediaFileModel\MetadataReader.cs" />
-    <Compile Include="MediaFileModel\MetadataWriter.cs" />
-    <Compile Include="MediaFileModel\VideoMetadataReader.cs" />
-    <Compile Include="MediaFileModel\VideoMetadataWriter.cs" />
-    <Compile Include="MediaFileModel\IMediaState.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaLockedCollection.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileItem.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileItemState.cs" />
-    <Compile Include="MediaFileModel\Watcher\ObservableRangeCollection.cs" />
+    <Compile Include="Model\Media\Metadata\ImageMetadataReader.cs" />
+    <Compile Include="Model\Media\Metadata\ImageMetadataWriter.cs" />
+    <Compile Include="Model\Media\State\MediaState.cs" />
+    <Compile Include="Model\Media\Metadata\MetadataReader.cs" />
+    <Compile Include="Model\Media\Metadata\MetadataWriter.cs" />
+    <Compile Include="Model\Media\Metadata\VideoMetadataReader.cs" />
+    <Compile Include="Model\Media\Metadata\VideoMetadataWriter.cs" />
+    <Compile Include="Model\Media\State\IMediaState.cs" />
+    <Compile Include="Model\Media\State\MediaLockedCollection.cs" />
+    <Compile Include="Model\Media\File\MediaFileItem.cs" />
+    <Compile Include="Model\Media\File\MediaFileItemState.cs" />
+    <Compile Include="Model\Collections\ObservableRangeCollection.cs" />
     <Compile Include="ImageGrid\ImageGridView.xaml.cs">
       <DependentUpon>ImageGridView.xaml</DependentUpon>
     </Compile>
@@ -385,8 +390,8 @@
       <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
-    <Compile Include="MediaFileModel\MediaFactory.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileWatcherQueue.cs" />
+    <Compile Include="Model\Media\File\MediaFactory.cs" />
+    <Compile Include="Model\Media\File\Watcher\MediaFileWatcherQueue.cs" />
     <Compile Include="ImagePanel\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
     </Compile>
@@ -397,16 +402,16 @@
     <Compile Include="ImagePanel\ScaleView.xaml.cs">
       <DependentUpon>ScaleView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaFileModel\MediaStateException.cs" />
+    <Compile Include="Model\Media\State\MediaStateException.cs" />
     <Compile Include="GlobalMessenger.cs" />
     <Compile Include="MetaData\ExtendedComboBox.cs" />
     <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
       <DependentUpon>FilenamePresetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\FilenamePresetsViewModel.cs" />
-    <Compile Include="MetaData\FormatMetaData.cs" />
-    <Compile Include="MetaData\GeoTagCoordinate.cs" />
-    <Compile Include="MetaData\GeoTagCoordinatePair.cs" />
+    <Compile Include="Model\Media\Metadata\FormatMetaData.cs" />
+    <Compile Include="Model\Media\Metadata\GeoTagCoordinate.cs" />
+    <Compile Include="Model\Media\Metadata\GeoTagCoordinatePair.cs" />
     <Compile Include="MetaData\TagEditorView.xaml.cs">
       <DependentUpon>TagEditorView.xaml</DependentUpon>
     </Compile>
@@ -452,7 +457,7 @@
     <Compile Include="MetaData\Tree\MetaDataTreeValue.cs" />
     <Compile Include="ImagePanel\DegreesConverter.cs" />
     <Compile Include="ImagePanel\ScaleConverter.cs" />
-    <Compile Include="MediaFileModel\Watcher\MediaFileWatcher.cs" />
+    <Compile Include="Model\Media\File\Watcher\MediaFileWatcher.cs" />
     <Compile Include="MetaData\MetaDataView.xaml.cs">
       <DependentUpon>MetaDataView.xaml</DependentUpon>
     </Compile>
@@ -500,15 +505,15 @@
     <Compile Include="UserControls\TextBlock\AutoLengthTextBlock.xaml.cs">
       <DependentUpon>AutoLengthTextBlock.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Utils\FileUtils.cs" />
-    <Compile Include="Utils\FileUtilsEventArgs.cs" />
-    <Compile Include="Utils\ImageUtils.cs" />
-    <Compile Include="Utils\MediaFormatConvert.cs" />
-    <Compile Include="Utils\Misc.cs" />
-    <Compile Include="Utils\Windows\DriveIdleMonitor.cs" />
-    <Compile Include="Utils\Windows\FileDialog.cs" />
-    <Compile Include="Utils\Windows\PerformanceCounters.cs" />
-    <Compile Include="Utils\WPF\TrulyObservableCollection.cs" />
+    <Compile Include="Model\Utils\FileUtils.cs" />
+    <Compile Include="Model\Utils\FileUtilsEventArgs.cs" />
+    <Compile Include="Model\Utils\ImageUtils.cs" />
+    <Compile Include="Model\Utils\MediaFormatConvert.cs" />
+    <Compile Include="Model\Utils\MiscUtils.cs" />
+    <Compile Include="Model\Utils\Windows\DriveIdleMonitor.cs" />
+    <Compile Include="Model\Utils\Windows\FileDialog.cs" />
+    <Compile Include="Model\Utils\Windows\PerformanceCounters.cs" />
+    <Compile Include="Model\Utils\WPF\TrulyObservableCollection.cs" />
     <Compile Include="ValidationRules\FloatValidationRule.cs" />
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />

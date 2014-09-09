@@ -1,7 +1,7 @@
-﻿using MediaViewer.GlobalEvents;
+﻿using MediaViewer.Model.GlobalEvents;
 using MediaViewer.ImageGrid;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
 using MvvmFoundation.Wpf;
@@ -22,6 +22,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.VideoPanel
 {
@@ -183,7 +184,7 @@ namespace MediaViewer.VideoPanel
 
             int seconds = (int)p;
 
-            timeLineSliderPopupText.Text = Utils.Misc.formatTimeSeconds(seconds);
+            timeLineSliderPopupText.Text = MiscUtils.formatTimeSeconds(seconds);
 
         }
 

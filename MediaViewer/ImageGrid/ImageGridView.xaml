@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView"
-             xmlns:local="clr-namespace:MediaViewer.MediaFileModel.Watcher"
+             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
              xmlns:effects="clr-namespace:MediaViewer.Effects"
              xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
@@ -18,19 +18,7 @@
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
-            <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
-            <ObjectDataProvider x:Key="filterModeEnum"
-                MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="ImageGrid:FilterMode"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-            <ObjectDataProvider x:Key="sortModeEnum"
-                MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="ImageGrid:SortMode"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
+            <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>          
             <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -65,17 +53,15 @@
                 </Grid.ColumnDefinitions>
                 <ImageGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
                 <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
-                <ComboBox Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                ItemsSource="{Binding Source={StaticResource filterModeEnum}}" SelectedItem="{Binding FilterMode}"/>
+                <ComboBox x:Name="filterComboBox" Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                 <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
-                <ComboBox Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                ItemsSource="{Binding SortModes}" SelectedItem="{Binding SortMode, Mode=TwoWay}"/>
+                <ComboBox x:Name="sortComboBox" Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
             </Grid>
         </Border>
-        <ItemsControl x:Name="itemsControl" Grid.Row="1" ItemsSource="{Binding Media}">
+        <ItemsControl x:Name="itemsControl" Grid.Row="1">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <Layout:VirtualizingTilePanel Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  
+                    <Layout:VirtualizingTilePanel x:Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  
                 </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>

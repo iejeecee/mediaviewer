@@ -1,4 +1,4 @@
-﻿using MediaViewer.Utils;
+﻿using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,11 +68,11 @@ namespace MediaViewer.MediaDatabase
                 }
 
                 sb.AppendLine("Duration:");
-                sb.AppendLine(Misc.formatTimeSeconds(DurationSeconds));
+                sb.AppendLine(MiscUtils.formatTimeSeconds(DurationSeconds));
                 sb.AppendLine();
 
                 sb.AppendLine("Size");
-                sb.AppendLine(Misc.formatSizeBytes(SizeBytes));
+                sb.AppendLine(MiscUtils.formatSizeBytes(SizeBytes));
                 sb.AppendLine();
 
                 return (sb.ToString());

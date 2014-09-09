@@ -2,9 +2,9 @@
 using MediaViewer.ImageGrid;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.Utils;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -345,7 +345,7 @@ namespace MediaViewer.MetaData
                 {
                     PresetMetadata result = presetMetaDataCommands.create(preset);
 
-                    Utils.Misc.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
+                    MiscUtils.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
                 }
                 catch (Exception e)
                 {
@@ -398,7 +398,7 @@ namespace MediaViewer.MetaData
                 {
                     PresetMetadata result = presetMetaDataCommands.update(preset);
                     MetadataPresets.Remove(SelectedPreset);
-                    Utils.Misc.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
+                    MiscUtils.insertIntoSortedCollection<PresetMetadata>(MetadataPresets, result);
                    
                     clear();
 

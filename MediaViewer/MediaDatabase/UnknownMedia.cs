@@ -12,7 +12,7 @@ namespace MediaViewer.MediaDatabase
     using System;
     using System.Collections.Generic;
     
-    public partial class UnknownMedia : Media
+    public partial class UnknownMedia : BaseMedia
     {
     }
 }

@@ -1,5 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace MediaViewer.ImageGrid
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            Media media = (Media)value;
+            BaseMedia media = (BaseMedia)value;
 
             if (media == null || media.Thumbnail == null) 
             {

@@ -19,6 +19,6 @@ namespace MediaViewer.MediaDatabase
         public short Width { get; set; }
         public short Height { get; set; }
     
-        public virtual Media Media { get; set; }
+        public virtual BaseMedia BaseMedia { get; set; }
     }
 }

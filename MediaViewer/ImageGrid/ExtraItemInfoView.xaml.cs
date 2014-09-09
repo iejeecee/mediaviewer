@@ -1,5 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,20 +31,20 @@ namespace MediaViewer.ImageGrid
             InitializeComponent();
         }
                
-        public SortMode InfoType
+        public MediaStateSortMode InfoType
         {
-            get { return (SortMode)GetValue(InfoTypeProperty); }
+            get { return (MediaStateSortMode)GetValue(InfoTypeProperty); }
             set { SetValue(InfoTypeProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for InfoType.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty InfoTypeProperty =
-            DependencyProperty.Register("InfoType", typeof(SortMode), typeof(ExtraItemInfoView), new PropertyMetadata(SortMode.Name, extraImageGridItemInfoView_InfoTypeChangedCallback));
+            DependencyProperty.Register("InfoType", typeof(MediaStateSortMode), typeof(ExtraItemInfoView), new PropertyMetadata(MediaStateSortMode.Name, extraImageGridItemInfoView_InfoTypeChangedCallback));
 
         private static void extraImageGridItemInfoView_InfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ExtraItemInfoView view = d as ExtraItemInfoView;
-            SortMode infoType = (SortMode)e.NewValue;
+            MediaStateSortMode infoType = (MediaStateSortMode)e.NewValue;
             MediaFileItem item = view.DataContext as MediaFileItem;
 
             String info = null;
@@ -54,21 +56,21 @@ namespace MediaViewer.ImageGrid
 
                 switch (infoType)
                 {
-                    case SortMode.Name:
+                    case MediaStateSortMode.Name:
                         break;
-                    case SortMode.Size:
-                        info = Utils.Misc.formatSizeBytes(item.Media.SizeBytes);
+                    case MediaStateSortMode.Size:
+                        info = MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(item.Media.SizeBytes);
                         break;
-                    case SortMode.Rating:
+                    case MediaStateSortMode.Rating:
 
                         if(item.Media.Rating.HasValue) {
                             view.rating.Value = item.Media.Rating.Value / 5;
                             view.rating.Visibility = Visibility.Visible;
                         }
                         break;
-                    case SortMode.Imported:
+                    case MediaStateSortMode.Imported:
                         break;
-                    case SortMode.Tags:
+                    case MediaStateSortMode.Tags:
                         if (item.Media.Tags.Count > 0)
                         {
                             info = item.Media.Tags.Count.ToString() + " tag";
@@ -79,28 +81,28 @@ namespace MediaViewer.ImageGrid
                             }
                         }
                         break;
-                    case SortMode.MimeType:
+                    case MediaStateSortMode.MimeType:
                         info = item.Media.MimeType;
                         break;
-                    case SortMode.FileDate:
+                    case MediaStateSortMode.FileDate:
                         info = item.Media.FileDate.ToString(dateFormat);
                         break;  
-                    case SortMode.LastModified:
+                    case MediaStateSortMode.LastModified:
                         info = item.Media.LastModifiedDate.ToString(dateFormat);                       
                         break;                        
-                    case SortMode.CreationDate:
+                    case MediaStateSortMode.CreationDate:
                         if (item.Media.CreationDate.HasValue)
                         {
                             info = item.Media.CreationDate.Value.ToString(dateFormat);
                         }
                         break;
-                    case SortMode.SoftWare:
+                    case MediaStateSortMode.SoftWare:
                         if (item.Media.Software != null)
                         {
                             info = item.Media.Software;
                         }
                         break;
-                    case SortMode.Width:
+                    case MediaStateSortMode.Width:
                         if (imageMedia != null)
                         {                          
                             info = imageMedia.Width.ToString() + " x " + imageMedia.Height.ToString();
@@ -110,7 +112,7 @@ namespace MediaViewer.ImageGrid
                             info = videoMedia.Width.ToString() + " x " + videoMedia.Height.ToString();
                         }
                         break;                        
-                    case SortMode.Height:
+                    case MediaStateSortMode.Height:
                         if (imageMedia != null)
                         {
                             info = imageMedia.Width.ToString() + " x " + imageMedia.Height.ToString();
@@ -120,91 +122,91 @@ namespace MediaViewer.ImageGrid
                             info = videoMedia.Width.ToString() + " x " + videoMedia.Height.ToString();
                         }                   
                         break;
-                    case SortMode.Duration:
+                    case MediaStateSortMode.Duration:
                         if (videoMedia != null)
                         {
-                            info = Utils.Misc.formatTimeSeconds(videoMedia.DurationSeconds);
+                            info = MiscUtils.formatTimeSeconds(videoMedia.DurationSeconds);
                         }                        
                         break;
-                    case SortMode.FramesPerSecond:
+                    case MediaStateSortMode.FramesPerSecond:
                         if (videoMedia != null)
                         {
                             info = videoMedia.FramesPerSecond.ToString("0.00") + " FPS";
                         }
                         break;
-                    case SortMode.VideoCodec:
+                    case MediaStateSortMode.VideoCodec:
                         if (videoMedia != null)
                         {
                             info = videoMedia.VideoCodec;
                         }
                         break;
-                    case SortMode.AudioCodec:
+                    case MediaStateSortMode.AudioCodec:
                         if (videoMedia != null)
                         {
                             info = videoMedia.AudioCodec;
                         }
                         break;
-                    case SortMode.PixelFormat:
+                    case MediaStateSortMode.PixelFormat:
                         if (videoMedia != null)
                         {
                             info = videoMedia.PixelFormat;
                         }
                         break;
-                    case SortMode.BitsPerSample:
+                    case MediaStateSortMode.BitsPerSample:
                         if (videoMedia != null)
                         {
                             info = videoMedia.BitsPerSample.HasValue ? videoMedia.BitsPerSample + "bit" : "";
                         }
                         break;
-                    case SortMode.SamplesPerSecond:
+                    case MediaStateSortMode.SamplesPerSecond:
                         if (videoMedia != null)
                         {
                             info = videoMedia.SamplesPerSecond.HasValue ? videoMedia.SamplesPerSecond + "hz" : "";
                         }
                         break;
-                    case SortMode.NrChannels:
+                    case MediaStateSortMode.NrChannels:
                         if (videoMedia != null)
                         {
                             info = videoMedia.NrChannels.HasValue ? videoMedia.NrChannels.Value.ToString() + " chan" : "";
                         }
                         break;
-                    case SortMode.CameraMake:
+                    case MediaStateSortMode.CameraMake:
                         if (imageMedia != null)
                         {
                             info = imageMedia.CameraMake != null ? imageMedia.CameraMake : "";
                         }
                         break;
-                    case SortMode.CameraModel:
+                    case MediaStateSortMode.CameraModel:
                         if (imageMedia != null)
                         {
                             info = imageMedia.CameraModel != null ? imageMedia.CameraModel : "";
                         }
                         break;
-                    case SortMode.Lens:
+                    case MediaStateSortMode.Lens:
                         if (imageMedia != null)
                         {
                             info = imageMedia.Lens != null ? imageMedia.Lens : "";
                         }
                         break;
-                    case SortMode.ISOSpeedRating:
+                    case MediaStateSortMode.ISOSpeedRating:
                         if (imageMedia != null)
                         {
                             info = imageMedia.ISOSpeedRating.HasValue ? "ISO: " + imageMedia.ISOSpeedRating.Value : "";
                         }
                         break;
-                    case SortMode.FNumber:
+                    case MediaStateSortMode.FNumber:
                         if (imageMedia != null)
                         {
                             info = imageMedia.FNumber.HasValue ? "f/" + imageMedia.FNumber.Value : "";
                         }
                         break;
-                    case SortMode.ExposureTime:
+                    case MediaStateSortMode.ExposureTime:
                         if (imageMedia != null)
                         {
                             info = imageMedia.ExposureTime.HasValue ? "1/" + 1/imageMedia.ExposureTime.Value + "s" : "";
                         }
                         break;
-                    case SortMode.FocalLength:
+                    case MediaStateSortMode.FocalLength:
                         if (imageMedia != null)
                         {
                             info = imageMedia.FocalLength.HasValue ? imageMedia.FocalLength.Value + "mm" : "";
@@ -218,7 +220,7 @@ namespace MediaViewer.ImageGrid
             view.infoTextBlock.Text = info;
             view.infoTextBlock.ToolTip = info;
 
-            if (infoType != SortMode.Rating)
+            if (infoType != MediaStateSortMode.Rating)
             {
                 view.rating.Visibility = Visibility.Hidden;
                 view.infoTextBlock.Visibility = Visibility.Visible;

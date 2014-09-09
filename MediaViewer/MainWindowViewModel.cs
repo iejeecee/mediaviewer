@@ -5,15 +5,15 @@ using System.Text;
 using System.Threading.Tasks;
 using MvvmFoundation.Wpf;
 using System.Windows;
-using MediaViewer.Utils;
 using MediaViewer.MetaData;
 using MediaViewer.About;
 using MediaViewer.Logging;
 using MediaViewer.ImagePanel;
 using MediaViewer.Import;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File.Watcher;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer
 {

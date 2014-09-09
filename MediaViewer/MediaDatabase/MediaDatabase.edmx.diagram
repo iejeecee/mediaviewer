@@ -8,19 +8,21 @@
         <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="2.25" PointY="0.875" />
         <EntityTypeShape EntityType="MediaDatabase.TagCategory" Width="1.5" PointX="0.625" PointY="0.875" />
         <AssociationConnector Association="MediaDatabase.TagCategoryTag" />
-        <EntityTypeShape EntityType="MediaDatabase.Media" Width="1.5" PointX="4.125" PointY="0.875" />
-        <AssociationConnector Association="MediaDatabase.MediaTag" />
+        <EntityTypeShape EntityType="MediaDatabase.BaseMedia" Width="1.5" PointX="4.125" PointY="0.875" />
         <EntityTypeShape EntityType="MediaDatabase.PresetMetadata" Width="1.5" PointX="7.875" PointY="0.75" />
         <AssociationConnector Association="MediaDatabase.PresetMetadataTag" />
         <AssociationConnector Association="MediaDatabase.TagTag" />
-        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="1" PointY="4.25" />
-        <AssociationConnector Association="MediaDatabase.MediaThumbnail" />
+        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="1" PointY="4" />
         <EntityTypeShape EntityType="MediaDatabase.ImageMedia" Width="1.5" PointX="5.875" PointY="2" />
         <InheritanceConnector EntityType="MediaDatabase.ImageMedia" />
-        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="4" PointY="5.25" />
+        <EntityTypeShape EntityType="MediaDatabase.VideoMedia" Width="1.5" PointX="2.5" PointY="5.75" />
         <InheritanceConnector EntityType="MediaDatabase.VideoMedia" />
         <EntityTypeShape EntityType="MediaDatabase.UnknownMedia" Width="1.5" PointX="5.875" PointY="0.875" />
         <InheritanceConnector EntityType="MediaDatabase.UnknownMedia" />
+        <InheritanceConnector EntityType="MediaDatabase.ImageMedia" />
+        <InheritanceConnector EntityType="MediaDatabase.VideoMedia" />
+        <AssociationConnector Association="MediaDatabase.BaseMediaTag" />
+        <AssociationConnector Association="MediaDatabase.BaseMediaThumbnail" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

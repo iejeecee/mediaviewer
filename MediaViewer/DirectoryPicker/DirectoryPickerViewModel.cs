@@ -1,6 +1,5 @@
 ﻿using MediaViewer.ImageGrid;
-using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.Utils;
+using MediaViewer.Model.Media.File;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -86,7 +85,7 @@ namespace MediaViewer.DirectoryPicker
 
                 }
 
-                temp += Utils.Misc.formatSizeBytes(sizeBytes);
+                temp += MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(sizeBytes);
             }
 
             InfoString = temp;

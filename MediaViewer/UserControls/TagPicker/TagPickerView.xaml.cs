@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.AutoCompleteBox;
 using System;
 using System.Collections.Generic;
@@ -220,7 +221,7 @@ namespace MediaViewer.UserControls.TagPicker
                              
                 if (!Tags.Contains(tag))
                 {
-                    Utils.Misc.insertIntoSortedCollection<Tag>(Tags, tag);
+                    MiscUtils.insertIntoSortedCollection<Tag>(Tags, tag);
                 }
             }           
         }

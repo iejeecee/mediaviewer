@@ -1,9 +1,10 @@
 ﻿using ICSharpCode.TreeView;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
-using MediaViewer.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -224,7 +225,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
         {
             List<MediaFileItem> items = (List<MediaFileItem>)state;
 
-            if (Utils.MediaFormatConvert.isMediaFile(info.FullName))
+            if (MediaFormatConvert.isMediaFile(info.FullName))
             {
                 items.Add(MediaFileItem.Factory.create(info.FullName));
             }

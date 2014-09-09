@@ -1,8 +1,7 @@
-﻿using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
 using MediaViewer.Pager;
-using MediaViewer.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Concurrent;
@@ -17,6 +16,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using VideoPlayerControl;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.VideoPanel
 {

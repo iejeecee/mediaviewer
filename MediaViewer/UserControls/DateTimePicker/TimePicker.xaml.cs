@@ -1,4 +1,5 @@
-﻿using MediaViewer.UserControls.NumberSpinner;
+﻿using MediaViewer.Model.Utils;
+using MediaViewer.UserControls.NumberSpinner;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -46,7 +47,7 @@ namespace MediaViewer.UserControls.DateTimePicker
             if (value != null)
             {
 
-                Utils.Misc.parseTimeSeconds(value.Value, out seconds, out minutes, out hours);
+                MiscUtils.parseTimeSeconds(value.Value, out seconds, out minutes, out hours);
 
                 TimeSpan temp = new TimeSpan(hours, minutes, seconds);
 

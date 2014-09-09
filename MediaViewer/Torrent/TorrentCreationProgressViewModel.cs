@@ -1,4 +1,4 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File;
 using MediaViewer.Progress;
 using MvvmFoundation.Wpf;
 using System;
@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
+using VideoPlayerControl;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.Torrent
 {
@@ -72,7 +74,7 @@ namespace MediaViewer.Torrent
 
                     App.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        Utils.Misc.insertIntoHistoryCollection(Settings.TorrentAnnounceHistory, vm.AnnounceURL);
+                        MiscUtils.insertIntoHistoryCollection(Settings.TorrentAnnounceHistory, vm.AnnounceURL);
                     }));
                     
                 }

@@ -16,10 +16,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.Regions;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
 using MediaViewer.MediaFileBrowser;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.GlobalEvents;
+using MediaViewer.Model.GlobalEvents;
 
 namespace MediaViewer.ImagePanel
 {

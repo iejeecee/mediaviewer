@@ -16,8 +16,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.ImageGrid;
 using MediaViewer.Input;
-using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.Utils;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Pager;
 using VideoPlayerControl;
 using MediaViewer.ImagePanel;
@@ -29,7 +28,8 @@ using MediaViewer.MetaData;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.VideoPanel;
-using MediaViewer.GlobalEvents;
+using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Media.State.CollectionView;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -165,22 +165,22 @@ namespace MediaViewer.MediaFileBrowser
                 MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
 
                 if (MediaFileBrowserViewModel.CurrentViewModel is ImageGridViewModel)
-                {                    
-                    options.FilterMode = FilterMode.All;
+                {
+                    options.FilterMode = MediaStateFilterMode.All;
                     options.IsHidden = true;                    
                 }
                 else if(MediaFileBrowserViewModel.CurrentViewModel is ImageViewModel)
                 {
-                    options.FilterMode = FilterMode.Images;
+                    options.FilterMode = MediaStateFilterMode.Images;
                     options.IsHidden = false;
                 }
                 else if (MediaFileBrowserViewModel.CurrentViewModel is VideoViewModel)
                 {
-                    options.FilterMode = FilterMode.Video;
+                    options.FilterMode = MediaStateFilterMode.Video;
                     options.IsHidden = false;
                 }
                 
-                EventAggregator.GetEvent<GlobalEvents.MediaBrowserDisplayEvent>().Publish(options);
+                EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
             }
 
         }

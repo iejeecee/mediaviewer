@@ -1,5 +1,7 @@
 ﻿using MediaViewer.ImagePanel;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Utils;
 using MediaViewer.Torrent;
 using MediaViewer.VideoPanel;
 using MediaViewer.VideoPreviewImage;
@@ -50,31 +52,31 @@ namespace MediaViewer.ImageGrid
 
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            if (Utils.MediaFormatConvert.isImageFile(item.Location))
+            if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(item.Location))
             {
                 Shell.ShellViewModel.navigateToImageView(item.Location);                
             }
-            else if (Utils.MediaFormatConvert.isVideoFile(item.Location))
+            else if (MediaFormatConvert.isVideoFile(item.Location))
             {
                 Shell.ShellViewModel.navigateToVideoView(item.Location);      
             }
 
         }
 
-        public SortMode ExtraInfoType
+        public MediaStateSortMode ExtraInfoType
         {
-            get { return (SortMode)GetValue(ExtraInfoTypeProperty); }
+            get { return (MediaStateSortMode)GetValue(ExtraInfoTypeProperty); }
             set { SetValue(ExtraInfoTypeProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for ExtraInfoType.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ExtraInfoTypeProperty =
-            DependencyProperty.Register("ExtraInfoType", typeof(SortMode), typeof(ImageGridItemView), new PropertyMetadata(SortMode.Name, imageGridItemView_ExtraInfoTypeChangedCallback));
+            DependencyProperty.Register("ExtraInfoType", typeof(MediaStateSortMode), typeof(ImageGridItemView), new PropertyMetadata(MediaStateSortMode.Name, imageGridItemView_ExtraInfoTypeChangedCallback));
 
         private static void imageGridItemView_ExtraInfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             ImageGridItemView view = d as ImageGridItemView;
-            view.extraInfo.InfoType = (SortMode)e.NewValue;
+            view.extraInfo.InfoType = (MediaStateSortMode)e.NewValue;
         }
 
         public bool IsGridLoaded
@@ -114,7 +116,7 @@ namespace MediaViewer.ImageGrid
         {
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+            String location = FileUtils.getPathWithoutFileName(item.Location);
 
             GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_SetPath", location);
         }
@@ -123,7 +125,7 @@ namespace MediaViewer.ImageGrid
         {
             MediaFileItem item = (MediaFileItem)DataContext;
 
-            String location = Utils.FileUtils.getPathWithoutFileName(item.Location);
+            String location = FileUtils.getPathWithoutFileName(item.Location);
 
             Process.Start(location);
         }

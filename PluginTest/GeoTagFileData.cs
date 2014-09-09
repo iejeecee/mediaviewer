@@ -1,10 +1,12 @@
-﻿using MediaViewer.MediaFileModel.Watcher;
+﻿using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.Metadata;
 
 namespace PluginTest
 {

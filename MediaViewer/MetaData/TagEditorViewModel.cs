@@ -2,7 +2,7 @@
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DataTransferObjects;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel.Watcher;
+using MediaViewer.Model.Collections;
 using MediaViewer.Progress;
 using Microsoft.Win32;
 using MvvmFoundation.Wpf;
@@ -85,7 +85,7 @@ namespace MediaViewer.MetaData
 
         private void export()
         {
-            SaveFileDialog saveTagsDialog = Utils.Windows.FileDialog.createSaveTagsFileDialog();
+            SaveFileDialog saveTagsDialog = MediaViewer.Model.Utils.Windows.FileDialog.createSaveTagsFileDialog();
             if (saveTagsDialog.ShowDialog() == false) return;
 
             XmlTextWriter outFile = null;
@@ -132,7 +132,7 @@ namespace MediaViewer.MetaData
 
         private void import()
         {
-            OpenFileDialog loadTagsDialog = Utils.Windows.FileDialog.createLoadTagsFileDialog();
+            OpenFileDialog loadTagsDialog = MediaViewer.Model.Utils.Windows.FileDialog.createLoadTagsFileDialog();
             if (loadTagsDialog.ShowDialog() == false) return;
 
             CancellableOperationProgressView importView = new CancellableOperationProgressView();

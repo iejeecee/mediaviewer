@@ -1,8 +1,9 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.MediaFileModel;
-using MediaViewer.MediaFileModel.Watcher;
-using MediaViewer.Utils;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Utils;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
@@ -144,10 +145,10 @@ namespace MediaViewer.Search
         {
             MediaDbCommands mediaCommands = new MediaDbCommands();
 
-            List<Media> results = mediaCommands.findMediaByQuery(searchQuery);
+            List<BaseMedia> results = mediaCommands.findMediaByQuery(searchQuery);
             List<MediaFileItem> items = new List<MediaFileItem>();
 
-            foreach (Media result in results)
+            foreach (BaseMedia result in results)
             {
                 items.Add(MediaFileItem.Factory.create(result.Location));
             }
