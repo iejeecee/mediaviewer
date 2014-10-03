@@ -23,34 +23,34 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaGrid
 {
     /// <summary>
-    /// Interaction logic for ImageGridItemView.xaml
+    /// Interaction logic for MediaGridItemView.xaml
     /// </summary>
-    public partial class ImageGridItemView : UserControl
-    {             
-        public ImageGridItemView()
+    public partial class MediaGridItemView : UserControl
+    {
+
+       
+        public MediaGridItemView()
         {
             InitializeComponent();
             selectAllMenuItem.IsEnabled = false;                       
         }
 
-        public MediaFileItem MediaFileItem
+        public SelectableMediaFileItem SelectableMediaFileItem
         {
-            get { return (MediaFileItem)GetValue(MediaFileItemProperty); }
-            set { SetValue(MediaFileItemProperty, value); }
+            get { return (SelectableMediaFileItem)GetValue(SelectableMediaFileItemProperty); }
+            set { SetValue(SelectableMediaFileItemProperty, value); }
         }
 
-        // Using a DependencyProperty as the backing store for MediaFileItem.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MediaFileItemProperty =
-            DependencyProperty.Register("MediaFileItem", typeof(MediaFileItem), typeof(ImageGridItemView), new PropertyMetadata(null));
+        // Using a DependencyProperty as the backing store for SelectableMediaFileItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty SelectableMediaFileItemProperty =
+            DependencyProperty.Register("SelectableMediaFileItem", typeof(SelectableMediaFileItem), typeof(MediaGridItemView), new PropertyMetadata(null));
 
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
-        {
-            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-
-            MediaFileItem item = (MediaFileItem)DataContext;
+        {          
+            MediaFileItem item = SelectableMediaFileItem.Item;
 
             if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(item.Location))
             {
@@ -71,11 +71,11 @@ namespace MediaViewer.ImageGrid
 
         // Using a DependencyProperty as the backing store for ExtraInfoType.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ExtraInfoTypeProperty =
-            DependencyProperty.Register("ExtraInfoType", typeof(MediaStateSortMode), typeof(ImageGridItemView), new PropertyMetadata(MediaStateSortMode.Name, imageGridItemView_ExtraInfoTypeChangedCallback));
+            DependencyProperty.Register("ExtraInfoType", typeof(MediaStateSortMode), typeof(MediaGridItemView), new PropertyMetadata(MediaStateSortMode.Name, imageGridItemView_ExtraInfoTypeChangedCallback));
 
         private static void imageGridItemView_ExtraInfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ImageGridItemView view = d as ImageGridItemView;
+            MediaGridItemView view = d as MediaGridItemView;
             view.extraInfo.InfoType = (MediaStateSortMode)e.NewValue;
         }
 
@@ -87,11 +87,11 @@ namespace MediaViewer.ImageGrid
 
         // Using a DependencyProperty as the backing store for IsGridLoaded.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty IsGridLoadedProperty =
-            DependencyProperty.Register("IsGridLoaded", typeof(bool), typeof(ImageGridItemView), new PropertyMetadata(true, isGridLoadedChangedCallback));
+            DependencyProperty.Register("IsGridLoaded", typeof(bool), typeof(MediaGridItemView), new PropertyMetadata(true, isGridLoadedChangedCallback));
 
         private static void isGridLoadedChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            ImageGridItemView item = d as ImageGridItemView;
+            MediaGridItemView item = d as MediaGridItemView;
 
             item.selectAllMenuItem.IsEnabled = !(bool)e.NewValue;
            
@@ -100,21 +100,21 @@ namespace MediaViewer.ImageGrid
         private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
 
-            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-            vm.selectAll();
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+            cv.selectAll();
         }
 
         private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
         {
 
-            ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-            vm.deselectAll();
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+            cv.deselectAll();
 
         }
 
         private void browseMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)DataContext;
+            MediaFileItem item = SelectableMediaFileItem.Item;
 
             String location = FileUtils.getPathWithoutFileName(item.Location);
 
@@ -123,7 +123,7 @@ namespace MediaViewer.ImageGrid
 
         private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)DataContext;
+            MediaFileItem item = SelectableMediaFileItem.Item;
 
             String location = FileUtils.getPathWithoutFileName(item.Location);
 
@@ -134,27 +134,27 @@ namespace MediaViewer.ImageGrid
 
         private void imageGridItem_Checked(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)DataContext;
-
-            if (item.IsSelected == true) return;
+           
+            if (SelectableMediaFileItem.IsSelected == true) return;
 
             if (Keyboard.Modifiers != ModifierKeys.Control)
-            {                     
-                ImageGridViewModel vm = (ImageGridViewModel)(this.Tag as ItemsControl).DataContext;
-                vm.deselectAll();          
+            {
+                MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+                cv.deselectAll();         
             }
 
-            item.IsSelected = true;
-         
+            SelectableMediaFileItem.IsSelected = true;     
+
+           
         }
 
         private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)DataContext;        
-
-            item.IsSelected = false;
+          
+            SelectableMediaFileItem.IsSelected = false;     
+            
         }
 
- 
+        
     }
 }

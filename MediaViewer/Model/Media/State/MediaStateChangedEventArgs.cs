@@ -19,6 +19,34 @@ namespace MediaViewer.Model.Media.State
 
     public class MediaStateChangedEventArgs : EventArgs
     {
+
+        public MediaStateChangedEventArgs(MediaStateChangedAction action)
+        {
+            this.action = action;
+
+            if (action != MediaStateChangedAction.Clear)
+            {
+                throw new ArgumentException("Only MediaStateChangedAction.Clear can use constructor without items");
+            }
+
+            NewItems = null;
+            OldItems = null;
+           
+        }
+
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, MediaFileItem item)
+        {
+            this.action = action;
+
+            if (action == MediaStateChangedAction.Add)
+            {
+                NewItems = new List<MediaFileItem>() {item};
+            }
+            else if (action == MediaStateChangedAction.Remove)
+            {
+                OldItems = new List<MediaFileItem>() { item };
+            }
+        }
         
         public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaFileItem> items)
         {
@@ -47,12 +75,12 @@ namespace MediaViewer.Model.Media.State
 
             this.newItems = newItems;
             this.oldLocations = oldLocations;
-
+           
         }
 
         MediaStateChangedAction action;
 
-        internal MediaStateChangedAction Action
+        public MediaStateChangedAction Action
         {
             get { return action; }
             private set { action = value; }

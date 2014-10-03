@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.GlobalEvents
 {
-    class MediaSelectionEvent : PubSubEvent<ICollection<MediaFileItem>> { }
+    public class MediaBatchSelectionEvent : PubSubEvent<ICollection<MediaFileItem>> { }
+    public class MediaSelectionEvent : PubSubEvent<MediaFileItem> { }
    
 }

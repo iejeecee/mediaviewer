@@ -1,4 +1,4 @@
-﻿using MediaViewer.ImageGrid;
+﻿using MediaViewer.MediaGrid;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;

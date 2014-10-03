@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.GlobalEvents;
-using MediaViewer.ImageGrid;
+using MediaViewer.MediaGrid;
 using MediaViewer.ImagePanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File.Watcher;
@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.File;
 
 namespace MediaViewer
 {
@@ -26,17 +27,46 @@ namespace MediaViewer
         public ImageViewModel ImageViewModel
         {
             get { return imageViewModel; }
-            private set { imageViewModel = value;
-            NotifyPropertyChanged();
+            private set
+            {
+                imageViewModel = value;
+                NotifyPropertyChanged();
             }
         }
+
+        MediaStackPanelViewModel imageMediaStackPanelViewModel;
+
+        public MediaStackPanelViewModel ImageMediaStackPanelViewModel
+        {
+            get { return imageMediaStackPanelViewModel; }
+            set
+            {
+                imageMediaStackPanelViewModel = value;
+                NotifyPropertyChanged();
+            }
+        }
+
         VideoViewModel videoViewModel;
 
         public VideoViewModel VideoViewModel
         {
             get { return videoViewModel; }
-            private set { videoViewModel = value;
-            NotifyPropertyChanged();
+            private set
+            {
+                videoViewModel = value;
+                NotifyPropertyChanged();
+            }
+        }
+
+        MediaStackPanelViewModel videoMediaStackPanelViewModel;
+
+        public MediaStackPanelViewModel VideoMediaStackPanelViewModel
+        {
+            get { return videoMediaStackPanelViewModel; }
+            set
+            {
+                videoMediaStackPanelViewModel = value;
+                NotifyPropertyChanged();
             }
         }
 
@@ -52,28 +82,38 @@ namespace MediaViewer
             }
         }
 
+    
+
         public ShellViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
         {
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
 
-            ImageViewModel = new ImagePanel.ImageViewModel(mediaFileWatcher.MediaState);
+            ImageViewModel = new ImagePanel.ImageViewModel();
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            VideoViewModel = new VideoPanel.VideoViewModel(mediaFileWatcher);
-            MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator);
+            ImageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
+            ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
 
+            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance);
+
+            VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
+            VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
+
+            MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator);
+           
         }
 
-        public void navigateToMediaStackPanelView()
+        public void navigateToMediaStackPanelView(MediaStackPanelViewModel viewModel, String location = null)
         {
-            Uri ImageViewUri = new Uri(typeof(ImageStackPanelView).FullName, UriKind.Relative);
+            Uri ImageViewUri = new Uri(typeof(MediaStackPanelView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
 
-            navigationParams.Add("viewModel", MediaFileBrowserViewModel.ImageGridViewModel);
-
+            navigationParams.Add("viewModel", viewModel);          
+            navigationParams.Add("location", location);
+           
             RegionManager.RequestNavigate(RegionNames.MainMediaSelectionRegion, ImageViewUri, navigationParams);
         }
 
@@ -83,22 +123,18 @@ namespace MediaViewer
             Uri ImageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
-         
-            navigationParams.Add("viewModel", ImageViewModel);                          
+
+            navigationParams.Add("viewModel", ImageViewModel);
             navigationParams.Add("location", location);
-           
+
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, ImageViewUri, navigationParams);
 
             Uri ImageToolbarViewUri = new Uri(typeof(ImageToolbarView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, ImageToolbarViewUri, navigationParams);
 
-            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
-          
-            options.FilterMode = MediaStateFilterMode.Images;
-            options.IsHidden = true;
-        
-            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
+            navigateToMediaStackPanelView(ImageMediaStackPanelViewModel, location);
+
         }
 
         public void navigateToMediaFileBrowser()
@@ -113,7 +149,9 @@ namespace MediaViewer
 
             Uri MediaFileBrowserToolbarViewUri = new Uri(typeof(MediaFileBrowserToolbarView).FullName, UriKind.Relative);
 
-            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, MediaFileBrowserToolbarViewUri, navigationParams); 
+            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, MediaFileBrowserToolbarViewUri, navigationParams);
+
+           
         }
 
         public void navigateToVideoView(String location = null)
@@ -127,13 +165,8 @@ namespace MediaViewer
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, VideoViewUri, navigationParams);
 
-            MediaBrowserDisplayOptions options = new MediaBrowserDisplayOptions();
+            navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, location);
 
-            options.FilterMode = MediaStateFilterMode.Video;
-            options.IsHidden = true;
-
-            EventAggregator.GetEvent<MediaBrowserDisplayEvent>().Publish(options);
-            
         }
     }
 }

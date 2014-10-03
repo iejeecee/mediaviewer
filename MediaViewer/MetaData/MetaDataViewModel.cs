@@ -1,5 +1,5 @@
 ﻿using MediaViewer.DirectoryPicker;
-using MediaViewer.ImageGrid;
+using MediaViewer.MediaGrid;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
@@ -20,6 +20,7 @@ using MediaViewer.Settings;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;
+using Microsoft.Practices.Prism.PubSubEvents;
 
 namespace MediaViewer.MetaData
 {
@@ -65,7 +66,7 @@ namespace MediaViewer.MetaData
         {
             return ("Metadata");
         }
-     
+
         public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
         {            
             //Items = new ObservableCollection<MediaFileItem>();
@@ -217,7 +218,7 @@ namespace MediaViewer.MetaData
                 {
                     if (BatchMode == false && Items.Count > 0)
                     {
-                        if (Items[0].Equals(item))
+                        if (Items.ElementAt(0).Equals(item))
                         {
                             grabData();
                         }
@@ -246,7 +247,7 @@ namespace MediaViewer.MetaData
                     {
                         MediaFileItem modifiedItem = sender as MediaFileItem;
 
-                        if (Items[0].Equals(modifiedItem))
+                        if (Items.ElementAt(0).Equals(modifiedItem))
                         {
                             Filename = Path.GetFileNameWithoutExtension(modifiedItem.Location);
                             Location = FileUtils.getPathWithoutFileName(modifiedItem.Location);
@@ -257,37 +258,23 @@ namespace MediaViewer.MetaData
             }
         }
 
-        ObservableCollection<MediaFileItem> items;
+        ICollection<MediaFileItem> items;
 
-        public ObservableCollection<MediaFileItem> Items
+        public ICollection<MediaFileItem> Items
         {
             get { return items; }
             set
-            {
-                if (items != null)
-                {
-                    items.CollectionChanged -= items_Modified;
-                }
-
-                if (value != null)
-                {
-                    value.CollectionChanged += items_Modified;
-                }
-
+            {                             
                 items = value;
 
                 if (items != null)
-                {
+                {                    
                     grabData();
                 }
+              
             }
         }
-
-        private void items_Modified(object sender, EventArgs e)
-        {
-            grabData();          
-        }
-
+   
         Command writeMetaDataCommand;
 
         public Command WriteMetaDataCommand
@@ -781,10 +768,10 @@ namespace MediaViewer.MetaData
             lock(Items)        
             {
 
-                if (items.Count == 1 && Items[0].Media != null)
+                if (items.Count == 1 && Items.ElementAt(0).Media != null)
                 {
 
-                    BaseMedia media = Items[0].Media;
+                    BaseMedia media = Items.ElementAt(0).Media;
 
                     if (media.SupportsXMPMetadata == false)
                     {

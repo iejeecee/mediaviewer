@@ -57,7 +57,7 @@ namespace MediaViewer.Export
             CancelCommand.CanExecute = true;
         }
 
-        public async Task exportAsync(List<MediaFileItem> items)
+        public async Task exportAsync(ICollection<MediaFileItem> items)
         {
             TotalProgressMax = items.Count;
             TotalProgress = 0;
@@ -74,7 +74,7 @@ namespace MediaViewer.Export
 
         }
 
-        void export(List<MediaFileItem> items)
+        void export(ICollection<MediaFileItem> items)
         {
             foreach (MediaFileItem item in items)
             {

@@ -15,7 +15,7 @@ using System.Windows.Shapes;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaGrid
 {
     /// <summary>
     /// Interaction logic for MediaStateInfo.xaml

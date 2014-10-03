@@ -18,19 +18,36 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Resources;
 using MediaViewer.Model.Media.File;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.MediaGrid;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer;
+using MediaViewer.Model.Media.State;
 
 namespace PluginTest
 {
     [Export]
-    public class GoogleEarthGeoTagViewModel : ObservableObject, IDisposable, ISelectedMedia, INavigationAware, IPageable
+    public class GoogleEarthGeoTagViewModel : ObservableObject, IDisposable, INavigationAware
     {
+
+        MediaStackPanelViewModel mediaStackPanel;
+
+        MediaFileItem SelectedItem { get; set; }
+
         MediaFileBrowserView MediaFileBrowserView { get; set; }
+        IEventAggregator EventAggregator { get; set; }
 
         GeoTagScriptInterface script;
       
         [ImportingConstructor]
-        public GoogleEarthGeoTagViewModel(MediaFileBrowserView mediaFileBrowserView)
+        public GoogleEarthGeoTagViewModel(MediaFileBrowserView mediaFileBrowserView, IEventAggregator eventAggregator)
         {
+            mediaStackPanel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, eventAggregator);
+            mediaStackPanel.IsVisible = true;      
+            mediaStackPanel.MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
+           
+            EventAggregator = eventAggregator;
+
             MediaFileBrowserView = mediaFileBrowserView;
             WebBrowser = new System.Windows.Controls.WebBrowser();
        
@@ -83,47 +100,7 @@ namespace PluginTest
 
                 script.flyTo(searchText);
             });
-
-            SelectedMedia = new ObservableCollection<MediaFileItem>();
-
-            currentPage = 0;
-            nrPages = 0;
-            isPagingEnabled = false;
-
-            NextPageCommand = new Command(() =>
-            {
-                if (NrPages != 0 && CurrentPage != NrPages)
-                {
-                    CurrentPage = CurrentPage + 1;
-                }
-
-            });
-
-            PrevPageCommand = new Command(() =>
-            {
-                if (NrPages != 0 && CurrentPage > 1)
-                {
-                    CurrentPage = CurrentPage - 1;
-                }
-            });
-
-            LastPageCommand = new Command(() =>
-            {
-                if (NrPages != 0)
-                {
-                    CurrentPage = NrPages;
-                }
-            });
-
-            FirstPageCommand = new Command(() =>
-            {
-                if (NrPages != 0)
-                {
-                    CurrentPage = 1;
-                }
-             
-            });
-
+                 
             CreateGeoTagCommand = new Command(() =>
                 {
                     GeoTagFileData geoTagItem = getSelectedGeoTag();
@@ -206,11 +183,10 @@ namespace PluginTest
 
         GeoTagFileData getSelectedGeoTag()
         {
-            MediaFileItem item = SelectedMedia[0];
-
+           
             foreach (GeoTagFileData geoTagItem in script.GeoTagFileItems)
             {
-                if (item.Equals(geoTagItem.MediaFileItem))
+                if (SelectedItem.Equals(geoTagItem.MediaFileItem))
                 {
                     return (geoTagItem);
                 }
@@ -221,12 +197,15 @@ namespace PluginTest
 
         void selectPlaceMark(GeoTagFileData geoTagItem, bool lookAtGeoTag = true)
         {
-            if (!(SelectedMedia.Count > 0 && SelectedMedia[0].Equals(geoTagItem.MediaFileItem)))
+            if (Object.Equals(SelectedItem,geoTagItem.MediaFileItem))
             {
-                SelectedMedia.Clear();
-                SelectedMedia.Add(geoTagItem.MediaFileItem);
+                return;
             }
-           
+            else
+            {
+                SelectedItem = geoTagItem.MediaFileItem;
+            }
+                  
             if (geoTagItem.HasGeoTag)
             {
                 script.reverseGeoCodePlaceMark(geoTagItem);
@@ -251,6 +230,7 @@ namespace PluginTest
                 CreateGeoTagCommand.CanExecute = true;
             }
 
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(SelectedItem);
          
         }
 
@@ -317,10 +297,38 @@ namespace PluginTest
             set;
         }
 
-        public ObservableCollection<MediaFileItem> SelectedMedia
+        private async void mediaState_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
         {
-            get; set;
+            await script.initializing.WaitAsync();
+ 
+            switch (e.Action)
+            {
+                case MediaStateChangedAction.Add:
+                    foreach (MediaFileItem item in e.NewItems)
+                    {
+                        script.addGeoTagItem(new GeoTagFileData(item));
+                    }
+                    break;
+                case MediaStateChangedAction.Remove:
+                    foreach (MediaFileItem item in e.OldItems)
+                    {
+                        script.removeGeoTagItem(new GeoTagFileData(item));
+                    }                    
+                    break;
+                case MediaStateChangedAction.Modified:
+                    break;
+                case MediaStateChangedAction.Clear:
+                    script.clearAll();
+                    break;
+                default:
+                    break;
+            }
+
+            script.initializing.Release();
+                        
         }
+      
+
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
@@ -329,20 +337,27 @@ namespace PluginTest
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-        
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Unsubscribe(geoTagViewModel_MediaSelectionEvent);
         }
 
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
+            ICollection<MediaFileItem> selectedItems = (ICollection<MediaFileItem>)navigationContext.Parameters["selectedItems"];
+
+            mediaStackPanel.MediaStateCollectionView.Filter = new Func<SelectableMediaFileItem, bool>((item) =>
+            {
+                return (selectedItems.Contains(item.Item));
+            });
+
+            Shell.ShellViewModel.navigateToMediaStackPanelView(mediaStackPanel);
+
             await script.initializing.WaitAsync();
            
-            script.clearAll();
-
-            SelectedMedia.Clear();
-
-            /*for (int i = 0; i < MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel.SelectedMedia.Count; i++)
+            /*script.clearAll();
+            
+            for (int i = 0; i < selectedItems.Count; i++)
             {
-                MediaFileItem item = MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel.SelectedMedia[i];
+                MediaFileItem item = selectedItems.ElementAt(i);
 
                 GeoTagFileData geoTagItem = new GeoTagFileData(item);
                 script.addGeoTagItem(geoTagItem);
@@ -353,107 +368,23 @@ namespace PluginTest
                 }
             }*/
            
-            MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel = this;
+            MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel = this;         
 
-            NrPages = script.GeoTagFileItems.Count;
-            CurrentPage = 1;
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(geoTagViewModel_MediaSelectionEvent);
             
             script.initializing.Release();
         }
 
-        int nrPages;
-
-        public int NrPages
+        private void geoTagViewModel_MediaSelectionEvent(MediaFileItem selectedItem)
         {
-            get
+            GeoTagFileData geoTagItem = script.getGeoTagFileData(selectedItem);
+
+            if (geoTagItem != null)
             {
-                return(nrPages);
-            }
-            set
-            {
-                nrPages = value;
-                if (nrPages > 0)
-                {
-                    IsPagingEnabled = true;
-                }
-                else
-                {
-                    IsPagingEnabled = false;
-                }
-                NotifyPropertyChanged();
+                selectPlaceMark(geoTagItem);
             }
         }
-
-        int currentPage;
-
-        public int CurrentPage
-        {
-            get
-            {
-                return (currentPage);
-            }
-            set
-            {
-                if (NrPages != 0)
-                {
-                    int newValue = value <= 0 ? 1 : (value > NrPages ? NrPages : value);
-
-                    GeoTagFileData geoTagItem = script.GeoTagFileItems[newValue - 1];
-                    selectPlaceMark(geoTagItem);
-
-                    currentPage = newValue;
-
-                }
-                else
-                {
-                    currentPage = 0;
-                }
-               
-                NotifyPropertyChanged();
-            }
-        }
-
-        bool isPagingEnabled;
-
-        public bool IsPagingEnabled
-        {
-            get
-            {
-                return (isPagingEnabled);
-            }
-            set
-            {
-                isPagingEnabled = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        public Command NextPageCommand
-        {
-            get;
-            set;
-
-        }
-
-        public Command PrevPageCommand
-        {
-            get;
-            set;
-        }
-
-        public Command FirstPageCommand
-        {
-            get;
-            set;
-
-        }
-
-        public Command LastPageCommand
-        {
-            get;
-            set;
-        }
-
+        
         bool drawRoads;
 
         public bool DrawRoads

@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.GlobalEvents;
-using MediaViewer.ImageGrid;
+using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.PubSubEvents;
@@ -236,12 +236,12 @@ namespace MediaViewer.VideoPanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {           
-            if(navigationContext.Uri.Equals(new Uri(typeof(ImageGridView).FullName,UriKind.Relative))) {
+            if(navigationContext.Uri.Equals(new Uri(typeof(MediaGridView).FullName,UriKind.Relative))) {
 
                 ViewModel.CloseCommand.DoExecute();
             }
 
-            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Unsubscribe(mediaBrowser_SelectedEvent);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(videoView_MediaSelectionEvent);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -257,10 +257,10 @@ namespace MediaViewer.VideoPanel
                 ViewModel.PlayCommand.DoExecute();
             }
 
-            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Subscribe(mediaBrowser_SelectedEvent, ThreadOption.UIThread);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
         }
 
-        private void mediaBrowser_SelectedEvent(MediaFileItem item)
+        private void videoView_MediaSelectionEvent(MediaFileItem item)
         {
             ViewModel.OpenCommand.DoExecute(item.Location);
             ViewModel.PlayCommand.DoExecute();

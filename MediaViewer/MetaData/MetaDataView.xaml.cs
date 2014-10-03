@@ -1,4 +1,4 @@
-﻿using MediaViewer.ImageGrid;
+﻿using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData.Tree;
@@ -23,6 +23,7 @@ using System.Windows.Threading;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using Microsoft.Practices.Prism.Regions;
+using Microsoft.Practices.Prism.PubSubEvents;
 
 namespace MediaViewer.MetaData
 {
@@ -30,18 +31,18 @@ namespace MediaViewer.MetaData
     /// Interaction logic for MetaDataView.xaml
     /// </summary>
     [Export]
-    public partial class MetaDataView : UserControl, IRegionMemberLifetime
+    public partial class MetaDataView : UserControl, IRegionMemberLifetime, INavigationAware
     {
 
-        MetaDataViewModel MetaDataViewModel
-        {
-            get;
-            set;
-        }
+        MetaDataViewModel MetaDataViewModel { get; set; }     
+        IEventAggregator EventAggregator { get; set; }
        
-        public MetaDataView()
+        [ImportingConstructor]
+        public MetaDataView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
+
+            EventAggregator = eventAggregator;
 
             MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
                 
@@ -57,10 +58,7 @@ namespace MediaViewer.MetaData
 
             DataContext = MetaDataViewModel;
 
-            RegionContext.GetObservableContext(this).PropertyChanged += (s, e) =>
-            {
-                MetaDataViewModel.Items = RegionContext.GetObservableContext(this).Value as ObservableCollection<MediaFileItem>;
-            };
+         
         }
                   
         List<RowDefinition> dynamicRows;
@@ -216,6 +214,35 @@ namespace MediaViewer.MetaData
             get { return (true); }
         }
 
-       
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return (true);
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Unsubscribe(globalMediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Unsubscribe(globalMediaSelectionEvent);
+        }        
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Subscribe(globalMediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
+        }
+
+        private void globalMediaBatchSelectionEvent(ICollection<MediaFileItem> selectedItems)
+        {
+            MetaDataViewModel.Items = selectedItems;
+        }
+
+        private void globalMediaSelectionEvent(MediaFileItem selectedItem)
+        {
+            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
+            selectedItems.Add(selectedItem);
+
+            MetaDataViewModel.Items = selectedItems;
+        }
     }
 }

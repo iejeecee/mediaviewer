@@ -3,10 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             x:Name="imageGrid" x:Class="MediaViewer.ImageGrid.ImageGridView"
+             x:Name="mediaGrid" x:Class="MediaViewer.MediaGrid.MediaGridView"
              xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
              xmlns:effects="clr-namespace:MediaViewer.Effects"
-             xmlns:ImageGrid="clr-namespace:MediaViewer.ImageGrid"
+             xmlns:MediaGrid="clr-namespace:MediaViewer.MediaGrid"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              mc:Ignorable="d"
@@ -18,7 +18,7 @@
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
-            <ImageGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>          
+            <MediaGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>          
             <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
                 <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
                 <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
@@ -51,14 +51,14 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <ImageGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
+                <MediaGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}"/>
                 <Label Content="Filter" Grid.Column="2" VerticalAlignment="Center"/>
-                <ComboBox x:Name="filterComboBox" Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <ComboBox x:Name="filterComboBox" Grid.Column="3" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
                 <Label Content="Sort" Grid.Column="4" VerticalAlignment="Center"/>
-                <ComboBox x:Name="sortComboBox" Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <ComboBox x:Name="sortComboBox" Grid.Column="5" Margin="5,5,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
             </Grid>
         </Border>
-        <ItemsControl x:Name="itemsControl" Grid.Row="1">
+        <ItemsControl x:Name="itemsControl" Grid.Row="1" ItemsSource="{Binding MediaStateCollectionView.Media}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Layout:VirtualizingTilePanel x:Name="virtualizingTilePanel" Columns="{Binding NrGridColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  
@@ -67,10 +67,10 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                    <ImageGrid:ImageGridItemView DataContext="{Binding}" MediaFileItem="{Binding}" Padding="2" 
-                                                 Tag="{Binding ElementName=itemsControl}" MaxHeight="150" 
-                                                 ExtraInfoType="{Binding DataContext.SortMode, ElementName=itemsControl}"
-                                                 IsGridLoaded="{Binding DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=itemsControl}"/>                    
+                    <MediaGrid:MediaGridItemView DataContext="{Binding}" SelectableMediaFileItem="{Binding}" Padding="2" 
+                                                 Tag="{Binding Path=DataContext.MediaStateCollectionView, ElementName=mediaGrid}" MaxHeight="150" 
+                                                 ExtraInfoType="{Binding Path=DataContext.MediaStateCollectionView.SortModes.CurrentItem, ElementName=mediaGrid}"
+                                                 IsGridLoaded="{Binding Path=DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=mediaGrid}"/>                    
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

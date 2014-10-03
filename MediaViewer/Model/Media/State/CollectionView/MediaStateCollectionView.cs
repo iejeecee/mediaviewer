@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Collections.Sort;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
 using MvvmFoundation.Wpf;
@@ -10,31 +11,44 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
 namespace MediaViewer.Model.Media.State.CollectionView
 {
-    class MediaStateCollectionView : ObservableObject {
-
+    public class MediaStateCollectionView : ObservableObject {
+        
+        public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
+        public event EventHandler<MediaStateChangedEventArgs> ItemPropertiesChanged;
+        public event EventHandler SelectionChanged;
+        public event EventHandler Cleared;
+      
         int sortedItemEnd;
 
         public MediaStateCollectionView(IMediaState mediaState)
-        {
-                      
+        {                      
             MediaState = mediaState;
 
-            Media = new ObservableCollection<MediaFileItem>();                      
+            Media = new ObservableCollection<SelectableMediaFileItem>();                      
             BindingOperations.EnableCollectionSynchronization(Media, Media);
-
-            SelectedMedia = new ObservableCollection<MediaFileItem>();
-            BindingOperations.EnableCollectionSynchronization(SelectedMedia, SelectedMedia);
-
-            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>(MediaState_NrItemsInStateChanged);
+         
+            MediaState.NrItemsInStateChanged += MediaState_NrItemsInStateChanged;
             MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
 
             sortedItemEnd = 0;
+
+            sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>((a, b) =>
+            {
+                return (a.ToString().CompareTo(b.ToString()));
+            });
+
+            filter = new Func<SelectableMediaFileItem,bool>((a) => {
+
+                return (true);
+            });
+            
         }
 
         public virtual void detachFromMediaState()
@@ -43,14 +57,23 @@ namespace MediaViewer.Model.Media.State.CollectionView
             MediaState.ItemPropertiesChanged -= MediaState_ItemPropertiesChanged;
         }
 
-        public ObservableCollection<MediaFileItem> Media { get; protected set; }
-        public ObservableCollection<MediaFileItem> SelectedMedia { get; protected set; }
+        public ObservableCollection<SelectableMediaFileItem> Media { get; protected set; }
 
+        public void lockMedia() {
+
+            Monitor.Enter(Media);
+        }
+
+        public void unlockMedia()
+        {
+            Monitor.Exit(Media);
+        }
+     
         public IMediaState MediaState { get; protected set; }
-          
-        Func<MediaFileItem, MediaFileItem, int> sortFunc;
 
-        public Func<MediaFileItem, MediaFileItem, int> SortFunc
+        protected Func<SelectableMediaFileItem, SelectableMediaFileItem, int> sortFunc;
+
+        public Func<SelectableMediaFileItem, SelectableMediaFileItem, int> SortFunc
         {
             get { return sortFunc; }
             set
@@ -61,13 +84,14 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 }
 
                 sortFunc = value;
-            
+
+                refresh();
             }
         }
 
-        Func<MediaFileItem, bool> filter;
+        protected Func<SelectableMediaFileItem, bool> filter;
 
-        public Func<MediaFileItem, bool> Filter
+        public Func<SelectableMediaFileItem, bool> Filter
         {
             get { return filter; }
             set
@@ -78,11 +102,29 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 }
 
                 filter = value;
+
+                refresh();
             }
         }
 
-        public event EventHandler Cleared;
+        public List<MediaFileItem> getSelectedItems()
+        {
+            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
 
+            lock (Media)
+            {
+                foreach (SelectableMediaFileItem item in Media)
+                {
+                    if (item.IsSelected)
+                    {
+                        selectedItems.Add(item.Item);
+                    }
+                }
+            }
+
+            return (selectedItems);
+        }
+      
         protected void OnCleared()
         {
             if (Cleared != null)
@@ -160,71 +202,200 @@ namespace MediaViewer.Model.Media.State.CollectionView
         {
             lock (Media)
             {
-                remove(item);
-                add(item);
-            }
-        }
+                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
 
-        public void removeSelected(MediaFileItem item)
-        {
-            lock (SelectedMedia)
-            {
-                int index = SelectedMedia.IndexOf(item);
+                int index = Media.IndexOf(selectableItem);
 
                 if (index >= 0)
                 {
-                    SelectedMedia.RemoveAt(index);
-                }
-            }
+                    selectableItem = Media[index];
 
-        }
-
-        protected void remove(MediaFileItem item)
-        {
-            lock (Media)
-            {               
-                int index = Media.IndexOf(item);
-
-                if (index >= 0)
-                {
                     Media.RemoveAt(index);
                     if (index < sortedItemEnd)
                     {
                         sortedItemEnd -= 1;
                     }
+
+                    if (Filter(selectableItem))
+                    {
+                        insertSorted(selectableItem);
+                    }   
+                }
+              
+            }
+        }
+
+        public void selectAll()
+        {
+            bool selectionChanged = false;
+
+            lock (Media)
+            {
+                foreach (SelectableMediaFileItem selectableItem in Media)
+                {
+                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+
+                    if (selectableItem.IsSelected == false)
+                    {
+                        selectionChanged = true;
+                    }
+
+                    selectableItem.IsSelected = true;
+
+                    selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+                }
+
+            }
+
+            if (selectionChanged)
+            {
+                OnSelectionChanged();
+            }
+        }
+       
+        public void deselectAll()
+        {
+            bool selectionChanged = false;
+
+            lock (Media)
+            {
+                foreach (SelectableMediaFileItem selectableItem in Media)
+                {
+                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+
+                    if (selectableItem.IsSelected == true)
+                    {
+                        selectionChanged = true;
+                    }
+
+                    selectableItem.IsSelected = false;
+
+                    selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+                }
+
+            }
+
+            if (selectionChanged)
+            {
+                OnSelectionChanged();
+            }
+        }
+
+        public int getIndexOf(MediaFileItem item) {
+
+            SelectableMediaFileItem temp = new SelectableMediaFileItem(item);
+
+            lock (Media)
+            {
+                for(int i = 0; i < Media.Count; i++)
+                {
+                    if (Media[i].Equals(temp))
+                    {
+                        return (i);
+                    }
+
+                }
+
+            }
+
+            return (-1);
+        }
+
+        public void setIsSelected(MediaFileItem item, bool isSelected = true)
+        {
+           
+            SelectableMediaFileItem temp = new SelectableMediaFileItem(item);
+
+            lock (Media)
+            {
+                foreach (SelectableMediaFileItem selectableItem in Media)
+                {                    
+                    if (selectableItem.Equals(temp))
+                    {
+                        selectableItem.IsSelected = isSelected;
+                    }
+                                       
+                }
+
+            }
+            
+        }
+
+        protected void remove(MediaFileItem item)
+        {
+            bool selectionChanged = false;
+            bool isItemRemoved = false;
+
+            lock (Media)
+            {
+                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
+
+                int index = Media.IndexOf(selectableItem);
+
+                if (index >= 0)
+                {
+                    if (Media[index].IsSelected)
+                    {
+                        selectionChanged = true;
+                    }
+
+                    Media.RemoveAt(index);
+                    if (index < sortedItemEnd)
+                    {
+                        sortedItemEnd -= 1;
+                    }
+
+                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+                    isItemRemoved = true;
                 }
             }
 
-            removeSelected(item);
+            if (isItemRemoved)
+            {
+                OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Remove, item));
+            }
+
+            if (selectionChanged)
+            {
+                OnSelectionChanged();
+            }
+            
         }
+
+
 
         protected void add(MediaFileItem item)
         {
+            bool isItemAdded = false;
+
             lock (Media)
             {
-                if (Filter(item) && !Media.Contains(item))
-                {
-                    insertSorted(item);
-                }                
-            }
-        }
+                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
 
-        public void addSelected(MediaFileItem item)
-        {
-            lock (SelectedMedia)
-            {
-                if (Filter(item) && !SelectedMedia.Contains(item))
+                if (Filter(selectableItem) && !Media.Contains(selectableItem))
                 {
-                    MiscUtils.insertIntoSortedCollection<MediaFileItem>(SelectedMedia, item, SortFunc);
+                    insertSorted(selectableItem);
+                    isItemAdded = true;
                 }
+
+                selectableItem.SelectionChanged += selectableItem_SelectionChanged;
             }
+
+            if (isItemAdded)
+            {
+                OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, item));
+            }
+
         }
 
-        void insertSorted(MediaFileItem item)
+        
+
+
+        void insertSorted(SelectableMediaFileItem selectableItem)
         {
             lock (Media)
-            {                
-                MiscUtils.insertIntoSortedCollection<MediaFileItem>(Media, item, SortFunc, 0, sortedItemEnd);
+            {
+                CollectionsSort.insertIntoSortedCollection<SelectableMediaFileItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
 
                 sortedItemEnd++;                               
             }
@@ -233,17 +404,52 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         protected void clear()
         {
+            bool selectionChanged = false;           
+
             lock (Media)
             {
+                foreach (SelectableMediaFileItem selectableItem in Media)
+                {
+                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+
+                    if (selectableItem.IsSelected)
+                    {
+                        selectionChanged = true;
+                    }
+                }
+
                 Media.Clear();
                 sortedItemEnd = 0;          
             }
 
-            lock (SelectedMedia)
+            if (selectionChanged)
             {
-                SelectedMedia.Clear();
+                OnSelectionChanged();
             }
 
+            OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Clear));
+
+        }
+
+        private void selectableItem_SelectionChanged(object sender, EventArgs e)
+        {
+            OnSelectionChanged();
+        }
+
+        void OnSelectionChanged()
+        {
+            if (SelectionChanged != null)
+            {
+                SelectionChanged(this, EventArgs.Empty);
+            }
+        }
+
+        private void OnNrItemsInStateChanged(MediaStateChangedEventArgs args)
+        {
+            if (NrItemsInStateChanged != null)
+            {
+                NrItemsInStateChanged(this, args);
+            }
         }
                
     }

@@ -9,34 +9,26 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.GlobalEvents
 {
-
-    public class MediaBrowserSelectedEvent : PubSubEvent<MediaFileItem> { }
+   
     public class MediaBrowserDisplayEvent : PubSubEvent<MediaBrowserDisplayOptions> { }
 
     public class MediaBrowserDisplayOptions
     {
         public MediaBrowserDisplayOptions()
         {
-            isHidden = false;
-            filterMode = MediaStateFilterMode.All;
+            IsHidden = false;
+            FilterMode = null;
+            SelectedItem = null;
+            IsEnabled = true;
         }
 
-        bool isHidden;
+        public Nullable<bool> IsEnabled { get; set; }
 
-        public bool IsHidden
-        {
-            get { return isHidden; }
-            set { isHidden = value; }
-        }
+        public Nullable<bool> IsHidden { get; set; }
+             
+        public Nullable<MediaStateFilterMode> FilterMode { get; set; }
 
-        MediaStateFilterMode filterMode;
-
-        public MediaStateFilterMode FilterMode
-        {
-            get { return filterMode; }
-            set { filterMode = value; }
-        }
-        
+        public MediaFileItem SelectedItem { get; set; }
 
     }
 }

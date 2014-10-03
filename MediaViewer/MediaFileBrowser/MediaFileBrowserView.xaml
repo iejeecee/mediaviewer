@@ -3,8 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"       
-             xmlns:regions="http://www.codeplex.com/CompositeWPF"          
-             xmlns:Pager="clr-namespace:MediaViewer.Pager" 
+             xmlns:regions="http://www.codeplex.com/CompositeWPF"                       
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData" 
              xmlns:Search="clr-namespace:MediaViewer.Search" 
              xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser"           
@@ -76,7 +75,7 @@
                 <Search:SearchView Grid.Column="0"/>
             </TabItem>
             <TabItem Header="Selection" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
-                <MediaDataGrid:MediaDataGridView Media="{Binding ImageGridViewModel.SelectedMedia}" RowDoubleClick="selectedMediaDataGridView_RowDoubleClick"/>
+                <MediaDataGrid:MediaDataGridView RowDoubleClick="selectedMediaDataGridView_RowDoubleClick"/>
             </TabItem>
         </TabControl>
         <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
@@ -131,17 +130,7 @@
                         </Button>
                         <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserPluginRegion"
                             Grid.Column="1" Margin="2,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center">                            
-                        </ItemsControl>
-                        <ContentControl Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Center" Content="{Binding CurrentViewModel}">
-                            <ContentControl.ContentTemplate>
-                                <DataTemplate>
-                                    <Pager:PagerView x:Name="pager"  
-						                NrPages="{Binding NrPages}" CurrentPage="{Binding CurrentPage}" IsPagingEnabled="{Binding IsPagingEnabled}"
-						                NextPageCommand="{Binding NextPageCommand}" PrevPageCommand="{Binding PrevPageCommand}" FirstPageCommand="{Binding FirstPageCommand}"
-						                LastPageCommand="{Binding LastPageCommand}"/>
-                                </DataTemplate>
-                            </ContentControl.ContentTemplate>
-                        </ContentControl>
+                        </ItemsControl>                       
                         <Button x:Name="deleteButton" Grid.Column="3" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}" Margin="0,0,2,0">
                             <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                         </Button>
@@ -151,8 +140,7 @@
             <Grid/>
         </Grid>
         <GridSplitter Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
-        <TabControl regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion" 
-                    regions:RegionManager.RegionContext="{Binding CurrentViewModel.SelectedMedia}"
+        <TabControl regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion"                     
                     Grid.Column="2" BorderThickness="5" 
                     BorderBrush="{StaticResource uiElementBorderColor}" 
                     Margin="2,0,0,0">         

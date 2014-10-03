@@ -79,15 +79,15 @@ namespace MediaViewer.Pager
             pagerView.totalPagesTextBox.Text = ((int)e.NewValue).ToString();
         }
 
-        public int CurrentPage
+        public Nullable<int> CurrentPage
         {
-            get { return (int)GetValue(CurrentPageProperty); }
+            get { return (Nullable<int>)GetValue(CurrentPageProperty); }
             set { SetValue(CurrentPageProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for CurrentPage.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty CurrentPageProperty =
-            DependencyProperty.Register("CurrentPage", typeof(int), typeof(PagerView), 
+            DependencyProperty.Register("CurrentPage", typeof(Nullable<int>), typeof(PagerView), 
              new FrameworkPropertyMetadata() {
                 BindsTwoWayByDefault = true,
                 DefaultUpdateSourceTrigger = UpdateSourceTrigger.Explicit,
@@ -97,7 +97,7 @@ namespace MediaViewer.Pager
 
         private static bool validateCurrentPage(object value)
         {
-            if (value.GetType() == typeof(int))
+            if (value == null || value.GetType() == typeof(int))
             {
                 return (true);
 
@@ -110,7 +110,17 @@ namespace MediaViewer.Pager
         private static void currentPageChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             PagerView pagerView = (PagerView)d;
-            pagerView.currentPageTextBox.Text = ((int)e.NewValue).ToString();
+
+            Nullable<int> newValue = (Nullable<int>)e.NewValue;
+
+            if (newValue == null)
+            {
+                pagerView.currentPageTextBox.Text = "";
+            }
+            else
+            {
+                pagerView.currentPageTextBox.Text = (newValue.Value).ToString();
+            }
         }
 
         public ICommand NextPageCommand

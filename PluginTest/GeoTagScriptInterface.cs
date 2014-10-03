@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File.Watcher;
+﻿using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
 using mshtml;
 using System;
 using System.Collections.Generic;
@@ -41,7 +42,24 @@ namespace PluginTest
 
 		    return(data);
 	    }
-	
+
+        public GeoTagFileData getGeoTagFileData(MediaFileItem mediaItem)
+        {
+           
+            foreach (GeoTagFileData geoTagItem in GeoTagFileItems)
+            {
+
+                if (geoTagItem.MediaFileItem.Equals(mediaItem))
+                {
+
+                    return (geoTagItem);                 
+                }
+            }
+
+            return (null);
+        }
+
+
 	    public event EventHandler Initialized;
 	    public event EventHandler<GeoTagFileData> PlaceMarkClicked;
 	    public event EventHandler<GeoTagFileData> PlaceMarkMoved;
@@ -80,6 +98,16 @@ namespace PluginTest
             }
 
             GeoTagFileItems.Add(item);
+        }
+
+        public void removeGeoTagItem(GeoTagFileData item)
+        {
+            if (item.HasGeoTag)
+            {
+                deletePlaceMark(item);
+            }
+
+            GeoTagFileItems.Remove(item);
         }
 
         public void clearAll()

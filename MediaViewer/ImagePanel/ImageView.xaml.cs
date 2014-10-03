@@ -288,7 +288,7 @@ namespace MediaViewer.ImagePanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Unsubscribe(mediaBrowser_SelectedEvent);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -303,11 +303,11 @@ namespace MediaViewer.ImagePanel
                 ViewModel.LoadImageAsyncCommand.DoExecute(location);
             }
 
-            EventAggregator.GetEvent<MediaBrowserSelectedEvent>().Subscribe(mediaBrowser_SelectedEvent, ThreadOption.UIThread);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
               
         }
 
-        private void mediaBrowser_SelectedEvent(MediaFileItem item)
+        private void imageView_MediaSelectionEvent(MediaFileItem item)
         {
             ViewModel.LoadImageAsyncCommand.DoExecute(item.Location);
         }

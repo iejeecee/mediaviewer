@@ -113,7 +113,7 @@ namespace MediaViewer.Torrent
 
             if (vm.Media.Count == 1)
             {
-                singleFileTorrent(info, new FileInfo(vm.Media[0].Location));
+                singleFileTorrent(info, new FileInfo(vm.Media.ElementAt(0).Location));
 
             }
             else
@@ -148,7 +148,7 @@ namespace MediaViewer.Torrent
             }
 
             String torrentName = String.IsNullOrEmpty(vm.TorrentName) ?
-                Path.GetFileNameWithoutExtension(vm.Media[0].Location) : vm.TorrentName;
+                Path.GetFileNameWithoutExtension(vm.Media.ElementAt(0).Location) : vm.TorrentName;
             String torrentFullName = vm.OutputPath + "\\" + torrentName + ".torrent";
 
             if (CancellationToken.IsCancellationRequested) return;
@@ -215,7 +215,7 @@ namespace MediaViewer.Torrent
 
         }
 
-        byte[] buildPiecesHash(List<MediaFileItem> items)
+        byte[] buildPiecesHash(ICollection<MediaFileItem> items)
         {
             byte[] piece = new byte[pieceLength];
             byte[] result;
@@ -229,12 +229,12 @@ namespace MediaViewer.Torrent
 
             for (int i = 0; i < items.Count; i++)
             {
-                ItemInfo = "Calculating SHA1 hash for: " + Path.GetFileName(items[i].Location);
+                ItemInfo = "Calculating SHA1 hash for: " + Path.GetFileName(items.ElementAt(i).Location);
                
                 FileStream fileStream = null;
                 try
                 {
-                    fileStream = new FileStream(items[i].Location, FileMode.Open);
+                    fileStream = new FileStream(items.ElementAt(i).Location, FileMode.Open);
                     ItemProgressMax = (int)fileStream.Length;
                     fileStream.Seek(0, SeekOrigin.Begin);
 
@@ -263,7 +263,7 @@ namespace MediaViewer.Torrent
                     } while (bytesRead == bytesToRead);
 
                     TotalProgress = i + 1;
-                    InfoMessages.Add("Finished calculating SHA1 hash for: " + Path.GetFileName(items[i].Location));
+                    InfoMessages.Add("Finished calculating SHA1 hash for: " + Path.GetFileName(items.ElementAt(i).Location));
                 }
                 finally
                 {

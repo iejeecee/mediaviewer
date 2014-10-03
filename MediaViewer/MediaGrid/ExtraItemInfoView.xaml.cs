@@ -17,7 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaGrid
 {
     /// <summary>
     /// Interaction logic for ExtraImageGridItemInfoView.xaml
@@ -45,7 +45,7 @@ namespace MediaViewer.ImageGrid
         {
             ExtraItemInfoView view = d as ExtraItemInfoView;
             MediaStateSortMode infoType = (MediaStateSortMode)e.NewValue;
-            MediaFileItem item = view.DataContext as MediaFileItem;
+            MediaFileItem item = (view.DataContext as SelectableMediaFileItem).Item;
 
             String info = null;
 

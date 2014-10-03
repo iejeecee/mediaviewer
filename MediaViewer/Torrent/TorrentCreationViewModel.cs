@@ -135,9 +135,9 @@ namespace MediaViewer.Torrent
                 
             }
         }
-        List<MediaFileItem> media;
+        ICollection<MediaFileItem> media;
 
-        public List<MediaFileItem> Media
+        public ICollection<MediaFileItem> Media
         {
             get { return media; }
             set { media = value;
@@ -203,17 +203,18 @@ namespace MediaViewer.Torrent
                 return;
             }
 
-            pathRoot = MediaViewer.Model.Utils.FileUtils.getPathWithoutFileName(Media[0].Location);
+            pathRoot = MediaViewer.Model.Utils.FileUtils.getPathWithoutFileName(Media.ElementAt(0).Location);
 
             for (int i = 1; i < Media.Count; i++)
             {
                 String newPathRoot = "";
 
-                for(int j = 0; j < Math.Min(Media[i].Location.Length, pathRoot.Length); j++) {
+                for (int j = 0; j < Math.Min(Media.ElementAt(i).Location.Length, pathRoot.Length); j++)
+                {
 
-                    if (pathRoot[j] == Media[i].Location[j])
+                    if (pathRoot[j] == Media.ElementAt(i).Location[j])
                     {
-                        newPathRoot += Media[i].Location[j];
+                        newPathRoot += Media.ElementAt(i).Location[j];
                     }
                     else
                     {
@@ -233,7 +234,7 @@ namespace MediaViewer.Torrent
 
             if (Media.Count == 1)
             {
-                TorrentName = Path.GetFileNameWithoutExtension(Media[0].Location);
+                TorrentName = Path.GetFileNameWithoutExtension(Media.ElementAt(0).Location);
             }
             else
             {

@@ -237,9 +237,9 @@ namespace MediaViewer.Model.Utils
             {
                 progress.ItemProgress = 0;
                 progress.ItemInfo = "Moving: " + source + "->" + destination;
-
+              
                 System.IO.Directory.Move(source, destination);
-
+                
                 progress.InfoMessages.Add("Moved: " + source + " -> " + destination);
                 progress.ItemProgress = progress.ItemProgressMax;
             }

@@ -1,4 +1,4 @@
-﻿using MediaViewer.ImageGrid;
+﻿using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
 using MvvmFoundation.Wpf;
 using System;

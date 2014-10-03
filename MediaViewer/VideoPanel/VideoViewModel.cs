@@ -18,58 +18,54 @@ using System.Windows.Input;
 using VideoPlayerControl;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
+using MediaViewer.Settings;
 
 namespace MediaViewer.VideoPanel
 {
 
-    public class VideoViewModel : ObservableObject, IPageable, IDisposable, ISelectedMedia
+    public class VideoViewModel : ObservableObject, IDisposable
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
 
-        public VideoViewModel(MediaFileWatcher mediaFileWatcher)
+        public VideoViewModel(AppSettings settings)
         {
             IsInitialized = false;
-
-            MediaState = mediaFileWatcher.MediaState;
-
+            CurrentLocation = null;
+        
             commandQueue = new ConcurrentQueue<Tuple<ICommand, Object>>();
-
-            selectedMedia = new ObservableCollection<MediaFileItem>();
-
-            OpenCommand = new Command<string>(async (location) =>
+           
+            OpenCommand = new Command<string>(location =>
             {
                 if (addCommandToQueue(OpenCommand, location) == true) return;
-
-                selectedMedia.Clear();
+              
                 tokenSource = new CancellationTokenSource();
                 try
                 {
                     videoPlayer.open(location);
-                    ScreenShotLocation = mediaFileWatcher.Path;
+                    CurrentLocation = location;
+                    ScreenShotLocation = FileUtils.getPathWithoutFileName(location); //settings.VideoScreenShotLocation;
                     ScreenShotName = System.IO.Path.GetFileName(location);
                 }
                 catch (Exception e)
                 {
                     MessageBox.Show("Error opening " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                updatePaging();
+              
 
-                MediaFileItem item = MediaFileItem.Factory.create(location);
+                //MediaFileItem item = MediaFileItem.Factory.create(location);
 
-                await item.readMetaDataAsync(MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
-
-                selectedMedia.Add(item);
-
+                //await item.readMetaDataAsync(MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
+              
             });
             PlayCommand = new Command(() =>
             {
                 if (addCommandToQueue(PlayCommand, null) == true) return;
 
-                if (VideoState == VideoPlayerControl.VideoState.CLOSED && selectedMedia.Count == 1)
+                if (VideoState == VideoPlayerControl.VideoState.CLOSED && CurrentLocation != null)
                 {
-                    String location = selectedMedia[0].Location;
+                    String location = CurrentLocation;
 
                     try
                     {
@@ -132,36 +128,7 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>((s, e) =>
-            {
-                updatePaging();
-
-            });
-
-            nextPageCommand = new Command(new Action(() =>
-            {
-
-                CurrentPage += 1;
-
-            }));
-
-            prevPageCommand = new Command(new Action(() =>
-            {
-
-                CurrentPage -= 1;
-
-            }));
-
-            firstPageCommand = new Command(new Action(() =>
-            {
-                CurrentPage = 1;
-            }));
-
-            lastPageCommand = new Command(new Action(() =>
-            {
-                CurrentPage = NrPages;
-            }));
-
+         
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
         }
@@ -374,16 +341,7 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        ObservableCollection<MediaFileItem> selectedMedia;
-
-        public ObservableCollection<MediaFileItem> SelectedMedia
-        {
-            get { return selectedMedia; }
-            set { selectedMedia = value;
-            NotifyPropertyChanged();
-            }
-        }
-
+    
         CancellationTokenSource tokenSource;
 
         public CancellationTokenSource TokenSource
@@ -507,263 +465,21 @@ namespace MediaViewer.VideoPanel
             set { hasAudio = value;
             NotifyPropertyChanged();
             }
-        }
+        }                
 
-        MediaState mediaState;
+        String currentLocation;
 
-        MediaState MediaState
+        public String CurrentLocation
         {
-            set
-            {
-                mediaState = value;
-            }
             get
             {
-                return (mediaState);
+                return currentLocation;
             }
-        }
-
-        bool isPagingEnabled;
-
-        public bool IsPagingEnabled
-        {
-            get { return isPagingEnabled; }
-            set
+            protected set
             {
-                isPagingEnabled = value;
-                if (value == false)
-                {
-                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        NextPageCommand.CanExecute = false;
-                        PrevPageCommand.CanExecute = false;
-                        FirstPageCommand.CanExecute = false;
-                        LastPageCommand.CanExecute = false;
-                    }));
-
-                }
+                currentLocation = value;
                 NotifyPropertyChanged();
             }
         }
-
-
-        int nrPages;
-
-        public int NrPages
-        {
-            get
-            {
-                return nrPages;
-            }
-            set
-            {
-                nrPages = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        int currentPage;
-
-        public int CurrentPage
-        {
-            get
-            {
-                return (currentPage);
-            }
-            set
-            {
-                if (value <= 0 || value > NrPages || IsPagingEnabled == false) return;
-                
-                String location = null;
-
-                MediaState.UIMediaCollection.EnterReaderLock();
-                try
-                {
-                   location = getVideoFileByIndex(value - 1);
-                }
-                finally
-                {
-                    MediaState.UIMediaCollection.ExitReaderLock();
-                }
-
-                if (location != null && !location.ToLower().Equals(videoPlayer.VideoLocation.ToLower())) 
-                {
-                    CloseCommand.DoExecute();
-                    OpenCommand.DoExecute(location);
-                    PlayCommand.DoExecute();                       
-                }
-               
-                currentPage = value;
-                App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    if (CurrentPage + 1 <= NrPages)
-                    {
-                        nextPageCommand.CanExecute = true;
-                        lastPageCommand.CanExecute = true;
-                    }
-                    else
-                    {
-                        nextPageCommand.CanExecute = false;
-                        lastPageCommand.CanExecute = false;
-                    }
-
-                    if (CurrentPage - 1 > 0)
-                    {
-                        prevPageCommand.CanExecute = true;
-                        firstPageCommand.CanExecute = true;
-                    }
-                    else
-                    {
-                        prevPageCommand.CanExecute = false;
-                        firstPageCommand.CanExecute = false;
-                    }
-                }));
-
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command nextPageCommand;
-
-        public Command NextPageCommand
-        {
-            get
-            {
-                return nextPageCommand;
-            }
-            set
-            {
-                nextPageCommand = value;
-            }
-        }
-
-        Command prevPageCommand;
-
-        public Command PrevPageCommand
-        {
-            get
-            {
-                return prevPageCommand;
-            }
-            set
-            {
-                prevPageCommand = value;
-            }
-        }
-
-        Command firstPageCommand;
-
-        public Command FirstPageCommand
-        {
-            get
-            {
-                return firstPageCommand;
-            }
-            set
-            {
-                firstPageCommand = value;
-            }
-        }
-
-        Command lastPageCommand;
-
-        public Command LastPageCommand
-        {
-            get
-            {
-                return lastPageCommand;
-            }
-            set
-            {
-                lastPageCommand = value;
-            }
-        }
-
-        void updatePaging()
-        {
-            MediaState.UIMediaCollection.EnterReaderLock();
-            try
-            {
-                int index = getVideoFileIndex(videoPlayer == null ? "" : videoPlayer.VideoLocation);
-
-                if (index == -1)
-                {
-                    IsPagingEnabled = false;
-                }
-                else
-                {
-                    IsPagingEnabled = true;
-                    NrPages = getNrVideoFiles();
-                    CurrentPage = index + 1;
-                }
-            }
-            finally
-            {
-                MediaState.UIMediaCollection.ExitReaderLock();
-            }
-        }
-
-        int getNrVideoFiles()
-        {
-            int count = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {
-                if (MediaFormatConvert.isVideoFile(item.Location))
-                {
-                    count++;
-                }
-            }
-
-            return (count);
-        }
-
-        string getVideoFileByIndex(int index)
-        {
-
-            int i = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {
-
-                if (MediaFormatConvert.isVideoFile(item.Location))
-                {
-                    if (index == i)
-                    {
-                        return (item.Location);
-                    }
-
-                    i++;
-                }
-
-            }
-
-            return (null);
-        }
-
-        int getVideoFileIndex(string location)
-        {
-
-            int i = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {
-
-                if (MediaFormatConvert.isVideoFile(item.Location))
-                {
-                    if (item.Location.ToLower().Equals(location.ToLower()))
-                    {
-                        return (i);
-                    }
-
-                    i++;
-                }
-
-            }
-
-            return (-1);
-        }
-
-     
     }
 }

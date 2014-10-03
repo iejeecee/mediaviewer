@@ -1,6 +1,7 @@
 ﻿using Aga.Controls.Tree;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Collections;
+using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -136,7 +137,7 @@ namespace MediaViewer.UserControls.TagTreePicker
         {
             if (tag.TagCategory == null)
             {
-                MiscUtils.insertIntoSortedCollection(treeView.Root.Children, new TagItem(tag),
+                CollectionsSort.insertIntoSortedCollection(treeView.Root.Children, new TagItem(tag),
                     compareTreeNodes, getNrCategories(), treeView.Root.Children.Count); 
              
             }
@@ -147,7 +148,7 @@ namespace MediaViewer.UserControls.TagTreePicker
 
                 if (item != null && item.IsLoaded)
                 {
-                    MiscUtils.insertIntoSortedCollection(item.Children, new TagItem(tag), compareTreeNodes);                   
+                    CollectionsSort.insertIntoSortedCollection(item.Children, new TagItem(tag), compareTreeNodes);                   
                 }
             }
         }
@@ -172,7 +173,7 @@ namespace MediaViewer.UserControls.TagTreePicker
 
         private void addCategory(TagCategory category)
         {
-            MiscUtils.insertIntoSortedCollection(treeView.Root.Children, new CategoryItem(category),
+            CollectionsSort.insertIntoSortedCollection(treeView.Root.Children, new CategoryItem(category),
                     compareTreeNodes, 0, getNrCategories());             
         }
 

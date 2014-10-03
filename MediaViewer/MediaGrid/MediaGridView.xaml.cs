@@ -25,77 +25,67 @@ using System.ComponentModel.Composition;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.State.CollectionView;
 using System.Windows.Controls.Primitives;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.Model.Media.File;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaGrid
 {
     /// <summary>
     /// Interaction logic for ImageGridControl.xaml
     /// </summary>
     [Export]
-    public partial class ImageGridView : UserControl, IRegionMemberLifetime, INavigationAware
+    public partial class MediaGridView : UserControl, IRegionMemberLifetime, INavigationAware
     {
         VirtualizingTilePanel panel;
+        
+        IEventAggregator EventAggregator { get; set; }
 
-        DefaultMediaStateCollectionView MediaCollectionView;
-
-      
-        ImageGridViewModel ViewModel
-        {
-            get;
-            set;
-        }
-
-        public ImageGridView()
-        {
-            InitializeComponent();
-            
-        }
-
+        MediaGridViewModel ViewModel {get;set;}
+     
+     
         [ImportingConstructor]
-        public ImageGridView(IRegionManager regionManager)
+        public MediaGridView(IRegionManager regionManager, IEventAggregator eventAggregator)
         {           
             InitializeComponent();
 
+            EventAggregator = eventAggregator;
+
             panel = null;
-          
+           
         }
 
         void ImageGridView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.OldValue is ImageGridViewModel)
+            if (e.OldValue is MediaGridViewModel)
             {
-                ImageGridViewModel imageGridViewModel = e.OldValue as ImageGridViewModel;
-               
-                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.LastPageCommand, "Executed", imageGridViewModel_LastPageCommand);
-                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.FirstPageCommand, "Executed", imageGridViewModel_FirstPageCommand);
-                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.NextPageCommand, "Executed", imageGridViewModel_NextPageCommand);
-                WeakEventManager<Command, EventArgs>.RemoveHandler(imageGridViewModel.PrevPageCommand, "Executed", imageGridViewModel_PrevPageCommand);
+                MediaGridViewModel oldImageGridViewModel = e.OldValue as MediaGridViewModel;
 
-                MediaCollectionView.Cleared -= imageGridViewModel_Cleared;
-
-                MediaCollectionView.detachFromMediaState();
+                oldImageGridViewModel.MediaStateCollectionView.Cleared -= imageGridViewModel_Cleared;
+                oldImageGridViewModel.MediaStateCollectionView.SelectionChanged -= imageGridViewModel_SelectionChanged;
+                           
             }
 
-            if (e.NewValue is ImageGridViewModel)
+            if (e.NewValue is MediaGridViewModel)
             {
-                ImageGridViewModel imageGridViewModel = e.NewValue as ImageGridViewModel;
-                
-                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.LastPageCommand, "Executed", imageGridViewModel_LastPageCommand);
-                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.FirstPageCommand, "Executed", imageGridViewModel_FirstPageCommand);
-                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.NextPageCommand, "Executed", imageGridViewModel_NextPageCommand);
-                WeakEventManager<Command, EventArgs>.AddHandler(imageGridViewModel.PrevPageCommand, "Executed", imageGridViewModel_PrevPageCommand);
+                MediaGridViewModel imageGridViewModel = e.NewValue as MediaGridViewModel;
 
-                MediaCollectionView = new DefaultMediaStateCollectionView(imageGridViewModel.MediaState);
-                MediaCollectionView.Cleared += imageGridViewModel_Cleared;
-                itemsControl.ItemsSource = MediaCollectionView.Media;
-                filterComboBox.ItemsSource = MediaCollectionView.FilterModes;               
-                sortComboBox.ItemsSource = MediaCollectionView.SortModes;
-                                         
+                imageGridViewModel.MediaStateCollectionView.Cleared += imageGridViewModel_Cleared;
+                imageGridViewModel.MediaStateCollectionView.SelectionChanged += imageGridViewModel_SelectionChanged;
+
+                //itemsControl.ItemsSource = MediaCollectionView.Media;
+                //filterComboBox.ItemsSource = MediaCollectionView.FilterModes;               
+                //sortComboBox.ItemsSource = MediaCollectionView.SortModes;
+                                                       
             }
             
         }
 
-
+        private void imageGridViewModel_SelectionChanged(object sender, EventArgs e)
+        {
+            List<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
+           
+            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Publish(selectedItems);
+        }
 
         private void imageGridViewModel_PrevPageCommand(object sender, EventArgs e)
         {
@@ -142,6 +132,7 @@ namespace MediaViewer.ImageGrid
         {
             panel = sender as VirtualizingTilePanel;
             
+            
         }
 
         public bool KeepAlive
@@ -161,7 +152,7 @@ namespace MediaViewer.ImageGrid
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            ViewModel = (ImageGridViewModel)navigationContext.Parameters["viewModel"];
+            ViewModel = (MediaGridViewModel)navigationContext.Parameters["viewModel"];
 
             DataContext = ViewModel;
         }

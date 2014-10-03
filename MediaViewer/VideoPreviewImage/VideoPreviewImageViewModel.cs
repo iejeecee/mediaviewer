@@ -25,9 +25,9 @@ namespace MediaViewer.VideoPreviewImage
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        List<MediaFileItem> media;
+        ICollection<MediaFileItem> media;
 
-        public List<MediaFileItem> Media
+        public ICollection<MediaFileItem> Media
         {
             get { return media; }
             set { media = value; }

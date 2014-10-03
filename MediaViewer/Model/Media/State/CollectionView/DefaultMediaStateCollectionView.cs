@@ -11,13 +11,13 @@ using System.Windows.Data;
 
 namespace MediaViewer.Model.Media.State.CollectionView
 {
-    sealed class DefaultMediaStateCollectionView : MediaStateCollectionView
+    public sealed class DefaultMediaStateCollectionView : MediaStateCollectionView
     {
         public DefaultMediaStateCollectionView(IMediaState mediaState)
             : base(mediaState)
         {
-            Filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.All);
-            SortFunc = MediaStateSortFunctions.getSortFunction(MediaStateSortMode.Name);
+            filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.All);
+            sortFunc = MediaStateSortFunctions.getSortFunction(MediaStateSortMode.Name);
 
             FilterModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateFilterMode)));         
             SortModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateSortMode)));
@@ -26,9 +26,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             {
                 MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
 
-                SortFunc = MediaStateSortFunctions.getSortFunction(sortMode);
-
-                refresh();
+                SortFunc = MediaStateSortFunctions.getSortFunction(sortMode);        
             };
 
             SortModes.Filter = mediaStateSortModeCollectionViewFilter;
@@ -66,7 +64,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         break;
                 }
 
-                refresh();
+       
             };
                                     
             FilterModes.MoveCurrentTo(MediaStateFilterMode.All);

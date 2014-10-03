@@ -67,7 +67,7 @@ namespace MediaViewer.VideoPreviewImage
              
                 for (TotalProgress = 0; TotalProgress < TotalProgressMax; TotalProgress++)
                 {
-                    MediaFileItem item = asyncState.Media[TotalProgress];
+                    MediaFileItem item = asyncState.Media.ElementAt(TotalProgress);
 
                     if (CancellationToken.IsCancellationRequested) return;
                     if (!MediaFormatConvert.isVideoFile(item.Location))

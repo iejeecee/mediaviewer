@@ -188,13 +188,7 @@ namespace MediaViewer.Model.Media.State
             {
                 foreach (MediaFileItem item in UIMediaCollection.Items)
                 {
-                    item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(item_PropertyChanged);
-
-                    if (item.IsSelected == true)
-                    {
-                        item.IsSelected = false;
-                    }
-
+                    item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(item_PropertyChanged);              
                 }
 
                 UIMediaCollection.Clear();
@@ -335,32 +329,7 @@ namespace MediaViewer.Model.Media.State
             OnNrItemsInStateChanged(args);
 
         }
-
-    
-
-        public List<MediaFileItem> getSelectedItemsUIState()
-        {
-            List<MediaFileItem> selected = new List<MediaFileItem>();
-
-            UIMediaCollection.EnterReaderLock();
-
-            try
-            {
-                foreach (MediaFileItem item in UIMediaCollection.Items)
-                {
-                    if (item.IsSelected)
-                    {
-                        selected.Add(item);
-                    }
-                }
-
-                return (selected);
-            }
-            finally
-            {
-                UIMediaCollection.ExitReaderLock();
-            }
-        }
+            
 
         public void import(MediaFileItem item, CancellationToken token)
         {

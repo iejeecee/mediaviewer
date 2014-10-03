@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MediaViewer.ImageGrid
+namespace MediaViewer.MediaGrid
 {
     class ThumbnailSelectorConverter : IValueConverter
     {

@@ -65,23 +65,30 @@ namespace MediaViewer
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(ImageNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(VideoNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(MediaFileBrowserNavigationItemView));
-         
-            String location = App.Args.Count() > 0 ? App.Args[0] : "";
 
-            ShellViewModel.navigateToMediaStackPanelView();
+            try {
 
-            if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(location))
-            {
-                ShellViewModel.navigateToImageView(location);
-                MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
-            }
-            else if (MediaFormatConvert.isVideoFile(location))
-            {
-                ShellViewModel.navigateToVideoView(location);
-                MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
-            }
-            else
-            {
+                String location = App.Args.Count() > 0 ? FileUtils.getProperFilePathCapitalization(App.Args[0]) : "";
+
+                if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(location))
+                {
+                    MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
+                    ShellViewModel.navigateToImageView(location);
+
+                }
+                else if (MediaFormatConvert.isVideoFile(location))
+                {
+                    MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
+                    ShellViewModel.navigateToVideoView(location);
+                }
+                else
+                {
+                    ShellViewModel.navigateToMediaFileBrowser();
+                }
+
+            } catch (Exception e) {
+
+                log.Error("Error in command line argument: " + App.Args[0], e);
                 ShellViewModel.navigateToMediaFileBrowser();
             }
                   

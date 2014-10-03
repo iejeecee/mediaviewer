@@ -21,6 +21,8 @@ namespace MediaViewer.UserControls.TextBlock
     /// </summary>
     public partial class AutoLengthTextBlock : UserControl
     {
+        const double errorMargin = 3;
+
         public AutoLengthTextBlock()
         {
             InitializeComponent();
@@ -106,24 +108,35 @@ namespace MediaViewer.UserControls.TextBlock
 
                textBlock.Padding = new Thickness(0, 0, 0, 0);
 
-               //calculate average length a character in the string
+               //calculate average length of characters in the string
                double avgCharLength = FullTextSize.Width / FullText.Length;
                // length of added dots with a little extra buffer
-               double dotsLength = avgCharLength * 4.5;
+               double dotsLength = avgCharLength * 3;
 
                 // calculate how many characters need to be dropped to fit the string into the available space
-               int x = (int)Math.Ceiling(((FullTextSize.Width + dotsLength) - textBlock.ActualWidth) / avgCharLength);
+               int nrDroppedChars = (int)Math.Ceiling(((FullTextSize.Width + dotsLength) - textBlock.ActualWidth) / avgCharLength);
 
-               int newLength = FullText.Length - x;
+               String text = "";
 
-               if (newLength <= 0)
+               do
                {
-                   textBlock.Text = "";
-                   return;
-               }
-                           
-               textBlock.Text = FullText.Substring(0, newLength) + "...";
+                   int newLength = FullText.Length - nrDroppedChars;
+
+                   if (newLength <= 0)
+                   {
+                       text = "";
+                       break;
+                   }
+
+                   text = FullText.Substring(0, newLength) + "...";
+
+                   nrDroppedChars++;
+
+               } while (MeasureString(text).Width >= textBlock.ActualWidth - errorMargin);
+
+               textBlock.Text = text;
               
+
             }
 
         }

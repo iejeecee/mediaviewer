@@ -11,7 +11,7 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Name="mainGrid" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource uiElementBackgroundColor}">    
+    <Grid Name="mainGrid" IsEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{StaticResource imageGridBorderColor2}">    
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
@@ -20,18 +20,18 @@
             <ColumnDefinition Width="Auto"/>
             <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
-        <Button Grid.Column="0" x:Name="beginButton" Width="39" Height="23" ToolTip="First Page" Margin="2,2,0,2">
+        <Button Grid.Column="0" x:Name="beginButton" Width="39" Height="20" ToolTip="First Page" Margin="2,2,0,2">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Rewind.ico" ToolTip="First Page"/>
         </Button>
-        <Button Grid.Column="1" x:Name="prevButton" Width="39" Height="23" ToolTip="Previous Page">
+        <Button Grid.Column="1" x:Name="prevButton" Width="39" Height="20" ToolTip="Previous Page">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Previous.ico" ToolTip="Previous Page"/>
         </Button>
-        <TextBox Grid.Column="2" x:Name="currentPageTextBox" Height="23" Width="32" TextAlignment="Center" KeyDown="currentPageTextBox_KeyDown" ToolTip="Current Page" Text="0" Margin="4,0,2,0"/>
-        <TextBox Grid.Column="3" x:Name="totalPagesTextBox" Height="23" Width="32" TextAlignment="Center" IsReadOnly="True" ToolTip="Total Pages" Text="0" Margin="2,0,4,0"/>
-        <Button Grid.Column="4" x:Name="nextButton" Width="39" Height="23" ToolTip="Next Page">
+        <TextBox Grid.Column="2" x:Name="currentPageTextBox" Height="20" Width="32" TextAlignment="Center" KeyDown="currentPageTextBox_KeyDown" ToolTip="Current Page" Text="0" Margin="4,0,2,0"/>
+        <TextBox Grid.Column="3" x:Name="totalPagesTextBox" Height="20" Width="32" TextAlignment="Center" IsReadOnly="True" ToolTip="Total Pages" Text="0" Margin="2,0,4,0"/>
+        <Button Grid.Column="4" x:Name="nextButton" Width="39" Height="20" ToolTip="Next Page">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Next.ico" ToolTip="Next Page"/>
         </Button>
-        <Button Grid.Column="5" x:Name="endButton" Width="39" Height="23" ToolTip="Last Page" Padding="0" Margin="0,2,2,2">
+        <Button Grid.Column="5" x:Name="endButton" Width="39" Height="20" ToolTip="Last Page" Padding="0" Margin="0,2,2,2">
             <Image Source="pack://application:,,,/Resources/Icons/Button-Forward.ico" ToolTip="Last Page"/>
         </Button>
     </Grid>

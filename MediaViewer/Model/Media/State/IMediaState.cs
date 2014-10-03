@@ -55,9 +55,7 @@ namespace MediaViewer.Model.Media.State
         {
             get;
         }
-            
-        List<MediaFileItem> getSelectedItemsUIState();
-      
+                         
         void addUIState(IEnumerable<MediaFileItem> items);
         void removeUIState(IEnumerable<MediaFileItem> items);
         void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations);

@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
 using System;
@@ -141,8 +142,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                 DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
 
-                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask, MediaFileWatcher.Instance.MediaState);           
-                MiscUtils.insertIntoSortedCollection(selectedNode.Children, child);
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask, MediaFileWatcher.Instance.MediaState);
+                CollectionsSort.insertIntoSortedCollection(selectedNode.Children, child);
                 infoGatherTask.addLocation(child);
 
                 selectedNode.IsExpanded = true;
@@ -179,7 +180,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 newNode = new DirectoryLocation(new DirectoryInfo(fullName), infoGatherTask, MediaFileWatcher.Instance.MediaState);
             }
 
-            MiscUtils.insertIntoSortedCollection(parent.Children, newNode);
+            CollectionsSort.insertIntoSortedCollection(parent.Children, newNode);
             infoGatherTask.addLocation(newNode);
             newNode.IsExpanded = selectedNode.IsExpanded;
             treeView.SelectedItem = newNode;

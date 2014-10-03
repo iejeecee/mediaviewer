@@ -22,46 +22,18 @@ using MediaViewer.Model.Utils;
 namespace MediaViewer.ImagePanel
 {
 
-    public class ImageViewModel : ObservableObject, IPageable, ISelectedMedia
+    public class ImageViewModel : ObservableObject
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        CancellationTokenSource loadImageCTS;
-
-        ImageMedia imageFile;
-
-        MediaState mediaState;
-     
-        MediaState MediaState
-        {
-            set
-            {
-                mediaState = value;
-            }
-            get
-            {
-                return (mediaState);
-            }
-        }
-
-        ObservableCollection<MediaFileItem> selectedMedia;
-
-        public ObservableCollection<MediaFileItem> SelectedMedia
-        {
-            get { return selectedMedia; }
-            set { selectedMedia = value;
-            NotifyPropertyChanged();
-            }
-        }
-
+        CancellationTokenSource loadImageCTS; 
+           
         public event EventHandler SetNormalScaleEvent;
         public event EventHandler SetBestFitScaleEvent;
           
-        public ImageViewModel(MediaState state)
+        public ImageViewModel()
         {
-
-            this.MediaState = state;
-
+           
             loadImageCTS = new CancellationTokenSource();
             isLoading = false;
 
@@ -82,44 +54,7 @@ namespace MediaViewer.ImagePanel
 
             }));
 
-
-            MediaState.NrItemsInStateChanged += new EventHandler<MediaStateChangedEventArgs>((s, e) =>
-            {
-
-                if (imageFile == null)
-                {
-                    IsPagingEnabled = false;
-                    return;
-                }
-
-                updatePaging();                                                   
-                
-            });
-
-            nextPageCommand = new Command(() =>
-            {
-
-                CurrentPage += 1;
-
-            });
-
-            prevPageCommand = new Command(() =>
-            {
-
-                CurrentPage -= 1;
-
-            });
-
-            firstPageCommand = new Command(() =>
-            {
-                CurrentPage = 1;
-            });
-
-            lastPageCommand = new Command(() =>
-            {
-                CurrentPage = NrPages;
-            });
-
+        
             rotate90DegreesCommand = new Command(() =>
             {
                 RotationDegrees += 90;
@@ -198,9 +133,7 @@ namespace MediaViewer.ImagePanel
             Contrast = 1;
             minScale = 0;
             maxScale = 1;
-
-            SelectedMedia = new ObservableCollection<MediaFileItem>();
-
+        
             IsEffectsEnabled = true;
             IsResetSettingsOnLoad = true;
          
@@ -477,71 +410,45 @@ namespace MediaViewer.ImagePanel
 
             Transform = transformMatrix;
         }
+              
 
-        void updatePaging()
-        {
-            MediaState.UIMediaCollection.EnterReaderLock();
-            try
-            {
-                int index = getImageFileIndex(imageFile.Location);
-
-                if (index == -1)
-                {
-                    IsPagingEnabled = false;
-                }
-                else
-                {
-                    IsPagingEnabled = true;
-                    NrPages = getNrImageFiles();
-                    CurrentPage = index + 1;
-                }
-            }
-            finally
-            {
-                MediaState.UIMediaCollection.ExitReaderLock();
-            }
-        }
-
-       
-
-        private void loadImage(String fileName)
+        private void loadImage(String location)
         {
                     
-            BaseMedia media = null;
-            SelectedMedia.Clear();
-
+            //BaseMedia media = null;
+          
             try
             {
                 IsLoading = true;
 
-                MediaFileItem item = MediaFileItem.Factory.create((String)fileName);
+                //MediaFileItem item = MediaFileItem.Factory.create((String)location);
                 
-                item.readMetaData(
-                    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, loadImageCTS.Token);
+                //item.readMetaData(
+                //    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, loadImageCTS.Token);
 
                 if (loadImageCTS.IsCancellationRequested) return;
 
-                media = item.Media;
+                //media = item.Media;
 
                 BitmapImage loadedImage = null;
 
-                if (media is ImageMedia && media.Data != null)
-                {
+                //if (media is ImageMedia && media.Data != null)
+                //{
                     loadedImage = new BitmapImage();
 
                     loadedImage.BeginInit();
                     loadedImage.CacheOption = BitmapCacheOption.OnLoad;
-                    loadedImage.StreamSource = media.Data;
+                    loadedImage.UriSource = new Uri(location);
                     loadedImage.EndInit();
 
                     loadedImage.Freeze();
 
-                    imageFile = (ImageMedia)media;
+                    //imageFile = (ImageMedia)media;
 
-                    updatePaging();
+                    //updatePaging();
 
-                    log.Info("Image loaded: " + media.Location);
-                }
+                    log.Info("Image loaded: " + location);
+                //}
 
                 if (IsResetSettingsOnLoad)
                 {
@@ -551,246 +458,30 @@ namespace MediaViewer.ImagePanel
                 Image = loadedImage;
           
                 IsLoading = false;
-                
-                SelectedMedia.Add(item);
+                         
              
-                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", item.Location);
+                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", location);
             }
             catch (TaskCanceledException)
             {
-                log.Info("Cancelled loading image:" + (String)fileName);
+                log.Info("Cancelled loading image:" + (String)location);
             }
             catch (Exception e)
             {
-                log.Error("Error decoding image:" + (String)fileName, e);
-                MessageBox.Show("Error loading image: " + fileName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                log.Error("Error decoding image:" + (String)location, e);
+                MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 Image = null;
             }
             finally
             {
-                if (media != null)
-                {
-                    media.close();
-                }
+                //if (media != null)
+                //{
+                 //   media.close();
+                //}
                 IsLoading = false;
             }
 
-        }
-
-        bool isPagingEnabled;
-
-        public bool IsPagingEnabled
-        {
-            get { return isPagingEnabled; }
-            set
-            {
-                isPagingEnabled = value;
-                if (value == false)
-                {
-                    App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        NextPageCommand.CanExecute = false;
-                        PrevPageCommand.CanExecute = false;
-                        FirstPageCommand.CanExecute = false;
-                        LastPageCommand.CanExecute = false;
-                    }));
-
-                }
-                NotifyPropertyChanged();
-            }
-        }
-
-
-        int nrPages;
-
-        public int NrPages
-        {
-            get
-            {
-                return nrPages;
-            }
-            set
-            {
-                nrPages = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        int currentPage;
-
-        public int CurrentPage
-        {
-            get
-            {
-                return (currentPage);
-            }
-            set
-            {
-                if (value <= 0 || value > NrPages || IsPagingEnabled == false) return;
-
-                MediaState.UIMediaCollection.EnterReaderLock();
-                try
-                {
-                    String location = getImageFileByIndex(value - 1);
-
-                    if (location != null && imageFile != null && !location.ToLower().Equals(imageFile.Location.ToLower()))
-                    {
-                        //GlobalMessenger.Instance.NotifyColleagues("MainWindowViewModel.ViewMediaCommand", location);
-                        loadImageAsyncCommand.DoExecute(location);
-                    }
-
-                }
-                finally
-                {
-                    MediaState.UIMediaCollection.ExitReaderLock();
-                }
-
-                currentPage = value;
-                App.Current.Dispatcher.BeginInvoke(new Action(() =>
-                  {
-                      if (CurrentPage + 1 <= NrPages)
-                      {
-                          nextPageCommand.CanExecute = true;
-                          lastPageCommand.CanExecute = true;
-                      }
-                      else
-                      {
-                          nextPageCommand.CanExecute = false;
-                          lastPageCommand.CanExecute = false;
-                      }
-
-                      if (CurrentPage - 1 > 0)
-                      {
-                          prevPageCommand.CanExecute = true;
-                          firstPageCommand.CanExecute = true;
-                      }
-                      else
-                      {
-                          prevPageCommand.CanExecute = false;
-                          firstPageCommand.CanExecute = false;
-                      }
-                  }));
-
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command nextPageCommand;
-
-        public Command NextPageCommand
-        {
-            get
-            {
-                return nextPageCommand;
-            }
-            set
-            {
-                nextPageCommand = value;
-            }
-        }
-
-        Command prevPageCommand;
-
-        public Command PrevPageCommand
-        {
-            get
-            {
-                return prevPageCommand;
-            }
-            set
-            {
-                prevPageCommand = value;
-            }
-        }
-
-        Command firstPageCommand;
-
-        public Command FirstPageCommand
-        {
-            get
-            {
-                return firstPageCommand;
-            }
-            set
-            {
-                firstPageCommand = value;
-            }
-        }
-
-        Command lastPageCommand;
-
-        public Command LastPageCommand
-        {
-            get
-            {
-                return lastPageCommand;
-            }
-            set
-            {
-                lastPageCommand = value;
-            }
-        }
-
-        int getNrImageFiles()
-        {           
-            int count = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {                  
-                if (MediaFormatConvert.isImageFile(item.Location))
-                {
-                    count++;
-                }                  
-            }
-
-            return (count);            
-        }
-
-        string getImageFileByIndex(int index)
-        {
-
-            int i = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {
-
-                if (MediaFormatConvert.isImageFile(item.Location))
-                {
-                    if (index == i)
-                    {
-                        return (item.Location);
-                    }
-
-                    i++;
-                }
-
-            }
-
-            return (null);
-        }
-
-        int getImageFileIndex(string location)
-        {
-
-            int i = 0;
-
-            foreach (MediaFileItem item in MediaState.UIMediaCollection.Items)
-            {
-
-                if (MediaFormatConvert.isImageFile(item.Location))
-                {
-                    if (item.Location.ToLower().Equals(location.ToLower()))
-                    {
-                        return (i);
-                    }
-
-                    i++;
-                }
-
-            }
-
-            return (-1);
         }
 
         public enum ScaleMode

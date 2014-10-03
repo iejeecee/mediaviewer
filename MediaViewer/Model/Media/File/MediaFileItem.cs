@@ -46,8 +46,7 @@ namespace MediaViewer.Model.Media.File
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             this.id = Id;
-            Location = location;
-            IsSelected = false;
+            Location = location;     
             Media = null;
             ItemState = state;
             hasTags = false;
@@ -187,35 +186,7 @@ namespace MediaViewer.Model.Media.File
                 NotifyPropertyChanged();              
             }
         }
-
-        bool isSelected;
-
-        public bool IsSelected
-        {
-            get
-            {
-                return (isSelected);
-            }
-            set
-            {         
-                // note that boolean assignment is atomic
-                isSelected = value;
-                NotifyPropertyChanged();                
-            }
-        }
-     
-        public void toggleSelected()
-        {
-            if (IsSelected == true)
-            {
-                IsSelected = false;
-            }
-            else
-            {
-                IsSelected = true;
-            }
-        }
-
+          
         BaseMedia media;
 
         public BaseMedia Media
@@ -254,7 +225,7 @@ namespace MediaViewer.Model.Media.File
             finally
             {            
                 rwLock.ExitUpgradeableReadLock();
-                NotifyPropertyChanged("BaseMedia");
+                NotifyPropertyChanged("Media");
             }
 
         }
