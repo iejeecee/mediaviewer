@@ -2,7 +2,8 @@
 #include "VideoFrameGrabber.h"
 #include "VideoDecoder.h"
 #include "VideoFrame.h"
-#include "FrameQueue.h"
+//#include "FrameQueue.h"
+#include "FrameQueue2.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -211,13 +212,15 @@ namespace VideoLib {
 
 		VideoDecoder *videoDecoder;
 		
-		FrameQueue ^frameQueue;
+		FrameQueue2 ^frameQueue;
 
 		String ^videoLocation;
 
 		System::Runtime::InteropServices::GCHandle gch;
 
 		bool isFinalPacketAdded;
+
+		
 
 	public:
 
@@ -243,12 +246,22 @@ namespace VideoLib {
 			DECODE_AUDIO_ONLY
 		};
 
+		enum class LogLevel {
+
+			LOG_LEVEL_FATAL = AV_LOG_FATAL,
+			LOG_LEVEL_ERROR = AV_LOG_ERROR,		
+			LOG_LEVEL_WARNING = AV_LOG_WARNING,
+			LOG_LEVEL_INFO = AV_LOG_INFO,
+			LOG_LEVEL_DEBUG = AV_LOG_DEBUG,
+			
+		};
+
 		delegate void LogCallbackDelegate(
 			int level, String ^message);
 
-		property VideoLib::FrameQueue ^FrameQueue {
+		property VideoLib::FrameQueue2 ^FrameQueue {
 
-			VideoLib::FrameQueue ^get() {
+			VideoLib::FrameQueue2 ^get() {
 
 				return(frameQueue);
 			}
@@ -355,7 +368,7 @@ namespace VideoLib {
 		void close();
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,
-			bool onlyLogImportant);
+			LogLevel level);
 		
 		static int getAvFormatVersion();
 		static String ^getAvFormatBuildInfo();

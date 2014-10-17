@@ -1,4 +1,5 @@
 ﻿using MediaViewer.ImagePanel;
+using MediaViewer.Model.GlobalEvents;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
@@ -22,6 +23,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.ServiceLocation;
 
 namespace MediaViewer.MediaGrid
 {
@@ -29,13 +32,15 @@ namespace MediaViewer.MediaGrid
     /// Interaction logic for MediaGridItemView.xaml
     /// </summary>
     public partial class MediaGridItemView : UserControl
-    {
-
+    {      
+        IEventAggregator EventAggregator { get; set; }
        
         public MediaGridItemView()
         {
             InitializeComponent();
-            selectAllMenuItem.IsEnabled = false;                       
+            selectAllMenuItem.IsEnabled = false;
+
+            EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
         }
 
         public SelectableMediaFileItem SelectableMediaFileItem
@@ -118,7 +123,7 @@ namespace MediaViewer.MediaGrid
 
             String location = FileUtils.getPathWithoutFileName(item.Location);
 
-            GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_SetPath", location);
+            EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(location);
         }
 
         private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)

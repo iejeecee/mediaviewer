@@ -145,9 +145,9 @@ namespace VideoLib {
 				packetData[i] = gcnew Packet();
 			}
 
-			freePackets = gcnew PacketQueue(maxVideoPackets + maxAudioPackets);
-			videoPackets = gcnew PacketQueue(maxVideoPackets);
-			audioPackets = gcnew PacketQueue(maxAudioPackets);
+			freePackets = gcnew PacketQueue("freePackets", maxVideoPackets + maxAudioPackets);
+			videoPackets = gcnew PacketQueue("videoPackets", maxVideoPackets);
+			audioPackets = gcnew PacketQueue("audioPackets", maxAudioPackets);
 
 			decodingPaused = gcnew array<WaitHandle^> {
 				audioPackets->Paused, videoPackets->Paused}; 		
@@ -281,26 +281,26 @@ namespace VideoLib {
 
 		void stop() {
 
-			System::Diagnostics::Debug::Print("Frame Queue Stop called");
+			Video::writeToLog(AV_LOG_DEBUG,"Frame Queue Stop called");
 
 			// stop each queue in turn and wait until the threads signal they have actually stopped
 			if(freePackets->QueueState != PacketQueue::State::STOPPED) {						
 				freePackets->stop();				
 				freePackets->Stopped->WaitOne();		
-				System::Diagnostics::Debug::Print("freePackets stopped");
+				Video::writeToLog(AV_LOG_DEBUG,"freePackets stopped");
 			}
 			if(videoPackets->QueueState != PacketQueue::State::STOPPED) {				
 				videoPackets->stop();
 				videoPackets->Stopped->WaitOne();	
-				System::Diagnostics::Debug::Print("videoPackets stopped");
+				Video::writeToLog(AV_LOG_DEBUG,"videoPackets stopped");
 			}
 			if(audioPackets->QueueState != PacketQueue::State::STOPPED) {			
 				audioPackets->stop();
 				audioPackets->Stopped->WaitOne();		
-				System::Diagnostics::Debug::Print("audioPackets stopped");
+				Video::writeToLog(AV_LOG_DEBUG,"audioPackets stopped");
 			}
 
-			System::Diagnostics::Debug::Print("Frame Queue Stop finished");
+			Video::writeToLog(AV_LOG_DEBUG,"Frame Queue Stop finished");
 		}
 	
 		void release() {

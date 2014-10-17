@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="MediaViewer.VideoPanel.VideoView"
+﻿<UserControl xmlns:VideoSlider="clr-namespace:MediaViewer.UserControls.VideoSlider"  x:Class="MediaViewer.VideoPanel.VideoView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -24,7 +24,39 @@
             <wfvpc:VideoPlayer x:Name="videoPlayer"/>
         </WindowsFormsHost>
         <Grid x:Name="uiGrid" Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
-            <ToggleButton x:Name="playButton" HorizontalAlignment="Left" Margin="5,30.667,0,5" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <VideoSlider:VideoSliderView Grid.Column="0" x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,5,0,0" Height="22"
+                     Minimum="0" Maximum="{Binding DurationSeconds}"/>                       
+                <TextBlock  Grid.Column="1" Margin="5,5,5,0" Grid.Row="1" FontSize="11"  Width="82" TextAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding UpdateSourceTrigger="Explicit" StringFormat="{}{0}/{1}">
+                            <Binding Path="PositionSeconds" 
+                         Converter="{StaticResource timeConverter}"/>
+                            <Binding Path="DurationSeconds" 
+                         Converter="{StaticResource timeConverter}"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </Grid>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+            <ToggleButton Grid.Column="0" x:Name="playButton" Margin="5,5,0,5" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
                 <ToggleButton.Style>
                     <Style TargetType="ToggleButton">
                         <Style.Triggers>
@@ -48,50 +80,35 @@
                     </Style>
                 </ToggleButton.Style>
             </ToggleButton>
-            <Button x:Name="closeButton" HorizontalAlignment="Left" Margin="45,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
+            <Button Grid.Column="1" x:Name="closeButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/ButtonClose.ico" />
             </Button>
-            <Button x:Name="screenShotButton" HorizontalAlignment="Left" Margin="85,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}" CommandParameter="screenshot">
+            <Button Grid.Column="2" x:Name="screenShotButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}" CommandParameter="screenshot">
                 <Image Source="pack://application:,,,/Resources/Icons/screenshot.ico" />
             </Button>
-            <Button x:Name="frameByFrameButton" HorizontalAlignment="Left" Margin="125,30.667,0,0" Grid.Row="1" VerticalAlignment="Top" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
+            <Button Grid.Column="3" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
             </Button>
-            <Popup Name="timeLineSliderPopup" PlacementTarget ="{Binding ElementName=timeLineSlider}" 
-            Placement="Relative" AllowsTransparency="True">
-                <TextBlock Name="timeLineSliderPopupText" Background="Yellow" TextWrapping="Wrap">00:00</TextBlock>
-            </Popup>
-            <Slider x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,3.667,92,0" Grid.Row="1" VerticalAlignment="Top" Height="22"
-                     Minimum="0" Maximum="{Binding DurationSeconds}"/>
-            <Slider x:Name="volumeSlider" HorizontalAlignment="Right" Margin="0,30.667,5,0" Grid.Row="1" VerticalAlignment="Top" Width="60" ToolTip="Volume"
-                Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />
-            <ToggleButton HorizontalAlignment="Right" Margin="0,30.667,70,0" Grid.Row="1" VerticalAlignment="Top" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
+                <ToggleButton Grid.Column="5" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
                       IsEnabled="{Binding HasAudio}" ToolTip="Mute">
-                <Image>
-                    <Image.Style>
-                        <Style>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsMuted}" Value="false">
-                                    <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Mute.ico"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsMuted}" Value="true">
-                                    <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Muted.ico"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                </Image>
-            </ToggleButton>
-            <TextBlock HorizontalAlignment="Right" Margin="0,4.667,5,0" Grid.Row="1" VerticalAlignment="Top" Height="21" FontSize="11"  Width="82" TextAlignment="Center">
-                <TextBlock.Text>
-                    <MultiBinding UpdateSourceTrigger="Explicit" StringFormat="{}{0}/{1}">
-                        <Binding Path="PositionSeconds" 
-                         Converter="{StaticResource timeConverter}"/>
-                        <Binding Path="DurationSeconds" 
-                         Converter="{StaticResource timeConverter}"/>
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
+                    <Image>
+                        <Image.Style>
+                            <Style>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsMuted}" Value="false">
+                                        <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Mute.ico"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsMuted}" Value="true">
+                                        <Setter Property="Image.Source" Value="pack://application:,,,/Resources/Icons/Muted.ico"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Image.Style>
+                    </Image>
+                </ToggleButton>
+                <Slider Grid.Column="6" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
+                Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />            
+            </Grid>
         </Grid>
     </Grid>
 </UserControl>

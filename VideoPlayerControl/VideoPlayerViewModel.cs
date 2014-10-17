@@ -14,8 +14,7 @@ using System.Drawing.Imaging;
 namespace VideoPlayerControl
 {
    public class VideoPlayerViewModel : IDisposable
-    {
-        //protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    {        
 
         public event EventHandler VideoOpened;
         public event EventHandler VideoClosed;
@@ -243,24 +242,18 @@ namespace VideoPlayerControl
             set { audioClock = value;       
             }
         }
-
-        log4net.ILog log;
-
-        public log4net.ILog Log
-        {
-            get { return log; }
-            set { log = value; }
-        }
-   
-        public VideoPlayerViewModel(Control owner, 
+       
+        public log4net.ILog Log { get; set; }
+             
+        public VideoPlayerViewModel(Control owner,
             VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat = VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
         {
-           
+       
             this.owner = owner;
             this.decodedVideoFormat = decodedVideoFormat;            
        
             videoDecoder = new VideoLib.VideoPlayer();
-            videoDecoder.setLogCallback(videoDecoderLogCallback, true, true);
+            videoDecoder.setLogCallback(videoDecoderLogCallback, true, VideoLib.VideoPlayer.LogLevel.LOG_LEVEL_ERROR);
 
             videoDecoder.FrameQueue.Finished += new EventHandler((s,e) =>
             {
@@ -393,7 +386,7 @@ restartvideo:
                 }
 
 			} else if(VideoState == VideoState.PAUSED || videoFrame == null) {
-
+                
 				videoRender.display(null, Color.Black, VideoRender.RenderMode.PAUSED);			
 			}
 
@@ -767,6 +760,10 @@ restartvideo:
             {
                 Log.Warn(message);
             }
+            else if (level == 48)
+            {
+                Log.Debug(message);
+            }
             else
             {
                 Log.Info(message);
@@ -815,7 +812,7 @@ restartvideo:
                         audioPlayer.flush();
 
                         // refill/buffer the framequeue from the new position
-                        fillFrameQueue();
+                        //fillFrameQueue();
 
                         audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
 
@@ -1007,10 +1004,9 @@ restartvideo:
             demuxPacketsCancellationTokenSource.Cancel();
 
             demuxPacketsTask.Wait();
-
-            System.Diagnostics.Debug.Print("Calling videodecoder close");
+           
             videoDecoder.close();
-            System.Diagnostics.Debug.Print("videodecoder close finished");
+          
             audioPlayer.flush();
 
             videoPts = 0;

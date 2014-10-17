@@ -49,48 +49,30 @@ namespace MediaViewer.MediaGrid
             });
 
             LastPageCommand = new Command(() =>
-            {
-                MediaStateCollectionView.lockMedia();
-                try
-                {
-                    CurrentPage = MediaStateCollectionView.Media.Count;
-                }
-                finally
-                {
-                    MediaStateCollectionView.unlockMedia();
-                }
+            {               
+                CurrentPage = MediaStateCollectionView.Media.Count;               
             });
         }
 
         private void mediaState_SelectionChanged(object sender, EventArgs e)
-        {
-            MediaStateCollectionView.lockMedia();
-            try
-            {
-                ICollection<MediaFileItem> selectedItems = MediaStateCollectionView.getSelectedItems();
+        {           
+            ICollection<MediaFileItem> selectedItems = MediaStateCollectionView.getSelectedItems();
 
-                if (selectedItems.Count > 0)
-                {
-                    MediaFileItem selectedItem = selectedItems.ElementAt(0);
-                    CurrentPage = MediaStateCollectionView.getIndexOf(selectedItem) + 1;
-                   
-                }
-                else
-                {
-                    CurrentPage = null;
-                }
-            }
-            finally
+            if (selectedItems.Count > 0)
             {
-                MediaStateCollectionView.unlockMedia();
+                MediaFileItem selectedItem = selectedItems.ElementAt(0);
+                CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(selectedItem)) + 1;                   
             }
+            else
+            {
+                CurrentPage = null;
+            }
+            
         }
 
         private void mediaState_NrItemsInStateChanged(object sender, EventArgs e)
-        {
-            MediaStateCollectionView.lockMedia();
-            NrPages = MediaStateCollectionView.Media.Count();
-            MediaStateCollectionView.unlockMedia();
+        {          
+            NrPages = MediaStateCollectionView.Media.Count();      
         }
 
         bool isVisible;
@@ -157,22 +139,21 @@ namespace MediaViewer.MediaGrid
                 if (currentPage.HasValue)
                 {
                     
-
-                    MediaStateCollectionView.lockMedia();
+                    MediaStateCollectionView.Media.EnterReaderLock();
                     try
                     {
                         currentPage = MiscUtils.clamp<int>(currentPage.Value, 1, MediaStateCollectionView.Media.Count);
 
                         int index = currentPage.Value - 1;
 
-                        MediaFileItem item = MediaStateCollectionView.Media.ElementAt(index).Item;
+                        MediaFileItem item = MediaStateCollectionView.Media[index].Item;
                                            
                         EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(item);
                        
                     }
                     finally
                     {
-                        MediaStateCollectionView.unlockMedia();
+                        MediaStateCollectionView.Media.ExitReaderLock();
                     }
 
                 }

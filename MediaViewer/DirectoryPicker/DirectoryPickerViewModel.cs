@@ -1,10 +1,13 @@
-﻿using MediaViewer.MediaGrid;
+﻿using log4net;
+using MediaViewer.Logging;
+using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
 using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +17,7 @@ using System.Threading.Tasks;
 namespace MediaViewer.DirectoryPicker
 {
     class DirectoryPickerViewModel : CloseableObservableObject
-    {
+    {    
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public DirectoryPickerViewModel()

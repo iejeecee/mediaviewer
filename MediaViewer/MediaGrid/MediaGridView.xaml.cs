@@ -27,6 +27,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using System.Windows.Controls.Primitives;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.GlobalEvents;
 
 namespace MediaViewer.MediaGrid
 {
@@ -155,6 +156,7 @@ namespace MediaViewer.MediaGrid
             ViewModel = (MediaGridViewModel)navigationContext.Parameters["viewModel"];
 
             DataContext = ViewModel;
+                    
         }
     }
 }

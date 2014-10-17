@@ -58,7 +58,6 @@ protected:
 	AVStream *audioStream;
 	int audioStreamIndex;
 
-	static bool libAVLogOnlyImportant;
 	static LOG_CALLBACK logCallback;
 
 	Video() {
@@ -86,13 +85,9 @@ protected:
 		char message[65536];   
 		const char *module = NULL;
 
-		// if no logging is done, return
-		if(logCallback == NULL) return;
-
-		// Comment back in to filter only "important" messages
-		if(libAVLogOnlyImportant == true && level > AV_LOG_WARNING)
-			return;
-
+		// if no logging is done or level is above treshold return
+		if(logCallback == NULL || level > av_log_get_level()) return;
+	
 		// Get module name
 		if(ptr)
 		{
@@ -237,11 +232,10 @@ public:
 		return(audioStreamIndex != -1);
 	}
 
-	static void enableLibAVLogging(bool logOnlyImportant) {
-
-		libAVLogOnlyImportant = logOnlyImportant;
-		av_log_set_callback(&Video::libAVLogCallback);
-		av_log_set_level(AV_LOG_VERBOSE); 
+	static void enableLibAVLogging(int logLevel = AV_LOG_ERROR) {
+	
+		av_log_set_level(logLevel); 
+		av_log_set_callback(&Video::libAVLogCallback);			
 			
 	}
 
@@ -264,6 +258,5 @@ public:
 	}
 };
 
-bool Video::libAVLogOnlyImportant = false;
 LOG_CALLBACK Video::logCallback = NULL;
 

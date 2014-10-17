@@ -4,6 +4,7 @@ using MediaViewer.MediaDatabase.DataTransferObjects;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Collections;
 using MediaViewer.Progress;
+using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Win32;
 using MvvmFoundation.Wpf;
 using System;
@@ -22,7 +23,7 @@ using System.Xml.Serialization;
 //Add/Attach and Entity States
 //http://msdn.microsoft.com/en-us/data/jj592676.aspx
 
-namespace MediaViewer.MetaData
+namespace MediaViewer.TagEditor
 {
    
     class TagEditorViewModel : CloseableObservableObject 
@@ -32,8 +33,13 @@ namespace MediaViewer.MetaData
 
         public static TagCategory NullCategory = new TagCategory() { Name = "None", Id = -1 };
 
-        public TagEditorViewModel()
-        {          
+        IEventAggregator EventAggregator { get; set; }
+
+        public TagEditorViewModel(IEventAggregator eventAggregator)
+        {
+
+            EventAggregator = eventAggregator;
+
             ChildTags = new ObservableRangeCollection<Tag>();
             AddChildTags = new ObservableRangeCollection<Tag>();
             RemoveChildTags = new ObservableRangeCollection<Tag>();
@@ -375,7 +381,7 @@ namespace MediaViewer.MetaData
                 try
                 {                   
                     tag = tagCommands.create(tag);
-                    GlobalMessenger.Instance.NotifyColleagues("tag_Created", tag);
+                    EventAggregator.GetEvent<TagCreatedEvent>().Publish(tag);         
 
                     SelectedTags.Replace(tag);
                   
@@ -470,7 +476,7 @@ namespace MediaViewer.MetaData
 
                         updateTag = tagCommands.update(updateTag);
 
-                        GlobalMessenger.Instance.NotifyColleagues("tag_Updated", updateTag);
+                        EventAggregator.GetEvent<TagUpdatedEvent>().Publish(updateTag);
                     }
                 }
                 catch (Exception e)
@@ -502,7 +508,8 @@ namespace MediaViewer.MetaData
 
                         TagCategory updatedCategory = tagCategoryCommands.update(SelectedCategories[i]);
 
-                        GlobalMessenger.Instance.NotifyColleagues("tagCategory_Updated", updatedCategory);
+                        EventAggregator.GetEvent<TagCategoryUpdatedEvent>().Publish(updatedCategory);
+                       
                     }
 
                     loadCategories();
@@ -550,7 +557,7 @@ namespace MediaViewer.MetaData
                     {
                         tagCategoryCommands.delete(SelectedCategories[i]);
 
-                        GlobalMessenger.Instance.NotifyColleagues("tagCategory_Deleted", SelectedCategories[i]);            
+                        EventAggregator.GetEvent<TagCategoryDeletedEvent>().Publish(SelectedCategories[i]);        
                     }
 
                     loadCategories();
@@ -582,7 +589,7 @@ namespace MediaViewer.MetaData
 
                     newCategory = tagCategoryCommands.create(newCategory);
 
-                    GlobalMessenger.Instance.NotifyColleagues("tagCategory_Created", newCategory);
+                    EventAggregator.GetEvent<TagCategoryCreatedEvent>().Publish(newCategory);        
 
                     loadCategories();
                 }
@@ -671,7 +678,7 @@ namespace MediaViewer.MetaData
                     for (int i = SelectedTags.Count - 1; i >= 0; i--)
                     {
                         tagCommands.delete(SelectedTags[i]);
-                        GlobalMessenger.Instance.NotifyColleagues("tag_Deleted", SelectedTags[i]);
+                        EventAggregator.GetEvent<TagDeletedEvent>().Publish(SelectedTags[i]);
                     }
 
                     SelectedTags.Clear();

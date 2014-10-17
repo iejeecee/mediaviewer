@@ -151,7 +151,7 @@ VideoPlayer::VideoPlayer() {
 
 	videoDecoder = new VideoDecoder();
 
-	frameQueue = gcnew VideoLib::FrameQueue(videoDecoder);
+	frameQueue = gcnew VideoLib::FrameQueue2(videoDecoder);
 	videoLocation = "";
 
 	isFinalPacketAdded = false;
@@ -272,7 +272,7 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 	if(read < 0) {
 
 		// end of the video
-		Video::writeToLog(AV_LOG_INFO, "end of stream reached");
+		//Video::writeToLog(AV_LOG_INFO, "end of stream reached");
 		frameQueue->addFreePacket(packet);
 
 		if(isFinalPacketAdded == false) {
@@ -325,7 +325,7 @@ void VideoPlayer::close() {
 }
 
 void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLibAVLogging,
-								 bool onlyLogImportant)
+								 LogLevel level)
 {
 
 	if(gch.IsAllocated) {
@@ -343,7 +343,7 @@ void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLi
 
 	if(enableLibAVLogging == true) {
 
-		Video::enableLibAVLogging(onlyLogImportant);
+		Video::enableLibAVLogging((int)level);
 
 	} else {
 

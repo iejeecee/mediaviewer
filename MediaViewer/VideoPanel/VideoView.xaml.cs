@@ -23,6 +23,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Model.Utils;
+using MediaViewer.UserControls.VideoSlider;
 
 namespace MediaViewer.VideoPanel
 {
@@ -51,7 +52,19 @@ namespace MediaViewer.VideoPanel
             updateTimeLineSlider = true;
 
             EventAggregator = eventAggregator;
-                 
+
+            EventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe((isFullScreen) =>
+            {
+                if (isFullScreen)
+                {
+                    uiGrid.Visibility = System.Windows.Visibility.Collapsed;
+                }
+                else
+                {
+                    uiGrid.Visibility = System.Windows.Visibility.Visible;
+                }
+
+            });
         }
 
         void VideoView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -60,9 +73,6 @@ namespace MediaViewer.VideoPanel
             {
                 timeLineSlider.RemoveHandler(Slider.MouseLeftButtonDownEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonDownEvent));
                 timeLineSlider.RemoveHandler(Slider.MouseLeftButtonUpEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonUpEvent));
-
-                timeLineSlider.RemoveHandler(Slider.MouseMoveEvent, new MouseEventHandler(timeLineSlider_MouseMoveEvent));
-                timeLineSlider.RemoveHandler(Slider.MouseLeaveEvent, new MouseEventHandler(timeLineSlider_MouseLeaveEvent));
 
                 VideoViewModel viewModel = e.OldValue as VideoViewModel;
 
@@ -85,9 +95,6 @@ namespace MediaViewer.VideoPanel
                    true);
                 timeLineSlider.AddHandler(Slider.MouseLeftButtonUpEvent, new MouseButtonEventHandler(timeLineSlider_MouseLeftButtonUpEvent),
                   true);
-
-                timeLineSlider.AddHandler(Slider.MouseMoveEvent, new MouseEventHandler(timeLineSlider_MouseMoveEvent));
-                timeLineSlider.AddHandler(Slider.MouseLeaveEvent, new MouseEventHandler(timeLineSlider_MouseLeaveEvent));
 
             }
 
@@ -140,14 +147,13 @@ namespace MediaViewer.VideoPanel
         {
             if (uiGrid.Visibility == Visibility.Visible)
             {
-                uiGrid.Visibility = Visibility.Collapsed;
+                EventAggregator.GetEvent<ToggleFullScreenEvent>().Publish(true);
             }
             else
             {
-                uiGrid.Visibility = Visibility.Visible;
+                EventAggregator.GetEvent<ToggleFullScreenEvent>().Publish(false);
             }
-
-            GlobalMessenger.Instance.NotifyColleagues("ToggleFullScreen");
+            
         }
 
         public void openAndPlay(String location)
@@ -169,29 +175,7 @@ namespace MediaViewer.VideoPanel
             timeLineSlider.Maximum = ViewModel.DurationSeconds;
         }
 
-        private void timeLineSlider_MouseMoveEvent(object sender, MouseEventArgs e)
-        {
-            if (!timeLineSliderPopup.IsOpen) { timeLineSliderPopup.IsOpen = true; }
-
-            Point currentPos = e.GetPosition(timeLineSlider);
-
-            // The + 20 part is so your mouse pointer doesn't overlap.
-            timeLineSliderPopup.HorizontalOffset = currentPos.X + 20;
-            timeLineSliderPopup.VerticalOffset = currentPos.Y;
-
-            double d = 1.0d / timeLineSlider.ActualWidth * currentPos.X;
-            var p = timeLineSlider.Maximum * d;
-
-            int seconds = (int)p;
-
-            timeLineSliderPopupText.Text = MiscUtils.formatTimeSeconds(seconds);
-
-        }
-
-        private void timeLineSlider_MouseLeaveEvent(object sender, MouseEventArgs e)
-        {
-            timeLineSliderPopup.IsOpen = false;
-        }
+        
 
         private void timeLineSlider_MouseLeftButtonDownEvent(object sender, MouseButtonEventArgs e)
         {
@@ -202,7 +186,7 @@ namespace MediaViewer.VideoPanel
         private void timeLineSlider_MouseLeftButtonUpEvent(object sender, MouseButtonEventArgs e)
         {
 
-            var slider = (Slider)sender;
+            VideoSliderView slider = sender as VideoSliderView;
             Point position = e.GetPosition(slider);
             double d = 1.0d / slider.ActualWidth * position.X;
             var p = slider.Maximum * d;
@@ -255,9 +239,14 @@ namespace MediaViewer.VideoPanel
             {
                 ViewModel.OpenCommand.DoExecute(location);
                 ViewModel.PlayCommand.DoExecute();
+
+            } else {
+             
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(ViewModel.CurrentLocation == null ? "" : ViewModel.CurrentLocation);                
             }
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
+            
         }
 
         private void videoView_MediaSelectionEvent(MediaFileItem item)

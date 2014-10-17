@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -25,7 +26,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -185,12 +185,16 @@
       <DependentUpon>AboutView.xaml</DependentUpon>
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
+    <Compile Include="Logging\Logger.cs" />
     <Compile Include="MediaGrid\MediaStackPanelViewModel.cs" />
     <Compile Include="MediaGrid\MediaStateCollectionViewModel.cs" />
     <Compile Include="MediaDatabase\BaseMedia.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
+    <Compile Include="Model\Collections\LockedObservableCollection2.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
+    <Compile Include="Model\GlobalEvents\GlobalCommandEvent.cs" />
     <Compile Include="Model\GlobalEvents\MediaSelectionEvent.cs" />
     <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
@@ -264,8 +268,9 @@
     <Compile Include="Model\Media\State\MediaStateChangedEventArgs.cs" />
     <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
-    <Compile Include="MetaData\ISelectedMedia.cs" />
-    <Compile Include="MetaData\TagEditorImportViewModel.cs" />
+    <Compile Include="TagEditor\TagEditorEvent.cs" />
+    <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
+    <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
     <Compile Include="Pager\IPageable.cs" />
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
       <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
@@ -403,7 +408,6 @@
       <DependentUpon>ScaleView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\Media\State\MediaStateException.cs" />
-    <Compile Include="GlobalMessenger.cs" />
     <Compile Include="MetaData\ExtendedComboBox.cs" />
     <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
       <DependentUpon>FilenamePresetsView.xaml</DependentUpon>
@@ -412,10 +416,10 @@
     <Compile Include="Model\Media\Metadata\FormatMetaData.cs" />
     <Compile Include="Model\Media\Metadata\GeoTagCoordinate.cs" />
     <Compile Include="Model\Media\Metadata\GeoTagCoordinatePair.cs" />
-    <Compile Include="MetaData\TagEditorView.xaml.cs">
+    <Compile Include="TagEditor\TagEditorView.xaml.cs">
       <DependentUpon>TagEditorView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MetaData\TagEditorViewModel.cs" />
+    <Compile Include="TagEditor\TagEditorViewModel.cs" />
     <Compile Include="MetaData\MetaDataPresetsView.xaml.cs">
       <DependentUpon>MetaDataPresetsView.xaml</DependentUpon>
     </Compile>
@@ -514,6 +518,10 @@
     <Compile Include="Model\Utils\Windows\FileDialog.cs" />
     <Compile Include="Model\Utils\Windows\PerformanceCounters.cs" />
     <Compile Include="Model\Utils\WPF\TrulyObservableCollection.cs" />
+    <Compile Include="UserControls\VideoSlider\TimeAdorner.cs" />
+    <Compile Include="UserControls\VideoSlider\VideoSliderView.xaml.cs">
+      <DependentUpon>VideoSliderView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ValidationRules\FloatValidationRule.cs" />
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
@@ -638,7 +646,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MetaData\TagEditorView.xaml">
+    <Page Include="TagEditor\TagEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -727,6 +735,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\TextBlock\AutoLengthTextBlock.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\VideoSlider\VideoSliderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

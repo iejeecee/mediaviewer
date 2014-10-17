@@ -18,6 +18,7 @@ using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
+using Microsoft.Practices.Prism.PubSubEvents;
 
 namespace MediaViewer.MetaData
 {
@@ -34,6 +35,8 @@ namespace MediaViewer.MetaData
             get;
             set;
         }
+
+        IEventAggregator EventAggregator { get; set; }
 
         class Counter
         {
@@ -65,10 +68,11 @@ namespace MediaViewer.MetaData
             set { tokenSource = value; }
         }
 
-        public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher)
+        public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {
             Settings = settings;
             MediaState = mediaFileWatcher.MediaState;
+            EventAggregator = eventAggregator;
 
             WindowIcon = "pack://application:,,,/Resources/Icons/info.ico";
 
@@ -336,7 +340,7 @@ namespace MediaViewer.MetaData
                 {
                     item.RWLock.ExitUpgradeableReadLock();                
 
-                    GlobalMessenger.Instance.NotifyColleagues("MetaDataUpdateViewModel_UpdateComplete", item);
+                    EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Publish(item);                  
                 }
 
             }

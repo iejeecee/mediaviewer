@@ -11,7 +11,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>           
         </Grid.RowDefinitions>      
-        <ToolBarPanel Grid.Row="1" Background="{StaticResource menuBackgroundColor}" Orientation="Horizontal">
+        <ToolBarPanel Grid.Row="1" x:Name="toolBarPanel" Background="{StaticResource menuBackgroundColor}" Orientation="Horizontal">
             <ToolBar>
                 <ItemsControl regions:RegionManager.RegionName="MainNavigationToolBarRegion" Background="{StaticResource menuBackgroundColor}">
                     <ItemsControl.ItemsPanel>

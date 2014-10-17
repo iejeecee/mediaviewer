@@ -18,6 +18,9 @@ using System.ComponentModel.Composition;
 using MediaViewer.MetaData;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
+using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.Model.GlobalEvents;
+using System.IO;
 
 namespace MediaViewer.ImagePanel
 {
@@ -30,12 +33,16 @@ namespace MediaViewer.ImagePanel
            
         public event EventHandler SetNormalScaleEvent;
         public event EventHandler SetBestFitScaleEvent;
+
+        IEventAggregator EventAggregator { get; set; }
           
-        public ImageViewModel()
+        public ImageViewModel(IEventAggregator eventAggregator)
         {
-           
+            EventAggregator = eventAggregator;
+
             loadImageCTS = new CancellationTokenSource();
             isLoading = false;
+            currentLocation = null;
 
             loadImageAsyncCommand = new Command(new Action<object>(async (fileName) =>
             {
@@ -382,6 +389,16 @@ namespace MediaViewer.ImagePanel
             set { setNormalScaleCommand = value; }
         }
 
+        String currentLocation;
+
+        public String CurrentLocation
+        {
+            get { return currentLocation; }
+            private set { currentLocation = value;
+            NotifyPropertyChanged();
+            }
+        }
+
         void setIdentityTransform()
         {
             RotationDegrees = 0;
@@ -447,6 +464,7 @@ namespace MediaViewer.ImagePanel
 
                     //updatePaging();
 
+                    CurrentLocation = location;
                     log.Info("Image loaded: " + location);
                 //}
 
@@ -458,9 +476,7 @@ namespace MediaViewer.ImagePanel
                 Image = loadedImage;
           
                 IsLoading = false;
-                         
-             
-                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", location);
+               
             }
             catch (TaskCanceledException)
             {
@@ -468,6 +484,7 @@ namespace MediaViewer.ImagePanel
             }
             catch (Exception e)
             {
+                CurrentLocation = null;
                 log.Error("Error decoding image:" + (String)location, e);
                 MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
@@ -479,6 +496,7 @@ namespace MediaViewer.ImagePanel
                 //{
                  //   media.close();
                 //}
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(location == null ? null : Path.GetFileName(CurrentLocation));
                 IsLoading = false;
             }
 

@@ -44,6 +44,8 @@ namespace MediaViewer.ImagePanel
         double autoFitScale;  
         double normalScale;
 
+        bool IsFullScreen { get; set; }
+
         ImageViewModel ViewModel { get; set; }
         IEventAggregator EventAggregator { get; set; }
 
@@ -55,7 +57,7 @@ namespace MediaViewer.ImagePanel
             InitializeComponent();
           
             pictureBox.Stretch = Stretch.None;
-        
+            IsFullScreen = false;
         }
 
         private void scrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -251,8 +253,8 @@ namespace MediaViewer.ImagePanel
         private void gridContainer_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
-            {             
-                GlobalMessenger.Instance.NotifyColleagues("ToggleFullScreen");
+            {                
+                EventAggregator.GetEvent<ToggleFullScreenEvent>().Publish(IsFullScreen = !IsFullScreen);               
             }
             else if (e.ClickCount == 1)
             {
@@ -301,6 +303,10 @@ namespace MediaViewer.ImagePanel
             if (!String.IsNullOrEmpty(location))
             {
                 ViewModel.LoadImageAsyncCommand.DoExecute(location);
+            }
+            else
+            {                             
+               EventAggregator.GetEvent<TitleChangedEvent>().Publish(ViewModel.CurrentLocation == null ? "" : ViewModel.CurrentLocation);                            
             }
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);

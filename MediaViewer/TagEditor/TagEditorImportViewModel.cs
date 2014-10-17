@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
 
-namespace MediaViewer.MetaData
+namespace MediaViewer.TagEditor
 {
     class TagEditorImportViewModel : CloseableObservableObject, ICancellableOperationProgress
     {

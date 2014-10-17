@@ -44,7 +44,7 @@ namespace MediaViewer.MetaData
 
             EventAggregator = eventAggregator;
 
-            MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
+            MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance, eventAggregator);
                 
             MetaDataViewModel.ItemsModified += new EventHandler((s, e) =>
             {

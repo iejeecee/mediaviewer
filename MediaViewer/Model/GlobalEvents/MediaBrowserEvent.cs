@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.GlobalEvents
 {
-   
+    public class MediaBrowserPathChangedEvent : PubSubEvent<String> { }
     public class MediaBrowserDisplayEvent : PubSubEvent<MediaBrowserDisplayOptions> { }
 
     public class MediaBrowserDisplayOptions

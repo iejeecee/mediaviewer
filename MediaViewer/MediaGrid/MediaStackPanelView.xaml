@@ -37,7 +37,7 @@
             </Style>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="{StaticResource imageGridBackgroundColor}">
+    <Grid x:Name="mainGrid" Background="{StaticResource imageGridBackgroundColor}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>

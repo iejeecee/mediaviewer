@@ -50,6 +50,7 @@ namespace MediaViewer.Model.Media.State
         public MediaState()
         {
             uiMediaCollection = new MediaLockedCollection(true);
+            uiMediaCollection.ItemPropertyChanged += item_PropertyChanged;
                    
             debugOutput = false;
 
@@ -82,29 +83,16 @@ namespace MediaViewer.Model.Media.State
   
         public void addUIState(IEnumerable<MediaFileItem> items)
         {
-
             if (items.Count() == 0) return;
-
-            bool success = false;  
-
+         
             UIMediaCollection.EnterWriteLock();
 
             if (DebugOutput) log.Info("begin add event: " + items.ElementAt(0).Location);
 
             try
             {
-                success = UIMediaCollection.AddRange(items);
-
-                if (success == false)
-                {
-                    throw new MediaStateException("Cannot add duplicate items to state");
-                }
-
-                foreach (MediaFileItem item in items)
-                {
-                    item.PropertyChanged += new PropertyChangedEventHandler(item_PropertyChanged);             
-                }
-
+                UIMediaCollection.AddRange(items);             
+            
                 NrItemsInState = UIMediaCollection.Count;
             }
             finally
@@ -113,11 +101,8 @@ namespace MediaViewer.Model.Media.State
                 if (DebugOutput) log.Info("end add event: " + items.ElementAt(0).Location);
 
                 UIMediaCollection.ExitWriteLock();
-
-                if (success)
-                {
-                    fireEvents(MediaStateChangedAction.Add, items);
-                }
+             
+                fireEvents(MediaStateChangedAction.Add, items);                
             }
         }
 
@@ -159,14 +144,8 @@ namespace MediaViewer.Model.Media.State
 
             try
             {
-                removed = UIMediaCollection.RemoveAll(removeItems);
-
-                foreach (MediaFileItem item in removed)
-                {
-                    item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(item_PropertyChanged);
-             
-                }
-
+                removed = UIMediaCollection.RemoveRange(removeItems);
+           
                 NrItemsInState = UIMediaCollection.Count;
             }
             finally
@@ -186,11 +165,7 @@ namespace MediaViewer.Model.Media.State
 
             try
             {
-                foreach (MediaFileItem item in UIMediaCollection.Items)
-                {
-                    item.PropertyChanged -= new System.ComponentModel.PropertyChangedEventHandler(item_PropertyChanged);              
-                }
-
+         
                 UIMediaCollection.Clear();
 
                 MediaStateInfo = stateInfo;
@@ -415,30 +390,7 @@ namespace MediaViewer.Model.Media.State
                 }             
             }
         }
-
-
-        public void readMetadataRangeAsync(int start, int nrItems, CancellationToken token)
-        {
-            UIMediaCollection.EnterReaderLock();
-            try
-            {
-                for (int i = 0; i < nrItems; i++)
-                {
-                    // don't reload already loaded items
-                    if (UIMediaCollection.Items[start + i].ItemState == MediaFileItemState.LOADED) continue;
-
-                    UIMediaCollection.Items[start + i].readMetaDataAsync(
-                        MediaFactory.ReadOptions.AUTO |
-                        MediaFactory.ReadOptions.GENERATE_THUMBNAIL,
-                        token).ContinueWith(finishedTask => { });
-
-                }
-            }
-            finally
-            {
-                UIMediaCollection.ExitReaderLock();
-            }
-        }
+        
 
         public void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, ICancellableOperationProgress progress)
         {

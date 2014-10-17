@@ -68,7 +68,24 @@ namespace MediaViewer.MediaFileBrowser
 
             RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigating += mediaFileBrowserContentRegion_Navigating;
             RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigated += mediaFileBrowserContentRegion_Navigated;
-                                                            
+
+            EventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe(toggleFullScreen);                                       
+        }
+
+        private void toggleFullScreen(bool isFullScreen)
+        {
+            if (isFullScreen)
+            {
+                browserTabControl.Visibility = System.Windows.Visibility.Collapsed;
+                rightTabControl.Visibility = System.Windows.Visibility.Collapsed;
+                miscOptionsGrid.Visibility = System.Windows.Visibility.Collapsed;
+            }
+            else
+            {
+                browserTabControl.Visibility = System.Windows.Visibility.Visible;
+                rightTabControl.Visibility = System.Windows.Visibility.Visible;
+                miscOptionsGrid.Visibility = System.Windows.Visibility.Visible;
+            }
         }
 
         private void mediaFileBrowserContentRegion_Navigating(object sender, RegionNavigationEventArgs e)
@@ -159,31 +176,38 @@ namespace MediaViewer.MediaFileBrowser
         {
             MediaFileBrowserViewModel = (MediaFileBrowserViewModel)navigationContext.Parameters["viewModel"];
             DataContext = MediaFileBrowserViewModel;
-           
+            String title = "";
+                      
             if (MediaFileBrowserViewModel.CurrentViewModel == null)
             {
                 MediaFileBrowserViewModel.navigateToMetaData();
                 MediaFileBrowserViewModel.navigateToMediaGrid();
-                              
+
+                title = MediaFileBrowserViewModel.BrowsePath;
             }
             else
             {               
                 if (MediaFileBrowserViewModel.CurrentViewModel is MediaGridViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.DummyMediaStackPanelViewModel);    
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.DummyMediaStackPanelViewModel);
+                    title = MediaFileBrowserViewModel.BrowsePath;
                 }
                 else if(MediaFileBrowserViewModel.CurrentViewModel is ImageViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.ImageMediaStackPanelViewModel);    
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.ImageMediaStackPanelViewModel);
+                    title = MediaFileBrowserViewModel.ImageViewModel.CurrentLocation;
+                    if (title != null) title = System.IO.Path.GetFileName(title);
                 }
                 else if (MediaFileBrowserViewModel.CurrentViewModel is VideoViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.VideoMediaStackPanelViewModel);    
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.VideoMediaStackPanelViewModel);
+                    title = MediaFileBrowserViewModel.VideoViewModel.CurrentLocation;
+                    if (title != null) title = System.IO.Path.GetFileName(title);
                 }
                                 
             }
 
-            
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(title);
         }
     }
         

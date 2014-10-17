@@ -47,9 +47,22 @@ namespace MediaViewer.MediaGrid
 
             eventAggregator.GetEvent<MediaBrowserDisplayEvent>().Subscribe(imageStackPanelView_DisplayEvent, ThreadOption.UIThread);
             eventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(selectItem, ThreadOption.UIThread);
+            eventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe(toggleFullScreen, ThreadOption.UIThread);
 
             scrollToIndex = -1;           
                       
+        }
+
+        private void toggleFullScreen(bool isFullScreen)
+        {
+            if (isFullScreen)
+            {
+                mainGrid.Visibility = System.Windows.Visibility.Collapsed;
+            }
+            else
+            {
+                mainGrid.Visibility = System.Windows.Visibility.Visible;
+            }
         }
 
         private void imageStackPanelView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -133,7 +146,7 @@ namespace MediaViewer.MediaGrid
             ViewModel.MediaStateCollectionView.deselectAll();
             ViewModel.MediaStateCollectionView.setIsSelected(item, true);
 
-            scrollToIndex = ViewModel.MediaStateCollectionView.getIndexOf(item);
+            scrollToIndex = ViewModel.MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(item));
 
             if (scrollViewer != null)
             {

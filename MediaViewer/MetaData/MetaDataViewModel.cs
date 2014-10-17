@@ -67,9 +67,12 @@ namespace MediaViewer.MetaData
             return ("Metadata");
         }
 
-        public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
+        IEventAggregator EventAggregator { get; set; }
+
+        public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings, IEventAggregator eventAggregator)
         {            
             //Items = new ObservableCollection<MediaFileItem>();
+            EventAggregator = eventAggregator;
 
             Tags = new ObservableCollection<Tag>();
             tagsLock = new Object();
@@ -94,7 +97,7 @@ namespace MediaViewer.MetaData
             writeMetaDataCommand = new Command(new Action(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
-                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher);
+                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher, EventAggregator);
                 metaDataUpdateView.DataContext = vm;
                 metaDataUpdateView.Show();             
                 await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
@@ -212,7 +215,7 @@ namespace MediaViewer.MetaData
 
             }));
 
-            GlobalMessenger.Instance.Register<MediaFileItem>("MetaDataUpdateViewModel_UpdateComplete", (item) =>
+            EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Subscribe((item) =>
             {
                 lock(Items)             
                 {

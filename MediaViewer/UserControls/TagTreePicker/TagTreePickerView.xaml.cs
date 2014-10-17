@@ -3,9 +3,13 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Utils;
+using MediaViewer.TagEditor;
+using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.ServiceLocation;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,33 +25,37 @@ using System.Windows.Shapes;
 
 namespace MediaViewer.UserControls.TagTreePicker
 {
-  
+
     public partial class TagTreePickerView : UserControl
     {
+        IEventAggregator EventAggregator { get; set; }
+    
         public TagTreePickerView()
         {
             InitializeComponent();
+            EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
+
             treeView.Root = new CategoryItem(null);
 
-            GlobalMessenger.Instance.Register<TagCategory>("tagCategory_Created", addCategory);
-            GlobalMessenger.Instance.Register<TagCategory>("tagCategory_Deleted", removeCategory);
-            GlobalMessenger.Instance.Register<TagCategory>("tagCategory_Updated", updateCategory);
+            EventAggregator.GetEvent<TagCategoryCreatedEvent>().Subscribe(addCategory);
+            EventAggregator.GetEvent<TagCategoryDeletedEvent>().Subscribe(removeCategory);
+            EventAggregator.GetEvent<TagCategoryUpdatedEvent>().Subscribe(updateCategory);
 
-            GlobalMessenger.Instance.Register<Tag>("tag_Created", addTag);
-            GlobalMessenger.Instance.Register<Tag>("tag_Deleted", removeTag);
-            GlobalMessenger.Instance.Register<Tag>("tag_Updated", updateTag);
+            EventAggregator.GetEvent<TagCreatedEvent>().Subscribe(addTag);
+            EventAggregator.GetEvent<TagDeletedEvent>().Subscribe(removeTag);
+            EventAggregator.GetEvent<TagUpdatedEvent>().Subscribe(updateTag);
             
         }
        
         public void unregisterMessages() {
 
-            GlobalMessenger.Instance.UnRegister<TagCategory>("tagCategory_Created", addCategory);
-            GlobalMessenger.Instance.UnRegister<TagCategory>("tagCategory_Deleted", removeCategory);
-            GlobalMessenger.Instance.UnRegister<TagCategory>("tagCategory_Updated", updateCategory);
+            EventAggregator.GetEvent<TagCategoryCreatedEvent>().Unsubscribe(addCategory);
+            EventAggregator.GetEvent<TagCategoryDeletedEvent>().Unsubscribe(removeCategory);
+            EventAggregator.GetEvent<TagCategoryUpdatedEvent>().Unsubscribe(updateCategory);
 
-            GlobalMessenger.Instance.UnRegister<Tag>("tag_Created", addTag);
-            GlobalMessenger.Instance.UnRegister<Tag>("tag_Deleted", removeTag);
-            GlobalMessenger.Instance.UnRegister<Tag>("tag_Updated", updateTag);
+            EventAggregator.GetEvent<TagCreatedEvent>().Unsubscribe(addTag);
+            EventAggregator.GetEvent<TagDeletedEvent>().Unsubscribe(removeTag);
+            EventAggregator.GetEvent<TagUpdatedEvent>().Unsubscribe(updateTag);
         }
 
         public ObservableRangeCollection<Tag> SelectedTags

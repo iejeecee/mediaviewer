@@ -20,6 +20,8 @@ using MediaViewer.Model.Media.File.Watcher;
 using System.Reflection;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Utils;
+using MediaViewer.Logging;
+using MediaViewer.Model.GlobalEvents;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -31,7 +33,8 @@ namespace MediaViewer
     [Export]   
     public partial class Shell : Window, IPartImportsSatisfiedNotification
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
+        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         [Import(AllowRecomposition = false)]
         public IRegionManager RegionManager;
@@ -41,14 +44,17 @@ namespace MediaViewer
 
         public static ShellViewModel ShellViewModel { get; set; }
 
+        System.Windows.WindowState prevWindowState;
+
         public Shell()
         {
+           
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
 
             InitializeComponent();
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
-
+         
             AppDomain currentDomain = AppDomain.CurrentDomain;
             PrintLoadedAssemblies(currentDomain);
             currentDomain.AssemblyLoad += new AssemblyLoadEventHandler(assemblyLoadEventHandler);
@@ -65,6 +71,37 @@ namespace MediaViewer
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(ImageNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(VideoNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(MediaFileBrowserNavigationItemView));
+
+            EventAggregator.GetEvent<TitleChangedEvent>().Subscribe((title) =>
+            {
+                if (!String.IsNullOrEmpty(title))
+                {
+                    this.Title = "MediaViewer - " + title;
+                }
+                else
+                {
+                    this.Title = "MediaViewer";
+                }
+
+            },ThreadOption.UIThread);
+
+            EventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe((isFullscreen) =>
+                {
+                    if (isFullscreen)
+                    {
+                        prevWindowState = WindowState;
+                        WindowState = System.Windows.WindowState.Maximized;
+                        WindowStyle = System.Windows.WindowStyle.None;
+                        toolBarPanel.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        WindowState = prevWindowState;
+                        WindowStyle = System.Windows.WindowStyle.SingleBorderWindow;
+                        toolBarPanel.Visibility = Visibility.Visible;
+                    }
+                }, ThreadOption.UIThread);
+
 
             try {
 
@@ -136,7 +173,7 @@ namespace MediaViewer
             log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());
         }
 
-        static void PrintLoadedAssemblies(AppDomain domain)
+        void PrintLoadedAssemblies(AppDomain domain)
         {
             foreach (Assembly a in domain.GetAssemblies())
             {
@@ -144,7 +181,7 @@ namespace MediaViewer
             }
         }
 
-        static void assemblyLoadEventHandler(object sender, AssemblyLoadEventArgs args)
+        void assemblyLoadEventHandler(object sender, AssemblyLoadEventArgs args)
         {
             log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);
         }

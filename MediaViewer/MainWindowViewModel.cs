@@ -14,6 +14,7 @@ using MediaViewer.Model.Media.File.Watcher;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using MediaViewer.Model.Utils;
+using MediaViewer.TagEditor;
 
 namespace MediaViewer
 {
@@ -70,12 +71,12 @@ namespace MediaViewer
             WindowTitle = "MediaViewer";
 
             // recieve messages requesting the display of media items
-
+/*
             GlobalMessenger.Instance.Register<string>("MainWindowViewModel.ViewMediaCommand", new Action<string>((fileName) =>
             {
                 ViewMediaCommand.DoExecute(fileName);
             }));
-
+*/
             ViewMediaCommand = new Command(new Action<object>((location) =>
               {
                   if (String.IsNullOrEmpty((string)location)) return;
@@ -99,8 +100,8 @@ namespace MediaViewer
 
             TagEditorCommand = new Command(() =>
                 {
-                    TagEditorView tagEditor = new TagEditorView();
-                    tagEditor.ShowDialog();
+                    //TagEditorView tagEditor = new TagEditorView();
+                    //tagEditor.ShowDialog();
                 });
 
             AboutCommand = new Command(() =>

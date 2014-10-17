@@ -155,8 +155,8 @@ namespace MediaViewer.MediaFileBrowser
             this.mediaFileWatcher = mediaFileWatcher;
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
-            
-            ImageViewModel = new ImagePanel.ImageViewModel();
+
+            ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
 
@@ -164,7 +164,7 @@ namespace MediaViewer.MediaFileBrowser
             ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
             ImageMediaStackPanelViewModel.IsVisible = true;
 
-            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance);
+            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance, EventAggregator);
 
             VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
             VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
@@ -258,7 +258,7 @@ namespace MediaViewer.MediaFileBrowser
                     }
                 });
   
-            GlobalMessenger.Instance.Register<String>("MediaFileBrowser_SetPath", (location) =>
+            EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Subscribe((location) =>
             {
                 BrowsePath = location;
             });
@@ -322,7 +322,7 @@ namespace MediaViewer.MediaFileBrowser
                 mediaFileWatcher.Path = pathWithoutFileName;
 
                 Title = value;
-                GlobalMessenger.Instance.NotifyColleagues("MediaFileBrowser_PathSelected", value);
+                EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
 
                 NotifyPropertyChanged();
             }
@@ -458,7 +458,7 @@ namespace MediaViewer.MediaFileBrowser
             {
                 title = value;
 
-                GlobalMessenger.Instance.NotifyColleagues("MainWindow_SetTitle", value);
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(value);
             }
         }
 

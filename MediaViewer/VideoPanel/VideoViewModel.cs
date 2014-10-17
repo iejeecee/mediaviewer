@@ -19,6 +19,9 @@ using VideoPlayerControl;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using MediaViewer.Settings;
+using MediaViewer.Model.GlobalEvents;
+using Microsoft.Practices.Prism.PubSubEvents;
+using System.IO;
 
 namespace MediaViewer.VideoPanel
 {
@@ -28,9 +31,12 @@ namespace MediaViewer.VideoPanel
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
+        IEventAggregator EventAggregator { get; set; }
 
-        public VideoViewModel(AppSettings settings)
+        public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
         {
+            EventAggregator = eventAggregator;
+
             IsInitialized = false;
             CurrentLocation = null;
         
@@ -47,16 +53,16 @@ namespace MediaViewer.VideoPanel
                     CurrentLocation = location;
                     ScreenShotLocation = FileUtils.getPathWithoutFileName(location); //settings.VideoScreenShotLocation;
                     ScreenShotName = System.IO.Path.GetFileName(location);
+                   
                 }
                 catch (Exception e)
                 {
+                    CurrentLocation = null;
                     MessageBox.Show("Error opening " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-              
 
-                //MediaFileItem item = MediaFileItem.Factory.create(location);
-
-                //await item.readMetaDataAsync(MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(location == null ? null : Path.GetFileName(location));
+                
               
             });
             PlayCommand = new Command(() =>
@@ -151,7 +157,7 @@ namespace MediaViewer.VideoPanel
 
             this.videoPlayer = videoPlayer;
                       
-            //videoPlayer.Log = log;
+            videoPlayer.Log = log;
                        
             videoPlayer.StateChanged += videoPlayer_StateChanged;
             videoPlayer.PositionSecondsChanged += videoPlayer_PositionSecondsChanged;

@@ -69,8 +69,7 @@ namespace MediaViewer.Model.Media.State
         void import(IEnumerable<MediaFileItem> items, CancellationToken token);
         void export(MediaFileItem item, CancellationToken token);
         void export(IEnumerable<MediaFileItem> items, CancellationToken token);
-
-        void readMetadataRangeAsync(int start, int nrItems, CancellationToken token);
+       
         void readMetadata(MediaFileItem item, MediaFactory.ReadOptions options, CancellationToken token);
         void readMetadata(IEnumerable<MediaFileItem> items, MediaFactory.ReadOptions options, CancellationToken token);
         void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, ICancellableOperationProgress progress);

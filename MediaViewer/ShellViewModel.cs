@@ -89,14 +89,14 @@ namespace MediaViewer
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
 
-            ImageViewModel = new ImagePanel.ImageViewModel();
+            ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
             ImageViewModel.IsEffectsEnabled = false;
 
             ImageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
             ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
 
-            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance);
+            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance, EventAggregator);
 
             VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
             VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
