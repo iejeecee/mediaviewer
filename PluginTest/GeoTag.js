@@ -10,10 +10,10 @@ google.load("earth", "1");
 function init() {
 
     geocoder = new google.maps.Geocoder();
-    google.earth.createInstance('map3d', initCallback, failureCallback);
+    google.earth.createInstance('map3d', initSuccessCallback, initFailureCallback);
 }
 
-function initCallback(instance) {
+function initSuccessCallback(instance) {
 
     ge = instance;
     ge.getWindow().setVisibility(true);
@@ -25,7 +25,7 @@ function initCallback(instance) {
     ge.getLayerRoot().enableLayerById(ge.LAYER_BORDERS, true);
     ge.getLayerRoot().enableLayerById(ge.LAYER_ROADS, true);
 
-    window.external.initialize();
+    window.external.initializeSuccess();
 
     // listen for mousedown on the window (look specifically for point placemarks)
     google.earth.addEventListener(ge.getWindow(), 'mousedown', function (event) {
@@ -34,6 +34,7 @@ function initCallback(instance) {
             event.getTarget().getGeometry().getType() == 'KmlPoint') {
             //event.preventDefault();
             var placemark = event.getTarget();
+            
 
             dragInfo = {
                 placemark: event.getTarget(),
@@ -75,6 +76,16 @@ function initCallback(instance) {
             dragInfo = null;
         }
     });
+}
+
+function initFailureCallback(errorCode) {
+
+    window.external.initializeFailure(errorCode);
+}
+
+function errorCallback(errorString) {
+
+    window.external.error(errorString);
 }
 
 function createPlaceMark(latitude, longitude, placemarkName, imagePath, imageName) {
@@ -172,11 +183,11 @@ function lookAtQuery(query) {
 
         } else if (status == google.maps.GeocoderStatus.ZERO_RESULTS) {
 
-            failureCallback('Location not found: ' + query);
+            errorCallback('Location not found: ' + query);
 
         } else {
 
-            failureCallback('Geocoder failed due to: ' + status);
+            errorCallback('Geocoder failed due to: ' + status);
         }
     });
 }
@@ -236,7 +247,7 @@ function reverseGeoCodePlaceMark(placeMarkId) {
 
         } else {
 
-            failureCallback('Geocoder failed due to: ' + status);
+            errorCallback('Geocoder failed due to: ' + status);
         }
     });
 
@@ -311,7 +322,5 @@ function setTerrain(isVisible) {
 }
 
 
-function failureCallback(errorCode) {
 
-    window.external.failure(errorCode);
-}
+

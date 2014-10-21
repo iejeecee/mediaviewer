@@ -417,8 +417,8 @@ namespace MediaViewer.MediaFileBrowser
           
             }, navigationParams);
 
-            Shell.ShellViewModel.navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, item.Location);
 
+            Shell.ShellViewModel.navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, item.Location);
            
         }
 

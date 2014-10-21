@@ -315,7 +315,10 @@ namespace MediaViewer.ImagePanel
 
         private void imageView_MediaSelectionEvent(MediaFileItem item)
         {
+            if (String.Equals(ViewModel.CurrentLocation, item.Location)) return;
+
             ViewModel.LoadImageAsyncCommand.DoExecute(item.Location);
+            
         }
     }
 }

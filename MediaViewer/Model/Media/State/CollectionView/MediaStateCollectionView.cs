@@ -20,9 +20,9 @@ using System.Windows.Data;
 namespace MediaViewer.Model.Media.State.CollectionView
 {
     public class MediaStateCollectionView : ObservableObject {
-        
+
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
-        public event EventHandler<MediaStateChangedEventArgs> ItemPropertyChanged;
+        public event EventHandler<PropertyChangedEventArgs> StateItemPropertyChanged;
         public event EventHandler SelectionChanged;
         public event EventHandler Cleared;
       
@@ -33,7 +33,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             MediaState = mediaState;
 
             Media = new SelectableMediaLockedCollection();                      
-            //BindingOperations.EnableCollectionSynchronization(Media, Media);
+            Media.ItemPropertyChanged += Media_ItemPropertyChanged;          
          
             MediaState.NrItemsInStateChanged += MediaState_NrItemsInStateChanged;
             MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
@@ -50,6 +50,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 return (true);
             });
             
+        }
+
+    
+        private void Media_ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {            
+            OnStateItemPropertyChanged(sender, e);
         }
 
         public virtual void detachFromMediaState()
@@ -467,6 +473,13 @@ namespace MediaViewer.Model.Media.State.CollectionView
             if (SelectionChanged != null)
             {
                 SelectionChanged(this, EventArgs.Empty);
+            }
+        }
+        private void OnStateItemPropertyChanged(Object sender, PropertyChangedEventArgs args)
+        {
+            if (StateItemPropertyChanged != null)
+            {
+                StateItemPropertyChanged(sender, args);
             }
         }
 

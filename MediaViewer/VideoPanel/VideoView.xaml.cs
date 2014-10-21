@@ -250,9 +250,11 @@ namespace MediaViewer.VideoPanel
         }
 
         private void videoView_MediaSelectionEvent(MediaFileItem item)
-        {
+        {          
+            if (String.Equals(ViewModel.CurrentLocation,item.Location)) return;
+
             ViewModel.OpenCommand.DoExecute(item.Location);
-            ViewModel.PlayCommand.DoExecute();
+            ViewModel.PlayCommand.DoExecute();            
         }
     }
 }

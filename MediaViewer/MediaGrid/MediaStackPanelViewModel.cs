@@ -60,8 +60,16 @@ namespace MediaViewer.MediaGrid
 
             if (selectedItems.Count > 0)
             {
-                MediaFileItem selectedItem = selectedItems.ElementAt(0);
-                CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(selectedItem)) + 1;                   
+                MediaStateCollectionView.Media.EnterReaderLock();
+                try
+                {
+                    MediaFileItem selectedItem = selectedItems.ElementAt(0);
+                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(selectedItem)) + 1;
+                }
+                finally
+                {
+                    MediaStateCollectionView.Media.ExitReaderLock();
+                }
             }
             else
             {
@@ -147,9 +155,8 @@ namespace MediaViewer.MediaGrid
                         int index = currentPage.Value - 1;
 
                         MediaFileItem item = MediaStateCollectionView.Media[index].Item;
-                                           
-                        EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(item);
-                       
+
+                        EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(item);                                       
                     }
                     finally
                     {

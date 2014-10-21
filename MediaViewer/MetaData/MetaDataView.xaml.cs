@@ -240,7 +240,10 @@ namespace MediaViewer.MetaData
         private void globalMediaSelectionEvent(MediaFileItem selectedItem)
         {
             List<MediaFileItem> selectedItems = new List<MediaFileItem>();
-            selectedItems.Add(selectedItem);
+            if (selectedItem != null)
+            {
+                selectedItems.Add(selectedItem);
+            }
 
             MetaDataViewModel.Items = selectedItems;
         }

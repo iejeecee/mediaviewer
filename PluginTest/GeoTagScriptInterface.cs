@@ -31,11 +31,11 @@ namespace PluginTest
 
 		    GeoTagFileData data = null;
 
-		    foreach(GeoTagFileData image in GeoTagFileItems) {
+		    foreach(GeoTagFileData item in GeoTagFileItems) {
 
-			    if(image.PlaceMarkIndex == placeMarkIndex) {
+			    if(item.PlaceMarkIndex == placeMarkIndex) {
 
-				    data = image;
+				    data = item;
 				    break;
 			    }
 		    }
@@ -59,35 +59,50 @@ namespace PluginTest
             return (null);
         }
 
-
-	    public event EventHandler Initialized;
 	    public event EventHandler<GeoTagFileData> PlaceMarkClicked;
 	    public event EventHandler<GeoTagFileData> PlaceMarkMoved;
 	    public event EventHandler<GeoTagFileData> EndPlaceMarkMoved;
 	    public event EventHandler<String> AddressUpdate;
 
-        public SemaphoreSlim initializing = new SemaphoreSlim(0, 1);   
+        public bool IsInitialized {get; private set;}
+        public bool IsError { get; private set; }
+        public SemaphoreSlim InitializingSemaphore { get; private set; }
 
 	    public GeoTagScriptInterface(WebBrowser browser) {
 
 		    this.browser = browser;
             GeoTagFileItems = new List<GeoTagFileData>();
-         		
-           	    
+
+            InitializingSemaphore = new SemaphoreSlim(0, 1);
+            IsInitialized = false;
+            IsError = false;
 	    }
 
-	    public void initialize()
+	    public void initializeSuccess()
         {		 
             setBorders(false);
             setRoads(false);
             setTerrain(false);
 
-            initializing.Release();
+            InitializingSemaphore.Release();
+            IsInitialized = true;
+            IsError = false;
+        
+        }
 
-            if (Initialized != null)
-            {
-                Initialized(this, EventArgs.Empty);
-            }
+        public void initializeFailure(String errorString)
+        {            
+            InitializingSemaphore.Release();
+
+            MessageBox.Show(errorString, "Error");
+
+            IsInitialized = false;
+            IsError = true;        
+        }
+
+        public void error(String errorString)
+        {
+            MessageBox.Show(errorString, "Error");
         }
 
         public void addGeoTagItem(GeoTagFileData item)
@@ -119,12 +134,7 @@ namespace PluginTest
 
             GeoTagFileItems.Clear();
         }
-
-	    public void failure(String errorString) {
-
-		    MessageBox.Show(errorString, "Error");
-	    }
-
+	    
 	    public void createPlaceMark(GeoTagFileData image, bool useViewportCenter) {
 		
 		    if(useViewportCenter == true) {
@@ -159,64 +169,64 @@ namespace PluginTest
 	
 	    }
 
-	    public void deletePlaceMark(GeoTagFileData image) {
+	    public void deletePlaceMark(GeoTagFileData item) {
 
-		    if(image.HasGeoTag == false) return;
+		    if(item.HasGeoTag == false) return;
 		
 		    Object[] args = new Object[1];
-		    args[0] = image.PlaceMarkIndex;
+		    args[0] = item.PlaceMarkIndex;
 
 		    browser.InvokeScript("deletePlaceMark", args);
 
-		    image.HasGeoTag = false;
-		    image.IsModified = true;
-		    image.PlaceMarkIndex = -1;
-		    image.GeoTag.Latitude.Decimal = 0;
-		    image.GeoTag.Longitude.Decimal = 0;
+		    item.HasGeoTag = false;
+		    item.IsModified = true;
+		    item.PlaceMarkIndex = -1;
+		    item.GeoTag.Latitude.Decimal = 0;
+		    item.GeoTag.Longitude.Decimal = 0;
 
 	    }
 
-	    public void lookAtPlaceMark(GeoTagFileData image) {
+	    public void lookAtPlaceMark(GeoTagFileData item) {
 
-		    if(image.PlaceMarkIndex == -1) return;
+		    if(item.PlaceMarkIndex == -1) return;
 
 		    Object[] args = new Object[1];
-		    args[0] = image.PlaceMarkIndex;
+		    args[0] = item.PlaceMarkIndex;
 
 		    browser.InvokeScript("lookAtPlaceMark", args);
 	    }
 
 	    public void placeMarkClicked(int index) {
 		
-		    GeoTagFileData clickedImage = getGeoTagFileData(index);
+		    GeoTagFileData item = getGeoTagFileData(index);
 
             if (PlaceMarkClicked != null)
             {
-                PlaceMarkClicked(this, clickedImage);
+                PlaceMarkClicked(this, item);
             }
 	    }
 
 	    public void placeMarkMoved(int index, double latitude, double longitude) {
 
-		    GeoTagFileData movedImage = getGeoTagFileData(index);
+		    GeoTagFileData item = getGeoTagFileData(index);
 
-		    movedImage.GeoTag.Latitude.Decimal = latitude;
-		    movedImage.GeoTag.Longitude.Decimal = longitude;
+		    item.GeoTag.Latitude.Decimal = latitude;
+		    item.GeoTag.Longitude.Decimal = longitude;
 
             if (PlaceMarkMoved != null)
             {
-                PlaceMarkMoved(this, movedImage);
+                PlaceMarkMoved(this, item);
             }
 	    }
 
 	    public void endPlaceMarkMoved(int index) {
 
-		    GeoTagFileData movedImage = getGeoTagFileData(index);
-		    movedImage.IsModified = true;
+		    GeoTagFileData item = getGeoTagFileData(index);
+		    item.IsModified = true;
 
             if (EndPlaceMarkMoved != null)
             {
-                EndPlaceMarkMoved(this, movedImage);
+                EndPlaceMarkMoved(this, item);
             }
 
 	    }
@@ -230,16 +240,16 @@ namespace PluginTest
 
 	    }
 
-	    public void reverseGeoCodePlaceMark(GeoTagFileData image) {
+	    public void reverseGeoCodePlaceMark(GeoTagFileData item) {
 
-		    if(image.HasGeoTag == false) {
+		    if(item.HasGeoTag == false) {
 			
 			    addressUpdate("unknown address");
 			    return;
 		    }
 
 		    Object[] args = new Object[1];
-		    args[0] = image.PlaceMarkIndex;
+		    args[0] = item.PlaceMarkIndex;
 
 		    browser.InvokeScript("reverseGeoCodePlaceMark", args);
 

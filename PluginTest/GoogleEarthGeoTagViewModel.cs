@@ -87,8 +87,7 @@ namespace PluginTest
             script = new GeoTagScriptInterface(WebBrowser);
 
             WebBrowser.ObjectForScripting = script;
-
-            script.Initialized += script_Initialized;
+        
             script.PlaceMarkClicked += script_PlaceMarkClicked;
             script.AddressUpdate += script_AddressUpdate;
             script.PlaceMarkMoved += script_PlaceMarkMoved;
@@ -122,6 +121,10 @@ namespace PluginTest
                     if (geoTagItem != null && geoTagItem.HasGeoTag == true)
                     {
                         script.deletePlaceMark(geoTagItem);
+
+                        Latitude = "";
+                        Longitude = "";
+                        GeoTagLocation = "";
 
                         CreateGeoTagCommand.CanExecute = true;
                         DeleteGeoTagCommand.CanExecute = false;
@@ -239,13 +242,7 @@ namespace PluginTest
             selectPlaceMark(e, false);
         }
 
-        void script_Initialized(object sender, EventArgs e)
-        {
-            if (Loaded != null)
-            {
-                Loaded(this, EventArgs.Empty);
-            }
-        }
+     
 
         WebBrowser webBrowser;
 
@@ -265,9 +262,7 @@ namespace PluginTest
                 WebBrowser.Dispose();
                 WebBrowser = null;
             }
-        }
-
-        public event EventHandler Loaded;
+        }   
 
         String searchText;
 
@@ -297,10 +292,10 @@ namespace PluginTest
             set;
         }
 
-        private async void mediaState_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
+        private void mediaState_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
         {
-            await script.initializing.WaitAsync();
- 
+            if (script.IsInitialized == false) return;
+           
             switch (e.Action)
             {
                 case MediaStateChangedAction.Add:
@@ -323,13 +318,9 @@ namespace PluginTest
                 default:
                     break;
             }
-
-            script.initializing.Release();
-                        
+                                  
         }
       
-
-
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
             return (true);
@@ -342,6 +333,8 @@ namespace PluginTest
 
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
+            bool isScriptInitialized = script.IsInitialized;
+
             ICollection<MediaFileItem> selectedItems = (ICollection<MediaFileItem>)navigationContext.Parameters["selectedItems"];
 
             mediaStackPanel.MediaStateCollectionView.Filter = new Func<SelectableMediaFileItem, bool>((item) =>
@@ -351,28 +344,35 @@ namespace PluginTest
 
             Shell.ShellViewModel.navigateToMediaStackPanelView(mediaStackPanel);
 
-            await script.initializing.WaitAsync();
-           
-            /*script.clearAll();
-            
-            for (int i = 0; i < selectedItems.Count; i++)
-            {
-                MediaFileItem item = selectedItems.ElementAt(i);
-
-                GeoTagFileData geoTagItem = new GeoTagFileData(item);
-                script.addGeoTagItem(geoTagItem);
-
-                if (i == 0)
-                {
-                    selectPlaceMark(geoTagItem);
-                }
-            }*/
-           
+            await script.InitializingSemaphore.WaitAsync();
+                                  
             MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel = this;         
 
             EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(geoTagViewModel_MediaSelectionEvent);
+
+            // initialize if first run and select first item
+            mediaStackPanel.MediaStateCollectionView.Media.EnterReaderLock();
+            try
+            {
+                if (!isScriptInitialized && script.IsError == false)
+                {
+                    foreach (SelectableMediaFileItem item in mediaStackPanel.MediaStateCollectionView.Media)
+                    {
+                        script.addGeoTagItem(new GeoTagFileData(item.Item));
+                    }
+                }
+
+                if (mediaStackPanel.MediaStateCollectionView.Media.Count > 0)
+                {
+                    EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(mediaStackPanel.MediaStateCollectionView.Media[0].Item);
+                }
+            }
+            finally
+            {
+                mediaStackPanel.MediaStateCollectionView.Media.ExitReaderLock();
+            }
             
-            script.initializing.Release();
+            script.InitializingSemaphore.Release();
         }
 
         private void geoTagViewModel_MediaSelectionEvent(MediaFileItem selectedItem)

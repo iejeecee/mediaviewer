@@ -192,7 +192,7 @@
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
-    <Compile Include="Model\Collections\LockedObservableCollection2.cs" />
+    <Compile Include="Model\Collections\LockedObservableCollection.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
     <Compile Include="Model\GlobalEvents\GlobalCommandEvent.cs" />
     <Compile Include="Model\GlobalEvents\MediaSelectionEvent.cs" />

@@ -8,6 +8,12 @@ namespace MediaViewer.Model.Media.Metadata
 {
     public class GeoTagCoordinate
     {
+        public enum CoordinateType
+        {
+            LATITUDE,
+            LONGITUDE
+        }
+
         private int degrees;
         private int minutes;
         private int seconds;
@@ -16,12 +22,11 @@ namespace MediaViewer.Model.Media.Metadata
 
         private double decimalVal;
 
-        private bool isLat;
+        public CoordinateType CoordType { get; private set; }
 
-        public GeoTagCoordinate(bool isLat)
+        public GeoTagCoordinate(CoordinateType type)
         {
-
-            this.isLat = isLat;
+            CoordType = type;
         }
 
         public string Coord
@@ -90,13 +95,7 @@ namespace MediaViewer.Model.Media.Metadata
             }
         }
 
-        public bool IsLat
-        {
-            get
-            {
-                return (isLat);
-            }
-        }
+   
 
         public double Decimal
         {
@@ -122,7 +121,7 @@ namespace MediaViewer.Model.Media.Metadata
 
                 if (decimalVal < 0)
                 {
-                    if (isLat)
+                    if (CoordType == CoordinateType.LATITUDE)
                     {
                         direction = 'S';
                     }
@@ -133,7 +132,7 @@ namespace MediaViewer.Model.Media.Metadata
                 }
                 else
                 {
-                    if (isLat)
+                    if (CoordType == CoordinateType.LATITUDE)
                     {
                         direction = 'N';
                     }

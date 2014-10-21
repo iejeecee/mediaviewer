@@ -152,6 +152,7 @@ namespace MediaViewer.MediaGrid
             {
                 scrollViewer.ScrollToHorizontalOffset(scrollToIndex);
             }
+           
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -170,11 +171,35 @@ namespace MediaViewer.MediaGrid
 
             DataContext = ViewModel;
 
+            if (ViewModel.IsEnabled == false) return;
+
+            ICollection<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
+
             String location = (String)navigationContext.Parameters["location"];
             if (!String.IsNullOrEmpty(location))
-            {
-                selectItem(MediaFileItem.Factory.create(location));
+            {                
+                MediaFileItem item = MediaFileItem.Factory.create(location);
+
+                if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item))
+                {
+                    // Send a selection event in the case the media is already selected
+                    // to inform other views
+                    EventAggregator.GetEvent<MediaSelectionEvent>().Publish(item);
+                }
+                else
+                {
+                    selectItem(item);
+                }
             }
+            else
+            {               
+                if (selectedItems.Count > 0)
+                {
+                    // Send a selection event to inform other views
+                    EventAggregator.GetEvent<MediaSelectionEvent>().Publish(selectedItems.ElementAt(0));
+                }                
+            }
+                      
         }        
   
     }

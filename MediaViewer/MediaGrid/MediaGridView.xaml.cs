@@ -156,6 +156,8 @@ namespace MediaViewer.MediaGrid
             ViewModel = (MediaGridViewModel)navigationContext.Parameters["viewModel"];
 
             DataContext = ViewModel;
+
+            EventAggregator.GetEvent<MediaBatchSelectionEvent>().Publish(ViewModel.MediaStateCollectionView.getSelectedItems());
                     
         }
     }

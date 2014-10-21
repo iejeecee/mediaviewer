@@ -7,10 +7,11 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.Metadata;
+using Microsoft.Practices.Prism.Mvvm;
 
 namespace PluginTest
 {
-    public class GeoTagFileData
+    public class GeoTagFileData : BindableBase
     {
         String fileUrl;
 
@@ -32,7 +33,10 @@ namespace PluginTest
         public bool IsModified
         {
             get { return isModified; }
-            set { isModified = value; }
+            set { 
+
+                SetProperty<bool>(ref isModified, value);
+            }
         }
         int placeMarkIndex;
 
@@ -47,7 +51,10 @@ namespace PluginTest
         public bool HasGeoTag
         {
             get { return hasGeoTag; }
-            set { hasGeoTag = value; }
+            set { 
+
+                SetProperty<bool>(ref hasGeoTag, value);
+            }
         }
 
         public GeoTagFileData(MediaFileItem item)

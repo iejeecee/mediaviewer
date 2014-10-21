@@ -27,8 +27,8 @@ namespace MediaViewer.Model.Media.Metadata
         public GeoTagCoordinatePair()
         {
 
-            latitude = new GeoTagCoordinate(true);
-            longitude = new GeoTagCoordinate(false);
+            latitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LATITUDE);
+            longitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LONGITUDE);
         }
 
     }
