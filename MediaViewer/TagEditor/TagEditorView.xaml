@@ -61,19 +61,19 @@
                             <Style TargetType="{x:Type Button}">
                                 <Setter Property="Content" Value="Create"/>
                                 <Setter Property="Command" Value="{Binding CreateCategoryCommand}"/>
-                                <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.CanExecute}"/>
+                                <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.IsExecutable}"/>
                                 <Setter Property="ToolTip" Value="Create a new category"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsCategorySelected}" Value="false">
                                         <Setter Property="Content" Value="Create" />
                                         <Setter Property="Command" Value="{Binding CreateCategoryCommand}"/>
-                                        <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.CanExecute}"/>
+                                        <Setter Property="IsEnabled" Value="{Binding CreateCategoryCommand.IsExecutable}"/>
                                         <Setter Property="ToolTip" Value="Create a new category"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsCategorySelected}" Value="true">
                                         <Setter Property="Content" Value="Update" />
                                         <Setter Property="Command" Value="{Binding UpdateCategoryCommand}"/>
-                                        <Setter Property="IsEnabled" Value="{Binding UpdateCategoryCommand.CanExecute}"/>
+                                        <Setter Property="IsEnabled" Value="{Binding UpdateCategoryCommand.IsExecutable}"/>
                                         <Setter Property="ToolTip" Value="Update selected category"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -126,19 +126,19 @@
                             <Style TargetType="{x:Type Button}">
                                 <Setter Property="Content" Value="Create"/>
                                 <Setter Property="Command" Value="{Binding CreateTagCommand}"/>
-                                <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.CanExecute}"/>
+                                <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.IsExecutable}"/>
                                 <Setter Property="ToolTip" Value="Create a new tag"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsTagSelected}" Value="false">
                                         <Setter Property="Content" Value="Create" />
                                         <Setter Property="Command" Value="{Binding CreateTagCommand}"/>
-                                        <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.CanExecute}"/>
+                                        <Setter Property="IsEnabled" Value="{Binding CreateTagCommand.IsExecutable}"/>
                                         <Setter Property="ToolTip" Value="Create a new tag"/>
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsTagSelected}" Value="true">
                                         <Setter Property="Content" Value="Update" />
                                         <Setter Property="Command" Value="{Binding UpdateTagCommand}"/>
-                                        <Setter Property="IsEnabled" Value="{Binding UpdateTagCommand.CanExecute}"/>
+                                        <Setter Property="IsEnabled" Value="{Binding UpdateTagCommand.IsExecutable}"/>
                                         <Setter Property="ToolTip" Value="Update selected tag"/>
                                     </DataTrigger>
                                 </Style.Triggers>

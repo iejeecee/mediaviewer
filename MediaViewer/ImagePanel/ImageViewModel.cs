@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using MediaViewer.Model.Media.File;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System.Windows;
 using System.Threading;
 using MediaViewer.Model.Media.File.Watcher;
@@ -19,13 +19,16 @@ using MediaViewer.MetaData;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using System.IO;
+using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Mvvm;
+using MediaViewer.MediaFileBrowser;
 
 namespace MediaViewer.ImagePanel
 {
 
-    public class ImageViewModel : ObservableObject
+    public class ImageViewModel : BindableBase, IMediaFileBrowserContentViewModel
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -44,7 +47,7 @@ namespace MediaViewer.ImagePanel
             isLoading = false;
             currentLocation = null;
 
-            loadImageAsyncCommand = new Command(new Action<object>(async (fileName) =>
+            loadImageAsyncCommand = new Command<String>(new Action<String>(async (fileName) =>
             {
                 // cancel previously running load requests          
                 loadImageCTS.Cancel();
@@ -52,7 +55,7 @@ namespace MediaViewer.ImagePanel
 
                 try
                 {
-                    await Task.Factory.StartNew(() => loadImage((String)fileName), loadImageCTS.Token);
+                    await Task.Factory.StartNew(() => loadImage(fileName), loadImageCTS.Token);
                 }
                 catch (TaskCanceledException)
                 {
@@ -62,17 +65,17 @@ namespace MediaViewer.ImagePanel
             }));
 
         
-            rotate90DegreesCommand = new Command(() =>
+            Rotate90DegreesCommand = new Command(() =>
             {
                 RotationDegrees += 90;
             });
 
-            rotateMinus90DegreesCommand = new Command(() =>
+            RotateMinus90DegreesCommand = new Command(() =>
             {
                 RotationDegrees -= 90;
             });
 
-            resetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
+            ResetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
       
             setIdentityTransform();
             SelectedScaleMode = ScaleMode.NONE;
@@ -163,8 +166,8 @@ namespace MediaViewer.ImagePanel
         public bool IsEffectsEnabled
         {
             get { return isEffectsEnabled; }
-            set { isEffectsEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref isEffectsEnabled, value);
             }
         }
 
@@ -174,10 +177,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return flipX; }
             set
-            {
-                flipX = value;
-
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref flipX, value);
                 updateTransform();
             }
         }
@@ -188,10 +189,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return flipY; }
             set
-            {
-                flipY = value;
-
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref flipY, value);
                 updateTransform();
             }
         }
@@ -202,9 +201,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return isLoading; }
             set
-            {
-                isLoading = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref isLoading, value);
             }
         }
 
@@ -214,9 +212,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return image; }
             set
-            {                
-                image = value;
-                NotifyPropertyChanged();
+            {                              
+                SetProperty(ref image, value);
             }
         }
 
@@ -226,9 +223,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return transform; }
             set
-            {
-                transform = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref transform, value);
             }
         }
       
@@ -240,89 +236,37 @@ namespace MediaViewer.ImagePanel
             get { return rotationDegrees; }
             set
             {
-                rotationDegrees = value;
+                double tempRotationDegrees = value;
 
-                if (rotationDegrees < 0)
+                if (tempRotationDegrees < 0)
                 {
-                    rotationDegrees = 360 + (rotationDegrees + Math.Floor(rotationDegrees / 360) * 360);
+                    tempRotationDegrees = 360 + (tempRotationDegrees + Math.Floor(tempRotationDegrees / 360) * 360);
                 }
-                else if (rotationDegrees >= 360)
+                else if (tempRotationDegrees >= 360)
                 {
-                    rotationDegrees = rotationDegrees - Math.Floor(rotationDegrees / 360) * 360;
+                    tempRotationDegrees = tempRotationDegrees - Math.Floor(tempRotationDegrees / 360) * 360;
                 }
 
-                NotifyPropertyChanged();
+                SetProperty(ref rotationDegrees, tempRotationDegrees);
                 updateTransform();
             }
         }
 
-        Command resetRotationDegreesCommand;
-
-        public Command ResetRotationDegreesCommand
-        {
-            get { return resetRotationDegreesCommand; }
-        }
-        Command setBrightnessCommand;
-
-        public Command SetBrightnessCommand
-        {
-            get { return setBrightnessCommand; }
-            set { setBrightnessCommand = value;
-            NotifyPropertyChanged();
-            }
-        }
-        Command resetBrightnessCommand;
-
-        public Command ResetBrightnessCommand
-        {
-            get { return resetBrightnessCommand; }
-            set { resetBrightnessCommand = value;
-            NotifyPropertyChanged();
-            }
-            
-        }
-
-        Command setContrastCommand;
-
-        public Command SetContrastCommand
-        {
-            get { return setContrastCommand; }
-            set { setContrastCommand = value;
-            NotifyPropertyChanged();
-            }
-        }
-        Command resetContrastCommand;
-
-        public Command ResetContrastCommand
-        {
-            get { return resetContrastCommand; }
-            set { resetContrastCommand = value;
-            NotifyPropertyChanged();
-            }
-        }
-
-        Command rotate90DegreesCommand;
-
-        public Command Rotate90DegreesCommand
-        {
-            get { return rotate90DegreesCommand; }
-            set { rotate90DegreesCommand = value; }
-        }
-        Command rotateMinus90DegreesCommand;
-
-        public Command RotateMinus90DegreesCommand
-        {
-            get { return rotateMinus90DegreesCommand; }
-            set { rotateMinus90DegreesCommand = value; }
-        }
-
+        public Command ResetRotationDegreesCommand { get; set; }              
+        public Command SetBrightnessCommand {get; set;}
+        public Command ResetBrightnessCommand { get; set; }       
+        public Command SetContrastCommand { get; set; }           
+        public Command ResetContrastCommand { get; set; }              
+        public Command Rotate90DegreesCommand {get; set;}
+        public Command RotateMinus90DegreesCommand { get; set; }
+       
         bool isResetSettingsOnLoad;
 
         public bool IsResetSettingsOnLoad
         {
             get { return isResetSettingsOnLoad; }
-            set { isResetSettingsOnLoad = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref isResetSettingsOnLoad, value);
             }
         }
 
@@ -341,8 +285,8 @@ namespace MediaViewer.ImagePanel
             get { return scale; }
             set
             {
-                scale = MiscUtils.clamp(value,MinScale,MaxScale);
-                NotifyPropertyChanged();
+                double clampedScale = MiscUtils.clamp(value,MinScale,MaxScale);
+                SetProperty(ref scale, clampedScale);
                 updateTransform();
             }
         }
@@ -352,8 +296,8 @@ namespace MediaViewer.ImagePanel
         public double Brightness
         {
             get { return brightness; }
-            set { brightness = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref brightness, value);
             }
         }
         double contrast;
@@ -361,14 +305,14 @@ namespace MediaViewer.ImagePanel
         public double Contrast
         {
             get { return contrast; }
-            set { contrast = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref contrast, value);
             }
         }
 
-        Command loadImageAsyncCommand;
+        Command<String> loadImageAsyncCommand;
 
-        public Command LoadImageAsyncCommand
+        public Command<String> LoadImageAsyncCommand
         {
             get { return loadImageAsyncCommand; }
         }
@@ -394,8 +338,8 @@ namespace MediaViewer.ImagePanel
         public String CurrentLocation
         {
             get { return currentLocation; }
-            private set { currentLocation = value;
-            NotifyPropertyChanged();
+            private set {  
+                SetProperty(ref currentLocation, value);
             }
         }
 
@@ -518,9 +462,8 @@ namespace MediaViewer.ImagePanel
         {
             get { return selectedScaleMode; }
             set
-            {
-                selectedScaleMode = value;                                     
-                NotifyPropertyChanged();
+            {                                                
+                SetProperty(ref selectedScaleMode, value);
             }
         }
        
@@ -540,8 +483,8 @@ namespace MediaViewer.ImagePanel
             get { return selectedRotationMode; }
             set
             {
-                selectedRotationMode = value;
-
+                SetProperty(ref selectedRotationMode, value);
+             
                 switch (selectedRotationMode)
                 {
                     case RotationMode.NONE:
@@ -572,7 +515,7 @@ namespace MediaViewer.ImagePanel
 
                 }
             
-                NotifyPropertyChanged();
+                
             }
         }
 
@@ -584,9 +527,8 @@ namespace MediaViewer.ImagePanel
             get { return customRotation; }
             set
             {
-                customRotation = value;
-                RotationDegrees = customRotation;
-                NotifyPropertyChanged();
+                SetProperty(ref customRotation, value);               
+                RotationDegrees = customRotation;                
             }
         }
         
@@ -603,9 +545,10 @@ namespace MediaViewer.ImagePanel
         public double MinScale
         {
             get { return minScale; }
-            set { minScale = value;
-            Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);
-            NotifyPropertyChanged();
+            set
+            {
+                SetProperty(ref minScale, value);
+                Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);           
             }
         }
         double maxScale;
@@ -613,13 +556,40 @@ namespace MediaViewer.ImagePanel
         public double MaxScale
         {
             get { return maxScale; }
-            set { maxScale = value;
-            Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);
-            NotifyPropertyChanged();
+            set
+            {
+                SetProperty(ref maxScale, value);
+                Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);           
             }
         }
 
-        
+        public void OnNavigatedTo(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
+        {
+            String location = (String)navigationContext.Parameters["location"];
+
+            if (!String.IsNullOrEmpty(location))
+            {
+                LoadImageAsyncCommand.Execute(location);
+            }
+            else
+            {
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentLocation == null ? "" : CurrentLocation);
+            }
+
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
+        }
+
+        public void OnNavigatedFrom(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
+        }
+
+        private void imageView_MediaSelectionEvent(MediaFileItem item)
+        {
+            if (String.Equals(CurrentLocation, item.Location)) return;
+
+            LoadImageAsyncCommand.Execute(item.Location);
+        }
     }
 
 }

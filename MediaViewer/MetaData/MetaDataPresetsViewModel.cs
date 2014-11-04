@@ -6,7 +6,7 @@ using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,10 +16,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataPresetsViewModel : CloseableObservableObject
+    class MetaDataPresetsViewModel : CloseableBindableBase
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -33,16 +35,16 @@ namespace MediaViewer.MetaData
                 MetadataPresets = new ObservableCollection<PresetMetadata>(presetMetadataCommands.getAllPresets());                                
             }
 
-            createPresetCommand = new Command(new Action(createPreset));          
-            createPresetCommand.CanExecute = false;
+            CreatePresetCommand = new Command(new Action(createPreset));          
+            CreatePresetCommand.IsExecutable = false;
 
-            updatePresetCommand = new Command(new Action(updatePreset));        
-            updatePresetCommand.CanExecute = false;
+            UpdatePresetCommand = new Command(new Action(updatePreset));        
+            UpdatePresetCommand.IsExecutable = false;
 
-            deletePresetCommand = new Command(new Action(deletePreset));
-            deletePresetCommand.CanExecute = false;
+            DeletePresetCommand = new Command(new Action(deletePreset));
+            DeletePresetCommand.IsExecutable = false;
             
-            clearPresetCommand = new Command(new Action(() =>
+            ClearPresetCommand = new Command(new Action(() =>
                 {
                     clear();
                 }));
@@ -84,8 +86,8 @@ namespace MediaViewer.MetaData
             get { return selectedPreset; }
             set
             {
-                selectedPreset = value;
-
+                SetProperty(ref selectedPreset, value);
+               
                 if (selectedPreset != null)
                 {
                     Rating = (float)selectedPreset.Rating;
@@ -101,18 +103,18 @@ namespace MediaViewer.MetaData
                     Creation = selectedPreset.CreationDate;
                     CreationEnabled = selectedPreset.IsCreationDateEnabled;
 
-                    CreatePresetCommand.CanExecute = false;
-                    UpdatePresetCommand.CanExecute = true;
-                    DeletePresetCommand.CanExecute = true;
+                    CreatePresetCommand.IsExecutable = false;
+                    UpdatePresetCommand.IsExecutable = true;
+                    DeletePresetCommand.IsExecutable = true;
                 }
                 else
                 {
                   
-                    UpdatePresetCommand.CanExecute = false;
-                    DeletePresetCommand.CanExecute = false;
+                    UpdatePresetCommand.IsExecutable = false;
+                    DeletePresetCommand.IsExecutable = false;
                 }
 
-                NotifyPropertyChanged();
+               
             }
         }
 
@@ -121,32 +123,33 @@ namespace MediaViewer.MetaData
         public String Name
         {
             get { return name; }
-            set { name = value;
-
-            if (String.IsNullOrEmpty(name) || String.IsNullOrWhiteSpace(name))
+            set
             {
-                if (SelectedPreset == null)
+                SetProperty(ref name, value);
+
+                if (String.IsNullOrEmpty(name) || String.IsNullOrWhiteSpace(name))
                 {
-                    CreatePresetCommand.CanExecute = false;
+                    if (SelectedPreset == null)
+                    {
+                        CreatePresetCommand.IsExecutable = false;
+                    }
+                    else
+                    {
+                        UpdatePresetCommand.IsExecutable = false;
+                    }
                 }
                 else
                 {
-                    UpdatePresetCommand.CanExecute = false;
+                    if (SelectedPreset == null)
+                    {
+                        CreatePresetCommand.IsExecutable = true;
+                    }
+                    else
+                    {
+                        UpdatePresetCommand.IsExecutable = true;
+                    }
                 }
-            }
-            else
-            {
-                if (SelectedPreset == null)
-                {
-                    CreatePresetCommand.CanExecute = true;
-                }
-                else
-                {
-                    UpdatePresetCommand.CanExecute = true;
-                }
-            }
 
-            NotifyPropertyChanged();
             }
         }
            
@@ -156,9 +159,8 @@ namespace MediaViewer.MetaData
         {
             get { return rating; }
             set
-            {
-                rating = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref rating, value);
             }
         }
 
@@ -167,8 +169,8 @@ namespace MediaViewer.MetaData
         public bool RatingEnabled
         {
             get { return ratingEnabled; }
-            set { ratingEnabled = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref ratingEnabled, value);
             }
         }
 
@@ -178,9 +180,8 @@ namespace MediaViewer.MetaData
         {
             get { return title; }
             set
-            {
-                title = value;
-                NotifyPropertyChanged();
+            {             
+                SetProperty(ref title, value);
             }
         }
 
@@ -189,8 +190,8 @@ namespace MediaViewer.MetaData
         public bool TitleEnabled
         {
             get { return titleEnabled; }
-            set { titleEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref titleEnabled, value);
             }
         }
 
@@ -200,9 +201,8 @@ namespace MediaViewer.MetaData
         {
             get { return description; }
             set
-            {
-                description = value;
-                NotifyPropertyChanged();
+            {                 
+                SetProperty(ref description, value);
             }
         }
 
@@ -211,8 +211,8 @@ namespace MediaViewer.MetaData
         public bool DescriptionEnabled
         {
             get { return descriptionEnabled; }
-            set { descriptionEnabled = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref descriptionEnabled, value);
             }
         }
 
@@ -222,9 +222,8 @@ namespace MediaViewer.MetaData
         {
             get { return author; }
             set
-            {
-                author = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref author, value);
             }
         }
 
@@ -233,8 +232,8 @@ namespace MediaViewer.MetaData
         public bool AuthorEnabled
         {
             get { return authorEnabled; }
-            set { authorEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref authorEnabled, value);
             }
         }
 
@@ -245,9 +244,8 @@ namespace MediaViewer.MetaData
             get { return copyright; }
 
             set
-            {
-                copyright = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref copyright, value);
             }
         }
 
@@ -256,8 +254,8 @@ namespace MediaViewer.MetaData
         public bool CopyrightEnabled
         {
             get { return copyrightEnabled; }
-            set { copyrightEnabled = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref copyrightEnabled, value);
             }
         }
 
@@ -266,8 +264,8 @@ namespace MediaViewer.MetaData
         public Nullable<DateTime> Creation
         {
             get { return creation; }
-            set { creation = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref creation, value);
             }
         }
 
@@ -276,8 +274,8 @@ namespace MediaViewer.MetaData
         public bool CreationEnabled
         {
             get { return creationEnabled; }
-            set { creationEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref creationEnabled, value);
             }
         }
 
@@ -287,42 +285,16 @@ namespace MediaViewer.MetaData
         {
             get { return tags; }
             set
-            {
-                tags = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref tags, value);
             }
         }
-
-        Command createPresetCommand;
-
-        public Command CreatePresetCommand
-        {
-            get { return createPresetCommand; }
-            set { createPresetCommand = value; }
-        }
-        Command updatePresetCommand;
-
-        public Command UpdatePresetCommand
-        {
-            get { return updatePresetCommand; }
-            set { updatePresetCommand = value; }
-        }
-        Command deletePresetCommand;
-
-        public Command DeletePresetCommand
-        {
-            get { return deletePresetCommand; }
-            set { deletePresetCommand = value; }
-        }
-
-        Command clearPresetCommand;
-
-        public Command ClearPresetCommand
-        {
-            get { return clearPresetCommand; }
-            set { clearPresetCommand = value; }
-        }
-
+       
+        public Command CreatePresetCommand {get;set;}
+        public Command UpdatePresetCommand {get;set;} 
+        public Command DeletePresetCommand {get;set;} 
+        public Command ClearPresetCommand {get;set;}
+     
         void createPreset()
         {
             PresetMetadata preset = new PresetMetadata();

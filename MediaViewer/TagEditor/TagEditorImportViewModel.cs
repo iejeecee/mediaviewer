@@ -4,7 +4,7 @@ using MediaViewer.MediaDatabase.DataTransferObjects;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Progress;
 using Microsoft.Win32;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,10 +15,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.TagEditor
 {
-    class TagEditorImportViewModel : CloseableObservableObject, ICancellableOperationProgress
+    class TagEditorImportViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
         public TagEditorImportViewModel()
         {
@@ -35,7 +37,7 @@ namespace MediaViewer.TagEditor
             });
 
             OkCommand = new Command(new Action(() => OnClosingRequest()));
-            OkCommand.CanExecute = false;
+            OkCommand.IsExecutable = false;
         }
      
         public void import(String filename)
@@ -78,8 +80,8 @@ namespace MediaViewer.TagEditor
 
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    OkCommand.CanExecute = true;
-                    CancelCommand.CanExecute = false;
+                    OkCommand.IsExecutable = true;
+                    CancelCommand.IsExecutable = false;
                 }));
             }
             catch (Exception e)
@@ -87,8 +89,8 @@ namespace MediaViewer.TagEditor
                 InfoMessages.Add("Error importing tags " + e.Message);
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    OkCommand.CanExecute = true;
-                    CancelCommand.CanExecute = false;
+                    OkCommand.IsExecutable = true;
+                    CancelCommand.IsExecutable = false;
                 }));
             }
             finally
@@ -115,9 +117,8 @@ namespace MediaViewer.TagEditor
                 return (totalProgress);
             }
             set
-            {
-                totalProgress = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref totalProgress, value);        
             }
         }
 
@@ -131,8 +132,8 @@ namespace MediaViewer.TagEditor
             }
             set
             {
-                totalProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref totalProgressMax,value);
+              
             }
         }
 
@@ -146,8 +147,7 @@ namespace MediaViewer.TagEditor
             }
             set
             {
-                itemProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgress,value);              
             }
         }
 
@@ -161,8 +161,7 @@ namespace MediaViewer.TagEditor
             }
             set
             {
-                itemProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgressMax,value);          
             }
         }
 
@@ -173,8 +172,7 @@ namespace MediaViewer.TagEditor
             get { return itemInfo; }
             set
             {
-                itemInfo = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemInfo, value);               
             }
         }
       
@@ -212,8 +210,7 @@ namespace MediaViewer.TagEditor
             }
             set
             {
-                windowTitle = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowTitle, value);              
             }
         }
 
@@ -227,8 +224,7 @@ namespace MediaViewer.TagEditor
             }
             set
             {
-                windowIcon = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowIcon, value);               
             }
         }
 

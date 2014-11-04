@@ -1,6 +1,6 @@
 ﻿using MediaViewer.Model.Media.File;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,10 +15,12 @@ using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using VideoPlayerControl;
 using MediaViewer.Model.Utils;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.Torrent
 {
-    public class TorrentCreationProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
+    public class TorrentCreationProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
              
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -59,8 +61,8 @@ namespace MediaViewer.Torrent
                 tokenSource.Cancel();
             });
 
-            OkCommand.CanExecute = false;
-            CancelCommand.CanExecute = true;
+            OkCommand.IsExecutable = false;
+            CancelCommand.IsExecutable = true;
 
         }
 
@@ -86,8 +88,8 @@ namespace MediaViewer.Torrent
 
                 App.Current.Dispatcher.Invoke(() =>
                 {
-                    OkCommand.CanExecute = true;
-                    CancelCommand.CanExecute = false;
+                    OkCommand.IsExecutable = true;
+                    CancelCommand.IsExecutable = false;
                 });
             });
         }
@@ -288,30 +290,9 @@ namespace MediaViewer.Torrent
             return (hashArray);
         }
 
-        Command okCommand;
-
-        public Command OkCommand
-        {
-            get { return okCommand; }
-            set
-            {
-                okCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set
-            {
-                cancelCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        public Command OkCommand {get;set;}   
+        public Command CancelCommand {get;set;}
+     
         CancellationToken cancellationToken;
 
         public CancellationToken CancellationToken
@@ -330,8 +311,7 @@ namespace MediaViewer.Torrent
             }
             set
             {
-                totalProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref totalProgress, value);           
             }
         }
 
@@ -345,8 +325,7 @@ namespace MediaViewer.Torrent
             }
             set
             {
-                totalProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref totalProgressMax, value);             
             }
         }
 
@@ -360,8 +339,7 @@ namespace MediaViewer.Torrent
             }
             set
             {
-                itemProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgress, value);              
             }
         }
 
@@ -375,8 +353,7 @@ namespace MediaViewer.Torrent
             }
             set
             {
-                itemProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgressMax, value);                
             }
         }
 
@@ -387,8 +364,7 @@ namespace MediaViewer.Torrent
             get { return itemInfo; }
             set
             {
-                itemInfo = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemInfo, value);       
             }
         }
 
@@ -399,8 +375,7 @@ namespace MediaViewer.Torrent
             get { return infoMessages; }
             set
             {
-                infoMessages = value;
-                NotifyPropertyChanged();
+                SetProperty(ref infoMessages, value);          
             }
         }
 
@@ -414,8 +389,7 @@ namespace MediaViewer.Torrent
             }
             set
             {
-                windowTitle = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowTitle, value);             
             }
         }
 
@@ -430,7 +404,7 @@ namespace MediaViewer.Torrent
             set
             {
                 windowIcon = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowIcon, value);               
             }
         }
 

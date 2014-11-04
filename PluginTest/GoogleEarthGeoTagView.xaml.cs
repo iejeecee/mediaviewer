@@ -44,7 +44,7 @@ namespace PluginTest
         {
             if (e.Key == Key.Enter)
             {
-                ViewModel.SearchCommand.DoExecute();
+                ViewModel.SearchCommand.Execute();
             }
         }
     }

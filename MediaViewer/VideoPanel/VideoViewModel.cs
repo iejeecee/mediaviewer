@@ -2,7 +2,7 @@
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
 using MediaViewer.Pager;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -19,14 +19,19 @@ using VideoPlayerControl;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using MediaViewer.Settings;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System.IO;
+using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Regions;
+using MediaViewer.MediaGrid;
+using MediaViewer.MediaFileBrowser;
 
 namespace MediaViewer.VideoPanel
 {
 
-    public class VideoViewModel : ObservableObject, IDisposable
+    public class VideoViewModel : BindableBase, IDisposable, IMediaFileBrowserContentViewModel
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -105,10 +110,10 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            SeekCommand = new Command<double>((pos) => {
+            SeekCommand = new Command<double?>((pos) => {
 
                 if (addCommandToQueue(SeekCommand, pos) == true) return;
-                videoPlayer.seek(pos); 
+                videoPlayer.seek(pos.Value); 
 
             }, false);
 
@@ -144,8 +149,8 @@ namespace MediaViewer.VideoPanel
         public bool IsInitialized
         {
             get { return isInitialized; }
-            private set { isInitialized = value;
-            NotifyPropertyChanged();
+            private set {  
+            SetProperty(ref isInitialized, value);
             }
         }
 
@@ -218,7 +223,7 @@ namespace MediaViewer.VideoPanel
             // cleanup unmanaged
             if (videoPlayer != null)
             {
-                CloseCommand.DoExecute();
+                CloseCommand.Execute();
 
                 videoPlayer.StateChanged -= videoPlayer_StateChanged;
                 videoPlayer.PositionSecondsChanged -= videoPlayer_PositionSecondsChanged;
@@ -244,7 +249,7 @@ namespace MediaViewer.VideoPanel
         {
             get { return videoPlayer.ScreenShotLocation; }
             set { videoPlayer.ScreenShotLocation = value;
-            NotifyPropertyChanged();
+                OnPropertyChanged("ScreenShotLocation");           
             }
         }
 
@@ -254,7 +259,7 @@ namespace MediaViewer.VideoPanel
             set
             {
                 videoPlayer.ScreenShotName = value;
-                NotifyPropertyChanged();
+                OnPropertyChanged("ScreenShotName");                
             }
         }
 
@@ -263,8 +268,8 @@ namespace MediaViewer.VideoPanel
         public int DurationSeconds
         {
             get { return durationSeconds; }
-            set { durationSeconds = value;
-            NotifyPropertyChanged();
+            set {
+                SetProperty(ref durationSeconds, value);
             }
         }
 
@@ -278,8 +283,9 @@ namespace MediaViewer.VideoPanel
         public int PositionSeconds
         {
             get { return positionSeconds; }
-            set { positionSeconds = value;
-            NotifyPropertyChanged();
+            set {
+                positionSeconds = value;
+                OnPropertyChanged("PositionSeconds");
             }
         }
 
@@ -293,8 +299,8 @@ namespace MediaViewer.VideoPanel
         public VideoState VideoState
         {
             get { return videoState; }
-            set { videoState = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref videoState, value);
             }
         }
 
@@ -306,42 +312,42 @@ namespace MediaViewer.VideoPanel
             {
                 case VideoState.OPEN:
                     {
-                        playCommand.CanExecute = true;
-                        pauseCommand.CanExecute = false;
-                        screenShotCommand.CanExecute = false;
-                        closeCommand.CanExecute = true;
-                        seekCommand.CanExecute = false;
-                        frameByFrameCommand.CanExecute = false;
+                        playCommand.IsExecutable = true;
+                        pauseCommand.IsExecutable = false;
+                        screenShotCommand.IsExecutable = false;
+                        closeCommand.IsExecutable = true;
+                        seekCommand.IsExecutable = false;
+                        frameByFrameCommand.IsExecutable = false;
                         break;
                     }
                 case VideoState.PLAYING:
                     {
-                        playCommand.CanExecute = false;
-                        pauseCommand.CanExecute = true;
-                        screenShotCommand.CanExecute = true;
-                        closeCommand.CanExecute = true;
-                        seekCommand.CanExecute = true;
-                        frameByFrameCommand.CanExecute = true;
+                        playCommand.IsExecutable = false;
+                        pauseCommand.IsExecutable = true;
+                        screenShotCommand.IsExecutable = true;
+                        closeCommand.IsExecutable = true;
+                        seekCommand.IsExecutable = true;
+                        frameByFrameCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.PAUSED:
                     {
-                        playCommand.CanExecute = true;
-                        pauseCommand.CanExecute = false;
-                        screenShotCommand.CanExecute = true;
-                        closeCommand.CanExecute = true;
-                        seekCommand.CanExecute = true;
-                        frameByFrameCommand.CanExecute = true;
+                        playCommand.IsExecutable = true;
+                        pauseCommand.IsExecutable = false;
+                        screenShotCommand.IsExecutable = true;
+                        closeCommand.IsExecutable = true;
+                        seekCommand.IsExecutable = true;
+                        frameByFrameCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.CLOSED:
                     {
-                        playCommand.CanExecute = true;
-                        pauseCommand.CanExecute = false;
-                        screenShotCommand.CanExecute = false;
-                        closeCommand.CanExecute = false;
-                        seekCommand.CanExecute = false;
-                        frameByFrameCommand.CanExecute = false;
+                        playCommand.IsExecutable = true;
+                        pauseCommand.IsExecutable = false;
+                        screenShotCommand.IsExecutable = false;
+                        closeCommand.IsExecutable = false;
+                        seekCommand.IsExecutable = false;
+                        frameByFrameCommand.IsExecutable = false;
                         break;
                     }
             }
@@ -397,9 +403,9 @@ namespace MediaViewer.VideoPanel
             set { screenShotCommand = value; }
         }
 
-        Command<double> seekCommand;
+        Command<double?> seekCommand;
 
-        public Command<double> SeekCommand
+        public Command<double?> SeekCommand
         {
             get { return seekCommand; }
             set { seekCommand = value; }
@@ -417,8 +423,8 @@ namespace MediaViewer.VideoPanel
 
         public int MaxVolume        
         {
-            private set { maxVolume = value;
-            NotifyPropertyChanged();
+            private set {  
+                SetProperty(ref maxVolume, value);
             }
             get { return maxVolume; }
         }
@@ -427,8 +433,8 @@ namespace MediaViewer.VideoPanel
 
         public int MinVolume
         {
-            private set { minVolume = value;
-            NotifyPropertyChanged();
+            private set {  
+             SetProperty(ref minVolume, value);
             }
             get { return minVolume; }
         }
@@ -438,9 +444,10 @@ namespace MediaViewer.VideoPanel
         public double Volume
         {
             set
-            {
-                volume = videoPlayer.Volume = value;
-                NotifyPropertyChanged();
+            {   
+                videoPlayer.Volume = value;
+
+                SetProperty(ref volume, value);
             }
             get
             {
@@ -454,8 +461,8 @@ namespace MediaViewer.VideoPanel
         {
             set
             {
-                isMuted = videoPlayer.IsMuted = value;
-                NotifyPropertyChanged();
+                videoPlayer.IsMuted = value;
+                SetProperty(ref isMuted, value);
             }
             get
             {
@@ -468,8 +475,8 @@ namespace MediaViewer.VideoPanel
         public bool HasAudio
         {
             get { return hasAudio; }
-            set { hasAudio = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref hasAudio, value);
             }
         }                
 
@@ -482,10 +489,47 @@ namespace MediaViewer.VideoPanel
                 return currentLocation;
             }
             protected set
-            {
-                currentLocation = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref currentLocation, value);
             }
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            if (navigationContext.Uri.Equals(new Uri(typeof(MediaGridView).FullName, UriKind.Relative)))
+            {
+
+                CloseCommand.Execute();
+            }
+
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(videoView_MediaSelectionEvent);
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            String location = (String)navigationContext.Parameters["location"];
+
+            if (!String.IsNullOrEmpty(location))
+            {
+                OpenCommand.Execute(location);
+                PlayCommand.Execute();
+
+            }
+            else
+            {
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentLocation == null ? "" : CurrentLocation);
+            }
+
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
+
+        }
+
+        private void videoView_MediaSelectionEvent(MediaFileItem item)
+        {
+            if (String.Equals(CurrentLocation, item.Location)) return;
+
+            OpenCommand.Execute(item.Location);
+            PlayCommand.Execute();
         }
     }
 }

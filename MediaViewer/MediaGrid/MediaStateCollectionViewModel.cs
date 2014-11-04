@@ -1,6 +1,6 @@
 ﻿using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.MediaGrid
 {
-    public class MediaStateCollectionViewModel : ObservableObject
+    public class MediaStateCollectionViewModel : BindableBase
     {
         IMediaState mediaState;
 
@@ -28,8 +28,7 @@ namespace MediaViewer.MediaGrid
             get { return mediaStateCollectionView; }
             protected set
             {
-                mediaStateCollectionView = value;
-                NotifyPropertyChanged();
+                SetProperty(ref mediaStateCollectionView, value);              
             }
         }
 
@@ -54,8 +53,7 @@ namespace MediaViewer.MediaGrid
             get { return imageGridInfo; }
             set
             {
-                imageGridInfo = value;
-                NotifyPropertyChanged();
+                SetProperty(ref imageGridInfo, value);             
             }
         }
 

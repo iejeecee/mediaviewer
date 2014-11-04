@@ -2,7 +2,9 @@
 using MediaViewer.Logging;
 using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
-using MvvmFoundation.Wpf;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,7 +18,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.DirectoryPicker
 {
-    class DirectoryPickerViewModel : CloseableObservableObject
+    class DirectoryPickerViewModel : CloseableBindableBase
     {    
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -64,9 +66,8 @@ namespace MediaViewer.DirectoryPicker
             }
 
             set
-            {
-                infoString = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref infoString, value);
             }
 
         }
@@ -101,11 +102,10 @@ namespace MediaViewer.DirectoryPicker
             get { return selectedItems; }
             set
             {
-                selectedItems = value;
+                SetProperty(ref selectedItems, value);              
                              
                 updateInfoString();
                
-                NotifyPropertyChanged();
             }
         }
 
@@ -115,9 +115,8 @@ namespace MediaViewer.DirectoryPicker
         {
             get { return movePath; }
             set
-            {
-                movePath = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref movePath, value);
             }
         }
         ObservableCollection<String> movePathHistory;
@@ -126,9 +125,8 @@ namespace MediaViewer.DirectoryPicker
         {
             get { return movePathHistory; }
             set
-            {
-                movePathHistory = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref movePathHistory, value);
             }
         }
     
@@ -195,7 +193,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 infoString = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
 
         }
@@ -234,7 +232,7 @@ namespace MediaViewer.DirectoryPicker
                              
                 updateInfoString();
                
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
 
@@ -246,7 +244,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 movePath = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
         ObservableCollection<String> movePathHistory;
@@ -257,7 +255,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 movePathHistory = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
 
@@ -284,7 +282,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 renameFileName = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
         ObservableCollection<String> renameFileNameHistory;
@@ -303,7 +301,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 renameExtension = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
         ObservableCollection<String> renameExtensionHistory;
@@ -330,7 +328,7 @@ namespace MediaViewer.DirectoryPicker
             set
             {
                 modeList = value;
-                NotifyPropertyChanged();
+                SetProperty(ref qqq, value);
             }
         }
 
@@ -384,8 +382,8 @@ namespace MediaViewer.DirectoryPicker
                     await Task.Run(method, progress.CancellationToken);
                 }
 
-                progress.OkCommand.CanExecute = true;
-                progress.CancelCommand.CanExecute = false;
+                progress.OkCommand.IsExecutable = true;
+                progress.CancelCommand.IsExecutable = false;
             }
             finally
             {

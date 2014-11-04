@@ -1,5 +1,5 @@
 ﻿using MediaViewer.ImagePanel;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;

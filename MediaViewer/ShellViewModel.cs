@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.GlobalEvents;
+﻿using MediaViewer.Model.Global.Events;
 using MediaViewer.MediaGrid;
 using MediaViewer.ImagePanel;
 using MediaViewer.MediaFileBrowser;
@@ -6,7 +6,7 @@ using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.VideoPanel;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,7 +17,7 @@ using MediaViewer.Model.Media.File;
 
 namespace MediaViewer
 {
-    public class ShellViewModel : ObservableObject
+    public class ShellViewModel : BindableBase
     {
         public IRegionManager RegionManager { get; set; }
         public IEventAggregator EventAggregator { get; set; }
@@ -29,8 +29,7 @@ namespace MediaViewer
             get { return imageViewModel; }
             private set
             {
-                imageViewModel = value;
-                NotifyPropertyChanged();
+                SetProperty(ref imageViewModel, value);            
             }
         }
 
@@ -41,8 +40,7 @@ namespace MediaViewer
             get { return imageMediaStackPanelViewModel; }
             set
             {
-                imageMediaStackPanelViewModel = value;
-                NotifyPropertyChanged();
+                SetProperty(ref imageMediaStackPanelViewModel, value);             
             }
         }
 
@@ -53,8 +51,7 @@ namespace MediaViewer
             get { return videoViewModel; }
             private set
             {
-                videoViewModel = value;
-                NotifyPropertyChanged();
+                SetProperty(ref videoViewModel, value);              
             }
         }
 
@@ -65,8 +62,7 @@ namespace MediaViewer
             get { return videoMediaStackPanelViewModel; }
             set
             {
-                videoMediaStackPanelViewModel = value;
-                NotifyPropertyChanged();
+                SetProperty(ref videoMediaStackPanelViewModel, value);           
             }
         }
 
@@ -77,8 +73,7 @@ namespace MediaViewer
             get { return mediaFileBrowserViewModel; }
             private set
             {
-                mediaFileBrowserViewModel = value;
-                NotifyPropertyChanged();
+                SetProperty(ref mediaFileBrowserViewModel, value);            
             }
         }
 
@@ -120,6 +115,12 @@ namespace MediaViewer
 
         public void navigateToImageView(String location = null)
         {
+            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is ImageView)
+            {
+                //active view is already imageview
+                return;
+            }
+
             Uri ImageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
@@ -139,23 +140,34 @@ namespace MediaViewer
 
         public void navigateToMediaFileBrowser()
         {
+            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is MediaFileBrowserView)
+            {
+                //active view is already mediafilebrowser
+                return;
+            }
+
             Uri MediaFileBrowserViewUri = new Uri(typeof(MediaFileBrowserView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
 
             navigationParams.Add("viewModel", MediaFileBrowserViewModel);
-
+           
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, MediaFileBrowserViewUri, navigationParams);
 
             Uri MediaFileBrowserToolbarViewUri = new Uri(typeof(MediaFileBrowserToolbarView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, MediaFileBrowserToolbarViewUri, navigationParams);
-
            
         }
 
         public void navigateToVideoView(String location = null)
         {
+            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView)
+            {
+                //active view is already videoview
+                return;
+            }
+
             Uri VideoViewUri = new Uri(typeof(VideoView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();

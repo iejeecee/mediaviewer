@@ -1,4 +1,6 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,7 +11,7 @@ using System.Windows;
 
 namespace MediaViewer.Logging
 {
-    class LogViewModel : ObservableObject
+    class LogViewModel : BindableBase
     {
         const int maxLinesInLog = 100;
 
@@ -43,7 +45,7 @@ namespace MediaViewer.Logging
 
         }
 
-       
+
         Command clearLog;
 
         public Command ClearLog

@@ -91,19 +91,19 @@
                 <Style TargetType="Button">
                     <Setter Property="Content" Value="Create"></Setter>
                     <Setter Property="Command" Value="{Binding CreatePresetCommand}"/>
-                    <Setter Property="IsEnabled" Value="{Binding CreatePresetCommand.CanExecute}"/>
+                    <Setter Property="IsEnabled" Value="{Binding CreatePresetCommand.IsExecutable}"/>
                     <Setter Property="ToolTip" Value="Create a new preset"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding SelectedPreset, Converter={StaticResource isNullConverter}}" Value="true">
                             <Setter Property="Content" Value="Create"></Setter>
                             <Setter Property="Command" Value="{Binding CreatePresetCommand}"/>
-                            <Setter Property="IsEnabled" Value="{Binding CreatePresetCommand.CanExecute}"/>
+                            <Setter Property="IsEnabled" Value="{Binding CreatePresetCommand.IsExecutable}"/>
                             <Setter Property="ToolTip" Value="Create a new preset"/>
                         </DataTrigger>
                         <DataTrigger Binding="{Binding SelectedPreset, Converter={StaticResource isNullConverter}}" Value="false">
                             <Setter Property="Content" Value="Update" />
                             <Setter Property="Command" Value="{Binding UpdatePresetCommand}"/>
-                            <Setter Property="IsEnabled" Value="{Binding UpdatePresetCommand.CanExecute}"/>
+                            <Setter Property="IsEnabled" Value="{Binding UpdatePresetCommand.IsExecutable}"/>
                             <Setter Property="ToolTip" Value="Update selected preset"/>
                         </DataTrigger>
                     </Style.Triggers>

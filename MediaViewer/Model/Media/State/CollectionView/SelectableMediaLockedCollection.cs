@@ -11,12 +11,12 @@ namespace MediaViewer.Model.Media.State
 {
     public class SelectableMediaLockedCollection : LockedObservableCollection<SelectableMediaFileItem>
     {
-        override protected void addItemPropertyChangedListener(SelectableMediaFileItem item)
+        override protected void afterItemAdded(SelectableMediaFileItem item)
         {
             item.Item.PropertyChanged += item_PropertyChanged;
         }
 
-        override protected void removeItemPropertyChangedListener(SelectableMediaFileItem item)
+        override protected void beforeItemRemoved(SelectableMediaFileItem item)
         {
             item.Item.PropertyChanged -= item_PropertyChanged;
         }

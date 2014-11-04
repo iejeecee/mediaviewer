@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Model.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -29,9 +30,9 @@ namespace MediaViewer.Input
 
             DataContext = inputViewModel = new InputViewModel();
 
-            inputViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
+            inputViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((o, e) =>
             {
-                if (e.DialogMode == MvvmFoundation.Wpf.CloseableObservableObject.DialogMode.CANCEL)
+                if (e.DialogMode == CloseableBindableBase.DialogMode.CANCEL)
                 {
                     DialogResult = false;                   
                 }

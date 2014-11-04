@@ -3,7 +3,7 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,10 +19,12 @@ using MediaViewer.Settings;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataUpdateViewModel : CloseableObservableObject, ICancellableOperationProgress, IDisposable
+    class MetaDataUpdateViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
         AppSettings Settings
         {
@@ -85,14 +87,14 @@ namespace MediaViewer.MetaData
                 TokenSource.Cancel();
             });
 
-            CancelCommand.CanExecute = true;
+            CancelCommand.IsExecutable = true;
 
             OkCommand = new Command(() =>
             {
                 OnClosingRequest();
             });
 
-            OkCommand.CanExecute = false;
+            OkCommand.IsExecutable = false;
             WindowTitle = "Updating Metadata";          
         }
 
@@ -126,8 +128,8 @@ namespace MediaViewer.MetaData
 
             }, cancellationToken);
 
-            OkCommand.CanExecute = true;
-            CancelCommand.CanExecute = false;
+            OkCommand.IsExecutable = true;
+            CancelCommand.IsExecutable = false;
         }
 
         void writeMetaData(MetaDataUpdateViewModelAsyncState state)
@@ -158,10 +160,12 @@ namespace MediaViewer.MetaData
 
                         if (item.Media is UnknownMedia)
                         {
-                            // reload metaData in metadataviewmodel                          
-                            ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
-                            InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                            log.Error("Could not open file and/or read it's metadata: " + item.Location);
+                            // reload metaData in metadataviewmodel      
+                            String error = "Could not open file and/or read it's metadata: " + item.Location;
+
+                            ItemInfo = error;
+                            InfoMessages.Add(error);
+                            log.Error(error);
                         }
                     }
 
@@ -502,39 +506,17 @@ namespace MediaViewer.MetaData
             return (outputFileName);
         }
 
-        Command okCommand;
-
-        public Command OkCommand
-        {
-            get { return okCommand; }
-            set
-            {
-                okCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set
-            {
-                cancelCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        public Command OkCommand { get; set; }
+        public Command CancelCommand { get; set; }
+        
         String itemInfo;
 
         public String ItemInfo
         {
             get { return itemInfo; }
             set
-            {
-                itemInfo = value;
-                NotifyPropertyChanged();
+            {             
+                SetProperty(ref itemInfo, value);
             }
         }
 
@@ -544,9 +526,8 @@ namespace MediaViewer.MetaData
         {
             get { return infoMessages; }
             set
-            {
-                infoMessages = value;
-                NotifyPropertyChanged();
+            {             
+                SetProperty(ref infoMessages, value);
             }
         }
 
@@ -567,9 +548,8 @@ namespace MediaViewer.MetaData
                 return (totalProgress);
             }
             set
-            {
-                totalProgress = value;
-                NotifyPropertyChanged();
+            {          
+                SetProperty(ref totalProgress, value);
             }
         }
 
@@ -582,9 +562,8 @@ namespace MediaViewer.MetaData
                 return (totalProgressMax);
             }
             set
-            {
-                totalProgressMax = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref totalProgressMax, value);
             }
         }
 
@@ -597,9 +576,8 @@ namespace MediaViewer.MetaData
                 return (itemProgress);
             }
             set
-            {
-                itemProgress = value;
-                NotifyPropertyChanged();
+            {           
+                SetProperty(ref itemProgress, value);
             }
         }
 
@@ -612,9 +590,8 @@ namespace MediaViewer.MetaData
                 return (itemProgressMax);
             }
             set
-            {
-                itemProgressMax = value;
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref itemProgressMax, value);
             }
         }
        
@@ -624,9 +601,8 @@ namespace MediaViewer.MetaData
         {
             get { return windowTitle; }
             set
-            {
-                windowTitle = value;
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref windowTitle, value);
             }
         }
 
@@ -639,9 +615,8 @@ namespace MediaViewer.MetaData
                 return (windowIcon);
             }
             set
-            {
-                windowIcon = value;
-                NotifyPropertyChanged();
+            {             
+                SetProperty(ref windowIcon, value);
             }
         }
     }

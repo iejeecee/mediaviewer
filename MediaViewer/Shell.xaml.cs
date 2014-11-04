@@ -21,7 +21,7 @@ using System.Reflection;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Utils;
 using MediaViewer.Logging;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 

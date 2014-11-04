@@ -61,7 +61,7 @@
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Background="{StaticResource appBackgroundColor}">
+    <Grid x:Name="mainGrid" Background="{StaticResource appBackgroundColor}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="2*"/>
             <ColumnDefinition Width="4*"/>
@@ -78,7 +78,7 @@
                 <MediaDataGrid:MediaDataGridView RowDoubleClick="selectedMediaDataGridView_RowDoubleClick"/>
             </TabItem>
         </TabControl>
-        <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
+        <GridSplitter x:Name="leftGridSplitter" Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
@@ -105,7 +105,7 @@
                             <Button.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding ExpandCommand.CanExecute}" Value="true">
+                                        <DataTrigger Binding="{Binding ExpandCommand.IsExecutable}" Value="true">
                                             <Setter Property="ButtonBase.Command" Value="{Binding ExpandCommand}"/>
                                             <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
                                             <Setter Property="FrameworkElement.ToolTip" Value="Media View"/>
@@ -115,7 +115,7 @@
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding ContractCommand.CanExecute}" Value="true">
+                                        <DataTrigger Binding="{Binding ContractCommand.IsExecutable}" Value="true">
                                             <Setter Property="ButtonBase.Command" Value="{Binding ContractCommand}"/>
                                             <Setter Property="FrameworkElement.ToolTip" Value="Grid View"/>
                                             <Setter Property="ContentControl.Content">
@@ -139,7 +139,7 @@
             </Grid>
             <Grid/>
         </Grid>
-        <GridSplitter Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
+        <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
         <TabControl x:Name="rightTabControl"
                     regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion"                     
                     Grid.Column="2" BorderThickness="5" 

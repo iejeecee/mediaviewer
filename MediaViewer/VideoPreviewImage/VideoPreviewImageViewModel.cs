@@ -2,8 +2,10 @@
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,7 +23,7 @@ using VideoLib;
 namespace MediaViewer.VideoPreviewImage
 {
  
-    class VideoPreviewImageViewModel : CloseableObservableObject
+    class VideoPreviewImageViewModel : CloseableBindableBase
     {
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -95,8 +97,8 @@ namespace MediaViewer.VideoPreviewImage
         public int MaxPreviewImageWidth
         {
             get { return maxPreviewImageWidth; }
-            set { maxPreviewImageWidth = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref maxPreviewImageWidth, value);
             }
         }
 
@@ -105,8 +107,8 @@ namespace MediaViewer.VideoPreviewImage
         public int NrRows
         {
             get { return nrRows; }
-            set { nrRows = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref nrRows, value);
             }
         }
 
@@ -117,8 +119,8 @@ namespace MediaViewer.VideoPreviewImage
             get { return isNrRowsEnabled; }
             set
             {
-                isNrRowsEnabled = value;
-
+                SetProperty(ref isNrRowsEnabled, value);
+               
                 if (IsNrRowsEnabled == true && IsCaptureIntervalSecondsEnabled == true)
                 {
                     IsCaptureIntervalSecondsEnabled = false;
@@ -127,8 +129,7 @@ namespace MediaViewer.VideoPreviewImage
                 {
                     IsCaptureIntervalSecondsEnabled = true;
                 }               
-                
-                NotifyPropertyChanged();
+                                
             }
         }
 
@@ -137,8 +138,8 @@ namespace MediaViewer.VideoPreviewImage
         public bool IsAddHeader
         {
             get { return isAddHeader; }
-            set { isAddHeader = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref isAddHeader, value);
             }
         }
 
@@ -147,8 +148,8 @@ namespace MediaViewer.VideoPreviewImage
         public int NrColumns
         {
             get { return nrColumns; }
-            set { nrColumns = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref nrColumns, value);
             }
         }
 
@@ -157,8 +158,8 @@ namespace MediaViewer.VideoPreviewImage
         public int JpegQuality
         {
             get { return jpegQuality; }
-            set { jpegQuality = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref jpegQuality, value);
             }
         }
 
@@ -167,8 +168,8 @@ namespace MediaViewer.VideoPreviewImage
         public int CaptureIntervalSeconds
         {
             get { return captureIntervalSeconds; }
-            set { captureIntervalSeconds = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref captureIntervalSeconds, value);
             }
         }
 
@@ -179,8 +180,8 @@ namespace MediaViewer.VideoPreviewImage
             get { return isCaptureIntervalSecondsEnabled; }
             set
             {
-                isCaptureIntervalSecondsEnabled = value;
-
+                SetProperty(ref isCaptureIntervalSecondsEnabled, value);
+               
                 if (isCaptureIntervalSecondsEnabled == true && IsNrRowsEnabled == true)
                 {
                     IsNrRowsEnabled = false;
@@ -189,8 +190,7 @@ namespace MediaViewer.VideoPreviewImage
                 {
                     IsNrRowsEnabled = true;
                 }
-                                
-                NotifyPropertyChanged();
+                                               
             }
         }
 
@@ -199,8 +199,8 @@ namespace MediaViewer.VideoPreviewImage
         public bool IsAddTags
         {
             get { return isAddTags; }
-            set { isAddTags = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isAddTags, value);
             }
         }
 
@@ -209,8 +209,8 @@ namespace MediaViewer.VideoPreviewImage
         public String Comment
         {
             get { return comment; }            
-            set { comment = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref comment, value);
             }
         }
         bool isCommentEnabled;
@@ -218,8 +218,8 @@ namespace MediaViewer.VideoPreviewImage
         public bool IsCommentEnabled
         {
             get { return isCommentEnabled; }
-            set { isCommentEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isCommentEnabled, value);
             }
         }
 
@@ -228,8 +228,8 @@ namespace MediaViewer.VideoPreviewImage
         public string OutputPath
         {
             get { return outputPath; }
-            set { outputPath = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref outputPath, value);
             }
         }
 
@@ -281,9 +281,8 @@ namespace MediaViewer.VideoPreviewImage
                 return isAddTimeStamps;
             }
             set
-            {
-                isAddTimeStamps = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref isAddTimeStamps, value);
             }
         }
     }

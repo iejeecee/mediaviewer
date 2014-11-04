@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Settings;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,10 +8,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Utils;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.MetaData
 {
-    class FilenamePresetsViewModel : CloseableObservableObject
+    class FilenamePresetsViewModel : CloseableBindableBase
     {
       
         AppSettings Settings
@@ -31,7 +33,7 @@ namespace MediaViewer.MetaData
            
             filenamePresets = Settings.FilenamePresets;
 
-            addNewPresetCommand = new Command(new Action(() =>
+            AddNewPresetCommand = new Command(new Action(() =>
             {
                 if (String.IsNullOrEmpty(NewPreset) || String.IsNullOrWhiteSpace(NewPreset)) return;
 
@@ -65,7 +67,7 @@ namespace MediaViewer.MetaData
                 OnClosingRequest(new DialogEventArgs(DialogMode.SUBMIT));
             }));
 
-            SelectCommand.CanExecute = false;
+            SelectCommand.IsExecutable = false;
 
             DeleteCommand = new Command(new Action(() =>
             {
@@ -73,19 +75,19 @@ namespace MediaViewer.MetaData
 
             }));
 
-            cancelCommand = new Command(new Action(() =>
+            CancelCommand = new Command(new Action(() =>
                 {
 
                     OnClosingRequest(new DialogEventArgs(DialogMode.CANCEL));
                 }));
 
-            DeleteCommand.CanExecute = false;
+            DeleteCommand.IsExecutable = false;
 
-            insertCounterCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertCounterCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + CounterValue + "\"");
+                    NewPreset = NewPreset.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.counterMarker + CounterValue + "\"");
                 }
                 catch (Exception e)
                 {
@@ -94,11 +96,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertFilenameCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertFilenameCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
+                    NewPreset = NewPreset.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
                 }
                 catch (Exception e)
                 {
@@ -107,11 +109,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertResolutionCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertResolutionCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
+                    NewPreset = NewPreset.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
                 }
                 catch (Exception e)
                 {
@@ -120,11 +122,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertDateCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertDateCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.dateMarker
+                    NewPreset = NewPreset.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.dateMarker
                         + SelectedDateFormat.Substring(0, SelectedDateFormat.IndexOf(':')) + "\"");
                 }
                 catch (Exception e)
@@ -134,11 +136,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertReplaceCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertReplaceCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    NewPreset = NewPreset.Insert(startIndex, "\"" + MetaDataUpdateViewModel.replaceMarker + MatchString + ";" + ReplaceString + "\"");
+                    NewPreset = NewPreset.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.replaceMarker + MatchString + ";" + ReplaceString + "\"");
                 }
                 catch (Exception e)
                 {
@@ -166,9 +168,8 @@ namespace MediaViewer.MetaData
         {
             get { return selectedDateFormat; }
             set
-            {
-                selectedDateFormat = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref selectedDateFormat, value);
             }
         }
 
@@ -187,24 +188,23 @@ namespace MediaViewer.MetaData
             get { return counterValue; }
             set
             {
-                counterValue = value;
-
+                SetProperty(ref counterValue, value);
+             
                 if (counterValue != null)
                 {
                     int temp;
                     bool isInteger = int.TryParse(counterValue, out temp);
                     if (!isInteger)
                     {
-                        InsertCounterCommand.CanExecute = false;
+                        InsertCounterCommand.IsExecutable = false;
                         throw new ArgumentException("Counter value must be a number");
                     }
                     else
                     {
-                        InsertCounterCommand.CanExecute = true;
+                        InsertCounterCommand.IsExecutable = true;
                     }
                 }
-
-                NotifyPropertyChanged();
+                
             }
         }
 
@@ -214,9 +214,8 @@ namespace MediaViewer.MetaData
         {
             get { return newPreset; }
             set
-            {
-                newPreset = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref newPreset, value);
             }
         }
 
@@ -227,11 +226,10 @@ namespace MediaViewer.MetaData
             get { return selectedPreset; }
             set
             {
-                selectedPreset = value;
+                SetProperty(ref selectedPreset, value);
+               
+                DeleteCommand.IsExecutable = SelectCommand.IsExecutable = (selectedPreset == null) ? false : true;
 
-                deleteCommand.CanExecute = selectCommand.CanExecute = (selectedPreset == null) ? false : true;
-
-                NotifyPropertyChanged();
             }
         }
 
@@ -242,24 +240,23 @@ namespace MediaViewer.MetaData
             get { return matchString; }
             set
             {
-                matchString = value;
+                SetProperty(ref matchString, value);             
 
                 if (String.IsNullOrEmpty(matchString))
                 {
-                    InsertReplaceCommand.CanExecute = false;
-                    NotifyPropertyChanged();
-                    return;
-                }
+                    InsertReplaceCommand.IsExecutable = false;
 
-                if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
+                }
+                else if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
                 {
-                    InsertReplaceCommand.CanExecute = false;
+                    InsertReplaceCommand.IsExecutable = false;
                     throw new ArgumentException("Filename string contains illegal characters");
                 }
-               
-                InsertReplaceCommand.CanExecute = true;
-              
-                NotifyPropertyChanged();
+                else
+                {
+                    InsertReplaceCommand.IsExecutable = true;
+                }
+                             
             }
         }
 
@@ -270,97 +267,34 @@ namespace MediaViewer.MetaData
             get { return replaceString; }
             set
             {
-                replaceString = value;
+                SetProperty(ref replaceString, value);
 
                 if (String.IsNullOrEmpty(matchString))
                 {
-                    InsertReplaceCommand.CanExecute = false;
-                    NotifyPropertyChanged();
-                    return;
+                    InsertReplaceCommand.IsExecutable = false;
                 }
-
-                if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
+                else if (FileUtils.containsIllegalFileNameChars(matchString) || FileUtils.containsIllegalFileNameChars(replaceString))
                 {
-                    InsertReplaceCommand.CanExecute = false;
+                    InsertReplaceCommand.IsExecutable = false;
                     throw new ArgumentException("Filename string contains illegal characters");
                 }
-
-                InsertReplaceCommand.CanExecute = true;
-
-                NotifyPropertyChanged();                             
+                else
+                {
+                    InsertReplaceCommand.IsExecutable = true;
+                }
+                                          
             }
         }
 
-        Command addNewPresetCommand;
-
-        public Command AddNewPresetCommand
-        {
-            get { return addNewPresetCommand; }
-            set { addNewPresetCommand = value; }
-        }
-
-        Command deleteCommand;
-
-        public Command DeleteCommand
-        {
-            get { return deleteCommand; }
-            set { deleteCommand = value; }
-        }
-
-        Command selectCommand;
-
-        public Command SelectCommand
-        {
-            get { return selectCommand; }
-            set { selectCommand = value; }
-        }
-
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set { cancelCommand = value; }
-        }
-
-        Command<int> insertCounterCommand;
-
-        public Command<int> InsertCounterCommand
-        {
-            get { return insertCounterCommand; }
-            set { insertCounterCommand = value; }
-        }
-
-        Command<int> insertDateCommand;
-
-        public Command<int> InsertDateCommand
-        {
-            get { return insertDateCommand; }
-            set { insertDateCommand = value; }
-        }
-
-        Command<int> insertFilenameCommand;
-
-        public Command<int> InsertFilenameCommand
-        {
-            get { return insertFilenameCommand; }
-            set { insertFilenameCommand = value; }
-        }
-
-        Command<int> insertResolutionCommand;
-
-        public Command<int> InsertResolutionCommand
-        {
-            get { return insertResolutionCommand; }
-            set { insertResolutionCommand = value; }
-        }
-
-        Command<int> insertReplaceCommand;
-
-        public Command<int> InsertReplaceCommand
-        {
-            get { return insertReplaceCommand; }
-            set { insertReplaceCommand = value; }
-        }
+        public Command AddNewPresetCommand { get; set; }
+        public Command DeleteCommand  { get; set; }       
+        public Command SelectCommand  { get; set; }
+        public Command CancelCommand  { get; set; }     
+        public Command<int?> InsertCounterCommand  { get; set; }
+        public Command<int?> InsertDateCommand { get; set; }
+        public Command<int?> InsertFilenameCommand { get; set; }
+        public Command<int?> InsertResolutionCommand { get; set; }
+        public Command<int?> InsertReplaceCommand  { get; set; }
+     
     }
 }

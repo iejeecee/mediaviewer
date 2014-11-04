@@ -1,10 +1,10 @@
-﻿using MediaViewer.Model.GlobalEvents;
+﻿using MediaViewer.Model.Global.Events;
 using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -144,9 +144,11 @@ namespace MediaViewer.VideoPanel
         }
 
         private void videoPlayer_DoubleClick(object sender, EventArgs e)
-        {
+        {           
             if (uiGrid.Visibility == Visibility.Visible)
             {
+                if (ViewModel.VideoState == VideoPlayerControl.VideoState.CLOSED) return;
+
                 EventAggregator.GetEvent<ToggleFullScreenEvent>().Publish(true);
             }
             else
@@ -160,8 +162,8 @@ namespace MediaViewer.VideoPanel
         {
             try
             {
-                ViewModel.OpenCommand.DoExecute(location);
-                ViewModel.PlayCommand.DoExecute();
+                ViewModel.OpenCommand.Execute(location);
+                ViewModel.PlayCommand.Execute();
             }
             catch (Exception e)
             {
@@ -193,19 +195,19 @@ namespace MediaViewer.VideoPanel
 
             int sliderValue = (int)p;
 
-            ViewModel.SeekCommand.DoExecute(sliderValue);
+            ViewModel.SeekCommand.Execute(sliderValue);
 
             updateTimeLineSlider = true;
         }
 
         private void playButton_Checked(object sender, RoutedEventArgs e)
         {
-            ViewModel.PlayCommand.DoExecute();
+            ViewModel.PlayCommand.Execute();
         }
 
         private void playButton_Unchecked(object sender, RoutedEventArgs e)
         {
-            ViewModel.PauseCommand.DoExecute();
+            ViewModel.PauseCommand.Execute();
         }
 
         public bool KeepAlive
@@ -219,42 +221,18 @@ namespace MediaViewer.VideoPanel
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
-        {           
-            if(navigationContext.Uri.Equals(new Uri(typeof(MediaGridView).FullName,UriKind.Relative))) {
-
-                ViewModel.CloseCommand.DoExecute();
-            }
-
-            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(videoView_MediaSelectionEvent);
+        {
+            ViewModel.OnNavigatedFrom(navigationContext);           
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             ViewModel = (VideoViewModel)navigationContext.Parameters["viewModel"];
             DataContext = ViewModel;
-            
-            String location = (String)navigationContext.Parameters["location"];
-           
-            if (!String.IsNullOrEmpty(location))
-            {
-                ViewModel.OpenCommand.DoExecute(location);
-                ViewModel.PlayCommand.DoExecute();
 
-            } else {
-             
-                EventAggregator.GetEvent<TitleChangedEvent>().Publish(ViewModel.CurrentLocation == null ? "" : ViewModel.CurrentLocation);                
-            }
-
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
-            
+            ViewModel.OnNavigatedTo(navigationContext);                        
         }
 
-        private void videoView_MediaSelectionEvent(MediaFileItem item)
-        {          
-            if (String.Equals(ViewModel.CurrentLocation,item.Location)) return;
-
-            ViewModel.OpenCommand.DoExecute(item.Location);
-            ViewModel.PlayCommand.DoExecute();            
-        }
+        
     }
 }

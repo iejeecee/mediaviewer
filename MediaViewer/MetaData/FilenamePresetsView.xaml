@@ -24,9 +24,9 @@
                 <ListBox Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                            ItemsSource="{Binding FilenamePresets}" SelectedItem="{Binding SelectedPreset}" ScrollViewer.VerticalScrollBarVisibility="Visible"/>
                 <Button Grid.Row="1" Content="Delete" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="5,5,85,5"
-                        Command="{Binding DeleteCommand}" IsEnabled="{Binding DeleteCommand.CanExecute}"/>
+                        Command="{Binding DeleteCommand}" IsEnabled="{Binding DeleteCommand.IsExecutable}"/>
                 <Button Grid.Row="1" Content="Select" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="5,5,165,5"
-                        Command="{Binding SelectCommand}" IsEnabled="{Binding SelectCommand.CanExecute}"/>
+                        Command="{Binding SelectCommand}" IsEnabled="{Binding SelectCommand.IsExecutable}"/>
                 <Button Grid.Row="1" Content="Cancel" HorizontalAlignment="Right" VerticalAlignment="Bottom" Width="75" Margin="5,5,5,5"
                         Command="{Binding CancelCommand}"/>
             </Grid>
@@ -53,7 +53,7 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button Grid.Row="0" Grid.Column="0" Content="Insert Counter" HorizontalAlignment="Left" Margin="5,5,5,5" Width="90" Click="insertCounterButton_Click"
-                        IsEnabled="{Binding InsertCounterCommand.CanExecute}" ToolTip="Insert a incrementing counter starting at index with any number of leading zero's"/>
+                        IsEnabled="{Binding InsertCounterCommand.IsExecutable}" ToolTip="Insert a incrementing counter starting at index with any number of leading zero's"/>
                     <Label Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Content="Index"/>
                     <TextBox Grid.Row="0" Grid.Column="2" HorizontalAlignment="Stretch" Margin="5,5,5,5">
                         <TextBox.Text>
@@ -73,7 +73,7 @@
                     <Button Grid.Row="3" Grid.Column="0" Content="Insert Resolution" HorizontalAlignment="Left" Margin="5,5,5,5" Width="90" Click="insertResolution_Click"
                         ToolTip="Insert the resolution of the file as WidthxHeight"/>
                     <Button Grid.Row="4" Grid.Column="0" Content="Insert Replace" HorizontalAlignment="Left" Margin="5,5,5,5" Width="90" Click="insertReplace_Click"
-                        ToolTip="Insert the resolution of the file as WidthxHeight" IsEnabled="{Binding InsertReplaceCommand.CanExecute}"/>
+                        ToolTip="Insert the resolution of the file as WidthxHeight" IsEnabled="{Binding InsertReplaceCommand.IsExecutable}"/>
                     <Label Grid.Row="4" Grid.Column="1" Content="Change" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                     <Grid Grid.Row="4" Grid.Column="2">
                         <Grid.ColumnDefinitions>

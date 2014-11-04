@@ -55,33 +55,30 @@ namespace MediaViewer.Model.Utils
 
         public static string formatSizeBytes(long sizeBytes)
         {
-
+            long TB = 1099511627776;
             long GB = 1073741824;
             long MB = 1048576;
             long KB = 1024;
             string output;
 
-            if (sizeBytes > GB)
+            if (sizeBytes > TB)
             {
-
+                output = (sizeBytes / (double)TB).ToString("0.00") + " TB";
+            }
+            else if (sizeBytes > GB)
+            {
                 output = (sizeBytes / (double)GB).ToString("0.00") + " GB";
-
             }
             else if (sizeBytes > MB)
             {
-
                 output = (sizeBytes / (double)MB).ToString("0.00") + " MB";
-
             }
             else if (sizeBytes > KB)
             {
-
                 output = (sizeBytes / (double)KB).ToString("0") + " KB";
-
             }
             else
             {
-
                 output = sizeBytes.ToString() + " Bytes";
             }
 

@@ -1,4 +1,5 @@
-﻿using MediaViewer.Settings;
+﻿using MediaViewer.Model.Mvvm;
+using MediaViewer.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,10 +29,10 @@ namespace MediaViewer.MetaData
             InitializeComponent();
             DataContext = filenamePresetsViewModel = new FilenamePresetsViewModel(AppSettings.Instance);
 
-            filenamePresetsViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s, e) =>
+            filenamePresetsViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s, e) =>
             {
 
-                if (e.DialogMode == MvvmFoundation.Wpf.CloseableObservableObject.DialogMode.CANCEL)
+                if (e.DialogMode == CloseableBindableBase.DialogMode.CANCEL)
                 {
                     this.DialogResult = false;
                 }
@@ -47,32 +48,32 @@ namespace MediaViewer.MetaData
         private void insertCounterButton_Click(object sender, RoutedEventArgs e)
         {
             int index = presetTextBox.CaretIndex;
-            filenamePresetsViewModel.InsertCounterCommand.DoExecute(index);
+            filenamePresetsViewModel.InsertCounterCommand.Execute(index);
         }
 
         private void insertFilenameButton_Click(object sender, RoutedEventArgs e)
         {
             int index = presetTextBox.CaretIndex;
-            filenamePresetsViewModel.InsertFilenameCommand.DoExecute(index);
+            filenamePresetsViewModel.InsertFilenameCommand.Execute(index);
         }
 
         private void insertDate_Click(object sender, RoutedEventArgs e)
         {
             int index = presetTextBox.CaretIndex;
-            filenamePresetsViewModel.InsertDateCommand.DoExecute(index);
+            filenamePresetsViewModel.InsertDateCommand.Execute(index);
         }
 
         private void insertResolution_Click(object sender, RoutedEventArgs e)
         {
             int index = presetTextBox.CaretIndex;
-            filenamePresetsViewModel.InsertResolutionCommand.DoExecute(index);
+            filenamePresetsViewModel.InsertResolutionCommand.Execute(index);
 
         }
 
         private void insertReplace_Click(object sender, RoutedEventArgs e)
         {
             int index = presetTextBox.CaretIndex;
-            filenamePresetsViewModel.InsertReplaceCommand.DoExecute(index);
+            filenamePresetsViewModel.InsertReplaceCommand.Execute(index);
 
         }
            

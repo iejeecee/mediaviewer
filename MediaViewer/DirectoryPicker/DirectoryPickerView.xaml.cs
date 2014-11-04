@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using MediaViewer.ExtensionMethods;
+using MediaViewer.Model.Mvvm;
 
 namespace MediaViewer.DirectoryPicker
 {
@@ -31,9 +32,9 @@ namespace MediaViewer.DirectoryPicker
             DataContext = directoryPickerViewModel;
             directoryBrowser.DataContext = directoryPickerViewModel;
 
-            directoryPickerViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s,e) => {
+            directoryPickerViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s,e) => {
 
-                if (e.DialogMode == MvvmFoundation.Wpf.CloseableObservableObject.DialogMode.CANCEL)
+                if (e.DialogMode == CloseableBindableBase.DialogMode.CANCEL)
                 {
                     this.DialogResult = false;
                 }

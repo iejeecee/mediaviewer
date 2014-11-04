@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.GlobalEvents
+namespace MediaViewer.Model.Global.Events
 {   
     public class TitleChangedEvent : PubSubEvent<String> { }
     public class ViewMediaEvent : PubSubEvent<String> { }

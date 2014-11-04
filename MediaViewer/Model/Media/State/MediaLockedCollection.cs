@@ -1,6 +1,6 @@
 ﻿using MediaViewer.Model.Collections;
 using MediaViewer.Model.Media.File;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -93,24 +93,7 @@ namespace MediaViewer.Model.Media.State
             get { return autoLoadItems; }           
         }
           
-        override protected void InsertItem(int index, MediaFileItem newItem)
-        {
-            base.InsertItem(index, newItem);
 
-            if (AutoLoadItems)
-            {
-                if (newItem.ItemState == MediaFileItemState.LOADED)
-                {
-                    NrLoadedItems++;
-                }
-                else
-                {
-                    itemLoader.add(newItem);
-                }
-            }
-                          
-        }
-               
         /// <summary>
         /// Remove all elements from the collection
         /// </summary>
@@ -125,48 +108,7 @@ namespace MediaViewer.Model.Media.State
             }                
         }
 
-        protected override void RemoveItem(int index)
-        {                                     
-            if (AutoLoadItems)
-            {
-                if (this[index].ItemState != MediaFileItemState.LOADING)
-                {
-                    NrLoadedItems--;
-                }
-                itemLoader.remove(this[index]);
-            }
 
-            base.RemoveItem(index);
-                    
-        }
-
-        public void AddRange(IEnumerable<MediaFileItem> addItems)
-        {
-            foreach (MediaFileItem item in addItems)
-            {
-                Add(item);
-            }
-        }
-
-        /// <summary>
-        /// Remove all elements contained in removeItems from the collection.   
-        /// Returns the actually removed items
-        /// </summary>
-        /// <param name="removeItems"></param>
-        public List<MediaFileItem> RemoveRange(IEnumerable<MediaFileItem> removeItems)
-        {
-            List<MediaFileItem> removed = new List<MediaFileItem>();
-                                   
-            foreach (MediaFileItem removeItem in removeItems)
-            {
-                if(Remove(removeItem)) {
-                    removed.Add(removeItem);
-                }
-            }
-                             
-            return (removed);           
-        }
-       
         public bool RenameRange(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations)
         {                      
             bool success = true;
@@ -193,6 +135,37 @@ namespace MediaViewer.Model.Media.State
             
             return (success);
            
+        }
+
+        override protected void afterItemAdded(MediaFileItem item)
+        {
+            base.afterItemAdded(item);
+
+            if (AutoLoadItems)
+            {
+                if (item.ItemState == MediaFileItemState.LOADED)
+                {
+                    NrLoadedItems++;
+                }
+                else
+                {
+                    itemLoader.add(item);
+                }
+            }
+        }
+
+        override protected void beforeItemRemoved(MediaFileItem item)
+        {
+            base.beforeItemRemoved(item);
+
+            if (AutoLoadItems)
+            {
+                if (item.ItemState != MediaFileItemState.LOADING)
+                {
+                    NrLoadedItems--;
+                }
+                itemLoader.remove(item);
+            }
         }
                                
     }

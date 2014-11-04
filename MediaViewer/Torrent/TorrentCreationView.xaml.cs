@@ -1,4 +1,5 @@
-﻿using MediaViewer.Settings;
+﻿using MediaViewer.Model.Mvvm;
+using MediaViewer.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace MediaViewer.Torrent
     {
         TorrentCreationViewModel viewModel;
 
-        internal TorrentCreationViewModel ViewModel
+        public TorrentCreationViewModel ViewModel
         {
             get { return viewModel; }
             set { viewModel = value; }
@@ -36,7 +37,7 @@ namespace MediaViewer.Torrent
             ViewModel.ClosingRequest += ViewModel_ClosingRequest;
         }
 
-        private void ViewModel_ClosingRequest(object sender, MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs e)
+        private void ViewModel_ClosingRequest(object sender, CloseableBindableBase.DialogEventArgs e)
         {
             this.Close();
         }

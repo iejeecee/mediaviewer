@@ -25,10 +25,7 @@ d:DesignHeight="300" d:DesignWidth="300">
         <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
             <ToggleButton.Style>
                 <Style>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="EMPTY">
-                            <Setter Property="UIElement.IsEnabled" Value="false"/>
-                        </DataTrigger>
+                    <Style.Triggers>                       
                         <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                             <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
@@ -79,9 +76,6 @@ d:DesignHeight="300" d:DesignWidth="300">
                                 <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="false">
                                     <Setter Property="Border.BorderBrush" Value="Black" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="EMPTY">
-                                    <Setter Property="UIElement.Visibility" Value="Collapsed"/>
-                                </DataTrigger>
                                 <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                     <Setter Property="Border.BorderBrush" Value="{x:Null}"/>
                                 </DataTrigger>
@@ -111,7 +105,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                         <Image x:Name="image">
                             <Image.Style>
                                 <Style>
-                                    <Style.Triggers>
+                                    <Style.Triggers>                                        
                                         <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                             <Setter Property="Image.Visibility" Value="Hidden"/>
                                             <Setter Property="Image.Source" Value="{x:Null}"/>
@@ -156,11 +150,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                                     <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                         <Setter Property="UIElement.IsEnabled" Value="false"/>
                                         <Setter Property="UIElement.Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="EMPTY">
-                                        <Setter Property="UIElement.IsEnabled" Value="false"/>
-                                        <Setter Property="UIElement.Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
+                                    </DataTrigger>                                 
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>

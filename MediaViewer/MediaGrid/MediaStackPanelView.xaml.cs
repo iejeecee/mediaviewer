@@ -15,11 +15,11 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Pager;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System.ComponentModel;
 
 namespace MediaViewer.MediaGrid

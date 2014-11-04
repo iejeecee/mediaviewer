@@ -1,9 +1,11 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,7 +20,7 @@ using VideoLib;
 
 namespace MediaViewer.VideoPreviewImage
 {
-    public class VideoPreviewImageProgressViewModel : CloseableObservableObject, ICancellableOperationProgress
+    public class VideoPreviewImageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
 
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -54,8 +56,8 @@ namespace MediaViewer.VideoPreviewImage
                 tokenSource.Cancel();
             });
 
-            OkCommand.CanExecute = false;
-            CancelCommand.CanExecute = true;
+            OkCommand.IsExecutable = false;
+            CancelCommand.IsExecutable = true;
         }
 
         public async Task generatePreviews()
@@ -91,8 +93,8 @@ namespace MediaViewer.VideoPreviewImage
 
                 App.Current.Dispatcher.Invoke(() =>
                 {
-                    OkCommand.CanExecute = true;
-                    CancelCommand.CanExecute = false;
+                    OkCommand.IsExecutable = true;
+                    CancelCommand.IsExecutable = false;
                 });
             });
 
@@ -254,31 +256,9 @@ namespace MediaViewer.VideoPreviewImage
             set { videoPreview = value; }
         }
 
-
-        Command okCommand;
-
-        public Command OkCommand
-        {
-            get { return okCommand; }
-            set
-            {
-                okCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set
-            {
-                cancelCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
+        public Command OkCommand { get; set; }
+        public Command CancelCommand { get; set; }
+        
         CancellationToken cancellationToken;
 
         public CancellationToken CancellationToken
@@ -296,9 +276,8 @@ namespace MediaViewer.VideoPreviewImage
                 return (totalProgress);
             }
             set
-            {
-                totalProgress = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref totalProgress, value);
             }
         }
 
@@ -311,9 +290,8 @@ namespace MediaViewer.VideoPreviewImage
                 return (totalProgressMax);
             }
             set
-            {
-                totalProgressMax = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref totalProgressMax, value);
             }
         }
 
@@ -327,8 +305,7 @@ namespace MediaViewer.VideoPreviewImage
             }
             set
             {
-                itemProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgress, value);
             }
         }
 
@@ -341,9 +318,8 @@ namespace MediaViewer.VideoPreviewImage
                 return (itemProgressMax);
             }
             set
-            {
-                itemProgressMax = value;
-                NotifyPropertyChanged();
+            {           
+                SetProperty(ref itemProgressMax, value);
             }
         }
 
@@ -353,9 +329,8 @@ namespace MediaViewer.VideoPreviewImage
         {
             get { return itemInfo; }
             set
-            {
-                itemInfo = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref itemInfo, value);
             }
         }
 
@@ -365,9 +340,8 @@ namespace MediaViewer.VideoPreviewImage
         {
             get { return infoMessages; }
             set
-            {
-                infoMessages = value;
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref infoMessages, value);
             }
         }
 
@@ -380,9 +354,8 @@ namespace MediaViewer.VideoPreviewImage
                 return (windowTitle);
             }
             set
-            {
-                windowTitle = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref windowTitle, value);
             }
         }
 
@@ -395,9 +368,8 @@ namespace MediaViewer.VideoPreviewImage
                 return (windowIcon);
             }
             set
-            {
-                windowIcon = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref windowIcon, value);
             }
         }
     }

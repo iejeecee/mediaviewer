@@ -1,4 +1,6 @@
-﻿using MvvmFoundation.Wpf;
+﻿using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -8,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Input
 {
-    class InputViewModel : CloseableObservableObject
+    class InputViewModel : CloseableBindableBase
     {
 
         public InputViewModel()
@@ -34,8 +36,8 @@ namespace MediaViewer.Input
         public String Title
         {
             get { return title; }
-            set { title = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref title, value);
             }
         }
 
@@ -44,8 +46,8 @@ namespace MediaViewer.Input
         public String InputText
         {
             get { return inputText; }
-            set { inputText = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref inputText, value);
             }
         }
 

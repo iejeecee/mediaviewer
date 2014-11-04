@@ -1,7 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.UserControls.Relation;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -18,7 +18,7 @@ namespace MediaViewer.Search
         Images
     }
 
-    class SearchQuery : ObservableObject
+    class SearchQuery : BindableBase
     {
 
         public SearchQuery()
@@ -116,9 +116,8 @@ namespace MediaViewer.Search
         {
             get { return searchType; }
             set
-            {
-                searchType = value;
-                NotifyPropertyChanged();
+            {           
+                SetProperty(ref searchType, value);
             }
         }
 
@@ -128,9 +127,8 @@ namespace MediaViewer.Search
         {
             get { return text; }
             set
-            {
-                text = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref text, value);
             }
         }
 
@@ -163,9 +161,8 @@ namespace MediaViewer.Search
         {
             get { return videoWidthStart; }
             set
-            {
-                videoWidthStart = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref videoWidthStart, value);
             }
         }
 
@@ -175,9 +172,8 @@ namespace MediaViewer.Search
         {
             get { return videoWidthEnd; }
             set
-            {
-                videoWidthEnd = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref videoWidthEnd, value);
             }
         }
 
@@ -187,9 +183,8 @@ namespace MediaViewer.Search
         {
             get { return videoHeightStart; }
             set
-            {
-                videoHeightStart = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref videoHeightStart, value);
             }
         }
 
@@ -199,9 +194,8 @@ namespace MediaViewer.Search
         {
             get { return videoHeightEnd; }
             set
-            {
-                videoHeightEnd = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref videoHeightEnd, value);
             }
         }
 
@@ -211,9 +205,8 @@ namespace MediaViewer.Search
         {
             get { return framesPerSecondStart; }
             set
-            {
-                framesPerSecondStart = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref framesPerSecondStart, value);
             }
         }
 
@@ -223,9 +216,8 @@ namespace MediaViewer.Search
         {
             get { return framesPerSecondEnd; }
             set
-            {
-                framesPerSecondEnd = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref framesPerSecondEnd, value);
             }
         }
 
@@ -235,9 +227,8 @@ namespace MediaViewer.Search
         {
             get { return durationSecondsStart; }
             set
-            {
-                durationSecondsStart = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref durationSecondsStart, value);
             }
         }
 
@@ -247,9 +238,8 @@ namespace MediaViewer.Search
         {
             get { return durationSecondsEnd; }
             set
-            {
-                durationSecondsEnd = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref durationSecondsEnd, value);
             }
         }
 
@@ -259,9 +249,8 @@ namespace MediaViewer.Search
         {
             get { return creationStart; }
             set
-            {
-                creationStart = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref creationStart, value);
             }
         }
         Nullable<DateTime> creationEnd;
@@ -270,9 +259,8 @@ namespace MediaViewer.Search
         {
             get { return creationEnd; }
             set
-            {
-                creationEnd = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref creationEnd, value);
             }
         }
 
@@ -282,9 +270,8 @@ namespace MediaViewer.Search
         {
             get { return imageWidthStart; }
             set
-            {
-                imageWidthStart = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref imageWidthStart, value);
             }
         }
 
@@ -294,9 +281,8 @@ namespace MediaViewer.Search
         {
             get { return imageWidthEnd; }
             set
-            {
-                imageWidthEnd = value;
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref  imageWidthEnd, value);
             }
         }
 
@@ -306,9 +292,8 @@ namespace MediaViewer.Search
         {
             get { return imageHeightStart; }
             set
-            {
-                imageHeightStart = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref imageHeightStart, value);
             }
         }
 
@@ -318,9 +303,8 @@ namespace MediaViewer.Search
         {
             get { return imageHeightEnd; }
             set
-            {
-                imageHeightEnd = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref imageHeightEnd, value);
             }
         }
 
@@ -329,8 +313,8 @@ namespace MediaViewer.Search
         public Nullable<double> RatingStart
         {
             get { return ratingStart; }
-            set { ratingStart = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref ratingStart, value);
             }
         }
         Nullable<double> ratingEnd;
@@ -338,8 +322,8 @@ namespace MediaViewer.Search
         public Nullable<double> RatingEnd
         {
             get { return ratingEnd; }
-            set { ratingEnd = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref ratingEnd, value);
             }
         }
     }

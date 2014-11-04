@@ -2,7 +2,7 @@
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +17,7 @@ using System.Windows.Threading;
 
 namespace MediaViewer.Model.Media.File
 {
-    public class MediaFileItem : ObservableObject, IEquatable<MediaFileItem>, IComparable<MediaFileItem>, IDisposable
+    public class MediaFileItem : BindableBase, IEquatable<MediaFileItem>, IComparable<MediaFileItem>, IDisposable
     {
 
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -84,14 +84,12 @@ namespace MediaViewer.Model.Media.File
             {
                 rwLock.EnterWriteLock();
                 try
-                {                   
-                    itemState = value;
-                   
+                {
+                    SetProperty(ref itemState, value);                                      
                 }
                 finally
                 {
-                    rwLock.ExitWriteLock();
-                    NotifyPropertyChanged();
+                    rwLock.ExitWriteLock();                                     
                 }
             }
         }
@@ -153,12 +151,12 @@ namespace MediaViewer.Model.Media.File
                         Factory.deleteFromDictionary(oldLocation);
                     }
 
-                    location = newLocation;                                  
+                    SetProperty(ref location, newLocation);                                             
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
-                    NotifyPropertyChanged();    
+                      
                 }
                                
             }
@@ -169,8 +167,8 @@ namespace MediaViewer.Model.Media.File
         public bool HasGeoTag
         {
             get { return hasGeoTag; }
-            protected set { hasGeoTag = value;
-            NotifyPropertyChanged();     
+            protected set { 
+            SetProperty(ref hasGeoTag, value);     
             }
         }
 
@@ -181,9 +179,8 @@ namespace MediaViewer.Model.Media.File
         {
             get { return hasTags; }
             protected set
-            {              
-                hasTags = value;
-                NotifyPropertyChanged();              
+            {                              
+                SetProperty(ref hasTags, value);              
             }
         }
           
@@ -196,14 +193,13 @@ namespace MediaViewer.Model.Media.File
             {
                 rwLock.EnterWriteLock();
                 try
-                {
-                    media = value;                    
+                {                  
+                    SetProperty(ref media, value);
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
-
-                    NotifyPropertyChanged();
+                   
                 }
             }
         }
@@ -225,7 +221,7 @@ namespace MediaViewer.Model.Media.File
             finally
             {            
                 rwLock.ExitUpgradeableReadLock();
-                NotifyPropertyChanged("Media");
+                OnPropertyChanged("Media");               
             }
 
         }
@@ -258,9 +254,7 @@ namespace MediaViewer.Model.Media.File
                         {
                             result = MediaFileItemState.ERROR;
                         }
-                    }
-
-                    checkVariables(media);
+                    }                   
                 }
 
             }
@@ -276,7 +270,10 @@ namespace MediaViewer.Model.Media.File
             finally
             {               
                 Media = media;
-                ItemState = result;             
+                ItemState = result;
+
+                checkVariables(media);
+
                 rwLock.ExitUpgradeableReadLock();
             }
         }
@@ -284,6 +281,8 @@ namespace MediaViewer.Model.Media.File
 
         void checkVariables(BaseMedia media)
         {
+            if (media == null) return;
+
             if (media.Tags.Count > 0)
             {
                 HasTags = true;
@@ -513,7 +512,7 @@ namespace MediaViewer.Model.Media.File
                         if (exists == false) {
                       
                             // item has been garbage collected, recreate
-                            item = new MediaFileItem(location, MediaFileItemState.LOADING);
+                            item = new MediaFileItem(location);
                             reference = new WeakReference<MediaFileItem>(item);
                             dictionary.Remove(location);
                             dictionary.Add(location, reference);
@@ -523,7 +522,7 @@ namespace MediaViewer.Model.Media.File
                     else
                     {
                         // item did not exist yet
-                        item = new MediaFileItem(location, MediaFileItemState.LOADING);
+                        item = new MediaFileItem(location);
                         reference = new WeakReference<MediaFileItem>(item);
                         dictionary.Add(location, reference);
                   
@@ -579,7 +578,7 @@ namespace MediaViewer.Model.Media.File
                         {
                             // item has been garbage collected, recreate
                             dictionary.Remove(oldLocation);
-                            item = new MediaFileItem(newLocation, MediaFileItemState.LOADING);
+                            item = new MediaFileItem(newLocation);
                             reference = new WeakReference<MediaFileItem>(item);
 
                             dictionary.Add(newLocation, reference);                          

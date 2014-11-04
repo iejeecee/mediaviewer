@@ -4,7 +4,7 @@
 // http://www.undisciplinedbytes.com/2012/03/creating-a-timestamp-column-with-entity-framework/
 // the script location is: 
 // C:\Program Files (x86)\Microsoft Visual Studio 11.0\Common7\IDE\Extensions\Microsoft\Entity Framework Tools\DBGen\SSDLToSQL10_CustomTimestamp.tt
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace MediaViewer.MediaDatabase
 {
     [Serializable]
-    partial class BaseMedia : ObservableObject
+    partial class BaseMedia : BindableBase
     {
         
         protected BaseMedia(String location, Stream data)
@@ -52,8 +52,9 @@ namespace MediaViewer.MediaDatabase
         public bool IsImported
         {
             get { return isImported; }
-            set { isImported = value;
-            NotifyPropertyChanged();
+            set {
+
+                SetProperty(ref isImported, value);              
             }
         }
 

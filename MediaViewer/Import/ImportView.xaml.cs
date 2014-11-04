@@ -13,6 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Mvvm;
 
 namespace MediaViewer.Import
 {
@@ -29,7 +30,7 @@ namespace MediaViewer.Import
 
             ImportViewModel vm = new ImportViewModel(MediaFileWatcher.Instance);
 
-            vm.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((o, e) =>
+            vm.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((o, e) =>
             {
                 this.Close();
             });

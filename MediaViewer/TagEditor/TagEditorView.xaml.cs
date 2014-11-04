@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.UserControls.TagTreePicker;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
@@ -34,15 +35,15 @@ namespace MediaViewer.TagEditor
             InitializeComponent();
             DataContext = tagEditorViewModel = new TagEditorViewModel(eventAggregator);
 
-            tagEditorViewModel.ClosingRequest += new EventHandler<MvvmFoundation.Wpf.CloseableObservableObject.DialogEventArgs>((s, e) =>
+            tagEditorViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s, e) =>
             {                
                 this.Close();
             });
 
-            tagEditorViewModel.ImportCommand.Executed += new MvvmFoundation.Wpf.Delegates.CommandEventHandler((s,e) =>
+            tagEditorViewModel.ImportCommand.Executed += (s,e) =>
             {
                 tagTreePicker.reloadAll();
-            });
+            };
         }
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)

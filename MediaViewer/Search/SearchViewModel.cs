@@ -3,8 +3,10 @@ using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -18,7 +20,7 @@ namespace MediaViewer.Search
 {
   
 
-    class SearchViewModel : ObservableObject
+    class SearchViewModel : BindableBase
     {
                
         class IgnoreCaseComparer : IEqualityComparer<Tag>
@@ -46,9 +48,9 @@ namespace MediaViewer.Search
 
             SearchCommand = new Command<SearchQuery>(new Action<SearchQuery>(async (query) =>
             {
-                SearchCommand.CanExecute = false;
+                SearchCommand.IsExecutable = false;
                 await Task.Run(() => doSearch(query));
-                SearchCommand.CanExecute = true;
+                SearchCommand.IsExecutable = true;
 
             }));
 
@@ -68,8 +70,8 @@ namespace MediaViewer.Search
         public SearchQuery Query
         {
             get { return query; }
-            set { query = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref query, value);
             }
         }
 
@@ -78,48 +80,23 @@ namespace MediaViewer.Search
         public MediaType SearchType
         {
             get { return searchType; }
-            set { searchType = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref searchType, value);
             }
         }
 
-        Command<SearchQuery> searchCommand;
-
-        public Command<SearchQuery> SearchCommand
-        {
-            get { return searchCommand; }
-            set
-            {
-                searchCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command clearRatingStartCommand;
-
-        public Command ClearRatingStartCommand
-        {
-            get { return clearRatingStartCommand; }
-            set { clearRatingStartCommand = value; }
-        }
-        Command clearRatingEndCommand;
-
-        public Command ClearRatingEndCommand
-        {
-            get { return clearRatingEndCommand; }
-            set { clearRatingEndCommand = value; }
-        }
-     
-
+        public Command<SearchQuery> SearchCommand { get; set; }
+        public Command ClearRatingStartCommand { get; set; }
+        public Command ClearRatingEndCommand { get; set; }
+            
         bool recurseSubDirectories;
 
         public bool RecurseSubDirectories
         {
             get { return recurseSubDirectories; }
             set
-            {
-                recurseSubDirectories = value;
-                NotifyPropertyChanged();
+            {             
+                SetProperty(ref recurseSubDirectories, value);
             }
         }
         

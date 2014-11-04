@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Model.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,7 @@ namespace MediaViewer.Progress
 
             Closing += new System.ComponentModel.CancelEventHandler((s, e) =>
             {
-                (DataContext as ICancellableOperationProgress).CancelCommand.DoExecute();
+                (DataContext as ICancellableOperationProgress).CancelCommand.Execute();
             });
         }
 
@@ -35,16 +36,16 @@ namespace MediaViewer.Progress
         {
             if (e.OldValue != null) 
             {
-                (e.OldValue as MvvmFoundation.Wpf.CloseableObservableObject).ClosingRequest -= CloseableObservableObject_ClosingRequest;
+                (e.OldValue as CloseableBindableBase).ClosingRequest -= CloseableBindableBase_ClosingRequest;
             }
 
             if (e.NewValue != null)
             {
-                (e.NewValue as MvvmFoundation.Wpf.CloseableObservableObject).ClosingRequest += CloseableObservableObject_ClosingRequest;
+                (e.NewValue as CloseableBindableBase).ClosingRequest += CloseableBindableBase_ClosingRequest;
             }           
         }
 
-        private void CloseableObservableObject_ClosingRequest(object sender, EventArgs e)
+        private void CloseableBindableBase_ClosingRequest(object sender, EventArgs e)
         {
             this.Close();
         }            

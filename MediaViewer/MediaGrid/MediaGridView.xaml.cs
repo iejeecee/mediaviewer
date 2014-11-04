@@ -19,7 +19,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.UserControls.Layout;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Regions;
 using System.ComponentModel.Composition;
 using MediaViewer.MediaFileBrowser;
@@ -27,7 +27,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using System.Windows.Controls.Primitives;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 
 namespace MediaViewer.MediaGrid
 {
@@ -42,8 +42,7 @@ namespace MediaViewer.MediaGrid
         IEventAggregator EventAggregator { get; set; }
 
         MediaGridViewModel ViewModel {get;set;}
-     
-     
+          
         [ImportingConstructor]
         public MediaGridView(IRegionManager regionManager, IEventAggregator eventAggregator)
         {           
@@ -85,7 +84,7 @@ namespace MediaViewer.MediaGrid
         {
             List<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
            
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Publish(selectedItems);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Publish(selectedItems);
         }
 
         private void imageGridViewModel_PrevPageCommand(object sender, EventArgs e)
@@ -148,7 +147,8 @@ namespace MediaViewer.MediaGrid
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-           
+
+            ViewModel.OnNavigatedFrom(navigationContext);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -157,8 +157,8 @@ namespace MediaViewer.MediaGrid
 
             DataContext = ViewModel;
 
-            EventAggregator.GetEvent<MediaBatchSelectionEvent>().Publish(ViewModel.MediaStateCollectionView.getSelectedItems());
-                    
+            ViewModel.OnNavigatedTo(navigationContext);
+                               
         }
     }
 }

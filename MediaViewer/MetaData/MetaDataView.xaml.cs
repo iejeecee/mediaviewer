@@ -144,7 +144,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            MetaDataViewModel.InsertCounterCommand.DoExecute(index);
+            MetaDataViewModel.InsertCounterCommand.Execute(index);
         }
 
         private void fileNameContextMenu_InsertExistingFilename(object sender, RoutedEventArgs e)
@@ -159,7 +159,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            MetaDataViewModel.InsertExistingFilenameCommand.DoExecute(index);
+            MetaDataViewModel.InsertExistingFilenameCommand.Execute(index);
         }
 
         private void fileNameContextMenu_InsertResolution(object sender, RoutedEventArgs e)
@@ -174,7 +174,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            MetaDataViewModel.InsertResolutionCommand.DoExecute(index);
+            MetaDataViewModel.InsertResolutionCommand.Execute(index);
 
         }
 
@@ -190,7 +190,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            MetaDataViewModel.InsertDateCommand.DoExecute(index);
+            MetaDataViewModel.InsertDateCommand.Execute(index);
 
         }
 
@@ -206,7 +206,7 @@ namespace MediaViewer.MetaData
 
             int index = textBox.CaretIndex;
 
-            MetaDataViewModel.InsertReplaceStringCommand.DoExecute(index);
+            MetaDataViewModel.InsertReplaceStringCommand.Execute(index);
         }
 
         public bool KeepAlive
@@ -222,30 +222,13 @@ namespace MediaViewer.MetaData
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Unsubscribe(globalMediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Unsubscribe(globalMediaSelectionEvent);
+            MetaDataViewModel.OnNavigatedFrom(navigationContext);           
         }        
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Subscribe(globalMediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
+            MetaDataViewModel.OnNavigatedTo(navigationContext);            
         }
-
-        private void globalMediaBatchSelectionEvent(ICollection<MediaFileItem> selectedItems)
-        {
-            MetaDataViewModel.Items = selectedItems;
-        }
-
-        private void globalMediaSelectionEvent(MediaFileItem selectedItem)
-        {
-            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
-            if (selectedItem != null)
-            {
-                selectedItems.Add(selectedItem);
-            }
-
-            MetaDataViewModel.Items = selectedItems;
-        }
+        
     }
 }

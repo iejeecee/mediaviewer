@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.GlobalEvents
+namespace MediaViewer.Model.Global.Events
 {
     public class MediaBatchSelectionEvent : PubSubEvent<ICollection<MediaFileItem>> { }
     public class MediaSelectionEvent : PubSubEvent<MediaFileItem> { }

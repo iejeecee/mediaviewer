@@ -5,7 +5,7 @@ using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -21,11 +21,13 @@ using Microsoft.Practices.Prism.Regions;
 using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Mvvm;
 
 namespace MediaViewer.MetaData
 {
 
-    class MetaDataViewModel : ObservableObject
+    class MetaDataViewModel : BindableBase
     {             
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -147,11 +149,11 @@ namespace MediaViewer.MetaData
                     Rating = null;
                 }));
 
-            insertCounterCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertCounterCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {                    
-                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.counterMarker + 
+                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.counterMarker + 
                         MetaDataUpdateViewModel.defaultCounter + "\"");
                 }
                 catch (Exception e)
@@ -161,11 +163,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertReplaceStringCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertReplaceStringCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.replaceMarker +
+                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.replaceMarker +
                         ";\"");
                 }
                 catch (Exception e)
@@ -175,11 +177,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertExistingFilenameCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertExistingFilenameCommand = new Command<int?>(new Action<int?>((startIndex) =>
                 {
                     try
                     {
-                        Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
+                        Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
                     }
                     catch (Exception e)
                     {
@@ -188,11 +190,11 @@ namespace MediaViewer.MetaData
 
                 }));
 
-            insertResolutionCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertResolutionCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
+                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
                 }
                 catch (Exception e)
                 {
@@ -201,11 +203,11 @@ namespace MediaViewer.MetaData
 
             }));
 
-            insertDateCommand = new Command<int>(new Action<int>((startIndex) =>
+            InsertDateCommand = new Command<int?>(new Action<int?>((startIndex) =>
             {
                 try
                 {
-                    Filename = Filename.Insert(startIndex, "\"" + MetaDataUpdateViewModel.dateMarker 
+                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.dateMarker 
                         + MetaDataUpdateViewModel.defaultDateFormat + "\"");
                 }
                 catch (Exception e)
@@ -300,61 +302,25 @@ namespace MediaViewer.MetaData
         {
             get { return filename; }
             set
-            {
-                filename = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref filename, value);
             }
         }
 
-        Command<int> insertCounterCommand;
-
-        public Command<int> InsertCounterCommand
-        {
-            get { return insertCounterCommand; }
-            set { insertCounterCommand = value; }
-        }
-
-        Command<int> insertExistingFilenameCommand;
-
-        public Command<int> InsertExistingFilenameCommand
-        {
-            get { return insertExistingFilenameCommand; }
-            set { insertExistingFilenameCommand = value; }
-        }
-
-        Command<int> insertResolutionCommand;
-
-        public Command<int> InsertResolutionCommand
-        {
-            get { return insertResolutionCommand; }
-            set { insertResolutionCommand = value; }
-        }
-
-        Command<int> insertDateCommand;
-
-        public Command<int> InsertDateCommand
-        {
-            get { return insertDateCommand; }
-            set { insertDateCommand = value; }
-        }
-
-        Command<int> insertReplaceStringCommand;
-
-        public Command<int> InsertReplaceStringCommand
-        {
-            get { return insertReplaceStringCommand; }
-            set { insertReplaceStringCommand = value; }
-        }
-
+        public Command<int?> InsertCounterCommand {get;set;}
+        public Command<int?> InsertExistingFilenameCommand { get; set; }
+        public Command<int?> InsertResolutionCommand { get; set; }
+        public Command<int?> InsertDateCommand { get; set; }
+        public Command<int?> InsertReplaceStringCommand { get; set; }
+       
         String location;
 
         public String Location
         {
             get { return location; }
             set
-            {           
-                location = value;
-                NotifyPropertyChanged();
+            {                          
+                SetProperty(ref location, value);
             }
         }
 
@@ -409,9 +375,9 @@ namespace MediaViewer.MetaData
                     }
                 }
 
-                selectedMetaDataPreset = value;
-               
-                if (selectedMetaDataPreset== null)
+                SetProperty(ref selectedMetaDataPreset, value);
+                           
+                if (selectedMetaDataPreset == null)
                 {
 
                 }
@@ -424,8 +390,7 @@ namespace MediaViewer.MetaData
                 }
                 else
                 {
-                    selectedMetaDataPreset = value;
-
+                 
                     if (selectedMetaDataPreset.IsTitleEnabled)
                     {
                         TitleEnabled = true;
@@ -460,7 +425,7 @@ namespace MediaViewer.MetaData
                     }
 
                 }
-                NotifyPropertyChanged();
+               
             }
 
         }
@@ -488,9 +453,8 @@ namespace MediaViewer.MetaData
         {
             get { return rating; }
             set
-            {
-                rating = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref rating, value);
             }
         }
 
@@ -500,9 +464,8 @@ namespace MediaViewer.MetaData
         {
             get { return ratingEnabled; }
             set
-            {
-                ratingEnabled = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref ratingEnabled, value);
             }
         }
 
@@ -512,9 +475,8 @@ namespace MediaViewer.MetaData
         {
             get { return title; }
             set
-            {
-                title = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref title, value);
             }
         }
 
@@ -524,9 +486,8 @@ namespace MediaViewer.MetaData
         {
             get { return titleEnabled; }
             set
-            {
-                titleEnabled = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref titleEnabled, value);
             }
         }
 
@@ -536,9 +497,8 @@ namespace MediaViewer.MetaData
         {
             get { return description; }
             set
-            {
-                description = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref description, value);
             }
         }
 
@@ -548,9 +508,8 @@ namespace MediaViewer.MetaData
         {
             get { return descriptionEnabled; }
             set
-            {
-                descriptionEnabled = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref descriptionEnabled, value);
             }
         }
 
@@ -560,9 +519,8 @@ namespace MediaViewer.MetaData
         {
             get { return author; }
             set
-            {
-                author = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref author, value);
             }
         }
 
@@ -572,9 +530,8 @@ namespace MediaViewer.MetaData
         {
             get { return authorEnabled; }
             set
-            {
-                authorEnabled = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref authorEnabled, value);
             }
         }
 
@@ -586,9 +543,8 @@ namespace MediaViewer.MetaData
             get { return copyright; }
 
             set
-            {
-                copyright = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref copyright, value);
             }
         }
 
@@ -598,9 +554,8 @@ namespace MediaViewer.MetaData
         {
             get { return copyrightEnabled; }
             set
-            {
-                copyrightEnabled = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref copyrightEnabled, value);
             }
         }
 
@@ -609,8 +564,8 @@ namespace MediaViewer.MetaData
         public Nullable<DateTime> Creation
         {
             get { return creation; }
-            set { creation = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref creation, value);
             }
         }
 
@@ -619,8 +574,8 @@ namespace MediaViewer.MetaData
         public bool CreationEnabled
         {
             get { return creationEnabled; }
-            set { creationEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref creationEnabled, value);
             }
         }
 
@@ -629,8 +584,8 @@ namespace MediaViewer.MetaData
         public bool IsImported
         {
             get { return isImported; }
-            set { isImported = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isImported, value);
             }
         }
 
@@ -639,8 +594,8 @@ namespace MediaViewer.MetaData
         public bool ImportedEnabled
         {
             get { return importedEnabled; }
-            set { importedEnabled = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref importedEnabled, value);
             }
         }
 
@@ -650,8 +605,8 @@ namespace MediaViewer.MetaData
         public ObservableCollection<Tag> Tags
         {
             get { return tags; }
-            set { tags = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref tags, value);
             }
         }
 
@@ -661,8 +616,8 @@ namespace MediaViewer.MetaData
         public ObservableCollection<Tag> AddTags
         {
             get { return addTags; }
-            set { addTags = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref addTags, value);
             }
         }
 
@@ -672,8 +627,8 @@ namespace MediaViewer.MetaData
         public ObservableCollection<Tag> RemoveTags
         {
             get { return removeTags; }
-            set { removeTags = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref removeTags, value);
             }
         }
 
@@ -699,9 +654,9 @@ namespace MediaViewer.MetaData
         {
             get { return isEnabled; }
             set
-            {
-                isEnabled = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref isEnabled, value);
+
                 if (isEnabled == false)
                 {                   
                     RatingEnabled = false;
@@ -723,9 +678,8 @@ namespace MediaViewer.MetaData
         {
             get { return batchMode; }
             set
-            {
-                batchMode = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref batchMode, value);
 
                 if (batchMode == true && IsEnabled == true)
                 {                   
@@ -920,8 +874,35 @@ namespace MediaViewer.MetaData
             return (p);
 
         }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Unsubscribe(globalMediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Unsubscribe(globalMediaSelectionEvent);
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(globalMediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
+        }
+
+        private void globalMediaBatchSelectionEvent(ICollection<MediaFileItem> selectedItems)
+        {
+            Items = selectedItems;
+        }
+
+        private void globalMediaSelectionEvent(MediaFileItem selectedItem)
+        {
+            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
+            if (selectedItem != null)
+            {
+                selectedItems.Add(selectedItem);
+            }
+
+            Items = selectedItems;
+        }
         
     }
-
-
+   
 }

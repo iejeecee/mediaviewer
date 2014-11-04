@@ -3,7 +3,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace MediaViewer.Model.Media.State
 {
  
-    public class MediaState : ObservableObject, IMediaState, IDisposable
+    public class MediaState : BindableBase, IMediaState, IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -470,9 +470,8 @@ namespace MediaViewer.Model.Media.State
         {
             get { return mediaStateType; }
             set
-            {                               
-                mediaStateType = value;             
-                NotifyPropertyChanged();                
+            {                                             
+                SetProperty(ref mediaStateType, value);                
             }
         }
 
@@ -482,9 +481,8 @@ namespace MediaViewer.Model.Media.State
         {
             get { return mediaStateInfo; }
             set
-            {              
-                mediaStateInfo = value;
-                NotifyPropertyChanged();                                   
+            {                            
+                SetProperty(ref mediaStateInfo, value);                                   
             }
         }
 
@@ -494,9 +492,8 @@ namespace MediaViewer.Model.Media.State
         {
             get { return mediaStateDateTime; }
             set
-            {                
-                mediaStateDateTime = value;
-                NotifyPropertyChanged();                 
+            {                              
+                SetProperty(ref mediaStateDateTime, value);                 
             }
         }
 
@@ -506,8 +503,7 @@ namespace MediaViewer.Model.Media.State
         {
             protected set
             {
-                nrLoadedItemsInState = value;
-                NotifyPropertyChanged();
+                SetProperty(ref nrLoadedItemsInState, value);
             }
             get { return (nrLoadedItemsInState); }
         }
@@ -517,9 +513,8 @@ namespace MediaViewer.Model.Media.State
         public int NrItemsInState
         {
             protected set
-            {
-                nrItemsInState = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref nrItemsInState, value);
             }
             get { return (nrItemsInState); }
         }

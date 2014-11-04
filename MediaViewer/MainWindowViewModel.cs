@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System.Windows;
 using MediaViewer.MetaData;
 using MediaViewer.About;
@@ -15,10 +15,12 @@ using System.ComponentModel.Composition;
 using MediaViewer.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.TagEditor;
+using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Mvvm;
 
 namespace MediaViewer
 {
-    class MainWindowViewModel : ObservableObject
+    class MainWindowViewModel : BindableBase
     {
            
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -35,9 +37,8 @@ namespace MediaViewer
         {
             get { return currentImageLocation; }
             set
-            {
-                currentImageLocation = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref currentImageLocation, value);
             }
         }
         string currentVideoLocation;
@@ -46,9 +47,8 @@ namespace MediaViewer
         {
             get { return currentVideoLocation; }
             set
-            {
-                currentVideoLocation = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref currentVideoLocation, value);
             }
         }
 
@@ -58,9 +58,8 @@ namespace MediaViewer
         {
             get { return windowTitle; }
             set
-            {
-                windowTitle = value;
-                NotifyPropertyChanged();
+            {         
+                SetProperty(ref windowTitle, value);
             }
         }
 
@@ -77,19 +76,19 @@ namespace MediaViewer
                 ViewMediaCommand.DoExecute(fileName);
             }));
 */
-            ViewMediaCommand = new Command(new Action<object>((location) =>
+            ViewMediaCommand = new Command<String>(new Action<String>((location) =>
               {
-                  if (String.IsNullOrEmpty((string)location)) return;
+                  if (String.IsNullOrEmpty(location)) return;
 
-                  String mimeType = MediaFormatConvert.fileNameToMimeType((string)location);
+                  String mimeType = MediaFormatConvert.fileNameToMimeType(location);
 
                   if (mimeType.StartsWith("image"))
                   {
-                      CurrentImageLocation = (string)location;
+                      CurrentImageLocation = location;
                   }
                   else if (mimeType.StartsWith("video"))
                   {
-                      CurrentVideoLocation = (string)location;
+                      CurrentVideoLocation = location;
                   }
                   else
                   {
@@ -139,9 +138,9 @@ namespace MediaViewer
             
         }
 
-        Command viewMediaCommand;
+        Command<String> viewMediaCommand;
 
-        public Command ViewMediaCommand
+        public Command<String> ViewMediaCommand
         {
             get { return viewMediaCommand; }
             set { viewMediaCommand = value; }

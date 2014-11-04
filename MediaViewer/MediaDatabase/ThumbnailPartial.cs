@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Media.File.Watcher;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 namespace MediaViewer.MediaDatabase
 {
     [Serializable]
-    partial class Thumbnail : ObservableObject
+    partial class Thumbnail : BindableBase
     {
         [NonSerialized]
         BitmapSource image;
@@ -20,8 +20,8 @@ namespace MediaViewer.MediaDatabase
         {
             get { return image; } 
             private set {
-                image = value;
-                NotifyPropertyChanged();
+               
+                SetProperty(ref image, value);
             }
         }
 

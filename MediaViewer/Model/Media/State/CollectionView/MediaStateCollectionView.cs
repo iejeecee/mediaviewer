@@ -3,7 +3,7 @@ using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -19,7 +19,7 @@ using System.Windows.Data;
 
 namespace MediaViewer.Model.Media.State.CollectionView
 {
-    public class MediaStateCollectionView : ObservableObject {
+    public class MediaStateCollectionView : BindableBase {
 
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
         public event EventHandler<PropertyChangedEventArgs> StateItemPropertyChanged;
@@ -101,6 +101,29 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 filter = value;
 
                 refresh();
+            }
+        }
+
+        public int getSelectedItem(out MediaFileItem selectedItem)
+        {           
+            Media.EnterReaderLock();
+            try
+            {
+                for (int i = 0; i < Media.Count; i++)
+                {
+                    if (Media[i].IsSelected)
+                    {
+                        selectedItem = Media[i].Item;
+                        return (i);
+                    }
+                }
+
+                selectedItem = null;
+                return (-1);
+            }
+            finally
+            {
+                Media.ExitReaderLock();
             }
         }
 
@@ -373,9 +396,34 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                foreach (MediaFileItem item in items)
+                if (this.Media.Count == 0 && items.Count() > 1)
                 {
-                    add(item);
+                    // Use a fast(er) path if we are just adding a batch of items to a empty list
+
+                    List<SelectableMediaFileItem> temp = new List<SelectableMediaFileItem>();
+
+                    foreach (MediaFileItem item in items)
+                    {
+                        SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);                        
+                       
+                        if (Filter(selectableItem))
+                        {
+                            selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+                            CollectionsSort.insertIntoSortedCollection(temp, selectableItem, sortFunc);                            
+                        }
+                    }
+
+                    Media.AddRange(temp);
+                    sortedItemEnd = Media.Count;
+
+                    OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, items));
+                }
+                else
+                {
+                    foreach (MediaFileItem item in items)
+                    {
+                        add(item);
+                    }
                 }
             }
             finally

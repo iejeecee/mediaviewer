@@ -3,8 +3,10 @@ using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +21,7 @@ using System.Windows;
 namespace MediaViewer.Export
 {
 
-    class ExportViewModel : CloseableObservableObject, ICancellableOperationProgress
+    class ExportViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
      
@@ -53,8 +55,8 @@ namespace MediaViewer.Export
                 tokenSource.Cancel();
             });
 
-            OkCommand.CanExecute = false;
-            CancelCommand.CanExecute = true;
+            OkCommand.IsExecutable = false;
+            CancelCommand.IsExecutable = true;
         }
 
         public async Task exportAsync(ICollection<MediaFileItem> items)
@@ -69,8 +71,8 @@ namespace MediaViewer.Export
 
             }, cancellationToken);
 
-            OkCommand.CanExecute = true;
-            CancelCommand.CanExecute = false;
+            OkCommand.IsExecutable = true;
+            CancelCommand.IsExecutable = false;
 
         }
 
@@ -124,30 +126,11 @@ namespace MediaViewer.Export
                 }
             }
         }
-
-        Command okCommand;
-
-        public Command OkCommand
-        {
-            get { return okCommand; }
-            set
-            {
-                okCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
-
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set
-            {
-                cancelCommand = value;
-                NotifyPropertyChanged();
-            }
-        }
+      
+        public Command OkCommand {get;set;}
+          
+        public Command CancelCommand {get;set;}
+   
 
         String itemInfo;
 
@@ -155,9 +138,8 @@ namespace MediaViewer.Export
         {
             get { return itemInfo; }
             set
-            {
-                itemInfo = value;
-                NotifyPropertyChanged();
+            {            
+                SetProperty(ref itemInfo, value);            
             }
         }
 
@@ -168,8 +150,7 @@ namespace MediaViewer.Export
             get { return infoMessages; }
             set
             {
-                infoMessages = value;
-                NotifyPropertyChanged();
+                SetProperty(ref infoMessages, value);          
             }
         }
 
@@ -191,8 +172,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                totalProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref totalProgress, value);       
             }
         }
 
@@ -206,8 +186,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                totalProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref totalProgressMax, value);            
             }
         }
 
@@ -221,8 +200,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                itemProgress = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgress, value);             
             }
         }
 
@@ -236,8 +214,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                itemProgressMax = value;
-                NotifyPropertyChanged();
+                SetProperty(ref itemProgressMax, value);         
             }
         }
 
@@ -251,8 +228,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                windowTitle = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowTitle, value);         
             }
         }
 
@@ -266,8 +242,7 @@ namespace MediaViewer.Export
             }
             set
             {
-                windowIcon = value;
-                NotifyPropertyChanged();
+                SetProperty(ref windowIcon, value);          
             }
         }
     }

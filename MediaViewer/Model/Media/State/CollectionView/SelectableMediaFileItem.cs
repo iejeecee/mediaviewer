@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Media.File;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.State.CollectionView
 {
-    public class SelectableMediaFileItem : ObservableObject, IComparable<SelectableMediaFileItem>, IEquatable<SelectableMediaFileItem>
+    public class SelectableMediaFileItem : BindableBase, IComparable<SelectableMediaFileItem>, IEquatable<SelectableMediaFileItem>
     {
         public event EventHandler SelectionChanged;
 
@@ -24,8 +24,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
         public MediaFileItem Item
         {
             get { return item; }
-            set { item = value;
-            NotifyPropertyChanged();
+            set {
+                SetProperty(ref item, value);               
             }
         }
 
@@ -38,8 +38,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
                 if (value != isSelected)
                 {
-                    isSelected = value;
-                    NotifyPropertyChanged();
+                    SetProperty(ref isSelected, value);                 
                     OnSelectionChanged();
                 }
             }

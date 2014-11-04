@@ -28,7 +28,7 @@ using MediaViewer.MetaData;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.VideoPanel;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 
 namespace MediaViewer.MediaFileBrowser
@@ -50,6 +50,9 @@ namespace MediaViewer.MediaFileBrowser
 
         IRegionManager RegionManager { get; set; }
         IEventAggregator EventAggregator { get; set; }
+
+        GridLength leftColumnWidth;
+        GridLength rightColumnWidth;
     
         public MediaFileBrowserView()
         {
@@ -69,22 +72,40 @@ namespace MediaViewer.MediaFileBrowser
             RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigating += mediaFileBrowserContentRegion_Navigating;
             RegionManager.Regions[RegionNames.MediaFileBrowserContentRegion].NavigationService.Navigated += mediaFileBrowserContentRegion_Navigated;
 
-            EventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe(toggleFullScreen);                                       
-        }
+            EventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe(toggleFullScreen);
 
+            leftColumnWidth = mainGrid.ColumnDefinitions[0].Width;
+            rightColumnWidth = mainGrid.ColumnDefinitions[2].Width;
+        }
+       
         private void toggleFullScreen(bool isFullScreen)
         {
+
             if (isFullScreen)
             {
                 browserTabControl.Visibility = System.Windows.Visibility.Collapsed;
                 rightTabControl.Visibility = System.Windows.Visibility.Collapsed;
                 miscOptionsGrid.Visibility = System.Windows.Visibility.Collapsed;
+
+                leftColumnWidth = mainGrid.ColumnDefinitions[0].Width;
+                rightColumnWidth = mainGrid.ColumnDefinitions[2].Width;
+                mainGrid.ColumnDefinitions[0].Width = new GridLength(0, GridUnitType.Pixel);
+                mainGrid.ColumnDefinitions[2].Width = new GridLength(0, GridUnitType.Pixel);
+
+                leftGridSplitter.Visibility = System.Windows.Visibility.Collapsed;
+                rightGridSplitter.Visibility = System.Windows.Visibility.Collapsed;
             }
             else
             {
                 browserTabControl.Visibility = System.Windows.Visibility.Visible;
                 rightTabControl.Visibility = System.Windows.Visibility.Visible;
                 miscOptionsGrid.Visibility = System.Windows.Visibility.Visible;
+
+                leftGridSplitter.Visibility = System.Windows.Visibility.Visible;
+                rightGridSplitter.Visibility = System.Windows.Visibility.Visible;
+                mainGrid.ColumnDefinitions[0].Width = leftColumnWidth;
+                mainGrid.ColumnDefinitions[2].Width = rightColumnWidth;
+                
             }
         }
 
@@ -114,13 +135,13 @@ namespace MediaViewer.MediaFileBrowser
           
             if (e.Uri.ToString().StartsWith(typeof(MediaGridView).FullName))
             {
-                MediaFileBrowserViewModel.ExpandCommand.CanExecute = true;
-                MediaFileBrowserViewModel.ContractCommand.CanExecute = false;
+                MediaFileBrowserViewModel.ExpandCommand.IsExecutable = true;
+                MediaFileBrowserViewModel.ContractCommand.IsExecutable = false;
             }
             else
             {
-                MediaFileBrowserViewModel.ExpandCommand.CanExecute = false;
-                MediaFileBrowserViewModel.ContractCommand.CanExecute = true;
+                MediaFileBrowserViewModel.ExpandCommand.IsExecutable = false;
+                MediaFileBrowserViewModel.ContractCommand.IsExecutable = true;
             }
         }
 
@@ -130,31 +151,10 @@ namespace MediaViewer.MediaFileBrowser
             //metaDataView.DataContext = mediaFileBrowserViewModel.CurrentViewModel;
 
         }
-
-        private void mediaFileBrowser_ToggleFullScreen()
-        {
-            /*Visibility mode;
-
-           if (pager.Visibility == System.Windows.Visibility.Visible)
-            {
-                mode = System.Windows.Visibility.Collapsed;
-            }
-            else
-            {
-                mode = System.Windows.Visibility.Visible;
-            }
-
-            pager.Visibility = mode;
-            browserButtons.Visibility = mode;
-            browserTabControl.Visibility = mode;
-            metaDataTabControl.Visibility = mode;
-            //imageOptionsGrid.Visibility = mode;
-             */
-        }
-
+        
         private void selectedMediaDataGridView_RowDoubleClick(object sender, MediaFileItem e)
         {
-            MediaFileBrowserViewModel.ExpandCommand.DoExecute(e);
+            MediaFileBrowserViewModel.ExpandCommand.Execute(e);
         }
 
         public bool KeepAlive
@@ -169,45 +169,15 @@ namespace MediaViewer.MediaFileBrowser
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            
+            MediaFileBrowserViewModel.OnNavigatedFrom(navigationContext);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             MediaFileBrowserViewModel = (MediaFileBrowserViewModel)navigationContext.Parameters["viewModel"];
             DataContext = MediaFileBrowserViewModel;
-            String title = "";
-                      
-            if (MediaFileBrowserViewModel.CurrentViewModel == null)
-            {
-                MediaFileBrowserViewModel.navigateToMetaData();
-                MediaFileBrowserViewModel.navigateToMediaGrid();
 
-                title = MediaFileBrowserViewModel.BrowsePath;
-            }
-            else
-            {               
-                if (MediaFileBrowserViewModel.CurrentViewModel is MediaGridViewModel)
-                {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.DummyMediaStackPanelViewModel);
-                    title = MediaFileBrowserViewModel.BrowsePath;
-                }
-                else if(MediaFileBrowserViewModel.CurrentViewModel is ImageViewModel)
-                {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.ImageMediaStackPanelViewModel);
-                    title = MediaFileBrowserViewModel.ImageViewModel.CurrentLocation;
-                    if (title != null) title = System.IO.Path.GetFileName(title);
-                }
-                else if (MediaFileBrowserViewModel.CurrentViewModel is VideoViewModel)
-                {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(MediaFileBrowserViewModel.VideoMediaStackPanelViewModel);
-                    title = MediaFileBrowserViewModel.VideoViewModel.CurrentLocation;
-                    if (title != null) title = System.IO.Path.GetFileName(title);
-                }
-                                
-            }
-
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(title);
+            MediaFileBrowserViewModel.OnNavigatedTo(navigationContext);            
         }
     }
         

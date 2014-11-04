@@ -1,5 +1,5 @@
 ﻿using MediaViewer;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
 using Microsoft.Practices.Prism.PubSubEvents;
@@ -43,8 +43,8 @@ namespace PluginTest
 
             SelectedItems = new List<MediaFileItem>();
          
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Subscribe(mediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(mediaSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(mediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(mediaSelectionEvent);
         }
 
         private void mediaBatchSelectionEvent(ICollection<MediaViewer.Model.Media.File.MediaFileItem> selectedItems)

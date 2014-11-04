@@ -1,7 +1,7 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Progress;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -13,10 +13,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
 using MediaViewer.Settings;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.Torrent
 {
-    public class TorrentCreationViewModel : CloseableObservableObject
+    public class TorrentCreationViewModel : CloseableBindableBase
     {
    
         AppSettings Settings
@@ -80,8 +82,8 @@ namespace MediaViewer.Torrent
         public String AnnounceURL
         {
             get { return announceURL; }
-            set { announceURL = value;
-            NotifyPropertyChanged();
+            set { 
+                SetProperty(ref announceURL, value);           
             }
         }
 
@@ -98,8 +100,8 @@ namespace MediaViewer.Torrent
         public bool IsCommentEnabled
         {
             get { return isCommentEnabled; }
-            set { isCommentEnabled = value;
-            NotifyPropertyChanged();
+            set {
+                SetProperty(ref isCommentEnabled, value);       
             }
         }
 
@@ -108,8 +110,8 @@ namespace MediaViewer.Torrent
         public String Comment
         {
             get { return comment; }
-            set { comment = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref comment, value);
             }
         }
       
@@ -118,8 +120,8 @@ namespace MediaViewer.Torrent
         public String OutputPath
         {
             get { return outputPath; }
-            set { outputPath = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref outputPath, value);
             }
         }
 
@@ -149,8 +151,8 @@ namespace MediaViewer.Torrent
         public bool IsPrivate
         {
             get { return isPrivate; }
-            set { isPrivate = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref isPrivate, value);
             }
         }
 
@@ -190,8 +192,7 @@ namespace MediaViewer.Torrent
             get { return torrentName; }
             set
             {
-                torrentName = value; 
-                NotifyPropertyChanged();
+                SetProperty(ref torrentName, value);
             }
         }
 

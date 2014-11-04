@@ -1,5 +1,5 @@
 ﻿using Aga.Controls.Tree;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +12,7 @@ using MediaViewer.Model.Media.Metadata;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataTreeModel : ObservableObject, ITreeModel
+    class MetaDataTreeModel : BindableBase, ITreeModel
     {
         MetaDataTreeNode root;
 
@@ -130,7 +130,7 @@ namespace MediaViewer.MetaData
            
     }
     
-    class MetaDataNameValue : ObservableObject
+    class MetaDataNameValue : BindableBase
     {
         public MetaDataNameValue()
         {
@@ -153,8 +153,8 @@ namespace MediaViewer.MetaData
         public String Name
         {
             get { return name; }
-            set { name = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref name, value);
             }
         }
         String value;
@@ -162,8 +162,8 @@ namespace MediaViewer.MetaData
         public String Value
         {
             get { return this.value; }
-            set { this.value = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref this.value, value);
             }
         }
 
@@ -172,8 +172,8 @@ namespace MediaViewer.MetaData
         public String IconPath
         {
             get { return iconPath; }
-            set { iconPath = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref iconPath, value);
             }
         }
 
@@ -182,8 +182,8 @@ namespace MediaViewer.MetaData
         public String NodeType
         {
             get { return nodeType; }
-            set { nodeType = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref nodeType, value);
             }
         }
 

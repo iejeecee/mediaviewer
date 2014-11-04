@@ -36,22 +36,22 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" Content="Location" VerticalAlignment="Center"/>
-            <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding GeoTagLocation}" IsReadOnly="True" Margin="2,2,2,2"/>
+            <TextBox Grid.Column="1" VerticalAlignment="Center" Text="{Binding SelectedItem.GeoTagLocation}" IsReadOnly="True" Margin="2,2,2,2"/>
             <Label Grid.Column="2" Content="Lat" VerticalAlignment="Center"/>
-            <TextBox Grid.Column="3" VerticalAlignment="Center" Text="{Binding Latitude}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
+            <TextBox Grid.Column="3" VerticalAlignment="Center" Text="{Binding SelectedItem.GeoTag.Latitude.Coord}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
             <Label Grid.Column="4" Content="Lon" VerticalAlignment="Center"/>
-            <TextBox Grid.Column="5" VerticalAlignment="Center" Text="{Binding Longitude}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
+            <TextBox Grid.Column="5" VerticalAlignment="Center" Text="{Binding SelectedItem.GeoTag.Longitude.Coord}" IsReadOnly="True" Width="70" Margin="2,2,2,2"/>
             <Button Grid.Column="6" Width="50" Margin="2,2,2,2">
                 <Button.Style>
                     <Style>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding CreateGeoTagCommand.CanExecute}" Value="true">
+                            <DataTrigger Binding="{Binding SelectedItem.HasGeoTag}" Value="false">
                                 <Setter Property="ButtonBase.Command" Value="{Binding CreateGeoTagCommand}"/>
                                 <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
                                 <Setter Property="FrameworkElement.ToolTip" Value="Create Geotag"/>
                                 <Setter Property="ButtonBase.Content" Value="Create"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding DeleteGeoTagCommand.CanExecute}" Value="true">
+                            <DataTrigger Binding="{Binding SelectedItem.HasGeoTag}" Value="true">
                                 <Setter Property="ButtonBase.Command" Value="{Binding DeleteGeoTagCommand}"/>
                                 <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
                                 <Setter Property="FrameworkElement.ToolTip" Value="Delete Geotag"/>

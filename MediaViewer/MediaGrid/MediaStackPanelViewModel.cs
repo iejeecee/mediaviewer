@@ -1,10 +1,11 @@
 ﻿using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Pager;
+using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,31 +57,54 @@ namespace MediaViewer.MediaGrid
 
         private void mediaState_SelectionChanged(object sender, EventArgs e)
         {           
-            ICollection<MediaFileItem> selectedItems = MediaStateCollectionView.getSelectedItems();
-
-            if (selectedItems.Count > 0)
+          
+            MediaStateCollectionView.Media.EnterReaderLock();
+            try
             {
-                MediaStateCollectionView.Media.EnterReaderLock();
-                try
+                MediaFileItem selectedItem;
+
+                MediaStateCollectionView.getSelectedItem(out selectedItem);
+
+                if (selectedItem != null)
                 {
-                    MediaFileItem selectedItem = selectedItems.ElementAt(0);
                     CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(selectedItem)) + 1;
                 }
-                finally
+                else
                 {
-                    MediaStateCollectionView.Media.ExitReaderLock();
+                    CurrentPage = null;
                 }
+     
             }
-            else
+            finally
             {
-                CurrentPage = null;
+                MediaStateCollectionView.Media.ExitReaderLock();
             }
-            
+                       
         }
-
+     
         private void mediaState_NrItemsInStateChanged(object sender, EventArgs e)
-        {          
-            NrPages = MediaStateCollectionView.Media.Count();      
+        {       
+             MediaStateCollectionView.Media.EnterReaderLock();
+             try
+             {
+                 NrPages = MediaStateCollectionView.Media.Count();
+
+                 // if the number of items in the state changed has changed
+                 // the index of the currently selected item, update the index
+                 MediaFileItem selectedItem;
+
+                 int index = MediaStateCollectionView.getSelectedItem(out selectedItem);
+
+                 if (index != -1 && (index + 1) != CurrentPage)
+                 {
+                     currentPage = index + 1;
+                     OnPropertyChanged("CurrentPage");
+                 }
+             }
+             finally
+             {
+                 MediaStateCollectionView.Media.ExitReaderLock();
+             }
         }
 
         bool isVisible;
@@ -88,8 +112,9 @@ namespace MediaViewer.MediaGrid
         public bool IsVisible
         {
             get { return isVisible; }
-            set { isVisible = value;
-            NotifyPropertyChanged();
+            set {
+                SetProperty(ref isVisible, value);  
+        
             }
         }
 
@@ -98,13 +123,14 @@ namespace MediaViewer.MediaGrid
         public bool IsEnabled
         {
             get { return isEnabled; }
-            set { isEnabled = value;
-
-            if (isEnabled == false)
+            set
             {
-                IsVisible = false;
-            }
-            NotifyPropertyChanged();
+                SetProperty(ref isEnabled, value);
+
+                if (isEnabled == false)
+                {
+                    IsVisible = false;
+                }
             }
         }
 
@@ -118,8 +144,8 @@ namespace MediaViewer.MediaGrid
             }
             set
             {
-                nrPages = value;
-
+                SetProperty(ref nrPages, value);
+                
                 if (nrPages > 0)
                 {
                     IsPagingEnabled = true;
@@ -128,7 +154,7 @@ namespace MediaViewer.MediaGrid
                 {
                     IsPagingEnabled = false;
                 }
-                NotifyPropertyChanged();
+               
             }
         }
 
@@ -142,21 +168,20 @@ namespace MediaViewer.MediaGrid
             }
             set
             {
-                currentPage = value;
+                int? newPage = value;              
 
-                if (currentPage.HasValue)
-                {
-                    
+                if (newPage.HasValue) {
+                                   
                     MediaStateCollectionView.Media.EnterReaderLock();
                     try
                     {
-                        currentPage = MiscUtils.clamp<int>(currentPage.Value, 1, MediaStateCollectionView.Media.Count);
+                        newPage = MiscUtils.clamp<int>(newPage.Value, 1, MediaStateCollectionView.Media.Count);
 
-                        int index = currentPage.Value - 1;
+                        int index = newPage.Value - 1;
 
                         MediaFileItem item = MediaStateCollectionView.Media[index].Item;
-
-                        EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Publish(item);                                       
+                        
+                        EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Publish(item);                                       
                     }
                     finally
                     {
@@ -164,7 +189,9 @@ namespace MediaViewer.MediaGrid
                     }
 
                 }
-                NotifyPropertyChanged();
+
+                SetProperty(ref currentPage, newPage);
+              
             }
         }
 
@@ -178,8 +205,7 @@ namespace MediaViewer.MediaGrid
             }
             set
             {
-                isPagingEnabled = value;
-                NotifyPropertyChanged();
+                SetProperty(ref isPagingEnabled, value);           
             }
         }
 

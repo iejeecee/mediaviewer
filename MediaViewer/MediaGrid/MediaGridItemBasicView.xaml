@@ -24,10 +24,7 @@ d:DesignHeight="300" d:DesignWidth="300">
         <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
             <ToggleButton.Style>
                 <Style>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="EMPTY">
-                            <Setter Property="UIElement.IsEnabled" Value="false"/>
-                        </DataTrigger>
+                    <Style.Triggers>                       
                         <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                             <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
@@ -61,10 +58,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="false">
                                     <Setter Property="Border.BorderBrush" Value="Black" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="EMPTY">
-                                    <Setter Property="UIElement.Visibility" Value="Collapsed"/>
-                                </DataTrigger>
+                                </DataTrigger>                             
                                 <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                     <Setter Property="Border.BorderBrush" Value="{x:Null}"/>
                                 </DataTrigger>

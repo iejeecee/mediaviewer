@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -93,11 +94,62 @@ namespace MediaViewer.Model.Collections
             rwLock.ExitWriteLock();
         }
 
+     
+        public virtual void AddRange(IEnumerable<T> collection)
+        {
+            if (collection == null) throw new ArgumentNullException("collection");
+
+            if (collection.Count() == 1)
+            {
+                Add(collection.First());
+                return;
+            }
+
+            foreach (T item in collection)
+            {
+                Items.Add(item);
+                afterItemAdded(item);    
+            }
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        }
+
+   
+        public virtual List<T> RemoveRange(IEnumerable<T> collection)
+        {
+            if (collection == null) throw new ArgumentNullException("collection");
+           
+            List<T> removed = new List<T>();
+
+            if (collection.Count() == 1)
+            {
+                if (Remove(collection.First()) == true)
+                {
+                    removed.Add(collection.First());                   
+                }
+
+                return (removed);
+            }
+
+            foreach (T item in collection)
+            {
+                if (Items.Remove(item))
+                {
+                    beforeItemRemoved(item);
+                    removed.Add(item);
+                }
+
+                
+            }
+            OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+
+            return (removed);
+        }
+
         protected override void ClearItems()
         {
             foreach (T item in this)
             {
-                removeItemPropertyChangedListener(item);    
+                beforeItemRemoved(item);    
             }
             
             base.ClearItems();
@@ -106,7 +158,7 @@ namespace MediaViewer.Model.Collections
 
         protected override void RemoveItem(int index)
         {
-            removeItemPropertyChangedListener(this[index]);  
+            beforeItemRemoved(this[index]);  
            
             base.RemoveItem(index);            
         }
@@ -120,7 +172,7 @@ namespace MediaViewer.Model.Collections
 
             base.InsertItem(index,newItem);
                
-            addItemPropertyChangedListener(newItem);                                          
+            afterItemAdded(newItem);                                          
         }
 
         protected override void SetItem(int index, T item)
@@ -136,12 +188,12 @@ namespace MediaViewer.Model.Collections
             }
         }
 
-        virtual protected void addItemPropertyChangedListener(T item)
+        virtual protected void afterItemAdded(T item)
         {
             item.PropertyChanged += item_PropertyChanged;
         }
 
-        virtual protected void removeItemPropertyChangedListener(T item)
+        virtual protected void beforeItemRemoved(T item)
         {
             item.PropertyChanged -= item_PropertyChanged;
         }

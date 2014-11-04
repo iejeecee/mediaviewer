@@ -134,6 +134,15 @@ function createPlaceMark(latitude, longitude, placemarkName, imagePath, imageNam
 
 }
 
+function updatePlaceMark(i, placemarkName, latitude, longitude) {
+
+    var mark = getPlaceMark(i);
+    mark.setName(placemarkName);
+    var point = mark.getGeometry();
+    point.setLatitude(latitude);
+    point.setLongitude(longitude);
+}
+
 function deletePlaceMark(placeMarkId) {
 
     for (var i = 0; i < placemark.length; i++) {
@@ -187,7 +196,7 @@ function lookAtQuery(query) {
 
         } else {
 
-            errorCallback('Geocoder failed due to: ' + status);
+            errorCallback('Look at query failed due to: ' + status);
         }
     });
 }
@@ -237,17 +246,17 @@ function reverseGeoCodePlaceMark(placeMarkId) {
 
             if (results[0]) {
 
-                window.external.addressUpdate(results[0].formatted_address);
+                window.external.reverseGeoCodeFinished(placeMarkId, results[0].formatted_address);
 
             }
 
         } else if (status == google.maps.GeocoderStatus.ZERO_RESULTS) {
 
-            window.external.addressUpdate('unknown address');
+            window.external.reverseGeoCodeFinished(placeMarkId, 'Unknown Address');
 
         } else {
 
-            errorCallback('Geocoder failed due to: ' + status);
+            errorCallback('Location lookup failed due to: ' + status);
         }
     });
 

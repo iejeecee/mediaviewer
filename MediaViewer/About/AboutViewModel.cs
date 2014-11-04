@@ -1,4 +1,4 @@
-﻿using MvvmFoundation.Wpf;
+﻿using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.About
 {
-    class AboutViewModel : ObservableObject
+    class AboutViewModel : BindableBase
     {
 
         public AboutViewModel()
@@ -24,8 +24,7 @@ namespace MediaViewer.About
             get { return assemblyInfo; }
             set
             {
-                assemblyInfo = value;
-                NotifyPropertyChanged();
+                SetProperty(ref assemblyInfo, value);              
             }
         }
 
@@ -34,8 +33,9 @@ namespace MediaViewer.About
         public String LibraryVersionsInfo
         {
             get { return libraryVersionsInfo; }
-            set { libraryVersionsInfo = value;
-            NotifyPropertyChanged();
+            set {
+
+                SetProperty(ref libraryVersionsInfo, value);                 
             }
         }
 

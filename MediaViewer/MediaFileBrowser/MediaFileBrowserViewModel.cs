@@ -5,7 +5,7 @@ using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.DirectoryPicker;
 using MediaViewer.Pager;
 using MediaViewer.Search;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -29,14 +29,15 @@ using MediaViewer.MetaData;
 using Microsoft.Practices.Prism.Commands;
 using System.Windows.Input;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
+using MediaViewer.Model.Mvvm;
 
 namespace MediaViewer.MediaFileBrowser
 {
    
-    public class MediaFileBrowserViewModel : ObservableObject
+    public class MediaFileBrowserViewModel : BindableBase
     {
 
         static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -44,13 +45,13 @@ namespace MediaViewer.MediaFileBrowser
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
 
-        Object currentViewModel;
+        IMediaFileBrowserContentViewModel currentViewModel;
 
-        public Object CurrentViewModel
+        public IMediaFileBrowserContentViewModel CurrentViewModel
         {
             get { return currentViewModel; }
-            set { currentViewModel = value;
-            NotifyPropertyChanged();
+            set { 
+            SetProperty(ref currentViewModel, value);
             }
         }
 
@@ -59,8 +60,8 @@ namespace MediaViewer.MediaFileBrowser
         public ImageViewModel ImageViewModel
         {
             get { return imageViewModel; }
-            private set { imageViewModel = value;
-            NotifyPropertyChanged();
+            private set {  
+            SetProperty(ref imageViewModel, value);
             }
         }
 
@@ -69,8 +70,8 @@ namespace MediaViewer.MediaFileBrowser
         public MediaStackPanelViewModel ImageMediaStackPanelViewModel
         {
             get { return imageMediaStackPanelViewModel; }
-            set { imageMediaStackPanelViewModel = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref imageMediaStackPanelViewModel, value);
             }
         }
 
@@ -79,8 +80,8 @@ namespace MediaViewer.MediaFileBrowser
         public VideoViewModel VideoViewModel
         {
             get { return videoViewModel; }
-            set { videoViewModel = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref videoViewModel, value);
             }
         }
 
@@ -89,8 +90,8 @@ namespace MediaViewer.MediaFileBrowser
         public MediaStackPanelViewModel VideoMediaStackPanelViewModel
         {
             get { return videoMediaStackPanelViewModel; }
-            set { videoMediaStackPanelViewModel = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref videoMediaStackPanelViewModel, value);
             }
         }
 
@@ -99,8 +100,8 @@ namespace MediaViewer.MediaFileBrowser
         public MediaGridViewModel MediaGridViewModel
         {
             get { return mediaGridViewModel; }
-            set { mediaGridViewModel = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref mediaGridViewModel, value);
             }
         }
 
@@ -110,9 +111,8 @@ namespace MediaViewer.MediaFileBrowser
         {
             get { return dummyMediaStackPanelViewModel; }
             set
-            {
-                dummyMediaStackPanelViewModel = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref dummyMediaStackPanelViewModel, value);
             }
         }
 
@@ -121,8 +121,8 @@ namespace MediaViewer.MediaFileBrowser
         public double MaxImageScale
         {
             get { return maxImageScale; }
-            set { maxImageScale = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref maxImageScale, value);
             }
         }
 
@@ -131,8 +131,8 @@ namespace MediaViewer.MediaFileBrowser
         public double MinImageScale
         {
             get { return minImageScale; }
-            set { minImageScale = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref minImageScale, value);
             }
         }
 
@@ -141,8 +141,8 @@ namespace MediaViewer.MediaFileBrowser
         public ICollection<MediaFileItem> SelectedItems
         {
             get { return selectedItems; }
-            set { selectedItems = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref selectedItems, value);
             }
         }
 
@@ -170,7 +170,7 @@ namespace MediaViewer.MediaFileBrowser
             VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
             VideoMediaStackPanelViewModel.IsVisible = true;
 
-            MediaGridViewModel = new MediaGrid.MediaGridViewModel(mediaFileWatcher.MediaState);
+            MediaGridViewModel = new MediaGrid.MediaGridViewModel(mediaFileWatcher.MediaState, EventAggregator);
 
             DummyMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
             DummyMediaStackPanelViewModel.IsEnabled = false;
@@ -224,7 +224,7 @@ namespace MediaViewer.MediaFileBrowser
                     NavigateBackCommand.Execute(null);
                 });
 
-            ContractCommand.CanExecute = false;
+            ContractCommand.IsExecutable = false;
 
             CreateVideoPreviewImagesCommand = new Command(() =>
                 {                 
@@ -271,8 +271,8 @@ namespace MediaViewer.MediaFileBrowser
 
             SelectedItems = new List<MediaFileItem>();
 
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaBatchSelectionEvent>().Subscribe(mediaFileBrowser_MediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.GlobalEvents.MediaSelectionEvent>().Subscribe(mediaFileBrowser_MediaSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(mediaFileBrowser_MediaBatchSelectionEvent);
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(mediaFileBrowser_MediaSelectionEvent);
 
         }
 
@@ -324,7 +324,7 @@ namespace MediaViewer.MediaFileBrowser
                 Title = value;
                 EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
 
-                NotifyPropertyChanged();
+                OnPropertyChanged("BrowsePath");
             }
 
             get
@@ -399,7 +399,6 @@ namespace MediaViewer.MediaFileBrowser
             }, navigationParams);
 
             Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
-
           
         }
 
@@ -462,6 +461,47 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            CurrentViewModel.OnNavigatedFrom(navigationContext);
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            String newTitle = "";
+
+            if (CurrentViewModel == null)
+            {
+                navigateToMetaData();
+                navigateToMediaGrid();
+
+                newTitle = BrowsePath;
+            }
+            else
+            {
+                if (CurrentViewModel is MediaGridViewModel)
+                {
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
+                    newTitle = BrowsePath;
+                }
+                else if (CurrentViewModel is ImageViewModel)
+                {
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(ImageMediaStackPanelViewModel);
+                    newTitle = ImageViewModel.CurrentLocation;
+                    if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
+                }
+                else if (CurrentViewModel is VideoViewModel)
+                {
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(VideoMediaStackPanelViewModel);
+                    newTitle = VideoViewModel.CurrentLocation;
+                    if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
+                }
+                
+                CurrentViewModel.OnNavigatedTo(navigationContext);                
+            }
+
+            Title = newTitle;
+        }
        
     }
 }

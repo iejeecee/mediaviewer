@@ -186,16 +186,19 @@
     </Compile>
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="Logging\Logger.cs" />
+    <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaGrid\MediaStackPanelViewModel.cs" />
     <Compile Include="MediaGrid\MediaStateCollectionViewModel.cs" />
     <Compile Include="MediaDatabase\BaseMedia.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
+    <Compile Include="Model\Global\Commands\GlobalCommands.cs" />
+    <Compile Include="Model\Mvvm\CloseableBindableBase.cs" />
     <Compile Include="Model\Collections\LockedObservableCollection.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
-    <Compile Include="Model\GlobalEvents\GlobalCommandEvent.cs" />
-    <Compile Include="Model\GlobalEvents\MediaSelectionEvent.cs" />
+    <Compile Include="Model\Global\Events\GlobalCommandEvent.cs" />
+    <Compile Include="Model\Global\Events\MediaSelectionEvent.cs" />
     <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateFilterFunctions.cs" />
@@ -218,7 +221,7 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
-    <Compile Include="Model\GlobalEvents\MediaBrowserEvent.cs" />
+    <Compile Include="Model\Global\Events\MediaBrowserEvent.cs" />
     <Compile Include="MediaGrid\ExtraItemInfoView.xaml.cs">
       <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
     </Compile>
@@ -268,6 +271,7 @@
     <Compile Include="Model\Media\State\MediaStateChangedEventArgs.cs" />
     <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
+    <Compile Include="Model\Mvvm\Command.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
@@ -806,10 +810,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MvvmFoundation\MvvmFoundation.Wpf\MvvmFoundation.Wpf.csproj">
-      <Project>{2e922430-eaac-4589-a8f4-f35fbb9799b8}</Project>
-      <Name>MvvmFoundation.Wpf</Name>
-    </ProjectReference>
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
       <Name>VideoLib</Name>

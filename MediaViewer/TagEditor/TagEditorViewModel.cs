@@ -6,7 +6,7 @@ using MediaViewer.Model.Collections;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Win32;
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Xml;
 using System.Xml.Serialization;
+using MediaViewer.Model.Mvvm;
+using Microsoft.Practices.Prism.Commands;
 
 //Add/Attach and Entity States
 //http://msdn.microsoft.com/en-us/data/jj592676.aspx
@@ -26,7 +28,7 @@ using System.Xml.Serialization;
 namespace MediaViewer.TagEditor
 {
    
-    class TagEditorViewModel : CloseableObservableObject 
+    class TagEditorViewModel : CloseableBindableBase 
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -47,23 +49,23 @@ namespace MediaViewer.TagEditor
             ClearTagCommand = new Command(() => SelectedTags.Clear());        
 
             CreateTagCommand = new Command(new Action(createTag));
-            CreateTagCommand.CanExecute = false;
+            CreateTagCommand.IsExecutable = false;
 
             UpdateTagCommand = new Command(new Action(updateTag));
-            UpdateTagCommand.CanExecute = false;
+            UpdateTagCommand.IsExecutable = false;
 
             DeleteTagCommand = new Command(new Action(deleteTag));
-            DeleteTagCommand.CanExecute = false;
+            DeleteTagCommand.IsExecutable = false;
 
             ClearCategoryCommand = new Command(() => SelectedCategories.Clear());
 
             CreateCategoryCommand = new Command(new Action(createCategory));
-            CreateCategoryCommand.CanExecute = false;
+            CreateCategoryCommand.IsExecutable = false;
 
             UpdateCategoryCommand = new Command(new Action(updateCategory));
 
             DeleteCategoryCommand = new Command(new Action(deleteCategory));
-            DeleteCategoryCommand.CanExecute = false;
+            DeleteCategoryCommand.IsExecutable = false;
 
             ImportCommand = new Command(new Action(import));
             ExportCommand = new Command(new Action(export));
@@ -155,9 +157,9 @@ namespace MediaViewer.TagEditor
             {
                 CategoryName = "";
 
-                CreateCategoryCommand.CanExecute = false;
-                UpdateCategoryCommand.CanExecute = false;
-                DeleteCategoryCommand.CanExecute = false;
+                CreateCategoryCommand.IsExecutable = false;
+                UpdateCategoryCommand.IsExecutable = false;
+                DeleteCategoryCommand.IsExecutable = false;
 
                 IsCategorySelected = false;
                 IsCategoryBatchMode = false;
@@ -168,9 +170,9 @@ namespace MediaViewer.TagEditor
                 if (selectedCategories[0] == null) return;
 
                 CategoryName = selectedCategories[0].Name;
-                CreateCategoryCommand.CanExecute = false;
-                UpdateCategoryCommand.CanExecute = true;
-                DeleteCategoryCommand.CanExecute = true;
+                CreateCategoryCommand.IsExecutable = false;
+                UpdateCategoryCommand.IsExecutable = true;
+                DeleteCategoryCommand.IsExecutable = true;
 
                 IsCategorySelected = true;
                 IsCategoryBatchMode = false;
@@ -181,9 +183,9 @@ namespace MediaViewer.TagEditor
                 if (IsCategoryBatchMode == false)
                 {
                     CategoryName = "";
-                    CreateCategoryCommand.CanExecute = false;
-                    UpdateCategoryCommand.CanExecute = false;
-                    DeleteCategoryCommand.CanExecute = true;
+                    CreateCategoryCommand.IsExecutable = false;
+                    UpdateCategoryCommand.IsExecutable = false;
+                    DeleteCategoryCommand.IsExecutable = true;
                  
                     IsCategoryBatchMode = true;
                 }
@@ -199,9 +201,9 @@ namespace MediaViewer.TagEditor
                 TagCategory = null;           
                 ChildTags.Clear();
 
-                CreateTagCommand.CanExecute = false;
-                UpdateTagCommand.CanExecute = false;
-                DeleteTagCommand.CanExecute = false;
+                CreateTagCommand.IsExecutable = false;
+                UpdateTagCommand.IsExecutable = false;
+                DeleteTagCommand.IsExecutable = false;
 
                 IsTagSelected = false;
                 IsTagBatchMode = false;
@@ -212,9 +214,9 @@ namespace MediaViewer.TagEditor
             {
                 selectTag(selectedTags[0]);
 
-                CreateTagCommand.CanExecute = false;
-                UpdateTagCommand.CanExecute = true;
-                DeleteTagCommand.CanExecute = true;
+                CreateTagCommand.IsExecutable = false;
+                UpdateTagCommand.IsExecutable = true;
+                DeleteTagCommand.IsExecutable = true;
 
                 IsTagSelected = true;
                 IsTagBatchMode = false;
@@ -250,8 +252,8 @@ namespace MediaViewer.TagEditor
         public ObservableRangeCollection<TagCategory> Categories
         {
             get { return categories; }
-            set { categories = value;
-            NotifyPropertyChanged();
+            set {  
+            SetProperty(ref categories, value);
             }
         }
       
@@ -261,9 +263,8 @@ namespace MediaViewer.TagEditor
         {
             get { return selectedTags; }
             set
-            {
-                selectedTags = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref selectedTags, value);
             }
         }
 
@@ -293,18 +294,17 @@ namespace MediaViewer.TagEditor
             get { return tagName; }
             set
             {
-                tagName = value;
-
+                SetProperty(ref tagName, value);
+          
                 if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName))
                 {                    
-                   CreateTagCommand.CanExecute = false;                                                     
+                   CreateTagCommand.IsExecutable = false;                                                     
                 }
                 else
                 {                    
-                   CreateTagCommand.CanExecute = true;                                                     
+                   CreateTagCommand.IsExecutable = true;                                                     
                 }
-
-                NotifyPropertyChanged();
+                
             }
         }
 
@@ -314,9 +314,8 @@ namespace MediaViewer.TagEditor
         {
             get { return childTags; }
             set
-            {
-                childTags = value;
-                NotifyPropertyChanged();
+            {              
+                SetProperty(ref childTags, value);
             }
         }
 
@@ -326,9 +325,8 @@ namespace MediaViewer.TagEditor
         {
             get { return addChildTags; }
             set
-            {
-                addChildTags = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref addChildTags, value);
             }
         }
 
@@ -338,9 +336,8 @@ namespace MediaViewer.TagEditor
         {
             get { return removeChildTags; }
             set
-            {
-                removeChildTags = value;
-                NotifyPropertyChanged();
+            {                 
+                SetProperty(ref removeChildTags, value);
             }
         }
 
@@ -350,9 +347,8 @@ namespace MediaViewer.TagEditor
         {
             get { return tagCategory; }
             set
-            {
-                tagCategory = value;
-                NotifyPropertyChanged();
+            {               
+                SetProperty(ref tagCategory, value);
             }
         }
 
@@ -616,9 +612,8 @@ namespace MediaViewer.TagEditor
         {
             get { return selectedCategories; }
             set
-            {
-                selectedCategories = value;
-                NotifyPropertyChanged();
+            {                
+                SetProperty(ref selectedCategories, value);
             }
         }
 
@@ -629,16 +624,17 @@ namespace MediaViewer.TagEditor
             get { return categoryName; }
             set
             {
-                categoryName = value;
+                SetProperty(ref categoryName, value);
+                
                 if (String.IsNullOrEmpty(categoryName) || String.IsNullOrWhiteSpace(categoryName))
                 {
-                    CreateCategoryCommand.CanExecute = false;
+                    CreateCategoryCommand.IsExecutable = false;
                 }
                 else
                 {
-                    CreateCategoryCommand.CanExecute = true;
+                    CreateCategoryCommand.IsExecutable = true;
                 }
-                NotifyPropertyChanged();
+               
             }
         }
               
@@ -712,8 +708,8 @@ namespace MediaViewer.TagEditor
         public bool IsTagSelected
         {
             get { return isTagSelected; }
-            set { isTagSelected = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isTagSelected, value);
             }
         }
         bool isCategorySelected;
@@ -721,8 +717,8 @@ namespace MediaViewer.TagEditor
         public bool IsCategorySelected
         {
             get { return isCategorySelected; }
-            set { isCategorySelected = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isCategorySelected, value);
             }
         }
 
@@ -731,8 +727,8 @@ namespace MediaViewer.TagEditor
         public bool IsTagBatchMode
         {
             get { return isTagBatchMode; }
-            set { isTagBatchMode = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isTagBatchMode, value);
             }
         }
 
@@ -741,8 +737,8 @@ namespace MediaViewer.TagEditor
         public bool IsCategoryBatchMode
         {
             get { return isCategoryBatchMode; }
-            set { isCategoryBatchMode = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isCategoryBatchMode, value);
             }
         }
 
@@ -752,8 +748,8 @@ namespace MediaViewer.TagEditor
         public bool IsTagCategoryEnabled
         {
             get { return isTagCategoryEnabled; }
-            set { isTagCategoryEnabled = value;
-            NotifyPropertyChanged();
+            set {  
+                SetProperty(ref isTagCategoryEnabled, value);
             }
         }
 

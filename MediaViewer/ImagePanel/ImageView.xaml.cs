@@ -1,5 +1,5 @@
 ﻿//http://bjorn.kuiper.nu/2011/05/11/tips-tricks-listening-to-dependency-property-change-notifications-of-a-given-element/
-using MvvmFoundation.Wpf;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +19,7 @@ using Microsoft.Practices.Prism.Regions;
 using MediaViewer.Model.Media.File;
 using MediaViewer.MediaFileBrowser;
 using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 
 namespace MediaViewer.ImagePanel
 {
@@ -290,35 +290,15 @@ namespace MediaViewer.ImagePanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
+            ViewModel.OnNavigatedFrom(navigationContext);            
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             ViewModel = (ImageViewModel)navigationContext.Parameters["viewModel"];
             DataContext = ViewModel;
-                      
-            String location = (String)navigationContext.Parameters["location"];
 
-            if (!String.IsNullOrEmpty(location))
-            {
-                ViewModel.LoadImageAsyncCommand.DoExecute(location);
-            }
-            else
-            {                             
-               EventAggregator.GetEvent<TitleChangedEvent>().Publish(ViewModel.CurrentLocation == null ? "" : ViewModel.CurrentLocation);                            
-            }
-
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
-              
-        }
-
-        private void imageView_MediaSelectionEvent(MediaFileItem item)
-        {
-            if (String.Equals(ViewModel.CurrentLocation, item.Location)) return;
-
-            ViewModel.LoadImageAsyncCommand.DoExecute(item.Location);
-            
-        }
+            ViewModel.OnNavigatedTo(navigationContext);              
+        }       
     }
 }

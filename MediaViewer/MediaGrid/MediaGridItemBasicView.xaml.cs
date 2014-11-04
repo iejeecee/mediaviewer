@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Media.File;
-using MediaViewer.Model.GlobalEvents;
+using MediaViewer.Model.Global.Events;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -50,8 +50,16 @@ namespace MediaViewer.MediaGrid
 
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
-           
-                  
+            MediaFileItem item = SelectableMediaFileItem.Item;
+
+            if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToImageView(item.Location);
+            }
+            else if (MediaFormatConvert.isVideoFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToVideoView(item.Location);
+            }
 
         }
          

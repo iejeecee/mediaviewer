@@ -1,4 +1,4 @@
-﻿using MvvmFoundation.Wpf;
+﻿using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.File
 {
-    class MediaFileItemLoader : ObservableObject
+    class MediaFileItemLoader : BindableBase
     {
         List<MediaFileItem> queuedItems;
         int maxLoadingTasks;
@@ -105,8 +105,9 @@ namespace MediaViewer.Model.Media.File
                     MediaFileItem item = queuedItems[0];
                     queuedItems.RemoveAt(0);
 
-                    // don't reload already loaded items
-                    if (item.ItemState == MediaFileItemState.LOADED) continue;
+                    // don't load already loaded/loading items
+                    if (item.ItemState == MediaFileItemState.LOADED ||
+                        item.ItemState == MediaFileItemState.LOADING) continue;
               
                     // wait until we have a thread available to load the item
                     while(nrLoadingTasks == maxLoadingTasks)
@@ -135,9 +136,9 @@ namespace MediaViewer.Model.Media.File
                         Monitor.PulseAll(queuedItems);
                         Monitor.Exit(queuedItems);
 
-                        if (ItemFinishedLoading != null && item.ItemState != MediaFileItemState.TIMED_OUT)
+                        if (isFinishedLoading(item))
                         {
-                            ItemFinishedLoading(item, EventArgs.Empty);
+                            OnItemFinishedLoading(item);
                         }
 
                     }).ConfigureAwait(false);
@@ -148,6 +149,26 @@ namespace MediaViewer.Model.Media.File
                 Monitor.Exit(queuedItems);
             }
         
+        }
+
+        bool isFinishedLoading(MediaFileItem item)
+        {
+            if (item.ItemState == MediaFileItemState.TIMED_OUT || item.ItemState == MediaFileItemState.LOADING)
+            {
+                return (false);
+            }
+            else
+            {
+                return (true);
+            }
+        }
+
+        void OnItemFinishedLoading(MediaFileItem item)
+        {
+            if (ItemFinishedLoading != null)
+            {
+                ItemFinishedLoading(item, EventArgs.Empty);
+            }
         }
     }
 }
