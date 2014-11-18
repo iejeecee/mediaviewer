@@ -251,6 +251,8 @@ namespace MediaViewer.Model.Media.File
                     media = mediaCommands.update(media);
                 }
             }
+
+            media.IsModified = false;
             
         }
        
@@ -295,7 +297,7 @@ namespace MediaViewer.Model.Media.File
                     }
                 }
 
-
+                media.IsModified = false;
                 return (media);
 
             }

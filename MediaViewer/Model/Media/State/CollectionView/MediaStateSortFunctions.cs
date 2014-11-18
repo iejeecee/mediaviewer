@@ -66,7 +66,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (a.Item.Media.SizeBytes.CompareTo(b.Item.Media.SizeBytes));
+                            return(onEquals(a.Item.Media.SizeBytes.CompareTo(b.Item.Media.SizeBytes), a, b));
+                       
                         });
                     break;
                 case MediaStateSortMode.Rating:
@@ -75,8 +76,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
+                 
+                            return (onEquals(Nullable.Compare(a.Item.Media.Rating, b.Item.Media.Rating), a, b));
 
-                            return (Nullable.Compare(a.Item.Media.Rating, b.Item.Media.Rating));
                         });
                     break;
                 case MediaStateSortMode.Imported:
@@ -85,8 +87,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
-
-                            return (a.Item.Media.IsImported.CompareTo(b.Item.Media.IsImported));
+           
+                            return (onEquals(a.Item.Media.IsImported.CompareTo(b.Item.Media.IsImported), a, b));
                         });
                     break;
                 case MediaStateSortMode.Tags:
@@ -96,7 +98,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (a.Item.Media.Tags.Count.CompareTo(b.Item.Media.Tags.Count));
+                            return (onEquals(a.Item.Media.Tags.Count.CompareTo(b.Item.Media.Tags.Count),a,b));
+
                         });
                     break;
                 case MediaStateSortMode.FileDate:
@@ -106,7 +109,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                            int result = hasMediaTest(a, b);
                            if (result != 0) return result;
 
-                           return (a.Item.Media.FileDate.CompareTo(b.Item.Media.FileDate));
+                           return (onEquals(a.Item.Media.FileDate.CompareTo(b.Item.Media.FileDate),a,b));
                        });
                     break;
                 case MediaStateSortMode.MimeType:
@@ -116,7 +119,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (a.Item.Media.MimeType.CompareTo(b.Item.Media.MimeType));
+                            return (onEquals(a.Item.Media.MimeType.CompareTo(b.Item.Media.MimeType),a,b));
                         });
                     break;
                 case MediaStateSortMode.LastModified:
@@ -126,7 +129,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (a.Item.Media.LastModifiedDate.CompareTo(b.Item.Media.LastModifiedDate));
+                            return (onEquals(a.Item.Media.LastModifiedDate.CompareTo(b.Item.Media.LastModifiedDate),a,b));
                         });
                     break;
                 case MediaStateSortMode.CreationDate:
@@ -136,7 +139,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (Nullable.Compare(a.Item.Media.CreationDate, b.Item.Media.CreationDate));
+                            return (onEquals(Nullable.Compare(a.Item.Media.CreationDate, b.Item.Media.CreationDate),a,b));
                         });
                     break;
                 case MediaStateSortMode.SoftWare:
@@ -146,7 +149,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (Compare(a.Item.Media.Software, b.Item.Media.Software));
+                            return (onEquals(Compare(a.Item.Media.Software, b.Item.Media.Software),a,b));
                         });
                     break;
                 case MediaStateSortMode.Width:
@@ -177,7 +180,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                                 widthB = (b.Item.Media as VideoMedia).Width;
                             }
 
-                            return (widthA.CompareTo(widthB));
+                            return (onEquals(widthA.CompareTo(widthB),a,b));
                         });
                     break;
                 case MediaStateSortMode.Height:
@@ -208,7 +211,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                                 heightB = (b.Item.Media as VideoMedia).Height;
                             }
 
-                            return (heightA.CompareTo(heightB));
+                            return (onEquals(heightA.CompareTo(heightB),a,b));
                         });
                     break;
                 case MediaStateSortMode.Duration:
@@ -221,7 +224,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<int> aDuration = a.Item.Media is VideoMedia ? new Nullable<int>((a.Item.Media as VideoMedia).DurationSeconds) : null;
                             Nullable<int> bDuration = b.Item.Media is VideoMedia ? new Nullable<int>((b.Item.Media as VideoMedia).DurationSeconds) : null;
 
-                            return (Nullable.Compare<int>(aDuration, bDuration));
+                            return (onEquals(Nullable.Compare<int>(aDuration, bDuration),a,b));
                         });
                     break;
                 case MediaStateSortMode.FramesPerSecond:
@@ -234,7 +237,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<double> aFPS = a.Item.Media is VideoMedia ? new Nullable<double>((a.Item.Media as VideoMedia).FramesPerSecond) : null;
                             Nullable<double> bFPS = b.Item.Media is VideoMedia ? new Nullable<double>((b.Item.Media as VideoMedia).FramesPerSecond) : null;
 
-                            return (Nullable.Compare<double>(aFPS, bFPS));
+                            return (onEquals(Nullable.Compare<double>(aFPS, bFPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.VideoCodec:
@@ -247,7 +250,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aVideoCodec = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).VideoCodec : "";
                             String bVideoCodec = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).VideoCodec : "";
 
-                            return (aVideoCodec.CompareTo(bVideoCodec));
+                            return (onEquals(aVideoCodec.CompareTo(bVideoCodec),a,b));
                         });
                     break;
                 case MediaStateSortMode.AudioCodec:
@@ -260,7 +263,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aAudioCodec = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).AudioCodec : null;
                             String bAudioCodec = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).AudioCodec : null;
 
-                            return (Compare(aAudioCodec, bAudioCodec));
+                            return (onEquals(Compare(aAudioCodec, bAudioCodec),a,b));
                         });
                     break;
                 case MediaStateSortMode.PixelFormat:
@@ -273,7 +276,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aPixelFormat = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).PixelFormat : null;
                             String bPixelFormat = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).PixelFormat : null;
 
-                            return (Compare(aPixelFormat, bPixelFormat));
+                            return (onEquals(Compare(aPixelFormat, bPixelFormat),a,b));
                         });
                     break;
                 case MediaStateSortMode.BitsPerSample:
@@ -286,7 +289,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<short> aBPS = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).BitsPerSample : null;
                             Nullable<short> bBPS = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).BitsPerSample : null;
 
-                            return (Nullable.Compare(aBPS, bBPS));
+                            return (onEquals(Nullable.Compare(aBPS, bBPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.SamplesPerSecond:
@@ -299,7 +302,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<int> aSPS = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).SamplesPerSecond : null;
                             Nullable<int> bSPS = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).SamplesPerSecond : null;
 
-                            return (Nullable.Compare(aSPS, bSPS));
+                            return (onEquals(Nullable.Compare(aSPS, bSPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.NrChannels:
@@ -312,7 +315,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<int> aNrChannels = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).NrChannels : null;
                             Nullable<int> bNrChannels = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).NrChannels : null;
 
-                            return (Nullable.Compare(aNrChannels, bNrChannels));
+                            return (onEquals(Nullable.Compare(aNrChannels, bNrChannels),a,b));
                         });
                     break;
                 case MediaStateSortMode.CameraMake:
@@ -325,7 +328,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).CameraMake : null;
                             String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).CameraMake : null;
 
-                            return (Compare(aVal, bVal));
+                            return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.CameraModel:
@@ -338,7 +341,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).CameraModel : null;
                             String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).CameraModel : null;
 
-                            return (Compare(aVal, bVal));
+                            return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.Lens:
@@ -351,7 +354,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).Lens : null;
                             String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).Lens : null;
 
-                            return (Compare(aVal, bVal));
+                            return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.FocalLength:
@@ -364,7 +367,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).FocalLength : null;
                             Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).FocalLength : null;
 
-                            return (Nullable.Compare(aVal, bVal));
+                            return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.FNumber:
@@ -377,7 +380,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).FNumber : null;
                             Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).FNumber : null;
 
-                            return (Nullable.Compare(aVal, bVal));
+                            return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.ExposureTime:
@@ -390,7 +393,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).ExposureTime : null;
                             Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).ExposureTime : null;
 
-                            return (Nullable.Compare(aVal, bVal));
+                            return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.ISOSpeedRating:
@@ -403,7 +406,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             Nullable<int> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).ISOSpeedRating : null;
                             Nullable<int> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).ISOSpeedRating : null;
 
-                            return (Nullable.Compare(aVal, bVal));
+                            return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 default:
@@ -429,6 +432,18 @@ namespace MediaViewer.Model.Media.State.CollectionView
         {
             if ((int)mode <= (int)MediaStateSortMode.Height || (int)mode >= (int)MediaStateSortMode.CameraMake) return (true);
             else return (false);
+        }
+
+        static int onEquals(int result, SelectableMediaFileItem a, SelectableMediaFileItem b)
+        {
+            if (result == 0)
+            {
+                return (System.IO.Path.GetFileName(a.Item.Location).CompareTo(System.IO.Path.GetFileName(b.Item.Location)));
+            }
+            else
+            {
+                return (result);
+            }
         }
 
         static int hasMediaTest(SelectableMediaFileItem a, SelectableMediaFileItem b)

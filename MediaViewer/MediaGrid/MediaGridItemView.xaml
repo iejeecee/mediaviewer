@@ -6,7 +6,7 @@ xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
 xmlns:effects="clr-namespace:MediaViewer.Effects"
 xmlns:MediaGrid="clr-namespace:MediaViewer.MediaGrid"
-xmlns:TextBlock="clr-namespace:MediaViewer.UserControls.TextBlock"
+xmlns:TextBlock="clr-namespace:MediaViewer.UserControls.TextBlockOld"
 xmlns:Media="clr-namespace:System.Windows.Media;assembly=PresentationCore"
 xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" x:Class="MediaViewer.MediaGrid.MediaGridItemView"
 mc:Ignorable="d"
@@ -22,7 +22,7 @@ d:DesignHeight="300" d:DesignWidth="300">
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="root">
-        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
+        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Click="imageGridItem_Click">
             <ToggleButton.Style>
                 <Style>
                     <Style.Triggers>                       

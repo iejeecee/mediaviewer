@@ -20,7 +20,7 @@ using VideoLib;
 
 namespace MediaViewer.VideoPreviewImage
 {
-    public class VideoPreviewImageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
+    public class VideoPreviewImageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
 
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -53,11 +53,40 @@ namespace MediaViewer.VideoPreviewImage
 
             CancelCommand = new Command(() =>
             {
-                tokenSource.Cancel();
+                if (tokenSource != null)
+                {
+                    tokenSource.Cancel();
+                }
             });
 
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool cleanupManaged)
+        {
+          
+            if (cleanupManaged)
+            {
+                if (videoPreview != null)
+                {
+                    videoPreview.Dispose();
+                    videoPreview = null;
+                }
+
+                if (tokenSource != null)
+                {
+                    tokenSource.Dispose();
+                    tokenSource = null;
+                }
+            }
+
         }
 
         public async Task generatePreviews()
@@ -372,5 +401,7 @@ namespace MediaViewer.VideoPreviewImage
                 SetProperty(ref windowIcon, value);
             }
         }
+
+       
     }
 }

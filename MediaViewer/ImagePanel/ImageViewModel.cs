@@ -28,7 +28,7 @@ using MediaViewer.MediaFileBrowser;
 namespace MediaViewer.ImagePanel
 {
 
-    public class ImageViewModel : BindableBase, IMediaFileBrowserContentViewModel
+    public class ImageViewModel : BindableBase, IMediaFileBrowserContentViewModel, IDisposable
     {
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -147,6 +147,24 @@ namespace MediaViewer.ImagePanel
             IsEffectsEnabled = true;
             IsResetSettingsOnLoad = true;
          
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (loadImageCTS != null)
+                {
+                    loadImageCTS.Dispose();
+                    loadImageCTS = null;
+                }
+            }
         }
 
         void resetSettings()

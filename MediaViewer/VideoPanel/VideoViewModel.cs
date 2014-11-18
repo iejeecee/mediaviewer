@@ -50,8 +50,7 @@ namespace MediaViewer.VideoPanel
             OpenCommand = new Command<string>(location =>
             {
                 if (addCommandToQueue(OpenCommand, location) == true) return;
-              
-                tokenSource = new CancellationTokenSource();
+                            
                 try
                 {
                     videoPlayer.open(location);
@@ -206,40 +205,32 @@ namespace MediaViewer.VideoPanel
             GC.SuppressFinalize(this);
         }
 
-        ~VideoViewModel()
-        {
-            Dispose(false);
-        }
-
-        public virtual void Dispose(bool cleanupManaged)
+        protected virtual void Dispose(bool cleanupManaged)
         {
             if (IsInitialized == false) return;
 
             if (cleanupManaged)
             {
-                // cleanup managed resources
+                // cleanup unmanaged
+                if (videoPlayer != null)
+                {
+                    CloseCommand.Execute();
+
+                    videoPlayer.StateChanged -= videoPlayer_StateChanged;
+                    videoPlayer.PositionSecondsChanged -= videoPlayer_PositionSecondsChanged;
+                    videoPlayer.DurationSecondsChanged -= videoPlayer_DurationSecondsChanged;
+                    videoPlayer.HasAudioChanged -= videoPlayer_HasAudioChanged;
+
+                    videoPlayer.Dispose();
+                    videoPlayer = null;
+
+                }
+
+                IsInitialized = false;
             }
-
-            // cleanup unmanaged
-            if (videoPlayer != null)
-            {
-                CloseCommand.Execute();
-
-                videoPlayer.StateChanged -= videoPlayer_StateChanged;
-                videoPlayer.PositionSecondsChanged -= videoPlayer_PositionSecondsChanged;
-                videoPlayer.DurationSecondsChanged -= videoPlayer_DurationSecondsChanged;
-                videoPlayer.HasAudioChanged -= videoPlayer_HasAudioChanged;
-
-                videoPlayer.Dispose();
-                videoPlayer = null;
-
-            }
-
-            IsInitialized = false;
+  
         }
 
-      
-       
         private void videoPlayer_HasAudioChanged(object sender, bool newHasAudio)
         {
             HasAudio = newHasAudio;
@@ -353,14 +344,6 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-    
-        CancellationTokenSource tokenSource;
-
-        public CancellationTokenSource TokenSource
-        {
-            get { return tokenSource; }
-            set { tokenSource = value; }
-        }
 
         /// <summary>
         /// VIEWMODEL INTERFACE
@@ -508,12 +491,17 @@ namespace MediaViewer.VideoPanel
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             String location = (String)navigationContext.Parameters["location"];
+            int? offsetSeconds = (int?)navigationContext.Parameters["offsetSeconds"];
 
             if (!String.IsNullOrEmpty(location))
             {
                 OpenCommand.Execute(location);
                 PlayCommand.Execute();
 
+                if (offsetSeconds != null)
+                {
+                    SeekCommand.Execute(offsetSeconds);
+                }
             }
             else
             {

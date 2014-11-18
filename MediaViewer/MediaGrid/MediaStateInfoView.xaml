@@ -29,7 +29,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label Name="infoLabel" Grid.Row="0" Grid.Column="0" VerticalContentAlignment="Center" VerticalAlignment="Center">
-                    <TextBlock Name="infoLabelTextBlock"/>
+                    <TextBlock Name="infoLabelTextBlock" TextTrimming="CharacterEllipsis"/>
                 </Label>
                 <Label Name="nrItemsLabel" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
                 <Label Name="dateTimeLabel" Grid.Row="1" Grid.Column="0" FontSize="8" FontWeight="Bold" VerticalContentAlignment="Center" VerticalAlignment="Center"/>

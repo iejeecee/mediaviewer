@@ -21,23 +21,14 @@ using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Global.Commands;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataUpdateViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
-        AppSettings Settings
-        {
-            get;
-            set;
-        }
-      
-        MediaState MediaState
-        {
-            get;
-            set;
-        }
-
+        AppSettings Settings { get; set; }            
+        MediaState MediaState {get;set;}       
         IEventAggregator EventAggregator { get; set; }
 
         class Counter
@@ -117,13 +108,13 @@ namespace MediaViewer.MetaData
 
         public async Task writeMetaDataAsync(MetaDataUpdateViewModelAsyncState state)
         {
-
             TotalProgressMax = state.ItemList.Count;
             ItemProgressMax = 100;
             TotalProgress = 0;            
 
             await Task.Factory.StartNew(() =>
             {
+                GlobalCommands.MetaDataUpdateCommand.Execute(state);
                 writeMetaData(state);
 
             }, cancellationToken);
@@ -172,6 +163,7 @@ namespace MediaViewer.MetaData
 
                     if (item.Media != null && !(item.Media is UnknownMedia))
                     {
+                        isModified = item.Media.IsModified;
 
                         BaseMedia media = item.Media;
 
@@ -621,7 +613,7 @@ namespace MediaViewer.MetaData
         }
     }
 
-    class MetaDataUpdateViewModelAsyncState
+    public class MetaDataUpdateViewModelAsyncState
     {
         public MetaDataUpdateViewModelAsyncState(MetaDataViewModel vm)
         {

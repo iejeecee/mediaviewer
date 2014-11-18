@@ -53,7 +53,7 @@ namespace MediaViewer.UserControls.TagPicker
 
                 using (TagDbCommands tc = new TagDbCommands())
                 {
-                    results = tc.getTagAutocompleteMatches(text);
+                    results = tc.getTagAutocompleteMatches(text, 50, IsStartsWithAutoCompleteMode);
                 }
 
                 return (results.Cast<Object>().ToList());
@@ -165,6 +165,17 @@ namespace MediaViewer.UserControls.TagPicker
         public static readonly DependencyProperty AddLinkedTagsProperty =
             DependencyProperty.Register("AddLinkedTags", typeof(bool), typeof(TagPickerView), new PropertyMetadata(true));
 
+
+        public bool IsStartsWithAutoCompleteMode
+        {
+            get { return (bool)GetValue(IsStartsWithAutoCompleteModeProperty); }
+            set { SetValue(IsStartsWithAutoCompleteModeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsStartsWithAutoCompleteMode.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsStartsWithAutoCompleteModeProperty =
+            DependencyProperty.Register("IsStartsWithAutoCompleteMode", typeof(bool), typeof(TagPickerView), new PropertyMetadata(false));
+        
 
         public bool AcceptOnlyExistingTags
         {

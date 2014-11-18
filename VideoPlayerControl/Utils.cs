@@ -136,5 +136,34 @@ namespace VideoPlayerControl
 
             return (stretched);
         }
+
+        public static void parseTimeSeconds(long totalSeconds, out int seconds, out int minutes, out int hours)
+        {
+            seconds = (int)(totalSeconds % 60);
+            minutes = (int)((totalSeconds / 60) % 60);
+            hours = (int)(totalSeconds / 3600);
+        }
+
+        public static string formatTimeSeconds(long totalSeconds)
+        {
+            int seconds, minutes, hours;
+
+            parseTimeSeconds(totalSeconds, out seconds, out minutes, out hours);
+
+            string hoursStr = "";
+
+            if (hours != 0)
+            {
+
+                hoursStr = hours.ToString() + ":";
+            }
+
+            string output = hoursStr +
+                minutes.ToString("00") + ":" +
+                seconds.ToString("00");
+
+            return (output);
+
+        }
     }
 }

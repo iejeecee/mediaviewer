@@ -10,6 +10,8 @@ using D3D = SharpDX.Direct3D9;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using System.Windows.Media.Imaging;
+using System.IO;
 
 
 namespace VideoPlayerControl
@@ -299,15 +301,45 @@ namespace VideoPlayerControl
                 SharpDX.DataRectangle stream = screenShot.LockRectangle(videoRect, D3D.LockFlags.ReadOnly);
                 try
                 {
-                    Bitmap image = new Bitmap(width, height, stream.Pitch,
-                        System.Drawing.Imaging.PixelFormat.Format32bppArgb, stream.DataPointer);
+                    JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                    BitmapMetadata metaData = new BitmapMetadata("jpg");
+
+                    UriBuilder uri = new UriBuilder(new Uri(videoLocation).AbsoluteUri);
+
+                    int offsetSeconds = 3;
+                    int offsetPosition = ((positionSeconds - offsetSeconds < 0) ? 0 : positionSeconds - offsetSeconds);
+                    uri.Query = "position=" + offsetPosition;
+
+                    metaData.ApplicationName = "MediaViewer v1.0";             
+                    metaData.Title = uri.ToString();
+                    metaData.DateTaken = DateTime.Now.ToString("R");
+
+                    BitmapSource bitmapSource = System.Windows.Media.Imaging.BitmapSource.Create(
+                        width,
+                        height,
+                        96,
+                        96,
+                        System.Windows.Media.PixelFormats.Bgra32,
+                        null,
+                        stream.DataPointer,
+                        height * stream.Pitch,
+                        stream.Pitch
+                    );
+
+                    encoder.Frames.Add(BitmapFrame.Create(bitmapSource, null, metaData, null));
 
                     screenShotName = System.IO.Path.GetFileNameWithoutExtension(screenShotName);
-                    screenShotName += "." + screenShotFormat.ToString();
+                    screenShotName += "." + "jpg";
 
                     screenShotName = Utils.getUniqueFileName(screenShotLocation + "\\" + screenShotName);
+
+                    FileStream outputFile = new FileStream(screenShotName, FileMode.Create);
+                    //encoder.QualityLevel = asyncState.JpegQuality;
+                    encoder.Save(outputFile);
+
+                    outputFile.Close();
+              
                     
-                    image.Save(screenShotName);
                     System.Media.SystemSounds.Exclamation.Play();
                 }
                 catch (Exception e)

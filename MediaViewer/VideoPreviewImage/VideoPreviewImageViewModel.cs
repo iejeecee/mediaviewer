@@ -56,13 +56,15 @@ namespace MediaViewer.VideoPreviewImage
             OkCommand = new Command(async () =>
             {
                 CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                VideoPreviewImageProgressViewModel vm = new VideoPreviewImageProgressViewModel();
-                progress.DataContext = vm;
-                vm.AsyncState = this;
-                progress.Show();
-                Task task = vm.generatePreviews();
-                OnClosingRequest();
-                await task;
+                using (VideoPreviewImageProgressViewModel vm = new VideoPreviewImageProgressViewModel())
+                {
+                    progress.DataContext = vm;
+                    vm.AsyncState = this;
+                    progress.Show();
+                    Task task = vm.generatePreviews();
+                    OnClosingRequest();
+                    await task;
+                }
             });
             CancelCommand = new Command(() =>
             {

@@ -7,6 +7,7 @@
              xmlns:inputtoolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"           
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
              xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
+             xmlns:HyperlinkTextBox="clr-namespace:MediaViewer.UserControls.HyperlinkTextBox"
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"  x:Class="MediaViewer.MetaData.MetaDataView"
              mc:Ignorable="d" d:DesignWidth="300">
     <UserControl.Resources>
@@ -113,7 +114,7 @@
                 <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
                 <Label Grid.Row="5" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"/>
                 <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
-					Value="{Binding Rating, Mode=TwoWay}"
+					Value="{Binding Rating, Mode=TwoWay}" 
 					IsEnabled="{Binding RatingEnabled}">
                     <inputtoolkit:Rating.ContextMenu>
                         <ContextMenu>
@@ -125,32 +126,33 @@
 					IsChecked="{Binding RatingEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="7" Grid.Column="0" Content="Title" Style="{StaticResource labelStyle}"/>
-                <TextBox x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,6" VerticalAlignment="Top"
-					Text="{Binding Title}"
-					IsEnabled="{Binding TitleEnabled}"/>
+                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" VerticalAlignment="Top"
+					Text="{Binding Title, Converter={StaticResource removeNewlinesConverter}}"
+					IsEnabled="{Binding TitleEnabled}" WordWrap="False" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
                 <CheckBox Grid.Row="7" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding TitleEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="8" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"/>
-                <TextBox x:Name="descriptionTextBox" Grid.Row="8" Grid.Column="1"  TextWrapping="Wrap"
-					AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="70"
+                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="descriptionTextBox" Grid.Row="8" Grid.Column="1" 
+					Margin="5, 5, 5, 5" Height="70" WordWrap="True"
+                    VerticalScrollBarVisibility="Auto"
 					Text="{Binding Description}"                     
-					IsEnabled="{Binding DescriptionEnabled}"/>
+					IsEnabled="{Binding DescriptionEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
                 <CheckBox Grid.Row="8" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding DescriptionEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="9" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}"/>
-                <TextBox x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
-					Text="{Binding Author}"
-					IsEnabled="{Binding AuthorEnabled}"/>
+                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
+					Text="{Binding Author, Converter={StaticResource removeNewlinesConverter}}"
+					IsEnabled="{Binding AuthorEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
                 <CheckBox Grid.Row="9" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding AuthorEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="10" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}"/>
-                <TextBox x:Name="copyrightTextBox" Grid.Row="10" Grid.Column="1"  TextWrapping="Wrap"
-					AcceptsReturn="True" VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35"
+                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="copyrightTextBox" Grid.Row="10" Grid.Column="1"
+					VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35" WordWrap="True"
 					Text="{Binding Copyright}"
-					IsEnabled="{Binding CopyrightEnabled}"/>
+					IsEnabled="{Binding CopyrightEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
                 <CheckBox Grid.Row="10" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CopyrightEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -175,21 +177,21 @@
 					Tags="{Binding Tags}"
 					IsEnabled="{Binding IsEnabled}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
                 <Label Grid.Row="14" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
                        />
                 <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding AddTags}"                                       
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True"/>
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
                 <Label Grid.Row="15" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
                        />
                 <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false"/>               
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>               
                 <Button Grid.Row="16" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding WriteMetaDataCommand}"

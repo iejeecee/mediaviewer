@@ -56,11 +56,7 @@ namespace MediaViewer.UserControls.TagTreePicker
 
         public bool Equals(TagTreePickerItem other)
         {
-            if (other == null)
-            {
-                throw new NotImplementedException();
-            }
-
+         
             if (this is TagItem && other is TagItem)
             {
                 return ((this as TagItem).Tag.Id == (other as TagItem).Tag.Id);

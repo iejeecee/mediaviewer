@@ -2,15 +2,17 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"             
              xmlns:Control="clr-namespace:MediaViewer.UserControls.AutoCompleteBox"
              mc:Ignorable="d" 
+             x:Name="autoCompleteBoxView"
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>       
         <Style x:Key="buttonStyle" TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">           
             <Setter Property="HorizontalAlignment" Value="Stretch"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
         </Style>
+        <Control:HighlightQueryConverter x:Key="highlightQueryConverter"/>
     </UserControl.Resources>
     <Grid>
         <TextBox x:Name="autoCompleteTextBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown"/>                 
@@ -20,7 +22,16 @@
                     <ItemsControl Name="popupItemsControl">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Name="suggestionButton" Tag="{Binding}" Content="{Binding}" Style="{StaticResource buttonStyle}" Click="suggestionButton_Click"/>
+                                <Button Name="suggestionButton" Tag="{Binding}" Style="{StaticResource buttonStyle}" Click="suggestionButton_Click">
+                                    <Button.Content>
+                                        <ContentControl                                         
+                                           HorizontalAlignment="Left"
+                                           VerticalAlignment="Center"
+                                           Content="{Binding Path=., Converter={StaticResource highlightQueryConverter},
+                                            ConverterParameter={x:Reference autoCompleteBoxView}, Mode=OneTime}">
+                                        </ContentControl>
+                                    </Button.Content>
+                                </Button>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         <ItemsControl.ItemsPanel>

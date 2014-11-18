@@ -47,9 +47,19 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (Db.TagSet.Count());
         }
 
-        public List<Tag> getTagAutocompleteMatches(String name)
+        public List<Tag> getTagAutocompleteMatches(String query, int maxResults, bool startsWith = false)
         {
-            List<Tag> result = Db.TagSet.Where(t => t.Name.StartsWith(name)).OrderByDescending(t => t.Used).ToList();
+            List<Tag> result;
+
+            if (startsWith == false)
+            {
+                result = Db.TagSet.Where(t => t.Name.Contains(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
+            }
+            else
+            {
+                result = Db.TagSet.Where(t => t.Name.StartsWith(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
+            }
+
             return (result);
         }
 

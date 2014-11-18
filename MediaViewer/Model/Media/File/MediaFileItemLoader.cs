@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.File
 {
-    class MediaFileItemLoader : BindableBase
+    class MediaFileItemLoader : BindableBase, IDisposable
     {
         List<MediaFileItem> queuedItems;
         int maxLoadingTasks;
@@ -27,6 +27,24 @@ namespace MediaViewer.Model.Media.File
             
             tokenSource = new CancellationTokenSource();
            
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (tokenSource != null)
+                {
+                    tokenSource.Dispose();
+                    tokenSource = null;
+                }
+            }
         }
        
         public void addRange(IEnumerable<MediaFileItem> itemList)

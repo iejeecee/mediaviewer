@@ -20,7 +20,7 @@ using Microsoft.Practices.Prism.Commands;
 
 namespace MediaViewer.Torrent
 {
-    public class TorrentCreationProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
+    public class TorrentCreationProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
              
         protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
@@ -64,6 +64,24 @@ namespace MediaViewer.Torrent
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
 
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (tokenSource != null)
+                {
+                    tokenSource.Dispose();
+                    tokenSource = null;
+                }
+            }
         }
 
         public async Task createTorrentAsync(TorrentCreationViewModel vm)

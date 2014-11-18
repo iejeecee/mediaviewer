@@ -1,5 +1,4 @@
 ﻿using VideoPlayerControl.Timers;
-using MvvmFoundation.Wpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -278,7 +277,7 @@ namespace VideoPlayerControl
 
             ScreenShotLocation = "";
             ScreenShotName = "";
-            ScreenShotFormat = ImageFormat.Png;
+            ScreenShotFormat = ImageFormat.Jpeg;
           
             DurationSeconds = 0;
             PositionSeconds = 0;
@@ -345,7 +344,9 @@ namespace VideoPlayerControl
                 
             }
         }
-      
+
+        //int nrFramesRendered = 0;
+
         void videoRefreshTimer_Tick(Object sender, EventArgs e)
         {
 
@@ -385,6 +386,8 @@ restartvideo:
                     renderOneFrame = false;
                 }
 
+                //nrFramesRendered++;
+
 			} else if(VideoState == VideoState.PAUSED || videoFrame == null) {
                 
 				videoRender.display(null, Color.Black, VideoRender.RenderMode.PAUSED);			
@@ -401,6 +404,12 @@ restartvideo:
                 goto restartvideo;
 
             }
+
+            /*if (nrFramesRendered % 100 == 0)
+            {
+                System.Diagnostics.Debug.Print("fps: " + (double)nrFramesRendered / getVideoClock());
+            }*/
+
 
             // start timer with delay for next frame
             videoRefreshTimer.Interval = (int)(actualDelay * 1000 + 0.5);

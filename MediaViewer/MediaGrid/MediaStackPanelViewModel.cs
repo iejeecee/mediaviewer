@@ -17,6 +17,7 @@ namespace MediaViewer.MediaGrid
     public class MediaStackPanelViewModel : MediaStateCollectionViewModel, IPageable
     {
         protected IEventAggregator EventAggregator { get; set; }
+        MediaFileItem selectedItem;
 
         public MediaStackPanelViewModel(IMediaState mediaState, IEventAggregator eventAggregator)
             : base(mediaState)
@@ -32,6 +33,7 @@ namespace MediaViewer.MediaGrid
 
             MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
             MediaStateCollectionView.SelectionChanged += mediaState_SelectionChanged;
+            MediaStateCollectionView.ItemResorted += mediaState_ItemResorted;
 
             NextPageCommand = new Command(() =>
             {
@@ -53,6 +55,19 @@ namespace MediaViewer.MediaGrid
             {               
                 CurrentPage = MediaStateCollectionView.Media.Count;               
             });
+
+            selectedItem = null;
+        }
+
+        private void mediaState_ItemResorted(object sender, int newIndex)
+        {
+            MediaFileItem resortedItem = (MediaFileItem)sender;
+
+            if (selectedItem != null && selectedItem.Equals(resortedItem))
+            {
+                currentPage = newIndex + 1;
+                OnPropertyChanged("CurrentPage");
+            }
         }
 
         private void mediaState_SelectionChanged(object sender, EventArgs e)
@@ -60,9 +75,7 @@ namespace MediaViewer.MediaGrid
           
             MediaStateCollectionView.Media.EnterReaderLock();
             try
-            {
-                MediaFileItem selectedItem;
-
+            {                
                 MediaStateCollectionView.getSelectedItem(out selectedItem);
 
                 if (selectedItem != null)
@@ -90,9 +103,7 @@ namespace MediaViewer.MediaGrid
                  NrPages = MediaStateCollectionView.Media.Count();
 
                  // if the number of items in the state changed has changed
-                 // the index of the currently selected item, update the index
-                 MediaFileItem selectedItem;
-
+                 // the index of the currently selected item, update the index            
                  int index = MediaStateCollectionView.getSelectedItem(out selectedItem);
 
                  if (index != -1 && (index + 1) != CurrentPage)

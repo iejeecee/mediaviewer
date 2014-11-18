@@ -22,7 +22,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
     public class MediaStateCollectionView : BindableBase {
 
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
-        public event EventHandler<PropertyChangedEventArgs> StateItemPropertyChanged;
+        public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
+        public event EventHandler<int> ItemResorted;
         public event EventHandler SelectionChanged;
         public event EventHandler Cleared;
       
@@ -55,7 +56,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
     
         private void Media_ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {            
-            OnStateItemPropertyChanged(sender, e);
+            OnItemPropertyChanged(sender, e);
         }
 
         public virtual void detachFromMediaState()
@@ -207,12 +208,17 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         protected void reSort(MediaFileItem item)
         {
+
+            int index = 0;
+            int newIndex = 0;
+
             Media.EnterWriteLock();
             try
             {
                 SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
 
-                int index = Media.IndexOf(selectableItem);
+                index = Media.IndexOf(selectableItem);
+                newIndex = index;
 
                 if (index >= 0)
                 {
@@ -226,7 +232,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
                     if (Filter(selectableItem))
                     {
-                        insertSorted(selectableItem);
+                        newIndex = insertSorted(selectableItem);                        
                     }
                 }
 
@@ -235,6 +241,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
             {
                 Media.ExitWriteLock();
             }
+
+            if (newIndex != index)
+            {
+                OnItemResorted(item, newIndex);
+            }
+         
         }
 
         public void selectAll()
@@ -269,7 +281,61 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 OnSelectionChanged();
             }
         }
-       
+
+        public void selectRange(MediaFileItem end)
+        {
+            bool selectionChanged = false;
+
+            Media.EnterWriteLock();
+            try
+            {
+                MediaFileItem start = null;
+
+                int startIndex = getSelectedItem(out start);
+                int endIndex = Media.IndexOf(new SelectableMediaFileItem(end));
+                
+                if(endIndex == -1) {
+
+                    return;
+
+                } else if(startIndex == -1) {
+
+                    Media[endIndex].IsSelected = true;
+                }
+
+                if(endIndex < startIndex) {
+
+                    int temp = startIndex;
+                    startIndex = endIndex;
+                    endIndex = temp;
+                }
+             
+                for(int i = startIndex; i <= endIndex; i++)
+                {  
+                    Media[i].SelectionChanged -= selectableItem_SelectionChanged;
+
+                    if (Media[i].IsSelected == false)
+                    {
+                        selectionChanged = true;
+                    }
+
+                    Media[i].IsSelected = true;
+
+                    Media[i].SelectionChanged += selectableItem_SelectionChanged;
+                }
+
+            }
+            finally
+            {
+                Media.ExitWriteLock();
+            }
+
+            if (selectionChanged)
+            {
+                OnSelectionChanged();
+            }
+        }
+
         public void deselectAll()
         {
             bool selectionChanged = false;
@@ -396,11 +462,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
+                // Use a fast(er) path if we are just adding a batch of items to a empty list
+                // instead of firing off a whole bunch of itemchanged events
                 if (this.Media.Count == 0 && items.Count() > 1)
-                {
-                    // Use a fast(er) path if we are just adding a batch of items to a empty list
-
+                {                   
                     List<SelectableMediaFileItem> temp = new List<SelectableMediaFileItem>();
+                    List<MediaFileItem> filteredItems = new List<MediaFileItem>();
 
                     foreach (MediaFileItem item in items)
                     {
@@ -409,14 +476,16 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         if (Filter(selectableItem))
                         {
                             selectableItem.SelectionChanged += selectableItem_SelectionChanged;
-                            CollectionsSort.insertIntoSortedCollection(temp, selectableItem, sortFunc);                            
+                            CollectionsSort.insertIntoSortedCollection(temp, selectableItem, sortFunc);
+
+                            filteredItems.Add(item);
                         }
                     }
 
                     Media.AddRange(temp);
                     sortedItemEnd = Media.Count;
 
-                    OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, items));
+                    OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, filteredItems));
                 }
                 else
                 {
@@ -461,14 +530,16 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         }
         
-        void insertSorted(SelectableMediaFileItem selectableItem)
+        int insertSorted(SelectableMediaFileItem selectableItem)
         {
             Media.EnterWriteLock();
             try
             {
-                CollectionsSort.insertIntoSortedCollection<SelectableMediaFileItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
+                int newIndex = CollectionsSort.insertIntoSortedCollection<SelectableMediaFileItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
 
                 sortedItemEnd++;
+
+                return (newIndex);
             }
             finally
             {
@@ -523,11 +594,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 SelectionChanged(this, EventArgs.Empty);
             }
         }
-        private void OnStateItemPropertyChanged(Object sender, PropertyChangedEventArgs args)
+        private void OnItemPropertyChanged(Object sender, PropertyChangedEventArgs args)
         {
-            if (StateItemPropertyChanged != null)
+            if (ItemPropertyChanged != null)
             {
-                StateItemPropertyChanged(sender, args);
+                ItemPropertyChanged(sender, args);
             }
         }
 
@@ -536,6 +607,14 @@ namespace MediaViewer.Model.Media.State.CollectionView
             if (NrItemsInStateChanged != null)
             {
                 NrItemsInStateChanged(this, args);
+            }
+        }
+
+        private void OnItemResorted(Object item, int newIndex)
+        {
+            if (ItemResorted != null)
+            {
+                ItemResorted(item, newIndex);
             }
         }
                

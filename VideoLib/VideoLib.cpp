@@ -151,7 +151,7 @@ VideoPlayer::VideoPlayer() {
 
 	videoDecoder = new VideoDecoder();
 
-	frameQueue = gcnew VideoLib::FrameQueue2(videoDecoder);
+	frameQueue = gcnew VideoLib::FrameQueue(videoDecoder);
 	videoLocation = "";
 
 	isFinalPacketAdded = false;

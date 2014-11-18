@@ -212,7 +212,7 @@ namespace VideoLib {
 
 		VideoDecoder *videoDecoder;
 		
-		FrameQueue2 ^frameQueue;
+		FrameQueue ^frameQueue;
 
 		String ^videoLocation;
 
@@ -259,9 +259,9 @@ namespace VideoLib {
 		delegate void LogCallbackDelegate(
 			int level, String ^message);
 
-		property VideoLib::FrameQueue2 ^FrameQueue {
+		property VideoLib::FrameQueue ^FrameQueue {
 
-			VideoLib::FrameQueue2 ^get() {
+			VideoLib::FrameQueue ^get() {
 
 				return(frameQueue);
 			}

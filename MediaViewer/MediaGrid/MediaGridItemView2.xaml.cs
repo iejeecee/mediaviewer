@@ -1,9 +1,14 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
+using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.ServiceLocation;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,32 +25,199 @@ using System.Windows.Shapes;
 namespace MediaViewer.MediaGrid
 {
     /// <summary>
-    /// Interaction logic for ExtraImageGridItemInfoView.xaml
+    /// Interaction logic for MediaGridItemView2.xaml
     /// </summary>
-    public partial class ExtraItemInfoView : UserControl
+    public partial class MediaGridItemView2 : UserControl
     {
-        const string dateFormat = "MMM d, yyyy";
+        static InfoIconsCache InfoIcons { get; set; }
+        static RatingCache Rating { get; set; }
 
-        public ExtraItemInfoView()
+        static IEventAggregator EventAggregator { get; set; }
+
+        public MediaGridItemView2()
         {
             InitializeComponent();
-        }
-               
-        public MediaStateSortMode InfoType
-        {
-            get { return (MediaStateSortMode)GetValue(InfoTypeProperty); }
-            set { SetValue(InfoTypeProperty, value); }
+
+            if(InfoIcons == null) {                
+
+                InfoIcons = new InfoIconsCache();
+                Rating = new RatingCache(true);
+
+                EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
+            }
+
+            
         }
 
-        // Using a DependencyProperty as the backing store for InfoType.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty InfoTypeProperty =
-            DependencyProperty.Register("InfoType", typeof(MediaStateSortMode), typeof(ExtraItemInfoView), new PropertyMetadata(MediaStateSortMode.Name, extraImageGridItemInfoView_InfoTypeChangedCallback));
-
-        private static void extraImageGridItemInfoView_InfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public SelectableMediaFileItem SelectableMediaFileItem
         {
-            ExtraItemInfoView view = d as ExtraItemInfoView;
-            MediaStateSortMode infoType = (MediaStateSortMode)e.NewValue;
-            MediaFileItem item = (view.DataContext as SelectableMediaFileItem).Item;
+            get { return (SelectableMediaFileItem)GetValue(MediaFileItemProperty); }
+            set { SetValue(MediaFileItemProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for SelectableMediaFileItem.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MediaFileItemProperty =
+            DependencyProperty.Register("SelectableMediaFileItem", typeof(SelectableMediaFileItem), typeof(MediaGridItemView2), new PropertyMetadata(null,selectableMediaFileItemChanged));
+
+        private static void selectableMediaFileItemChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaGridItemView2 view = d as MediaGridItemView2;
+
+            view.selectableMediaFileItemChanged(e);
+        }
+
+        void selectableMediaFileItemChanged(DependencyPropertyChangedEventArgs e)
+        {
+            if (e.NewValue != null)
+            {
+                MediaFileItem item = (e.NewValue as SelectableMediaFileItem).Item;
+
+                WeakEventManager<MediaFileItem, PropertyChangedEventArgs>.AddHandler(item, "PropertyChanged", mediaFileItem_PropertyChanged);
+                infoIconsImage.Source = InfoIcons.getInfoIconsBitmap(item);
+            }
+        }
+
+        private void mediaFileItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() => {
+                
+                infoIconsImage.Source = InfoIcons.getInfoIconsBitmap(SelectableMediaFileItem.Item);
+            }));
+        }
+
+        public MediaStateSortMode ExtraInfoType
+        {
+            get { return (MediaStateSortMode)GetValue(ExtraInfoTypeProperty); }
+            set { SetValue(ExtraInfoTypeProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for ExtraInfoType.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty ExtraInfoTypeProperty =
+            DependencyProperty.Register("ExtraInfoType", typeof(MediaStateSortMode), typeof(MediaGridItemView2), new PropertyMetadata(MediaStateSortMode.Name, extraInfoTypeChangedCallback));
+
+        private static void extraInfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaGridItemView2 view = d as MediaGridItemView2;
+            view.showExtraItemInfo((MediaStateSortMode)e.NewValue);
+            //view.extraInfo.InfoType = (MediaStateSortMode)e.NewValue;
+        }
+        
+
+        private void imageGridItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+
+            if (Keyboard.Modifiers == ModifierKeys.Control)
+            {
+                SelectableMediaFileItem.IsSelected = !SelectableMediaFileItem.IsSelected;
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                cv.selectRange(SelectableMediaFileItem.Item);
+            }
+            else
+            {
+                cv.deselectAll();
+                SelectableMediaFileItem.IsSelected = true;
+            }
+
+        }
+
+        private void viewMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = SelectableMediaFileItem.Item;
+
+            if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToImageView(item.Location);
+            }
+            else if (MediaFormatConvert.isVideoFile(item.Location))
+            {
+                Shell.ShellViewModel.navigateToVideoView(item.Location);
+            }
+
+        }
+
+        public bool IsGridLoaded
+        {
+            get { return (bool)GetValue(IsGridLoadedProperty); }
+            set { SetValue(IsGridLoadedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsGridLoaded.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsGridLoadedProperty =
+            DependencyProperty.Register("IsGridLoaded", typeof(bool), typeof(MediaGridItemView2), new PropertyMetadata(true, isGridLoadedChangedCallback));
+
+        private static void isGridLoadedChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            MediaGridItemView2 item = d as MediaGridItemView2;
+
+           // item.selectAllMenuItem.IsEnabled = !(bool)e.NewValue;
+
+        }
+
+        private void selectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+            cv.selectAll();
+        }
+
+        private void deselectAllMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+            cv.deselectAll();
+
+        }
+
+        private void browseMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+
+            MediaFileItem item = SelectableMediaFileItem.Item;
+
+            String location = FileUtils.getPathWithoutFileName(item.Location);
+
+            EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(location);
+        }
+
+        private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            MediaFileItem item = SelectableMediaFileItem.Item;
+
+            String location = FileUtils.getPathWithoutFileName(item.Location);
+
+            Process.Start(location);
+        }
+
+
+
+        private void imageGridItem_Checked(object sender, RoutedEventArgs e)
+        {
+            SelectableMediaFileItem item = (SelectableMediaFileItem)DataContext;
+
+            if (item.IsSelected == true) return;
+
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
+            cv.deselectAll();
+
+            item.IsSelected = true;
+
+        }
+
+        private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
+        {
+            SelectableMediaFileItem item = (SelectableMediaFileItem)DataContext;
+
+            item.IsSelected = false;
+
+        }
+
+        void showExtraItemInfo(MediaStateSortMode infoType) {
+
+            string dateFormat = "MMM d, yyyy";
+
+            MediaFileItem item = SelectableMediaFileItem.Item;
 
             String info = null;
 
@@ -64,8 +236,8 @@ namespace MediaViewer.MediaGrid
                     case MediaStateSortMode.Rating:
 
                         if(item.Media.Rating.HasValue) {
-                            view.rating.Value = item.Media.Rating.Value / 5;
-                            view.rating.Visibility = Visibility.Visible;
+                            //view.rating.Value = item.Media.Rating.Value / 5;
+                            //view.rating.Visibility = Visibility.Visible;
                         }
                         break;
                     case MediaStateSortMode.Imported:
@@ -217,20 +389,11 @@ namespace MediaViewer.MediaGrid
                 }
             }
 
-            view.infoTextBlock.Text = info;
-            view.infoTextBlock.ToolTip = info;
-
-            if (infoType != MediaStateSortMode.Rating)
-            {
-                view.rating.Visibility = Visibility.Collapsed;
-                view.infoTextBlock.Visibility = Visibility.Visible;
-            }
-            else
-            {          
-                view.infoTextBlock.Visibility = Visibility.Collapsed;
-            }
-           
+            extraInfoTextBlock.Text = info;
+            extraInfoTextBlock.ToolTip = info;
         }
+       
 
+        
     }
 }

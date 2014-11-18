@@ -160,7 +160,7 @@ namespace MediaViewer
            
         }
 
-        public void navigateToVideoView(String location = null)
+        public void navigateToVideoView(String location = null, int? offsetSeconds = null)
         {
             if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView)
             {
@@ -174,6 +174,7 @@ namespace MediaViewer
 
             navigationParams.Add("viewModel", VideoViewModel);
             navigationParams.Add("location", location);
+            navigationParams.Add("offsetSeconds", offsetSeconds);
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, VideoViewUri, navigationParams);
 

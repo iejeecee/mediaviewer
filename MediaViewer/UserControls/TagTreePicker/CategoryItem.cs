@@ -111,12 +111,7 @@ namespace MediaViewer.UserControls.TagTreePicker
 
 
         public bool Equals(CategoryItem other)
-        {
-            if (other == null)
-            {
-                throw new ArgumentException();
-            }
-
+        {          
             return (other.Category.Id == Category.Id);
         }
     }

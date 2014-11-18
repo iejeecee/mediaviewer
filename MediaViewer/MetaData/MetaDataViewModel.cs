@@ -27,7 +27,7 @@ using MediaViewer.Model.Mvvm;
 namespace MediaViewer.MetaData
 {
 
-    class MetaDataViewModel : BindableBase
+    public class MetaDataViewModel : BindableBase
     {             
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -96,7 +96,7 @@ namespace MediaViewer.MetaData
             BatchMode = false;
             IsEnabled = false;
             
-            writeMetaDataCommand = new Command(new Action(async () =>
+            WriteMetaDataCommand = new Command(new Action(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
                 MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher, EventAggregator);
@@ -106,7 +106,7 @@ namespace MediaViewer.MetaData
 
             }));
 
-            filenamePresetsCommand = new Command(new Action(() =>
+            FilenamePresetsCommand = new Command(new Action(() =>
             {
                 FilenamePresetsView filenamePreset = new FilenamePresetsView();
                 FilenamePresetsViewModel vm = (FilenamePresetsViewModel)filenamePreset.DataContext;
@@ -118,7 +118,7 @@ namespace MediaViewer.MetaData
 
             })); 
 
-            directoryPickerCommand = new Command(new Action(() => 
+            DirectoryPickerCommand = new Command(new Action(() => 
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
@@ -136,7 +136,7 @@ namespace MediaViewer.MetaData
 
             }));
 
-            metaDataPresetsCommand = new Command(new Action(() =>
+            MetaDataPresetsCommand = new Command(new Action(() =>
                 {
                     MetaDataPresetsView metaDataPresets = new MetaDataPresetsView();
                     metaDataPresets.ShowDialog();
@@ -144,7 +144,7 @@ namespace MediaViewer.MetaData
 
                 }));
 
-            clearRatingCommand = new Command(new Action(() =>
+            ClearRatingCommand = new Command(new Action(() =>
                 {
                     Rating = null;
                 }));
@@ -238,8 +238,6 @@ namespace MediaViewer.MetaData
 
             MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
 
-            
-            
         }
 
         private void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -279,22 +277,6 @@ namespace MediaViewer.MetaData
               
             }
         }
-   
-        Command writeMetaDataCommand;
-
-        public Command WriteMetaDataCommand
-        {
-            get { return writeMetaDataCommand; }
-            set { writeMetaDataCommand = value; }
-        }
-
-        Command clearRatingCommand;
-
-        public Command ClearRatingCommand
-        {
-            get { return clearRatingCommand; }
-            set { clearRatingCommand = value; }
-        }
 
         string filename;
 
@@ -307,56 +289,33 @@ namespace MediaViewer.MetaData
             }
         }
 
-        public Command<int?> InsertCounterCommand {get;set;}
-        public Command<int?> InsertExistingFilenameCommand { get; set; }
-        public Command<int?> InsertResolutionCommand { get; set; }
-        public Command<int?> InsertDateCommand { get; set; }
-        public Command<int?> InsertReplaceStringCommand { get; set; }
-       
         String location;
 
         public String Location
         {
             get { return location; }
             set
-            {                          
+            {
                 SetProperty(ref location, value);
             }
         }
 
-        Command filenamePresetsCommand;
+        public Command WriteMetaDataCommand { get; set; }
+        public Command ClearRatingCommand { get; set; }
 
-        public Command FilenamePresetsCommand
-        {
-            get { return filenamePresetsCommand; }
-            set { filenamePresetsCommand = value; }
-        }
+        public Command<int?> InsertCounterCommand {get;set;}
+        public Command<int?> InsertExistingFilenameCommand { get; set; }
+        public Command<int?> InsertResolutionCommand { get; set; }
+        public Command<int?> InsertDateCommand { get; set; }
+        public Command<int?> InsertReplaceStringCommand { get; set; }
 
-        Command directoryPickerCommand;
-
-        public Command DirectoryPickerCommand
-        {
-            get { return directoryPickerCommand; }
-            set { directoryPickerCommand = value; }
-        }
-
-        Command metaDataPresetsCommand;
-
-        public Command MetaDataPresetsCommand
-        {
-            get { return metaDataPresetsCommand; }
-            set { metaDataPresetsCommand = value; }
-        }
+        public Command FilenamePresetsCommand { get; set; }
+        public Command DirectoryPickerCommand { get; set; }
+        public Command MetaDataPresetsCommand { get; set; }
 
         static PresetMetadata noPresetMetaData = new PresetMetadata() { Name = "None", Id = -1 };
 
-        ObservableCollection<PresetMetadata> metaDataPresets;
-
-        public ObservableCollection<PresetMetadata> MetaDataPresets
-        {
-            get { return metaDataPresets; }
-            set { metaDataPresets = value; }
-        }
+        public ObservableCollection<PresetMetadata> MetaDataPresets { get; set; }
 
         PresetMetadata selectedMetaDataPreset;
 
@@ -632,21 +591,8 @@ namespace MediaViewer.MetaData
             }
         }
 
-        ObservableCollection<String> filenameHistory;
-
-        public ObservableCollection<String> FilenameHistory
-        {
-            get { return filenameHistory; }
-            set { filenameHistory = value; }
-        }
-
-        ObservableCollection<String> movePathHistory;
-
-        public ObservableCollection<String> MovePathHistory
-        {
-            get { return movePathHistory; }
-            set { movePathHistory = value; }
-        }
+        public ObservableCollection<String> FilenameHistory { get; set; }
+        public ObservableCollection<String> MovePathHistory { get; set; }
 
         bool isEnabled;
 

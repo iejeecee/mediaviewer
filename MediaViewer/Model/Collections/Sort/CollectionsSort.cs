@@ -8,12 +8,25 @@ namespace MediaViewer.Model.Collections.Sort
 {
     class CollectionsSort
     {
-        public static void insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc, int start, int end)
+        /// <summary>
+        ///    Insert item into a sorted list.
+        ///    Returns index of the sorted item after insertion.
+        /// </summary>
+        /// <typeparam name="T">Item type</typeparam>
+        /// <param name="list">List to insert the item into</param>
+        /// <param name="item">Item to be inserted</param>
+        /// <param name="compareFunc">Compare function used for sorting</param>
+        /// <param name="start">Start of subset of the list to insert the item into</param>
+        /// <param name="end">End of subset of the list to insert item into</param>
+        /// <returns>new index of sorted item</returns>
+        public static int insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc, int start, int end)
         {
+            int newIndex = 0;
+
             if (list.Count == 0)
             {
                 list.Add(item);
-                return;
+                return(newIndex);
             }
 
             int mid = start;
@@ -43,29 +56,35 @@ namespace MediaViewer.Model.Collections.Sort
 
             if (compareFunc(item, list[mid]) >= 0)
             {
-                list.Insert(mid + 1, item);
+                newIndex = mid + 1;               
             }
             else
             {
-                list.Insert(mid, item);
+                newIndex = mid;              
             }
 
+            list.Insert(newIndex, item);
+
+            return (newIndex);
         }
 
-        public static void insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
+        public static int insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
         {
 
-            insertIntoSortedCollection<T>(list, item, compareFunc, 0, list.Count);
+            int newIndex = insertIntoSortedCollection<T>(list, item, compareFunc, 0, list.Count);
 
+            return (newIndex);
         }
 
-        public static void insertIntoSortedCollection<T>(IList<T> list, T item)
+        public static int insertIntoSortedCollection<T>(IList<T> list, T item)
         {
-            insertIntoSortedCollection<T>(list, item, (a, b) =>
+            int newIndex = insertIntoSortedCollection<T>(list, item, (a, b) =>
             {
                 return (a.ToString().CompareTo(b.ToString()));
             }, 0, list.Count);
 
+
+            return (newIndex);
         }
     }
 }

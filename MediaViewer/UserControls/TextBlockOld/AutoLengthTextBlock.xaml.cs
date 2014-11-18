@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.UserControls.TextBlock
+namespace MediaViewer.UserControls.TextBlockOld
 {
     /// <summary>
     /// Interaction logic for AutoLengthTextBlock.xaml

@@ -27,7 +27,8 @@ namespace MediaViewer.MediaDatabase
             MimeType = MediaFormatConvert.fileNameToMimeType(location);            
             Tags = new HashSet<Tag>();
            
-            IsImported = false;
+            isImported = false;
+            isModified = false;
             metadataReadError = null;            
         }
 
@@ -58,6 +59,17 @@ namespace MediaViewer.MediaDatabase
             }
         }
 
+        bool isModified;
+
+        public bool IsModified
+        {
+            get { return isModified; }
+            set
+            {
+                SetProperty(ref isModified, value);
+            }
+        }
+
         public abstract String DefaultFormatCaption
         {
             get;            
@@ -65,17 +77,25 @@ namespace MediaViewer.MediaDatabase
 
         public virtual void clear()
         {
-            Title = null;
-            Description = null;
+
             Author = null;
-            Software = null;
             Copyright = null;
-            Rating = null;
-            Thumbnail = null;
-            Tags = new HashSet<Tag>();
             CreationDate = null;
+            Description = null;
+
+            Latitude = null;
+            Longitude = null;
+
+            MetadataDate = null;
             MetadataModifiedDate = null;
-            MetadataDate = null;       
+
+            Rating = null;
+
+            Software = null;
+            Tags = new HashSet<Tag>();
+            Thumbnail = null;           
+            Title = null;
+   
         }
 
         public virtual void close()

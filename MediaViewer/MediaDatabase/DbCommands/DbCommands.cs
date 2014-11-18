@@ -75,7 +75,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     if (i == nrRetriesOnOptimisticConcurrencyException - 1)
                     {
                         log.Error("Concurrencyexception while updating entity, nr retries exhausted: " + e.Message);
-                        throw e;
+                        throw;
                     }
                     else
                     {
@@ -114,7 +114,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 log.Error("Concurrencyexception while creating entity: " + e.Message);
 
-                throw e;
+                throw;
             }
                            
             return (result);
@@ -137,7 +137,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 log.Error("Concurrencyexception while deleting entity: " + e.Message);
 
-                throw e;
+                throw;
             }
 
             

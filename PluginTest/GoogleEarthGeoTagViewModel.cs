@@ -25,6 +25,7 @@ using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Global.Commands;
 
 namespace PluginTest
 {
@@ -77,8 +78,6 @@ namespace PluginTest
             {
                 scriptString = reader.ReadToEnd();
             }
-
-            scriptStream.Close();
 
             HtmlDocument document = new HtmlDocument();
             document.Load(htmlStream);
@@ -140,9 +139,63 @@ namespace PluginTest
                     }                   
 
                 }, false);
-           
+
+            MetaDataUpdateCommand = new Command<MetaDataUpdateViewModelAsyncState>((state) =>
+            {
+                foreach (MediaFileItem item in state.ItemList)
+                {
+                    GeoTagFileItem tagItem = script.get(item);
+
+                    if (tagItem != null && item.Media != null)
+                    {
+                        item.RWLock.EnterWriteLock();
+                        try
+                        {
+                            String latitude = tagItem.HasGeoTag ? tagItem.GeoTag.Latitude.Coord : null;
+                            String longitude = tagItem.HasGeoTag ? tagItem.GeoTag.Longitude.Coord : null;
+
+                            if (!EqualityComparer<String>.Default.Equals(item.Media.Latitude, latitude))
+                            {
+                                item.Media.Latitude = latitude;
+                                item.Media.IsModified = true;
+                            }
+
+                            if (!EqualityComparer<String>.Default.Equals(item.Media.Longitude, longitude))
+                            {
+                                item.Media.Longitude = longitude;
+                                item.Media.IsModified = true;
+                            }
+                        }
+                        finally
+                        {
+                            item.RWLock.ExitWriteLock();
+                        }
+
+                    }
+
+                }
+            });
+
             drawRoads = false;
             drawBorders = false;
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (WebBrowser != null)
+                {
+                    WebBrowser.Dispose();
+                    WebBrowser = null;
+                }
+            }
         }
                  
         async Task selectPlaceMark(GeoTagFileItem item, bool lookAtGeoTag = true, bool reselect = false)
@@ -195,14 +248,7 @@ namespace PluginTest
         }
 
      
-        public void Dispose()
-        {
-            if (WebBrowser != null)
-            {
-                WebBrowser.Dispose();
-                WebBrowser = null;
-            }
-        }   
+      
 
         String searchText;
 
@@ -231,6 +277,8 @@ namespace PluginTest
             get;
             set;
         }
+
+        public Command<MetaDataUpdateViewModelAsyncState> MetaDataUpdateCommand { get; set; }
 
         private async void mediaState_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
         {
@@ -272,6 +320,8 @@ namespace PluginTest
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            GlobalCommands.MetaDataUpdateCommand.UnregisterCommand(MetaDataUpdateCommand);
+
             EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Unsubscribe(geoTagViewModel_MediaSelectionEvent);
         }
 
@@ -292,6 +342,8 @@ namespace PluginTest
             Shell.ShellViewModel.navigateToMediaStackPanelView(mediaStackPanel);
 
             MediaFileBrowserView.MediaFileBrowserViewModel.CurrentViewModel = this;
+
+            GlobalCommands.MetaDataUpdateCommand.RegisterCommand(MetaDataUpdateCommand);
 
             EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(geoTagViewModel_MediaSelectionEvent);
      

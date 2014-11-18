@@ -22,6 +22,7 @@ using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Utils;
 using MediaViewer.Logging;
 using MediaViewer.Model.Global.Events;
+using System.Windows.Media.Animation;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
@@ -60,6 +61,9 @@ namespace MediaViewer
             currentDomain.AssemblyLoad += new AssemblyLoadEventHandler(assemblyLoadEventHandler);
 
             this.Closing += Shell_Closing;
+
+            //RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
+         
         }
 
         public void OnImportsSatisfied()

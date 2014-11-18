@@ -407,7 +407,7 @@ namespace MediaViewer.MediaFileBrowser
             Uri VideoViewUri = new Uri(typeof(VideoView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
-            navigationParams.Add("location", item != null ? item.Location : null);          
+            navigationParams.Add("location", item != null ? item.Location : null);           
             navigationParams.Add("viewModel", VideoViewModel);
 
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>

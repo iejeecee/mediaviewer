@@ -157,10 +157,18 @@ namespace MediaViewer.Model.Media.Metadata
             {
                 xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", media.Latitude, 0);
             }
+            else
+            {
+                xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLatitude");
+            }
 
             if (media.Longitude != null)
             {
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", media.Longitude, 0);
+                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLongitude", media.Longitude, 0);
+            }
+            else
+            {
+                xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLongitude");
             }
 /*
             if (HasGeoTag == true)

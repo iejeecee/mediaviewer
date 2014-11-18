@@ -45,12 +45,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
         }     
 
         public bool Equals(SelectableMediaFileItem other)
-        {
-            if (other == null)
-            {
-                throw new ArgumentException();
-            }
-
+        {       
             return (Item.Equals(other.Item));
         }
 

@@ -50,7 +50,7 @@ namespace MediaViewer.MediaGrid
 
             EventAggregator = eventAggregator;
 
-            panel = null;
+            panel = null;           
            
         }
 

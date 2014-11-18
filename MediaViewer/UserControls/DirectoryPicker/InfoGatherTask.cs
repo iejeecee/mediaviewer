@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.DirectoryPicker
 {
-    public class InfoGatherTask
+    public class InfoGatherTask : IDisposable
     {
         CancellationToken token;
         BlockingCollection<Location> locationQueue;
@@ -22,7 +22,25 @@ namespace MediaViewer.UserControls.DirectoryPicker
             Task.Factory.StartNew(infoGatherLoop, token);
            
         }
-        
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool safe)
+        {
+            if (safe)
+            {
+                if (locationQueue != null)
+                {
+                    locationQueue.Dispose();
+                    locationQueue = null;
+                }
+            }
+        }
+
         public void addLocation(Location location)
         {
             locationQueue.Add(location);
@@ -42,5 +60,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
           
         }
 
+
+      
     }
 }

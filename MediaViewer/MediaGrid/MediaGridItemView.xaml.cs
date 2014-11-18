@@ -137,28 +137,27 @@ namespace MediaViewer.MediaGrid
 
      
 
-        private void imageGridItem_Checked(object sender, RoutedEventArgs e)
+        private void imageGridItem_Click(object sender, RoutedEventArgs e)
         {
            
-            if (SelectableMediaFileItem.IsSelected == true) return;
+            MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
 
-            if (Keyboard.Modifiers != ModifierKeys.Control)
+            if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                MediaStateCollectionView cv = (this.Tag as MediaStateCollectionView);
-                cv.deselectAll();         
+                SelectableMediaFileItem.IsSelected = !SelectableMediaFileItem.IsSelected;  
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                cv.selectRange(SelectableMediaFileItem.Item);
+            }
+            else
+            {
+                cv.deselectAll();
+                SelectableMediaFileItem.IsSelected = true;  
             }
 
-            SelectableMediaFileItem.IsSelected = true;     
-
-           
         }
-
-        private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
-        {
-          
-            SelectableMediaFileItem.IsSelected = false;     
-            
-        }
+        
 
         
     }

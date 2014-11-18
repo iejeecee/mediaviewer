@@ -163,7 +163,7 @@ public:
 
 	virtual void open(String ^location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
 
-		// Convert location to UTF8 string *
+		// Convert location to UTF8 string pointer
 		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
 
 		// prevent GC moving the bytes around while this variable is on the stack
@@ -204,14 +204,14 @@ public:
 		videoCodec = avcodec_find_decoder(videoCodecContext->codec_id);
 		if(videoCodec == NULL)
 		{		
-			throw gcnew VideoLib::VideoLibException("Unsupported videoCodec");
+			throw gcnew VideoLib::VideoLibException("Unsupported video codec");
 		}
 
 		videoCodecContext->skip_frame = discardMode;
 
 		if ((errorCode = avcodec_open2(videoCodecContext, videoCodec, NULL)) != 0)
 		{	
-			throw gcnew VideoLib::VideoLibException("Error opening the videoCodec: " + errorToString(errorCode));
+			throw gcnew VideoLib::VideoLibException("Error opening the video codec: " + errorToString(errorCode));
 		}
 
 		audioStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
@@ -231,7 +231,7 @@ public:
 
 			if ((errorCode = avcodec_open2(audioCodecContext, audioCodec, NULL)) != 0)
 			{				
-				throw gcnew VideoLib::VideoLibException("Error opening the audioCodec: " + errorToString(errorCode));
+				throw gcnew VideoLib::VideoLibException("Error opening the audio codec: " + errorToString(errorCode));
 			}
 		}
 		
