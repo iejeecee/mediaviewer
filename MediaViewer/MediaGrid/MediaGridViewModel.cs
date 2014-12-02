@@ -16,7 +16,7 @@ using System.ComponentModel;
 using MediaViewer.MediaDatabase;
 using Microsoft.Practices.Prism.Regions;
 using System.Windows.Input;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using MediaViewer.MetaData;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;

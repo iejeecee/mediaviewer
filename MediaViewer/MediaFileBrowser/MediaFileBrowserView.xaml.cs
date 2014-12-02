@@ -17,7 +17,7 @@ using System.Windows.Shapes;
 using MediaViewer.MediaGrid;
 using MediaViewer.Input;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using VideoPlayerControl;
 using MediaViewer.ImagePanel;
 using System.ComponentModel;

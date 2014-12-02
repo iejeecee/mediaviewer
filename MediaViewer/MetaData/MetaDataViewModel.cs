@@ -30,9 +30,7 @@ namespace MediaViewer.MetaData
     public class MetaDataViewModel : BindableBase
     {             
         private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        public event EventHandler ItemsModified;
-
+        
         void clear()
         {
             Filename = "";
@@ -45,7 +43,11 @@ namespace MediaViewer.MetaData
             Copyright = "";
             Creation = null;
             IsImported = false;
-            dynamicProperties = new List<Tuple<string, string>>();
+
+            lock (itemsLock)
+            {
+                DynamicProperties.Clear();
+            }
 
             SelectedMetaDataPreset = noPresetMetaData;
 
@@ -74,6 +76,11 @@ namespace MediaViewer.MetaData
         public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings, IEventAggregator eventAggregator)
         {            
             //Items = new ObservableCollection<MediaFileItem>();
+            itemsLock = new Object();
+
+            DynamicProperties = new ObservableCollection<Tuple<string, string>>();
+            BindingOperations.EnableCollectionSynchronization(DynamicProperties, itemsLock);
+
             EventAggregator = eventAggregator;
 
             Tags = new ObservableCollection<Tag>();
@@ -219,7 +226,7 @@ namespace MediaViewer.MetaData
 
             EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Subscribe((item) =>
             {
-                lock(Items)             
+                lock(itemsLock)            
                 {
                     if (BatchMode == false && Items.Count > 0)
                     {
@@ -261,18 +268,22 @@ namespace MediaViewer.MetaData
             }
         }
 
+        Object itemsLock;
         ICollection<MediaFileItem> items;
 
         public ICollection<MediaFileItem> Items
         {
             get { return items; }
             set
-            {                             
-                items = value;
+            {
+                lock (itemsLock)
+                {
+                    items = value;
 
-                if (items != null)
-                {                    
-                    grabData();
+                    if (items != null)
+                    {
+                        grabData();
+                    }
                 }
               
             }
@@ -650,157 +661,136 @@ namespace MediaViewer.MetaData
 
             }
         }
-
-        List<Tuple<String, String>> dynamicProperties;
-
-        public List<Tuple<String, String>> DynamicProperties
-        {
-            get { return dynamicProperties; }
-        }
-
-        
-
+     
+        public ObservableCollection<Tuple<String, String>> DynamicProperties { get; private set; }
+               
         void grabData()
-        {        
-         /*   if (items == null)
-            {
-                clear();
-                return;
-            }*/
-
-            lock(Items)        
+        {                       
+            if (items.Count == 1 && Items.ElementAt(0).Media != null)
             {
 
-                if (items.Count == 1 && Items.ElementAt(0).Media != null)
+                BaseMedia media = Items.ElementAt(0).Media;
+
+                if (media.SupportsXMPMetadata == false)
                 {
-
-                    BaseMedia media = Items.ElementAt(0).Media;
-
-                    if (media.SupportsXMPMetadata == false)
-                    {
-                        clear();
-                    }
-
-                    Filename = Path.GetFileNameWithoutExtension(media.Location);
-                    Location = FileUtils.getPathWithoutFileName(media.Location);
-
-                    if (media is VideoMedia)
-                    {
-                        dynamicProperties = getVideoProperties(media as VideoMedia);
-                    }
-                    else
-                    {
-                        dynamicProperties.Clear();
-                    }
-
-                    Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
-                    Title = media.Title;
-                    Description = media.Description;
-                    Author = media.Author;
-                    Copyright = media.Copyright;
-                    Creation = media.CreationDate;
-                    IsImported = media.IsImported;
-
-                    lock (tagsLock)
-                    {
-                        Tags.Clear();
-
-                        foreach (Tag tag in media.Tags)
-                        {
-                            Tags.Add(tag);
-                        }
-                    }
-
-                    getExifProperties(dynamicProperties, media);
-
-
-                    SelectedMetaDataPreset = noPresetMetaData;
-                    IsEnabled = true;
-                    BatchMode = false;
-
+                    clear();
                 }
-                else if (items.Count > 1 && BatchMode == true)
+
+                Filename = Path.GetFileNameWithoutExtension(media.Location);
+                Location = FileUtils.getPathWithoutFileName(media.Location);
+
+                DynamicProperties.Clear();
+
+                if (media is VideoMedia)
                 {
-
-
+                    getVideoProperties(DynamicProperties, media as VideoMedia);
                 }
-                else
+                
+                Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
+                Title = media.Title;
+                Description = media.Description;
+                Author = media.Author;
+                Copyright = media.Copyright;
+                Creation = media.CreationDate;
+                IsImported = media.IsImported;
+
+                lock (tagsLock)
                 {
-                    if (items.Count > 1)
+                    Tags.Clear();
+
+                    foreach (Tag tag in media.Tags)
                     {
-                        IsEnabled = true;
-                        BatchMode = true;
-                        clear();
-
+                        Tags.Add(tag);
                     }
-                    else if (items.Count == 0)
-                    {
-
-                        BatchMode = false;
-                        IsEnabled = false;
-                        clear();
-                    }
-
                 }
+
+                getExifProperties(DynamicProperties, media);
+
+
+                SelectedMetaDataPreset = noPresetMetaData;
+                IsEnabled = true;
+                BatchMode = false;
+
             }
-           
-            if (ItemsModified != null)
+            else if (items.Count > 1 && BatchMode == true)
             {
-                ItemsModified(this, EventArgs.Empty);
-            }           
 
+
+            }
+            else
+            {
+                if (items.Count > 1)
+                {
+                    IsEnabled = true;
+                    BatchMode = true;
+                    clear();
+
+                }
+                else if (items.Count == 0)
+                {
+
+                    BatchMode = false;
+                    IsEnabled = false;
+                    clear();
+                }
+
+            }
+                                               
         }
 
-        private void getExifProperties(List<Tuple<string, string>> dynamicProperties, BaseMedia media)
+        private void getExifProperties(ObservableCollection<Tuple<string, string>> p, BaseMedia media)
         {
-            int nrProps = dynamicProperties.Count;
+            int nrProps = p.Count;
            
             if (media.Software != null)
             {
-                dynamicProperties.Add(new Tuple<string,string>("Software", media.Software));
+                p.Add(new Tuple<string,string>("Software", media.Software));
             }
             if(media.MetadataDate != null) {
 
-                dynamicProperties.Add(new Tuple<string, string>("Metadata Date", media.MetadataDate.ToString()));
+                p.Add(new Tuple<string, string>("Metadata Date", media.MetadataDate.ToString()));
             }
             if (media.MetadataModifiedDate != null)
             {
-                dynamicProperties.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
+                p.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
             }
                       
             if (media is ImageMedia)
             {
-                dynamicProperties.AddRange(FormatMetaData.formatProperties(media as ImageMedia));
+                foreach (Tuple<string, string> item in FormatMetaData.formatProperties(media as ImageMedia))
+                {
+                    p.Add(item);
+                }
             }
 
             if (media.Latitude != null)
             {
-                dynamicProperties.Add(new Tuple<string, string>("GPS Latitude", media.Latitude));
+                p.Add(new Tuple<string, string>("GPS Latitude", media.Latitude));
             }
 
             if (media.Longitude != null)
             {
-                dynamicProperties.Add(new Tuple<string, string>("GPS Longitude", media.Longitude));
+                p.Add(new Tuple<string, string>("GPS Longitude", media.Longitude));
             }
             
-            if (dynamicProperties.Count > nrProps)
+            if (p.Count > nrProps)
             {
-                dynamicProperties.Insert(nrProps, new Tuple<string, string>("", "EXIF"));
+                p.Insert(nrProps, new Tuple<string, string>("", "EXIF"));
             }
             
-        }
+        }    
 
-    
-
-        List<Tuple<String, String>> getVideoProperties(VideoMedia video)
+        void getVideoProperties(ObservableCollection<Tuple<String, String>> p, VideoMedia video)
         {
-            List<Tuple<String, String>> p = new List<Tuple<string, string>>();
-
+           
             p.Add(new Tuple<string, string>("", "VIDEO"));
             p.Add(new Tuple<string, string>("Video Container", video.VideoContainer));
             p.Add(new Tuple<string, string>("Video Codec", video.VideoCodec));
 
-            p.AddRange(FormatMetaData.formatProperties(video));
+            foreach (Tuple<string, string> item in FormatMetaData.formatProperties(video))
+            {
+                p.Add(item);
+            }
 
             p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
             p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));
@@ -813,11 +803,7 @@ namespace MediaViewer.MetaData
                 p.Add(new Tuple<string, string>("Bits Per Sample", video.BitsPerSample.ToString()));
                 p.Add(new Tuple<string, string>("Samples Per Second", video.SamplesPerSecond.ToString()));
                 p.Add(new Tuple<string, string>("Nr Channels", video.NrChannels.ToString()));
-            }
-
-       
-
-            return (p);
+            }                
 
         }
 

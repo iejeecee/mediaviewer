@@ -20,7 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using VideoLib;
 
-namespace MediaViewer.VideoPreviewImage
+namespace MediaViewer.GridImage.VideoPreviewImage
 {
  
     class VideoPreviewImageViewModel : CloseableBindableBase
@@ -90,6 +90,7 @@ namespace MediaViewer.VideoPreviewImage
             IsAddTags = true;
             IsAddTimestamps = true;
             IsCommentEnabled = false;
+            FontSize = 20;
             JpegQuality = 80;
             IsAddHeader = true;
         }
@@ -163,6 +164,14 @@ namespace MediaViewer.VideoPreviewImage
             set {  
                 SetProperty(ref jpegQuality, value);
             }
+        }
+
+        int fontSize;
+
+        public int FontSize
+        {
+            get { return fontSize; }
+            set { SetProperty(ref fontSize, value); }
         }
 
         int captureIntervalSeconds;

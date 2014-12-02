@@ -32,6 +32,7 @@ extern "C" {
 #include "libswscale/swscale.h"
 #include "libswresample/swresample.h"
 
+
 #ifdef PixelFormat
 #undef PixelFormat
 #endif
@@ -115,8 +116,10 @@ protected:
 		logCallback(level, fullMessage.c_str());
 	
     }
+	
+public:
 
-	System::String ^errorToString(int err)
+	static System::String ^errorToString(int err)
 	{
 		char errbuf[128];
 		const char *errbuf_ptr = errbuf;
@@ -126,9 +129,6 @@ protected:
 		
 		return(msclr::interop::marshal_as<System::String^>(errbuf_ptr));
 	}
-
-
-public:
 
 	enum FrameType {
 		VIDEO,
@@ -141,20 +141,15 @@ public:
 		close();
 	}
 
-	void close() {
-
-		if(videoCodecContext != NULL) {
-
-			avcodec_close(videoCodecContext);				
-		}
-
-		if(audioCodecContext != NULL) {
-
-			avcodec_close(audioCodecContext);				
-		}
-	
+	virtual void close() {
+		
 		if(formatContext != NULL) {
 					
+			for (unsigned int i = 0; i < formatContext->nb_streams; i++) {
+
+				avcodec_close(formatContext->streams[i]->codec);			
+			}
+
 			avformat_close_input(&formatContext);
 		} 
 
@@ -220,6 +215,51 @@ public:
 	int getAudioStreamIndex() const {
 
 		return(audioStreamIndex);
+	}
+
+	void setFormatContext(AVFormatContext *formatContext) {
+
+		this->formatContext = formatContext;
+	}
+
+	void setVideoCodecContext(AVCodecContext *videoCodecContext) {
+
+		this->videoCodecContext = videoCodecContext;
+	}
+
+	void setVideoCodec(AVCodec *videoCodec) {
+
+		this->videoCodec = videoCodec;
+	}
+
+	void setAudioCodecContext(AVCodecContext *audioCodecContext) {
+
+		this->audioCodecContext = audioCodecContext;
+	}
+
+	void setAudioCodec(AVCodec *audioCodec) {
+
+		this->audioCodec = audioCodec;
+	}
+	
+	void setVideoStream(AVStream *videoStream) {
+
+		this->videoStream = videoStream;
+	}
+
+	void setVideoStreamIndex(int videoStreamIndex) {
+
+		this->videoStreamIndex = videoStreamIndex;
+	}
+
+	void setAudioStream(AVStream *audioStream) {
+
+		this->audioStream = audioStream;
+	}
+
+	void setAudioStreamIndex(int audioStreamIndex) {
+
+		this->audioStreamIndex = audioStreamIndex;
 	}
 
 	bool hasVideo() const {

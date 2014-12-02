@@ -18,7 +18,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using VideoLib;
 
-namespace MediaViewer.VideoPreviewImage
+namespace MediaViewer.GridImage.VideoPreviewImage
 {
     public class VideoPreviewImageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
@@ -91,42 +91,56 @@ namespace MediaViewer.VideoPreviewImage
 
         public async Task generatePreviews()
         {
+            var tcs = new TaskCompletionSource<bool>();
 
-            await Task.Run(() =>
+            Thread thread = new Thread(() => 
             {
-                TotalProgressMax = asyncState.Media.Count;
-             
-                for (TotalProgress = 0; TotalProgress < TotalProgressMax; TotalProgress++)
+                try
                 {
-                    MediaFileItem item = asyncState.Media.ElementAt(TotalProgress);
+                    TotalProgressMax = asyncState.Media.Count;
 
-                    if (CancellationToken.IsCancellationRequested) return;
-                    if (!MediaFormatConvert.isVideoFile(item.Location))
+                    for (TotalProgress = 0; TotalProgress < TotalProgressMax; TotalProgress++)
                     {
-                        InfoMessages.Add("Skipping: " + item.Location + " is not a video file.");
-                        continue;
-                    }
-                    if (item.Media == null)
-                    {
-                        item.readMetaData(MediaFactory.ReadOptions.AUTO, CancellationToken);
-                        if (item.ItemState != MediaFileItemState.LOADED)
+                        MediaFileItem item = asyncState.Media.ElementAt(TotalProgress);
+
+                        if (CancellationToken.IsCancellationRequested) return;
+                        if (!MediaFormatConvert.isVideoFile(item.Location))
                         {
-                            InfoMessages.Add("Skipping: " + item.Location + " could not read metadata.");
+                            InfoMessages.Add("Skipping: " + item.Location + " is not a video file.");
                             continue;
                         }
+                        if (item.Media == null)
+                        {
+                            item.readMetaData(MediaFactory.ReadOptions.AUTO, CancellationToken);
+                            if (item.ItemState != MediaFileItemState.LOADED)
+                            {
+                                InfoMessages.Add("Skipping: " + item.Location + " could not read metadata.");
+                                continue;
+                            }
+                        }
+
+                        generatePreview(item);
+
                     }
 
-                    generatePreview(item);
-             
-                }
+                    App.Current.Dispatcher.Invoke(() =>
+                    {
+                        OkCommand.IsExecutable = true;
+                        CancelCommand.IsExecutable = false;
+                    });
 
-                App.Current.Dispatcher.Invoke(() =>
+                    tcs.SetResult(true);
+                }
+                catch (Exception e)
                 {
-                    OkCommand.IsExecutable = true;
-                    CancelCommand.IsExecutable = false;
-                });
+                    tcs.SetException(e);
+                }
             });
 
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+
+            await tcs.Task;
         }
 
         int calcNrRowsNrColumns(int nrFrames)
@@ -194,13 +208,12 @@ namespace MediaViewer.VideoPreviewImage
                     nrFrames = calcNrRowsNrColumns(nrFrames);
                 }
                 
-                GridImage gridImage = new GridImage(item.Media as VideoMedia, asyncState, thumbs[0].Thumb.PixelWidth * asyncState.NrColumns,
-                    thumbs[0].Thumb.PixelHeight * asyncState.NrRows, asyncState.NrRows, asyncState.NrColumns, thumbs);
+                VideoGridImage gridImage = new VideoGridImage(item.Media as VideoMedia, asyncState, thumbs);
 
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();
                 BitmapMetadata metaData = new BitmapMetadata("jpg");
                 metaData.ApplicationName = App.getAppInfoString();
-                //metaData.DateTaken = DateTime.Now.ToLongDateString();
+                metaData.DateTaken = DateTime.Now.ToString("R");
 
                 if (item.Media.Tags.Count > 0)
                 {
@@ -243,7 +256,9 @@ namespace MediaViewer.VideoPreviewImage
                     metaData.Rating = (int)item.Media.Rating.Value;
                 }
 
-                encoder.Frames.Add(BitmapFrame.Create(gridImage.Image, null, metaData, null));
+                BitmapSource bitmap = gridImage.createGridImage(asyncState.MaxPreviewImageWidth);
+
+                encoder.Frames.Add(BitmapFrame.Create(bitmap, null, metaData, null));
 
                 String outputFileName = Path.GetFileNameWithoutExtension(item.Location) + ".jpg";              
 

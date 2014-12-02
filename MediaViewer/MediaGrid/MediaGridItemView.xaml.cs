@@ -5,7 +5,6 @@ using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.Torrent;
 using MediaViewer.VideoPanel;
-using MediaViewer.VideoPreviewImage;
 using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;

@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace MediaViewer.Pager
+namespace MediaViewer.UserControls.Pager
 {
     /// <summary>
     /// Interaction logic for PagerControl.xaml

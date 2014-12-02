@@ -22,6 +22,7 @@
     <Converters:CollectionIsEmptyConverter x:Key="collectionIsEmptyConverter"/>
     <Converters:ToStringConverter x:Key="toStringConverter"/>
     <Converters:RemoveNewlinesConverter x:Key="removeNewlinesConverter"/>
+    <Converters:IsEqualConverter x:Key="isEqualConverter"/>
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 

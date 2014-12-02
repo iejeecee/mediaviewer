@@ -10,7 +10,7 @@ using Microsoft.Practices.Prism.Mvvm;
 using System.Windows;
 using System.Threading;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using System.Collections.Specialized;
 using MediaViewer.MediaDatabase;
 using System.Collections.ObjectModel;
@@ -416,6 +416,7 @@ namespace MediaViewer.ImagePanel
                     loadedImage = new BitmapImage();
 
                     loadedImage.BeginInit();
+                    loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     loadedImage.CacheOption = BitmapCacheOption.OnLoad;
                     loadedImage.UriSource = new Uri(location);
                     loadedImage.EndInit();

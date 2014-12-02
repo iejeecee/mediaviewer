@@ -29,8 +29,8 @@ namespace MediaViewer.MediaGrid
     /// </summary>
     public partial class MediaGridItemView2 : UserControl
     {
-        static InfoIconsCache InfoIcons { get; set; }
-        static RatingCache Rating { get; set; }
+        static InfoIconsCache InfoIconsCache { get; set; }
+        static RatingCache RatingCache { get; set; }
 
         static IEventAggregator EventAggregator { get; set; }
 
@@ -38,10 +38,10 @@ namespace MediaViewer.MediaGrid
         {
             InitializeComponent();
 
-            if(InfoIcons == null) {                
+            if(InfoIconsCache == null) {                
 
-                InfoIcons = new InfoIconsCache();
-                Rating = new RatingCache(true);
+                InfoIconsCache = new InfoIconsCache();
+                RatingCache = new RatingCache();
 
                 EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
             }
@@ -73,7 +73,7 @@ namespace MediaViewer.MediaGrid
                 MediaFileItem item = (e.NewValue as SelectableMediaFileItem).Item;
 
                 WeakEventManager<MediaFileItem, PropertyChangedEventArgs>.AddHandler(item, "PropertyChanged", mediaFileItem_PropertyChanged);
-                infoIconsImage.Source = InfoIcons.getInfoIconsBitmap(item);
+                infoIconsImage.Source = InfoIconsCache.getInfoIconsBitmap(item);
             }
         }
 
@@ -81,7 +81,7 @@ namespace MediaViewer.MediaGrid
         {
             Dispatcher.BeginInvoke(new Action(() => {
                 
-                infoIconsImage.Source = InfoIcons.getInfoIconsBitmap(SelectableMediaFileItem.Item);
+                infoIconsImage.Source = InfoIconsCache.getInfoIconsBitmap(SelectableMediaFileItem.Item);
             }));
         }
 
@@ -236,6 +236,11 @@ namespace MediaViewer.MediaGrid
                     case MediaStateSortMode.Rating:
 
                         if(item.Media.Rating.HasValue) {
+
+                            int nrStars = (int)item.Media.Rating.Value;
+
+                            ratingImage.Source = RatingCache.RatingBitmap[nrStars];
+                            ratingImage.Visibility = System.Windows.Visibility.Visible;
                             //view.rating.Value = item.Media.Rating.Value / 5;
                             //view.rating.Visibility = Visibility.Visible;
                         }

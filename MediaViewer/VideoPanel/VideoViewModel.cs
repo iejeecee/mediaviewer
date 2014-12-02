@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Concurrent;

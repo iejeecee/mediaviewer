@@ -364,5 +364,33 @@ String ^VideoPlayer::getAvFormatBuildInfo() {
 	return(marshal_as<String ^>(info));
 
 }
+
+VideoTranscoder::VideoTranscoder() 
+{
+
+	videoTranscode = new VideoTranscode();
 }
 
+VideoTranscoder::~VideoTranscoder() 
+{
+	delete videoTranscode;
+}
+
+void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken ^token, 
+								bool remuxVideo, bool remuxAudio, TranscodeProgressDelegate ^progressCallback)
+{
+	GCHandle gch = GCHandle::Alloc(progressCallback);
+	try {
+				
+		IntPtr ip = Marshal::GetFunctionPointerForDelegate(progressCallback);
+		VideoTranscode::ProgressCallback cb = static_cast<VideoTranscode::ProgressCallback>(ip.ToPointer());
+
+		videoTranscode->transcode(input, output, token, remuxVideo, remuxAudio, cb);
+
+	} finally {
+
+		gch.Free();
+	}
+}
+
+}

@@ -17,6 +17,11 @@ extern "C" {
 
 #include "libavformat/avformat.h"
 #include "libavcodec/avcodec.h"
+#include "libavfilter/avfiltergraph.h"
+#include "libavfilter/avcodec.h"
+#include "libavfilter/buffersink.h"
+#include "libavfilter/buffersrc.h"
+#include "libavutil/opt.h"
 
 /*
 
@@ -45,6 +50,7 @@ public:
 
 			av_register_all();
 			avcodec_register_all();
+			avfilter_register_all();
 			
 			avformat_network_init();
 

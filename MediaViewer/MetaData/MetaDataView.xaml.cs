@@ -45,14 +45,7 @@ namespace MediaViewer.MetaData
             EventAggregator = eventAggregator;
 
             MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance, eventAggregator);
-                
-            MetaDataViewModel.ItemsModified += new EventHandler((s, e) =>
-            {
-
-                displayDynamicProperties(MetaDataViewModel.DynamicProperties);
-
-            });
-            
+                                     
             dynamicElements = new List<UIElement>();
             dynamicRows = new List<RowDefinition>();
 
@@ -66,7 +59,7 @@ namespace MediaViewer.MetaData
 
         void displayDynamicProperties(List<Tuple<String, String>> additionalProps)
         {
-            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+           /* App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
                 foreach (RowDefinition row in dynamicRows)
                 {
@@ -129,7 +122,7 @@ namespace MediaViewer.MetaData
                     Grid.SetRow(value, miscGrid.RowDefinitions.Count - 1);
 
                 }
-            }));
+            }));*/
         }
 
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)

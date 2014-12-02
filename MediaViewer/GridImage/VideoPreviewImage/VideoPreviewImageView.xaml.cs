@@ -14,7 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MediaViewer.VideoPreviewImage
+namespace MediaViewer.GridImage.VideoPreviewImage
 {
     /// <summary>
     /// Interaction logic for VideoPreviewImageView.xaml

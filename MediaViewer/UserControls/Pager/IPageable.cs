@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Pager
+namespace MediaViewer.UserControls.Pager
 {
     public interface IPageable
     {

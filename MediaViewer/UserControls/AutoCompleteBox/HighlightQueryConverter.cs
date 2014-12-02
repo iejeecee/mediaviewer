@@ -24,7 +24,8 @@ namespace MediaViewer.UserControls.AutoCompleteBox
 
             Run head = new Run(text.Substring(0, pos));
             Run highlight = new Run(query);
-            highlight.FontWeight = FontWeights.SemiBold;
+            //highlight.FontWeight = FontWeights.SemiBold;
+            highlight.Foreground = new SolidColorBrush(Colors.Red);
             Run tail = new Run(text.Substring(pos + query.Length));
 
             TextBlock textBlock = new TextBlock();

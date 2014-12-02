@@ -18,7 +18,7 @@ using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Mvvm;
 using System.ComponentModel;
 

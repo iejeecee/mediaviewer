@@ -109,6 +109,7 @@ d:DesignHeight="300" d:DesignWidth="300">
             </Grid.ColumnDefinitions>
             <Image x:Name="infoIconsImage" MaxHeight="11" ToolTip="Imported" Grid.Column="0"/>
                     <TextBlock x:Name="extraInfoTextBlock" Grid.Column="1" TextAlignment="Right" FontSize="10" Foreground="Purple"/>
+                    <Image x:Name="ratingImage" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Right" VerticalAlignment="Center" Stretch="None"/>
                     <!--<MediaGrid:ExtraItemInfoView x:Name="extraInfo" Grid.Column="1" HorizontalAlignment="Stretch"/>-->
                 </Grid>
             </Grid>

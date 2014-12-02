@@ -3,7 +3,7 @@ using MediaViewer.Input;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.DirectoryPicker;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using MediaViewer.Search;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -20,7 +20,7 @@ using MediaViewer.Export;
 using MediaViewer.ImagePanel;
 using VideoPlayerControl;
 using MediaViewer.VideoPanel;
-using MediaViewer.VideoPreviewImage;
+using MediaViewer.GridImage.VideoPreviewImage;
 using MediaViewer.Torrent;
 using MediaViewer.Progress;
 using System.ComponentModel.Composition;
@@ -33,6 +33,8 @@ using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.GridImage.ImageCollage;
+using MediaViewer.VideoTranscode;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -226,6 +228,27 @@ namespace MediaViewer.MediaFileBrowser
 
             ContractCommand.IsExecutable = false;
 
+            CreateImageCollageCommand = new Command(() =>
+            {
+                if (SelectedItems.Count == 0) return;
+
+                ImageCollageView collage = new ImageCollageView();
+
+                collage.ViewModel.Media = SelectedItems;
+                collage.ShowDialog();
+            });
+
+            TranscodeVideoCommand = new Command(() =>
+            {
+                if (SelectedItems.Count == 0) return;
+
+                VideoTranscodeView transcode = new VideoTranscodeView();
+                transcode.ViewModel.Items = SelectedItems;
+                transcode.ViewModel.OutputPath = BrowsePath;
+
+                transcode.ShowDialog();
+            });
+
             CreateVideoPreviewImagesCommand = new Command(() =>
                 {                 
                     if (SelectedItems.Count == 0) return;
@@ -333,9 +356,10 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-
+        public Command CreateImageCollageCommand { get; set; }
         public Command CreateVideoPreviewImagesCommand {get;set;}
         public Command CreateTorrentFileCommand { get; set; }
+        public Command TranscodeVideoCommand { get; set; }
         public Command DeleteSelectedItemsCommand { get; set; }
         public Command ImportSelectedItemsCommand { get; set; }
         public Command ExportSelectedItemsCommand { get; set; }

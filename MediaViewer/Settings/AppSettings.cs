@@ -18,12 +18,12 @@ namespace MediaViewer.Settings
     {
         public AppSettings()
         {            
-            metaDataUpdateDirectoryHistory = new ObservableCollection<string>();
-            filenamePresets = new ObservableCollection<string>();
-            filenameHistory = new ObservableCollection<string>();
-            createDirectoryHistory = new ObservableCollection<string>();
-            torrentAnnounceHistory = new ObservableCollection<string>();
-         
+            MetaDataUpdateDirectoryHistory = new ObservableCollection<string>();
+            FilenamePresets = new ObservableCollection<string>();
+            FilenameHistory = new ObservableCollection<string>();
+            CreateDirectoryHistory = new ObservableCollection<string>();
+            TorrentAnnounceHistory = new ObservableCollection<string>();
+            TranscodeOutputDirectoryHistory = new ObservableCollection<string>();
         }
 
         protected static void load()
@@ -65,66 +65,22 @@ namespace MediaViewer.Settings
 
         }
 
-        ObservableCollection<String> filenamePresets;
-
-        public ObservableCollection<String> FilenamePresets
-        {
-            get { return filenamePresets; }
-            set { filenamePresets = value; }
-        }
-
-
-        ObservableCollection<String> metaDataUpdateDirectoryHistory;
-
-        public ObservableCollection<String> MetaDataUpdateDirectoryHistory
-        {
-            get { return metaDataUpdateDirectoryHistory; }
-            set { metaDataUpdateDirectoryHistory = value; }
-        }
-
-
-        ObservableCollection<String> filenameHistory;
-
-        public ObservableCollection<String> FilenameHistory
-        {
-            get { return filenameHistory; }
-            set { filenameHistory = value; }
-        }
-
-        ObservableCollection<String> createDirectoryHistory;
-
-        public ObservableCollection<String> CreateDirectoryHistory
-        {
-            get { return createDirectoryHistory; }
-            set { createDirectoryHistory = value; }
-        }
-
-        ObservableCollection<String> torrentAnnounceHistory;
-
-        public ObservableCollection<String> TorrentAnnounceHistory
-        {
-            get { return torrentAnnounceHistory; }
-            set { torrentAnnounceHistory = value; }
-        }
-
+        public ObservableCollection<String> FilenamePresets { get; set; }
+        public ObservableCollection<String> MetaDataUpdateDirectoryHistory { get; set; }
+        public ObservableCollection<String> FilenameHistory { get; set; }
+        public ObservableCollection<String> CreateDirectoryHistory { get; set;}
+        public ObservableCollection<String> TorrentAnnounceHistory { get; set; }
+        public String VideoScreenShotLocation { get; set; }
+        public ObservableCollection<string> TranscodeOutputDirectoryHistory { get; set; }
 
         public void clearHistory()
         {
-
             FilenameHistory.Clear();
             MetaDataUpdateDirectoryHistory.Clear();
             CreateDirectoryHistory.Clear();
             TorrentAnnounceHistory.Clear();
-       
+            TranscodeOutputDirectoryHistory.Clear();
         }
-
-
-        String videoScreenShotLocation;
-
-        public String VideoScreenShotLocation
-        {
-            get { return videoScreenShotLocation; }
-            set { videoScreenShotLocation = value; }
-        }
+            
     }
 }

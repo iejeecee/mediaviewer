@@ -1,9 +1,11 @@
 // VideoLib.h
 #include "VideoFrameGrabber.h"
 #include "VideoDecoder.h"
+#include "VideoTranscode.h"
 #include "VideoFrame.h"
 //#include "FrameQueue.h"
 #include "FrameQueue2.h"
+
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -52,8 +54,7 @@ namespace VideoLib {
 		VideoFrameGrabber *frameGrabber;
 		System::Runtime::InteropServices::GCHandle gch;
 
-		delegate void DecodedFrameDelegate(
-		void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
+		delegate void DecodedFrameDelegate(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
 
 		void decodedFrameCallback(void *data, AVPacket *packet, 
 			AVFrame *frame, Video::FrameType type);
@@ -372,5 +373,21 @@ namespace VideoLib {
 		
 		static int getAvFormatVersion();
 		static String ^getAvFormatBuildInfo();
+	};
+
+	public ref class VideoTranscoder 
+	{
+
+		VideoTranscode *videoTranscode;
+
+	public:
+
+		delegate void TranscodeProgressDelegate(double progress);
+
+		VideoTranscoder();
+		~VideoTranscoder();
+
+		void transcode(String ^input, String ^output, CancellationToken ^token, bool remuxVideo, bool remuxAudio,
+			TranscodeProgressDelegate ^progressCallback);
 	};
 }

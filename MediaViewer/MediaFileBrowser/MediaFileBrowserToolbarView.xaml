@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="100">
+             d:DesignHeight="50" d:DesignWidth="130">
     <Grid>
         <ToolBar Background="{StaticResource menuBackgroundColor}">
             <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
@@ -13,10 +13,16 @@
             <Button x:Name="exportButton" Height="16" ToolTip="Export" Command="{Binding ExportSelectedItemsCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
             </Button>
+            <Button Height="16" ToolTip="Create Image Collage" Command="{Binding CreateImageCollageCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
+            </Button>
             <Button Height="16" ToolTip="Create Video Preview Image(s)" Command="{Binding CreateVideoPreviewImagesCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/preview.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Torrent" Command="{Binding CreateTorrentFileCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
+            </Button>
+            <Button Height="16" ToolTip="Transcode Video" Command="{Binding TranscodeVideoCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
             </Button>
         </ToolBar>

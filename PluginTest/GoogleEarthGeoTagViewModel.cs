@@ -2,7 +2,6 @@
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData;
-using MediaViewer.Pager;
 using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;

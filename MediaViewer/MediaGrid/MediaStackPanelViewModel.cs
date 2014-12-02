@@ -3,7 +3,7 @@ using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
-using MediaViewer.Pager;
+using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
