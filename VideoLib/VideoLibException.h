@@ -4,6 +4,7 @@ using namespace System;
 using namespace System::Runtime::InteropServices;
 
 namespace VideoLib {
+
 	[Serializable]
 	public ref class VideoLibException : public Exception
 	{

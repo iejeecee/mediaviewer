@@ -35,6 +35,8 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.GridImage.ImageCollage;
 using MediaViewer.VideoTranscode;
+using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -42,7 +44,7 @@ namespace MediaViewer.MediaFileBrowser
     public class MediaFileBrowserViewModel : BindableBase
     {
 
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
            
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
@@ -166,7 +168,7 @@ namespace MediaViewer.MediaFileBrowser
             ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
             ImageMediaStackPanelViewModel.IsVisible = true;
 
-            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance, EventAggregator);
+            VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
             VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
             VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
@@ -390,7 +392,7 @@ namespace MediaViewer.MediaFileBrowser
                 catch (Exception ex)
                 {
 
-                    log.Error("Error deleting file", ex);
+                    Logger.Log.Error("Error deleting file", ex);
                     MessageBox.Show(ex.Message, "Error deleting file");
                 }
                 

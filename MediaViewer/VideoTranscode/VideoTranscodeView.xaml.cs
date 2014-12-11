@@ -1,4 +1,4 @@
-﻿using MediaViewer.Settings;
+﻿using MediaViewer.Infrastructure.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;

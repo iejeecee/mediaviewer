@@ -12,18 +12,19 @@ using MediaViewer.ImagePanel;
 using MediaViewer.Import;
 using MediaViewer.Model.Media.File.Watcher;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.TagEditor;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer
 {
     class MainWindowViewModel : BindableBase
     {
            
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         AppSettings Settings
         {
@@ -92,7 +93,7 @@ namespace MediaViewer
                   }
                   else
                   {
-                      log.Warn("Trying to view media of unknown mime type: " + (string)location + ", mime type: " + mimeType);
+                      Logger.Log.Warn("Trying to view media of unknown mime type: " + (string)location + ", mime type: " + mimeType);
                   }
 
               }));
@@ -115,11 +116,11 @@ namespace MediaViewer
 
             ShowLogCommand = new Command(() =>
                 {
-                    log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
-                    VisualAppender appender = (VisualAppender)(appenders[0]);
+                    //log4net.Appender.IAppender[] appenders = log4net.LogManager.GetRepository().GetAppenders();
+                    //VisualAppender appender = (VisualAppender)(appenders[0]);
 
                     LogView logView = new LogView();
-                    logView.DataContext = appender.LogViewModel;
+                    //logView.DataContext = appender.LogViewModel;
 
                     logView.Show();
 

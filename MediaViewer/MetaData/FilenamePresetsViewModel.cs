@@ -1,4 +1,4 @@
-﻿using MediaViewer.Settings;
+﻿using MediaViewer.Infrastructure.Settings;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.ComponentModel.Composition;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.MetaData
 {
@@ -22,7 +23,7 @@ namespace MediaViewer.MetaData
             set;
         }
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public FilenamePresetsViewModel(AppSettings settings)
         {
@@ -91,7 +92,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -104,7 +105,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -117,7 +118,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -131,7 +132,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -144,7 +145,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));

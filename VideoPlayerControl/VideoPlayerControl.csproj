@@ -121,6 +121,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaViewer.Infrastructure\MediaViewer.Infrastructure.csproj">
+      <Project>{a4d7c456-6180-4196-9a48-128894b6a32a}</Project>
+      <Name>MediaViewer.Infrastructure</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
       <Name>VideoLib</Name>

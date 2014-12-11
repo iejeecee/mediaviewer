@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
@@ -23,7 +24,7 @@ namespace MediaViewer.Import
 
     class ImportProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
      
         MediaState MediaState
         {
@@ -202,7 +203,7 @@ namespace MediaViewer.Import
                 {
                     ItemInfo = "Error importing file: " + item;
                     InfoMessages.Add("Error importing file: " + item + " " + e.Message);
-                    log.Error("Error importing file: " + item, e);
+                    Logger.Log.Error("Error importing file: " + item, e);
                     MessageBox.Show("Error importing file: " + item + "\n\n" + e.Message,
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;

@@ -1,4 +1,6 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MetaData;
 using MediaViewer.Model.Media.Metadata;
@@ -45,9 +47,7 @@ namespace MediaViewer.Model.Media.File
         const int FILE_OPEN_ASYNC_TIMEOUT_MS = 5 * 1000;
         // 5 seconds
         const int FILE_OPEN_SYNC_TIMEOUT_MS = 5 * 1000;
-
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        
         static BaseMedia readMediaFromWeb(string location, ReadOptions options, CancellationToken token)
         {
 
@@ -115,7 +115,6 @@ namespace MediaViewer.Model.Media.File
 
                 if (response != null)
                 {
-
                     response.Close();
                 }
             }
@@ -205,7 +204,7 @@ namespace MediaViewer.Model.Media.File
                     if ((info.LastWriteTime - media.LastModifiedDate) > TimeSpan.FromSeconds(10))
                     {
                         // media is outdated so update in database
-                        log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
+                        Logger.Log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
                         int id = media.Id;
                         media = readMediaFromFile(media.Location, options, token);
 

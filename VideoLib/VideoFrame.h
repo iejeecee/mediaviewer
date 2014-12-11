@@ -185,6 +185,8 @@ namespace VideoLib {
 			Byte *U = AVLibFrameData->data[1];
 			Byte *V = AVLibFrameData->data[2];
 						
+			AVFrame *temp = AVLibFrameData;
+
 			for (int y = 0 ; y < Height ; y++)
 			{
 				memcpy(pict, Y, Width);

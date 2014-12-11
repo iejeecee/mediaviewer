@@ -25,7 +25,7 @@ namespace MediaViewer.GridImage.ImageCollage
 
     public class ImageCollageViewModel : CloseableBindableBase
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         ICollection<MediaFileItem> media;
 

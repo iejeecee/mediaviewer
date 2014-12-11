@@ -32,7 +32,7 @@ namespace MediaViewer
             InitializeComponent();
           
             /*Version version = Assembly.GetEntryAssembly().GetName().Version;
-            log.Info("Starting MediaViewer v" + version.ToString());
+            Logger.Log.Info("Starting MediaViewer v" + version.ToString());
 
             AppDomain currentDomain = AppDomain.CurrentDomain;
             PrintLoadedAssemblies(currentDomain);

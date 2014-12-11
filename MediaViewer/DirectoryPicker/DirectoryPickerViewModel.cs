@@ -1,5 +1,4 @@
-﻿using log4net;
-using MediaViewer.Logging;
+﻿using MediaViewer.Logging;
 using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
@@ -19,9 +18,7 @@ using System.Threading.Tasks;
 namespace MediaViewer.DirectoryPicker
 {
     class DirectoryPickerViewModel : CloseableBindableBase
-    {    
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+    {            
         public DirectoryPickerViewModel()
         {
             MovePathHistory = new ObservableCollection<string>();
@@ -150,7 +147,7 @@ namespace MediaViewer.DirectoryPicker
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -166,7 +163,7 @@ namespace MediaViewer.DirectoryPicker
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));

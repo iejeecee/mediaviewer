@@ -21,6 +21,7 @@ using System.Xml;
 using System.Xml.Serialization;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Infrastructure.Logging;
 
 //Add/Attach and Entity States
 //http://msdn.microsoft.com/en-us/data/jj592676.aspx
@@ -30,7 +31,7 @@ namespace MediaViewer.TagEditor
    
     class TagEditorViewModel : CloseableBindableBase 
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
 
         public static TagCategory NullCategory = new TagCategory() { Name = "None", Id = -1 };
@@ -384,7 +385,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not add tag to database: " + TagName, e);
+                    Logger.Log.Error("Could not add tag to database: " + TagName, e);
                     MessageBox.Show("Error creating tag: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -477,7 +478,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not update tag in database: " + TagName, e);
+                    Logger.Log.Error("Could not update tag in database: " + TagName, e);
                     MessageBox.Show("Could not update tag in database: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -512,7 +513,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not update tag category in database", e);
+                    Logger.Log.Error("Could not update tag category in database", e);
                     MessageBox.Show("Could not update tag category in database: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -560,7 +561,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not remove tag category from database", e);
+                    Logger.Log.Error("Could not remove tag category from database", e);
                     MessageBox.Show("Could not remove tag category from database: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -591,7 +592,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not create tag category in database", e);
+                    Logger.Log.Error("Could not create tag category in database", e);
                     MessageBox.Show("Could not create tag category in database: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -681,7 +682,7 @@ namespace MediaViewer.TagEditor
                 }
                 catch (Exception e)
                 {
-                    log.Error("Could not remove SelectedTags from database", e);
+                    Logger.Log.Error("Could not remove SelectedTags from database", e);
                     MessageBox.Show("Could not remove tag from database: " + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }

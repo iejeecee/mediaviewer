@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
@@ -22,7 +23,7 @@ namespace MediaViewer.Model.Media.State
  
     public class MediaState : BindableBase, IMediaState, IDisposable
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
         public event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;        
@@ -87,7 +88,7 @@ namespace MediaViewer.Model.Media.State
          
             UIMediaCollection.EnterWriteLock();
 
-            if (DebugOutput) log.Info("begin add event: " + items.ElementAt(0).Location);
+            if (DebugOutput) Logger.Log.Info("begin add event: " + items.ElementAt(0).Location);
 
             try
             {
@@ -98,7 +99,7 @@ namespace MediaViewer.Model.Media.State
             finally
             {
 
-                if (DebugOutput) log.Info("end add event: " + items.ElementAt(0).Location);
+                if (DebugOutput) Logger.Log.Info("end add event: " + items.ElementAt(0).Location);
 
                 UIMediaCollection.ExitWriteLock();
              
@@ -114,7 +115,7 @@ namespace MediaViewer.Model.Media.State
             bool success = false;
 
             UIMediaCollection.EnterWriteLock();
-            if (DebugOutput) log.Info("begin rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
+            if (DebugOutput) Logger.Log.Info("begin rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
 
             try
             {
@@ -122,7 +123,7 @@ namespace MediaViewer.Model.Media.State
             }
             finally
             {
-                if (DebugOutput) log.Info("end rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
+                if (DebugOutput) Logger.Log.Info("end rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
                 UIMediaCollection.ExitWriteLock();
 
                 //if (success)
@@ -140,7 +141,7 @@ namespace MediaViewer.Model.Media.State
             List<MediaFileItem> removed = new List<MediaFileItem>();
 
             UIMediaCollection.EnterWriteLock();
-            if (DebugOutput) log.Info("begin remove event: " + removeItems.ElementAt(0).Location);
+            if (DebugOutput) Logger.Log.Info("begin remove event: " + removeItems.ElementAt(0).Location);
 
             try
             {
@@ -150,7 +151,7 @@ namespace MediaViewer.Model.Media.State
             }
             finally
             {
-                if (DebugOutput) log.Info("end remove event: " + removeItems.ElementAt(0).Location);
+                if (DebugOutput) Logger.Log.Info("end remove event: " + removeItems.ElementAt(0).Location);
                 UIMediaCollection.ExitWriteLock();
 
                 fireEvents(MediaStateChangedAction.Remove, removed);

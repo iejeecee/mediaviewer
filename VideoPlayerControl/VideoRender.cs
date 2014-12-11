@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.IO;
+using MediaViewer.Infrastructure.Settings;
 
 
 namespace VideoPlayerControl
@@ -283,8 +284,7 @@ namespace VideoPlayerControl
 
         }                                           
 
-        public void createScreenShot(String screenShotLocation, String screenShotName, ImageFormat screenShotFormat,
-            int positionSeconds, String videoLocation)
+        public void createScreenShot(String screenShotName, int positionSeconds, String videoLocation)
         {
             lock (renderLock)
             {
@@ -331,7 +331,10 @@ namespace VideoPlayerControl
                     screenShotName = System.IO.Path.GetFileNameWithoutExtension(screenShotName);
                     screenShotName += "." + "jpg";
 
-                    screenShotName = Utils.getUniqueFileName(screenShotLocation + "\\" + screenShotName);
+                    String location = AppSettings.Instance.VideoScreenShotLocation == null ?
+                        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) : AppSettings.Instance.VideoScreenShotLocation;
+
+                    screenShotName = Utils.getUniqueFileName(location + "\\" + screenShotName);
 
                     FileStream outputFile = new FileStream(screenShotName, FileMode.Create);
                     //encoder.QualityLevel = asyncState.JpegQuality;

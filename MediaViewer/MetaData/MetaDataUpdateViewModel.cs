@@ -15,13 +15,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Global.Commands;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.MetaData
 {
@@ -43,7 +44,7 @@ namespace MediaViewer.MetaData
             public int nrDigits;
         };
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public const string oldFilenameMarker = "filename";
         public const string counterMarker = "counter:";
@@ -156,7 +157,7 @@ namespace MediaViewer.MetaData
 
                             ItemInfo = error;
                             InfoMessages.Add(error);
-                            log.Error(error);
+                            Logger.Log.Error(error);
                         }
                     }
 
@@ -319,7 +320,7 @@ namespace MediaViewer.MetaData
 
                         ItemInfo = "Error updating file: " + item.Location;
                         InfoMessages.Add("Error updating file: " + item.Location + " " + e.Message);
-                        log.Error("Error updating file: " + item.Location, e);
+                        Logger.Log.Error("Error updating file: " + item.Location, e);
                         MessageBox.Show("Error updating file: " + item.Location + "\n\n" + e.Message,
                             "Error", MessageBoxButton.OK, MessageBoxImage.Error);                                               
                         return;
@@ -328,7 +329,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error writing metadata", e);
+                    Logger.Log.Error("Error writing metadata", e);
                     MessageBox.Show("Error writing metadata", e.Message);
                   
                 }

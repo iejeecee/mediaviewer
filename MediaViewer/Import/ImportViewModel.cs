@@ -24,7 +24,7 @@ namespace MediaViewer.Import
    
     class ImportViewModel : CloseableBindableBase
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
   
         public ImportViewModel(MediaFileWatcher mediaFileWatcher)
         {

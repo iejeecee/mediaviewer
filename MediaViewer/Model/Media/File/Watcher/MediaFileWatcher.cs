@@ -12,13 +12,14 @@ using System.Windows.Data;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.Model.Media.File.Watcher
 {
  
     public class MediaFileWatcher : IDisposable
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         MediaState mediaState;
         /// <summary>
@@ -152,7 +153,7 @@ namespace MediaViewer.Model.Media.File.Watcher
         {
             if (DebugOutput)
             {
-                log.Info("Changed watcher event: " + e.FullPath);
+                Logger.Log.Info("Changed watcher event: " + e.FullPath);
             }
 
             fileWatcherQueue.EventItems.Add(e);
@@ -162,7 +163,7 @@ namespace MediaViewer.Model.Media.File.Watcher
         {
             if (DebugOutput)
             {
-                log.Info("Created watcher event: " + e.FullPath);
+                Logger.Log.Info("Created watcher event: " + e.FullPath);
             }
 
             fileWatcherQueue.EventItems.Add(e);
@@ -172,7 +173,7 @@ namespace MediaViewer.Model.Media.File.Watcher
         {
             if (DebugOutput)
             {
-                log.Info("Deleted watcher event: " + e.FullPath);
+                Logger.Log.Info("Deleted watcher event: " + e.FullPath);
             }
 
             fileWatcherQueue.EventItems.Add(e);
@@ -182,7 +183,7 @@ namespace MediaViewer.Model.Media.File.Watcher
         {
             if (DebugOutput)
             {
-                log.Info("Renamed watcher event: " + e.OldFullPath + " " + e.FullPath);
+                Logger.Log.Info("Renamed watcher event: " + e.OldFullPath + " " + e.FullPath);
             }
 
             fileWatcherQueue.EventItems.Add(e);

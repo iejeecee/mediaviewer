@@ -10,7 +10,7 @@ namespace MediaViewer.Model.Media.Metadata
 
 public class FormatMetaData
 {
-    private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+    
 
 	// convert metadata properties to human readable strings
 	class FormatInfo {
@@ -570,7 +570,7 @@ public class FormatMetaData
 
 			} catch (Exception e) {
 
-                log.Warn("Error converting property value to number: " + value, e);
+                Logger.Log.Warn("Error converting property value to number: " + value, e);
 			}
 		}
 */

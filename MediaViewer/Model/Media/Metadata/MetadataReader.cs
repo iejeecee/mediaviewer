@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace MediaViewer.Model.Media.Metadata
 
     abstract class MetadataReader
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         protected const int MAX_THUMBNAIL_WIDTH = 160;
         protected const int MAX_THUMBNAIL_HEIGHT = 160;
@@ -43,7 +44,7 @@ namespace MediaViewer.Model.Media.Metadata
             }
             catch (Exception e)
             {
-                log.Error("Cannot read XMP metadata for: " + media.Location, e);
+                Logger.Log.Error("Cannot read XMP metadata for: " + media.Location, e);
                 media.MetadataReadError = e;
 
             } finally {
@@ -55,7 +56,7 @@ namespace MediaViewer.Model.Media.Metadata
 
         private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
         {
-            log.Error("MetadataReader (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
+            Logger.Log.Error("MetadataReader (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
             return (true);
         }
       

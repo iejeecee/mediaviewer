@@ -18,7 +18,7 @@ using System.Windows.Input;
 using VideoPlayerControl;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using MediaViewer.Model.Global.Events;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System.IO;
@@ -33,7 +33,7 @@ namespace MediaViewer.VideoPanel
 
     public class VideoViewModel : BindableBase, IDisposable, IMediaFileBrowserContentViewModel
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
         IEventAggregator EventAggregator { get; set; }
@@ -54,8 +54,7 @@ namespace MediaViewer.VideoPanel
                 try
                 {
                     videoPlayer.open(location);
-                    CurrentLocation = location;
-                    ScreenShotLocation = FileUtils.getPathWithoutFileName(location); //settings.VideoScreenShotLocation;
+                    CurrentLocation = location;                   
                     ScreenShotName = System.IO.Path.GetFileName(location);
                    
                 }
@@ -160,9 +159,7 @@ namespace MediaViewer.VideoPanel
             if (IsInitialized == true) return;
 
             this.videoPlayer = videoPlayer;
-                      
-            videoPlayer.Log = log;
-                       
+                                                     
             videoPlayer.StateChanged += videoPlayer_StateChanged;
             videoPlayer.PositionSecondsChanged += videoPlayer_PositionSecondsChanged;
             videoPlayer.DurationSecondsChanged += videoPlayer_DurationSecondsChanged;
@@ -235,15 +232,7 @@ namespace MediaViewer.VideoPanel
         {
             HasAudio = newHasAudio;
         }
-       
-        public string ScreenShotLocation
-        {
-            get { return videoPlayer.ScreenShotLocation; }
-            set { videoPlayer.ScreenShotLocation = value;
-                OnPropertyChanged("ScreenShotLocation");           
-            }
-        }
-
+            
         public string ScreenShotName
         {
             get { return videoPlayer.ScreenShotName; }

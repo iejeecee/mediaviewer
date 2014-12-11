@@ -22,7 +22,7 @@ namespace MediaViewer.VideoTranscode
 
         public VideoTranscodeProgressViewModel(ICollection<MediaFileItem> items, VideoTranscodeViewModel vm)
         {
-            WindowIcon = "pack://application:,,,/Resources/Icons/torrent.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/transcode.ico";
             WindowTitle = "Video Transcoding Progress";
 
             AsyncState = vm;
@@ -56,6 +56,33 @@ namespace MediaViewer.VideoTranscode
 
         }
 
+        Dictionary<String, Object> getOptions()
+        {
+            Dictionary<String, Object> options = new Dictionary<string, object>();
+            options.Add("videoStreamMode", AsyncState.VideoStreamMode);
+            options.Add("audioStreamMode", AsyncState.AudioStreamMode);
+            options.Add("videoEncoder", AsyncState.VideoEncoder);
+            options.Add("audioEncoder", AsyncState.AudioEncoder);
+            options.Add("videoEncoderPreset", AsyncState.VideoEncoderPreset);
+
+            if (AsyncState.Width.HasValue)
+            {
+                options.Add("width", AsyncState.Width.Value);
+            }
+
+            if (AsyncState.Height.HasValue)
+            {
+                options.Add("height", AsyncState.Height.Value);
+            }
+
+            if (AsyncState.SampleRate.HasValue)
+            {
+                options.Add("sampleRate", AsyncState.SampleRate.Value);
+            }
+
+            return (options);
+        }
+
         void startTranscode()
         {
             VideoLib.VideoTranscoder videoTranscoder = new VideoLib.VideoTranscoder();
@@ -65,37 +92,30 @@ namespace MediaViewer.VideoTranscode
 
             try
             {
-
+                Dictionary<String, Object> options = getOptions();
+                
                 foreach (MediaFileItem input in Items)
                 {
                     if (CancellationToken.IsCancellationRequested) break;
+                    if (!MediaFormatConvert.isVideoFile(input.Location))
+                    {
+                        InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
+                        continue;
+                    }
 
                     String outLocation = AsyncState.OutputPath + "\\" + Path.GetFileNameWithoutExtension(input.Location);
 
-                    switch (AsyncState.ContainerFormat)
-                    {
-
-                        case ContainerFormats.MP4:
-                            {
-                                outLocation += ".mp4";
-                                break;
-                            }
-                        default:
-                            {
-                                break;
-                            }
-                    };
-
+                    outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
+                    
                     if (outLocation.Equals(input.Location))
                     {
-
                         outLocation = FileUtils.getUniqueFileName(input.Location);
                     }
 
                     ItemProgress = 0;
                     ItemInfo = "Transcoding: " + input.Location;
 
-                    videoTranscoder.transcode(input.Location, outLocation, CancellationToken, true, true, 
+                    videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options, 
                         transcodeProgressCallback);
 
                     ItemProgress = 100;

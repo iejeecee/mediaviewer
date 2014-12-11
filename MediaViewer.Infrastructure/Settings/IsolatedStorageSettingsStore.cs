@@ -1,3 +1,4 @@
+using SettingsProviderNet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,11 +6,11 @@ using System.IO.IsolatedStorage;
 using System.Runtime.Serialization.Json;
 using System.Text;
 
-namespace MediaViewer.Settings
+namespace MediaViewer.Infrastructure.Settings
 {
     public class IsolatedStorageSettingsStore : JsonSettingsStoreBase
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        //protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         const IsolatedStorageScope Scope = IsolatedStorageScope.Assembly | IsolatedStorageScope.User | IsolatedStorageScope.Roaming;
 
@@ -28,9 +29,9 @@ namespace MediaViewer.Settings
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                log.Error("Cannot write application settings to isolated storage file", e);
+                //log.Error("Cannot write application settings to isolated storage file", e);
             }
         }
 
@@ -57,9 +58,9 @@ namespace MediaViewer.Settings
                 }
 
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                log.Error("Cannot read application settings from isolated storage file", e);
+                //log.Error("Cannot read application settings from isolated storage file", e);
             }
 
             return result;

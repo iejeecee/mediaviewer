@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -20,7 +21,7 @@ namespace MediaViewer.Model.Media.File
     public class MediaFileItem : BindableBase, IEquatable<MediaFileItem>, IComparable<MediaFileItem>, IDisposable
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
 
         ReaderWriterLockSlim rwLock;
@@ -265,7 +266,7 @@ namespace MediaViewer.Model.Media.File
             catch (Exception e)
             {
                 result = MediaFileItemState.ERROR;
-                log.Info("Error loading image grid item:" + Location, e);
+                Logger.Log.Info("Error loading image grid item:" + Location, e);
             }
             finally
             {               

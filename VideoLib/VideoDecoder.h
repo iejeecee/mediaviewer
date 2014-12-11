@@ -2,6 +2,9 @@
 #include "stdafx.h"
 #include "Video.h"
 #include "VideoLibException.h"
+#include "FilterGraph.h"
+
+namespace VideoLib {
 
 typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
 
@@ -39,6 +42,14 @@ protected:
 	int nrChannels;
 
 	int durationSeconds;
+
+	FilterGraph *videoFilterGraph;
+	FilterGraph *audioFilterGraph;
+
+	static void logCallback(int level, const char *message) {
+		
+		Console::WriteLine(gcnew System::String(message)); 
+	}
 
 public:
 
@@ -93,6 +104,9 @@ public:
 		imageConvertFormat = AV_PIX_FMT_YUV420P;
 		audioConvertFormat = AV_SAMPLE_FMT_S16;
 
+		videoFilterGraph = NULL;
+		audioFilterGraph = NULL;
+	
 	}
 
 	virtual ~VideoDecoder() {
@@ -103,11 +117,6 @@ public:
 	bool isClosed() {
 
 		return(closed);
-	}
-
-	bool hasAudio() {
-
-		return(audioStreamIndex >= 0);
 	}
 
 	void setDecodedFrameCallback(DECODED_FRAME_CALLBACK decodedFrame = NULL,
@@ -151,6 +160,18 @@ public:
 			audioConvertContext = NULL;
 		}
 
+		if(videoFilterGraph != NULL) {
+
+			delete videoFilterGraph;
+			videoFilterGraph = NULL;
+		}
+
+		if(audioFilterGraph != NULL) {
+
+			delete audioFilterGraph;
+			audioFilterGraph = NULL;
+		}
+
 		startTime = 0;
 	
 		closed = true;
@@ -176,7 +197,7 @@ public:
 
 		if((errorCode = avformat_open_input(&formatContext, locationUTF8, NULL, NULL)) != 0)
 		{			
-			throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + errorToString(errorCode));
+			throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
 		}
 
 		// generate pts?? -- from ffplay, not documented
@@ -185,59 +206,44 @@ public:
 
 		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
 		{		
-			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + errorToString(errorCode));
+			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + VideoInit::errorToString(errorCode));
 		}
 
-		videoStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO,
-                                -1, -1, NULL, 0);
+		for(unsigned int i = 0; i < formatContext->nb_streams; i++) {
 
-		if(videoStreamIndex >= 0) {
+			AVCodec *decoder = NULL;
 
-			videoStream = formatContext->streams[videoStreamIndex];
+			if(formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO ||
+				formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO)
+			{
+				decoder = avcodec_find_decoder(formatContext->streams[i]->codec->codec_id);
+				if(decoder == NULL)
+				{		
+					throw gcnew VideoLib::VideoLibException("Unsupported decoder for input stream");
+				}
+			}
+
+			VideoLib::Stream *newStream = new VideoLib::Stream(formatContext->streams[i], decoder);			
 		
-		} else {
-			
+			stream.push_back(newStream);			
+		}
+
+		videoIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+		if(videoIdx < 0) {
+					
 			throw gcnew VideoLib::VideoLibException("Unable to find a video stream");
 		}
 
-		videoCodecContext = formatContext->streams[videoStreamIndex]->codec;
-		videoCodec = avcodec_find_decoder(videoCodecContext->codec_id);
-		if(videoCodec == NULL)
-		{		
-			throw gcnew VideoLib::VideoLibException("Unsupported video codec");
-		}
-
-		videoCodecContext->skip_frame = discardMode;
-
-		if ((errorCode = avcodec_open2(videoCodecContext, videoCodec, NULL)) != 0)
-		{	
-			throw gcnew VideoLib::VideoLibException("Error opening the video codec: " + errorToString(errorCode));
-		}
-
-		audioStreamIndex = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO,
-                                -1, -1, NULL, 0);
-
-		if(audioStreamIndex >= 0) {
-
-			audioStream = formatContext->streams[audioStreamIndex];
-
-			audioCodecContext = formatContext->streams[audioStreamIndex]->codec;
-			audioCodec = avcodec_find_decoder(audioCodecContext->codec_id);
-
-			if(audioCodec == NULL) {
+		stream[videoIdx]->open();
+		stream[videoIdx]->getCodecContext()->skip_frame = discardMode; 	
+	
+		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+		if(audioIdx >= 0) {
 				
-				throw gcnew VideoLib::VideoLibException("no suitable audio decoder found");
-			}
-
-			if ((errorCode = avcodec_open2(audioCodecContext, audioCodec, NULL)) != 0)
-			{				
-				throw gcnew VideoLib::VideoLibException("Error opening the audio codec: " + errorToString(errorCode));
-			}
+			stream[audioIdx]->open();
 		}
-		
-		//TODO: if one of these fail, we should release what has succeeded
+			
 		frame = avcodec_alloc_frame();
-
 		if(frame == NULL)
 		{		
 			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
@@ -256,7 +262,7 @@ public:
 		
 		if(durationSeconds < 0) {
 
-			durationSeconds  = videoStream->duration * av_q2d(videoStream->time_base);
+			durationSeconds  = getVideoStream()->duration * av_q2d(getVideoStream()->time_base);
 		}
 		
 		if(durationSeconds < 0) {
@@ -275,35 +281,35 @@ public:
 
 		if(hasAudio()) {
 
-			samplesPerSecond = audioCodecContext->sample_rate;
-			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+			samplesPerSecond = getAudioCodecContext()->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
 			
-			nrChannels = audioCodecContext->channels;
+			nrChannels = getAudioCodecContext()->channels;
 		}		
 
 	}
 
-	int getSizeBytes() {
+	int getSizeBytes() const {
 
 		return(sizeBytes);
 	}
 
-	int getAudioSamplesPerSecond() {
+	int getAudioSamplesPerSecond() const {
 
 		return(samplesPerSecond);
 	}
 
-	int getAudioBytesPerSample() {
+	int getAudioBytesPerSample() const  {
 
 		return(bytesPerSample);
 	}
 
-	int getAudioNrChannels() {
+	int getAudioNrChannels() const {
 
 		return(nrChannels);
 	}
 
-	int getAudioBytesPerSecond() {
+	int getAudioBytesPerSecond() const {
 
 		return(samplesPerSecond * bytesPerSample * nrChannels);
 	}
@@ -311,27 +317,36 @@ public:
 	double getDurationSeconds() const {
 		
 		return(durationSeconds);
-
 	}
 
-	SwsContext *getImageConvertContext() {
+	SwsContext *getImageConvertContext() const {
 
 		return(imageConvertContext);
 	}
 
-	AVPixelFormat getImageConvertFormat() {
+	AVPixelFormat getImageConvertFormat() const {
 
 		return(imageConvertFormat);
 	}
 
-	SwrContext *getAudioConvertContext() {
+	SwrContext *getAudioConvertContext() const {
 
 		return(audioConvertContext);
 	}
 
-	AVSampleFormat getAudioConvertFormat() {
+	AVSampleFormat getAudioConvertFormat() const {
 
 		return(audioConvertFormat);
+	}
+
+	FilterGraph *getVideoFilterGraph() const {
+
+		return(videoFilterGraph);
+	}
+
+	FilterGraph *getAudioFilterGraph() const {
+
+		return(audioFilterGraph);
 	}
 
 	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
@@ -351,7 +366,7 @@ public:
 			}
 
 			// only decode video/keyframe or non corrupt packets
-			if((packet.stream_index == videoStreamIndex) &&
+			if((packet.stream_index == videoIdx) &&
 				(videoMode != DECODE_KEY_FRAMES_ONLY || (packet.flags & AV_PKT_FLAG_KEY)) &&
 				!(packet.flags & AV_PKT_FLAG_CORRUPT) &&
 				(videoMode != SKIP_VIDEO))
@@ -359,7 +374,7 @@ public:
 
 				avcodec_get_frame_defaults(frame);
 
-				int ret = avcodec_decode_video2(videoCodecContext, frame, &frameFinished, &packet);
+				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
 				if(ret < 0) {
 
 					//Error decoding video frame
@@ -389,12 +404,12 @@ public:
 
 				}
 
-			} else if((packet.stream_index == audioStreamIndex) &&
+			} else if((packet.stream_index == audioIdx) &&
 				(audioMode == DECODE_AUDIO)) {
 
 					avcodec_get_frame_defaults(frame);
 
-					int ret = avcodec_decode_audio4(audioCodecContext, frame, &frameFinished, 
+					int ret = avcodec_decode_audio4(getAudioCodecContext(), frame, &frameFinished, 
 						&packet);
 
 					if(ret < 0) {
@@ -428,11 +443,11 @@ public:
 		int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
 		if(ret >= 0) { 
 
-			avcodec_flush_buffers(videoCodecContext);
+			avcodec_flush_buffers(getVideoCodecContext());
 
-			if(audioCodecContext != NULL) {
+			if(hasAudio()) {
 
-				avcodec_flush_buffers(audioCodecContext);
+				avcodec_flush_buffers(getAudioCodecContext());
 			}
 
 			return true;
@@ -443,46 +458,53 @@ public:
 	}
 
 	void initImageConverter(AVPixelFormat format, int dstWidth, int dstHeight, 
-		SamplingMode sampling) 
+		SamplingMode sampling, bool useFilterGraph = false) 
 	{
 
-		convertedFrame = avcodec_alloc_frame();
-		if(convertedFrame == NULL)
-		{
-			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
-		}
+		if(useFilterGraph == false) {
 
-		int numBytes = avpicture_get_size(format, dstWidth, dstHeight);
-		convertedFrameBuffer = (uint8_t*)av_malloc(numBytes);
+			convertedFrame = avcodec_alloc_frame();
+			if(convertedFrame == NULL)
+			{
+				throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
+			}
 
-		avpicture_fill((AVPicture*)convertedFrame, convertedFrameBuffer, format, dstWidth, dstHeight);
+			int numBytes = avpicture_get_size(format, dstWidth, dstHeight);
+			convertedFrameBuffer = (uint8_t*)av_malloc(numBytes);
 
-		imageConvertContext = sws_getContext(
-			videoCodecContext->width,
-			videoCodecContext->height,
-			videoCodecContext->pix_fmt,
-			dstWidth,
-			dstHeight,
-			format,
-			sampling,
-			NULL,
-			NULL,
-			NULL);
+			avpicture_fill((AVPicture*)convertedFrame, convertedFrameBuffer, format, dstWidth, dstHeight);
 
-		if(imageConvertContext == NULL) {
+			imageConvertContext = sws_getContext(
+				getVideoCodecContext()->width,
+				getVideoCodecContext()->height,
+				getVideoCodecContext()->pix_fmt,
+				dstWidth,
+				dstHeight,
+				format,
+				sampling,
+				NULL,
+				NULL,
+				NULL);
 
-			throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
+			if(imageConvertContext == NULL) {
+
+				throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
+
+			} else {
+
+				imageConvertFormat = format;
+			}
 
 		} else {
-
-			imageConvertFormat = format;
+			
+			videoFilterGraph = new FilterGraph(getVideoCodecContext(), format, sampling);
+			videoFilterGraph->createGraph("null");
 		}
-
 		
 	}
 
 	bool initAudioConverter(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
-		AVSampleFormat sampleFormat = AV_SAMPLE_FMT_S16) 
+		AVSampleFormat sampleFormat = AV_SAMPLE_FMT_S16, bool useFilterGraph = false) 
 	{
 
 		if(hasAudio() == false) {
@@ -490,79 +512,74 @@ public:
 			return(false);
 		}
 
-		this->audioConvertFormat = sampleFormat;
+		if(useFilterGraph == false) {
 
-		// Note that AVCodecContext::channel_layout may or may not be set by libavcodec. Because of this,
-		// we won't use it, and will instead try to guess the layout from the number of channels.
-		audioConvertContext = swr_alloc_set_opts(NULL,
-			channelLayout,
-			sampleFormat,
-			sampleRate,
-			av_get_default_channel_layout(audioCodecContext->channels),
-			audioCodecContext->sample_fmt,
-			audioCodecContext->sample_rate,
-			0,
-			NULL);
+			this->audioConvertFormat = sampleFormat;
 
-		if(audioConvertContext == NULL) {
+			// Note that AVCodecContext::channel_layout may or may not be set by libavcodec. Because of this,
+			// we won't use it, and will instead try to guess the layout from the number of channels.
+			audioConvertContext = swr_alloc_set_opts(NULL,
+				channelLayout,
+				sampleFormat,
+				sampleRate,
+				av_get_default_channel_layout(getAudioCodecContext()->channels),
+				getAudioCodecContext()->sample_fmt,
+				getAudioCodecContext()->sample_rate,
+				0,
+				NULL);
 
-			throw gcnew VideoLib::VideoLibException("Unable to allocate audio convert context");
+			if(audioConvertContext == NULL) {
+
+				throw gcnew VideoLib::VideoLibException("Unable to allocate audio convert context");
+			}
+
+			if(swr_init(audioConvertContext) != 0)
+			{
+				throw gcnew VideoLib::VideoLibException("Unable to initialize audio convert context");
+			}
+
+			return(true);
+
+		} else {
+
+			audioFilterGraph = new FilterGraph(getAudioCodecContext(), sampleFormat, channelLayout, sampleRate);
+			audioFilterGraph->createGraph("anull");
+
+			return(true);
 		}
-
-		if(swr_init(audioConvertContext) != 0)
-		{
-			throw gcnew VideoLib::VideoLibException("Unable to initialize audio convert context");
-		}
-
-		return(true);
 	}
 
 	int getWidth() const {
 
-		return(videoCodecContext == NULL ? 0 : videoCodecContext->width);
+		return(hasVideo() ? getVideoCodecContext()->width : 0);
 	}
 
 	int getHeight() const {
 
-		return(videoCodecContext == NULL ? 0 : videoCodecContext->height);
+		return(hasVideo() ? getVideoCodecContext()->height : 0);
 	}
 
 
-	static AVFrame *convertFrame(const AVFrame *source, AVPixelFormat dstFormat, int dstWidth, int dstHeight, 
-		SamplingMode sampling)
+	void convertVideoFrame(AVFrame *input, AVFrame *output)
 	{
 
-		AVFrame *dest = avcodec_alloc_frame();
+		if(imageConvertContext != NULL) {
 
-		if(avpicture_alloc((AVPicture *)dest, dstFormat, dstWidth, dstHeight) != 0) 
-		{
-			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
-		}
-
-		SwsContext *convertCtx = sws_getContext(
-			source->width,
-			source->height,
-			(AVPixelFormat)source->format,
-			dstWidth,
-			dstHeight,
-			dstFormat,
-			sampling,
-			NULL,
-			NULL,
-			NULL);
-
-		sws_scale(convertCtx,
-				source->data,
-				source->linesize,
+			// convert frame to the right format
+			sws_scale(imageConvertContext,
+				input->data,
+				input->linesize,
 				0,
-				source->height,
-				dest->data,
-				dest->linesize);
+				input->height,
+				output->data,
+				output->linesize);
 
+		} else {
 
-		sws_freeContext(convertCtx);
-
-		return(dest);
+			videoFilterGraph->filterFrame(input, output);
+		}
 	}
+	
 };
 
+}

@@ -1,4 +1,5 @@
-﻿using SharpDX.D3DCompiler;
+﻿using MediaViewer.Infrastructure.Logging;
+using SharpDX.D3DCompiler;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -13,7 +14,7 @@ namespace MediaViewer.Effects
 {
     class PixelShaderEffect : ShaderEffect
     {
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         protected PixelShaderEffect()
         {
@@ -28,14 +29,14 @@ namespace MediaViewer.Effects
             try
             {
                 ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath + name, entryPoint, "ps_2_0", ShaderFlags.None, EffectFlags.None, null, null);
-                log.Info("Compiled pixel shader: " + shaderPath + name);
+                Logger.Log.Info("Compiled pixel shader: " + shaderPath + name);
                 FileStream stream = new FileStream("D:\\Repos\\mediaviewer\\MediaViewer\\Resources\\CompiledShaders\\" + System.IO.Path.GetFileNameWithoutExtension(name) + ".ps", FileMode.Create);
                 shaderBytes.Save(stream);
                 stream.Close();                             
             }
             catch (Exception e)
             {
-                log.Error("Error loading pixel shader " + name, e);
+                Logger.Log.Error("Error loading pixel shader " + name, e);
                 throw;
             }
         }
@@ -57,7 +58,7 @@ namespace MediaViewer.Effects
             try
             {
                 ShaderBytecode shaderBytes = ShaderBytecode.CompileFromFile(shaderPath + name, entryPoint, "ps_2_0", ShaderFlags.None, EffectFlags.None, null, null);
-                log.Info("Compiled pixel shader: " + shaderPath + name);
+                Logger.Log.Info("Compiled pixel shader: " + shaderPath + name);
                 MemoryStream stream = new MemoryStream();
                 shaderBytes.Save(stream);
                 stream.Position = 0;
@@ -67,7 +68,7 @@ namespace MediaViewer.Effects
             }
             catch (Exception e)
             {
-                log.Error("Error loading pixel shader " + name, e);
+                Logger.Log.Error("Error loading pixel shader " + name, e);
                 throw;
             }
         }

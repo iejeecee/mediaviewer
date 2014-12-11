@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -23,7 +24,7 @@ namespace MediaViewer.Export
 
     class ExportViewModel : CloseableBindableBase, ICancellableOperationProgress
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
      
         MediaState MediaState
         {
@@ -94,7 +95,7 @@ namespace MediaViewer.Export
                         {
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
                             InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                            log.Error("Could not open file and/or read it's metadata: " + item.Location);
+                            Logger.Log.Error("Could not open file and/or read it's metadata: " + item.Location);
                         }
                     }
 
@@ -118,7 +119,7 @@ namespace MediaViewer.Export
                 {
                     ItemInfo = "Error exporting file: " + item.Location;
                     InfoMessages.Add("Error exporting file: " + item.Location + " " + e.Message);
-                    log.Error("Error exporting file: " + item.Location, e);
+                    Logger.Log.Error("Error exporting file: " + item.Location, e);
                     MessageBox.Show("Error exporting file: " + item.Location + "\n\n" + e.Message,
                         "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;

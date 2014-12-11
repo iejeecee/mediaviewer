@@ -18,13 +18,14 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataPresetsViewModel : CloseableBindableBase
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
         
         public MetaDataPresetsViewModel()
         {
@@ -322,7 +323,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error creating presetMetadata", e);
+                    Logger.Log.Error("Error creating presetMetadata", e);
                 }
             }
         }
@@ -341,7 +342,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error deleting presetMetadata", e);
+                    Logger.Log.Error("Error deleting presetMetadata", e);
                 }
             }
         }
@@ -378,7 +379,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error updating presetMetadata", e);
+                    Logger.Log.Error("Error updating presetMetadata", e);
                 }
             }
         }

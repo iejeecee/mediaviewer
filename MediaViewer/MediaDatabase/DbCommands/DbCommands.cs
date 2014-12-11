@@ -3,6 +3,7 @@
 // Debug generated SQL, add the following line
 // context.Database.Log = s => System.Diagnostics.Debug.WriteLine(s);
 
+using MediaViewer.Infrastructure.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Core;
@@ -15,7 +16,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 {
     class DbCommands<T> : IDisposable
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         const int nrRetriesOnOptimisticConcurrencyException = 100;
 
@@ -74,7 +75,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 {
                     if (i == nrRetriesOnOptimisticConcurrencyException - 1)
                     {
-                        log.Error("Concurrencyexception while updating entity, nr retries exhausted: " + e.Message);
+                        Logger.Log.Error("Concurrencyexception while updating entity, nr retries exhausted: " + e.Message);
                         throw;
                     }
                     else
@@ -85,7 +86,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                             conflictingEntity.Reload();
                         }
                                                
-                        log.Warn("Concurrencyexception while updating entity: " + e.Message);
+                        Logger.Log.Warn("Concurrencyexception while updating entity: " + e.Message);
                         retry = true;
                     }
                    
@@ -112,7 +113,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             catch (DbUpdateConcurrencyException e)
             {
-                log.Error("Concurrencyexception while creating entity: " + e.Message);
+                Logger.Log.Error("Concurrencyexception while creating entity: " + e.Message);
 
                 throw;
             }
@@ -135,7 +136,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             catch (DbUpdateConcurrencyException e)
             {
-                log.Error("Concurrencyexception while deleting entity: " + e.Message);
+                Logger.Log.Error("Concurrencyexception while deleting entity: " + e.Message);
 
                 throw;
             }

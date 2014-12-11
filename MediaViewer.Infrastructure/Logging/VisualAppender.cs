@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using log4net;
+
 
 namespace MediaViewer.Logging
 {
-    class VisualAppender : log4net.Appender.AppenderSkeleton
+    class VisualAppender //: log4net.Appender.AppenderSkeleton
 	{
 
-        LogViewModel logViewModel;
+       /* LogViewModel logViewModel;
 
         public LogViewModel LogViewModel
         {
@@ -83,6 +83,6 @@ namespace MediaViewer.Logging
 				return(LogMessageModel);
 			}
 		}
-
+        */
 	}
 }

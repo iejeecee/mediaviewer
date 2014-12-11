@@ -199,7 +199,6 @@
     <Compile Include="GridImage\ImageCollage\ImageCollageViewModel.cs" />
     <Compile Include="GridImage\ImageCollage\PictureGridImage.cs" />
     <Compile Include="GridImage\VideoPreviewImage\VideoGridImage.cs" />
-    <Compile Include="Logging\Logger.cs" />
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaGrid\InfoIconsCache.cs" />
     <Compile Include="MediaGrid\MediaGridItemView2.xaml.cs">
@@ -305,9 +304,6 @@
     <Compile Include="Progress\TotalProgressTextConverter.cs" />
     <Compile Include="Progress\WindowTitleConverter.cs" />
     <Compile Include="RegionNames.cs" />
-    <Compile Include="Settings\SettingsView.xaml.cs">
-      <DependentUpon>SettingsView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
     </Compile>
@@ -413,7 +409,6 @@
     <Compile Include="Logging\LogView.xaml.cs">
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Logging\VisualAppender.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="MediaFileBrowser\MediaFileBrowserView.xaml.cs">
       <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
@@ -519,9 +514,6 @@
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
-    <Compile Include="Settings\IsolatedStorageSettingsStore.cs" />
-    <Compile Include="Settings\AppSettings.cs" />
-    <Compile Include="Settings\SettingsProvider.cs" />
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
     <Compile Include="UserControls\Relation\RelationEnum.cs" />
@@ -556,6 +548,10 @@
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VideoPanel\VideoSettingsView.xaml.cs">
+      <DependentUpon>VideoSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPanel\VideoSettingsViewModel.cs" />
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -566,7 +562,7 @@
       <DependentUpon>VideoPreviewImageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="GridImage\VideoPreviewImage\VideoPreviewImageViewModel.cs" />
-    <Compile Include="VideoTranscode\Formats.cs" />
+    <Compile Include="VideoTranscode\IsOptionsEnabledConverter.cs" />
     <Compile Include="VideoTranscode\VideoTranscodeProgressViewModel.cs" />
     <Compile Include="VideoTranscode\VideoTranscodeView.xaml.cs">
       <DependentUpon>VideoTranscodeView.xaml</DependentUpon>
@@ -637,10 +633,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Progress\NonCancellableOperationProgressView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Settings\SettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -792,6 +784,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="VideoPanel\VideoSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="VideoPanel\VideoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -823,9 +819,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="log4net.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <EntityDeploy Include="MediaDatabase\MediaDatabase.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
@@ -856,6 +849,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaViewer.Infrastructure\MediaViewer.Infrastructure.csproj">
+      <Project>{a4d7c456-6180-4196-9a48-128894b6a32a}</Project>
+      <Name>MediaViewer.Infrastructure</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
       <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
       <Name>VideoLib</Name>
@@ -1010,6 +1007,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\transcode.ico" />
     <Resource Include="Resources\Images\0stars.png" />
     <Resource Include="Resources\Images\1stars.png" />
     <Resource Include="Resources\Images\2stars.png" />

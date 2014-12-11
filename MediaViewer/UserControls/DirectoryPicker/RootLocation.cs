@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
@@ -57,7 +58,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
             catch (Exception e)
             {
-                log.Error("Cannot read system drives", e);
+                Logger.Log.Error("Cannot read system drives", e);
             }
 
             return (drives);

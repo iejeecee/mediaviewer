@@ -14,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Infrastructure.Settings;
 
 namespace MediaViewer
 {
@@ -91,7 +92,7 @@ namespace MediaViewer
             ImageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
             ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
 
-            VideoViewModel = new VideoPanel.VideoViewModel(Settings.AppSettings.Instance, EventAggregator);
+            VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
             VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
             VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);

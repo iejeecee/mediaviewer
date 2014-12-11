@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Utils;
@@ -32,7 +33,7 @@ namespace MediaViewer.UserControls.TagPicker
     /// </summary>
     public partial class TagPickerView : UserControl
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         static SolidColorBrush unselectedTagColor = new SolidColorBrush(Colors.White);
         static SolidColorBrush parentSelectedTagColor = new SolidColorBrush(Colors.Red);
@@ -486,13 +487,13 @@ namespace MediaViewer.UserControls.TagPicker
                         }
                         else
                         {                     
-                            log.Error("Error linking tags", ex);
+                            Logger.Log.Error("Error linking tags", ex);
                             MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
                     catch (Exception ex)
                     {
-                        log.Error("Error linking tags", ex);
+                        Logger.Log.Error("Error linking tags", ex);
                         MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 

@@ -1,4 +1,5 @@
 ﻿using MediaViewer.GridImage.ImageCollage;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -23,9 +24,7 @@ namespace MediaViewer.GridImage.ImageCollage
 {
     public class ImageCollageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
-
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-      
+           
         public ImageCollageViewModel AsyncState {get;set;}
        
         CancellationTokenSource tokenSource;
@@ -145,7 +144,7 @@ namespace MediaViewer.GridImage.ImageCollage
             catch (Exception e)
             {
                 InfoMessages.Add("Error creating image collage: " + e.Message);
-                log.Error("Error creating image collage: ", e);
+                Logger.Log.Error("Error creating image collage: ", e);
             }
             finally
             {

@@ -21,7 +21,7 @@ using System.Windows.Shapes;
 using MediaViewer.ExtensionMethods;
 using System.Windows.Threading;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.Prism.PubSubEvents;
 

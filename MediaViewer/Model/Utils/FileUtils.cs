@@ -16,13 +16,14 @@ using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.GenericEventArgs;
 using MediaViewer.Progress;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.Model.Utils
 {
     class FileUtils
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         private enum CopyFileCallbackAction
         {
@@ -219,7 +220,7 @@ namespace MediaViewer.Model.Utils
             }
             catch (Exception e)
             {
-                log.Error("Copy Exception", e);
+                Logger.Log.Error("Copy Exception", e);
                 progress.ItemInfo = "Copy Exception: " + e.Message;
             }            
 
@@ -304,7 +305,7 @@ namespace MediaViewer.Model.Utils
             catch (Exception e)
             {
 
-                log.Error("Move Exception", e);
+                Logger.Log.Error("Move Exception", e);
                 progress.ItemInfo = "Move Exception: " + e.Message;
             }
          
@@ -597,11 +598,11 @@ namespace MediaViewer.Model.Utils
                 // This code just writes out the message and continues to recurse. 
                 // You may decide to do something different here. For example, you 
                 // can try to elevate your privileges and access the file again.
-                log.Warn(e.Message);
+                Logger.Log.Warn(e.Message);
             }
             catch (DirectoryNotFoundException e)
             {
-                log.Warn(e.Message);
+                Logger.Log.Warn(e.Message);
             }
 
             if (files != null)

@@ -5,39 +5,10 @@
 #include <algorithm>
 #include "stdafx.h"
 #include "VideoInit.h"
+#include "Stream.h"
 #include <msclr\marshal.h>
 
-extern "C" {
-
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS
-#ifdef _STDINT_H
-#undef _STDINT_H
-#endif
-# include "stdint.h"
-#endif
-
-
-#include "libavcodec/avcodec.h"
-
-#include "libavformat/avformat.h"
-
-#include "libavutil/avutil.h"
-#include "libavutil/audioconvert.h"
-#include "libavutil/mathematics.h"
-#include "libavutil/pixdesc.h"
-
-#include "libavutil/time.h"
-
-#include "libswscale/swscale.h"
-#include "libswresample/swresample.h"
-
-
-#ifdef PixelFormat
-#undef PixelFormat
-#endif
-
-}
+namespace VideoLib {
 
 typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);
 
@@ -47,35 +18,19 @@ protected:
 
 	AVFormatContext *formatContext;
 
-	AVCodecContext *videoCodecContext;
-	AVCodec *videoCodec;
+	std::vector<VideoLib::Stream *> stream;
 
-	AVCodecContext *audioCodecContext;
-	AVCodec *audioCodec;
+	int videoIdx;
+	int audioIdx;
 	
-	AVStream *videoStream;
-	int videoStreamIndex;
-
-	AVStream *audioStream;
-	int audioStreamIndex;
-
 	static LOG_CALLBACK logCallback;
 
 	Video() {
 
 		formatContext = NULL;
 
-		videoCodecContext = NULL;
-		videoCodec = NULL;
-
-		audioCodecContext = NULL;
-		audioCodec = NULL;
-
-		videoStream = NULL;
-		audioStream = NULL;
-
-		videoStreamIndex = -1;
-		audioStreamIndex = -1;
+		videoIdx = -1;
+		audioIdx = -1;
 
 		VideoInit::initializeAVLib();
 			
@@ -119,16 +74,6 @@ protected:
 	
 public:
 
-	static System::String ^errorToString(int err)
-	{
-		char errbuf[128];
-		const char *errbuf_ptr = errbuf;
-
-		if (av_strerror(err, errbuf, sizeof(errbuf)) < 0)
-			errbuf_ptr = strerror(AVUNERROR(err));
-		
-		return(msclr::interop::marshal_as<System::String^>(errbuf_ptr));
-	}
 
 	enum FrameType {
 		VIDEO,
@@ -144,132 +89,102 @@ public:
 	virtual void close() {
 		
 		if(formatContext != NULL) {
-					
-			for (unsigned int i = 0; i < formatContext->nb_streams; i++) {
-
-				avcodec_close(formatContext->streams[i]->codec);			
+				
+			for(unsigned int i = 0; i < stream.size(); i++) {
+				
+				delete stream[i];
 			}
-
+			
 			avformat_close_input(&formatContext);
+
+			stream.clear();		
 		} 
 
 		formatContext = NULL;
-		videoCodecContext = NULL;
-		audioCodecContext = NULL;
 
-		videoStreamIndex = -1;
-		audioStreamIndex = -1;
-
-		videoStream = NULL;
-		audioStream = NULL;
-
-		videoCodec = NULL;
-		audioCodec = NULL;
-
-		videoCodecContext = NULL;
-		audioCodecContext = NULL;
+		videoIdx = -1;
+		audioIdx = -1;
 	
 	}
 
+	void addStream(VideoLib::Stream *stream) {
+
+		this->stream.push_back(stream);
+
+		if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_VIDEO) {
+
+			videoIdx = this->stream.size() - 1;
+
+		} else if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_AUDIO) {
+
+			audioIdx = this->stream.size() - 1;
+		}
+	}
 
 	AVFormatContext *getFormatContext() const {
 
 		return(formatContext);
 	}
 
-	AVCodecContext *getVideoCodecContext() const {
-
-		return(videoCodecContext);
-	}
-
-	AVCodec *getVideoCodec() const {
-
-		return(videoCodec);
-	}
-
-	AVCodecContext *getAudioCodecContext() const {
-
-		return(audioCodecContext);
-	}
-
-	AVCodec *getAudioCodec() const {
-
-		return(audioCodec);
-	}
-	
-	AVStream *getVideoStream() const {
-
-		return(videoStream);
-	}
-
 	int getVideoStreamIndex() const {
 
-		return(videoStreamIndex);
-	}
-
-	AVStream *getAudioStream() const {
-
-		return(audioStream);
+		return(videoIdx);
 	}
 
 	int getAudioStreamIndex() const {
 
-		return(audioStreamIndex);
+		return(audioIdx);
 	}
 
-	void setFormatContext(AVFormatContext *formatContext) {
+	void setVideoStreamIndex(int idx) {
 
-		this->formatContext = formatContext;
+		videoIdx = idx;
 	}
 
-	void setVideoCodecContext(AVCodecContext *videoCodecContext) {
+	void setAudioStreamIndex(int idx) {
 
-		this->videoCodecContext = videoCodecContext;
+		audioIdx = idx;
 	}
 
-	void setVideoCodec(AVCodec *videoCodec) {
+	AVStream *getVideoStream() const {
 
-		this->videoCodec = videoCodec;
+		return(stream[videoIdx]->getStream());
 	}
 
-	void setAudioCodecContext(AVCodecContext *audioCodecContext) {
+	const AVCodec *getVideoCodec() const {
 
-		this->audioCodecContext = audioCodecContext;
+		return(stream[videoIdx]->getCodec());
 	}
 
-	void setAudioCodec(AVCodec *audioCodec) {
+	AVCodecContext *getVideoCodecContext() const {
 
-		this->audioCodec = audioCodec;
+		return(stream[videoIdx]->getCodecContext());
 	}
+
+	AVStream *getAudioStream() const {
+
+		return(stream[audioIdx]->getStream());
+	}
+
+	const AVCodec *getAudioCodec() const {
+
+		return(stream[audioIdx]->getCodec());
+	}
+
+	AVCodecContext *getAudioCodecContext() const {
+
+		return(stream[audioIdx]->getCodecContext());
+	}
+
 	
-	void setVideoStream(AVStream *videoStream) {
-
-		this->videoStream = videoStream;
-	}
-
-	void setVideoStreamIndex(int videoStreamIndex) {
-
-		this->videoStreamIndex = videoStreamIndex;
-	}
-
-	void setAudioStream(AVStream *audioStream) {
-
-		this->audioStream = audioStream;
-	}
-
-	void setAudioStreamIndex(int audioStreamIndex) {
-
-		this->audioStreamIndex = audioStreamIndex;
-	}
-
 	bool hasVideo() const {
 
-		return(videoStreamIndex != -1);
+		return(videoIdx >= 0);
 	}
 
 	bool hasAudio() const {
 
-		return(audioStreamIndex != -1);
+		return(audioIdx >= 0);
 	}
 
 	static void enableLibAVLogging(int logLevel = AV_LOG_ERROR) {
@@ -300,3 +215,4 @@ public:
 
 LOG_CALLBACK Video::logCallback = NULL;
 
+}

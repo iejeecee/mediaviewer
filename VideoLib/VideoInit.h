@@ -23,17 +23,23 @@ extern "C" {
 #include "libavfilter/buffersrc.h"
 #include "libavutil/opt.h"
 
-/*
+#include "libavutil/avutil.h"
+#include "libavutil/audioconvert.h"
+#include "libavutil/mathematics.h"
+#include "libavutil/pixdesc.h"
 
-#include <pthread.h>
+#include "libavutil/time.h"
 
-#elif HAVE_W32THREADS
-#include "compat/w32pthreads.h"
-#elif HAVE_OS2THREADS
-#include "compat/os2threads.h"
+#include "libswscale/swscale.h"
+#include "libswresample/swresample.h"
+
+#ifdef PixelFormat
+#undef PixelFormat
 #endif
-*/
 }
+
+
+namespace VideoLib {
 
 class VideoInit {
 
@@ -85,6 +91,17 @@ public:
 	
 		} 
 
+	}
+
+	static System::String ^errorToString(int err)
+	{
+		char errbuf[128];
+		const char *errbuf_ptr = errbuf;
+
+		if (av_strerror(err, errbuf, sizeof(errbuf)) < 0)
+			errbuf_ptr = strerror(AVUNERROR(err));
+		
+		return(msclr::interop::marshal_as<System::String^>(errbuf_ptr));
 	}
 /*
 	static int default_lockmgr_cb(void **arg, enum AVLockOp op)
@@ -189,4 +206,4 @@ public:
 bool VideoInit::isAVlibInitialized = false;
 ThreadSafeList<CRITICAL_SECTION **> *VideoInit::criticalSections = new ThreadSafeList<CRITICAL_SECTION **>();
 
-
+}

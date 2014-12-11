@@ -1,8 +1,9 @@
 ﻿using MediaViewer.DirectoryPicker;
+using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,7 +27,7 @@ namespace MediaViewer.VideoTranscode
             OutputPathHistory = settings.TranscodeOutputDirectoryHistory;
 
             OkCommand = new Command(async () =>
-                {
+                {                    
                     CancellableOperationProgressView progress = new CancellableOperationProgressView();
                     VideoTranscodeProgressViewModel vm = new VideoTranscodeProgressViewModel(Items, this);
                     progress.DataContext = vm;
@@ -63,11 +64,18 @@ namespace MediaViewer.VideoTranscode
 
                 });
 
+            setDefaults();
         }
 
         void setDefaults()
         {
+            VideoStreamMode = StreamOptions.Copy;
+            VideoEncoder = VideoEncoders.H264;
+            VideoEncoderPreset = VideoEncoderPresets.Medium;
+            
 
+            AudioStreamMode = StreamOptions.Copy;
+            AudioEncoder = AudioEncoders.AAC;
         }
 
         ObservableCollection<String> outputPathHistory;
@@ -90,11 +98,74 @@ namespace MediaViewer.VideoTranscode
 
         ContainerFormats containerFormat;
 
-        internal ContainerFormats ContainerFormat
+        public ContainerFormats ContainerFormat
         {
             get { return containerFormat; }
             set { SetProperty(ref containerFormat, value); }
         }
 
+        StreamOptions videoStreamMode;
+
+        public StreamOptions VideoStreamMode
+        {
+            get { return videoStreamMode; }
+            set { SetProperty(ref videoStreamMode, value); }
+        }
+
+        VideoEncoders videoEncoder;
+
+        public VideoEncoders VideoEncoder
+        {
+            get { return videoEncoder; }
+            set { SetProperty(ref videoEncoder, value); }
+        }
+
+        VideoEncoderPresets videoEncoderPreset;
+
+        public VideoEncoderPresets VideoEncoderPreset
+        {
+            get { return videoEncoderPreset; }
+            set { SetProperty(ref videoEncoderPreset, value); }
+        }
+
+        StreamOptions audioStreamMode;
+
+        public StreamOptions AudioStreamMode
+        {
+            get { return audioStreamMode; }
+            set { SetProperty(ref audioStreamMode, value); }
+        }
+
+        AudioEncoders audioEncoder;
+
+        public AudioEncoders AudioEncoder
+        {
+            get { return audioEncoder; }
+            set { SetProperty(ref audioEncoder, value); }
+        }
+
+        int? width;
+
+        public int? Width
+        {
+            get { return width; }
+            set { SetProperty(ref width, value); }
+        }
+
+        int? height;
+
+        public int? Height
+        {
+            get { return height; }
+            set { SetProperty(ref height, value); }
+        }
+
+        int? sampleRate;
+
+        public int? SampleRate
+        {
+            get { return sampleRate; }
+            set { sampleRate = value; }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Progress;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace MediaViewer.Model.Media.Metadata
 {
     abstract class MetadataWriter 
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         private ICancellableOperationProgress progress;
 
@@ -68,7 +69,7 @@ namespace MediaViewer.Model.Media.Metadata
 
         private bool errorCallback(string filePath, byte errorSeverity, System.UInt32 cause, string message)
         {
-            log.Error("MetadataWriter (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
+            Logger.Log.Error("MetadataWriter (XMP Error): " + filePath + " - " + message + " - error severity: " + errorSeverity.ToString());
             return (true);
         }
 

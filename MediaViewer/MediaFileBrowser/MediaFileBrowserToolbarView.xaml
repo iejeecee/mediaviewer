@@ -23,7 +23,7 @@
                 <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
             </Button>
             <Button Height="16" ToolTip="Transcode Video" Command="{Binding TranscodeVideoCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/transcode.ico"/>
             </Button>
         </ToolBar>
     </Grid>

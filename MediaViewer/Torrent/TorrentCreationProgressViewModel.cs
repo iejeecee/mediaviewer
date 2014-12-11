@@ -12,18 +12,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using VideoPlayerControl;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.Torrent
 {
     public class TorrentCreationProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
              
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         AppSettings Settings
         {
@@ -101,7 +102,7 @@ namespace MediaViewer.Torrent
                 catch (Exception e)
                 {
                     MessageBox.Show("Error creating torrent file\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    log.Error("Error creating torrent file", e);
+                    Logger.Log.Error("Error creating torrent file", e);
                 }
 
                 App.Current.Dispatcher.Invoke(() =>

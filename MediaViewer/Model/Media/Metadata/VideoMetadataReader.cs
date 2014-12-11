@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace MediaViewer.Model.Media.Metadata
 {
     class VideoMetadataReader : MetadataReader
     {
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
        
 
         public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media)
@@ -65,7 +66,7 @@ namespace MediaViewer.Model.Media.Metadata
                 }
                 catch (Exception e)
                 {
-                    log.Error("FFMPG cannot read video file: " + video.Location, e);
+                    Logger.Log.Error("FFMPG cannot read video file: " + video.Location, e);
                     media.MetadataReadError = e;
                 }
 
@@ -78,7 +79,7 @@ namespace MediaViewer.Model.Media.Metadata
                 }
                 catch (Exception e)
                 {
-                    log.Error("Cannot create video thumbnail: " + video.Location, e);
+                    Logger.Log.Error("Cannot create video thumbnail: " + video.Location, e);
                     media.MetadataReadError = e;
                 }
                 

@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 
+namespace VideoLib {
+
 class WindowsFileUtil {
 
 public:
@@ -66,3 +68,5 @@ public:
 	}
 
 };
+
+}

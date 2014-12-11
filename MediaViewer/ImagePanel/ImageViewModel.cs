@@ -24,13 +24,14 @@ using System.IO;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.MediaFileBrowser;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.ImagePanel
 {
 
     public class ImageViewModel : BindableBase, IMediaFileBrowserContentViewModel, IDisposable
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         CancellationTokenSource loadImageCTS; 
            
@@ -428,7 +429,7 @@ namespace MediaViewer.ImagePanel
                     //updatePaging();
 
                     CurrentLocation = location;
-                    log.Info("Image loaded: " + location);
+                    Logger.Log.Info("Image loaded: " + location);
                 //}
 
                 if (IsResetSettingsOnLoad)
@@ -443,12 +444,12 @@ namespace MediaViewer.ImagePanel
             }
             catch (TaskCanceledException)
             {
-                log.Info("Cancelled loading image:" + (String)location);
+                Logger.Log.Info("Cancelled loading image:" + (String)location);
             }
             catch (Exception e)
             {
                 CurrentLocation = null;
-                log.Error("Error decoding image:" + (String)location, e);
+                Logger.Log.Error("Error decoding image:" + (String)location, e);
                 MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 Image = null;

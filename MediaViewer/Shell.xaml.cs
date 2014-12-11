@@ -23,8 +23,9 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Logging;
 using MediaViewer.Model.Global.Events;
 using System.Windows.Media.Animation;
+using MediaViewer.Infrastructure.Logging;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
+
 
 namespace MediaViewer
 {
@@ -35,7 +36,7 @@ namespace MediaViewer
     public partial class Shell : Window, IPartImportsSatisfiedNotification
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         [Import(AllowRecomposition = false)]
         public IRegionManager RegionManager;
@@ -129,7 +130,7 @@ namespace MediaViewer
 
             } catch (Exception e) {
 
-                log.Error("Error in command line argument: " + App.Args[0], e);
+                Logger.Log.Error("Error in command line argument: " + App.Args[0], e);
                 ShellViewModel.navigateToMediaFileBrowser();
             }
                   
@@ -143,19 +144,19 @@ namespace MediaViewer
 
                 case XMPLib.MetaData.LogLevel.ERROR:
                     {
-                        log.Error(message);
+                        Logger.Log.Error(message);
                         break;
                     }
                 case XMPLib.MetaData.LogLevel.WARNING:
                     {
 
-                        log.Warn(message);
+                        Logger.Log.Warn(message);
                         break;
                     }
                 case XMPLib.MetaData.LogLevel.INFO:
                     {
 
-                        log.Info(message);
+                        Logger.Log.Info(message);
                         break;
                     }
                 default:
@@ -168,26 +169,26 @@ namespace MediaViewer
 
         private void Shell_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            MediaViewer.Settings.AppSettings.Instance.save();
+            MediaViewer.Infrastructure.Settings.AppSettings.Instance.save();
             Dispatcher.InvokeShutdown();
         }
 
         private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());
+            Logger.Log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());
         }
 
         void PrintLoadedAssemblies(AppDomain domain)
         {
             foreach (Assembly a in domain.GetAssemblies())
             {
-                log.Info("Assembly loaded: " + a.FullName);
+                Logger.Log.Info("Assembly loaded: " + a.FullName);
             }
         }
 
         void assemblyLoadEventHandler(object sender, AssemblyLoadEventArgs args)
         {
-            log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);
+            Logger.Log.Info("Assembly loaded: " + args.LoadedAssembly.FullName);
         }
     }
 }

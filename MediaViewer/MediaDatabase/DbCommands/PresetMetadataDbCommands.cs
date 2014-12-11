@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Logging;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity.Validation;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 {
     class PresetMetadataDbCommands : DbCommands<PresetMetadata>
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public PresetMetadataDbCommands(MediaDatabaseContext existingContext = null) : base(existingContext) {
 
@@ -90,7 +92,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (tag == null)
                 {
-                    log.Warn("Cannot add non-existent tag: " + updateTag.Id.ToString() + " to presetMetadata: " + preset.Id.ToString());
+                    Logger.Log.Warn("Cannot add non-existent tag: " + updateTag.Id.ToString() + " to presetMetadata: " + preset.Id.ToString());
                     continue;
                 }
 

@@ -40,7 +40,7 @@ namespace MediaViewer.MediaFileBrowser
     public partial class MediaFileBrowserView : UserControl, IRegionMemberLifetime, INavigationAware
     {
 
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public MediaFileBrowserViewModel MediaFileBrowserViewModel
         {

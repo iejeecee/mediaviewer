@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Mvvm;
@@ -22,9 +23,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 {
     public class VideoPreviewImageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
-
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+      
         VideoPreviewImageViewModel asyncState;
 
         internal VideoPreviewImageViewModel AsyncState
@@ -274,7 +273,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             catch (Exception e)
             {
                 InfoMessages.Add("Error creating video preview image for: " + item.Location + " " + e.Message);
-                log.Error("Error creating preview image for: " + item.Location, e);
+                Logger.Log.Error("Error creating preview image for: " + item.Location, e);
             }
             finally
             {

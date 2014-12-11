@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Utils;
 using System;
@@ -14,7 +15,7 @@ namespace MediaViewer.Model.Media.Metadata
 {
     class ImageMetadataReader : MetadataReader
     {
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media)
         {
@@ -42,7 +43,7 @@ namespace MediaViewer.Model.Media.Metadata
             }
             catch (Exception e)
             {
-                log.Error("Cannot generate image thumbnail: " + image.Location, e);
+                Logger.Log.Error("Cannot generate image thumbnail: " + image.Location, e);
                 media.MetadataReadError = e;
             }
             finally

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Infrastructure.Logging;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -14,7 +15,7 @@ namespace MediaViewer.Model.Utils
     class ImageUtils
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
 
         public static Rectangle centerRectangle(Rectangle outer, Rectangle inner)
@@ -95,7 +96,7 @@ namespace MediaViewer.Model.Utils
             catch (Exception e)
             {
 
-                log.Error("Error resizing image", e);
+                Logger.Log.Error("Error resizing image", e);
                 MessageBox.Show(e.Message, "Error resizing image");
 
             }

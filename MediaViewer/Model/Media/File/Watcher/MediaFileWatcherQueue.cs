@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Infrastructure.Logging;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ namespace MediaViewer.Model.Media.File.Watcher
 {
     class MediaFileWatcherQueue : IDisposable
     {
-        static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         class OrderedFileEvent
         {
@@ -303,7 +304,7 @@ namespace MediaViewer.Model.Media.File.Watcher
                 }
                 catch (Exception e)
                 {
-                    log.Error("Exception in MediaFileWatcherQueue", e);
+                    Logger.Log.Error("Exception in MediaFileWatcherQueue", e);
                 }
 
             }

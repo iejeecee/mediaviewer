@@ -16,20 +16,21 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.MetaData
 {
 
     public class MetaDataViewModel : BindableBase
     {             
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
         
         void clear()
         {
@@ -165,7 +166,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -179,7 +180,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -192,7 +193,7 @@ namespace MediaViewer.MetaData
                     }
                     catch (Exception e)
                     {
-                        log.Error(e);
+                        Logger.Log.Error(e);
                     }
 
                 }));
@@ -205,7 +206,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));
@@ -219,7 +220,7 @@ namespace MediaViewer.MetaData
                 }
                 catch (Exception e)
                 {
-                    log.Error(e);
+                    Logger.Log.Error(e);
                 }
 
             }));

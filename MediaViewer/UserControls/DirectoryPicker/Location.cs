@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -19,8 +20,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
    
     public class Location : SharpTreeNode
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+      
         protected InfoGatherTask infoGatherTask;
         protected MediaState MediaState { get; set; }
 
@@ -111,7 +111,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
             catch (Exception e)
             {
-                log.Error("Cannot read directories", e);
+                Logger.Log.Error("Cannot read directories", e);
             }
 
             return (directories);

@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -55,7 +56,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 }
                 catch (Exception e)
                 {
-                    log.Error("Cannot read directories", e);
+                    Logger.Log.Error("Cannot read directories", e);
                     return (false);
                 }
             }
@@ -135,7 +136,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error renaming directory: " + FullName, e);
+                    Logger.Log.Error("Error renaming directory: " + FullName, e);
                     MessageBox.Show("Error renaming directory: " + FullName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return (false); 
                 }
@@ -213,7 +214,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 }
                 catch (Exception e)
                 {
-                    log.Error("Error deleting directory: " + location.FullName, e);
+                    Logger.Log.Error("Error deleting directory: " + location.FullName, e);
                     MessageBox.Show("Error deleting directory: " + location.FullName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }

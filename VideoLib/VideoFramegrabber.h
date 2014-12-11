@@ -8,6 +8,7 @@
 #include "VideoDecoder.h"
 #include "WindowsFileUtil.h"
 
+namespace VideoLib {
 
 class VideoFrameGrabber : public VideoDecoder {
 
@@ -116,10 +117,10 @@ public:
 		height = getHeight();
 		
 		container = std::string(formatContext->iformat->long_name);
-		videoCodecName = std::string(videoCodec->name);
+		videoCodecName = std::string(getVideoCodec()->name);
 	
 		char buf[64];
-		av_get_pix_fmt_string(buf, 64, videoCodecContext->pix_fmt);
+		av_get_pix_fmt_string(buf, 64, getVideoCodecContext()->pix_fmt);
 		pixelFormat = std::string(buf);
 
 		int pos = pixelFormat.find_first_of(' ');
@@ -128,25 +129,26 @@ public:
 			pixelFormat = pixelFormat.substr(0, pos);
 		}
 
-		if(videoStream->avg_frame_rate.den != 0 && videoStream->avg_frame_rate.num != 0) {
+		if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) {
 
-			frameRate = av_q2d(videoStream->avg_frame_rate);
+			frameRate = av_q2d(getVideoStream()->avg_frame_rate);
 			
 		} else {
 
-			frameRate = 1.0 / av_q2d(videoStream->time_base);
+			frameRate = 1.0 / av_q2d(getVideoStream()->time_base);
 		}
 
 		probe_dict(formatContext->metadata, "");
 
 		// audio info
-		if(audioCodecContext != NULL) {
-			audioCodecName = std::string(audioCodec->name);
+		if(hasAudio()) {
 
-			samplesPerSecond = audioCodecContext->sample_rate;
-			bytesPerSample = av_get_bytes_per_sample(audioCodecContext->sample_fmt);
+			audioCodecName = std::string(getAudioCodec()->name);
+
+			samplesPerSecond = getAudioCodecContext()->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
 		
-			nrChannels = audioCodecContext->channels;
+			nrChannels = getAudioCodecContext()->channels;
 		}
 	}
 
@@ -288,3 +290,4 @@ public:
 
 };
 
+}

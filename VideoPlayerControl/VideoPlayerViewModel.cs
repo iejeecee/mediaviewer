@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using VideoLib;
 using System.Drawing;
 using System.Drawing.Imaging;
+using MediaViewer.Infrastructure.Settings;
 
 namespace VideoPlayerControl
 {
@@ -116,35 +117,8 @@ namespace VideoPlayerControl
 
         Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
-        
-        string screenShotLocation;
 
-        public string ScreenShotLocation
-        {
-            get { return screenShotLocation; }
-            set { screenShotLocation = value;         
-            }
-        }
-
-        string screenShotName;
-
-        public string ScreenShotName
-        {
-            get { return screenShotName; }
-            set { screenShotName = value;        
-            }
-        }
-   
-        ImageFormat screenShotFormat;
-
-        public ImageFormat ScreenShotFormat
-        {
-            get { return screenShotFormat; }
-            set
-            {
-                screenShotFormat = value;
-            }
-        }
+        public String ScreenShotName { get; set; }
 
         int positionSeconds;
 
@@ -273,11 +247,7 @@ namespace VideoPlayerControl
 
             audioRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             audioRefreshTimer.Tick += new EventHandler(audioRefreshTimer_Tick);
-            audioRefreshTimer.AutoReset = false;
-
-            ScreenShotLocation = "";
-            ScreenShotName = "";
-            ScreenShotFormat = ImageFormat.Jpeg;
+            audioRefreshTimer.AutoReset = false;            
           
             DurationSeconds = 0;
             PositionSeconds = 0;
@@ -293,8 +263,8 @@ namespace VideoPlayerControl
 
         public void createScreenShot()
         {
-            videoRender.createScreenShot(ScreenShotLocation, ScreenShotName, ScreenShotFormat,
-                PositionSeconds, VideoLocation);
+           
+            videoRender.createScreenShot(ScreenShotName, PositionSeconds, VideoLocation);
         }
 
         public void Dispose()
@@ -451,21 +421,18 @@ restartvideo:
 
                 if (Math.Abs(diff) < AV_NOSYNC_THRESHOLD)
                 {
-
                     if (diff <= -sync_threshold)
                     {
-
                         delay = 0;
-
                     }
                     else if (diff >= sync_threshold)
                     {
-
                         delay = 2 * delay;
                     }
                 }
 
             }
+
             // adjust delay based on the actual current time
             videoFrameTimer += delay;
             double actualDelay = videoFrameTimer - HRTimer.getTimestamp();
@@ -561,19 +528,15 @@ restartvideo:
 
                 if (Math.Abs(diff) < AV_NOSYNC_THRESHOLD)
                 {
-
                     // accumulate the diffs
                     audioDiffCum = diff + audioDiffAvgCoef * audioDiffCum;
 
                     if (audioDiffAvgCount < AUDIO_DIFF_AVG_NB)
                     {
-
                         audioDiffAvgCount++;
-
                     }
                     else
                     {
-
                         double avgDiff = audioDiffCum * (1.0 - audioDiffAvgCoef);
 
                         // Shrinking/expanding buffer code....
@@ -587,24 +550,16 @@ restartvideo:
                             double correctionPercent = Utils.clamp(10 + (Math.Abs(avgDiff) - audioDiffThreshold) * 15, 10, 60);
 
                             //Util.DebugOut(correctionPercent);
-
-                            //AUDIO_SAMPLE_CORRECTION_PERCENT_MAX
-
-                            int minSize = (int)(frame.Length * ((100 - correctionPercent)
-                                / 100));
-
-                            int maxSize = (int)(frame.Length * ((100 + correctionPercent)
-                                / 100));
+                 
+                            int minSize = (int)(frame.Length * ((100 - correctionPercent) / 100));
+                            int maxSize = (int)(frame.Length * ((100 + correctionPercent) / 100));
 
                             if (wantedSize < minSize)
                             {
-
                                 wantedSize = minSize;
-
                             }
                             else if (wantedSize > maxSize)
                             {
-
                                 wantedSize = maxSize;
                             }
 
@@ -614,11 +569,9 @@ restartvideo:
                             int samplesPerSecond = (int)((length * sps) / wantedSize);
                             //videoDebug.AudioFrameLengthAdjust = samplesPerSecond;
                             audioPlayer.SamplesPerSecond = samplesPerSecond;
-
                         }
                         else
                         {
-
                             audioPlayer.SamplesPerSecond = videoDecoder.SamplesPerSecond;
                         }
 

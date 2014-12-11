@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File.Watcher;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Search;
 using MediaViewer.UserControls.Relation;
 using System;
@@ -16,7 +17,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 {
     class MediaDbCommands : DbCommands<BaseMedia>
     {
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public MediaDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
@@ -327,7 +328,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (info.LastWriteTime < (DateTime)SqlDateTime.MinValue)
             {
 
-                log.Warn("LastWriteTime for " + media.Location + " smaller as SqlDateTime.MinValue");
+                Logger.Log.Warn("LastWriteTime for " + media.Location + " smaller as SqlDateTime.MinValue");
                 newMedia.LastModifiedDate = (DateTime)SqlDateTime.MinValue;
 
             } else {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Infrastructure.Logging;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Validation;
@@ -11,7 +12,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
     class TagDbCommands : DbCommands<Tag>
     {
 
-        private static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        
 
         public TagDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
@@ -132,7 +133,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (child == null)
                 {
-                    log.Warn("Cannot add non-existent child tag: " + childTag.Id.ToString() + " to parent: " + tag.Id.ToString());
+                    Logger.Log.Warn("Cannot add non-existent child tag: " + childTag.Id.ToString() + " to parent: " + tag.Id.ToString());
                     continue;
                 }
 
@@ -204,7 +205,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (child == null)
                 {
-                    log.Warn("Cannot add non-existent child tag: " + updateChild.Id.ToString() + " to parent: " + tag.Id.ToString());
+                    Logger.Log.Warn("Cannot add non-existent child tag: " + updateChild.Id.ToString() + " to parent: " + tag.Id.ToString());
                     continue;
                 }
 

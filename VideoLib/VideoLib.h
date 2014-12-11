@@ -387,7 +387,7 @@ namespace VideoLib {
 		VideoTranscoder();
 		~VideoTranscoder();
 
-		void transcode(String ^input, String ^output, CancellationToken ^token, bool remuxVideo, bool remuxAudio,
+		void transcode(String ^input, String ^output, CancellationToken ^token, Dictionary<String ^, Object ^> ^options,
 			TranscodeProgressDelegate ^progressCallback);
 	};
 }

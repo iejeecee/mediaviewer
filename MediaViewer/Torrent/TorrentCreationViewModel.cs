@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Settings;
+using MediaViewer.Infrastructure.Settings;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 
@@ -27,8 +27,7 @@ namespace MediaViewer.Torrent
             set;
         }
 
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+    
         public TorrentCreationViewModel(AppSettings settings)
         {
             Settings = settings;

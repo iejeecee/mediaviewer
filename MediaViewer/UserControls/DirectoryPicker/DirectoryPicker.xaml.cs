@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.TreeView;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
@@ -26,7 +27,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
     /// </summary>
     public partial class DirectoryPicker : UserControl
     {
-        protected static log4net.ILog log = log4net.LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        protected 
 
         SharpTreeNode scrollToNodeOnTreeViewVisible;
         InfoGatherTask infoGatherTask;
@@ -152,7 +153,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
             catch (Exception ex)
             {
-                log.Error("Error creating directory", ex);
+                Logger.Log.Error("Error creating directory", ex);
                 MessageBox.Show("Error creating directory\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
                         
