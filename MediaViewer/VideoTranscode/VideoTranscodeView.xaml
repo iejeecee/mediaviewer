@@ -23,22 +23,12 @@
                 <ObjectDataProvider.MethodParameters>
                     <x:Type TypeName="Formats:StreamOptions"/>
                 </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-            <ObjectDataProvider x:Key="videoEncodersEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="Formats:VideoEncoders"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
+            </ObjectDataProvider>            
             <ObjectDataProvider x:Key="videoEncoderPresetsEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
                 <ObjectDataProvider.MethodParameters>
                     <x:Type TypeName="Formats:VideoEncoderPresets"/>
                 </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
-            <ObjectDataProvider x:Key="audioEncodersEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
-                <ObjectDataProvider.MethodParameters>
-                    <x:Type TypeName="Formats:AudioEncoders"/>
-                </ObjectDataProvider.MethodParameters>
-            </ObjectDataProvider>
+            </ObjectDataProvider>          
             <VideoTranscode:IsOptionsEnabledConverter x:Key="isOptionsEnabledConverter"/>
         </ResourceDictionary>
     </Window.Resources>
@@ -106,11 +96,11 @@
                     <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding VideoStreamMode, Mode=TwoWay}"
 			            ItemsSource="{Binding Source={StaticResource streamOptionsEnum}}"			     
-			            IsReadOnly="True" IsEditable="True"
+			            IsReadOnly="True" IsEditable="True" IsEnabled="{Binding IsContainerSupportsVideoStream}"
 			            Style="{StaticResource baseComboBoxStyle}"/>
                     <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding VideoEncoder, Mode=TwoWay}"
-			            ItemsSource="{Binding Source={StaticResource videoEncodersEnum}}"			         
+			            ItemsSource="{Binding SupportedVideoEncoders}"			         
 			            IsReadOnly="True" IsEditable="True"
                         IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"
 			            Style="{StaticResource baseComboBoxStyle}"/>
@@ -148,11 +138,11 @@
                     <ComboBox Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding AudioStreamMode, Mode=TwoWay}"
 			            ItemsSource="{Binding Source={StaticResource streamOptionsEnum}}"			     
-			            IsReadOnly="True" IsEditable="True"
+			            IsReadOnly="True" IsEditable="True" IsEnabled="{Binding IsContainerSupportsAudioStream}"
 			            Style="{StaticResource baseComboBoxStyle}"/>
                     <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding AudioEncoder, Mode=TwoWay}"
-			            ItemsSource="{Binding Source={StaticResource audioEncodersEnum}}"			         
+			            ItemsSource="{Binding SupportedAudioEncoders}"			         
 			            IsReadOnly="True" IsEditable="True"
                         IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"
 			            Style="{StaticResource baseComboBoxStyle}"/>                    

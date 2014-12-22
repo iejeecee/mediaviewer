@@ -119,8 +119,7 @@ namespace VideoPlayerControl
             prevPtsPos = 0;
             playLoops = 0;
             ptsLoops = 0;
-
-            audioState = AudioState.START_PLAY_AFTER_NEXT_WRITE;
+           
         }
 
         public void stop()
@@ -336,7 +335,6 @@ namespace VideoPlayerControl
 
             if (audioState == AudioState.START_PLAY_AFTER_NEXT_WRITE)
             {
-
                 audioBuffer.Play(0, PlayFlags.Looping);
                 audioState = AudioState.PLAYING;
             }

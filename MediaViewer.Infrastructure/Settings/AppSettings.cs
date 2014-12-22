@@ -75,7 +75,7 @@ namespace MediaViewer.Infrastructure.Settings
             if (settings.VideoScreenShotLocation == null)
             {
                 settings.VideoScreenShotLocation = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            }
+            }       
 
         }
 

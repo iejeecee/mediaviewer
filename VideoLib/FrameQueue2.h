@@ -33,10 +33,10 @@ namespace VideoLib {
 		enum class QueueID {
 			FREE_PACKETS = 0,
 			VIDEO_PACKETS,
-			AUDIO_PACKETS
+			AUDIO_PACKETS,		
 		};
 
-		event EventHandler ^Finished;
+		event EventHandler ^Finished;		
 
 	private:
 
@@ -57,7 +57,12 @@ namespace VideoLib {
 
 		double videoClock;
 		double audioClock;
-	
+		
+		bool singleFrame;
+		bool isLastFrame;
+		AutoResetEvent ^singleFrameEvent;
+		AutoResetEvent ^continueSingleFrameEvent;
+
 		double synchronizeVideo(int repeatFrame, __int64 dts) {
 
 			double pts;
@@ -121,14 +126,18 @@ namespace VideoLib {
 					
 					if(State == FrameQueueState::STOPPED) 
 					{
-						packetQueueStopped[id] = true;
-						Monitor::PulseAll(lockObject);
+						if(packetQueueStopped[id] == false) {
+
+							packetQueueStopped[id] = true;
+							Monitor::PulseAll(lockObject);							
+						}
+						
 						return(false);
 					} 
 					else if(State == FrameQueueState::PAUSED)
 					{
 						if(packetQueuePaused[id] == false) 
-						{
+						{							
 							packetQueuePaused[id] = true;
 							Monitor::PulseAll(lockObject);
 						}
@@ -146,7 +155,7 @@ namespace VideoLib {
 
 				if(packet->Type == PacketType::LAST_PACKET) {
 
-					packetQueueStopped[id] = true;							
+					packetQueueStopped[id] = true;					
 					return(false);
 				}
 
@@ -157,7 +166,7 @@ namespace VideoLib {
 				Monitor::Exit(lockObject);
 
 				if(packet != nullptr && packet->Type == PacketType::LAST_PACKET) {
-
+				
 					if(packetQueueStopped[(int)QueueID::AUDIO_PACKETS] && 
 						packetQueueStopped[(int)QueueID::VIDEO_PACKETS])
 					{
@@ -176,20 +185,20 @@ namespace VideoLib {
 
 				int id = (int)queueID;
 
-				while(packetQueue[id]->Count == maxPackets[id]) {
+				while(packetQueue[id]->Count >= maxPackets[id]) {
 
 					if(State == FrameQueueState::STOPPED) {	
-					
+										
+						// make sure the packet isn't lost when the queue is stopped
+						packetQueue[id]->Enqueue(packet);
 						return;
 					} 
-					/*else if(State == FrameQueueState::PAUSED)
+					else if(State == FrameQueueState::PAUSED)
 					{
-						if(packetQueuePaused[id] == false) 
-						{
-							packetQueuePaused[id] = true;
-							Monitor::PulseAll(lockObject);
-						}
-					}*/
+						// make sure the packet IS discarded because a pause should always be followed by a flush
+						// e.g. when seeking in the stream
+						return;
+					}				
 
 					Monitor::Wait(lockObject);
 				}
@@ -207,14 +216,51 @@ namespace VideoLib {
 			}
 		}
 
-		bool isTrue(cli::array<bool> ^vars) {
+		bool isTrue(cli::array<bool> ^vars, ... array<QueueID> ^queueIDs) {
 
-			return(vars[0] && vars[1] && vars[2]);
+			bool result = true;
+
+			if(queueIDs->Length == 0) {
+
+				return(vars[0] && vars[1] && vars[2]);
+			}
+
+			for(int i = 0; i < queueIDs->Length; i++) {
+
+				result = result && vars[(int)queueIDs[i]];
+			}
+
+			return(result);
 		}
 
-		bool isTrueAudioVideo(cli::array<bool> ^vars) {
+		/*bool isTrueAudioVideo(cli::array<bool> ^vars) {
 
 			return(vars[(int)QueueID::VIDEO_PACKETS] && vars[(int)QueueID::AUDIO_PACKETS]);
+		}*/
+
+		void debugOut(int i, String ^text) {
+
+			String ^output;
+
+			switch (i)
+			{
+			case 0:
+				output = "Free Packets: ";
+				break;
+			case 1:
+				output = "Video Packets: ";
+				break;
+			case 2:
+				output = "Audio Packets: ";
+				break;
+			default:
+				output = "Error";
+				break;
+			}
+
+			output += text;
+
+			System::Diagnostics::Debug::Print(output);
 		}
 
 		FrameQueueState state;
@@ -274,6 +320,9 @@ namespace VideoLib {
 			}
 															
 			State = FrameQueueState::ACTIVE;
+			
+			singleFrameEvent = gcnew AutoResetEvent(false);
+			continueSingleFrameEvent = gcnew AutoResetEvent(false);
 		}
 
 		~FrameQueue() {
@@ -344,7 +393,7 @@ namespace VideoLib {
 
 				packetQueue[(int)QueueID::FREE_PACKETS]->Enqueue(packetData[i]);
 			}
-
+			
 		}
 		
 		void flush() {		
@@ -359,7 +408,8 @@ namespace VideoLib {
 
 				for(int i = 0; i < packetData->Length; i++) {
 
-					addFreePacket(packetData[i]);
+					packetData[i]->free();
+					packetQueue[(int)QueueID::FREE_PACKETS]->Enqueue(packetData[i]);					
 				}
 
 			} finally {
@@ -376,15 +426,14 @@ namespace VideoLib {
 				if(State == FrameQueueState::ACTIVE) return;
 
 				State = FrameQueueState::ACTIVE;
-
+			
 				for(int i = 0; i < 3; i++) {
 				
 					packetQueueStopped[i] = false;
 					packetQueuePaused[i] = false;				
 				}
 
-				// wakeup threads waiting on empty queues
-				// and put them in paused state
+				// wakeup threads waiting on empty queues			
 				Monitor::PulseAll(lockObject);
 
 			} finally {
@@ -393,6 +442,46 @@ namespace VideoLib {
 
 		}
 
+
+		bool startSingleFrame() {
+
+			singleFrame = true;
+			isLastFrame = false;
+			singleFrameEvent->Reset();
+			continueSingleFrameEvent->Reset();
+
+			start();
+
+			singleFrameEvent->WaitOne();
+
+			singleFrame = false;
+			if(isLastFrame == true) {
+				return(true);
+			}
+
+			Monitor::Enter(lockObject);
+			try {
+	
+				State = FrameQueueState::STOPPED;
+				// wakeup threads waiting on empty queues
+				// and put them in paused state
+				Monitor::PulseAll(lockObject);
+
+				continueSingleFrameEvent->Set();
+
+				// wait until the packet queue is fully stopped
+				while(!isTrue(packetQueueStopped)) {
+					
+					Monitor::Wait(lockObject);
+				}
+
+			} finally {
+				Monitor::Exit(lockObject);				
+			}
+
+			return(false);
+		}
+				
 		void stop() {
 
 			Monitor::Enter(lockObject);
@@ -418,21 +507,20 @@ namespace VideoLib {
 			
 		}
 
-		void pause() {
+		void pause(... array<QueueID> ^queueIDs) {
 
 			Monitor::Enter(lockObject);
 			try {
 
-				if(State == FrameQueueState::PAUSED ||
-					State == FrameQueueState::STOPPED) return;
-
+				if(State == FrameQueueState::PAUSED) return;
+			
 				State = FrameQueueState::PAUSED;
 				// wakeup threads waiting on empty queues
 				// and put them in paused state
 				Monitor::PulseAll(lockObject);
 
 				// wait until the packet queue is fully paused
-				while(!isTrueAudioVideo(packetQueuePaused)) {
+				while(!isTrue(packetQueuePaused, queueIDs)) {
 					
 					Monitor::Wait(lockObject);
 				}
@@ -520,9 +608,15 @@ namespace VideoLib {
 				bool success = getPacket(QueueID::VIDEO_PACKETS, videoPacket);
 				if(success == false) {
 			
+					if(singleFrame) {
+
+						isLastFrame = true;
+						singleFrameEvent->Set();						
+					}
+
 					return(nullptr);
 				}
-
+			
 				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
 
 				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
@@ -534,7 +628,6 @@ namespace VideoLib {
 
 				if(frameFinished)
 				{
-
 					videoDecoder->convertVideoFrame(videoFrame->AVLibFrameData, convertedVideoFrame->AVLibFrameData);					
 
 					convertedVideoFrame->Pts = synchronizeVideo(
@@ -545,6 +638,11 @@ namespace VideoLib {
 				addFreePacket(videoPacket);
 			}
 
+			if(singleFrame) {
+
+				singleFrameEvent->Set();
+				continueSingleFrameEvent->WaitOne();
+			}
 
 			return(convertedVideoFrame);
 
@@ -577,25 +675,8 @@ namespace VideoLib {
 				}
 
 				if(frameFinished)
-				{
-
-					SwrContext *acc = videoDecoder->getAudioConvertContext();
-
-					// convert audio to a packed format ready for playback
-					int numSamplesOut = swr_convert(acc,
-							convertedAudioFrame->AVLibFrameData->data,
-                            audioFrame->AVLibFrameData->nb_samples,
-                            (const unsigned char**)audioFrame->AVLibFrameData->extended_data,
-                            audioFrame->AVLibFrameData->nb_samples);
-
-					// audio length does not equal linesize, because some extra 
-					// padding bytes may be added for alignment.
-					// Instead av_samples_get_buffer_size needs to be used
-					convertedAudioFrame->Length = av_samples_get_buffer_size(NULL, 
-						videoDecoder->getAudioNrChannels(), 
-						numSamplesOut,
-						(AVSampleFormat)convertedAudioFrame->AVLibFrameData->format, 
-						1);
+				{					
+					convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);
 				
 					convertedAudioFrame->Pts = synchronizeAudio(audioFrame->Length, 
 						audioPacket->AVLibPacketData->dts);

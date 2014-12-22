@@ -215,9 +215,23 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 		videoDecoder->initImageConverter(convertToFormat,
 			videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
 
-		int channelLayout = videoDecoder->getAudioNrChannels() == 1 ? 
-			AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
+		int channelLayout;
 
+		switch(videoDecoder->getAudioNrChannels()) {
+		case 1:
+			{
+				channelLayout = AV_CH_LAYOUT_MONO;
+			}
+		case 2:
+			{
+				channelLayout = AV_CH_LAYOUT_STEREO;
+			}
+		default: 
+			{
+				channelLayout = AV_CH_LAYOUT_STEREO;
+			}
+		}
+		
 		AVSampleFormat format;
 
 		switch(videoDecoder->getAudioBytesPerSample()) {

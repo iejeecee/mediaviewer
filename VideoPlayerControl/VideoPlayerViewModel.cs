@@ -22,7 +22,7 @@ namespace VideoPlayerControl
         public event EventHandler<int> PositionSecondsChanged;
         public event EventHandler<int> DurationSecondsChanged;
         public event EventHandler<bool> HasAudioChanged;
-   
+      
         Control owner;
 
         VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat;
@@ -68,8 +68,7 @@ namespace VideoPlayerControl
 
         // we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
         const int AUDIO_DIFF_AVG_NB = 5;//20;
-
-        bool renderOneFrame;
+      
         double oldVolume;
 
         VideoLib.VideoPlayer videoDecoder;
@@ -111,10 +110,7 @@ namespace VideoPlayerControl
         double audioDiffAvgCoef;
         double audioDiffThreshold;
         int audioDiffAvgCount;
-
-        bool seekRequest;
-        double seekPosition;     
-
+   
         Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
 
@@ -247,8 +243,8 @@ namespace VideoPlayerControl
 
             audioRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             audioRefreshTimer.Tick += new EventHandler(audioRefreshTimer_Tick);
-            audioRefreshTimer.AutoReset = false;            
-          
+            audioRefreshTimer.AutoReset = false;           
+
             DurationSeconds = 0;
             PositionSeconds = 0;
 
@@ -256,9 +252,9 @@ namespace VideoPlayerControl
 
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
-
-            renderOneFrame = false;
+            
             oldVolume = 0;
+                 
         }
 
         public void createScreenShot()
@@ -315,22 +311,24 @@ namespace VideoPlayerControl
             }
         }
 
-        //int nrFramesRendered = 0;
+        int nrFramesRendered = 0;
 
         void videoRefreshTimer_Tick(Object sender, EventArgs e)
         {
 
             bool skipVideoFrame = false;
+            
 
 restartvideo:
 			
 			double actualDelay = 0.04;
 
-			// grab a decoded frame, returns false if the queue is stopped
+			// grab a decoded frame, returns null if the queue is stopped
 			VideoFrame videoFrame = videoDecoder.FrameQueue.getDecodedVideoFrame();
-
+           
 			if(VideoState == VideoState.CLOSED && videoFrame == null) {
-
+            
+                updateObservableVariables();
 				return;
 
             }
@@ -346,25 +344,16 @@ restartvideo:
 				} 					
 
 				actualDelay = synchronizeVideo(videoPts);
-
-                if (renderOneFrame)
-                {
-                    owner.BeginInvoke(new Action(() => {
-                        pausePlay();
-                        Volume = oldVolume;
-                    }));
-                    renderOneFrame = false;
-                }
-
-                //nrFramesRendered++;
+                              
+                updateObservableVariables();
+                                                                           
+                nrFramesRendered++;               
 
 			} else if(VideoState == VideoState.PAUSED || videoFrame == null) {
                 
 				videoRender.display(null, Color.Black, VideoRender.RenderMode.PAUSED);			
 			}
-
-            updateObservableVariables();
-        
+                  
             if (actualDelay < 0.010)
             {
 
@@ -374,6 +363,8 @@ restartvideo:
                 goto restartvideo;
 
             }
+
+            updateObservableVariables();
 
             /*if (nrFramesRendered % 100 == 0)
             {
@@ -754,43 +745,11 @@ restartvideo:
             audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
 
             VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
-
-            // decode frames one by one, or handle seek requests
+           
             do
-            {
-                if (seekRequest == true)
-                {
-
-                    // wait for video and audio decoding to pause/block
-                    // To make sure no packets are in limbo
-                    // before flushing any ffmpeg internal or external queues. 
-                    videoDecoder.FrameQueue.pause();
-
-                    if (videoDecoder.seek(seekPosition) == true)
-                    {
-
-                        // flush the framequeue	and audioplayer buffer				
-                        videoDecoder.FrameQueue.flush();
-                        audioPlayer.flush();
-
-                        // refill/buffer the framequeue from the new position
-                        //fillFrameQueue();
-
-                        audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
-
-                    }
-                    seekRequest = false;
-
-                    // allow video and audio decoding to continue
-                    videoDecoder.FrameQueue.start();
-
-                }
-                else
-                {
-
-                    result = videoDecoder.demuxPacket();
-                }
-
+            {                
+                 result = videoDecoder.demuxPacket();
+               
             } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
 
         }
@@ -827,10 +786,9 @@ restartvideo:
           
             audioPlayer.stop();
             
-
         }
 
-        public void startPlay()
+        public void startPlay(bool singleFrame = false)
         {       
             if (VideoState == VideoState.PLAYING ||
                 VideoState == VideoState.CLOSED)
@@ -860,29 +818,83 @@ restartvideo:
 
         }
 
-        public void seek(double seconds)
+        public void seek(double positionSeconds)
         {
-            seekPosition = seconds;
-            seekRequest = true;
-
-            if (VideoState == VideoPlayerControl.VideoState.PAUSED)
+            if (VideoState == VideoPlayerControl.VideoState.CLOSED)
             {
-                frameByFrame();
+                return;
+
+            } else if (VideoState == VideoPlayerControl.VideoState.PLAYING)
+            {
+                // wait for video and audio decoding to pause/block
+                // To make sure no packets are in limbo
+                // before flushing any ffmpeg internal or external queues. 
+                videoDecoder.FrameQueue.pause();
+            }
+            else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
+            {
+                // in paused mode only the video is spinning
+                videoDecoder.FrameQueue.pause(FrameQueue.QueueID.VIDEO_PACKETS);
+            }
+
+            if (videoDecoder.seek(positionSeconds) == true)
+            {
+                // flush the framequeue	and audioplayer buffer				
+                videoDecoder.FrameQueue.flush();
+                audioPlayer.flush();
+
+                // refill/buffer the framequeue from the new position
+                //fillFrameQueue();
+
+                audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
+            }
+
+            if (VideoState == VideoPlayerControl.VideoState.PLAYING)
+            {
+                // allow video and audio decoding to continue   
+                audioPlayer.startPlayAfterNextWrite();
+                videoDecoder.FrameQueue.start();
+            }
+            else if (VideoState == VideoPlayerControl.VideoState.PAUSED)
+            {
+                displayNextFrame();
             }
         }
 
-        public void frameByFrame()
+        public void displayNextFrame()
         {         
-            if (VideoState == VideoPlayerControl.VideoState.PLAYING)
-            {
+            if (VideoState == VideoPlayerControl.VideoState.PLAYING) 
+            {            
                 pausePlay();
             }
             else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
-            {              
-                renderOneFrame = true;
+            {                             
                 oldVolume = Volume;
                 Volume = MinVolume;
-                startPlay();
+                
+                videoDecoder.FrameQueue.pause(FrameQueue.QueueID.VIDEO_PACKETS);
+
+                VideoState = VideoPlayerControl.VideoState.PLAYING;
+
+                demuxPacketsCancellationTokenSource = new CancellationTokenSource();
+                demuxPacketsTask = new Task(() => { demuxPackets(demuxPacketsCancellationTokenSource.Token); },
+                    demuxPacketsCancellationTokenSource.Token);
+                demuxPacketsTask.Start();
+                audioRefreshTimer.start();
+
+                bool isLastFrame = videoDecoder.FrameQueue.startSingleFrame();
+
+                if (!isLastFrame)
+                {
+                    VideoState = VideoPlayerControl.VideoState.PAUSED;
+                }
+                else
+                {
+                    close();
+                }
+
+                Volume = oldVolume;
+                
             }
         }
 
@@ -908,7 +920,7 @@ restartvideo:
                 {
 
                     audioPlayer.initialize(videoDecoder.SamplesPerSecond, videoDecoder.BytesPerSample,
-                        videoDecoder.NrChannels, videoDecoder.MaxAudioFrameSize * 2);
+                        Math.Min(videoDecoder.NrChannels,2) , videoDecoder.MaxAudioFrameSize * 2);
 
                     audioDiffThreshold = 2.0 * 1024 / videoDecoder.SamplesPerSecond;
                 }
@@ -939,14 +951,14 @@ restartvideo:
                 }
 
             }
-            catch (VideoLib.VideoLibException e)
+            catch (VideoLib.VideoLibException)
             {
 
                 VideoState = VideoState.CLOSED;
 
                 //log.Error("Cannot open: " + location, e);
 
-                throw new VideoPlayerException("Cannot open: " + location + "\n\n" + e.Message, e);
+                throw;
              
             }
         }
@@ -972,12 +984,8 @@ restartvideo:
             audioPlayer.flush();
 
             videoPts = 0;
-            videoPtsDrift = 0;
-
-            renderOneFrame = false;
-            seekRequest = false;
-            seekPosition = 0;
-
+            videoPtsDrift = 0;           
+  
             DurationSeconds = 0;
             PositionSeconds = 0;
 

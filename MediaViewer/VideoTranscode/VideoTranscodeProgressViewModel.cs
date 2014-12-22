@@ -96,10 +96,14 @@ namespace MediaViewer.VideoTranscode
                 
                 foreach (MediaFileItem input in Items)
                 {
+                    ItemProgress = 0;
+                    ItemInfo = "Transcoding: " + input.Location;
+
                     if (CancellationToken.IsCancellationRequested) break;
                     if (!MediaFormatConvert.isVideoFile(input.Location))
                     {
                         InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
+                        TotalProgress++;
                         continue;
                     }
 
@@ -110,10 +114,7 @@ namespace MediaViewer.VideoTranscode
                     if (outLocation.Equals(input.Location))
                     {
                         outLocation = FileUtils.getUniqueFileName(input.Location);
-                    }
-
-                    ItemProgress = 0;
-                    ItemInfo = "Transcoding: " + input.Location;
+                    }                    
 
                     videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options, 
                         transcodeProgressCallback);

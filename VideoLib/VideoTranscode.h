@@ -5,6 +5,7 @@
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
+using namespace msclr::interop;
 
 namespace VideoLib {
 
@@ -16,8 +17,8 @@ protected:
 	VideoDecoder *input;
 	VideoEncoder *output;
 
+	std::vector<int> streamMap;
 	std::vector<FilterGraph *> filterGraph;
-	std::vector<int> discardStreamIdx;
 
 public:
 
@@ -40,9 +41,26 @@ public:
 		Console::WriteLine(gcnew System::String(message)); 
 	}
 
+	void listEncoders() {
+
+		AVCodec *codec = av_codec_next(NULL);
+
+		while(codec != NULL) {
+
+			if(codec->encode2 != NULL && codec->name != NULL) {
+
+				System::Diagnostics::Debug::Print(marshal_as<String ^>(std::string(codec->name)));
+			}
+
+			codec = av_codec_next(codec);
+		}
+	}
+
 	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken ^token, 
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
 	{
+
+		//listEncoders();
 
 		Video::enableLibAVLogging(AV_LOG_INFO);
 		Video::setLogCallback((LOG_CALLBACK)logCallback);
@@ -55,6 +73,13 @@ public:
 		AVMediaType type;
 		int ret = 0;
 		int (*dec_func)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
+
+		if(options->ContainsKey("offset")) {
+
+			int offsetSeconds = (int)options["offset"];
+
+			input->seek(offsetSeconds);
+		}
 
 		unsigned int stream_index;		
 		int got_frame;
@@ -94,7 +119,7 @@ public:
 				stream_index = packet.stream_index;
 				type = input->getFormatContext()->streams[packet.stream_index]->codec->codec_type;
 
-				if(std::find(discardStreamIdx._Myfirst,discardStreamIdx._Mylast, stream_index) != discardStreamIdx._Mylast) {
+				if(streamMap[stream_index] == -1) {
 
 					// discard packets from this input stream
 
@@ -118,9 +143,9 @@ public:
 
 					dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 : avcodec_decode_audio4;
 
-					ret = dec_func(input->getFormatContext()->streams[stream_index]->codec, frame,
-						&got_frame, &packet);
+					ret = dec_func(input->getFormatContext()->streams[stream_index]->codec, frame, &got_frame, &packet);
 					if (ret < 0) {
+
 						av_frame_free(&frame);
 						av_log(NULL, AV_LOG_ERROR, "Decoding failed\n");
 						break;
@@ -129,6 +154,7 @@ public:
 					if (got_frame) {
 
 						frame->pts = av_frame_get_best_effort_timestamp(frame);
+
 						ret = filterEncodeWriteFrame(frame, stream_index);
 						av_frame_free(&frame);
 						if (ret < 0) {
@@ -142,20 +168,24 @@ public:
 
 				} else {
 
+					int out_stream_index = streamMap[stream_index];
+				
+					packet.stream_index = out_stream_index;
+
 					// remux this frame without reencoding 
 					packet.dts = av_rescale_q_rnd(packet.dts,
 						input->getFormatContext()->streams[stream_index]->time_base,
-						output->getFormatContext()->streams[stream_index]->time_base,
+						output->getFormatContext()->streams[out_stream_index]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 
 					packet.pts = av_rescale_q_rnd(packet.pts,
 						input->getFormatContext()->streams[stream_index]->time_base,
-						output->getFormatContext()->streams[stream_index]->time_base,
+						output->getFormatContext()->streams[out_stream_index]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 					packet.duration = av_rescale_q(packet.duration, 
 						input->getFormatContext()->streams[stream_index]->time_base, 
-						output->getFormatContext()->streams[stream_index]->time_base);
+						output->getFormatContext()->streams[out_stream_index]->time_base);
 
 					packet.pos = -1;
 
@@ -218,8 +248,10 @@ public:
 
 protected:
 
-	void initVideoSettings(const AVCodec* encoder, AVCodecContext *enc_ctx, AVCodecContext *dec_ctx,
+	void initVideoSettings(const AVCodec* encoder, AVStream *outStream, AVCodecContext *dec_ctx,
 		Dictionary<String ^, Object ^> ^options) {
+
+		AVCodecContext *enc_ctx = outStream->codec;
 
 		int width = dec_ctx->width;
 		int height = dec_ctx->height;
@@ -227,11 +259,21 @@ protected:
 		if(options->ContainsKey("width")) {
 
 			width = (int)options["width"];
+
+			if(!options->ContainsKey("height")) {
+
+				height = int((dec_ctx->width / (float)width) * dec_ctx->height);
+			}
 		}
 
 		if(options->ContainsKey("height")) {
 
 			height = (int)options["height"];
+
+			if(!options->ContainsKey("width")) {
+
+				width = int((dec_ctx->height / (float)height) * dec_ctx->width);
+			}
 		}
 
 		enc_ctx->width = width;
@@ -239,29 +281,38 @@ protected:
 		enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;
 		// take first format from list of supported formats 
 		enc_ctx->pix_fmt = encoder->pix_fmts[0];
-		// video time_base can be set to whatever is handy and supported by encoder 
-		enc_ctx->time_base = dec_ctx->time_base;
 
-		//enc_ctx->profile = FF_PROFILE_H264_BASELINE;
-		//enc_ctx->bit_rate = dec_ctx->bit_rate;
-		//enc_ctx->gop_size = dec_ctx->gop_size;
-					
-		if(enc_ctx->codec_id == AV_CODEC_ID_H264) {
+		// video time_base can be set to whatever is handy and supported by encoder 					
+		outStream->time_base = enc_ctx->time_base = dec_ctx->time_base;	
+			
+		if(enc_ctx->codec_id == AV_CODEC_ID_H264 || enc_ctx->codec_id == AV_CODEC_ID_HEVC) {
 						
 			String ^preset = ((VideoEncoderPresets)options["videoEncoderPreset"]).ToString()->ToLower();
 
-			std::string value = msclr::interop::marshal_as<std::string>(preset);
+			std::string value = marshal_as<std::string>(preset);
 
 			int ret = av_opt_set(enc_ctx->priv_data, "preset", value.c_str(), 0);
 			if(ret != 0) {
 
 				throw gcnew VideoLib::VideoLibException("Error setting video options");
 			}
+
+		} else if(enc_ctx->codec_id == AV_CODEC_ID_VP8) {
+			
+			enc_ctx->bit_rate = 1000000;
+
+			av_opt_set(enc_ctx, "crf", "10", 0);
+			av_opt_set(enc_ctx, "qmin", "4", 0);
+			av_opt_set(enc_ctx, "qmax", "50", 0);
+
 		}
 	}
 
-	void initAudioSettings(const AVCodec* encoder, AVCodecContext *enc_ctx, AVCodecContext *dec_ctx,
-		Dictionary<String ^, Object ^> ^options) {
+	void initAudioSettings(const AVCodec* encoder, AVStream *outStream, AVCodecContext *dec_ctx,
+		Dictionary<String ^, Object ^> ^options) 
+	{
+
+		AVCodecContext *enc_ctx = outStream->codec;
 
 		int sampleRate = dec_ctx->sample_rate;
 
@@ -276,10 +327,10 @@ protected:
 		// take first format from list of supported formats 
 		enc_ctx->sample_fmt = encoder->sample_fmts[0];
 
-		enc_ctx->time_base.num = 1;
-		enc_ctx->time_base.den = enc_ctx->sample_rate;
-
+		outStream->time_base.num = 1;
+		outStream->time_base.den = enc_ctx->sample_rate;
 	
+		enc_ctx->time_base = outStream->time_base;
 	}
 
 
@@ -288,7 +339,7 @@ protected:
 
 		if(streamMode == StreamOptions::Discard) {
 
-			discardStreamIdx.push_back(inputStreamIndex);
+			streamMap.push_back(-1);		
 			return(NULL);
 		}
 
@@ -297,56 +348,83 @@ protected:
 		AVStream *in_stream = input->getFormatContext()->streams[inputStreamIndex];
 		AVCodecContext *dec_ctx = in_stream->codec;
 							
+		AVStream *out_stream;
+		AVCodec *encoder;
+
+		VideoLib::Stream *outStream;
+
 		if(streamMode == StreamOptions::Copy) {
 
-			AVCodec *encoder = avcodec_find_encoder(dec_ctx->codec->id);
+			encoder = avcodec_find_encoder(dec_ctx->codec->id);
 			if(encoder == NULL) {
 		
 				throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
 			}
 		
-			ret = avcodec_copy_context(enc_ctx, dec_ctx);
+			out_stream = avformat_new_stream(output->getFormatContext(), encoder);
+			if (out_stream == NULL) {
+			
+				throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
+			}
+
+			ret = avcodec_copy_context(out_stream->codec, dec_ctx);
 			if (ret < 0) {
 
 				throw gcnew VideoLib::VideoLibException("Copying stream context failed: " + outputFilename);							
 			}
 
-			enc_ctx->codec_tag = 0;
+			out_stream->codec->codec_tag = 0;
+
+			outStream = new VideoLib::Stream(out_stream, encoder);
+			output->addStream(outStream);
 
 		} else {
 
 			if(type == AVMEDIA_TYPE_VIDEO) {
 
 				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["videoEncoder"]).ToString());
-
-				AVCodec *encoder = avcodec_find_encoder_by_name(encoderName.c_str());
+				 
+				encoder = avcodec_find_encoder_by_name(encoderName.c_str());
 				if(encoder == NULL) {
 		
 					throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
 				}
 
-				initVideoSettings(outStream->getCodec(), enc_ctx, dec_ctx, options);
+				out_stream = avformat_new_stream(output->getFormatContext(), encoder);
+				if (out_stream == NULL) {
+			
+					throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
+				}
 
+				initVideoSettings(encoder, out_stream, dec_ctx, options);
+				
 			} else {
 
-				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["audioEncoder"]).ToString());
+				std::string encoderName = marshal_as<std::string>(((AudioEncoders)options["audioEncoder"]).ToString());
 
-				AVCodec *encoder = avcodec_find_encoder_by_name(encoderName.c_str());
+				encoder = avcodec_find_encoder_by_name(encoderName.c_str());
 				if(encoder == NULL) {
 		
 					throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
 				}
 
+				out_stream = avformat_new_stream(output->getFormatContext(), encoder);
+				if (out_stream == NULL) {
+			
+					throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
+				}
 
-				initAudioSettings(outStream->getCodec(), enc_ctx, dec_ctx, options);
+				initAudioSettings(encoder, out_stream, dec_ctx, options);			
 			}
-															
+					
+			outStream = new VideoLib::Stream(out_stream, encoder);
+			output->addStream(outStream);
+
 			outStream->open();
 		}
-
-		VideoLib::Stream *outStream = new VideoLib::Stream(out_stream, encoder);
-		output->addStream(outStream);
 		
+		streamMap.push_back(output->getFormatContext()->nb_streams - 1);
+
 		AVCodecContext *enc_ctx = outStream->getCodecContext();		
 	
 		return(enc_ctx);
@@ -360,7 +438,8 @@ protected:
 		input->open(inputFilename);					
 		output->open(outputFilename);
 
-		discardStreamIdx.clear();
+		filterGraph.clear();
+		streamMap.clear();
 
 		for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) {
 								
@@ -387,7 +466,7 @@ protected:
 
 			} else {
 
-				discardStreamIdx.push_back(i);
+				streamMap.push_back(-1);
 
 				// if this stream must be remuxed 
 				/*AVStream *out_stream = avformat_new_stream(output->getFormatContext(), NULL);
@@ -436,7 +515,9 @@ protected:
 		int ret;
 		int got_frame;
 
-		if (!(output->getFormatContext()->streams[stream_index]->codec->codec->capabilities & CODEC_CAP_DELAY))
+		int out_stream_index = streamMap[stream_index];
+
+		if (!(output->getFormatContext()->streams[out_stream_index]->codec->codec->capabilities & CODEC_CAP_DELAY))
 		{
 			return 0;
 		}
@@ -474,7 +555,9 @@ protected:
 
 		av_init_packet(&enc_pkt);
 
-		ret = enc_func(output->getFormatContext()->streams[stream_index]->codec, &enc_pkt, filt_frame, got_frame);
+		int out_stream_index = streamMap[stream_index];
+
+		ret = enc_func(output->getFormatContext()->streams[out_stream_index]->codec, &enc_pkt, filt_frame, got_frame);
 		av_frame_free(&filt_frame);
 		if (ret < 0) {
 
@@ -486,21 +569,21 @@ protected:
 			return 0;
 			
 		// prepare packet for muxing 
-		enc_pkt.stream_index = stream_index;
+		enc_pkt.stream_index = out_stream_index;
 
 		enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
-			output->getFormatContext()->streams[stream_index]->codec->time_base,
-			output->getFormatContext()->streams[stream_index]->time_base,
+			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
+			output->getFormatContext()->streams[out_stream_index]->time_base,
 			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 		enc_pkt.pts = av_rescale_q_rnd(enc_pkt.pts,
-			output->getFormatContext()->streams[stream_index]->codec->time_base,
-			output->getFormatContext()->streams[stream_index]->time_base,
+			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
+			output->getFormatContext()->streams[out_stream_index]->time_base,
 			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 		enc_pkt.duration = av_rescale_q(enc_pkt.duration,
-			output->getFormatContext()->streams[stream_index]->codec->time_base,
-			output->getFormatContext()->streams[stream_index]->time_base);
+			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
+			output->getFormatContext()->streams[out_stream_index]->time_base);
 		//av_log(NULL, AV_LOG_DEBUG, "Muxing frame\n");
 		// mux encoded frame 
 		
@@ -558,12 +641,9 @@ protected:
 	}
 
 	int initFilters(Dictionary<String ^,Object ^> ^options)
-	{
-		
+	{		
 		unsigned int i;
-			
-		filterGraph.clear();
-	
+						
 		for (i = 0; i < input->getFormatContext()->nb_streams; i++) {
 					
 			filterGraph.push_back(NULL);
@@ -575,7 +655,11 @@ protected:
 				filterGraph[i] = new FilterGraph(input->getVideoCodecContext(),
 					output->getVideoCodecContext()->pix_fmt, SWS_BICUBIC);
 
-				String ^graph = "scale=" + output->getVideoCodecContext()->width + "x" + output->getVideoCodecContext()->height;
+				int outputFmt = (int)output->getVideoCodecContext()->pix_fmt;
+				int outWidth = output->getVideoCodecContext()->width;
+				int outHeight = output->getVideoCodecContext()->height;
+
+				String ^graph = "scale=" + outWidth + "x" + outHeight + ",format=" + outputFmt;
 				
 				std::string value = msclr::interop::marshal_as<std::string>(graph);
 

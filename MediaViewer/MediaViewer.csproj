@@ -538,6 +538,7 @@
     <Compile Include="Model\Utils\Windows\FileDialog.cs" />
     <Compile Include="Model\Utils\Windows\PerformanceCounters.cs" />
     <Compile Include="Model\Utils\WPF\TrulyObservableCollection.cs" />
+    <Compile Include="UserControls\VideoSlider\MarkerAdorner.cs" />
     <Compile Include="UserControls\VideoSlider\TimeAdorner.cs" />
     <Compile Include="UserControls\VideoSlider\VideoSliderView.xaml.cs">
       <DependentUpon>VideoSliderView.xaml</DependentUpon>

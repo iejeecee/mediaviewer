@@ -11,38 +11,33 @@ using System.Windows.Media;
 
 namespace MediaViewer.UserControls.VideoSlider
 {
-    class TimeAdorner : Adorner
-    {       
-        public int TimeTextSize { get; set; }
-        public int TimeTextMargin { get; set; }
-        public int TimeSeconds { get; set; }
+    class MarkerAdorner : Adorner
+    {     
         public Point Location { get; set; }
 
-        public TimeAdorner(UIElement adornedElement) :
+        public MarkerAdorner(UIElement adornedElement) :
             base(adornedElement)
-        {
-            TimeSeconds = 0;
-            Location = new Point(0, 0);
-            TimeTextMargin = 1;
-            TimeTextSize = 8;
+        {        
+            Location = new Point(0, 0);        
         }
 
         protected override void OnRender(DrawingContext drawingContext)
         {
             base.OnRender(drawingContext);
+                                      
+            var start = new Point(Location.X, Location.Y + 6);
 
-            FormattedText timeText = createFormattedText(MiscUtils.formatTimeSeconds(TimeSeconds), "Consolas", TimeTextSize, Colors.Black, FontWeights.Normal);
-            
-            Brush brush = new SolidColorBrush(Colors.Yellow);
-            Pen pen = new Pen();
-            Size size = new Size(timeText.Width + TimeTextMargin * 2, timeText.Height + TimeTextMargin * 2);
-            Point drawLocation = new Point(Location.X - size.Width / 2, Location.Y);
-            Rect rectangle = new Rect(drawLocation, size);
+            var segments = new[]
+            { 
+                new LineSegment(new Point(start.X - 3 , start.Y + 5), true), 
+                new LineSegment(new Point(start.X + 3 , start.Y + 5), true)
+            };
 
-            drawingContext.DrawRectangle(brush, pen, rectangle);
+            PathFigure figure = new PathFigure(start, segments, true);
+            PathGeometry geo = new PathGeometry(new[] { figure });
 
-            Point textLocation = new Point(drawLocation.X + TimeTextMargin, drawLocation.Y + TimeTextMargin);
-            drawingContext.DrawText(timeText, textLocation);
+            drawingContext.DrawGeometry(Brushes.Black, null, geo);
+          
         }
 
         private FormattedText createFormattedText(String text, String font, double size, Color color, FontWeight weight)

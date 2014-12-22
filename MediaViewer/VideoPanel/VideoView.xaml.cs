@@ -195,9 +195,10 @@ namespace MediaViewer.VideoPanel
 
             int sliderValue = (int)p;
 
-            ViewModel.SeekCommand.Execute(sliderValue);
-
             updateTimeLineSlider = true;
+
+            ViewModel.SeekCommand.Execute(sliderValue);
+           
         }
 
         private void playButton_Checked(object sender, RoutedEventArgs e)

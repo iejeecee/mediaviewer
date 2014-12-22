@@ -186,6 +186,7 @@ public:
 
 		return(audioIdx >= 0);
 	}
+	
 
 	static void enableLibAVLogging(int logLevel = AV_LOG_ERROR) {
 	

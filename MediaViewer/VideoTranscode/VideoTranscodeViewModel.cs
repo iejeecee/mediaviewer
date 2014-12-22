@@ -10,6 +10,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Data;
 
 namespace MediaViewer.VideoTranscode
 {
@@ -64,18 +65,101 @@ namespace MediaViewer.VideoTranscode
 
                 });
 
+            SupportedAudioEncoders = new ListCollectionView(Enum.GetValues(typeof(AudioEncoders)));
+            SupportedAudioEncoders.Filter = supportedAudioEncodersFilter;
+            SupportedVideoEncoders = new ListCollectionView(Enum.GetValues(typeof(VideoEncoders)));
+            SupportedVideoEncoders.Filter = supportedVideoEncodersFilter;
+
             setDefaults();
         }
 
+        bool supportedVideoEncodersFilter(object videoEncoder)
+        {
+            VideoEncoders encoder = (VideoEncoders)videoEncoder;
+
+            switch (ContainerFormat)
+            {
+                case ContainerFormats.MP4:
+                    if (encoder == VideoEncoders.libx264 || encoder == VideoEncoders.libx265) return true;
+                    else return (false);            
+                case ContainerFormats.MOV:
+                    if (encoder == VideoEncoders.libx264) return true;
+                    else return (false);               
+                case ContainerFormats.AVI:
+                    if (encoder == VideoEncoders.libx264) return true;
+                    else return (false);            
+                case ContainerFormats.MKV:
+                    if (encoder == VideoEncoders.libx264 || encoder == VideoEncoders.libvpx) return true;
+                    else return (false);
+                case ContainerFormats.FLV:
+                    if (encoder == VideoEncoders.libx264) return true;
+                    else return (false);              
+                case ContainerFormats.GIF:
+                    if (encoder == VideoEncoders.gif) return true;
+                    else return (false);                
+                case ContainerFormats.MP3:
+                    if (encoder == VideoEncoders.none) return (true);
+                    else return (false);              
+                case ContainerFormats.M4A:
+                    if (encoder == VideoEncoders.none) return (true);
+                    else return (false);
+                case ContainerFormats.OGG:
+                    if (encoder == VideoEncoders.none) return (true);
+                    else return (false);   
+                default:
+                    return (false);
+            }
+        }
+
+        bool supportedAudioEncodersFilter(Object audioEncoder)
+        {
+            AudioEncoders encoder = (AudioEncoders)audioEncoder;
+
+            switch (ContainerFormat)
+            {
+                case ContainerFormats.MP4:
+                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    else return (false);                   
+                case ContainerFormats.MOV:
+                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    else return (false);                
+                case ContainerFormats.AVI:
+                    if (encoder == AudioEncoders.libmp3lame) return (true);
+                    else return (false);
+                case ContainerFormats.MKV:
+                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc || encoder == AudioEncoders.libvorbis) return (true);
+                    else return (false);    
+                case ContainerFormats.FLV:
+                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    else return (false);    
+                case ContainerFormats.GIF:
+                    if (encoder == AudioEncoders.none) return (true);
+                    else return (false);
+                case ContainerFormats.MP3:
+                    if (encoder == AudioEncoders.libmp3lame) return (true);
+                    else return (false);
+                case ContainerFormats.M4A:
+                    if (encoder == AudioEncoders.libvo_aacenc) return (true);
+                    else return (false);
+                case ContainerFormats.OGG:
+                    if(encoder == AudioEncoders.libvorbis) return(true);
+                    else return (false);
+                default:
+                    return (false);
+            }
+        }
+
+
         void setDefaults()
         {
+            ContainerFormat = ContainerFormats.MP4;
+
             VideoStreamMode = StreamOptions.Copy;
-            VideoEncoder = VideoEncoders.H264;
+            VideoEncoder = VideoEncoders.libx264;
             VideoEncoderPreset = VideoEncoderPresets.Medium;
             
-
             AudioStreamMode = StreamOptions.Copy;
-            AudioEncoder = AudioEncoders.AAC;
+            AudioEncoder = AudioEncoders.libvo_aacenc;
         }
 
         ObservableCollection<String> outputPathHistory;
@@ -101,7 +185,54 @@ namespace MediaViewer.VideoTranscode
         public ContainerFormats ContainerFormat
         {
             get { return containerFormat; }
-            set { SetProperty(ref containerFormat, value); }
+            set {                                 
+                SetProperty(ref containerFormat, value);
+
+                SupportedAudioEncoders.Refresh();
+                SupportedVideoEncoders.Refresh();
+
+                if (containerFormat == ContainerFormats.MP3 || containerFormat == ContainerFormats.M4A ||
+                    containerFormat == ContainerFormats.OGG)
+                {
+                    IsContainerSupportsVideoStream = false;
+                    IsContainerSupportsAudioStream = true;
+                    VideoStreamMode = StreamOptions.Discard;
+                    AudioStreamMode = StreamOptions.Encode;
+                
+                }
+                else if (containerFormat == ContainerFormats.GIF)
+                {
+                    IsContainerSupportsVideoStream = true;
+                    IsContainerSupportsAudioStream = false;
+                    AudioStreamMode = StreamOptions.Discard;
+                    VideoStreamMode = StreamOptions.Encode;                  
+                }
+                else
+                {
+                    IsContainerSupportsVideoStream = true;
+                    IsContainerSupportsAudioStream = true;
+                    VideoStreamMode = StreamOptions.Copy;                    
+                    AudioStreamMode = StreamOptions.Copy;                    
+                }
+
+                SupportedVideoEncoders.MoveCurrentToFirst();
+                SupportedAudioEncoders.MoveCurrentToFirst();
+            }
+        }
+
+        bool isContainerSupportsVideoStream;
+
+        public bool IsContainerSupportsVideoStream
+        {
+            get { return isContainerSupportsVideoStream; }
+            protected set { SetProperty(ref isContainerSupportsVideoStream, value); }
+        }
+        bool isContainerSupportsAudioStream;
+
+        public bool IsContainerSupportsAudioStream
+        {
+            get { return isContainerSupportsAudioStream; }
+            protected set { SetProperty(ref isContainerSupportsAudioStream, value); }
         }
 
         StreamOptions videoStreamMode;
@@ -111,7 +242,7 @@ namespace MediaViewer.VideoTranscode
             get { return videoStreamMode; }
             set { SetProperty(ref videoStreamMode, value); }
         }
-
+       
         VideoEncoders videoEncoder;
 
         public VideoEncoders VideoEncoder
@@ -120,6 +251,14 @@ namespace MediaViewer.VideoTranscode
             set { SetProperty(ref videoEncoder, value); }
         }
 
+        ListCollectionView supportedVideoEncoders;
+
+        public ListCollectionView SupportedVideoEncoders
+        {
+            get { return supportedVideoEncoders; }
+            set { supportedVideoEncoders = value; }
+        }
+      
         VideoEncoderPresets videoEncoderPreset;
 
         public VideoEncoderPresets VideoEncoderPreset
@@ -142,6 +281,14 @@ namespace MediaViewer.VideoTranscode
         {
             get { return audioEncoder; }
             set { SetProperty(ref audioEncoder, value); }
+        }
+
+        ListCollectionView supportedAudioEncoders;
+
+        public ListCollectionView SupportedAudioEncoders
+        {
+            get { return supportedAudioEncoders; }
+            set { supportedAudioEncoders = value; }
         }
 
         int? width;

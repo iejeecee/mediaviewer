@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -52,45 +53,63 @@ namespace MediaViewer.UserControls.LogTextBox
                 var coll = (ObservableCollection<String>)e.NewValue;
                 // Subscribe to CollectionChanged on the new collection
                 coll.CollectionChanged += control.infoMessages_CollectionChanged;
+
+                control.addText(coll);
             }
 
         }
 
         private void infoMessages_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {          
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    {
+                        addText(e.NewItems);                   
+                        break;
+                    }
+                case NotifyCollectionChangedAction.Reset:
+                    {
+                        reset(e.NewItems);                 
+                        break;
+                    }
+                default:
+                    {
+                        break;
+                    }
+            }
+           
+        }
+
+        void addText(IList text)
         {
             App.Current.Dispatcher.BeginInvoke(new Action(() =>
             {
-
-                switch (e.Action)
+                foreach (String message in text)
                 {
-                    case NotifyCollectionChangedAction.Add:
-                        {
-                            foreach (String message in e.NewItems)
-                            {
-                                infoTextBox.AppendText(message + "\n");
-                            }
-
-                            infoTextBox.ScrollToEnd();
-                            break;
-                        }
-                    case NotifyCollectionChangedAction.Reset:
-                        {
-                            infoTextBox.Text = "";
-                            if (e.NewItems == null) return;
-
-                            foreach (String message in e.NewItems)
-                            {
-                                infoTextBox.AppendText(message + "\n");
-                            }
-                            infoTextBox.ScrollToEnd();
-                            break;
-                        }
-                    default:
-                        {
-                            break;
-                        }
+                    infoTextBox.AppendText(message + "\n");
                 }
+
+                infoTextBox.ScrollToEnd();
+
             }));
+        }
+
+        void reset(IList text)
+        {
+            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                infoTextBox.Text = "";
+                if (text == null) return;
+
+                foreach (String message in text)
+                {
+                    infoTextBox.AppendText(message + "\n");
+                }
+                infoTextBox.ScrollToEnd();
+
+            }));
+
         }
     }
 }

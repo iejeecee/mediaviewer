@@ -3,6 +3,7 @@
 #include "Video.h"
 #include "VideoLibException.h"
 #include "FilterGraph.h"
+#include <algorithm>
 
 namespace VideoLib {
 
@@ -578,6 +579,40 @@ public:
 
 			videoFilterGraph->filterFrame(input, output);
 		}
+	}
+
+	int convertAudioFrame(AVFrame *input, AVFrame *output) 
+	{
+		int length;
+
+		if(audioConvertContext != NULL) {
+
+			// convert audio to a packed format ready for playback
+			int numSamplesOut = swr_convert(audioConvertContext,
+					output->data,
+					input->nb_samples,
+					(const unsigned char**)input->extended_data,
+					input->nb_samples);
+
+			// audio length does not equal linesize, because some extra 
+			// padding bytes may be added for alignment.
+			// Instead av_samples_get_buffer_size needs to be used
+			length = av_samples_get_buffer_size(NULL, 
+				getAudioNrChannels(),  
+				numSamplesOut, 
+				(AVSampleFormat)output->format, 1);
+
+		} else {
+
+			audioFilterGraph->filterFrame(input,output);
+
+			length = av_samples_get_buffer_size(NULL, 
+				getAudioNrChannels(),  
+				output->nb_samples, 
+				(AVSampleFormat)output->format, 1);
+		}
+
+		return(length);
 	}
 	
 };

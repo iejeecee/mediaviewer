@@ -68,6 +68,7 @@ namespace MediaViewer.VideoPanel
                 
               
             });
+
             PlayCommand = new Command(() =>
             {
                 if (addCommandToQueue(PlayCommand, null) == true) return;
@@ -118,7 +119,7 @@ namespace MediaViewer.VideoPanel
             FrameByFrameCommand = new Command(() => {
 
                 if (addCommandToQueue(FrameByFrameCommand, null) == true) return;
-                videoPlayer.frameByFrame(); 
+                videoPlayer.displayNextFrame(); 
 
             }, false);
 
@@ -137,7 +138,13 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-         
+            AddMarkerCommand = new Command(() =>
+            {
+                Markers.Add(videoPlayer.PositionSeconds);
+
+            }, false);
+
+            Markers = new ObservableCollection<int>();
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
         }
@@ -274,6 +281,14 @@ namespace MediaViewer.VideoPanel
             PositionSeconds = newPositionSeconds;
         }
 
+        ObservableCollection<int> markers;
+
+        public ObservableCollection<int> Markers
+        {
+            get { return markers; }
+            set { SetProperty(ref markers,value); }
+        }
+
         VideoState videoState;
 
         public VideoState VideoState
@@ -285,112 +300,74 @@ namespace MediaViewer.VideoPanel
         }
 
         void videoPlayer_StateChanged(object sender, VideoState newVideoState)
-        {
+        {           
+           
             VideoState = newVideoState;
 
             switch (videoState)
             {
                 case VideoState.OPEN:
                     {
-                        playCommand.IsExecutable = true;
-                        pauseCommand.IsExecutable = false;
-                        screenShotCommand.IsExecutable = false;
-                        closeCommand.IsExecutable = true;
-                        seekCommand.IsExecutable = false;
-                        frameByFrameCommand.IsExecutable = false;
+                        PlayCommand.IsExecutable = true;
+                        PauseCommand.IsExecutable = false;
+                        ScreenShotCommand.IsExecutable = false;
+                        CloseCommand.IsExecutable = true;
+                        SeekCommand.IsExecutable = false;
+                        FrameByFrameCommand.IsExecutable = false;
+                        AddMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.PLAYING:
                     {
-                        playCommand.IsExecutable = false;
-                        pauseCommand.IsExecutable = true;
-                        screenShotCommand.IsExecutable = true;
-                        closeCommand.IsExecutable = true;
-                        seekCommand.IsExecutable = true;
-                        frameByFrameCommand.IsExecutable = true;
+                        PlayCommand.IsExecutable = false;
+                        PauseCommand.IsExecutable = true;
+                        ScreenShotCommand.IsExecutable = true;
+                        CloseCommand.IsExecutable = true;
+                        SeekCommand.IsExecutable = true;
+                        FrameByFrameCommand.IsExecutable = true;
+                        AddMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.PAUSED:
                     {
-                        playCommand.IsExecutable = true;
-                        pauseCommand.IsExecutable = false;
-                        screenShotCommand.IsExecutable = true;
-                        closeCommand.IsExecutable = true;
-                        seekCommand.IsExecutable = true;
-                        frameByFrameCommand.IsExecutable = true;
+                        PlayCommand.IsExecutable = true;
+                        PauseCommand.IsExecutable = false;
+                        ScreenShotCommand.IsExecutable = true;
+                        CloseCommand.IsExecutable = true;
+                        SeekCommand.IsExecutable = true;
+                        FrameByFrameCommand.IsExecutable = true;
+                        AddMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.CLOSED:
                     {
-                        playCommand.IsExecutable = true;
-                        pauseCommand.IsExecutable = false;
-                        screenShotCommand.IsExecutable = false;
-                        closeCommand.IsExecutable = false;
-                        seekCommand.IsExecutable = false;
-                        frameByFrameCommand.IsExecutable = false;
+                        PlayCommand.IsExecutable = true;
+                        PauseCommand.IsExecutable = false;
+                        ScreenShotCommand.IsExecutable = false;
+                        CloseCommand.IsExecutable = false;
+                        SeekCommand.IsExecutable = false;
+                        FrameByFrameCommand.IsExecutable = false;
+                        AddMarkerCommand.IsExecutable = false;
+                        Markers.Clear();
                         break;
                     }
             }
+          
         }
 
 
         /// <summary>
         /// VIEWMODEL INTERFACE
         /// </summary>
-        Command<String> openCommand;
-
-        public Command<String> OpenCommand
-        {
-            get { return openCommand; }
-            set { openCommand = value; }
-        }
-
-        Command playCommand;
-
-        public Command PlayCommand
-        {
-            get { return playCommand; }
-            set { playCommand = value; }
-        }
-        Command pauseCommand;
-
-        public Command PauseCommand
-        {
-            get { return pauseCommand; }
-            set { pauseCommand = value; }
-        }
-        Command closeCommand;
-
-        public Command CloseCommand
-        {
-            get { return closeCommand; }
-            set { closeCommand = value; }
-        }
-
-        Command screenShotCommand;
-
-        public Command ScreenShotCommand
-        {
-            get { return screenShotCommand; }
-            set { screenShotCommand = value; }
-        }
-
-        Command<double?> seekCommand;
-
-        public Command<double?> SeekCommand
-        {
-            get { return seekCommand; }
-            set { seekCommand = value; }
-        }
-
-        Command frameByFrameCommand;
-
-        public Command FrameByFrameCommand
-        {
-            get { return frameByFrameCommand; }
-            set { frameByFrameCommand = value; }
-        }
-
+        public Command<String> OpenCommand { get; set; }
+        public Command PlayCommand { get; set; }
+        public Command PauseCommand { get; set; }
+        public Command CloseCommand { get; set; }
+        public Command ScreenShotCommand { get; set; }
+        public Command<double?> SeekCommand { get; set; }
+        public Command FrameByFrameCommand { get; set; }
+        public Command AddMarkerCommand { get; set; }
+       
         int maxVolume;
 
         public int MaxVolume        

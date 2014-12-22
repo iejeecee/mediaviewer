@@ -34,7 +34,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <VideoSlider:VideoSliderView Grid.Column="0" x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,5,0,0" Height="22"
-                     Minimum="0" Maximum="{Binding DurationSeconds}"/>                       
+                     Minimum="0" Maximum="{Binding DurationSeconds}" Markers="{Binding Markers}"/>                       
                 <TextBlock  Grid.Column="1" Margin="5,5,5,0" Grid.Row="1" FontSize="11"  Width="82" TextAlignment="Center" VerticalAlignment="Center">
                     <TextBlock.Text>
                         <MultiBinding UpdateSourceTrigger="Explicit" StringFormat="{}{0}/{1}">
@@ -48,6 +48,7 @@
             </Grid>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -89,8 +90,11 @@
             <Button Grid.Column="3" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
             </Button>
-            <ToggleButton Grid.Column="5" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
-                    IsEnabled="{Binding HasAudio}" ToolTip="Mute">
+            <Button Grid.Column="4" x:Name="markerButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Create Marker" Command="{Binding AddMarkerCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
+            </Button>
+            <ToggleButton Grid.Column="6" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
+                IsEnabled="{Binding HasAudio}" ToolTip="Mute">
                 <Image>
                     <Image.Style>
                         <Style>
@@ -106,7 +110,7 @@
                     </Image.Style>
                 </Image>
             </ToggleButton>
-            <Slider Grid.Column="6" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
+            <Slider Grid.Column="7" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
                 Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />            
             </Grid>
         </Grid>
