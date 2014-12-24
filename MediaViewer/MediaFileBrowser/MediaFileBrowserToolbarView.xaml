@@ -14,7 +14,7 @@
                 <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Image Collage" Command="{Binding CreateImageCollageCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/collage.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Video Preview Image(s)" Command="{Binding CreateVideoPreviewImagesCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/preview.ico"/>
@@ -23,7 +23,7 @@
                 <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
             </Button>
             <Button Height="16" ToolTip="Transcode Video" Command="{Binding TranscodeVideoCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/transcode.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/videotranscode.ico"/>
             </Button>
         </ToolBar>
     </Grid>

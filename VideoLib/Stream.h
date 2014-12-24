@@ -20,6 +20,8 @@ protected:
 	
 	AVStream *stream;
 	
+	
+
 public:
 
 	Stream(AVStream *stream, const AVCodec *codec) {
@@ -27,6 +29,7 @@ public:
 		this->stream = stream;
 		this->codecContext = stream->codec;
 		this->codec = codec;
+		
 	}
 			
 	~Stream() {
@@ -71,7 +74,6 @@ public:
 		return(stream);
 	}
 			
-	
 		
 };
 

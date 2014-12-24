@@ -22,7 +22,7 @@ namespace MediaViewer.VideoTranscode
 
         public VideoTranscodeProgressViewModel(ICollection<MediaFileItem> items, VideoTranscodeViewModel vm)
         {
-            WindowIcon = "pack://application:,,,/Resources/Icons/transcode.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/videotranscode.ico";
             WindowTitle = "Video Transcoding Progress";
 
             AsyncState = vm;
@@ -78,6 +78,12 @@ namespace MediaViewer.VideoTranscode
             if (AsyncState.SampleRate.HasValue)
             {
                 options.Add("sampleRate", AsyncState.SampleRate.Value);
+            }
+
+            if (AsyncState.IsTimeRangeEnabled)
+            {
+                options.Add("startTimeRange", AsyncState.StartTimeRange);
+                options.Add("endTimeRange", AsyncState.EndTimeRange);
             }
 
             return (options);

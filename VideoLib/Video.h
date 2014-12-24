@@ -14,12 +14,14 @@ typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);
 
 class Video {
 
-protected:
-
-	AVFormatContext *formatContext;
+public:
 
 	std::vector<VideoLib::Stream *> stream;
 
+protected:
+
+	AVFormatContext *formatContext;
+	
 	int videoIdx;
 	int audioIdx;
 	

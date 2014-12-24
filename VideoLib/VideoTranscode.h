@@ -2,23 +2,66 @@
 #include "VideoDecoder.h"
 #include "VideoEncoder.h"
 #include "FilterGraph.h"
+#include "BitStreamFilter.h"
+
+#define DISCARD_STREAM -1
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
 using namespace msclr::interop;
 
+
 namespace VideoLib {
 
 class VideoTranscode {
 
-
 protected:
+
+	struct StreamInfo {
+
+		StreamInfo(int outStreamIdx = DISCARD_STREAM) {
+
+			dtsOffset = posSeconds = 0;			
+			bitStreamFilter = NULL;
+			filterGraph = NULL;		
+			this->outStreamIdx = outStreamIdx;
+			hasOffset = false;
+		}
+
+		~StreamInfo() {
+
+			if(bitStreamFilter != NULL) {
+				delete bitStreamFilter;
+				bitStreamFilter = NULL;
+			}
+
+			if(filterGraph != NULL) {
+				delete filterGraph;
+				filterGraph = NULL;
+			}
+		}
+
+		void setDtsOffset(double dtsOffset) {
+
+			if(hasOffset) return;
+			this->dtsOffset = dtsOffset;
+			hasOffset = true;
+		}
+	
+		int outStreamIdx;
+
+		bool hasOffset;
+		double dtsOffset;
+		double posSeconds;
+
+		FilterGraph *filterGraph;
+		BitStreamFilter *bitStreamFilter;
+	};
 
 	VideoDecoder *input;
 	VideoEncoder *output;
 
-	std::vector<int> streamMap;
-	std::vector<FilterGraph *> filterGraph;
+	std::vector<StreamInfo *> streamInfo;
 
 public:
 
@@ -73,24 +116,31 @@ public:
 		AVMediaType type;
 		int ret = 0;
 		int (*dec_func)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
-
-		if(options->ContainsKey("offset")) {
-
-			int offsetSeconds = (int)options["offset"];
-
-			input->seek(offsetSeconds);
-		}
-
-		unsigned int stream_index;		
+		
+		
 		int got_frame;
 		
 		try {
 
 			initialize(inputFilename, outputFilename, options);
-			
+					
+			if(options->ContainsKey("startTimeRange")) {
+
+				double offsetSeconds = (double)options["startTimeRange"];
+
+				input->seek(offsetSeconds);				
+			}
+
+			double endTimeRange = DBL_MAX;
+
+			if(options->ContainsKey("endTimeRange")) {
+
+				endTimeRange = (double)options["endTimeRange"];						
+			}
+
 			int i = 0;
 			double progress = 0;
-
+	
 			// read all packets 
 			while (1) {
 
@@ -102,6 +152,18 @@ public:
 				if ((ret = av_read_frame(input->getFormatContext(), &packet)) < 0) {
 					// finished
 					break;
+				}
+			
+				unsigned int inStreamIdx = packet.stream_index;	
+				unsigned int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
+
+				if(outStreamIdx != DISCARD_STREAM) {
+
+					if(packet.pts * av_q2d(input->stream[inStreamIdx]->getStream()->time_base) > endTimeRange) {
+
+						break;
+					}
+									
 				}
 
 				if(i++ % 500 && progressCallback != NULL) {
@@ -115,15 +177,14 @@ public:
 					}
 
 				}
+			
+				type = input->getFormatContext()->streams[inStreamIdx]->codec->codec_type;
 
-				stream_index = packet.stream_index;
-				type = input->getFormatContext()->streams[packet.stream_index]->codec->codec_type;
-
-				if(streamMap[stream_index] == -1) {
+				if(outStreamIdx == DISCARD_STREAM) {
 
 					// discard packets from this input stream
 
-				} else if (filterGraph[stream_index] != NULL) {
+				} else if(streamInfo[inStreamIdx]->filterGraph != NULL) {
 					
 					frame = av_frame_alloc();
 					if (!frame) {
@@ -132,18 +193,18 @@ public:
 					}
 
 					packet.dts = av_rescale_q_rnd(packet.dts,
-						input->getFormatContext()->streams[stream_index]->time_base,
-						input->getFormatContext()->streams[stream_index]->codec->time_base,
+						input->getFormatContext()->streams[inStreamIdx]->time_base,
+						input->getFormatContext()->streams[inStreamIdx]->codec->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 					packet.pts = av_rescale_q_rnd(packet.pts,
-						input->getFormatContext()->streams[stream_index]->time_base,
-						input->getFormatContext()->streams[stream_index]->codec->time_base,
+						input->getFormatContext()->streams[inStreamIdx]->time_base,
+						input->getFormatContext()->streams[inStreamIdx]->codec->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 					dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 : avcodec_decode_audio4;
 
-					ret = dec_func(input->getFormatContext()->streams[stream_index]->codec, frame, &got_frame, &packet);
+					ret = dec_func(input->getFormatContext()->streams[inStreamIdx]->codec, frame, &got_frame, &packet);
 					if (ret < 0) {
 
 						av_frame_free(&frame);
@@ -155,7 +216,7 @@ public:
 
 						frame->pts = av_frame_get_best_effort_timestamp(frame);
 
-						ret = filterEncodeWriteFrame(frame, stream_index);
+						ret = filterEncodeWriteFrame(frame, inStreamIdx);
 						av_frame_free(&frame);
 						if (ret < 0) {
 							return;
@@ -167,25 +228,25 @@ public:
 					}
 
 				} else {
+								
+					streamInfo[inStreamIdx]->setDtsOffset(packet.dts);	
 
-					int out_stream_index = streamMap[stream_index];
-				
-					packet.stream_index = out_stream_index;
+					packet.stream_index = outStreamIdx;
 
 					// remux this frame without reencoding 
-					packet.dts = av_rescale_q_rnd(packet.dts,
-						input->getFormatContext()->streams[stream_index]->time_base,
-						output->getFormatContext()->streams[out_stream_index]->time_base,
+					packet.dts = av_rescale_q_rnd(packet.dts - streamInfo[inStreamIdx]->dtsOffset,
+						input->getFormatContext()->streams[inStreamIdx]->time_base,
+						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 
-					packet.pts = av_rescale_q_rnd(packet.pts,
-						input->getFormatContext()->streams[stream_index]->time_base,
-						output->getFormatContext()->streams[out_stream_index]->time_base,
+					packet.pts = av_rescale_q_rnd(packet.pts - streamInfo[inStreamIdx]->dtsOffset,
+						input->getFormatContext()->streams[inStreamIdx]->time_base,
+						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 					packet.duration = av_rescale_q(packet.duration, 
-						input->getFormatContext()->streams[stream_index]->time_base, 
-						output->getFormatContext()->streams[out_stream_index]->time_base);
+						input->getFormatContext()->streams[inStreamIdx]->time_base, 
+						output->getFormatContext()->streams[outStreamIdx]->time_base);
 
 					packet.pos = -1;
 
@@ -203,8 +264,9 @@ public:
 			// flush filters and encoders 
 			for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) 
 			{
-				// flush filter 
-				if (filterGraph[i] == NULL) continue;
+				if (streamInfo[i]->filterGraph == NULL) continue;
+
+				// flush filter 					
 				ret = filterEncodeWriteFrame(NULL, i);
 				if (ret < 0) {
 
@@ -230,16 +292,14 @@ public:
 
 			av_frame_free(&frame);
 
-			for (unsigned int i = 0; i < filterGraph.size(); i++) {
-
-				if(filterGraph[i] != NULL) {
-
-					delete filterGraph[i];
-					filterGraph[i] = NULL;
-				}
-			
+			for (unsigned int i = 0; i < streamInfo.size(); i++) {
+				
+				delete streamInfo[i];
+				streamInfo[i] = NULL;							
 			}
-		
+
+			streamInfo.clear();
+			
 			input->close();
 			output->close();
 		}		
@@ -322,8 +382,18 @@ protected:
 		}
 
 		enc_ctx->sample_rate = sampleRate;
-		enc_ctx->channel_layout = dec_ctx->channel_layout;
-		enc_ctx->channels = av_get_channel_layout_nb_channels(enc_ctx->channel_layout);
+		
+		if(!dec_ctx->channel_layout) {
+
+			enc_ctx->channels = dec_ctx->channels;
+			enc_ctx->channel_layout = av_get_default_channel_layout(dec_ctx->channels);
+
+		} else {
+
+			enc_ctx->channel_layout = dec_ctx->channel_layout;
+			enc_ctx->channels = av_get_channel_layout_nb_channels(dec_ctx->channel_layout);			
+		}
+
 		// take first format from list of supported formats 
 		enc_ctx->sample_fmt = encoder->sample_fmts[0];
 
@@ -337,9 +407,10 @@ protected:
 	AVCodecContext *initStream(AVMediaType type, int inputStreamIndex, String ^outputFilename, 
 		StreamOptions streamMode, Dictionary<String ^, Object ^> ^options) {
 
+
 		if(streamMode == StreamOptions::Discard) {
 
-			streamMap.push_back(-1);		
+			streamInfo.push_back(new StreamInfo());		
 			return(NULL);
 		}
 
@@ -423,8 +494,8 @@ protected:
 			outStream->open();
 		}
 		
-		streamMap.push_back(output->getFormatContext()->nb_streams - 1);
-
+		streamInfo.push_back(new StreamInfo(output->getFormatContext()->nb_streams - 1));	
+		
 		AVCodecContext *enc_ctx = outStream->getCodecContext();		
 	
 		return(enc_ctx);
@@ -438,8 +509,7 @@ protected:
 		input->open(inputFilename);					
 		output->open(outputFilename);
 
-		filterGraph.clear();
-		streamMap.clear();
+		streamInfo.clear();			
 
 		for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) {
 								
@@ -466,7 +536,7 @@ protected:
 
 			} else {
 
-				streamMap.push_back(-1);
+				streamInfo.push_back(new StreamInfo());
 
 				// if this stream must be remuxed 
 				/*AVStream *out_stream = avformat_new_stream(output->getFormatContext(), NULL);
@@ -510,21 +580,21 @@ protected:
 		initFilters(options);
 	}
 
-	int flushEncoder(unsigned int stream_index)
+	int flushEncoder(unsigned int inStreamIdx)
 	{
 		int ret;
 		int got_frame;
 
-		int out_stream_index = streamMap[stream_index];
+		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
 
-		if (!(output->getFormatContext()->streams[out_stream_index]->codec->codec->capabilities & CODEC_CAP_DELAY))
+		if (!(output->getFormatContext()->streams[outStreamIdx]->codec->codec->capabilities & CODEC_CAP_DELAY))
 		{
 			return 0;
 		}
 
 		while (1) {
 
-			ret = encodeWriteFrame(NULL, stream_index, &got_frame);
+			ret = encodeWriteFrame(NULL, inStreamIdx, &got_frame);
 
 			if (ret < 0) break;
 
@@ -534,7 +604,7 @@ protected:
 		return ret;
 	}
 
-	int encodeWriteFrame(AVFrame *filt_frame, unsigned int stream_index, int *got_frame) {
+	int encodeWriteFrame(AVFrame *filt_frame, unsigned int inStreamIdx, int *got_frame) {
 
 		int ret;
 		int got_frame_local;
@@ -542,7 +612,7 @@ protected:
 		AVPacket enc_pkt;
 
 		int (*enc_func)(AVCodecContext *, AVPacket *, const AVFrame *, int *) =
-			(input->getFormatContext()->streams[stream_index]->codec->codec_type ==
+			(input->getFormatContext()->streams[inStreamIdx]->codec->codec_type ==
 			AVMEDIA_TYPE_VIDEO) ? avcodec_encode_video2 : avcodec_encode_audio2;
 
 		if (!got_frame)
@@ -555,9 +625,9 @@ protected:
 
 		av_init_packet(&enc_pkt);
 
-		int out_stream_index = streamMap[stream_index];
+		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
 
-		ret = enc_func(output->getFormatContext()->streams[out_stream_index]->codec, &enc_pkt, filt_frame, got_frame);
+		ret = enc_func(output->getFormatContext()->streams[outStreamIdx]->codec, &enc_pkt, filt_frame, got_frame);
 		av_frame_free(&filt_frame);
 		if (ret < 0) {
 
@@ -568,40 +638,44 @@ protected:
 		if (!(*got_frame))
 			return 0;
 			
+		streamInfo[inStreamIdx]->setDtsOffset(enc_pkt.dts);	
+
 		// prepare packet for muxing 
-		enc_pkt.stream_index = out_stream_index;
+		enc_pkt.stream_index = outStreamIdx;
 
 		enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
-			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
-			output->getFormatContext()->streams[out_stream_index]->time_base,
+			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
+			output->getFormatContext()->streams[outStreamIdx]->time_base,
 			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 		enc_pkt.pts = av_rescale_q_rnd(enc_pkt.pts,
-			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
-			output->getFormatContext()->streams[out_stream_index]->time_base,
+			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
+			output->getFormatContext()->streams[outStreamIdx]->time_base,
 			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
 		enc_pkt.duration = av_rescale_q(enc_pkt.duration,
-			output->getFormatContext()->streams[out_stream_index]->codec->time_base,
-			output->getFormatContext()->streams[out_stream_index]->time_base);
-		//av_log(NULL, AV_LOG_DEBUG, "Muxing frame\n");
-		// mux encoded frame 
-		
+			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
+			output->getFormatContext()->streams[outStreamIdx]->time_base);
+	
+
+		if(streamInfo[inStreamIdx]->bitStreamFilter != NULL) {
+
+			streamInfo[inStreamIdx]->bitStreamFilter->filterPacket(&enc_pkt, output->stream[outStreamIdx]->getCodecContext());
+		}
 
 		ret = av_interleaved_write_frame(output->getFormatContext(), &enc_pkt);
-
 
 		return ret;
 	}
 
-	int filterEncodeWriteFrame(AVFrame *frame, unsigned int stream_index)
+	int filterEncodeWriteFrame(AVFrame *frame, unsigned int inStreamIdx)
 	{
 		int ret;
 		AVFrame *filt_frame;
 	
 		/* push the decoded frame into the filtergraph */
 
-		ret = av_buffersrc_add_frame_flags(filterGraph[stream_index]->getBufferSourceContext(), frame, 0);
+		ret = av_buffersrc_add_frame_flags(streamInfo[inStreamIdx]->filterGraph->getBufferSourceContext(), frame, 0);
 		if (ret < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Error while feeding the filtergraph");			
@@ -616,7 +690,7 @@ protected:
 				throw gcnew VideoLib::VideoLibException("Not enough memory");				
 			}
 
-			ret = av_buffersink_get_frame(filterGraph[stream_index]->getBufferSinkContext(), filt_frame);
+			ret = av_buffersink_get_frame(streamInfo[inStreamIdx]->filterGraph->getBufferSinkContext(), filt_frame);
 			if (ret < 0) {
 				/* if no more frames for output - returns AVERROR(EAGAIN)
 				* if flushed and no more frames for output - returns AVERROR_EOF
@@ -631,7 +705,7 @@ protected:
 			}
 
 			filt_frame->pict_type = AV_PICTURE_TYPE_NONE;
-			ret = encodeWriteFrame(filt_frame, stream_index, NULL);
+			ret = encodeWriteFrame(filt_frame, inStreamIdx, NULL);
 			if (ret < 0) {
 				break;
 			}
@@ -646,34 +720,50 @@ protected:
 						
 		for (i = 0; i < input->getFormatContext()->nb_streams; i++) {
 					
-			filterGraph.push_back(NULL);
-			
+			streamInfo.push_back(NULL);
+						
 			if (input->getFormatContext()->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 
 				if((StreamOptions)options["videoStreamMode"] != StreamOptions::Encode) continue;
 
-				filterGraph[i] = new FilterGraph(input->getVideoCodecContext(),
+				streamInfo[i]->filterGraph = new FilterGraph(input->getVideoCodecContext(),
 					output->getVideoCodecContext()->pix_fmt, SWS_BICUBIC);
 
 				int outputFmt = (int)output->getVideoCodecContext()->pix_fmt;
 				int outWidth = output->getVideoCodecContext()->width;
 				int outHeight = output->getVideoCodecContext()->height;
 
-				String ^graph = "scale=" + outWidth + "x" + outHeight + ",format=" + outputFmt;
+				String ^videoGraph = "scale=" + outWidth + "x" + outHeight + ",format=" + outputFmt;
 				
-				std::string value = msclr::interop::marshal_as<std::string>(graph);
+				std::string value = msclr::interop::marshal_as<std::string>(videoGraph);
 
-				filterGraph[i]->createGraph(value.c_str());				
+				streamInfo[i]->filterGraph->createGraph(value.c_str());				
 
 			} else {
 
 				if((StreamOptions)options["audioStreamMode"] != StreamOptions::Encode) continue;
 
-				filterGraph[i] = new FilterGraph(input->getAudioCodecContext(),
+				streamInfo[i]->filterGraph = new FilterGraph(input->getAudioCodecContext(),
 					output->getAudioCodecContext()->sample_fmt, output->getAudioCodecContext()->channel_layout,
 					output->getAudioCodecContext()->sample_rate);
 
-				filterGraph[i]->createGraph("anull");	
+				String ^audioGraph = "anull";
+
+				if(output->getAudioCodecContext()->frame_size != 0) {
+
+					audioGraph = "asetnsamples=n=" + output->getAudioCodecContext()->frame_size;
+				}
+
+				std::string value = msclr::interop::marshal_as<std::string>(audioGraph);
+
+				streamInfo[i]->filterGraph->createGraph(value.c_str());	
+
+				if(output->getAudioCodecContext()->codec_id == AV_CODEC_ID_AAC) {
+
+					streamInfo[i]->bitStreamFilter = new BitStreamFilter();
+					streamInfo[i]->bitStreamFilter->add("aac_adtstoasc");
+				}
+
 			}
 			
 		}

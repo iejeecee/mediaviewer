@@ -29,13 +29,19 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <VideoSlider:VideoSliderView Grid.Column="0" x:Name="timeLineSlider" HorizontalAlignment="Stretch" Margin="5,5,0,0" Height="22"
-                     Minimum="0" Maximum="{Binding DurationSeconds}" Markers="{Binding Markers}"/>                       
-                <TextBlock  Grid.Column="1" Margin="5,5,5,0" Grid.Row="1" FontSize="11"  Width="82" TextAlignment="Center" VerticalAlignment="Center">
+                <VideoSlider:VideoSliderView Grid.Column="0" x:Name="timeLineSlider" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,10,0,0" 
+                     Minimum="0" Maximum="{Binding DurationSeconds}"/>
+                <VideoSlider:RangeSlider Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,0,0,0" Minimum="0" Maximum="{Binding DurationSeconds}"
+                                         LowerValue="{Binding StartTimeRange}" UpperValue="{Binding EndTimeRange}" Visibility="{Binding IsTimeRangeEnabled, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                <TextBlock  Grid.Column="1" Margin="5,5,5,0" Grid.Row="0" Grid.RowSpan="2" FontSize="11"  Width="82" TextAlignment="Center" VerticalAlignment="Center">
                     <TextBlock.Text>
                         <MultiBinding UpdateSourceTrigger="Explicit" StringFormat="{}{0}/{1}">
                             <Binding Path="PositionSeconds" 
@@ -44,10 +50,11 @@
                          Converter="{StaticResource timeConverter}"/>
                         </MultiBinding>
                     </TextBlock.Text>
-                </TextBlock>
+                </TextBlock>                
             </Grid>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -90,10 +97,13 @@
             <Button Grid.Column="3" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
             </Button>
-            <Button Grid.Column="4" x:Name="markerButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Create Marker" Command="{Binding AddMarkerCommand}">
+            <Button Grid.Column="4" x:Name="markerButton" Margin="10,5,0,5" Width="38" Height="21" ToolTip="Create Marker" Command="{Binding AddMarkerCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
             </Button>
-            <ToggleButton Grid.Column="6" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
+            <Button Grid.Column="5" x:Name="cutButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Cut Selection" Command="{Binding CutVideoCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/videocut.ico" />
+            </Button>
+             <ToggleButton Grid.Column="7" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
                 IsEnabled="{Binding HasAudio}" ToolTip="Mute">
                 <Image>
                     <Image.Style>
@@ -110,7 +120,7 @@
                     </Image.Style>
                 </Image>
             </ToggleButton>
-            <Slider Grid.Column="7" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
+            <Slider Grid.Column="8" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
                 Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />            
             </Grid>
         </Grid>

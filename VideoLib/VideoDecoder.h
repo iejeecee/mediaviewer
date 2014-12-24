@@ -367,12 +367,8 @@ public:
 			}
 
 			// only decode video/keyframe or non corrupt packets
-			if((packet.stream_index == videoIdx) &&
-				(videoMode != DECODE_KEY_FRAMES_ONLY || (packet.flags & AV_PKT_FLAG_KEY)) &&
-				!(packet.flags & AV_PKT_FLAG_CORRUPT) &&
-				(videoMode != SKIP_VIDEO))
+			if(packet.stream_index == videoIdx && videoMode != SKIP_VIDEO)
 			{
-
 				avcodec_get_frame_defaults(frame);
 
 				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
@@ -405,8 +401,7 @@ public:
 
 				}
 
-			} else if((packet.stream_index == audioIdx) &&
-				(audioMode == DECODE_AUDIO)) {
+			} else if(packet.stream_index == audioIdx && audioMode == DECODE_AUDIO) {
 
 					avcodec_get_frame_defaults(frame);
 

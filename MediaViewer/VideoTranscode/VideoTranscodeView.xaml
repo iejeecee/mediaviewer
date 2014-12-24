@@ -5,7 +5,7 @@
         xmlns:Formats="clr-namespace:MediaViewer.Infrastructure.Video.TranscodeOptions;assembly=MediaViewer.Infrastructure"
         xmlns:VideoTranscode="clr-namespace:MediaViewer.VideoTranscode"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
-        Title="Transcode Video(s)" Height="330" Width="300" Icon="/MediaViewer;component/Resources/Icons/transcode.ico">
+        Title="{Binding Title}" Height="330" Width="300" Icon="{Binding IconUri}">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

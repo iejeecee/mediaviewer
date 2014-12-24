@@ -32,7 +32,7 @@ namespace MediaViewer.GridImage.ImageCollage
         public ImageCollageProgressViewModel()
         {
             WindowTitle = "Image Collage";
-            WindowIcon = "pack://application:,,,/Resources/Icons/preview.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/collage.ico";
           
             InfoMessages = new ObservableCollection<string>();
             tokenSource = new CancellationTokenSource();

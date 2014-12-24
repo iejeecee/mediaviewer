@@ -27,16 +27,19 @@ using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
+using MediaViewer.VideoTranscode;
+using MediaViewer.Infrastructure.Video.TranscodeOptions;
 
 namespace MediaViewer.VideoPanel
 {
 
     public class VideoViewModel : BindableBase, IDisposable, IMediaFileBrowserContentViewModel
     {
-        protected 
-
+     
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
         IEventAggregator EventAggregator { get; set; }
+
+        int markerStage;
 
         public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
         {
@@ -123,6 +126,34 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
+            CutVideoCommand = new Command(() =>
+            {
+                VideoTranscodeView videoTranscode = new VideoTranscodeView();            
+                videoTranscode.ViewModel.Items.Add(MediaFileItem.Factory.create(videoPlayer.VideoLocation));
+                videoTranscode.ViewModel.Title = "Cut Video";
+                videoTranscode.ViewModel.IconUri = "/MediaViewer;component/Resources/Icons/videocut.ico";
+                videoTranscode.ViewModel.OutputPath = FileUtils.getPathWithoutFileName(videoPlayer.VideoLocation);
+                videoTranscode.ViewModel.IsTimeRangeEnabled = IsTimeRangeEnabled;
+                videoTranscode.ViewModel.StartTimeRange = StartTimeRange;
+                videoTranscode.ViewModel.EndTimeRange = EndTimeRange;
+
+                String extension = Path.GetExtension(videoPlayer.VideoLocation).ToLower().TrimStart('.');
+
+                foreach(ContainerFormats format in Enum.GetValues(typeof(ContainerFormats))) {
+
+                    if (format.ToString().ToLower().Equals(extension))
+                    {
+                        videoTranscode.ViewModel.ContainerFormat = format;
+                    }
+                }
+                
+                videoTranscode.ShowDialog();
+
+
+
+
+            }, false);
+
             ScreenShotCommand = new Command(() =>
             {
                 if (addCommandToQueue(ScreenShotCommand, null) == true) return;
@@ -140,13 +171,31 @@ namespace MediaViewer.VideoPanel
 
             AddMarkerCommand = new Command(() =>
             {
-                Markers.Add(videoPlayer.PositionSeconds);
+                if (markerStage == 0)
+                {
+                    IsTimeRangeEnabled = true;
+                    EndTimeRange = StartTimeRange = videoPlayer.PositionSeconds;
+                }
+                else if (markerStage == 1)
+                {
+                    EndTimeRange = videoPlayer.PositionSeconds;
+                }
+                else
+                {
+                    IsTimeRangeEnabled = false;
+                }
+
+                markerStage = (markerStage + 1) % 3;
 
             }, false);
 
-            Markers = new ObservableCollection<int>();
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
+
+            markerStage = 0;
+            IsTimeRangeEnabled = false;
+            StartTimeRange = 0;
+            EndTimeRange = 0;
         }
        
         bool isInitialized;
@@ -281,12 +330,32 @@ namespace MediaViewer.VideoPanel
             PositionSeconds = newPositionSeconds;
         }
 
-        ObservableCollection<int> markers;
+        bool isTimeRangeEnabled;
 
-        public ObservableCollection<int> Markers
+        public bool IsTimeRangeEnabled
         {
-            get { return markers; }
-            set { SetProperty(ref markers,value); }
+            get { return isTimeRangeEnabled; }
+            set {
+               
+                CutVideoCommand.IsExecutable = value;                
+                SetProperty(ref isTimeRangeEnabled, value); 
+            }
+        }
+
+        double startTimeRange;
+
+        public double StartTimeRange
+        {
+            get { return startTimeRange; }
+            set { SetProperty(ref startTimeRange, value); }
+        }
+
+        double endTimeRange;
+
+        public double EndTimeRange
+        {
+            get { return endTimeRange; }
+            set { SetProperty(ref endTimeRange, value); }
         }
 
         VideoState videoState;
@@ -348,7 +417,8 @@ namespace MediaViewer.VideoPanel
                         SeekCommand.IsExecutable = false;
                         FrameByFrameCommand.IsExecutable = false;
                         AddMarkerCommand.IsExecutable = false;
-                        Markers.Clear();
+                        IsTimeRangeEnabled = false;
+                        markerStage = 0;
                         break;
                     }
             }
@@ -367,6 +437,7 @@ namespace MediaViewer.VideoPanel
         public Command<double?> SeekCommand { get; set; }
         public Command FrameByFrameCommand { get; set; }
         public Command AddMarkerCommand { get; set; }
+        public Command CutVideoCommand { get; set; }
        
         int maxVolume;
 

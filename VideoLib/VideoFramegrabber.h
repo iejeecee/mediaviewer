@@ -253,27 +253,26 @@ public:
 
 			bool seekSuccess = seek(pos);
 
-			if(seekSuccess) {
+			if(seekSuccess == false && nrFrames == 1) {
 
-				bool frameOk = decodeFrame(DECODE_KEY_FRAMES_ONLY, SKIP_AUDIO);
+				seekSuccess = seek(0);
+			}
+			
+			bool frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO);
 
-				if(!frameOk) {
+			if(!frameOk) {
+			
+				if(suppressError == false) {
 
-					// retry a non-keyframe
-					frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO);
+					throw gcnew VideoLib::VideoLibException("could not decode frame");
 
-					if(!frameOk) {
+				} else {
 
-						if(suppressError == false) {
-
-							throw gcnew VideoLib::VideoLibException("could not decode frame");
-						} else {
-							return;
-						}
-					}
+					return;
 				}
-
-			}		
+				
+			}
+				
 		}
 
 	}

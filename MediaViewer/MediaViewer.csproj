@@ -539,6 +539,9 @@
     <Compile Include="Model\Utils\Windows\PerformanceCounters.cs" />
     <Compile Include="Model\Utils\WPF\TrulyObservableCollection.cs" />
     <Compile Include="UserControls\VideoSlider\MarkerAdorner.cs" />
+    <Compile Include="UserControls\VideoSlider\RangeSlider.xaml.cs">
+      <DependentUpon>RangeSlider.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UserControls\VideoSlider\TimeAdorner.cs" />
     <Compile Include="UserControls\VideoSlider\VideoSliderView.xaml.cs">
       <DependentUpon>VideoSliderView.xaml</DependentUpon>
@@ -777,6 +780,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\VideoSlider\RangeSlider.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UserControls\VideoSlider\VideoSliderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1008,6 +1015,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\videocut.ico" />
+    <Resource Include="Resources\Icons\videotranscode.ico" />
     <Resource Include="Resources\Icons\transcode.ico" />
     <Resource Include="Resources\Images\0stars.png" />
     <Resource Include="Resources\Images\1stars.png" />

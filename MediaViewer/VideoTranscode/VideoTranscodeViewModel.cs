@@ -70,7 +70,15 @@ namespace MediaViewer.VideoTranscode
             SupportedVideoEncoders = new ListCollectionView(Enum.GetValues(typeof(VideoEncoders)));
             SupportedVideoEncoders.Filter = supportedVideoEncodersFilter;
 
+            Items = new List<MediaFileItem>();
+            Title = "Transcode Video(s)";
+            IconUri = "/MediaViewer;component/Resources/Icons/videotranscode.ico";
+
             setDefaults();
+
+            IsTimeRangeEnabled = false;
+            StartTimeRange = 0;
+            EndTimeRange = 0;
         }
 
         bool supportedVideoEncodersFilter(object videoEncoder)
@@ -93,7 +101,10 @@ namespace MediaViewer.VideoTranscode
                     else return (false);
                 case ContainerFormats.FLV:
                     if (encoder == VideoEncoders.libx264) return true;
-                    else return (false);              
+                    else return (false);
+                case ContainerFormats.WMV:
+                    if (encoder == VideoEncoders.msmpeg4) return true;
+                    else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == VideoEncoders.gif) return true;
                     else return (false);                
@@ -131,7 +142,10 @@ namespace MediaViewer.VideoTranscode
                     else return (false);    
                 case ContainerFormats.FLV:
                     if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
-                    else return (false);    
+                    else return (false);
+                case ContainerFormats.WMV:
+                    if (encoder == AudioEncoders.wmav2) return true;
+                    else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == AudioEncoders.none) return (true);
                     else return (false);
@@ -160,6 +174,7 @@ namespace MediaViewer.VideoTranscode
             
             AudioStreamMode = StreamOptions.Copy;
             AudioEncoder = AudioEncoders.libvo_aacenc;
+            
         }
 
         ObservableCollection<String> outputPathHistory;
@@ -312,7 +327,46 @@ namespace MediaViewer.VideoTranscode
         public int? SampleRate
         {
             get { return sampleRate; }
-            set { sampleRate = value; }
+            set { SetProperty(ref sampleRate, value); }
+        }
+
+        String title;
+
+        public String Title
+        {
+            get { return title; }
+            set { SetProperty(ref title, value); }
+        }
+
+        String iconUri;
+
+        public String IconUri
+        {
+            get { return iconUri; }
+            set { SetProperty(ref iconUri, value); }
+        }
+
+        bool isTimeRangeEnabled;
+
+        public bool IsTimeRangeEnabled
+        {
+            get { return isTimeRangeEnabled; }
+            set { SetProperty(ref isTimeRangeEnabled, value); }
+        }
+
+        double startTimeRange;
+
+        public double StartTimeRange
+        {
+            get { return startTimeRange; }
+            set { SetProperty(ref startTimeRange, value); }
+        }
+        double endTimeRange;
+
+        public double EndTimeRange
+        {
+            get { return endTimeRange; }
+            set { SetProperty(ref endTimeRange, value); }
         }
     }
 }
