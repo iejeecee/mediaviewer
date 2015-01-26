@@ -26,7 +26,10 @@
             <ListView.View>
                 <sd:SharpGridView>
                     <GridView.Columns>
-                        <GridViewColumn Header="Location" Width="240">
+                        <GridViewColumn Width="240">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Location" Click="location_Click">Location</GridViewColumnHeader>
+                            </GridViewColumn.Header>
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <sd:SharpTreeNodeView>

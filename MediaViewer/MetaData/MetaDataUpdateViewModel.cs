@@ -23,6 +23,7 @@ using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Global.Commands;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Concurrency;
 
 namespace MediaViewer.MetaData
 {
@@ -43,9 +44,7 @@ namespace MediaViewer.MetaData
             public int value;
             public int nrDigits;
         };
-
         
-
         public const string oldFilenameMarker = "filename";
         public const string counterMarker = "counter:";
         public const string replaceMarker = "replace:";
@@ -111,14 +110,14 @@ namespace MediaViewer.MetaData
         {
             TotalProgressMax = state.ItemList.Count;
             ItemProgressMax = 100;
-            TotalProgress = 0;            
-
+            TotalProgress = 0;
+                              
             await Task.Factory.StartNew(() =>
             {
                 GlobalCommands.MetaDataUpdateCommand.Execute(state);
                 writeMetaData(state);
 
-            }, cancellationToken);
+            }, cancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;

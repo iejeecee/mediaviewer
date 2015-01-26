@@ -190,7 +190,7 @@ public:
 	}
 
 	void grab(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset)
+			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken, int timeOutSeconds)
 	{
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -213,11 +213,13 @@ public:
 		thumbWidth = round(getWidth() * std::min<float>(widthScale, heightScale));
 		thumbHeight = round(getHeight() * std::min<float>(widthScale, heightScale));
 
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset);
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, false, cancellationToken, timeOutSeconds);
 	}
 
 	void startGrab(int thumbWidth, int thumbHeight, 
-		int captureInterval, int nrThumbs, double startOffset, bool suppressError = false, System::Threading::CancellationToken ^cancellationToken = nullptr)
+		int captureInterval, int nrThumbs, double startOffset, bool suppressError = false, 
+		System::Threading::CancellationToken ^cancellationToken = nullptr,
+		int decodingTimeOut = 0)
 	{
 
 		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
@@ -254,11 +256,11 @@ public:
 			bool seekSuccess = seek(pos);
 
 			if(seekSuccess == false && nrFrames == 1) {
-
+				
 				seekSuccess = seek(0);
 			}
 			
-			bool frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO);
+			bool frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO, cancellationToken, decodingTimeOut);
 
 			if(!frameOk) {
 			

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.VideoTranscode
 {
@@ -32,12 +33,14 @@ namespace MediaViewer.VideoTranscode
                     CancellableOperationProgressView progress = new CancellableOperationProgressView();
                     VideoTranscodeProgressViewModel vm = new VideoTranscodeProgressViewModel(Items, this);
                     progress.DataContext = vm;
+                    vm.WindowIcon = IconUri;
 
                     Task task = vm.startTranscodeAsync();
                     progress.Show();
                     OnClosingRequest();
                     await task;
-              
+
+                    MiscUtils.insertIntoHistoryCollection(settings.TranscodeOutputDirectoryHistory, OutputPath);
                 });
 
 
@@ -104,6 +107,9 @@ namespace MediaViewer.VideoTranscode
                     else return (false);
                 case ContainerFormats.WMV:
                     if (encoder == VideoEncoders.msmpeg4) return true;
+                    else return (false);
+                case ContainerFormats.WEBM:
+                    if (encoder == VideoEncoders.libvpx) return true;
                     else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == VideoEncoders.gif) return true;
@@ -145,6 +151,9 @@ namespace MediaViewer.VideoTranscode
                     else return (false);
                 case ContainerFormats.WMV:
                     if (encoder == AudioEncoders.wmav2) return true;
+                    else return (false);
+                case ContainerFormats.WEBM:
+                    if (encoder == AudioEncoders.libvorbis) return true;
                     else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == AudioEncoders.none) return (true);

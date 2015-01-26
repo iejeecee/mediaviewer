@@ -57,7 +57,7 @@ namespace XMPDLL {
 
 		SXMPMeta meta;
 		SXMPFiles myFile;
-		
+				
 	
 	public:
 

@@ -9,6 +9,7 @@
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
 using namespace msclr::interop;
+using namespace MediaViewer::Infrastructure::Utils;
 
 
 namespace VideoLib {
@@ -24,8 +25,8 @@ protected:
 			dtsOffset = posSeconds = 0;			
 			bitStreamFilter = NULL;
 			filterGraph = NULL;		
-			this->outStreamIdx = outStreamIdx;
-			hasOffset = false;
+			this->outStreamIdx = outStreamIdx;	
+			offsetSet = false;
 		}
 
 		~StreamInfo() {
@@ -40,18 +41,12 @@ protected:
 				filterGraph = NULL;
 			}
 		}
-
-		void setDtsOffset(double dtsOffset) {
-
-			if(hasOffset) return;
-			this->dtsOffset = dtsOffset;
-			hasOffset = true;
-		}
+		
 	
 		int outStreamIdx;
-
-		bool hasOffset;
-		double dtsOffset;
+		
+		bool offsetSet;
+		int64_t dtsOffset;	
 		double posSeconds;
 
 		FilterGraph *filterGraph;
@@ -62,6 +57,7 @@ protected:
 	VideoEncoder *output;
 
 	std::vector<StreamInfo *> streamInfo;
+
 
 public:
 
@@ -94,9 +90,57 @@ public:
 
 				System::Diagnostics::Debug::Print(marshal_as<String ^>(std::string(codec->name)));
 			}
-
+		
 			codec = av_codec_next(codec);
 		}
+	}
+	
+	double smallestOffset;
+
+	void setDtsOffsets(AVPacket &packet) {
+		
+		//get the dts value of the first input packet and subtract it from subsequent dts & pts
+		//values to make sure the output video starts at time zero.	
+		if(streamInfo[packet.stream_index]->offsetSet == true) return;
+			
+		double dtsOffsetSeconds = 0;
+		
+		if(packet.dts != AV_NOPTS_VALUE) {
+
+			// packet has a dts value, subtract from subsequent dts/pts values
+			dtsOffsetSeconds = packet.dts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+			
+		} else if(packet.pts != AV_NOPTS_VALUE) {
+
+			// packet only has a pts value, subtract from subsequent dts/pts values
+			dtsOffsetSeconds = packet.pts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+
+		} else {
+
+			return;
+		}
+
+		streamInfo[packet.stream_index]->offsetSet = true;
+
+		// check if the pts/dts value of the current packet is smaller as the current smallest value we found
+		// if so use this value instead
+		if(dtsOffsetSeconds < smallestOffset) {
+
+			smallestOffset = dtsOffsetSeconds;
+
+		} else {
+
+			dtsOffsetSeconds = smallestOffset;		
+		}
+			   
+		for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) {
+
+			if(streamInfo[i]->outStreamIdx != DISCARD_STREAM) {
+
+				streamInfo[i]->dtsOffset = int64_t(dtsOffsetSeconds / av_q2d(input->stream[i]->getStream()->time_base));				
+			}
+		}
+					
 	}
 
 	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken ^token, 
@@ -124,11 +168,13 @@ public:
 
 			initialize(inputFilename, outputFilename, options);
 					
+			double startTimeRange = 0;
+
 			if(options->ContainsKey("startTimeRange")) {
 
-				double offsetSeconds = (double)options["startTimeRange"];
+				startTimeRange = (double)options["startTimeRange"];
 
-				input->seek(offsetSeconds);				
+				input->seek(startTimeRange);				
 			}
 
 			double endTimeRange = DBL_MAX;
@@ -141,6 +187,8 @@ public:
 			int i = 0;
 			double progress = 0;
 	
+			smallestOffset = DBL_MAX;
+
 			// read all packets 
 			while (1) {
 
@@ -156,25 +204,38 @@ public:
 			
 				unsigned int inStreamIdx = packet.stream_index;	
 				unsigned int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
-
+				
 				if(outStreamIdx != DISCARD_STREAM) {
+					
+					//get the dts value of the first input packet and subtract it from subsequent dts & pts
+					//values to make sure the output video starts at time zero.										
+					setDtsOffsets(packet);
+					
+					// check if every stream has passed the end of timerange 
+					// stop encoding if true
+					streamInfo[inStreamIdx]->posSeconds = packet.pts * av_q2d(input->stream[inStreamIdx]->getStream()->time_base);
 
-					if(packet.pts * av_q2d(input->stream[inStreamIdx]->getStream()->time_base) > endTimeRange) {
+					bool isPassedEndTimeRange = true;
 
-						break;
+					for(unsigned int j = 0; j < streamInfo.size(); j++) {
+
+						if(streamInfo[j]->outStreamIdx != DISCARD_STREAM) {
+
+							isPassedEndTimeRange = isPassedEndTimeRange && (streamInfo[j]->posSeconds > endTimeRange);
+						}
 					}
-									
+						
+					if(isPassedEndTimeRange) break;
 				}
 
 				if(i++ % 500 && progressCallback != NULL) {
-					
-					double newProgress = fabs(packet.pos / (double)input->getSizeBytes());
+										
+					double endTime = Math::Min(endTimeRange, input->getDurationSeconds());
+					double totalSeconds = endTime - startTimeRange;
 
-					if(newProgress > progress) {
+					double progress = (streamInfo[inStreamIdx]->posSeconds - startTimeRange) / totalSeconds; 
 
-						progressCallback(newProgress);
-						progress = newProgress;
-					}
+					progressCallback(progress);
 
 				}
 			
@@ -191,7 +252,17 @@ public:
 
 						throw gcnew VideoLib::VideoLibException("Out of memory");	
 					}
+					
+					if(packet.dts != AV_NOPTS_VALUE) {
 
+						packet.dts -= streamInfo[inStreamIdx]->dtsOffset;
+					}
+
+					if(packet.pts != AV_NOPTS_VALUE) {
+
+						packet.pts -= streamInfo[inStreamIdx]->dtsOffset;
+					}
+								
 					packet.dts = av_rescale_q_rnd(packet.dts,
 						input->getFormatContext()->streams[inStreamIdx]->time_base,
 						input->getFormatContext()->streams[inStreamIdx]->codec->time_base,
@@ -208,8 +279,7 @@ public:
 					if (ret < 0) {
 
 						av_frame_free(&frame);
-						av_log(NULL, AV_LOG_ERROR, "Decoding failed\n");
-						break;
+						throw gcnew VideoLibException("Error while decoding: " + inputFilename);						
 					}
 
 					if (got_frame) {
@@ -228,18 +298,26 @@ public:
 					}
 
 				} else {
-								
-					streamInfo[inStreamIdx]->setDtsOffset(packet.dts);	
-
+													
 					packet.stream_index = outStreamIdx;
 
+					if(packet.dts != AV_NOPTS_VALUE) {
+
+						packet.dts -= streamInfo[inStreamIdx]->dtsOffset;
+					}
+
+					if(packet.pts != AV_NOPTS_VALUE) {
+
+						packet.pts -= streamInfo[inStreamIdx]->dtsOffset;
+					}
+
 					// remux this frame without reencoding 
-					packet.dts = av_rescale_q_rnd(packet.dts - streamInfo[inStreamIdx]->dtsOffset,
+					packet.dts = av_rescale_q_rnd(packet.dts,
 						input->getFormatContext()->streams[inStreamIdx]->time_base,
 						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 
-					packet.pts = av_rescale_q_rnd(packet.pts - streamInfo[inStreamIdx]->dtsOffset,
+					packet.pts = av_rescale_q_rnd(packet.pts,
 						input->getFormatContext()->streams[inStreamIdx]->time_base,
 						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
@@ -322,7 +400,7 @@ protected:
 
 			if(!options->ContainsKey("height")) {
 
-				height = int((dec_ctx->width / (float)width) * dec_ctx->height);
+				height = int(((float)width / dec_ctx->width) * dec_ctx->height);
 			}
 		}
 
@@ -332,7 +410,7 @@ protected:
 
 			if(!options->ContainsKey("width")) {
 
-				width = int((dec_ctx->height / (float)height) * dec_ctx->width);
+				width = int(((float)height / dec_ctx->height) * dec_ctx->width);
 			}
 		}
 
@@ -359,9 +437,9 @@ protected:
 
 		} else if(enc_ctx->codec_id == AV_CODEC_ID_VP8) {
 			
-			enc_ctx->bit_rate = 1000000;
+			enc_ctx->bit_rate = 3200000;
 
-			av_opt_set(enc_ctx, "crf", "10", 0);
+			av_opt_set(enc_ctx, "crf", "5", 0);
 			av_opt_set(enc_ctx, "qmin", "4", 0);
 			av_opt_set(enc_ctx, "qmax", "50", 0);
 
@@ -636,9 +714,7 @@ protected:
 		}
 
 		if (!(*got_frame))
-			return 0;
-			
-		streamInfo[inStreamIdx]->setDtsOffset(enc_pkt.dts);	
+			return 0;					
 
 		// prepare packet for muxing 
 		enc_pkt.stream_index = outStreamIdx;
@@ -719,9 +795,7 @@ protected:
 		unsigned int i;
 						
 		for (i = 0; i < input->getFormatContext()->nb_streams; i++) {
-					
-			streamInfo.push_back(NULL);
-						
+														
 			if (input->getFormatContext()->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 
 				if((StreamOptions)options["videoStreamMode"] != StreamOptions::Encode) continue;
@@ -730,10 +804,20 @@ protected:
 					output->getVideoCodecContext()->pix_fmt, SWS_BICUBIC);
 
 				int outputFmt = (int)output->getVideoCodecContext()->pix_fmt;
+				int inWidth = input->getWidth();
+				int inHeight = input->getHeight();
 				int outWidth = output->getVideoCodecContext()->width;
 				int outHeight = output->getVideoCodecContext()->height;
+					
+				System::Drawing::Rectangle inRect(0,0,inWidth,inHeight);
+				System::Drawing::Rectangle outRect(0,0,outWidth,outHeight);
 
-				String ^videoGraph = "scale=" + outWidth + "x" + outHeight + ",format=" + outputFmt;
+				System::Drawing::Rectangle scaledRect = ImageUtils::stretchRectangle(inRect,outRect);
+				System::Drawing::Rectangle centeredRect = ImageUtils::centerRectangle(outRect, scaledRect);
+
+				String ^videoGraph = "scale=" + centeredRect.Width + "x" + centeredRect.Height + 
+					",pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y +
+					",format=" + outputFmt;
 				
 				std::string value = msclr::interop::marshal_as<std::string>(videoGraph);
 

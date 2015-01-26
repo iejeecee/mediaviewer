@@ -75,35 +75,21 @@ namespace MediaViewer.GridImage.ImageCollage
         }
 
         public async Task generateImage()
-        {
-            var tcs = new TaskCompletionSource<bool>();
+        {          
+            await Task.Factory.StartNew(() =>
+            {               
+                TotalProgressMax = 1;
 
-            Thread thread = new Thread(() =>
-            {
-                try
-                {
-                    TotalProgressMax = 1;
-
-                    generateImageCollage();
+                generateImageCollage();
                     
-                    App.Current.Dispatcher.Invoke(() =>
-                    {
-                        OkCommand.IsExecutable = true;
-                        CancelCommand.IsExecutable = false;
-                    });
-
-                    tcs.SetResult(true);
-                }
-                catch (Exception e)
+                App.Current.Dispatcher.Invoke(() =>
                 {
-                    tcs.SetException(e);
-                }
+                    OkCommand.IsExecutable = true;
+                    CancelCommand.IsExecutable = false;
+                });
+                   
             });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-
-            await tcs.Task;
+            
         }
        
         void generateImageCollage()
@@ -113,12 +99,10 @@ namespace MediaViewer.GridImage.ImageCollage
             //ItemInfo = "Creating video preview image for: " + System.IO.Path.GetFileName(item.Location);
 
             FileStream outputFile = null;
-           
+            RenderTargetBitmap bitmap = null;
+                      
             try
-            {
-                                                         
-                PictureGridImage gridImage = new PictureGridImage(AsyncState, AsyncState.Media.ToList(), AsyncState.IsUseThumbs);
-
+            {                                                                        
                 JpegBitmapEncoder encoder = new JpegBitmapEncoder();
                 BitmapMetadata metaData = new BitmapMetadata("jpg");
                 metaData.ApplicationName = App.getAppInfoString();
@@ -126,7 +110,12 @@ namespace MediaViewer.GridImage.ImageCollage
 
                 int? maxGridHeight = AsyncState.IsMaxGridHeightEnabled ? new Nullable<int>(AsyncState.MaxGridHeight) : null;
 
-                BitmapSource bitmap = gridImage.createGridImage(AsyncState.MaxWidth, maxGridHeight);
+                App.Current.Dispatcher.Invoke(() =>
+                {
+                    PictureGridImage gridImage = new PictureGridImage(AsyncState, AsyncState.Media.ToList(), AsyncState.IsUseThumbs);
+                    bitmap = gridImage.createGridImage(AsyncState.MaxWidth, maxGridHeight);
+
+                });
 
                 encoder.Frames.Add(BitmapFrame.Create(bitmap, null, metaData, null));
 
@@ -148,6 +137,12 @@ namespace MediaViewer.GridImage.ImageCollage
             }
             finally
             {
+                if (bitmap != null)
+                {
+                    bitmap.Clear();
+                    bitmap = null;
+                }
+
                 if (outputFile != null)
                 {
                     outputFile.Close();

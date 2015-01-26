@@ -36,6 +36,9 @@ namespace MediaViewer.Search
             FramesPerSecondStart = null;
             framesPerSecondEnd = null;
 
+            NrChannelsStart = null;
+            NrChannelsEnd = null;
+
             DurationSecondsStart = null;
             DurationSecondsEnd = null;
 
@@ -68,7 +71,12 @@ namespace MediaViewer.Search
                     return (false);
                 }
 
-                if (this.FramesPerSecondEnd != null || this.FramesPerSecondEnd != null)
+                if (this.FramesPerSecondEnd != null || this.FramesPerSecondStart != null)
+                {
+                    return (false);
+                }
+
+                if (this.NrChannelsEnd != null || this.NrChannelsStart!= null)
                 {
                     return (false);
                 }
@@ -220,6 +228,29 @@ namespace MediaViewer.Search
                 SetProperty(ref framesPerSecondEnd, value);
             }
         }
+
+        Nullable<int> nrChannelsStart;
+
+        public Nullable<int> NrChannelsStart
+        {
+            get { return nrChannelsStart; }
+            set
+            {
+                SetProperty(ref nrChannelsStart, value);
+            }
+        }
+
+        Nullable<int> nrChannelsEnd;
+
+        public Nullable<int> NrChannelsEnd
+        {
+            get { return nrChannelsEnd; }
+            set
+            {
+                SetProperty(ref nrChannelsEnd, value);
+            }
+        }
+
 
         Nullable<long> durationSecondsStart;
 

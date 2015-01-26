@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Concurrency;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -49,7 +50,8 @@ namespace MediaViewer.VideoTranscode
             await Task.Factory.StartNew(() =>
             {
                 startTranscode();
-            });
+
+            },CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
@@ -116,12 +118,9 @@ namespace MediaViewer.VideoTranscode
                     String outLocation = AsyncState.OutputPath + "\\" + Path.GetFileNameWithoutExtension(input.Location);
 
                     outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
-                    
-                    if (outLocation.Equals(input.Location))
-                    {
-                        outLocation = FileUtils.getUniqueFileName(input.Location);
-                    }                    
-
+                                       
+                    outLocation = FileUtils.getUniqueFileName(outLocation);
+                                       
                     videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options, 
                         transcodeProgressCallback);
 

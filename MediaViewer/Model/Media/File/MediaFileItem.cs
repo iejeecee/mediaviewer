@@ -444,6 +444,7 @@ namespace MediaViewer.Model.Media.File
                 using (MediaDbCommands mediaCommands = new MediaDbCommands())
                 {
                     mediaCommands.delete(Media);
+                    OnPropertyChanged("Media");
                 }
 
                 return (true);

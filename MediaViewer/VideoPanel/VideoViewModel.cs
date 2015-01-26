@@ -38,9 +38,7 @@ namespace MediaViewer.VideoPanel
      
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
         IEventAggregator EventAggregator { get; set; }
-
-        int markerStage;
-
+      
         public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator;
@@ -168,31 +166,35 @@ namespace MediaViewer.VideoPanel
                 }
 
             }, false);
+        
+            SetLeftMarkerCommand = new Command(() =>
+                {
+                    if (IsTimeRangeEnabled == false)
+                    {
+                        IsTimeRangeEnabled = true;
+                    }
 
-            AddMarkerCommand = new Command(() =>
+                    StartTimeRange = videoPlayer.PositionSeconds;
+
+                }, false);
+
+            SetRightMarkerCommand = new Command(() =>
             {
-                if (markerStage == 0)
+                if (IsTimeRangeEnabled == false)
                 {
                     IsTimeRangeEnabled = true;
-                    EndTimeRange = StartTimeRange = videoPlayer.PositionSeconds;
-                }
-                else if (markerStage == 1)
-                {
-                    EndTimeRange = videoPlayer.PositionSeconds;
+                    StartTimeRange = videoPlayer.PositionSeconds;
                 }
                 else
                 {
-                    IsTimeRangeEnabled = false;
+                    EndTimeRange = videoPlayer.PositionSeconds;
                 }
-
-                markerStage = (markerStage + 1) % 3;
 
             }, false);
 
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
-
-            markerStage = 0;
+           
             IsTimeRangeEnabled = false;
             StartTimeRange = 0;
             EndTimeRange = 0;
@@ -382,8 +384,9 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = false;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = false;
-                        FrameByFrameCommand.IsExecutable = false;
-                        AddMarkerCommand.IsExecutable = true;
+                        FrameByFrameCommand.IsExecutable = false;                      
+                        SetLeftMarkerCommand.IsExecutable = true;
+                        SetRightMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.PLAYING:
@@ -393,8 +396,9 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = true;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = true;
-                        FrameByFrameCommand.IsExecutable = true;
-                        AddMarkerCommand.IsExecutable = true;
+                        FrameByFrameCommand.IsExecutable = true;                      
+                        SetLeftMarkerCommand.IsExecutable = true;
+                        SetRightMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.PAUSED:
@@ -404,8 +408,9 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = true;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = true;
-                        FrameByFrameCommand.IsExecutable = true;
-                        AddMarkerCommand.IsExecutable = true;
+                        FrameByFrameCommand.IsExecutable = true;                       
+                        SetLeftMarkerCommand.IsExecutable = true;
+                        SetRightMarkerCommand.IsExecutable = true;
                         break;
                     }
                 case VideoState.CLOSED:
@@ -415,10 +420,10 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = false;
                         CloseCommand.IsExecutable = false;
                         SeekCommand.IsExecutable = false;
-                        FrameByFrameCommand.IsExecutable = false;
-                        AddMarkerCommand.IsExecutable = false;
-                        IsTimeRangeEnabled = false;
-                        markerStage = 0;
+                        FrameByFrameCommand.IsExecutable = false;                       
+                        IsTimeRangeEnabled = false;                   
+                        SetLeftMarkerCommand.IsExecutable = false;
+                        SetRightMarkerCommand.IsExecutable = false;
                         break;
                     }
             }
@@ -435,8 +440,9 @@ namespace MediaViewer.VideoPanel
         public Command CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
         public Command<double?> SeekCommand { get; set; }
-        public Command FrameByFrameCommand { get; set; }
-        public Command AddMarkerCommand { get; set; }
+        public Command FrameByFrameCommand { get; set; }      
+        public Command SetLeftMarkerCommand { get; set; }
+        public Command SetRightMarkerCommand { get; set; }
         public Command CutVideoCommand { get; set; }
        
         int maxVolume;

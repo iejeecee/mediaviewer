@@ -34,7 +34,7 @@ namespace VideoLib {
 		}
 
 		// only packed audio types should be used as format
-		AudioFrame(AVSampleFormat format) :
+		AudioFrame(AVSampleFormat format, int64_t channelLayout, int sampleRate) :
 			Frame(FrameType::AUDIO)
 		{
 
@@ -45,7 +45,10 @@ namespace VideoLib {
 			// planar types should allocate more data planes
 			// here
 			AVLibFrameData->data[0] = (uint8_t *)av_malloc(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
+
 			AVLibFrameData->format = format;
+			AVLibFrameData->channel_layout = channelLayout;
+			AVLibFrameData->sample_rate = sampleRate;
 		
 			hasAllocatedOwnBuffers = true;
 		}
@@ -90,26 +93,25 @@ namespace VideoLib {
 		}
 
 		property int Length {
-
-			int get() {
-
-				return(length);
-			}
-
+	
 			void set(int length) {
 
 				this->length = length;
 			}
 
+			int get() {
+
+				return(length);
+			}
+		
 		}
 
 		void copyAudioDataToManagedMemory()
-		{
+		{			
 
-			if(length > 0) {
-
-				this->length = length;			
-				Marshal::Copy(IntPtr(AVLibFrameData->data[0]), data, 0, length);
+			if(Length > 0) {
+				
+				Marshal::Copy(IntPtr(AVLibFrameData->data[0]), data, 0, Length);
 
 			} else {
 

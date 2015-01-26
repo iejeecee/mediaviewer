@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using VideoLib;
@@ -14,10 +15,9 @@ namespace MediaViewer.Model.Media.Metadata
 {
     class VideoMetadataReader : MetadataReader
     {
-        
        
-
-        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media)
+        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media, 
+            CancellationToken token, int timeoutSeconds)
         {
             VideoMedia video = media as VideoMedia;
 
@@ -74,7 +74,7 @@ namespace MediaViewer.Model.Media.Metadata
                 {
                     if (options.HasFlag(MediaFactory.ReadOptions.GENERATE_THUMBNAIL) && videoPreview != null)
                     {
-                        generateThumbnail(videoPreview, video);
+                        generateThumbnail(videoPreview, video, token, timeoutSeconds);
                     }
                 }
                 catch (Exception e)
@@ -92,7 +92,7 @@ namespace MediaViewer.Model.Media.Metadata
                     video.SupportsXMPMetadata = false;
                 }
 
-                base.readMetadata(data, options, media);
+                base.readMetadata(data, options, media, token, timeoutSeconds);
 
                 parseFFMpegMetaData(fsMetaData, video);
             
@@ -107,18 +107,19 @@ namespace MediaViewer.Model.Media.Metadata
             }
         }
 
-         public void generateThumbnail(VideoPreview videoPreview, VideoMedia video)
+        public void generateThumbnail(VideoPreview videoPreview, VideoMedia video, 
+            CancellationToken token, int timeoutSeconds)
          {
 
              List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
-                 MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025);
+                 MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025, token, timeoutSeconds);
 
              if (thumbBitmaps.Count == 0)
              {
 
                  // possibly could not seek in video, try to get the first frame in the video
                  thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
-                     MAX_THUMBNAIL_HEIGHT, -1, 1, 0);
+                     MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
              }
 
              if (thumbBitmaps.Count > 0)
@@ -205,16 +206,13 @@ namespace MediaViewer.Model.Media.Metadata
          {
             
              // XMP Metadata does not support matroska
-             if (video.MimeType.Equals("video/x-matroska"))
+             if (video.MimeType.Equals("video/x-matroska") || video.MimeType.Equals("video/webm"))
              {
-
-                 return (false);
-
-                 // mp4 versions incompatible with XMP metadata
+                 return (false);                
              }
              else if (video.MimeType.Equals("video/mp4"))
              {
-
+                 // mp4 versions incompatible with XMP metadata
 
                  if (fsMetaData.Contains("major_brand: isom") &&
                      fsMetaData.Contains("minor_version: 1"))

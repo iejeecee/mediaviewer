@@ -10,14 +10,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MediaViewer.Model.Utils
+namespace MediaViewer.Infrastructure.Utils
 {
-    class ImageUtils
+    public class ImageUtils
     {
-
         
-
-
         public static Rectangle centerRectangle(Rectangle outer, Rectangle inner)
         {
 
@@ -97,7 +94,7 @@ namespace MediaViewer.Model.Utils
             {
 
                 Logger.Log.Error("Error resizing image", e);
-                MessageBox.Show(e.Message, "Error resizing image");
+                //MessageBox.Show(e.Message, "Error resizing image");
 
             }
 

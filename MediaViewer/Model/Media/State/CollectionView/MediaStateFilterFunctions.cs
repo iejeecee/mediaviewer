@@ -9,7 +9,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 {
     public enum MediaStateFilterMode
     {
-        All,
+        None,
         Video,
         Images
     }
@@ -22,7 +22,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             switch (mode)
             {
-                case MediaStateFilterMode.All:
+                case MediaStateFilterMode.None:
                     filter = new Func<SelectableMediaFileItem, bool>((item) =>
                     {
                         return (true);

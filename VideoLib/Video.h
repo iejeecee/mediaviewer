@@ -216,6 +216,6 @@ public:
 	}
 };
 
-LOG_CALLBACK Video::logCallback = NULL;
+
 
 }

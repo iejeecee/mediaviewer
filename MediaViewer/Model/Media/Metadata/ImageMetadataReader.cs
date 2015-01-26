@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using XMPLib;
@@ -17,7 +18,8 @@ namespace MediaViewer.Model.Media.Metadata
     {
         
 
-        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media)
+        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media, 
+            CancellationToken token, int timeoutSeconds)
         {
             ImageMedia image = media as ImageMedia;
             media.SizeBytes = data.Length;
@@ -55,7 +57,7 @@ namespace MediaViewer.Model.Media.Metadata
             {
                 image.SupportsXMPMetadata = true;
 
-                base.readMetadata(data, options, media);
+                base.readMetadata(data, options, media, token, timeoutSeconds);
             }
             else
             {
@@ -75,7 +77,7 @@ namespace MediaViewer.Model.Media.Metadata
 
                 var tempImage = new BitmapImage();
                 tempImage.BeginInit();
-                tempImage.CacheOption = BitmapCacheOption.OnLoad;
+                tempImage.CacheOption = BitmapCacheOption.OnLoad;          
                 tempImage.StreamSource = data;
                 tempImage.DecodePixelWidth = MAX_THUMBNAIL_WIDTH;
                 tempImage.EndInit();

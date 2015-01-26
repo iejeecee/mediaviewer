@@ -378,16 +378,20 @@ namespace VideoLib {
 
 			videoFrame = gcnew VideoFrame();
 
-			convertedVideoFrame = gcnew VideoFrame(videoDecoder->getWidth(), 
-				videoDecoder->getHeight(), videoDecoder->getImageConvertFormat());
+			convertedVideoFrame = gcnew VideoFrame(
+				videoDecoder->getWidth(), 
+				videoDecoder->getHeight(), 
+				videoDecoder->getImageConvertFormat());
 			
 			if(videoDecoder->hasAudio()) {
 
 				audioFrame = gcnew AudioFrame();
 
 				convertedAudioFrame = gcnew AudioFrame(
-					videoDecoder->getAudioConvertFormat());
-			}
+					videoDecoder->getAudioConvertFormat(),
+					videoDecoder->getAudioConvertChannelLayout(),
+					videoDecoder->getAudioConvertSampleRate());
+			} 
 
 			for(int i = 0; i < packetData->Length; i++) {
 
@@ -427,12 +431,14 @@ namespace VideoLib {
 
 				State = FrameQueueState::ACTIVE;
 			
-				for(int i = 0; i < 3; i++) {
-				
-					packetQueueStopped[i] = false;
-					packetQueuePaused[i] = false;				
-				}
+				packetQueueStopped[(int)QueueID::FREE_PACKETS] = false;
+				packetQueuePaused[(int)QueueID::FREE_PACKETS] = false;	
+				packetQueueStopped[(int)QueueID::VIDEO_PACKETS] = false;
+				packetQueuePaused[(int)QueueID::VIDEO_PACKETS] = false;	
 
+				packetQueuePaused[(int)QueueID::AUDIO_PACKETS] = !videoDecoder->hasAudio();
+				packetQueueStopped[(int)QueueID::AUDIO_PACKETS] = !videoDecoder->hasAudio();
+																
 				// wakeup threads waiting on empty queues			
 				Monitor::PulseAll(lockObject);
 
@@ -677,8 +683,8 @@ namespace VideoLib {
 				if(frameFinished)
 				{					
 					convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);
-				
-					convertedAudioFrame->Pts = synchronizeAudio(audioFrame->Length, 
+					
+					convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
 						audioPacket->AVLibPacketData->dts);
 
 					convertedAudioFrame->copyAudioDataToManagedMemory();

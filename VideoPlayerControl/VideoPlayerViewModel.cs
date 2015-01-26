@@ -650,7 +650,7 @@ restartvideo:
 
                                 // remove samples 
                                 //videoDebug.AudioFrameLengthAdjust = wantedSize - frame.Length;
-                                frame.Length = wantedSize;
+                                frame.Length = wantedSize;                                
 
                             }
                             else if (wantedSize > frame.Length)

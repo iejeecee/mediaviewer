@@ -286,6 +286,20 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 result = result.OfType<VideoMedia>().Where(m => (m.FramesPerSecond >= query.FramesPerSecondStart.Value) && (m.FramesPerSecond <= query.FramesPerSecondEnd.Value));
             }
 
+            // nr channels
+            if (query.NrChannelsStart != null && query.NrChannelsEnd == null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.NrChannels >= query.NrChannelsStart.Value);
+            }
+            else if (query.NrChannelsStart == null && query.NrChannelsEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => m.NrChannels <= query.NrChannelsEnd.Value);
+            }
+            else if (query.NrChannelsStart != null && query.NrChannelsEnd != null)
+            {
+                result = result.OfType<VideoMedia>().Where(m => (m.NrChannels >= query.NrChannelsStart.Value) && (m.NrChannels <= query.NrChannelsEnd.Value));
+            }
+
             return result;
         }
 

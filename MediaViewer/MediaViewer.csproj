@@ -54,6 +54,8 @@
   <PropertyGroup>
     <ApplicationIcon>Resources\Icons\bird.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup />
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="Aga.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1d788d229eb5990, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -290,6 +292,7 @@
     <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
     <Compile Include="Model\Mvvm\Command.cs" />
+    <Compile Include="Model\Concurrency\PriorityScheduler.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
@@ -531,7 +534,6 @@
     </Compile>
     <Compile Include="Model\Utils\FileUtils.cs" />
     <Compile Include="Model\Utils\FileUtilsEventArgs.cs" />
-    <Compile Include="Model\Utils\ImageUtils.cs" />
     <Compile Include="Model\Utils\MediaFormatConvert.cs" />
     <Compile Include="Model\Utils\MiscUtils.cs" />
     <Compile Include="Model\Utils\Windows\DriveIdleMonitor.cs" />

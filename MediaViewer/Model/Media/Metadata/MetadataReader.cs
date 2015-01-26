@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using XMPLib;
 
@@ -20,7 +21,7 @@ namespace MediaViewer.Model.Media.Metadata
         protected const int MAX_THUMBNAIL_HEIGHT = 160;
         protected static DateTime sqlMinDate = new DateTime(1753, 1, 1);     
 
-        public virtual void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media)
+        public virtual void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media, CancellationToken token, int timeoutSeconds)
         {
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);

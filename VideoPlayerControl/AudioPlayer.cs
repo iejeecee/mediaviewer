@@ -220,7 +220,9 @@ namespace VideoPlayerControl
 
                     directSound = new DirectSound();
                     directSound.SetCooperativeLevel(owner.Handle, CooperativeLevel.Priority);
+                
                 }
+             
 
                 releaseResources();
 
@@ -234,6 +236,7 @@ namespace VideoPlayerControl
                 desc.Flags = BufferFlags.Defer | BufferFlags.GlobalFocus |
                     BufferFlags.ControlVolume | BufferFlags.ControlFrequency |
                     BufferFlags.GetCurrentPosition2;
+               
 
                 //desc.AlgorithmFor3D = Guid.Empty;
 

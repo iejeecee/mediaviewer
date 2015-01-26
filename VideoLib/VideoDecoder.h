@@ -19,8 +19,13 @@ protected:
 	SwrContext *audioConvertContext;
 
 	AVPixelFormat imageConvertFormat;
-	AVSampleFormat audioConvertFormat;
 
+	int64_t audioConvertChannelLayout;
+	int audioConvertNrChannels;
+	int audioConvertSampleRate;
+	int audioConvertBytesPerSample;
+	AVSampleFormat audioConvertFormat;
+	
 	AVFrame *convertedFrame;
 	uint8_t *convertedFrameBuffer;
 
@@ -43,6 +48,8 @@ protected:
 	int nrChannels;
 
 	int durationSeconds;
+
+	
 
 	FilterGraph *videoFilterGraph;
 	FilterGraph *audioFilterGraph;
@@ -103,11 +110,16 @@ public:
 		durationSeconds = 0;
 
 		imageConvertFormat = AV_PIX_FMT_YUV420P;
+
 		audioConvertFormat = AV_SAMPLE_FMT_S16;
+		audioConvertNrChannels = 0;
+		audioConvertSampleRate = 0;
+		audioConvertChannelLayout = 0;
+		audioConvertBytesPerSample = 0;
 
 		videoFilterGraph = NULL;
-		audioFilterGraph = NULL;
-	
+		audioFilterGraph = NULL;	
+		
 	}
 
 	virtual ~VideoDecoder() {
@@ -242,6 +254,7 @@ public:
 		if(audioIdx >= 0) {
 				
 			stream[audioIdx]->open();
+		
 		}
 			
 		frame = avcodec_alloc_frame();
@@ -281,6 +294,11 @@ public:
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
 
 		if(hasAudio()) {
+			
+			if(getAudioCodecContext()->channel_layout == 0) {
+
+				getAudioCodecContext()->channel_layout = av_get_default_channel_layout(getAudioCodecContext()->channels);
+			}
 
 			samplesPerSecond = getAudioCodecContext()->sample_rate;
 			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
@@ -340,6 +358,26 @@ public:
 		return(audioConvertFormat);
 	}
 
+	int getAudioConvertSampleRate() const {
+
+		return(audioConvertSampleRate);
+	}
+
+	int64_t getAudioConvertChannelLayout() const {
+
+		return(audioConvertChannelLayout);
+	}
+
+	int getAudioConvertNrChannels() const {
+
+		return(audioConvertNrChannels);
+	}
+
+	int getAudioConvertBytesPerSample() const {
+
+		return(audioConvertBytesPerSample);
+	}
+
 	FilterGraph *getVideoFilterGraph() const {
 
 		return(videoFilterGraph);
@@ -351,18 +389,30 @@ public:
 	}
 
 	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
-		AudioDecodeMode audioMode = DECODE_AUDIO) 
+		AudioDecodeMode audioMode = DECODE_AUDIO, System::Threading::CancellationToken ^token = nullptr, int timeOutSeconds = 0) 
 	{
 
 		if(isClosed()) return(false);
 
 		int frameFinished = 0;
 
+		DateTime startTime = DateTime::Now;
+
 		while(!frameFinished) {
+		
+			if(timeOutSeconds > 0 && (DateTime::Now - startTime).TotalSeconds > timeOutSeconds) {
+
+				throw gcnew VideoLibException("Timed out during decoding");
+			}
+
+			if(token != nullptr && token->IsCancellationRequested) {
+
+				throw gcnew VideoLibException("Decoding cancelled");
+			}
 
 			if(av_read_frame(formatContext, &packet) != 0) {
 
-				// cannot read frame or end of file
+				// cannot read frame or end of file				
 				return(false);
 			}
 
@@ -379,24 +429,11 @@ public:
 				}
 
 				if(frameFinished)
-				{		
-					AVFrame *finishedFrame = frame;					
-
-					if(imageConvertContext != NULL) {
-
-						sws_scale(imageConvertContext,
-							frame->data,
-							frame->linesize,
-							0,
-							frame->height,
-							convertedFrame->data,
-							convertedFrame->linesize);
-
-						finishedFrame = convertedFrame;
-					}
+				{										
+					convertVideoFrame(frame, convertedFrame);				
 
 					if(decodedFrame != NULL) {
-						decodedFrame(data, &packet, finishedFrame, VIDEO);
+						decodedFrame(data, &packet, convertedFrame, VIDEO);
 					}
 
 				}
@@ -429,16 +466,17 @@ public:
 	}
 
 
-	bool seek(double posSeconds) {
+	bool seek(double posSeconds, int flags = 0) {
 
 		// convert timestamp into a videostream timestamp
 		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
 	
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
-		
-		int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
+					
+		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
+		int ret = avformat_seek_file(formatContext, -1, 0,seekTarget,seekTarget, flags);
 		if(ret >= 0) { 
-
+			
 			avcodec_flush_buffers(getVideoCodecContext());
 
 			if(hasAudio()) {
@@ -452,6 +490,8 @@ public:
 		return false;
 		
 	}
+
+
 
 	void initImageConverter(AVPixelFormat format, int dstWidth, int dstHeight, 
 		SamplingMode sampling, bool useFilterGraph = false) 
@@ -508,9 +548,17 @@ public:
 			return(false);
 		}
 
-		if(useFilterGraph == false) {
+		audioConvertFormat = sampleFormat;
+		audioConvertChannelLayout = channelLayout;
+		audioConvertSampleRate = sampleRate;
+		audioConvertNrChannels = av_get_channel_layout_nb_channels(channelLayout);
+		audioConvertBytesPerSample = av_get_bytes_per_sample(sampleFormat);
 
-			this->audioConvertFormat = sampleFormat;
+		if(useFilterGraph == false) {
+			
+			int64_t inChannelLayout = getAudioCodecContext()->channel_layout;
+			AVSampleFormat inSampleFormat = getAudioCodecContext()->sample_fmt;	
+			int inSampleRate = getAudioCodecContext()->sample_rate;
 
 			// Note that AVCodecContext::channel_layout may or may not be set by libavcodec. Because of this,
 			// we won't use it, and will instead try to guess the layout from the number of channels.
@@ -518,9 +566,9 @@ public:
 				channelLayout,
 				sampleFormat,
 				sampleRate,
-				av_get_default_channel_layout(getAudioCodecContext()->channels),
-				getAudioCodecContext()->sample_fmt,
-				getAudioCodecContext()->sample_rate,
+				inChannelLayout,
+				inSampleFormat,
+				inSampleRate,
 				0,
 				NULL);
 
@@ -575,38 +623,38 @@ public:
 			videoFilterGraph->filterFrame(input, output);
 		}
 	}
+	
 
 	int convertAudioFrame(AVFrame *input, AVFrame *output) 
 	{
 		int length;
 
 		if(audioConvertContext != NULL) {
-
-			// convert audio to a packed format ready for playback
+						
 			int numSamplesOut = swr_convert(audioConvertContext,
-					output->data,
-					input->nb_samples,
-					(const unsigned char**)input->extended_data,
-					input->nb_samples);
-
-			// audio length does not equal linesize, because some extra 
+											output->data,
+											input->nb_samples,
+											(const unsigned char**)input->extended_data,
+											input->nb_samples);
+			// audio length does not equal linesize, because some extra
 			// padding bytes may be added for alignment.
 			// Instead av_samples_get_buffer_size needs to be used
-			length = av_samples_get_buffer_size(NULL, 
-				getAudioNrChannels(),  
-				numSamplesOut, 
-				(AVSampleFormat)output->format, 1);
-
+			length = av_samples_get_buffer_size(NULL,
+												audioConvertNrChannels,
+												numSamplesOut,
+												audioConvertFormat, 1);
+		
+							
 		} else {
 
 			audioFilterGraph->filterFrame(input,output);
-
-			length = av_samples_get_buffer_size(NULL, 
-				getAudioNrChannels(),  
-				output->nb_samples, 
-				(AVSampleFormat)output->format, 1);
+			length = av_samples_get_buffer_size(NULL,
+								audioConvertNrChannels,
+								output->nb_samples,
+								audioConvertFormat, 1);
+			
 		}
-
+			
 		return(length);
 	}
 	

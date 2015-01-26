@@ -38,11 +38,11 @@ namespace MediaViewer.GridImage
         public int NrColumns { get; protected set; }
                                     
         protected abstract void createHeader(Grid mainGrid,String fontFamily, int margin);
-        protected abstract void addImageInfo(int imageNr, Grid cell, String fontFamily, int margin);
-     
+        protected abstract void addImageInfo(int imageNr, Grid cell, String fontFamily, int margin);      
+
         public RenderTargetBitmap createGridImage(int width, int? maxGridHeight = null, String fontFamily = "Consolas", double fontSize = 20)
         {
-            Grid mainGrid = new Grid();
+            Grid mainGrid = new Grid();            
             mainGrid.HorizontalAlignment = HorizontalAlignment.Center;
             mainGrid.VerticalAlignment = VerticalAlignment.Center;
             mainGrid.Background = new SolidColorBrush(Colors.White);
@@ -115,19 +115,15 @@ namespace MediaViewer.GridImage
             Rect size = VisualTreeHelper.GetDescendantBounds(mainGrid);
             mainGrid.Arrange(new Rect(new Size(size.Width, size.Height)));
 
-            RenderTargetBitmap output = new RenderTargetBitmap((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Default);
-
+            RenderTargetBitmap output = new RenderTargetBitmap((int)size.Width, (int)size.Height, 96, 96, PixelFormats.Default);   
+        
             RenderOptions.SetBitmapScalingMode(output, BitmapScalingMode.HighQuality);
             TextOptions.SetTextFormattingMode(output, TextFormattingMode.Display);
             TextOptions.SetTextRenderingMode(output, TextRenderingMode.ClearType);
 
             output.Render(mainGrid);
-
-            /*Window dummy = new Window();
-            dummy.Content = mainGrid;
-            dummy.SizeToContent = SizeToContent.WidthAndHeight;
-            dummy.Show();*/                     
-
+            output.Freeze();
+                              
             return (output);
                   
         }

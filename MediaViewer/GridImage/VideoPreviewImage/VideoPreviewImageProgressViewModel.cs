@@ -16,6 +16,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using VideoLib;
 
@@ -90,9 +91,8 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
         public async Task generatePreviews()
         {
-            var tcs = new TaskCompletionSource<bool>();
-
-            Thread thread = new Thread(() => 
+           
+            await Task.Factory.StartNew(() =>
             {
                 try
                 {
@@ -122,24 +122,16 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
                     }
 
+                }
+                finally
+                {
                     App.Current.Dispatcher.Invoke(() =>
                     {
                         OkCommand.IsExecutable = true;
                         CancelCommand.IsExecutable = false;
                     });
-
-                    tcs.SetResult(true);
-                }
-                catch (Exception e)
-                {
-                    tcs.SetException(e);
                 }
             });
-
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-
-            await tcs.Task;
         }
 
         int calcNrRowsNrColumns(int nrFrames)
@@ -166,7 +158,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
             return (nrFrames);
         }
-
+   
         void generatePreview(MediaFileItem item)
         {
             ItemProgressMax = 100;
@@ -174,6 +166,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             ItemInfo = "Creating video preview image for: " + System.IO.Path.GetFileName(item.Location);
 
             FileStream outputFile = null;
+            RenderTargetBitmap bitmap = null;
 
             videoPreview.open(item.Location);
             try
@@ -197,7 +190,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
                 List<VideoThumb> thumbs = videoPreview.grabThumbnails(thumbWidth,
                        asyncState.IsCaptureIntervalSecondsEnabled ? asyncState.CaptureIntervalSeconds : -1, nrFrames, 0.01, CancellationToken, grabThumbnails_UpdateProgressCallback);
-
+             
                 if (thumbs.Count == 0 || CancellationToken.IsCancellationRequested) return;
 
                 nrFrames = Math.Min(thumbs.Count, nrFrames);
@@ -205,11 +198,9 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 if (asyncState.IsCaptureIntervalSecondsEnabled == true)
                 {
                     nrFrames = calcNrRowsNrColumns(nrFrames);
-                }
-                
-                VideoGridImage gridImage = new VideoGridImage(item.Media as VideoMedia, asyncState, thumbs);
+                }                               
 
-                JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+                JpegBitmapEncoder encoder = new JpegBitmapEncoder();                
                 BitmapMetadata metaData = new BitmapMetadata("jpg");
                 metaData.ApplicationName = App.getAppInfoString();
                 metaData.DateTaken = DateTime.Now.ToString("R");
@@ -255,9 +246,17 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                     metaData.Rating = (int)item.Media.Rating.Value;
                 }
 
-                BitmapSource bitmap = gridImage.createGridImage(asyncState.MaxPreviewImageWidth);
+                // rendertargetbitmap has to be executed on the UI thread
+                // if it's run on a non-UI thread there will be a memory leak
+                App.Current.Dispatcher.Invoke(() =>
+                    {
+                        VideoGridImage gridImage = new VideoGridImage(item.Media as VideoMedia, asyncState, thumbs);
+                        bitmap = gridImage.createGridImage(asyncState.MaxPreviewImageWidth);
+                    });
 
-                encoder.Frames.Add(BitmapFrame.Create(bitmap, null, metaData, null));
+                BitmapFrame frame = BitmapFrame.Create(bitmap, null, metaData, null);
+
+                encoder.Frames.Add(frame);               
 
                 String outputFileName = Path.GetFileNameWithoutExtension(item.Location) + ".jpg";              
 
@@ -268,7 +267,8 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 ItemProgressMax = nrFrames;
                 ItemProgress = nrFrames;
                 InfoMessages.Add("Finished video preview image: " + asyncState.OutputPath + "/" + outputFileName);
-
+                                               
+                
             }
             catch (Exception e)
             {
@@ -277,9 +277,16 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             }
             finally
             {
+                if (bitmap != null)
+                {
+                    bitmap.Clear();
+                    bitmap = null;                            
+                }
+
                 if (outputFile != null)
                 {
                     outputFile.Close();
+                    outputFile.Dispose();
                 }
 
                 videoPreview.close();

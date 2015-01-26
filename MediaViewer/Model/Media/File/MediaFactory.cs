@@ -48,7 +48,7 @@ namespace MediaViewer.Model.Media.File
         // 5 seconds
         const int FILE_OPEN_SYNC_TIMEOUT_MS = 5 * 1000;
         
-        static BaseMedia readMediaFromWeb(string location, ReadOptions options, CancellationToken token)
+        static BaseMedia readMediaFromWeb(string location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
 
             HttpWebResponse response = null;
@@ -58,7 +58,7 @@ namespace MediaViewer.Model.Media.File
             {
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(location);
                 request.Method = "GET";
-                request.Timeout = HTTP_TIMEOUT_MS;
+                request.Timeout = timeoutSeconds * 1000;
 
                 IAsyncResult requestResult = request.BeginGetResponse(null, null);
 
@@ -101,7 +101,7 @@ namespace MediaViewer.Model.Media.File
 
                 data.Seek(0, System.IO.SeekOrigin.Begin);
 
-                BaseMedia media = createMediaFromMimeType(location, options, response.ContentType, data);
+                BaseMedia media = createMediaFromMimeType(location, options, response.ContentType, data, token, timeoutSeconds);
 
                 return (media);
 
@@ -120,7 +120,7 @@ namespace MediaViewer.Model.Media.File
             }
         }
 
-        static BaseMedia readMediaFromFile(String location, ReadOptions options, CancellationToken token)
+        static BaseMedia readMediaFromFile(String location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
 
             Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
@@ -128,13 +128,13 @@ namespace MediaViewer.Model.Media.File
 
             string mimeType = MediaFormatConvert.fileNameToMimeType(location);
 
-            BaseMedia media = createMediaFromMimeType(location, options, mimeType, data);
+            BaseMedia media = createMediaFromMimeType(location, options, mimeType, data, token, timeoutSeconds);
 
             return (media);
         }
 
         static BaseMedia createMediaFromMimeType(String location, ReadOptions options,
-            string mimeType, Stream data)
+            string mimeType, Stream data, CancellationToken token, int timeoutSeconds)
         {
 
             BaseMedia media = null;
@@ -143,14 +143,14 @@ namespace MediaViewer.Model.Media.File
             {
                 media = new ImageMedia(location, data);
                 ImageMetadataReader imageMetaData = new ImageMetadataReader();
-                imageMetaData.readMetadata(data, options, media);
+                imageMetaData.readMetadata(data, options, media, token, timeoutSeconds);
 
             }
             else if (mimeType.ToLower().StartsWith("video"))
             {
                 media = new VideoMedia(location, data);
                 VideoMetadataReader videoMetaData = new VideoMetadataReader();
-                videoMetaData.readMetadata(data, options, media);
+                videoMetaData.readMetadata(data, options, media, token, timeoutSeconds);
 
             }
             else
@@ -166,7 +166,7 @@ namespace MediaViewer.Model.Media.File
             return (media);
         }
 
-        private static BaseMedia readMediaFromDatabase(string location, ReadOptions options, CancellationToken token)
+        private static BaseMedia readMediaFromDatabase(string location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
             BaseMedia media = null;
 
@@ -206,7 +206,7 @@ namespace MediaViewer.Model.Media.File
                         // media is outdated so update in database
                         Logger.Log.Info("Updated: " + media.Location + " - Database timestamp: " + media.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
                         int id = media.Id;
-                        media = readMediaFromFile(media.Location, options, token);
+                        media = readMediaFromFile(media.Location, options, token, timeoutSeconds);
 
                         if (media != null)
                         {
@@ -264,7 +264,7 @@ namespace MediaViewer.Model.Media.File
         /// <param name="options"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public static BaseMedia read(string location, ReadOptions options, CancellationToken token)
+        public static BaseMedia read(string location, ReadOptions options, CancellationToken token, int timeoutSeconds = 60)
         {
 
             limitConcurrentReadsSemaphore.Wait(token);
@@ -279,20 +279,20 @@ namespace MediaViewer.Model.Media.File
                 }
                 else if (FileUtils.isUrl(location))
                 {
-                    media = readMediaFromWeb(location, options, token);
+                    media = readMediaFromWeb(location, options, token, timeoutSeconds);
                 }
                 else
                 {
                     if (options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE))
                     {
 
-                        media = readMediaFromDatabase(location, options, token);
+                        media = readMediaFromDatabase(location, options, token, timeoutSeconds);
                     }
 
                     if ((media == null && options.HasFlag(ReadOptions.AUTO)) ||
                         options.HasFlag(ReadOptions.READ_FROM_DISK))
                     {
-                        media = readMediaFromFile(location, options, token);
+                        media = readMediaFromFile(location, options, token, timeoutSeconds);
                     }
                 }
 
@@ -311,15 +311,7 @@ namespace MediaViewer.Model.Media.File
             }
         }
 
-/*     
-        public static async Task<BaseMedia> readAsync(string location, ReadOptions options, CancellationToken token)
-        {
 
-            return await Task<BaseMedia>.Run(() => read(location, options, token), token).ConfigureAwait(false);
-           
-
-        }
- */ 
 
     }
 }

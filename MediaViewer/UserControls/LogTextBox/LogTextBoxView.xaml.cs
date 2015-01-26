@@ -52,9 +52,10 @@ namespace MediaViewer.UserControls.LogTextBox
             {
                 var coll = (ObservableCollection<String>)e.NewValue;
                 // Subscribe to CollectionChanged on the new collection
-                coll.CollectionChanged += control.infoMessages_CollectionChanged;
-
                 control.addText(coll);
+
+                coll.CollectionChanged += control.infoMessages_CollectionChanged;
+              
             }
 
         }

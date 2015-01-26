@@ -4,7 +4,9 @@ using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -198,6 +200,29 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
         }
 
+        public class DummyComparer : IComparer
+        {
+            public int Compare(object a, object b)
+            {
+                Location nodeA = (Location)a;
+                Location nodeB = (Location)b;
+
+                return(nodeA.NrImported.CompareTo(nodeB.NrImported));
+              
+            }
+        }
+
+        private void location_Click(object sender, RoutedEventArgs e)
+        {
+            /*GridViewColumnHeader column = (sender as GridViewColumnHeader);
+            string sortBy = column.Tag.ToString();
+           
+            var dataView =
+                    (ListCollectionView)CollectionViewSource.GetDefaultView(treeView.ItemsSource);
+            dataView.CustomSort = new DummyComparer();
+            dataView.Refresh();*/
+                                                          
+        }
         
     }
 }

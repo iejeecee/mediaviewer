@@ -16,7 +16,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
         public DefaultMediaStateCollectionView(IMediaState mediaState)
             : base(mediaState)
         {
-            filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.All);
+            filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.None);
             sortFunc = MediaStateSortFunctions.getSortFunction(MediaStateSortMode.Name);
 
             FilterModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateFilterMode)));         
@@ -42,7 +42,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
                 switch (filterMode)
                 {
-                    case MediaStateFilterMode.All:
+                    case MediaStateFilterMode.None:
                         if (!MediaStateSortFunctions.isAllSortMode(sortMode))
                         {
                             SortModes.MoveCurrentToFirst();
@@ -67,7 +67,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
        
             };
                                     
-            FilterModes.MoveCurrentTo(MediaStateFilterMode.All);
+            FilterModes.MoveCurrentTo(MediaStateFilterMode.None);
             
         }
 
@@ -103,7 +103,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             switch ((MediaStateFilterMode)FilterModes.CurrentItem)
             {
-                case MediaStateFilterMode.All:
+                case MediaStateFilterMode.None:
                     return (MediaStateSortFunctions.isAllSortMode(mode));
                 case MediaStateFilterMode.Video:
                     return (MediaStateSortFunctions.isVideoSortMode(mode));

@@ -3,7 +3,7 @@
 #include <winbase.h>
 #include <msclr\marshal_cppstd.h>
 #include "ThreadSafeList.h"
-
+#include <iostream>
 
 extern "C" {
 
@@ -12,7 +12,7 @@ extern "C" {
 #ifdef _STDINT_H
 #undef _STDINT_H
 #endif
-# include "stdint.h"
+#include "stdint.h"
 #endif
 
 #include "libavformat/avformat.h"
@@ -46,7 +46,7 @@ class VideoInit {
 protected:
 
 	static bool isAVlibInitialized;
-	static ThreadSafeList<CRITICAL_SECTION **> *criticalSections;
+	//static ThreadSafeList<CRITICAL_SECTION **> *criticalSections;
 
 public:
 
@@ -145,9 +145,9 @@ public:
 		}
 		return 1;
 	}
-*/
+	*/
 
-	static int lockmgr(void **mutex, enum AVLockOp op)
+	/*static int lockmgr(void **mutex, enum AVLockOp op)
 	{
 		// Avoid using unintialized criticalSections by keeping track of which
 		// criticalSections actually exist
@@ -199,11 +199,10 @@ public:
 
 		return 0; 
 	}
-
+	*/
 
 };
 
-bool VideoInit::isAVlibInitialized = false;
-ThreadSafeList<CRITICAL_SECTION **> *VideoInit::criticalSections = new ThreadSafeList<CRITICAL_SECTION **>();
+
 
 }
