@@ -99,7 +99,7 @@ public:
 		const char *errbuf_ptr = errbuf;
 
 		if (av_strerror(err, errbuf, sizeof(errbuf)) < 0)
-			errbuf_ptr = strerror(AVUNERROR(err));
+			strerror_s(errbuf,AVUNERROR(err));
 		
 		return(msclr::interop::marshal_as<System::String^>(errbuf_ptr));
 	}

@@ -1,4 +1,4 @@
-﻿using MediaViewer.Infrastructure.Settings;
+﻿using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;

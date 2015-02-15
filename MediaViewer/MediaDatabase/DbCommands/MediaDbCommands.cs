@@ -25,6 +25,32 @@ namespace MediaViewer.MediaDatabase.DbCommands
             
         }
 
+        public List<BaseMedia> getAllMedia()
+        {
+            return(Db.BaseMediaSet.ToList());
+        }
+
+        public int getNrMedia()
+        {
+            int result = Db.BaseMediaSet.Count();
+
+            return (result);
+        }
+
+        public int getNrImages()
+        {
+            int result = Db.BaseMediaSet.OfType<ImageMedia>().Count();
+
+            return (result);
+        }
+
+        public int getNrVideos()
+        {
+            int result = Db.BaseMediaSet.OfType<VideoMedia>().Count();
+
+            return (result);
+        }
+
         public int getNrMediaInLocation(String location)
         {
             int result = Db.BaseMediaSet.Where(m => m.Location.StartsWith(location)).Count();

@@ -1,4 +1,5 @@
 ﻿using MediaViewer;
+using MediaViewer.Infrastructure;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;

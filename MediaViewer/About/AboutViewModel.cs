@@ -1,17 +1,20 @@
-﻿using Microsoft.Practices.Prism.Mvvm;
+﻿using MediaViewer.Model.Settings;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.ComponentModel.Composition;
 
 namespace MediaViewer.About
 {
-    class AboutViewModel : BindableBase
+    [Export]
+    public class AboutViewModel : SettingsBase
     {
-
-        public AboutViewModel()
+        public AboutViewModel() :
+            base("About", new Uri(typeof(AboutView).FullName, UriKind.Relative))
         {
             AssemblyInfo = Assembly.GetEntryAssembly().GetName();       
             getLibraryVersionsInfo();

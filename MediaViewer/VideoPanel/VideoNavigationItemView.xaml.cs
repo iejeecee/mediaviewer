@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel.Composition;
+using Microsoft.Practices.ServiceLocation;
 
 namespace MediaViewer.VideoPanel
 {
@@ -24,12 +25,13 @@ namespace MediaViewer.VideoPanel
     [ViewSortHint("02")]
     public partial class VideoNavigationItemView : UserControl
     {
-        [Import]
-        public IRegionManager RegionManager { get; set; }
-
+   
         public VideoNavigationItemView()
         {
             InitializeComponent();
+
+            // initialize a instance of videosettings
+            ServiceLocator.Current.GetInstance(typeof(VideoSettingsViewModel));
         }
 
         private void navigationButton_Click(object sender, RoutedEventArgs e)

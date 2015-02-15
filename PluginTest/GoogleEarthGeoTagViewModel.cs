@@ -21,10 +21,10 @@ using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer;
 using MediaViewer.Model.Media.State;
-using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Commands;
-using MediaViewer.Model.Global.Commands;
+using MediaViewer.Infrastructure.Global.Commands;
+using MediaViewer.Model.Mvvm;
 
 namespace PluginTest
 {

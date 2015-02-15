@@ -169,7 +169,9 @@ namespace MediaViewer.Model.Utils
                     throw new IOException(win32exception.Message);
                 }
 
-                progress.InfoMessages.Add("Copied: " + source + " -> " + destination);
+                string info = "Copied: " + source + " -> " + destination;
+                progress.InfoMessages.Add(info);
+                Logger.Log.Info(info);
 
                 return (true);
 
@@ -238,10 +240,13 @@ namespace MediaViewer.Model.Utils
             {
                 progress.ItemProgress = 0;
                 progress.ItemInfo = "Moving: " + source + "->" + destination;
-              
+                              
                 System.IO.Directory.Move(source, destination);
-                
-                progress.InfoMessages.Add("Moved: " + source + " -> " + destination);
+
+                string info = "Moved: " + source + " -> " + destination;
+
+                progress.InfoMessages.Add(info);
+                Logger.Log.Info(info);
                 progress.ItemProgress = progress.ItemProgressMax;
             }
             else
@@ -255,7 +260,11 @@ namespace MediaViewer.Model.Utils
                 copyFile(source, destination, progress);
 
                 System.IO.File.Delete(source);
-                progress.InfoMessages.Add("Deleted: " + source);
+
+                string info = "Deleted: " + source;
+
+                progress.InfoMessages.Add(info);
+                Logger.Log.Info(info);
             }
 
         }
@@ -653,6 +662,11 @@ namespace MediaViewer.Model.Utils
 
         public static string getProperDirectoryCapitalization(DirectoryInfo dirInfo)
         {
+            if (dirInfo.Exists == false)
+            {
+                throw new DirectoryNotFoundException(dirInfo.FullName + " not found");
+            }
+
             DirectoryInfo parentDirInfo = dirInfo.Parent;
             if (parentDirInfo == null)
             {
@@ -668,6 +682,11 @@ namespace MediaViewer.Model.Utils
         {
             FileInfo fileInfo = new FileInfo(filename);
             DirectoryInfo dirInfo = fileInfo.Directory;
+
+            if (fileInfo.Exists == false)
+            {
+                throw new FileNotFoundException(filename + " not found");
+            }
 
             string result = Path.Combine(getProperDirectoryCapitalization(dirInfo),
                 dirInfo.GetFiles(fileInfo.Name)[0].Name);

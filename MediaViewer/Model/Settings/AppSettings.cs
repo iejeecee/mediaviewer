@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 
 //https://github.com/JakeGinnivan/SettingsProvider.net
-namespace MediaViewer.Infrastructure.Settings
+namespace MediaViewer.Model.Settings
 {
    
     public class AppSettings
@@ -28,6 +28,29 @@ namespace MediaViewer.Infrastructure.Settings
             TranscodeOutputDirectoryHistory = new ObservableCollection<string>();
             VideoScreenShotLocation = null;
             VideoScreenShotLocationHistory = new ObservableCollection<string>();
+
+            BrowsePathHistory = new ObservableCollection<string>();
+            FavoriteLocations = new ObservableCollection<string>();
+        }
+
+        public static T getSettings<T>(String name) where T : new()
+        {
+            String fullName = appName + "." + name;
+
+            var settingsProvider = new SettingsProvider(new RoamingAppDataStorage(fullName));
+
+            T result = settingsProvider.GetSettings<T>();
+
+            return (result);
+        }
+
+        public static void saveSettings<T>(String name, T settings) 
+        {
+            String fullName = appName + "." + name;
+
+            var settingsProvider = new SettingsProvider(new RoamingAppDataStorage(fullName));
+
+            settingsProvider.SaveSettings<T>(settings);            
         }
 
         protected static AppSettings load()
@@ -86,7 +109,11 @@ namespace MediaViewer.Infrastructure.Settings
         public ObservableCollection<String> TorrentAnnounceHistory { get; set; }
         public String VideoScreenShotLocation { get; set; }
         public ObservableCollection<String> VideoScreenShotLocationHistory { get; set; }
-        public ObservableCollection<string> TranscodeOutputDirectoryHistory { get; set; }
+        public ObservableCollection<String> TranscodeOutputDirectoryHistory { get; set; }
+
+        // mediafilebrowser
+        public ObservableCollection<String> BrowsePathHistory { get; set; }
+        public ObservableCollection<String> FavoriteLocations { get; set; }
 
         public void clearHistory()
         {
@@ -97,6 +124,8 @@ namespace MediaViewer.Infrastructure.Settings
             TranscodeOutputDirectoryHistory.Clear();
             VideoScreenShotLocation = null;
             VideoScreenShotLocationHistory.Clear();
+            BrowsePathHistory.Clear();
+            FavoriteLocations.Clear();
         }
             
     }

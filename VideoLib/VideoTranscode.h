@@ -10,6 +10,7 @@ using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
 using namespace msclr::interop;
 using namespace MediaViewer::Infrastructure::Utils;
+using namespace MediaViewer::Infrastructure::Logging;
 
 
 namespace VideoLib {
@@ -80,24 +81,10 @@ public:
 		Console::WriteLine(gcnew System::String(message)); 
 	}
 
-	void listEncoders() {
-
-		AVCodec *codec = av_codec_next(NULL);
-
-		while(codec != NULL) {
-
-			if(codec->encode2 != NULL && codec->name != NULL) {
-
-				System::Diagnostics::Debug::Print(marshal_as<String ^>(std::string(codec->name)));
-			}
-		
-			codec = av_codec_next(codec);
-		}
-	}
 	
 	double smallestOffset;
 
-	void setDtsOffsets(AVPacket &packet) {
+	void setDtsOffsets(const AVPacket &packet) {
 		
 		//get the dts value of the first input packet and subtract it from subsequent dts & pts
 		//values to make sure the output video starts at time zero.	
@@ -108,12 +95,12 @@ public:
 		if(packet.dts != AV_NOPTS_VALUE) {
 
 			// packet has a dts value, subtract from subsequent dts/pts values
-			dtsOffsetSeconds = packet.dts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+			dtsOffsetSeconds = -packet.dts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
 			
 		} else if(packet.pts != AV_NOPTS_VALUE) {
 
 			// packet only has a pts value, subtract from subsequent dts/pts values
-			dtsOffsetSeconds = packet.pts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+			dtsOffsetSeconds = -packet.pts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
 
 		} else {
 
@@ -124,7 +111,7 @@ public:
 
 		// check if the pts/dts value of the current packet is smaller as the current smallest value we found
 		// if so use this value instead
-		if(dtsOffsetSeconds < smallestOffset) {
+		if(dtsOffsetSeconds > smallestOffset) {
 
 			smallestOffset = dtsOffsetSeconds;
 
@@ -146,9 +133,7 @@ public:
 	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken ^token, 
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
 	{
-
-		//listEncoders();
-
+		
 		Video::enableLibAVLogging(AV_LOG_INFO);
 		Video::setLogCallback((LOG_CALLBACK)logCallback);
 
@@ -160,8 +145,7 @@ public:
 		AVMediaType type;
 		int ret = 0;
 		int (*dec_func)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
-		
-		
+				
 		int got_frame;
 		
 		try {
@@ -187,7 +171,7 @@ public:
 			int i = 0;
 			double progress = 0;
 	
-			smallestOffset = DBL_MAX;
+			smallestOffset = -DBL_MAX;
 
 			// read all packets 
 			while (1) {
@@ -255,12 +239,12 @@ public:
 					
 					if(packet.dts != AV_NOPTS_VALUE) {
 
-						packet.dts -= streamInfo[inStreamIdx]->dtsOffset;
+						packet.dts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 
 					if(packet.pts != AV_NOPTS_VALUE) {
 
-						packet.pts -= streamInfo[inStreamIdx]->dtsOffset;
+						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 								
 					packet.dts = av_rescale_q_rnd(packet.dts,
@@ -279,7 +263,8 @@ public:
 					if (ret < 0) {
 
 						av_frame_free(&frame);
-						throw gcnew VideoLibException("Error while decoding: " + inputFilename);						
+						Logger::Log->Error("Error while decoding: " + inputFilename);
+						break;										
 					}
 
 					if (got_frame) {
@@ -303,12 +288,12 @@ public:
 
 					if(packet.dts != AV_NOPTS_VALUE) {
 
-						packet.dts -= streamInfo[inStreamIdx]->dtsOffset;
+						packet.dts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 
 					if(packet.pts != AV_NOPTS_VALUE) {
 
-						packet.pts -= streamInfo[inStreamIdx]->dtsOffset;
+						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 
 					// remux this frame without reencoding 
@@ -387,7 +372,8 @@ public:
 protected:
 
 	void initVideoSettings(const AVCodec* encoder, AVStream *outStream, AVCodecContext *dec_ctx,
-		Dictionary<String ^, Object ^> ^options) {
+		Dictionary<String ^, Object ^> ^options) 
+	{
 
 		AVCodecContext *enc_ctx = outStream->codec;
 
@@ -460,17 +446,25 @@ protected:
 		}
 
 		enc_ctx->sample_rate = sampleRate;
-		
-		if(!dec_ctx->channel_layout) {
 
-			enc_ctx->channels = dec_ctx->channels;
-			enc_ctx->channel_layout = av_get_default_channel_layout(dec_ctx->channels);
+		int nrChannels = dec_ctx->channels;
 
-		} else {
+		if(options->ContainsKey("nrChannels")) {
+
+			nrChannels = (int)options["nrChannels"];
+
+		} 
+					
+		//if(!dec_ctx->channel_layout) {
+
+			enc_ctx->channels = nrChannels;
+			enc_ctx->channel_layout = av_get_default_channel_layout(nrChannels);
+
+		/*} else {
 
 			enc_ctx->channel_layout = dec_ctx->channel_layout;
 			enc_ctx->channels = av_get_channel_layout_nb_channels(dec_ctx->channel_layout);			
-		}
+		}*/
 
 		// take first format from list of supported formats 
 		enc_ctx->sample_fmt = encoder->sample_fmts[0];
@@ -615,21 +609,6 @@ protected:
 			} else {
 
 				streamInfo.push_back(new StreamInfo());
-
-				// if this stream must be remuxed 
-				/*AVStream *out_stream = avformat_new_stream(output->getFormatContext(), NULL);
-				if (!out_stream) {
-
-					throw gcnew VideoLib::VideoLibException("Could not create new stream: " + outputFilename);
-				}
-
-				enc_ctx = out_stream->codec;	
-				
-				ret = avcodec_copy_context(enc_ctx, dec_ctx);
-				if (ret < 0) {
-
-					throw gcnew VideoLib::VideoLibException("Copying stream context failed: " + outputFilename);							
-				}*/
 				
 			}
 
@@ -836,6 +815,20 @@ protected:
 				if(output->getAudioCodecContext()->frame_size != 0) {
 
 					audioGraph = "asetnsamples=n=" + output->getAudioCodecContext()->frame_size;
+				}
+
+				if(output->getAudioCodecContext()->sample_rate != input->getAudioCodecContext()->sample_rate)
+				{
+					if(audioGraph->Equals("anull")) {
+
+						audioGraph = "";
+
+					} else {
+
+						audioGraph += ",";
+					}
+
+					audioGraph = "aresample=" + output->getAudioCodecContext()->sample_rate;
 				}
 
 				std::string value = msclr::interop::marshal_as<std::string>(audioGraph);

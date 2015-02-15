@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer
+namespace MediaViewer.Infrastructure
 {
     public static class RegionNames
     {
@@ -16,5 +16,7 @@ namespace MediaViewer
         public const String MediaFileBrowserPluginRegion = "MediaFileBrowserPluginRegion";
         public const String MediaFileBrowserContentRegion = "MediaFileBrowserContentRegion";
         public const String MediaFileBrowserRightTabRegion = "MediaFileBrowserRightTabRegion";
+
+        public const String GlobalSettingsRegion = "GlobalSettingsRegion";
     }
 }

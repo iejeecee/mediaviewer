@@ -51,9 +51,12 @@ namespace MediaViewer.UserControls.LogTextBox
             if (e.NewValue != null)
             {
                 var coll = (ObservableCollection<String>)e.NewValue;
-                // Subscribe to CollectionChanged on the new collection
-                control.addText(coll);
+                
+                // copy the collection to be added as text to prevent cross thread changes
+                // generating errors
+                control.addText(coll.ToList());
 
+                // Subscribe to CollectionChanged on the new collection
                 coll.CollectionChanged += control.infoMessages_CollectionChanged;
               
             }

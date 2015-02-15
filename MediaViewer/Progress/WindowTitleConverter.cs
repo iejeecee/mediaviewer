@@ -15,13 +15,25 @@ namespace MediaViewer.Progress
             String title = (String)values[0];
             int totalProgress = (int)values[1];
             int totalProgressMax = (int)values[2];
-            int itemProgress = (int)values[3];
-            int itemProgressMax = (int)values[4];
 
-            String totalProgressString = "Finished: " + totalProgress.ToString() + "/" + totalProgressMax.ToString() + ", ";
-            String itemProgressString = itemProgressMax != 0 ? "Progress: " + ((int)((itemProgress / (float)itemProgressMax) * 100)).ToString() + "%" : "";
+            string info;
 
-            return (title + " - " + totalProgressString + itemProgressString);
+            if (values.Count() > 3)
+            {
+                int itemProgress = (int)values[3];
+                int itemProgressMax = (int)values[4];
+
+                String totalProgressString = "Finished: " + totalProgress.ToString() + "/" + totalProgressMax.ToString() + ", ";
+                String itemProgressString = itemProgressMax != 0 ? "Progress: " + ((int)((itemProgress / (float)itemProgressMax) * 100)).ToString() + "%" : "";
+
+                info = totalProgressString + itemProgressString;
+            }
+            else
+            {
+                info = "Finished: " + (int)((totalProgress / (double)totalProgressMax) * 100) + "%";               
+            }
+
+            return (title + " - " + info);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

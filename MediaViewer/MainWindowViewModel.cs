@@ -12,7 +12,7 @@ using MediaViewer.ImagePanel;
 using MediaViewer.Import;
 using MediaViewer.Model.Media.File.Watcher;
 using System.ComponentModel.Composition;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.TagEditor;
 using Microsoft.Practices.Prism.Commands;
@@ -103,16 +103,7 @@ namespace MediaViewer
                     //TagEditorView tagEditor = new TagEditorView();
                     //tagEditor.ShowDialog();
                 });
-
-            AboutCommand = new Command(() =>
-                {
-                    AboutView about = new AboutView();
-                    AboutViewModel aboutViewModel = new AboutViewModel();
-                    about.DataContext = aboutViewModel;
-
-                    about.ShowDialog();
-
-                });
+         
 
             ShowLogCommand = new Command(() =>
                 {
@@ -153,15 +144,7 @@ namespace MediaViewer
         {
             get { return tagEditorCommand; }
             set { tagEditorCommand = value; }
-        }
-
-        Command aboutCommand;
-
-        public Command AboutCommand
-        {
-            get { return aboutCommand; }
-            set { aboutCommand = value; }
-        }
+        }  
 
         Command showLogCommand;
 

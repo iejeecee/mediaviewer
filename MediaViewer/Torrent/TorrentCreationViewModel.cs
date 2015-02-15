@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 

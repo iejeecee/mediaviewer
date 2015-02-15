@@ -116,6 +116,10 @@
       <HintPath>..\packages\CommonServiceLocator.1.2\lib\portable-windows8+net40+sl5+windowsphone8\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Classic" />
+    <Reference Include="SettingsProviderNet, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\SettingsProviderNet.2.1.1\lib\net40\SettingsProviderNet.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.dll</HintPath>
@@ -156,6 +160,7 @@
     <Reference Include="System.Windows.Controls.Layout.Toolkit, Version=3.5.40128.1, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\WPFToolkit.3.5.50211.1\lib\System.Windows.Controls.Layout.Toolkit.dll</HintPath>
     </Reference>
+    <Reference Include="System.Windows.Controls.Ribbon" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -201,6 +206,11 @@
     <Compile Include="GridImage\ImageCollage\ImageCollageViewModel.cs" />
     <Compile Include="GridImage\ImageCollage\PictureGridImage.cs" />
     <Compile Include="GridImage\VideoPreviewImage\VideoGridImage.cs" />
+    <Compile Include="MediaDatabase\DbSettings\DbSettingsView.xaml.cs">
+      <DependentUpon>DbSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\DbSettings\DbSettingsViewModel.cs" />
+    <Compile Include="MediaDatabase\DbSettings\TagOperationsViewModel.cs" />
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaGrid\InfoIconsCache.cs" />
     <Compile Include="MediaGrid\MediaGridItemView2.xaml.cs">
@@ -213,11 +223,11 @@
     </Compile>
     <Compile Include="MediaGrid\RatingCache.cs" />
     <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
-    <Compile Include="Model\Global\Commands\GlobalCommands.cs" />
-    <Compile Include="Model\Mvvm\CloseableBindableBase.cs" />
     <Compile Include="Model\Collections\LockedObservableCollection.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
+    <Compile Include="Model\Global\Commands\GlobalCommands.cs" />
     <Compile Include="Model\Global\Events\GlobalCommandEvent.cs" />
+    <Compile Include="Model\Global\Events\MediaBrowserEvent.cs" />
     <Compile Include="Model\Global\Events\MediaSelectionEvent.cs" />
     <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
@@ -241,7 +251,6 @@
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
-    <Compile Include="Model\Global\Events\MediaBrowserEvent.cs" />
     <Compile Include="MediaGrid\ExtraItemInfoView.xaml.cs">
       <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
     </Compile>
@@ -291,11 +300,27 @@
     <Compile Include="Model\Media\State\MediaStateChangedEventArgs.cs" />
     <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
-    <Compile Include="Model\Mvvm\Command.cs" />
     <Compile Include="Model\Concurrency\PriorityScheduler.cs" />
+    <Compile Include="Model\Mvvm\CloseableBindableBase.cs" />
+    <Compile Include="Model\Mvvm\Command.cs" />
+    <Compile Include="Model\Settings\AppSettings.cs" />
+    <Compile Include="Model\Settings\SettingsBase.cs" />
+    <Compile Include="Model\Settings\SettingsNavigationItemView.xaml.cs">
+      <DependentUpon>SettingsNavigationItemView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Settings\SettingsView.xaml.cs">
+      <DependentUpon>SettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Model\Settings\SettingsViewModel.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
+    <Compile Include="UserControls\LocationBox\BooleanToSolidColorBrushConverter.cs" />
+    <Compile Include="UserControls\LocationBox\LocationBoxView.xaml.cs">
+      <DependentUpon>LocationBoxView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\LocationBox\LocationItem.cs" />
+    <Compile Include="UserControls\LocationBox\PopupViewModel.cs" />
     <Compile Include="UserControls\Pager\IPageable.cs" />
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
       <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
@@ -306,7 +331,6 @@
     </Compile>
     <Compile Include="Progress\TotalProgressTextConverter.cs" />
     <Compile Include="Progress\WindowTitleConverter.cs" />
-    <Compile Include="RegionNames.cs" />
     <Compile Include="Shell.xaml.cs">
       <DependentUpon>Shell.xaml</DependentUpon>
     </Compile>
@@ -516,7 +540,6 @@
     <Compile Include="Search\SearchView.xaml.cs">
       <DependentUpon>SearchView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings.cs" />
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
     <Compile Include="UserControls\Relation\RelationEnum.cs" />
@@ -554,6 +577,7 @@
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VideoPanel\VideoSettings.cs" />
     <Compile Include="VideoPanel\VideoSettingsView.xaml.cs">
       <DependentUpon>VideoSettingsView.xaml</DependentUpon>
     </Compile>
@@ -579,6 +603,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="GridImage\ImageCollage\ImageCollageView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="MediaDatabase\DbSettings\DbSettingsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -633,6 +661,14 @@
     <Page Include="Import\ImportView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Model\Settings\SettingsNavigationItemView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Model\Settings\SettingsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Progress\CancellableOperationProgressView.xaml">
       <SubType>Designer</SubType>
@@ -707,6 +743,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\Loading\LoadingView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\LocationBox\LocationBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1017,6 +1057,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\star.ico" />
+    <Resource Include="Resources\Icons\settings.ico" />
+    <Resource Include="Resources\Icons\NavigateBackwards .ico" />
+    <Resource Include="Resources\Icons\NavigateForwards.ico" />
     <Resource Include="Resources\Icons\videocut.ico" />
     <Resource Include="Resources\Icons\videotranscode.ico" />
     <Resource Include="Resources\Icons\transcode.ico" />

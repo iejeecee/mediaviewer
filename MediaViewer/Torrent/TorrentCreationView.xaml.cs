@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Mvvm;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -35,8 +35,12 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.GridImage.ImageCollage;
 using MediaViewer.VideoTranscode;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Global.Events;
+using System.Collections.ObjectModel;
+using MediaViewer.UserControls.LocationBox;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -152,14 +156,19 @@ namespace MediaViewer.MediaFileBrowser
 
         IRegionManager RegionManager {get;set;}
         IEventAggregator EventAggregator { get; set; }
+        AppSettings Settings { get; set; }
 
-        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
+        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator, AppSettings settings)
         {
 
             this.mediaFileWatcher = mediaFileWatcher;
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
+            Settings = settings;
 
+            BrowsePathHistory = Settings.BrowsePathHistory;            
+            FavoriteLocations = Settings.FavoriteLocations;            
+                 
             ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
@@ -299,6 +308,7 @@ namespace MediaViewer.MediaFileBrowser
             EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(mediaFileBrowser_MediaBatchSelectionEvent);
             EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(mediaFileBrowser_MediaSelectionEvent);
 
+            
         }
 
         private void mediaFileBrowser_MediaSelectionEvent(MediaFileItem selectedItem)
@@ -337,7 +347,9 @@ namespace MediaViewer.MediaFileBrowser
                     pathWithoutFileName = FileUtils.getPathWithoutFileName(value);
 
                 }
-
+               
+                
+                
                 if (mediaFileWatcher.Path.Equals(pathWithoutFileName))
                 {
 
@@ -345,7 +357,7 @@ namespace MediaViewer.MediaFileBrowser
                 }
 
                 mediaFileWatcher.Path = pathWithoutFileName;
-
+               
                 Title = value;
                 EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
 
@@ -356,6 +368,22 @@ namespace MediaViewer.MediaFileBrowser
             {                
                 return (mediaFileWatcher.Path);
             }
+        }
+
+        ObservableCollection<String> browsePathHistory;
+
+        public ObservableCollection<String> BrowsePathHistory
+        {
+            get { return browsePathHistory; }
+            set { SetProperty(ref browsePathHistory, value); }
+        }
+
+        ObservableCollection<String> favoriteLocations;
+
+        public ObservableCollection<String> FavoriteLocations
+        {
+            get { return favoriteLocations; }
+            set { SetProperty(ref favoriteLocations, value); }
         }
 
         public Command CreateImageCollageCommand { get; set; }

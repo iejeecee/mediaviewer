@@ -98,7 +98,7 @@ public:
 
 	FilterGraph(AVCodecContext *inputContext,  AVSampleFormat outputSampleFMT, uint64_t outputChannelLayout, int outputSampleRate) 
 	{		
-		char args[512];
+		
 		int result = 0;
 
 		initialize();
@@ -115,6 +115,31 @@ public:
 
 			inputContext->channel_layout = av_get_default_channel_layout(inputContext->channels);
 		}
+		 
+		buffersrc_ctx = avfilter_graph_alloc_filter(filterGraph, buffersrc, "src");
+		if (!buffersrc_ctx) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot allocate audio buffer source");		
+		}
+
+		// https://www.ffmpeg.org/doxygen/2.2/filter_audio_8c-example.html
+		// Set the filter options through the AVOptions API. 
+		char ch_layout[64];
+		av_get_channel_layout_string(ch_layout, sizeof(ch_layout), 0, inputContext->channel_layout);
+		av_opt_set (buffersrc_ctx, "channel_layout", ch_layout, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set (buffersrc_ctx, "sample_fmt", av_get_sample_fmt_name(inputContext->sample_fmt), AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_q (buffersrc_ctx, "time_base", inputContext->time_base, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_int(buffersrc_ctx, "sample_rate", inputContext->sample_rate, AV_OPT_SEARCH_CHILDREN);
+		// Now initialize the filter; we pass NULL options, since we have already
+		// set all the options above. 
+		result = avfilter_init_str(buffersrc_ctx, NULL);
+		if (result < 0) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot create audio buffer source");	
+		}
+
+		/*
+		char args[512];
 
 		_snprintf(args, sizeof(args),
 			"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%I64u",
@@ -127,7 +152,7 @@ public:
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot create audio buffer source");					
-		}
+		}*/
 
 		result = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
 			NULL, NULL, filterGraph);
@@ -200,8 +225,7 @@ public:
 
 				throw gcnew VideoLib::VideoLibException("error parsing filter graph");	
 			}
-			
-		
+					
 			result = avfilter_graph_config(filterGraph, NULL);
 			if(result < 0) {
 

@@ -15,13 +15,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
-using MediaViewer.Model.Global.Commands;
+using MediaViewer.Infrastructure.Global.Commands;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Concurrency;
 
@@ -263,11 +263,17 @@ namespace MediaViewer.MetaData
                             ItemInfo = "Saving MetaData: " + item.Location;
                             MediaState.writeMetadata(item, MediaFactory.WriteOptions.AUTO, this);
 
-                            InfoMessages.Add("Completed updating Metadata for: " + item.Location);
+                            string info = "Completed updating Metadata for: " + item.Location;
+
+                            InfoMessages.Add(info);
+                            Logger.Log.Info(info);
                         }
                         else
                         {
-                            InfoMessages.Add("Skipped updating Metadata (no changes) for: " + item.Location);
+                            string info = "Skipped updating Metadata (no changes) for: " + item.Location;
+
+                            InfoMessages.Add(info);
+                            Logger.Log.Info(info);
                         }
 
                         //rename and/or move
@@ -285,7 +291,11 @@ namespace MediaViewer.MetaData
                             {
                                 ItemInfo = "Exporting: " + item.Location;
                                 MediaState.export(item, TokenSource.Token);
-                                InfoMessages.Add("Exported: " + item.Location);
+
+                                string info = "Exported: " + item.Location;
+
+                                InfoMessages.Add(info);
+                                Logger.Log.Info(info);
                             }
                         }
 
@@ -297,7 +307,12 @@ namespace MediaViewer.MetaData
                             {
                                 ItemInfo = "Importing: " + item.Location;
                                 MediaState.import(item, TokenSource.Token);
-                                InfoMessages.Add("Imported: " + item.Media.Location);
+
+                                string info = "Imported: " + item.Media.Location;
+
+                                InfoMessages.Add(info);
+                                Logger.Log.Info(info);
+                                
                             }
 
                         }
@@ -318,8 +333,8 @@ namespace MediaViewer.MetaData
                             MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
 
                         ItemInfo = "Error updating file: " + item.Location;
-                        InfoMessages.Add("Error updating file: " + item.Location + " " + e.Message);
-                        Logger.Log.Error("Error updating file: " + item.Location, e);
+                        InfoMessages.Add(ItemInfo + " " + e.Message);
+                        Logger.Log.Error(ItemInfo, e);
                         MessageBox.Show("Error updating file: " + item.Location + "\n\n" + e.Message,
                             "Error", MessageBoxButton.OK, MessageBoxImage.Error);                                               
                         return;

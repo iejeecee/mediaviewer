@@ -1,28 +1,29 @@
 ﻿using MediaViewer.DirectoryPicker;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
+using MediaViewer.Infrastructure.Global.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MediaViewer.VideoPanel
 {
-    public class VideoSettingsViewModel : CloseableBindableBase 
-    {
-        public Command OkCommand { get; set; }
+    [Export]
+    public class VideoSettingsViewModel : SettingsBase
+    {  
         public Command DirectoryPickerCommand { get; set; }
-        AppSettings Settings { get; set; }
-
-        public VideoSettingsViewModel(AppSettings settings)
-        {
-            Settings = settings;
-
-            OkCommand = new Command(() => OnClosingRequest());
+        
+        public VideoSettings Settings { get; set; }
+        
+        public VideoSettingsViewModel() :
+            base("Video", new Uri(typeof(VideoSettingsView).FullName, UriKind.Relative))
+        {                       
             DirectoryPickerCommand = new Command(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
@@ -35,9 +36,15 @@ namespace MediaViewer.VideoPanel
                     VideoScreenShotLocation = vm.MovePath;
                 }
             });
+                                            
+        }
 
-            VideoScreenShotLocation = settings.VideoScreenShotLocation;          
-            VideoScreenShotLocationHistory = settings.VideoScreenShotLocationHistory;
+        int videoScreenShotTimeOffset;
+
+        public int VideoScreenShotTimeOffset
+        {
+            get { return videoScreenShotTimeOffset; }
+            set { SetProperty(ref videoScreenShotTimeOffset, value); }
         }
 
         private String videoScreenShotLocation;
@@ -46,14 +53,31 @@ namespace MediaViewer.VideoPanel
         {
             get { return videoScreenShotLocation; }
             set {
-
-                Settings.VideoScreenShotLocation = value;
-                MiscUtils.insertIntoHistoryCollection(Settings.VideoScreenShotLocationHistory, value);
+            
+                MiscUtils.insertIntoHistoryCollection(VideoScreenShotLocationHistory, value);
                 SetProperty(ref videoScreenShotLocation, value); 
             }
         }
 
         public ObservableCollection<String> VideoScreenShotLocationHistory { get; set; }
 
+        protected override void OnLoad()
+        {
+            Settings = getSettings<VideoSettings>();
+            Settings.setDefaults();
+
+            VideoScreenShotLocationHistory = Settings.VideoScreenShotLocationHistory;
+            VideoScreenShotLocation = Settings.VideoScreenShotLocation;
+            VideoScreenShotTimeOffset = Settings.VideoScreenShotTimeOffset;
+        }
+
+        protected override void OnSave() 
+        {
+            Settings.VideoScreenShotLocation = VideoScreenShotLocation;
+            Settings.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
+            Settings.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;
+
+            saveSettings(Settings);
+        }
     }
 }

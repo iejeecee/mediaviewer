@@ -13,8 +13,7 @@ using System.Windows;
 namespace MediaViewer.Infrastructure.Utils
 {
     public class ImageUtils
-    {
-        
+    {        
         public static Rectangle centerRectangle(Rectangle outer, Rectangle inner)
         {
 

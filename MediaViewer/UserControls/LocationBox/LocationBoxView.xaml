@@ -1,0 +1,76 @@
+﻿<UserControl x:Class="MediaViewer.UserControls.LocationBox.LocationBoxView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
+             xmlns:Control="clr-namespace:MediaViewer.UserControls.LocationBox"               
+             mc:Ignorable="d" 
+             d:DesignHeight="20" d:DesignWidth="300">
+    <UserControl.Resources>
+        <Style x:Key="buttonStyle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style TargetType="MenuItem">
+            <Setter Property="Header" Value="{Binding Path=Name}" />
+            <Setter Property="ItemsSource" Value="{Binding Path=Children}" />
+            <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>          
+            <Setter Property="CommandParameter" Value="{Binding}"/>
+        </Style>
+        <Control:BooleanToSolidColorBrushConverter x:Key="booleanToSolidColorBrushConverter"/>
+    </UserControl.Resources>
+    <Grid Height="20">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        <Button x:Name="backButton" Grid.Column="0" Width="20" Height="20" Click="backButton_Click" ToolTip="Back">
+            <Button.Content>
+                <Image Source="/MediaViewer;component/Resources/Icons/NavigateBackwards .ico" />
+            </Button.Content>
+        </Button>
+        <Button x:Name="forwardButton" Grid.Column="1" Width="20" Height="20" Click="forwardButton_Click" ToolTip="Forward">
+            <Button.Content>
+                <Image Source="/MediaViewer;component/Resources/Icons/NavigateForwards.ico" />
+            </Button.Content>
+        </Button>
+        <TextBox Grid.Column="2" x:Name="locationTextBox" PreviewKeyDown="locationTextBox_PreviewKeyDown"/>
+        <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Height="20" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                ToolTip="History">
+            <Button.Content>
+                <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>
+            </Button.Content>
+        </Button>
+        <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15" Height="20" Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                ToolTip="Favorites">
+            <Button.Content>
+                <Image Source="/MediaViewer;component/Resources/Icons/up arrow.ico"/>
+            </Button.Content>
+        </Button>    
+        <Button Grid.Column="5" x:Name="addFavoritesButton" Grid.Row="1" Width="15" Height="20" Click="addFavoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                ToolTip="Add To Favorites">
+            <Button.Content>
+                <Image Source="/MediaViewer;component/Resources/Icons/star.ico"/>
+            </Button.Content>
+        </Button>
+        <Popup Grid.Column="2" x:Name="popup" StaysOpen="false" AllowsTransparency="True" Height="Auto" Width="Auto" MaxHeight="200">
+            <Border BorderBrush="Black" BorderThickness="1">
+                <ScrollViewer Name="scrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                    <Menu ItemsSource="{Binding Locations}">
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>                        
+                    </Menu>
+                </ScrollViewer>
+            </Border>
+        </Popup>        
+    </Grid>
+</UserControl>

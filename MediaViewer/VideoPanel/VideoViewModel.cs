@@ -18,7 +18,7 @@ using System.Windows.Input;
 using VideoPlayerControl;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Utils;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using MediaViewer.Model.Global.Events;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System.IO;
@@ -29,19 +29,25 @@ using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.VideoTranscode;
 using MediaViewer.Infrastructure.Video.TranscodeOptions;
+using MediaViewer.Infrastructure.Global.Events;
+using Microsoft.Practices.ServiceLocation;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.VideoPanel
 {
 
     public class VideoViewModel : BindableBase, IDisposable, IMediaFileBrowserContentViewModel
     {
-     
+
+        VideoSettingsViewModel VideoSettings { get; set; }
+
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
         IEventAggregator EventAggregator { get; set; }
       
         public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator;
+            VideoSettings = ServiceLocator.Current.GetInstance(typeof(VideoSettingsViewModel)) as VideoSettingsViewModel;
 
             IsInitialized = false;
             CurrentLocation = null;
@@ -55,9 +61,7 @@ namespace MediaViewer.VideoPanel
                 try
                 {
                     videoPlayer.open(location);
-                    CurrentLocation = location;                   
-                    ScreenShotName = System.IO.Path.GetFileName(location);
-                   
+                    CurrentLocation = location;                                                         
                 }
                 catch (Exception e)
                 {
@@ -80,19 +84,24 @@ namespace MediaViewer.VideoPanel
 
                     try
                     {
+                        Logger.Log.Info("Opening: " + location);
+
                         videoPlayer.open(location);
-                        videoPlayer.startPlay();
+                        videoPlayer.startPlay();                        
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show("Error opening " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        String error = "Error opening " + location;
+
+                        Logger.Log.Error(error, e);
+                        MessageBox.Show(error + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                 }
                 else if (VideoState == VideoPlayerControl.VideoState.OPEN || VideoState == VideoPlayerControl.VideoState.PAUSED)
                 {
                     videoPlayer.startPlay();
-                }
+                }                
 
             }, false);
 
@@ -157,8 +166,14 @@ namespace MediaViewer.VideoPanel
                 if (addCommandToQueue(ScreenShotCommand, null) == true) return;
 
                 try
-                {
-                    videoPlayer.createScreenShot();
+                {                   
+                    String screenShotName = System.IO.Path.GetFileNameWithoutExtension(CurrentLocation);
+                    screenShotName += "." + "jpg";
+
+                    String fullPath = VideoSettings.Settings.VideoScreenShotLocation + "\\" + screenShotName;
+                    fullPath = FileUtils.getUniqueFileName(fullPath);
+
+                    videoPlayer.createScreenShot(fullPath, VideoSettings.Settings.VideoScreenShotTimeOffset);
                 }
                 catch (Exception e)
                 {
@@ -289,17 +304,7 @@ namespace MediaViewer.VideoPanel
         private void videoPlayer_HasAudioChanged(object sender, bool newHasAudio)
         {
             HasAudio = newHasAudio;
-        }
-            
-        public string ScreenShotName
-        {
-            get { return videoPlayer.ScreenShotName; }
-            set
-            {
-                videoPlayer.ScreenShotName = value;
-                OnPropertyChanged("ScreenShotName");                
-            }
-        }
+        }                 
 
         int durationSeconds;
 

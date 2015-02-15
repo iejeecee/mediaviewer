@@ -1,4 +1,5 @@
-﻿using MediaViewer.Infrastructure.Settings;
+﻿using MediaViewer.Model.Mvvm;
+using MediaViewer.Model.Settings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,7 +35,7 @@ namespace MediaViewer.VideoTranscode
 
         }
 
-        private void viewModel_ClosingRequest(object sender, Model.Mvvm.CloseableBindableBase.DialogEventArgs e)
+        private void viewModel_ClosingRequest(object sender, CloseableBindableBase.DialogEventArgs e)
         {
             this.Close();
         }

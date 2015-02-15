@@ -20,6 +20,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.MediaFileBrowser;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Global.Events;
+using MediaViewer.Infrastructure.Global.Events;
 
 namespace MediaViewer.ImagePanel
 {

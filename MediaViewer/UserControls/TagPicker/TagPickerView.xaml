@@ -50,8 +50,9 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
             <ListBox.ContextMenu>
-                <ContextMenu Background="{StaticResource imageGridBackgroundColorBrush}">
+                <ContextMenu Background="{StaticResource imageGridBackgroundColorBrush}">                    
                     <MenuItem Name="contextMenuLink" Header="Link" Click="contextMenuLink_Click"/>
+                    <MenuItem Name="contextMenuUnlink" Header="Unlink All" Click="contextMenuUnlink_Click"/>
                     <MenuItem Name="contextMenuUnselect" Header="Deselect All" Click="contextMenuUnselect_Click"/>
                     <Separator/>
                     <MenuItem Name="contextMenuCut" Header="Cut" Click="contextMenuCut_Click"/>                                         

@@ -12,22 +12,27 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.ComponentModel.Composition;
+using MediaViewer.About;
 
-namespace MediaViewer
+namespace MediaViewer.About
 {
     /// <summary>
     /// Interaction logic for AboutWindow.xaml
     /// </summary>
-    public partial class AboutView : Window
+    [Export]
+    public partial class AboutView : UserControl
     {
-        public AboutView()
+        [ImportingConstructor]
+        public AboutView(AboutViewModel viewModel)
         {
             InitializeComponent();
+            DataContext = viewModel;
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            this.Close();
+            
         }
     }
 }

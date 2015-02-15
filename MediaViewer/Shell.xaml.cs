@@ -24,6 +24,12 @@ using MediaViewer.Logging;
 using MediaViewer.Model.Global.Events;
 using System.Windows.Media.Animation;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.Model.Settings;
+using Microsoft.Practices.ServiceLocation;
+using MediaViewer.About;
+using MediaViewer.MediaDatabase.DbSettings;
 
 
 
@@ -35,9 +41,7 @@ namespace MediaViewer
     [Export]   
     public partial class Shell : Window, IPartImportsSatisfiedNotification
     {
-
         
-
         [Import(AllowRecomposition = false)]
         public IRegionManager RegionManager;
 
@@ -76,6 +80,7 @@ namespace MediaViewer
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(ImageNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(VideoNavigationItemView));
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(MediaFileBrowserNavigationItemView));
+            this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(SettingsNavigationItemView));
 
             EventAggregator.GetEvent<TitleChangedEvent>().Subscribe((title) =>
             {
@@ -107,6 +112,10 @@ namespace MediaViewer
                     }
                 }, ThreadOption.UIThread);
 
+
+            // initialize several settings
+            ServiceLocator.Current.GetInstance(typeof(DbSettingsViewModel));
+            ServiceLocator.Current.GetInstance(typeof(AboutViewModel));
 
             try {
 
@@ -169,7 +178,7 @@ namespace MediaViewer
 
         private void Shell_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            MediaViewer.Infrastructure.Settings.AppSettings.Instance.save();
+            AppSettings.Instance.save();
             Dispatcher.InvokeShutdown();
         }
 

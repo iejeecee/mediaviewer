@@ -12,8 +12,6 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.IO;
-using MediaViewer.Infrastructure.Settings;
-
 
 namespace VideoPlayerControl
 {
@@ -284,7 +282,7 @@ namespace VideoPlayerControl
 
         }                                           
 
-        public void createScreenShot(String screenShotName, int positionSeconds, String videoLocation)
+        public void createScreenShot(String screenShotName, int positionSeconds, String videoLocation, int offsetSeconds)
         {
             lock (renderLock)
             {
@@ -305,10 +303,21 @@ namespace VideoPlayerControl
                     BitmapMetadata metaData = new BitmapMetadata("jpg");
 
                     UriBuilder uri = new UriBuilder(new Uri(videoLocation).AbsoluteUri);
+                 
+                    TimeSpan time = new TimeSpan(0, 0, Math.Max(positionSeconds + offsetSeconds, 0));
+                    String timeString = "";
 
-                    int offsetSeconds = 3;
-                    int offsetPosition = ((positionSeconds - offsetSeconds < 0) ? 0 : positionSeconds - offsetSeconds);
-                    uri.Query = "position=" + offsetPosition;
+                    if(time.Hours > 0) {
+                        timeString += time.TotalHours + "h";
+                    }
+
+                    if(time.Minutes > 0) {
+                        timeString += time.Minutes + "m";
+                    }
+
+                    timeString += time.Seconds + "s";
+
+                    uri.Query = "t=" + timeString;
 
                     metaData.ApplicationName = "MediaViewer v1.0";             
                     metaData.Title = uri.ToString();
@@ -327,22 +336,13 @@ namespace VideoPlayerControl
                     );
 
                     encoder.Frames.Add(BitmapFrame.Create(bitmapSource, null, metaData, null));
-
-                    screenShotName = System.IO.Path.GetFileNameWithoutExtension(screenShotName);
-                    screenShotName += "." + "jpg";
-
-                    String location = AppSettings.Instance.VideoScreenShotLocation == null ?
-                        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) : AppSettings.Instance.VideoScreenShotLocation;
-
-                    screenShotName = Utils.getUniqueFileName(location + "\\" + screenShotName);
-
+                                                     
                     FileStream outputFile = new FileStream(screenShotName, FileMode.Create);
                     //encoder.QualityLevel = asyncState.JpegQuality;
                     encoder.Save(outputFile);
 
                     outputFile.Close();
-              
-                    
+                                  
                     System.Media.SystemSounds.Exclamation.Play();
                 }
                 catch (Exception e)

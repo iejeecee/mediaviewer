@@ -21,6 +21,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Mvvm;
 using System.ComponentModel;
+using MediaViewer.Infrastructure.Global.Events;
 
 namespace MediaViewer.MediaGrid
 {

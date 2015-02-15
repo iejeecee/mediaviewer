@@ -128,6 +128,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Audio Stream" Style="{StaticResource labelStyle}"/>
                 <Grid Grid.Row="0" Grid.Column="1">
@@ -148,7 +149,9 @@
 			            Style="{StaticResource baseComboBoxStyle}"/>                    
                 </Grid>
                 <Label Grid.Row="1" Grid.Column="0" Content="Hz" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" Value="{Binding SampleRate}" Min="32" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" Value="{Binding SampleRate}" Min="8000" Max="48000" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Channels" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding NrChannels}" Min="1" Max="6" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
             </Grid>
         </GroupBox>
         <Button Grid.Row="3" Grid.Column="0" Width="50" Content="Defaults" Command="{Binding DefaultsCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Set Default Values" Margin="5,5,5,5"/>

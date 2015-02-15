@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Utils;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -57,17 +58,31 @@ namespace MediaViewer.UserControls.HyperlinkTextBox
             if (uri.IsFile)          
             {
                 String location = null;
-                int position = 0;
-
+               
                 location = HttpUtility.UrlDecode(uri.AbsolutePath);
 
                 if (MediaFormatConvert.isVideoFile(location))
                 {
                     NameValueCollection values = HttpUtility.ParseQueryString(uri.Query);
 
-                    bool hasPosition = int.TryParse(values["position"], out position);
+                    String[] formats = { @"h'h'm'm's's'", @"m'm's's'", @"s's'"};
 
-                    Shell.ShellViewModel.navigateToVideoView(location, position);
+                    String timeOffsetString = values["t"];
+                    TimeSpan time = new TimeSpan();
+
+                    if (timeOffsetString != null)
+                    {
+                        try
+                        {
+                            bool success = TimeSpan.TryParseExact(timeOffsetString, formats, null, out time);
+                        }
+                        catch(Exception ex)
+                        {
+                            Logger.Log.Error("Error parsing timestring: " + timeOffsetString + " for " + location, ex);
+                        }
+                    }
+
+                    Shell.ShellViewModel.navigateToVideoView(location, (int)time.TotalSeconds);
                 }
 
                 e.Handled = true;

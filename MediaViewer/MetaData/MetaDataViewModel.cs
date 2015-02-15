@@ -16,7 +16,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using System.ComponentModel.Composition;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;

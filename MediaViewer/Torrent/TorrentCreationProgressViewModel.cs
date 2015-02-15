@@ -12,7 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using VideoPlayerControl;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;

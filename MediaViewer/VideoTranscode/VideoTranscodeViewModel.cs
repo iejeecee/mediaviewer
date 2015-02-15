@@ -3,7 +3,7 @@ using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
-using MediaViewer.Infrastructure.Settings;
+using MediaViewer.Model.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -337,6 +337,14 @@ namespace MediaViewer.VideoTranscode
         {
             get { return sampleRate; }
             set { SetProperty(ref sampleRate, value); }
+        }
+
+        int? nrChannels;
+
+        public int? NrChannels
+        {
+            get { return nrChannels; }
+            set { SetProperty(ref nrChannels, value); }
         }
 
         String title;

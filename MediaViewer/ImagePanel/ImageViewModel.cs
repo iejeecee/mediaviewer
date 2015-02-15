@@ -25,6 +25,7 @@ using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Infrastructure.Global.Events;
 
 namespace MediaViewer.ImagePanel
 {

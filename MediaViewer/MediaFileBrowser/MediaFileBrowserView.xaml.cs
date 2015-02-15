@@ -30,6 +30,8 @@ using Microsoft.Practices.ServiceLocation;
 using MediaViewer.VideoPanel;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Global.Events;
 
 namespace MediaViewer.MediaFileBrowser
 {

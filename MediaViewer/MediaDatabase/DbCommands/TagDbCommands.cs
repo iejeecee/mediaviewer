@@ -19,6 +19,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
 
         }
+
+        public List<Tag> getAllUnusedTags()
+        {           
+            List<Tag> tags = Db.TagSet.Where((t) => t.Used == 0).ToList();
+
+            return (tags);
+        }
          
         public List<Tag> getAllTags(bool loadAllReferences = false)
         {

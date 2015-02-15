@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File.Watcher;
+﻿using MediaViewer.Model.Mvvm;
+using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace MediaViewer.GridImage.ImageCollage
             DataContext = ViewModel;
         }
 
-        private void vm_ClosingRequest(object sender, Model.Mvvm.CloseableBindableBase.DialogEventArgs e)
+        private void vm_ClosingRequest(object sender, CloseableBindableBase.DialogEventArgs e)
         {
             this.Close();
         }

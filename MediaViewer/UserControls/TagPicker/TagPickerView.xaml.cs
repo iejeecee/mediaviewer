@@ -347,6 +347,19 @@ namespace MediaViewer.UserControls.TagPicker
                 contextMenuUnselect.IsEnabled = true;
             }
 
+            if (selectedTags.Count == 1 && EnableLinkingTags)
+            {
+                contextMenuUnlink.IsEnabled = true;
+            }
+            else if (EnableLinkingTags)
+            {
+                contextMenuUnlink.IsEnabled = false;
+            }
+            else
+            {
+                contextMenuUnlink.Visibility = System.Windows.Visibility.Collapsed;
+            }
+
             if (selectedTags.Count < 2 && EnableLinkingTags)
             {
                 contextMenuLink.IsEnabled = false;
@@ -424,6 +437,22 @@ namespace MediaViewer.UserControls.TagPicker
                 selectedTags[i].IsChecked = false;
             }
         }
+
+        void unlinkTags(TagDbCommands tagCommands)
+        {
+            Tag parent = tagCommands.getTagByName((selectedTags[0].Tag as Tag).Name);
+
+            if (parent == null)
+            {
+                return;
+            }
+
+            tagCommands.Db.Entry(parent).State = EntityState.Modified;
+
+            parent.ChildTags.Clear();
+
+            tagCommands.Db.SaveChanges();
+        }
     
         void linkTags(TagDbCommands tagCommands)
         {
@@ -464,9 +493,8 @@ namespace MediaViewer.UserControls.TagPicker
             
         }
 
-        private void contextMenuLink_Click(object sender, RoutedEventArgs e)
-        {
-            if (selectedTags.Count < 2) return;         
+        void updateTag(Action<TagDbCommands> function) {
+
             int nrTries = 3;
 
             using (TagDbCommands tagCommands = new TagDbCommands())
@@ -475,31 +503,44 @@ namespace MediaViewer.UserControls.TagPicker
                 {
                     try
                     {
-                        linkTags(tagCommands);
+                        function(tagCommands);
                         unselectAllTags();
                         nrTries = 0;
                     }
                     catch (DbUpdateConcurrencyException ex)
-                    {                      
+                    {
                         if (nrTries > 0)
-                        {                           
-                            nrTries -= 1;                        
+                        {
+                            nrTries -= 1;
                         }
                         else
-                        {                     
-                            Logger.Log.Error("Error linking tags", ex);
-                            MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        {
+                            Logger.Log.Error("Error updating tag", ex);
+                            MessageBox.Show("Error updating tag\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                         }
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log.Error("Error linking tags", ex);
-                        MessageBox.Show("Error linking tags\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Logger.Log.Error("Error updating tag", ex);
+                        MessageBox.Show("Error updating tag\n\n" + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
 
                 } while (nrTries > 0);
             }
+        }
 
+        private void contextMenuUnlink_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedTags.Count != 1) return;
+
+            updateTag(unlinkTags);
+        }
+
+        private void contextMenuLink_Click(object sender, RoutedEventArgs e)
+        {
+            if (selectedTags.Count < 2) return;
+
+            updateTag(linkTags);            
         }
 
         private void contextMenuUnselect_Click(object sender, RoutedEventArgs e)

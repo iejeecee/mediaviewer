@@ -82,6 +82,11 @@ namespace MediaViewer.VideoTranscode
                 options.Add("sampleRate", AsyncState.SampleRate.Value);
             }
 
+            if (AsyncState.NrChannels.HasValue)
+            {
+                options.Add("nrChannels", AsyncState.NrChannels.Value);
+            }
+
             if (AsyncState.IsTimeRangeEnabled)
             {
                 options.Add("startTimeRange", AsyncState.StartTimeRange);
@@ -200,8 +205,8 @@ namespace MediaViewer.VideoTranscode
             }
         }
 
-        public Model.Mvvm.Command OkCommand {get;set;}
-        public Model.Mvvm.Command CancelCommand { get; set; }
+        public Command OkCommand {get;set;}
+        public Command CancelCommand { get; set; }
 
         public System.Threading.CancellationToken CancellationToken { get; set; }
 

@@ -1,6 +1,7 @@
-﻿using MediaViewer.Infrastructure.Settings;
+﻿using MediaViewer.Model.Settings;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 namespace MediaViewer.VideoPanel
@@ -18,21 +20,14 @@ namespace MediaViewer.VideoPanel
     /// <summary>
     /// Interaction logic for VideoSettingsView.xaml
     /// </summary>
-    public partial class VideoSettingsView : Window
+    [Export]
+    public partial class VideoSettingsView : UserControl
     {
-        public VideoSettingsViewModel ViewModel { get; set; }
-
-        public VideoSettingsView()
+        [ImportingConstructor]
+        public VideoSettingsView(VideoSettingsViewModel viewModel)
         {
             InitializeComponent();
-            ViewModel = new VideoSettingsViewModel(AppSettings.Instance);
-
-            ViewModel.ClosingRequest += ViewModel_ClosingRequest;
-        }
-
-        void ViewModel_ClosingRequest(object sender, Model.Mvvm.CloseableBindableBase.DialogEventArgs e)
-        {
-            Close();
+            DataContext = viewModel;
         }
     }
 }

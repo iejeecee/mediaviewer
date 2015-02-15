@@ -24,6 +24,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.VideoSlider;
+using MediaViewer.Infrastructure.Global.Events;
 
 namespace MediaViewer.VideoPanel
 {
@@ -34,9 +35,7 @@ namespace MediaViewer.VideoPanel
     [PartCreationPolicy(CreationPolicy.NonShared)]
     public partial class VideoView : UserControl, IRegionMemberLifetime, INavigationAware
     {
-
         bool updateTimeLineSlider;
-
 
         public VideoViewModel ViewModel { get; set; }
       
@@ -65,6 +64,7 @@ namespace MediaViewer.VideoPanel
                 }
 
             });
+            
         }
 
         void VideoView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)

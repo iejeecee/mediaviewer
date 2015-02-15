@@ -9,7 +9,6 @@ using System.Windows.Forms;
 using VideoLib;
 using System.Drawing;
 using System.Drawing.Imaging;
-using MediaViewer.Infrastructure.Settings;
 
 namespace VideoPlayerControl
 {
@@ -113,9 +112,7 @@ namespace VideoPlayerControl
    
         Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
-
-        public String ScreenShotName { get; set; }
-
+    
         int positionSeconds;
 
         public int PositionSeconds
@@ -257,10 +254,9 @@ namespace VideoPlayerControl
                  
         }
 
-        public void createScreenShot()
+        public void createScreenShot(String screenShotName, int positionOffset)
         {
-           
-            videoRender.createScreenShot(ScreenShotName, PositionSeconds, VideoLocation);
+            videoRender.createScreenShot(screenShotName, PositionSeconds, VideoLocation, positionOffset);
         }
 
         public void Dispose()

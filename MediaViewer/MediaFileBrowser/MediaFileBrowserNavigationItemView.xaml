@@ -6,7 +6,8 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <Button x:Name="navigationButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" Click="navigationButton_Click" Style="{DynamicResource {x:Static ToolBar.ButtonStyleKey}}">
+        <Button x:Name="navigationButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" Click="navigationButton_Click" Style="{DynamicResource {x:Static ToolBar.ButtonStyleKey}}"
+                ToolTip="Browser">
             <Image Source="pack://application:,,,/Resources/Icons/browser.ico" />
         </Button>
     </Grid>

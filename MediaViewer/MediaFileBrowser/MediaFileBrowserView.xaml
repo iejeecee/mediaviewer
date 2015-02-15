@@ -9,6 +9,7 @@
              xmlns:MediaFileBrowser="clr-namespace:MediaViewer.MediaFileBrowser"           
              xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
              xmlns:MediaDataGrid="clr-namespace:MediaViewer.UserControls.MediaDataGrid"
+             xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="903.333">
@@ -20,7 +21,7 @@
             <MediaFileBrowser:ImageOptionsVisibilityConverter x:Key="imageOptionsVisibilityConverter"/>
             <!--http://stackoverflow.com/questions/14357503/how-to-add-tab-items-programmatically-to-tab-control-in-prism-->
             <Style x:Key="MyTabItemStyle" TargetType="{x:Type TabItem}">
-                <Setter Property="Header" Value="{Binding Content.DataContext, RelativeSource={RelativeSource Self}, Converter={StaticResource toStringConverter}}"/>
+                <Setter Property="Header" Value="{Binding Content.DataContext, Converter={StaticResource toStringConverter}, RelativeSource={RelativeSource Self}}"/>
                 <Setter Property="Background" Value="{StaticResource uiElementBorderColor}"/>
                 <Setter Property="Foreground" Value="{StaticResource uiElementBorderTextColor}"/>
             </Style>
@@ -69,7 +70,14 @@
         </Grid.ColumnDefinitions>
         <TabControl x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" Background="{StaticResource uiElementBorderColor}">
             <TabItem Header="Browse" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
-                <DirectoryPicker:DirectoryPicker x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}"/>
+                <Grid Background="{StaticResource uiElementBackgroundColor}">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <LocationBox:LocationBoxView Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Location="{Binding BrowsePath, Mode=TwoWay}" LocationHistory="{Binding BrowsePathHistory}" FavoriteLocations="{Binding FavoriteLocations}"/>
+                    <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                </Grid>
             </TabItem>
             <TabItem Header="Search" Background="{StaticResource uiElementBorderColor}" Foreground="{StaticResource uiElementBorderTextColor}">
                 <Search:SearchView Grid.Column="0"/>
@@ -86,8 +94,8 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <ContentControl regions:RegionManager.RegionName="MediaFileBrowserContentRegion"                            
-                            Grid.Row="0"/>
-            <ContentControl Grid.Row="1" ContentTemplate="{StaticResource imageControls}" Content="{Binding ImageViewModel}" Visibility="{Binding CurrentViewModel,Converter={StaticResource imageOptionsVisibilityConverter}}"/>
+				Grid.Row="0"/>
+            <ContentControl Grid.Row="1" ContentTemplate="{StaticResource imageControls}" Content="{Binding ImageViewModel}" Visibility="{Binding CurrentViewModel, Converter={StaticResource imageOptionsVisibilityConverter}}"/>
             <Grid Grid.Row="2" x:Name="miscOptionsGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -129,8 +137,7 @@
                             </Button.Style>
                         </Button>
                         <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserPluginRegion"
-                            Grid.Column="1" Margin="2,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center">                            
-                        </ItemsControl>                       
+							Grid.Column="1" Margin="2,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
                         <Button x:Name="deleteButton" Grid.Column="3" Width="30" Height="20" ToolTip="Delete" Command="{Binding DeleteSelectedItemsCommand}" Margin="0,0,2,0">
                             <Image Source="pack://application:,,,/Resources/Icons/delete.ico"/>
                         </Button>
@@ -141,10 +148,9 @@
         </Grid>
         <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
         <TabControl x:Name="rightTabControl"
-                    regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion"                     
-                    Grid.Column="2" BorderThickness="5" 
-                    BorderBrush="{StaticResource uiElementBorderColor}" 
-                    Margin="2,0,0,0">         
-        </TabControl>
+			regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion"                     
+			Grid.Column="2" BorderThickness="5" 
+			BorderBrush="{StaticResource uiElementBorderColor}" 
+			Margin="2,0,0,0"/>        
     </Grid>
 </UserControl>

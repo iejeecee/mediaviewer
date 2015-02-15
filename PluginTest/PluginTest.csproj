@@ -105,6 +105,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\MediaViewer.Infrastructure\MediaViewer.Infrastructure.csproj">
+      <Project>{a4d7c456-6180-4196-9a48-128894b6a32a}</Project>
+      <Name>MediaViewer.Infrastructure</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MediaViewer\MediaViewer.csproj">
       <Project>{4c27e034-3647-4087-9699-c1562d604c44}</Project>
       <Name>MediaViewer</Name>
