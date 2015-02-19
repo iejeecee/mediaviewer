@@ -16,7 +16,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
             <Style TargetType="{x:Type CheckBox}" x:Key="checkBoxStyle">
@@ -78,7 +78,7 @@
 					ItemsSource="{Binding MetaDataPresets}"                    
 					IsEnabled="{Binding IsEnabled}" IsEditable="False"
                     DisplayMemberPath="Name"
-                    Style="{StaticResource baseComboBoxStyle}"/>
+                    />
                 <Button Grid.Row="4" x:Name="metadataPresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
@@ -91,8 +91,7 @@
 					Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
 					ItemsSource="{Binding FilenameHistory}"
 					IsEnabled="{Binding IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}" 
-                    IsEditable="True" IsTextSearchEnabled="False"
-                    Style="{StaticResource baseComboBoxStyle}"/>
+                    IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
                 <Button Grid.Row="0" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
@@ -106,7 +105,7 @@
 					ItemsSource="{Binding MovePathHistory}"
 					ToolTip="{Binding Location}"
 					IsEnabled="{Binding IsEnabled}" IsReadOnly="True" IsEditable="True"
-                    Style="{StaticResource baseComboBoxStyle}"/>
+                    />
                 <Button Grid.Row="1" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"

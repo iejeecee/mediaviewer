@@ -2,13 +2,13 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
-        Title="Create Torrent File" Height="350" Width="500" Icon="/MediaViewer;component/Resources/Icons/torrent.ico">
+        Title="Create Torrent File" SizeToContent="WidthAndHeight" Width="350" Icon="/MediaViewer;component/Resources/Icons/torrent.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
         </ResourceDictionary>
@@ -37,7 +37,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Included Files" Style="{StaticResource labelStyle}"/>
-                <ListBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Media}" DisplayMemberPath="Location" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                <ListBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Media}" DisplayMemberPath="Location" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled" MinHeight="200"/>
                 <Label Grid.Row="1" Grid.Column="0" Content="Torrent Name" Style="{StaticResource labelStyle}"/>
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding TorrentName}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,2,0,2"/>
                 <Label Grid.Row="2" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
@@ -46,7 +46,7 @@
 			        ItemsSource="{Binding OutputPathHistory}"
 			        ToolTip="{Binding OutputPath}"
 			        IsReadOnly="True" IsEditable="True"
-			        Style="{StaticResource baseComboBoxStyle}"/>
+			        />
                 <Button Grid.Row="2" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
 			        HorizontalAlignment="Right"					
 			        Command="{Binding DirectoryPickerCommand}"
@@ -59,7 +59,7 @@
 			        ItemsSource="{Binding AnnounceURLHistory}"
 			        ToolTip="{Binding OutputPath}"
 			        IsEditable="True"
-			        Style="{StaticResource baseComboBoxStyle}"/>                             
+			        />                             
                 <Label Grid.Row="4" Grid.Column="0" Content="Private" Style="{StaticResource labelStyle}"/>
                 <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding IsPrivate}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>                
                 <Label Grid.Row="5" Grid.Column="0" Content="Comment" Style="{StaticResource labelStyle}"/>

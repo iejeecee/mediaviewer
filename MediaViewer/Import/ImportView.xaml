@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:Search="clr-namespace:MediaViewer.Search"
-        Title="Import" Height="400" Width="500" Icon="/MediaViewer;component/Resources/Icons/Import.ico">
+        Title="Import" SizeToContent="WidthAndHeight" Width="500" Icon="/MediaViewer;component/Resources/Icons/Import.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -26,7 +26,7 @@
         </Grid.RowDefinitions>
         <DataGrid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
                   VerticalAlignment="Stretch" ItemsSource="{Binding IncludeLocations}" Background="LightGray" 
-                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedIncludeLocation}" VerticalScrollBarVisibility="Visible">
+                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedIncludeLocation}" VerticalScrollBarVisibility="Visible" MinHeight="200">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Include Locations" Binding="{Binding Location, Mode=OneWay}" />
                 <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
@@ -45,7 +45,7 @@
         </StackPanel>
         <DataGrid Grid.Row="2" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
                   VerticalAlignment="Stretch" ItemsSource="{Binding ExcludeLocations}" Background="LightGray" 
-                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedExcludeLocation}" VerticalScrollBarVisibility="Visible">
+                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedExcludeLocation}" VerticalScrollBarVisibility="Visible" MinHeight="200">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Exclude Locations" Binding="{Binding Location, Mode=OneWay}" />
                 <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
@@ -58,7 +58,7 @@
             </DataGrid.RowStyle>
         </DataGrid>
         <StackPanel Grid.Row="3" Orientation="Horizontal">
-        <Button Content="Add" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding AddExcludeLocationCommand}"/>
+        <Button Content="Add" Width="50" Margin="5,5,5,5" VerticalAlignment="Top" Command="{Binding AddExcludeLocationCommand}"/>
         <Button Content="Remove" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding RemoveExcludeLocationCommand}"/>
         <Button Content="Clear" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding ClearExcludeLocationsCommand}"/>
         </StackPanel>

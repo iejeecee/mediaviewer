@@ -25,7 +25,7 @@
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
-        <TextBox Grid.Row="2" HorizontalAlignment="Center" Height="160" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True" Style="{StaticResource baseTextBoxStyle}"/>
+        <TextBox Grid.Row="2" HorizontalAlignment="Center" Height="160" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True"/>
         <TextBlock Grid.Row="3" HorizontalAlignment="Center" Text="©2013/2014 IJC. All Rights Reserved" Foreground="LightGray" Margin="0,0,0,10"/>                        
     </Grid>                         
 </UserControl>

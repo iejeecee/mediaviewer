@@ -7,12 +7,17 @@
              mc:Ignorable="d" 
              x:Name="autoCompleteBoxView"
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>       
-        <Style x:Key="buttonStyle" TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">           
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-        <Control:HighlightQueryConverter x:Key="highlightQueryConverter"/>
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="buttonStyle" TargetType="Button" BasedOn="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>
+            <Control:HighlightQueryConverter x:Key="highlightQueryConverter"/>
+        </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
         <TextBox x:Name="autoCompleteTextBox" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" LostFocus="autoCompleteTextBox_LostFocus" PreviewKeyDown="autoCompleteTextBox_PreviewKeyDown"/>                 

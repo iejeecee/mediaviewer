@@ -6,70 +6,107 @@
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              xmlns:Control="clr-namespace:MediaViewer.UserControls.LocationBox"               
              mc:Ignorable="d" 
-             d:DesignHeight="20" d:DesignWidth="300">
+             d:DesignHeight="60"  d:DesignWidth="300">
     <UserControl.Resources>
-        <Style x:Key="buttonStyle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-        <Style TargetType="MenuItem">
-            <Setter Property="Header" Value="{Binding Path=Name}" />
-            <Setter Property="ItemsSource" Value="{Binding Path=Children}" />
-            <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>          
-            <Setter Property="CommandParameter" Value="{Binding}"/>
-        </Style>
-        <Control:BooleanToSolidColorBrushConverter x:Key="booleanToSolidColorBrushConverter"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style x:Key="buttonStyle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}">
+                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            </Style>            
+            <Control:BooleanToSolidColorBrushConverter x:Key="booleanToSolidColorBrushConverter"/>
+            <ContextMenu x:Key="nodeContextMenu">
+                <MenuItem Header="Remove" Command="{Binding RemoveCommand}" CommandParameter="{Binding}"/>
+            </ContextMenu>
+        </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Height="20">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        <Button x:Name="backButton" Grid.Column="0" Width="20" Height="20" Click="backButton_Click" ToolTip="Back">
-            <Button.Content>
-                <Image Source="/MediaViewer;component/Resources/Icons/NavigateBackwards .ico" />
-            </Button.Content>
-        </Button>
-        <Button x:Name="forwardButton" Grid.Column="1" Width="20" Height="20" Click="forwardButton_Click" ToolTip="Forward">
-            <Button.Content>
-                <Image Source="/MediaViewer;component/Resources/Icons/NavigateForwards.ico" />
-            </Button.Content>
-        </Button>
-        <TextBox Grid.Column="2" x:Name="locationTextBox" PreviewKeyDown="locationTextBox_PreviewKeyDown"/>
-        <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Height="20" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
-                ToolTip="History">
-            <Button.Content>
-                <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>
-            </Button.Content>
-        </Button>
-        <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15" Height="20" Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
-                ToolTip="Favorites">
-            <Button.Content>
-                <Image Source="/MediaViewer;component/Resources/Icons/up arrow.ico"/>
-            </Button.Content>
-        </Button>    
-        <Button Grid.Column="5" x:Name="addFavoritesButton" Grid.Row="1" Width="15" Height="20" Click="addFavoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
-                ToolTip="Add To Favorites">
-            <Button.Content>
-                <Image Source="/MediaViewer;component/Resources/Icons/star.ico"/>
-            </Button.Content>
-        </Button>
+    <Grid Height="27">                
+        <mwt:ClassicBorderDecorator Grid.Column="2" BorderThickness="2,2,2,2" BorderStyle="Sunken">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Button x:Name="backButton" Grid.Column="0" Width="20" Height="20" Click="backButton_Click" ToolTip="Back">
+                    <Button.Content>
+                        <Image Source="/MediaViewer;component/Resources/Icons/NavigateBackwards .ico" />
+                    </Button.Content>
+                </Button>
+                <Button x:Name="forwardButton" Grid.Column="1" Width="20" Height="20" Click="forwardButton_Click" ToolTip="Forward">                    
+                    <Button.Content>
+                        <Image Source="/MediaViewer;component/Resources/Icons/NavigateForwards.ico" />
+                    </Button.Content>
+                </Button>
+                <Menu Grid.Column="2" x:Name="locationListBox" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                    ItemsSource="{Binding SplitPath}" VerticalContentAlignment="Center">
+                    <Menu.Resources>
+                        <Style TargetType="MenuItem">
+                            <Setter Property="Header" Value="{Binding Path=DirectoryName}" />
+                            <Setter Property="ItemsSource" Value="{Binding Path=SubDirectories}" />
+                            <Setter Property="Icon" Value="{Binding Icon}"/>
+                            <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>
+                            <Setter Property="CommandParameter" Value="{Binding}"/>
+                        </Style>
+                    </Menu.Resources>
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+                <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ToolTip="History">
+                    <Button.Content>
+                        <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15"  Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ToolTip="Favorites">
+                    <Button.Content>
+                        <Image Source="/MediaViewer;component/Resources/Icons/up arrow.ico"/>
+                    </Button.Content>
+                </Button>
+                <Button Grid.Column="5" x:Name="addFavoritesButton" Grid.Row="1" Width="15"  Click="addFavoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ToolTip="Add To Favorites">
+                    <Button.Content>
+                        <Image Source="/MediaViewer;component/Resources/Icons/star.ico"/>
+                    </Button.Content>
+                </Button>
+            </Grid>
+        </mwt:ClassicBorderDecorator>        
         <Popup Grid.Column="2" x:Name="popup" StaysOpen="false" AllowsTransparency="True" Height="Auto" Width="Auto" MaxHeight="200">
-            <Border BorderBrush="Black" BorderThickness="1">
+            <Border BorderBrush="Black" BorderThickness="1">                        
                 <ScrollViewer Name="scrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
                     <Menu ItemsSource="{Binding Locations}">
+                        <Menu.Resources>
+                            <Style TargetType="MenuItem">
+                                <Setter Property="Header" Value="{Binding Path=Name}" />
+                                <Setter Property="ItemsSource" Value="{Binding Path=Children}" />
+                                <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>
+                                <Setter Property="CommandParameter" Value="{Binding}"/>                                
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsRemovable}" Value="False">
+                                        <Setter Property="ContextMenu" Value="{x:Null}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsRemovable}" Value="True">
+                                        <Setter Property="ContextMenu" Value="{StaticResource nodeContextMenu}"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Menu.Resources>
                         <Menu.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <VirtualizingStackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
-                        </Menu.ItemsPanel>                        
+                        </Menu.ItemsPanel>                              
                     </Menu>
-                </ScrollViewer>
+                </ScrollViewer>                    
             </Border>
         </Popup>        
     </Grid>

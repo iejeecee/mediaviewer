@@ -30,6 +30,7 @@ using MediaViewer.Model.Settings;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.About;
 using MediaViewer.MediaDatabase.DbSettings;
+using MediaViewer.Model.Utils.Windows;
 
 
 
@@ -54,7 +55,9 @@ namespace MediaViewer
 
         public Shell()
         {
-           
+
+            //ColorUtils.printSystemColors();
+
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
 
             InitializeComponent();

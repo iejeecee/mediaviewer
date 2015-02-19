@@ -22,13 +22,24 @@ namespace MediaViewer.UserControls.NumberSpinner
     /// </summary>
     public partial class IntegerSpinner : IntegerSpinnerBase
     {
-        
+        static IntegerSpinner()
+        {
+            BackgroundProperty.OverrideMetadata(typeof(IntegerSpinner), new FrameworkPropertyMetadata(new PropertyChangedCallback(BackgroundPropertyChanged)));
+        }
+
         public IntegerSpinner()
         {
             InitializeComponent();
 
             initializeElems(upButton, downButton, valueTextBox);
-           
+            
+        }
+
+        private static void BackgroundPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            IntegerSpinner spinner = (IntegerSpinner)d;
+
+            //spinner.valueTextBox.Background = (Brush)e.NewValue;
         }
 
         protected override void addValue()

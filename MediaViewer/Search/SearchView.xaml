@@ -18,7 +18,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
                 <Setter Property="VerticalAlignment" Value="Top"/>
             </Style>
@@ -64,7 +64,7 @@
                 <TextBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" x:Name="queryTextBox" HorizontalAlignment="Stretch" Text="{Binding Query.Text}" 
 					ToolTip="Query" KeyDown="queryTextBox_KeyDown" GotFocus="queryTextBox_GotFocus" Margin="5,5,5,4.667" AllowDrop="True"/>
                 <Label Grid.Row="1" Grid.Column="0"  Content="Media Type" Style="{StaticResource labelStyle}" Margin="0,0.333,0,0"/>
-                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5.333,5,5" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" 
+                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5.333,5,5"  HorizontalAlignment="Stretch" 
 					ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
                 <Label Grid.Row="2" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Grid.RowSpan="2"/>
                 <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"

@@ -2,14 +2,14 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="MediaViewer.GridImage.ImageCollage.ImageCollageView"
-        Title="Image Collage" Height="330" Width="350" Icon="/MediaViewer;component/Resources/Icons/collage.ico"
-        ResizeMode="NoResize">
+        Title="Image Collage" Icon="/MediaViewer;component/Resources/Icons/collage.ico"
+        SizeToContent="Height" Width="350" ResizeMode="NoResize" >
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
         </ResourceDictionary>
@@ -47,8 +47,7 @@
 			        Text="{Binding OutputPath, Mode=TwoWay}"
 			        ItemsSource="{Binding OutputPathHistory}"
 			        ToolTip="{Binding OutputPath}"
-			        IsReadOnly="True" IsEditable="True"
-			        Style="{StaticResource baseComboBoxStyle}"/>
+			        IsReadOnly="True" IsEditable="True"/>
                 <Button Grid.Row="0" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
 			        HorizontalAlignment="Right"					
 			        Command="{Binding DirectoryPickerCommand}"

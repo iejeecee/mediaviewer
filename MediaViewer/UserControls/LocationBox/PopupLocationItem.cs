@@ -10,16 +10,19 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.LocationBox
 {
-    public class LocationItem : BindableBase, IEquatable<LocationItem>
+    public class PopupLocationItem : BindableBase, IEquatable<PopupLocationItem>
     {        
-        public LocationItem(String location, Command<LocationItem> isSelectedCommand)
+        public PopupLocationItem(String location, Command<PopupLocationItem> isSelectedCommand,
+            Command<PopupLocationItem> removeCommand)
         {
             Name = location;
-            Children = new ObservableCollection<LocationItem>();
+            Children = new ObservableCollection<PopupLocationItem>();
 
             IsSelected = false;
+            IsRemovable = false;
 
             IsSelectedCommand = isSelectedCommand;
+            RemoveCommand = removeCommand;
              
         }
 
@@ -29,15 +32,14 @@ namespace MediaViewer.UserControls.LocationBox
         {
             get { return name; }
             set { 
-                String properPath = FileUtils.getProperDirectoryCapitalization(new System.IO.DirectoryInfo(value));
-
-                SetProperty(ref name, properPath); 
+                
+                SetProperty(ref name, value); 
             }
         }
 
-        ObservableCollection<LocationItem> children;
+        ObservableCollection<PopupLocationItem> children;
 
-        public ObservableCollection<LocationItem> Children
+        public ObservableCollection<PopupLocationItem> Children
         {
             get { return children; }
             set { children = value; }
@@ -51,9 +53,18 @@ namespace MediaViewer.UserControls.LocationBox
             set { SetProperty(ref isSelected, value); }
         }
 
-        public Command<LocationItem> IsSelectedCommand { get; set; }
+        bool isRemovable;
+
+        public bool IsRemovable
+        {
+            get { return isRemovable; }
+            set { SetProperty(ref isRemovable, value); }
+        }
+
+        public Command<PopupLocationItem> IsSelectedCommand { get; set; }
+        public Command<PopupLocationItem> RemoveCommand { get; set; }
       
-        public bool Equals(LocationItem other)
+        public bool Equals(PopupLocationItem other)
         {
             return (Name.Equals(other.Name));
         }

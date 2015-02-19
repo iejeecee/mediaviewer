@@ -52,76 +52,15 @@ namespace MediaViewer.DirectoryPicker
             });
           
         }
-
-        private void currentPathComboBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                BindingExpression be = currentPathComboBox.GetBindingExpression(ComboBox.TextProperty);          
-                be.UpdateSource();              
-            }
-        }
-
+     
         private void currentPathComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count > 0)
             {
                 directoryPickerViewModel.MovePath = (String)e.AddedItems[0];
             }
-            /*
-            if (e.AddedItems.Count > 0)
-            {
-                //directoryPickerViewModel.MovePath = (String)e.AddedItems[0];
-                currentPathComboBox.SetCurrentValue(ComboBox.TextProperty, (String)e.AddedItems[0]);
-                //currentPathComboBox.Text = (String)e.AddedItems[0];
-                BindingExpression be = currentPathComboBox.GetBindingExpression(ComboBox.TextProperty);
-                be.UpdateSource();
-            }
-            else
-            {
-                currentPathComboBox.Text = (String)e.RemovedItems[0];
-            }
-            */
-           
+                  
         }
-/*
-        private void oldNameButton_Click(object sender, RoutedEventArgs e)
-        {
-            TextBox textBox = newFileNameComboBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            } 
-
-            int index = textBox.CaretIndex;
-
-            directoryPickerViewModel.InsertOldFilenameCommand.DoExecute(index);
-        }
-
-       
-
-        private void counterButton_Click(object sender, RoutedEventArgs e)
-        {
-            TextBox textBox = newFileNameComboBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            } 
-            int index = textBox.CaretIndex;
-
-            int counter = (int)counterIntegerUpDown.Value;
-
-            Tuple<int, int> args = new Tuple<int, int>(index, counter);
-
-            directoryPickerViewModel.InsertCounterCommand.DoExecute(args);
-        }
-*/
-      
-
-        
+              
     }
 }

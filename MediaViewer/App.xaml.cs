@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase.DataTransferObjects;
+using MediaViewer.Model.Utils.WPF;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -31,6 +32,8 @@ namespace MediaViewer
               SplashScreen.Show(false, true);
 #endif
 
+            ThemeHelper.SetTheme("classic", "");
+
             MediaViewerBootstrapper bootstrapper = new MediaViewerBootstrapper();
             bootstrapper.Run();                     
 
@@ -41,5 +44,7 @@ namespace MediaViewer
         {
             return ("MediaViewer v" + Assembly.GetEntryAssembly().GetName().Version.ToString());
         }
+
+       
     }
 }

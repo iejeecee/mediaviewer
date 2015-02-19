@@ -29,7 +29,7 @@
         <ComboBox x:Name="filterComboBox" HorizontalAlignment="Left" Margin="38,0,0,5.333" Grid.Row="1" 
                   VerticalAlignment="Bottom" Width="120" SelectedIndex="2" Grid.ColumnSpan="2" 
                   SelectionChanged="filterComboBox_SelectionChanged"
-                  Style="{StaticResource baseComboBoxStyle}">
+                  >
             <ListBoxItem Content="Errors"/>
             <ListBoxItem Content="Warnings"/>
             <ListBoxItem Content="Info"/>

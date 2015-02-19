@@ -67,7 +67,7 @@
                 </Grid.ColumnDefinitions>
             <ToggleButton Grid.Column="0" x:Name="playButton" Margin="5,5,0,5" Width="38" Height="21" Checked="playButton_Checked" Unchecked="playButton_Unchecked">
                 <ToggleButton.Style>
-                    <Style TargetType="ToggleButton">
+                   <Style TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
                         <Style.Triggers>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter Property="Content">

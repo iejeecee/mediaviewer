@@ -12,14 +12,17 @@ namespace MediaViewer.UserControls.LocationBox
 {
     class PopupViewModel : BindableBase
     {        
-        public event EventHandler<LocationItem> LocationSelected;
+        public event EventHandler<PopupLocationItem> LocationSelected;
+        public event EventHandler<PopupLocationItem> LocationRemoved;
 
         public PopupViewModel()
         {
-            Locations = new ObservableCollection<LocationItem>();
-            LocationSelectedCommand = new Command<LocationItem>((item) =>
-            {                
-                foreach (LocationItem items in Locations)
+            Locations = new ObservableCollection<PopupLocationItem>();
+            LocationSelectedCommand = new Command<PopupLocationItem>((item) =>
+            {
+                if (!Locations.Contains(item)) return;
+
+                foreach (PopupLocationItem items in Locations)
                 {
                     items.IsSelected = false;
                 }
@@ -32,33 +35,42 @@ namespace MediaViewer.UserControls.LocationBox
                 }
                              
             });
+
+            LocationRemovedCommand = new Command<PopupLocationItem>((item) =>
+            {
+                Locations.Remove(item);
+
+                if (LocationRemoved != null)
+                {
+                    LocationRemoved(this, item);
+                }
+            });
        
         }
 
-        public void setLocations(ObservableCollection<String> locations)
+        public void setLocations(ObservableCollection<String> locations, bool isRemovable)
         {
            
             Locations.Clear();
 
             for(int i = locations.Count() - 1; i >= 0; i--)
             {
-                try
-                {
-                    Locations.Insert(0, new LocationItem(locations[i], LocationSelectedCommand));
-                }
-                catch(Exception e)
-                {
-                    Logger.Log.Error("Removed incorrect directory", e);
-                    locations.RemoveAt(i);
-                }
+                
+               PopupLocationItem location = new PopupLocationItem(locations[i], LocationSelectedCommand, 
+                   LocationRemovedCommand);
+               location.IsRemovable = isRemovable;
+
+               Locations.Insert(0, location);
+              
             }
         }
 
-        Command<LocationItem> LocationSelectedCommand { get; set; }
+        Command<PopupLocationItem> LocationSelectedCommand { get; set; }
+        Command<PopupLocationItem> LocationRemovedCommand { get; set; }
 
-        ObservableCollection<LocationItem> locations;
+        ObservableCollection<PopupLocationItem> locations;
 
-        public ObservableCollection<LocationItem> Locations
+        public ObservableCollection<PopupLocationItem> Locations
         {
             get { return locations; }
             set { locations = value; }

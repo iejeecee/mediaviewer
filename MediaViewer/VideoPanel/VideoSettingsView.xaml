@@ -11,7 +11,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
@@ -54,7 +54,7 @@
 			ItemsSource="{Binding VideoScreenShotLocationHistory}"
 			ToolTip="{Binding VideoScreenShotLocation}"
 			IsReadOnly="True" IsEditable="True"
-			Style="{StaticResource baseComboBoxStyle}"/>
+			/>
         <Button Grid.Row="1" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 			HorizontalAlignment="Right"				
 			Command="{Binding DirectoryPickerCommand}"

@@ -172,7 +172,7 @@ public:
 			double progress = 0;
 	
 			smallestOffset = -DBL_MAX;
-
+		
 			// read all packets 
 			while (1) {
 
@@ -295,6 +295,7 @@ public:
 
 						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
+					
 
 					// remux this frame without reencoding 
 					packet.dts = av_rescale_q_rnd(packet.dts,

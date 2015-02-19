@@ -61,7 +61,7 @@
                                      FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"
                                      PrevPageCommand="{Binding PrevPageCommand}" IsPagingEnabled="{Binding IsPagingEnabled}"/>
                     <Label Content="Sort" Grid.Column="2" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="sortComboBox" Grid.Column="3" Margin="2,2,2,2" Style="{StaticResource baseComboBoxStyle}" HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                    <ComboBox x:Name="sortComboBox" Grid.Column="3" Margin="2,2,2,2"  HorizontalAlignment="Stretch" VerticalAlignment="Center"
                               ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
             </Border>

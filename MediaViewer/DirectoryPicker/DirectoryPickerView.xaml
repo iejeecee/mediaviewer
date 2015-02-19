@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"     
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
+        xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"
         x:Class="MediaViewer.DirectoryPicker.DirectoryPickerView"
         Title="{Binding InfoString}" Height="400" Width="600" Icon="/MediaViewer;component/Resources/Icons/folder_open.ico">
     <Window.Resources>
@@ -15,10 +16,12 @@
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}" Margin="0,0,-0.333,-2.667">
         <GroupBox Header="Destination Path" HorizontalAlignment="Stretch" Margin="0,0,0,30" VerticalAlignment="Stretch">
             <Grid>
-                <ComboBox x:Name="currentPathComboBox" IsEditable="True" ItemsSource="{Binding MovePathHistory}" Text="{Binding MovePath, Mode=TwoWay, UpdateSourceTrigger=Explicit}" HorizontalAlignment="Stretch"
-					PreviewKeyDown="currentPathComboBox_PreviewKeyDown" SelectionChanged="currentPathComboBox_SelectionChanged" Height="20" VerticalAlignment="Top"/>
-                <DirectoryPicker:DirectoryPicker x:Name="directoryBrowser" VerticalAlignment="Stretch" Margin="0,21,0,0" SelectedLocation="{Binding MovePath, Mode=TwoWay}"/>
-                <!--<DirectoryBrowser:DirectoryBrowserControl2 x:Name="directoryBrowser" VerticalAlignment="Stretch" Margin="0,21,0,0" SelectedPath="{Binding MovePath, Mode=TwoWay}"/>-->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <LocationBox:LocationBoxView Grid.Row="0" Location="{Binding MovePath, Mode=TwoWay}" LocationHistory="{Binding MovePathHistory}" FavoriteLocations="{Binding FavoriteLocations}" IsUpdateHistory="False" HorizontalAlignment="Stretch"/>             
+                <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryBrowser" VerticalAlignment="Stretch" SelectedLocation="{Binding MovePath, Mode=TwoWay}"/>               
             </Grid>
         </GroupBox>
         <Button Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" Margin="0,0,81,5" VerticalAlignment="Bottom" Width="75"/>

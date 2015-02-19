@@ -5,13 +5,13 @@
         xmlns:Formats="clr-namespace:MediaViewer.Infrastructure.Video.TranscodeOptions;assembly=MediaViewer.Infrastructure"
         xmlns:VideoTranscode="clr-namespace:MediaViewer.VideoTranscode"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
-        Title="{Binding Title}" Height="330" Width="300" Icon="{Binding IconUri}">
+        Title="{Binding Title}" SizeToContent="Height" Width="350" Icon="{Binding IconUri}" ResizeMode="NoResize">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
             <ObjectDataProvider x:Key="containersEnum" MethodName="GetValues" ObjectType="{x:Type System:Enum}">
@@ -59,7 +59,7 @@
 			        ItemsSource="{Binding OutputPathHistory}"
 			        ToolTip="{Binding OutputPath}"
 			        IsReadOnly="True" IsEditable="True"
-			        Style="{StaticResource baseComboBoxStyle}"/>
+			        />
                 <Button Grid.Row="0" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
 			        HorizontalAlignment="Right"					
 			        Command="{Binding DirectoryPickerCommand}"
@@ -71,7 +71,7 @@
 			        SelectedItem="{Binding ContainerFormat, Mode=TwoWay}"
 			        ItemsSource="{Binding Source={StaticResource containersEnum}}"			       
 			        IsReadOnly="True" IsEditable="True"
-			        Style="{StaticResource baseComboBoxStyle}"/>
+			        />
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Video Options">
@@ -97,13 +97,13 @@
 			            SelectedItem="{Binding VideoStreamMode, Mode=TwoWay}"
 			            ItemsSource="{Binding Source={StaticResource streamOptionsEnum}}"			     
 			            IsReadOnly="True" IsEditable="True" IsEnabled="{Binding IsContainerSupportsVideoStream}"
-			            Style="{StaticResource baseComboBoxStyle}"/>
+			            />
                     <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding VideoEncoder, Mode=TwoWay}"
 			            ItemsSource="{Binding SupportedVideoEncoders}"			         
 			            IsReadOnly="True" IsEditable="True"
                         IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"
-			            Style="{StaticResource baseComboBoxStyle}"/>
+			            />
                 </Grid>
                 <Label Grid.Row="1" Grid.Column="0" Content="Preset" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
@@ -111,7 +111,7 @@
 			        ItemsSource="{Binding Source={StaticResource videoEncoderPresetsEnum}}"			       
 			        IsReadOnly="True" IsEditable="True"
                     IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"
-			        Style="{StaticResource baseComboBoxStyle}"/>
+			        />
                 <Label Grid.Row="2" Grid.Column="0" Content="Width" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding Width}" Min="32" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
                 <Label Grid.Row="3" Grid.Column="0" Content="Height" Style="{StaticResource labelStyle}"/>
@@ -140,13 +140,13 @@
 			            SelectedItem="{Binding AudioStreamMode, Mode=TwoWay}"
 			            ItemsSource="{Binding Source={StaticResource streamOptionsEnum}}"			     
 			            IsReadOnly="True" IsEditable="True" IsEnabled="{Binding IsContainerSupportsAudioStream}"
-			            Style="{StaticResource baseComboBoxStyle}"/>
+			            />
                     <ComboBox Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         
 			            SelectedItem="{Binding AudioEncoder, Mode=TwoWay}"
 			            ItemsSource="{Binding SupportedAudioEncoders}"			         
 			            IsReadOnly="True" IsEditable="True"
                         IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"
-			            Style="{StaticResource baseComboBoxStyle}"/>                    
+			            />                    
                 </Grid>
                 <Label Grid.Row="1" Grid.Column="0" Content="Hz" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" Value="{Binding SampleRate}" Min="8000" Max="48000" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding AudioStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>

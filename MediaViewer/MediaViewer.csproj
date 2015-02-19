@@ -312,14 +312,18 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\Settings\SettingsViewModel.cs" />
+    <Compile Include="Model\Utils\Windows\ColorUtils.cs" />
+    <Compile Include="Model\Utils\WPF\ThemeHelper.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
     <Compile Include="UserControls\LocationBox\BooleanToSolidColorBrushConverter.cs" />
+    <Compile Include="UserControls\LocationBox\DirectoryItem.cs" />
     <Compile Include="UserControls\LocationBox\LocationBoxView.xaml.cs">
       <DependentUpon>LocationBoxView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UserControls\LocationBox\LocationItem.cs" />
+    <Compile Include="UserControls\LocationBox\LocationBoxViewModel.cs" />
+    <Compile Include="UserControls\LocationBox\PopupLocationItem.cs" />
     <Compile Include="UserControls\LocationBox\PopupViewModel.cs" />
     <Compile Include="UserControls\Pager\IPageable.cs" />
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
@@ -1057,6 +1061,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\computer.ico" />
     <Resource Include="Resources\Icons\star.ico" />
     <Resource Include="Resources\Icons\settings.ico" />
     <Resource Include="Resources\Icons\NavigateBackwards .ico" />

@@ -11,7 +11,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource baseLabelStyle}">
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
             <CollectionViewSource x:Key="categoriesViewSource" Source="{Binding Categories}"/>
@@ -55,7 +55,7 @@
                     </Grid.RowDefinitions>
                     <Label Grid.Row="0" Grid.Column="0" Content="Name" HorizontalAlignment="Right" HorizontalContentAlignment="Right" Style="{StaticResource labelStyle}" Width="60"/>
                     <TextBox Grid.Row="0" Grid.Column="1" x:Name="categoryNameAutoCompleteBox" Text="{Binding CategoryName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5"
-                             Style="{StaticResource baseTextBoxStyle}" IsReadOnly="{Binding IsCategoryBatchMode}"/>                   
+                             IsReadOnly="{Binding IsCategoryBatchMode}"/>                   
                     <Button Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" Margin="5,5,115,5" VerticalAlignment="Top" Width="50">
                         <Button.Style>
                             <Style TargetType="{x:Type Button}">
@@ -101,12 +101,12 @@
                     <Label Grid.Row="0" Grid.Column="0" Content="Name" HorizontalAlignment="Right" Style="{StaticResource labelStyle}"/>
                     <TextBox Grid.Row="0" Grid.Column="1" x:Name="tagNameAutoCompleteBox" Text="{Binding TagName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                              HorizontalAlignment="Stretch" Height="20" Margin="5,5,5,5" IsReadOnly="{Binding IsTagSelected}"
-                             Style="{StaticResource baseTextBoxStyle}"/>
+                             />
                     <Label Grid.Row="1" Grid.Column="0" Content="Category" HorizontalAlignment="Right"  Style="{StaticResource labelStyle}"/>
                     <ComboBox Grid.Row="1" Grid.Column="1" DisplayMemberPath="Name" 
 						SelectedItem="{Binding TagCategory, ConverterParameter={x:Static TagEditor:TagEditorViewModel.NullCategory}, Converter={StaticResource nullConverter}, Mode=TwoWay}" 
 						Margin="5,5,5,5" HorizontalAlignment="Stretch" Height="20" IsEnabled="{Binding IsTagCategoryEnabled}"
-						Style="{StaticResource baseComboBoxStyle}">
+						>
                         <ComboBox.ItemsSource>
                             <CompositeCollection>
                                 <x:Static Member="MetaData:TagEditorViewModel.NullCategory"/>

@@ -42,21 +42,7 @@
               
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
-    
-    <!-- Label -->
-    <Style TargetType="{x:Type Label}" x:Key="baseLabelStyle">
-        <Setter Property="Foreground" Value="{StaticResource uiElementLabelColor}"/>
-    </Style>
-
-    <!-- TextBox -->
-    <Style TargetType="{x:Type TextBox}" x:Key="baseTextBoxStyle">
-        <Style.Triggers>         
-            <Trigger Property="IsReadOnly" Value="True">
-                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
+         
     <!-- HyperlinkTextBox -->
     <Style TargetType="{x:Type HyperlinkTextBox:HyperlinkTextBoxView}" x:Key="baseHyperlinkTextBoxStyle">
         <Style.Triggers>
@@ -77,20 +63,5 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-
-
-    <!-- ComboBox -->
-    <Style TargetType="{x:Type ComboBox}" x:Key="baseComboBoxStyle">
-        <Style.Triggers>
-            <Trigger Property="IsEditable" Value="False">
-                <Setter Property="Background" Value="LightGray"/>
-            </Trigger>
-            <Trigger Property="IsReadOnly" Value="True">
-                <Setter Property="Background" Value="LightGray"/>
-            </Trigger>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
-            </Trigger>
-        </Style.Triggers>        
-    </Style>
+  
 </ResourceDictionary>

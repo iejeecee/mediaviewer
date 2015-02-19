@@ -1,30 +1,106 @@
 ﻿<Application x:Class="MediaViewer.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->
-        <SolidColorBrush x:Key="disabledColor" Color="#FFD4D0C8"/>
-        <SolidColorBrush x:Key="appBackgroundColor" Color="#FF293955"/>
+        <ResourceDictionary>          
+            <SolidColorBrush x:Key="disabledColor" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="appBackgroundColor" Color="#FF293955"/>
 
-        <SolidColorBrush x:Key="toolBarBackgroundColor" Color="#FFD6DBE9"/>
-        <SolidColorBrush x:Key="menuBackgroundColor" Color="#FFD6DBE9"/>
+            <SolidColorBrush x:Key="toolBarBackgroundColor" Color="#FFD6DBE9"/>
+            <SolidColorBrush x:Key="menuBackgroundColor" Color="#FFD6DBE9"/>
 
-        <SolidColorBrush x:Key="imageGridBackgroundColor" Color="#FF989898"/>
-        <SolidColorBrush x:Key="imageGridItemBackgroundColor" Color="#FFD3D9DD"/>
-        <SolidColorBrush x:Key="imageGridItemSelectedBackgroundColor" Color="LightYellow"/>
-        <SolidColorBrush x:Key="imageGridItemTextColor" Color="Black"/>
-        <SolidColorBrush x:Key="imageGridBorderColor" Color="#FFDCE0EC"/>
-        <SolidColorBrush x:Key="imageGridBorderColor2" Color="#FFB8B8B8"/>
+            <SolidColorBrush x:Key="imageGridBackgroundColor" Color="#FF989898"/>
+            <SolidColorBrush x:Key="imageGridItemBackgroundColor" Color="#FFD3D9DD"/>
+            <SolidColorBrush x:Key="imageGridItemSelectedBackgroundColor" Color="LightYellow"/>
+            <SolidColorBrush x:Key="imageGridItemTextColor" Color="Black"/>
+            <SolidColorBrush x:Key="imageGridBorderColor" Color="#FFDCE0EC"/>
+            <SolidColorBrush x:Key="imageGridBorderColor2" Color="#FFB8B8B8"/>
 
-        <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
-        <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>
-        <SolidColorBrush x:Key="uiElementLabelColor" Color="#FF4D4D4D"/>
-        <SolidColorBrush x:Key="uiElementBorderColor" Color="#FF475B7E"/>
-        <SolidColorBrush x:Key="uiElementBorderTextColor" Color="White"/>
+            <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
+            <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>
+            <SolidColorBrush x:Key="uiElementLabelColor" Color="#FF4D4D4D"/>
+            <SolidColorBrush x:Key="uiElementBorderColor" Color="#FF475B7E"/>
+            <SolidColorBrush x:Key="uiElementBorderTextColor" Color="White"/>
 
-        <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
-        <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
-        <SolidColorBrush x:Key="imageTextColorBrush" Color="Black"/>
+            <SolidColorBrush x:Key="imageGridBackgroundColorBrush" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="imageGridSelectedColorBrush" Color="#FFA4A098"/>
+            <SolidColorBrush x:Key="imageTextColorBrush" Color="Black"/>
+
+            <SolidColorBrush x:Key="buttonBackgroundColorBrush" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="scrollBarBackgroundColorBrush" Color="#FFEAE8E4"/>                                       
+            
+            <Style TargetType="{x:Type TextBox}">
+                <Style.Triggers>
+                    <Trigger Property="IsReadOnly" Value="True">
+                        <Setter Property="Background" Value="LightGray"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="{x:Type ComboBox}">
+                <Style.Triggers>
+                    <Trigger Property="IsEditable" Value="False">
+                        <Setter Property="Background" Value="LightGray"/>
+                    </Trigger>
+                    <Trigger Property="IsReadOnly" Value="True">
+                        <Setter Property="Background" Value="LightGray"/>
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+
+            <Style TargetType="{x:Type NumberSpinner:IntegerSpinner}">
+                <Style.Triggers>                  
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>                                
+
+            <Style TargetType="{x:Type Label}">
+                <Setter Property="Foreground" Value="{StaticResource uiElementLabelColor}"/>
+            </Style>
+            
+        <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->        
+        
+            <!-- force classic colors -->
+            <SolidColorBrush x:Key="{x:Static SystemColors.ActiveBorderBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ActiveCaptionBrushKey}" Color="#FF0A246A"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ActiveCaptionTextBrushKey}" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.AppWorkspaceBrushKey}" Color="#FF808080"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlDarkBrushKey}" Color="#FF808080"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlDarkDarkBrushKey}" Color="#FF404040"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlLightBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlLightLightBrushKey}" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ControlTextBrushKey}" Color="#FF000000"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.DesktopBrushKey}" Color="#FF3A6EA5"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.GradientActiveCaptionBrushKey}" Color="#FFA6CAF0"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.GradientInactiveCaptionBrushKey}" Color="#FFC0C0C0"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.GrayTextBrushKey}" Color="#FF808080"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="#FF0A246A"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightTextBrushKey}" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.HotTrackBrushKey}" Color="#FF000080"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveBorderBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveCaptionBrushKey}" Color="#FF808080"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InactiveCaptionTextBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InfoBrushKey}" Color="#FFFFFFE1"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.InfoTextBrushKey}" Color="#FF000000"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.MenuBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.MenuBarBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.MenuHighlightBrushKey}" Color="#FF0A246A"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.MenuTextBrushKey}" Color="#FF000000"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.ScrollBarBrushKey}" Color="#FFD4D0C8"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.WindowBrushKey}" Color="#FFFFFFFF"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.WindowFrameBrushKey}" Color="#FF000000"/>
+            <SolidColorBrush x:Key="{x:Static SystemColors.WindowTextBrushKey}" Color="#FF000000"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
