@@ -3,6 +3,8 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.Model.Settings;
+using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
@@ -25,7 +27,7 @@ namespace MediaViewer.GridImage.ImageCollage
 
     public class ImageCollageViewModel : CloseableBindableBase
     {
-        protected 
+        AppSettings Settings { get; set; }
 
         ICollection<MediaFileItem> media;
 
@@ -35,9 +37,12 @@ namespace MediaViewer.GridImage.ImageCollage
             set { media = value; }
         }
 
-        public ImageCollageViewModel(MediaFileWatcher mediaFileWatcher)
+        public ImageCollageViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
         {
+            Settings = settings;
+           
             setDefaults(mediaFileWatcher);
+           
 
             directoryPickerCommand = new Command(new Action(() =>
             {
@@ -64,6 +69,7 @@ namespace MediaViewer.GridImage.ImageCollage
                     Task task = vm.generateImage();
                     OnClosingRequest();
                     await task;
+                    MiscUtils.insertIntoHistoryCollection(OutputPathHistory, OutputPath);
                 }
             });
             CancelCommand = new Command(() =>
@@ -84,15 +90,14 @@ namespace MediaViewer.GridImage.ImageCollage
             IsMaxGridHeightEnabled = true;
             MaxGridHeight = 256;            
             OutputPath = mediaFileWatcher.Path;
-            OutputPathHistory = new ObservableCollection<string>();
-            OutputPathHistory.Insert(0, OutputPath);      
+            OutputPathHistory = Settings.ImageCollageOutputDirectoryHistory;                 
             IsCommentEnabled = false;
             FontSize = 20;
             JpegQuality = 80;
             IsAddHeader = true;
             IsAddInfo = true;
             IsUseThumbs = true;
-            Filename = "collage";
+            Filename = String.IsNullOrEmpty(OutputPath) ? "collage" : Path.GetFileName(OutputPath);
         }
 
         string filename;

@@ -12,6 +12,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.IO;
+using SharpDX.Direct3D9;
 
 namespace VideoPlayerControl
 {
@@ -133,8 +134,14 @@ namespace VideoPlayerControl
         {
            
             if (direct3D == null) return;
+           
+			SharpDX.DataRectangle stream = offscreen.LockRectangle(LockFlags.ReadOnly);
+			
+            VideoFrame.copySurfaceToBuffer(stream.DataPointer, 
+                offscreen.Description.Width, offscreen.Description.Height, stream.Pitch, offscreenBuffer);
 
-            VideoFrame.copySurfaceToBuffer(offscreen, offscreenBuffer);               
+            offscreen.UnlockRectangle();
+
             releaseResources();
 
             D3D.PresentParameters[] presentParams = createPresentParams(windowed, owner);
@@ -142,7 +149,13 @@ namespace VideoPlayerControl
             device.Reset(presentParams);
                           
             aquireResources();
-            VideoFrame.copyBufferToSurface(offscreenBuffer, offscreen);                                            
+           
+            stream = offscreen.LockRectangle(LockFlags.None);
+
+            VideoFrame.copyBufferToSurface(offscreenBuffer, stream.DataPointer,
+                offscreen.Description.Width, offscreen.Description.Height, stream.Pitch);
+
+            offscreen.UnlockRectangle();              
             
         }
 
@@ -403,7 +416,11 @@ namespace VideoPlayerControl
 
                             videoSourceRect = new SharpDX.Rectangle(0, 0, videoFrame.Width, videoFrame.Height);
 
-                            videoFrame.copyFrameDataToSurface(offscreen);
+                            SharpDX.DataRectangle stream = offscreen.LockRectangle(LockFlags.None);
+
+                            videoFrame.copyFrameDataToSurface(stream.DataPointer, stream.Pitch);
+
+                            offscreen.UnlockRectangle();
 
                         }
                         else if (mode == RenderMode.PAUSED)
@@ -443,5 +460,8 @@ namespace VideoPlayerControl
                 }
             }
         }        
+
+        
+
     }
 }

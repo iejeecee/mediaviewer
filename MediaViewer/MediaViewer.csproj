@@ -73,11 +73,11 @@
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.6.0.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.2\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.AvalonEdit">
       <HintPath>..\packages\AvalonEdit.4.4.2.9744\lib\Net40\ICSharpCode.AvalonEdit.dll</HintPath>
@@ -148,7 +148,6 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
@@ -211,6 +210,7 @@
     </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsViewModel.cs" />
     <Compile Include="MediaDatabase\DbSettings\TagOperationsViewModel.cs" />
+    <Compile Include="MediaDatabase\InitializeDb.cs" />
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaGrid\InfoIconsCache.cs" />
     <Compile Include="MediaGrid\MediaGridItemView2.xaml.cs">
@@ -317,6 +317,7 @@
     <Compile Include="TagEditor\TagEditorEvent.cs" />
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
+    <Compile Include="Torrent\ScanFilesViewModel.cs" />
     <Compile Include="UserControls\LocationBox\BooleanToSolidColorBrushConverter.cs" />
     <Compile Include="UserControls\LocationBox\DirectoryItem.cs" />
     <Compile Include="UserControls\LocationBox\LocationBoxView.xaml.cs">
@@ -586,6 +587,9 @@
       <DependentUpon>VideoSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="VideoPanel\VideoSettingsViewModel.cs" />
+    <Compile Include="VideoPanel\VideoToolbarView.xaml.cs">
+      <DependentUpon>VideoToolbarView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="VideoPanel\VideoView.xaml.cs">
       <DependentUpon>VideoView.xaml</DependentUpon>
     </Compile>
@@ -839,6 +843,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VideoPanel\VideoToolbarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

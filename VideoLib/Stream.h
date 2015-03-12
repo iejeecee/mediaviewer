@@ -68,13 +68,40 @@ public:
 
 		return(codecContext);
 	}
+
+	AVMediaType getCodecType() const {
+
+		return(codecContext->codec_type);
+	}
+
+	AVCodecID getCodecID() const {
+
+		return(codecContext->codec_id);
+	}
 		
 	AVStream *getStream() const {
 
 		return(stream);
 	}
 			
-		
+	void setOption(const std::string &name, const std::string &value) 
+	{
+		int result = av_opt_set(codecContext, name.c_str(), value.c_str(), 0);
+		if(result != 0)
+		{				
+			throw gcnew VideoLib::VideoLibException("Error setting option: " + VideoInit::errorToString(result));
+		}
+
+	}
+
+	void setPrivateOption(const std::string &name, const std::string &value) 
+	{
+		int result = av_opt_set(codecContext->priv_data, name.c_str(), value.c_str(), 0);
+		if(result != 0)
+		{	
+			throw gcnew VideoLib::VideoLibException("Error setting private option: " + VideoInit::errorToString(result));
+		}
+	}
 };
 
 

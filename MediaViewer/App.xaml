@@ -67,8 +67,14 @@
             <Style TargetType="{x:Type Label}">
                 <Setter Property="Foreground" Value="{StaticResource uiElementLabelColor}"/>
             </Style>
-            
-        <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->        
+
+            <Geometry x:Key="downArrow">M0,0 L1,0 0.5,1Z</Geometry>
+            <Geometry x:Key="upArrow">M0,1 L1,1 0.5,0Z</Geometry>
+            <Geometry x:Key="rightArrow">M0,0 L1,0.5 0,1Z</Geometry>
+            <Geometry x:Key="leftArrow">M0,0.5 L1,1 1,0Z</Geometry>
+            <Geometry x:Key="closeX">M0,0 L1,1 M0,1 L1,0</Geometry>
+
+            <!--http://www.colorcombos.com/color-schemes/3/ColorCombo3.html-->        
         
             <!-- force classic colors -->
             <SolidColorBrush x:Key="{x:Static SystemColors.ActiveBorderBrushKey}" Color="#FFD4D0C8"/>

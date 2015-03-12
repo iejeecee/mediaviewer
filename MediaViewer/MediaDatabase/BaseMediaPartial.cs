@@ -8,6 +8,7 @@ using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.Infrastructure;
 using System.IO;
 using System.Linq;
@@ -50,6 +51,7 @@ namespace MediaViewer.MediaDatabase
 
         bool isImported;
 
+        [NotMapped]
         public bool IsImported
         {
             get { return isImported; }
@@ -61,6 +63,7 @@ namespace MediaViewer.MediaDatabase
 
         bool isModified;
 
+        [NotMapped]
         public bool IsModified
         {
             get { return isModified; }

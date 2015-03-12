@@ -275,15 +275,15 @@ namespace MediaViewer.MediaFileBrowser
             CreateTorrentFileCommand = new Command(() =>
                 {
                
-                    if (SelectedItems.Count == 0) return;
+                    //if (SelectedItems.Count == 0) return;
 
                     try
                     {
                         TorrentCreationView torrent = new TorrentCreationView();
 
-                        torrent.ViewModel.Media = SelectedItems;
                         torrent.ViewModel.PathRoot = mediaFileWatcher.Path;
-
+                        torrent.ViewModel.Media = new ObservableCollection<MediaFileItem>(SelectedItems);
+                        
                         torrent.ShowDialog();
                     }
                     catch (Exception e)

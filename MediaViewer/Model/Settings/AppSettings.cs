@@ -27,7 +27,9 @@ namespace MediaViewer.Model.Settings
             TorrentAnnounceHistory = new ObservableCollection<string>();
             TranscodeOutputDirectoryHistory = new ObservableCollection<string>();
             VideoScreenShotLocation = null;
+            VideoPreviewOutputDirectoryHistory = new ObservableCollection<string>();
             VideoScreenShotLocationHistory = new ObservableCollection<string>();
+            ImageCollageOutputDirectoryHistory = new ObservableCollection<string>();
 
             BrowsePathHistory = new ObservableCollection<string>();
             FavoriteLocations = new ObservableCollection<string>();
@@ -110,6 +112,8 @@ namespace MediaViewer.Model.Settings
         public String VideoScreenShotLocation { get; set; }
         public ObservableCollection<String> VideoScreenShotLocationHistory { get; set; }
         public ObservableCollection<String> TranscodeOutputDirectoryHistory { get; set; }
+        public ObservableCollection<String> VideoPreviewOutputDirectoryHistory { get; set; }
+        public ObservableCollection<String> ImageCollageOutputDirectoryHistory { get; set; }
 
         // mediafilebrowser
         public ObservableCollection<String> BrowsePathHistory { get; set; }
@@ -126,6 +130,8 @@ namespace MediaViewer.Model.Settings
             VideoScreenShotLocationHistory.Clear();
             BrowsePathHistory.Clear();
             FavoriteLocations.Clear();
+            VideoPreviewOutputDirectoryHistory.Clear();
+            ImageCollageOutputDirectoryHistory.Clear();
         }
             
     }

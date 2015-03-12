@@ -288,8 +288,14 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                     outputFile.Close();
                     outputFile.Dispose();
                 }
-
+                
                 videoPreview.close();
+
+                // because of the extreme amount of memory used by rendertargetbitmap 
+                // make sure we have it all back before moving on to prevent out of memory spikes
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
             }
         }
 

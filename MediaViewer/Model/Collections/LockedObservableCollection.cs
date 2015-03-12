@@ -110,6 +110,7 @@ namespace MediaViewer.Model.Collections
                 Items.Add(item);
                 afterItemAdded(item);    
             }
+
             OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
         }
 
@@ -169,7 +170,7 @@ namespace MediaViewer.Model.Collections
             {
                 throw new MediaStateException("Cannot add duplicate items to LockedCollection");
             }
-
+           
             base.InsertItem(index,newItem);
                
             afterItemAdded(newItem);                                          

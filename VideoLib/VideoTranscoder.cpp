@@ -10,13 +10,40 @@ using namespace System::Runtime::InteropServices;
 
 VideoTranscoder::VideoTranscoder() 
 {
-
 	videoTranscode = new VideoTranscode();
 }
 
 VideoTranscoder::~VideoTranscoder() 
 {
 	delete videoTranscode;
+}
+
+void VideoTranscoder::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLibAVLogging, 
+									 LogLevel level)
+{
+
+	if(gch.IsAllocated) {
+
+		gch.Free();
+	}
+
+	gch = GCHandle::Alloc(logCallback);
+
+	IntPtr voidPtr = Marshal::GetFunctionPointerForDelegate(logCallback);
+		
+	LOG_CALLBACK nativeLogCallback = static_cast<LOG_CALLBACK>(voidPtr.ToPointer());
+
+	Video::setLogCallback(nativeLogCallback);
+
+	if(enableLibAVLogging == true) {
+
+		Video::enableLibAVLogging((int)level);
+
+	} else {
+
+		Video::disableLibAVLogging();
+	}
+
 }
 
 void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken ^token, 

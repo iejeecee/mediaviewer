@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using MediaViewer.Model.Settings;
 
 namespace MediaViewer.GridImage.ImageCollage
 {
@@ -27,7 +28,7 @@ namespace MediaViewer.GridImage.ImageCollage
         {
             InitializeComponent();
 
-            ViewModel = new ImageCollageViewModel(MediaFileWatcher.Instance);
+            ViewModel = new ImageCollageViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
 
             ViewModel.ClosingRequest += vm_ClosingRequest;
 

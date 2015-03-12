@@ -115,17 +115,19 @@ namespace MediaViewer.Search
 
         public List<MediaFileItem> dbSearch(SearchQuery searchQuery)
         {
-            MediaDbCommands mediaCommands = new MediaDbCommands();
-
-            List<BaseMedia> results = mediaCommands.findMediaByQuery(searchQuery);
-            List<MediaFileItem> items = new List<MediaFileItem>();
-
-            foreach (BaseMedia result in results)
+            using (MediaDbCommands mediaCommands = new MediaDbCommands())
             {
-                items.Add(MediaFileItem.Factory.create(result.Location));
-            }
+                List<BaseMedia> results = mediaCommands.findMediaByQuery(searchQuery);
+                List<MediaFileItem> items = new List<MediaFileItem>();
 
-            return (items);
+                foreach (BaseMedia result in results)
+                {
+                    items.Add(MediaFileItem.Factory.create(result.Location));
+                }
+
+                return (items);
+            }
+           
         }
 
 

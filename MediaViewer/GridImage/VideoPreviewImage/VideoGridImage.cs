@@ -56,10 +56,12 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             headerGrid.ColumnDefinitions.Add(valueColumn);
 
             List<TextBlock> labels = new List<TextBlock>();
-            List<TextBlock> values = new List<TextBlock>();
+            List<UIElement> values = new List<UIElement>();
 
             labels.Add(new TextBlock(new Run("Filename: ")));
-            values.Add(new TextBlock(new Run(Path.GetFileName(Video.Location))));
+            TextBlock location = new TextBlock(new Run(Path.GetFileName(Video.Location)));
+            location.TextWrapping = TextWrapping.Wrap;
+            values.Add(location);
 
             labels.Add(new TextBlock(new Run("Container: ")));
             values.Add(new TextBlock(new Run(Video.VideoContainer)));
@@ -69,7 +71,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 labels.Add(new TextBlock(new Run("Encoder: ")));
                 values.Add(new TextBlock(new Run(Video.Software)));
             }
-
+            
             labels.Add(new TextBlock(new Run("Video Codec: ")));
 
             String videoCodecInfo = Video.VideoCodec + ", " + Video.Width + "x" + Video.Height + ", " + Video.FramesPerSecond.ToString("0.00") + "fps" + ", " + Video.PixelFormat;
@@ -90,7 +92,26 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
             labels.Add(new TextBlock(new Run("Size: ")));
             values.Add(new TextBlock(new Run(MiscUtils.formatSizeBytes(Video.SizeBytes))));
-           
+
+            if (Video.Rating != null)
+            {
+                labels.Add(new TextBlock(new Run("Rating: ")));
+            
+                Rating ratingControl = new Rating();
+                ratingControl.HorizontalAlignment = HorizontalAlignment.Left;
+                ratingControl.VerticalAlignment = VerticalAlignment.Top;
+                ratingControl.ItemCount = 5;
+                ratingControl.Foreground = new SolidColorBrush(Colors.Red);
+                ratingControl.Background = null;
+                ratingControl.IsReadOnly = true;
+                ratingControl.SelectionMode = RatingSelectionMode.Continuous;
+
+                ratingControl.Value = Video.Rating * (1.0 / 5);
+
+                values.Add(ratingControl);
+              
+            }
+
             if (Video.Tags.Count > 0 && Vm.IsAddTags)
             {
                 labels.Add(new TextBlock(new Run("Tags: ")));
@@ -134,11 +155,16 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 labelRun.FontSize = Vm.FontSize;
                 labelRun.Foreground = new SolidColorBrush(Colors.Gray);
 
-                Run valueRun = ((Run)values[i].Inlines.First());
-                valueRun.FontFamily = new FontFamily(fontFamily);
-                valueRun.FontSize = Vm.FontSize;
-            }
+                if (values[i] is TextBlock)
+                {
+                    TextBlock value = values[i] as TextBlock;
 
+                    Run valueRun = (Run)value.Inlines.First();
+                    valueRun.FontFamily = new FontFamily(fontFamily);
+                    valueRun.FontSize = Vm.FontSize;
+                }
+            }
+            
             Grid.SetRow(headerGrid, 0);
             mainGrid.Children.Add(headerGrid);
                   

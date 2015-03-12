@@ -27,7 +27,7 @@ namespace MediaViewer.MediaGrid
         {
             get { return mediaStateCollectionView; }
             protected set
-            {
+            {            
                 SetProperty(ref mediaStateCollectionView, value);              
             }
         }

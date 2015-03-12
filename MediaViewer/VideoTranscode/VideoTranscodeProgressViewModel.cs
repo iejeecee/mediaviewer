@@ -96,9 +96,16 @@ namespace MediaViewer.VideoTranscode
             return (options);
         }
 
+        void logCallback(int logLevel, String message)
+        {
+            InfoMessages.Add(message);
+        }
+
         void startTranscode()
         {
+            
             VideoLib.VideoTranscoder videoTranscoder = new VideoLib.VideoTranscoder();
+            videoTranscoder.setLogCallback(logCallback, true, VideoLib.VideoTranscoder.LogLevel.LOG_LEVEL_INFO);
             TotalProgressMax = Items.Count;
             TotalProgress = 0;
             itemProgressMax = 100;
@@ -128,7 +135,7 @@ namespace MediaViewer.VideoTranscode
                                        
                     videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options, 
                         transcodeProgressCallback);
-
+                    
                     ItemProgress = 100;
                     TotalProgress++;
 

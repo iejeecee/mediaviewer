@@ -52,6 +52,7 @@ protected:
 
 		FilterGraph *filterGraph;
 		BitStreamFilter *bitStreamFilter;
+		
 	};
 
 	VideoDecoder *input;
@@ -75,13 +76,7 @@ public:
 		delete input;
 		delete output;
 	}
-
-	static void logCallback(int level, const char *message) {
 		
-		Console::WriteLine(gcnew System::String(message)); 
-	}
-
-	
 	double smallestOffset;
 
 	void setDtsOffsets(const AVPacket &packet) {
@@ -134,9 +129,6 @@ public:
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
 	{
 		
-		Video::enableLibAVLogging(AV_LOG_INFO);
-		Video::setLogCallback((LOG_CALLBACK)logCallback);
-
 		AVPacket packet;
 		packet.data = NULL;
 		packet.size = 0;
@@ -151,7 +143,9 @@ public:
 		try {
 
 			initialize(inputFilename, outputFilename, options);
-					
+			
+			av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
+
 			double startTimeRange = 0;
 
 			if(options->ContainsKey("startTimeRange")) {
@@ -181,7 +175,7 @@ public:
 					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
 				}
 
-				if ((ret = av_read_frame(input->getFormatContext(), &packet)) < 0) {
+				if (av_read_frame(input->getFormatContext(), &packet) < 0) {
 					// finished
 					break;
 				}
@@ -223,14 +217,14 @@ public:
 
 				}
 			
-				type = input->getFormatContext()->streams[inStreamIdx]->codec->codec_type;
+				type = input->stream[inStreamIdx]->getCodecType();
 
 				if(outStreamIdx == DISCARD_STREAM) {
 
 					// discard packets from this input stream
 
 				} else if(streamInfo[inStreamIdx]->filterGraph != NULL) {
-					
+										
 					frame = av_frame_alloc();
 					if (!frame) {
 
@@ -259,7 +253,7 @@ public:
 
 					dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 : avcodec_decode_audio4;
 
-					ret = dec_func(input->getFormatContext()->streams[inStreamIdx]->codec, frame, &got_frame, &packet);
+					ret = dec_func(input->stream[inStreamIdx]->getCodecContext(), frame, &got_frame, &packet);
 					if (ret < 0) {
 
 						av_frame_free(&frame);
@@ -296,7 +290,6 @@ public:
 						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 					
-
 					// remux this frame without reencoding 
 					packet.dts = av_rescale_q_rnd(packet.dts,
 						input->getFormatContext()->streams[inStreamIdx]->time_base,
@@ -314,11 +307,7 @@ public:
 
 					packet.pos = -1;
 
-					ret = av_interleaved_write_frame(output->getFormatContext(), &packet);
-					if (ret < 0) {
-					
-						throw gcnew VideoLib::VideoLibException("Error muxing packet: " + outputFilename);						
-					}
+					output->writeEncodedPacket(&packet);				
 
 				}
 
@@ -326,7 +315,7 @@ public:
 			}
 
 			// flush filters and encoders 
-			for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) 
+			for(int i = 0; i < input->getNrStreams(); i++) 
 			{
 				if (streamInfo[i]->filterGraph == NULL) continue;
 
@@ -345,7 +334,7 @@ public:
 				}
 			}
 
-			av_write_trailer(output->getFormatContext());
+			output->writeTrailer();
 
 		} finally {
 
@@ -372,332 +361,159 @@ public:
 
 protected:
 
-	void initVideoSettings(const AVCodec* encoder, AVStream *outStream, AVCodecContext *dec_ctx,
-		Dictionary<String ^, Object ^> ^options) 
+
+	void initOutputStream(Stream *inStream, StreamOptions streamMode, Dictionary<String ^, Object ^> ^options) 
 	{
-
-		AVCodecContext *enc_ctx = outStream->codec;
-
-		int width = dec_ctx->width;
-		int height = dec_ctx->height;
-
-		if(options->ContainsKey("width")) {
-
-			width = (int)options["width"];
-
-			if(!options->ContainsKey("height")) {
-
-				height = int(((float)width / dec_ctx->width) * dec_ctx->height);
-			}
-		}
-
-		if(options->ContainsKey("height")) {
-
-			height = (int)options["height"];
-
-			if(!options->ContainsKey("width")) {
-
-				width = int(((float)height / dec_ctx->height) * dec_ctx->width);
-			}
-		}
-
-		enc_ctx->width = width;
-		enc_ctx->height = height;		
-		enc_ctx->sample_aspect_ratio = dec_ctx->sample_aspect_ratio;
-		// take first format from list of supported formats 
-		enc_ctx->pix_fmt = encoder->pix_fmts[0];
-
-		// video time_base can be set to whatever is handy and supported by encoder 					
-		outStream->time_base = enc_ctx->time_base = dec_ctx->time_base;	
-			
-		if(enc_ctx->codec_id == AV_CODEC_ID_H264 || enc_ctx->codec_id == AV_CODEC_ID_HEVC) {
-						
-			String ^preset = ((VideoEncoderPresets)options["videoEncoderPreset"]).ToString()->ToLower();
-
-			std::string value = marshal_as<std::string>(preset);
-
-			int ret = av_opt_set(enc_ctx->priv_data, "preset", value.c_str(), 0);
-			if(ret != 0) {
-
-				throw gcnew VideoLib::VideoLibException("Error setting video options");
-			}
-
-		} else if(enc_ctx->codec_id == AV_CODEC_ID_VP8) {
-			
-			enc_ctx->bit_rate = 3200000;
-
-			av_opt_set(enc_ctx, "crf", "5", 0);
-			av_opt_set(enc_ctx, "qmin", "4", 0);
-			av_opt_set(enc_ctx, "qmax", "50", 0);
-
-		}
-	}
-
-	void initAudioSettings(const AVCodec* encoder, AVStream *outStream, AVCodecContext *dec_ctx,
-		Dictionary<String ^, Object ^> ^options) 
-	{
-
-		AVCodecContext *enc_ctx = outStream->codec;
-
-		int sampleRate = dec_ctx->sample_rate;
-
-		if(options->ContainsKey("sampleRate")) {
-
-			sampleRate = (int)options["sampleRate"];
-		}
-
-		enc_ctx->sample_rate = sampleRate;
-
-		int nrChannels = dec_ctx->channels;
-
-		if(options->ContainsKey("nrChannels")) {
-
-			nrChannels = (int)options["nrChannels"];
-
-		} 
-					
-		//if(!dec_ctx->channel_layout) {
-
-			enc_ctx->channels = nrChannels;
-			enc_ctx->channel_layout = av_get_default_channel_layout(nrChannels);
-
-		/*} else {
-
-			enc_ctx->channel_layout = dec_ctx->channel_layout;
-			enc_ctx->channels = av_get_channel_layout_nb_channels(dec_ctx->channel_layout);			
-		}*/
-
-		// take first format from list of supported formats 
-		enc_ctx->sample_fmt = encoder->sample_fmts[0];
-
-		outStream->time_base.num = 1;
-		outStream->time_base.den = enc_ctx->sample_rate;
-	
-		enc_ctx->time_base = outStream->time_base;
-	}
-
-
-	AVCodecContext *initStream(AVMediaType type, int inputStreamIndex, String ^outputFilename, 
-		StreamOptions streamMode, Dictionary<String ^, Object ^> ^options) {
-
 
 		if(streamMode == StreamOptions::Discard) {
 
-			streamInfo.push_back(new StreamInfo());		
-			return(NULL);
+			streamInfo.push_back(new StreamInfo());				
 		}
-
-		int ret = 0;
-
-		AVStream *in_stream = input->getFormatContext()->streams[inputStreamIndex];
-		AVCodecContext *dec_ctx = in_stream->codec;
-							
-		AVStream *out_stream;
-		AVCodec *encoder;
-
-		VideoLib::Stream *outStream;
-
+													
 		if(streamMode == StreamOptions::Copy) {
 
-			encoder = avcodec_find_encoder(dec_ctx->codec->id);
-			if(encoder == NULL) {
-		
-				throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
-			}
-		
-			out_stream = avformat_new_stream(output->getFormatContext(), encoder);
-			if (out_stream == NULL) {
-			
-				throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
-			}
-
-			ret = avcodec_copy_context(out_stream->codec, dec_ctx);
-			if (ret < 0) {
-
-				throw gcnew VideoLib::VideoLibException("Copying stream context failed: " + outputFilename);							
-			}
-
-			out_stream->codec->codec_tag = 0;
-
-			outStream = new VideoLib::Stream(out_stream, encoder);
-			output->addStream(outStream);
+			output->createStream(inStream);
 
 		} else {
 
-			if(type == AVMEDIA_TYPE_VIDEO) {
+			VideoLib::Stream *outStream;
+
+			AVCodecContext *dec_ctx = inStream->getCodecContext();
+
+			if(inStream->getCodecType() == AVMEDIA_TYPE_VIDEO) {
 
 				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["videoEncoder"]).ToString());
 				 
-				encoder = avcodec_find_encoder_by_name(encoderName.c_str());
-				if(encoder == NULL) {
-		
-					throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
+				int width = dec_ctx->width;
+				int height = dec_ctx->height;
+
+				if(options->ContainsKey("width")) {
+
+					width = (int)options["width"];
+
+					if(!options->ContainsKey("height")) {
+
+						height = int(((float)width / dec_ctx->width) * dec_ctx->height);
+					}
 				}
 
-				out_stream = avformat_new_stream(output->getFormatContext(), encoder);
-				if (out_stream == NULL) {
+				if(options->ContainsKey("height")) {
+
+					height = (int)options["height"];
+
+					if(!options->ContainsKey("width")) {
+
+						width = int(((float)height / dec_ctx->height) * dec_ctx->width);
+					}
+				}
+
+				outStream = output->createStream(encoderName, width, height, dec_ctx->sample_aspect_ratio, dec_ctx->time_base);
+								
+				if(outStream->getCodecID() == AV_CODEC_ID_H264 || outStream->getCodecID() == AV_CODEC_ID_HEVC) 
+				{						
+					String ^preset = ((VideoEncoderPresets)options["videoEncoderPreset"]).ToString()->ToLower();
+
+					std::string value = marshal_as<std::string>(preset);
+
+					outStream->setPrivateOption("preset", value.c_str());
+				
+				} else if(outStream->getCodecID() == AV_CODEC_ID_VP8) {
 			
-					throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
-				}
+					outStream->getCodecContext()->bit_rate = 3200000;
 
-				initVideoSettings(encoder, out_stream, dec_ctx, options);
+					//outStream->setOption("crf", "5");
+					outStream->setOption("qmin", "4");
+					outStream->setOption("qmax", "50");
+				}
 				
 			} else {
 
 				std::string encoderName = marshal_as<std::string>(((AudioEncoders)options["audioEncoder"]).ToString());
 
-				encoder = avcodec_find_encoder_by_name(encoderName.c_str());
-				if(encoder == NULL) {
-		
-					throw gcnew VideoLib::VideoLibException("Could not find suitable encoder for stream: " + outputFilename);
+				int sampleRate = dec_ctx->sample_rate;
+
+				if(options->ContainsKey("sampleRate")) {
+
+					sampleRate = (int)options["sampleRate"];
 				}
 
-				out_stream = avformat_new_stream(output->getFormatContext(), encoder);
-				if (out_stream == NULL) {
-			
-					throw gcnew VideoLib::VideoLibException("Could not create output stream for: " + outputFilename);
-				}
+				int nrChannels = dec_ctx->channels;
 
-				initAudioSettings(encoder, out_stream, dec_ctx, options);			
+				if(options->ContainsKey("nrChannels")) {
+
+					nrChannels = (int)options["nrChannels"];
+				} 
+
+				outStream = output->createStream(encoderName, sampleRate, nrChannels);		
 			}
-					
-			outStream = new VideoLib::Stream(out_stream, encoder);
-			output->addStream(outStream);
-
+								
 			outStream->open();
 		}
 		
-		streamInfo.push_back(new StreamInfo(output->getFormatContext()->nb_streams - 1));	
-		
-		AVCodecContext *enc_ctx = outStream->getCodecContext();		
-	
-		return(enc_ctx);
+		streamInfo.push_back(new StreamInfo(output->getNrStreams() - 1));	
+				
 	}
 
 	
 	void initialize(String ^inputFilename, String ^outputFilename, Dictionary<String ^,Object ^> ^options) {
-
-		int ret = 0;
 		
 		input->open(inputFilename);					
 		output->open(outputFilename);
 
 		streamInfo.clear();			
 
-		for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) {
-								
-			AVStream *in_stream = input->getFormatContext()->streams[i];
-			AVCodecContext *dec_ctx = in_stream->codec;
+		for(int i = 0; i < input->getNrStreams(); i++) {
+				
+			Stream *inStream = input->stream[i];
+											
+			if (inStream->getCodecType() == AVMEDIA_TYPE_VIDEO || inStream->getCodecType() == AVMEDIA_TYPE_AUDIO) {
 
-			AVCodecContext *enc_ctx = NULL;
-		
-			if (dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO || dec_ctx->codec_type == AVMEDIA_TYPE_AUDIO) {
-
-				StreamOptions streamMode = dec_ctx->codec_type == AVMEDIA_TYPE_VIDEO ? 
+				StreamOptions streamMode = inStream->getCodecType() == AVMEDIA_TYPE_VIDEO ? 
 					(StreamOptions)options["videoStreamMode"] : (StreamOptions)options["audioStreamMode"];
 							
-				enc_ctx = initStream(dec_ctx->codec_type, i, outputFilename, streamMode, options);
-
-				if (output->getFormatContext()->oformat->flags & AVFMT_GLOBALHEADER && enc_ctx != NULL) {
-
-					enc_ctx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-				}
-				
-			} else if (dec_ctx->codec_type == AVMEDIA_TYPE_UNKNOWN) {
+				initOutputStream(inStream, streamMode, options);
+							
+			} else if (inStream->getCodecType() == AVMEDIA_TYPE_UNKNOWN) {
 
 				throw gcnew VideoLib::VideoLibException("Elementary stream is of unknown type, cannot proceed: " + outputFilename);
 
 			} else {
 
-				streamInfo.push_back(new StreamInfo());
-				
+				streamInfo.push_back(new StreamInfo());				
 			}
-
 			
 		}
 
-		av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
-
-		if (!(output->getFormatContext()->oformat->flags & AVFMT_NOFILE)) {
-
-			ret = avio_open(&output->getFormatContext()->pb, output->getFormatContext()->filename, AVIO_FLAG_WRITE);
-			if (ret < 0) {
-
-				throw gcnew VideoLib::VideoLibException("Could not open output file: " + outputFilename);										
-			}
-		}
-
-		// init muxer, write output file header 
-		ret = avformat_write_header(output->getFormatContext(), NULL);
-		if (ret < 0) {
-
-			throw gcnew VideoLib::VideoLibException("Error writing header: " + outputFilename + " " + VideoInit::errorToString(ret));	
-
-		}
+		output->writeHeader();
 
 		initFilters(options);
 	}
 
 	int flushEncoder(unsigned int inStreamIdx)
-	{
-		int ret;
-		int got_frame;
-
+	{		
 		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
 
-		if (!(output->getFormatContext()->streams[outStreamIdx]->codec->codec->capabilities & CODEC_CAP_DELAY))
+		if (!(output->stream[outStreamIdx]->getCodec()->capabilities & CODEC_CAP_DELAY))
 		{
 			return 0;
 		}
 
-		while (1) {
+		while (encodeWriteFrame(NULL, inStreamIdx)) {}
 
-			ret = encodeWriteFrame(NULL, inStreamIdx, &got_frame);
-
-			if (ret < 0) break;
-
-			if (!got_frame) return 0;
-		}
-
-		return ret;
+		return 0;
 	}
 
-	int encodeWriteFrame(AVFrame *filt_frame, unsigned int inStreamIdx, int *got_frame) {
-
-		int ret;
-		int got_frame_local;
-
+	bool encodeWriteFrame(AVFrame *filt_frame, unsigned int inStreamIdx) {
+	
 		AVPacket enc_pkt;
-
-		int (*enc_func)(AVCodecContext *, AVPacket *, const AVFrame *, int *) =
-			(input->getFormatContext()->streams[inStreamIdx]->codec->codec_type ==
-			AVMEDIA_TYPE_VIDEO) ? avcodec_encode_video2 : avcodec_encode_audio2;
-
-		if (!got_frame)
-			got_frame = &got_frame_local;
-
-		//av_log(NULL, AV_LOG_INFO, "Encoding frame\n");
-		// encode filtered frame 
-		enc_pkt.data = NULL;
-		enc_pkt.size = 0;
-
-		av_init_packet(&enc_pkt);
 
 		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
 
-		ret = enc_func(output->getFormatContext()->streams[outStreamIdx]->codec, &enc_pkt, filt_frame, got_frame);
-		av_frame_free(&filt_frame);
-		if (ret < 0) {
+		bool gotPacket = output->encodeFrame(outStreamIdx, filt_frame, &enc_pkt);
+	
+		if (gotPacket == false) return false;					
 
-			String ^error = VideoInit::errorToString(ret);
-			return ret;
-		}
-
-		if (!(*got_frame))
-			return 0;					
-
-		// prepare packet for muxing 
-		enc_pkt.stream_index = outStreamIdx;
+		// prepare packet for muxing 		
 
 		enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
 			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
@@ -713,61 +529,48 @@ protected:
 			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
 			output->getFormatContext()->streams[outStreamIdx]->time_base);
 	
-
 		if(streamInfo[inStreamIdx]->bitStreamFilter != NULL) {
 
 			streamInfo[inStreamIdx]->bitStreamFilter->filterPacket(&enc_pkt, output->stream[outStreamIdx]->getCodecContext());
 		}
 
-		ret = av_interleaved_write_frame(output->getFormatContext(), &enc_pkt);
+		output->writeEncodedPacket(&enc_pkt);	
 
-		return ret;
+		return true;
 	}
 
 	int filterEncodeWriteFrame(AVFrame *frame, unsigned int inStreamIdx)
 	{
-		int ret;
-		AVFrame *filt_frame;
-	
-		/* push the decoded frame into the filtergraph */
-
-		ret = av_buffersrc_add_frame_flags(streamInfo[inStreamIdx]->filterGraph->getBufferSourceContext(), frame, 0);
-		if (ret < 0) {
-
-			throw gcnew VideoLib::VideoLibException("Error while feeding the filtergraph");			
-		}
-
+				
+		// push frame trough filtergraph
+		streamInfo[inStreamIdx]->filterGraph->pushFrame(frame);
+			
 		// pull filtered frames from the filtergraph
 		while (1) {
 
-			filt_frame = av_frame_alloc();
-			if (!filt_frame) {
+			AVFrame *filteredFrame = av_frame_alloc();
+			if (!filteredFrame) {
 
 				throw gcnew VideoLib::VideoLibException("Not enough memory");				
 			}
 
-			ret = av_buffersink_get_frame(streamInfo[inStreamIdx]->filterGraph->getBufferSinkContext(), filt_frame);
-			if (ret < 0) {
-				/* if no more frames for output - returns AVERROR(EAGAIN)
-				* if flushed and no more frames for output - returns AVERROR_EOF
-				* rewrite retcode to 0 to show it as normal procedure completion
-				*/
-				if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
+			try {
 
-					ret = 0;
+				bool success = streamInfo[inStreamIdx]->filterGraph->pullFrame(filteredFrame);			
+				if (success == false) {
+				
+					return(0);
 				}
-				av_frame_free(&filt_frame);
-				break;
-			}
+		
+				encodeWriteFrame(filteredFrame, inStreamIdx);
+				
+			} finally {
 
-			filt_frame->pict_type = AV_PICTURE_TYPE_NONE;
-			ret = encodeWriteFrame(filt_frame, inStreamIdx, NULL);
-			if (ret < 0) {
-				break;
+				av_frame_free(&filteredFrame);
 			}
 		}
 
-		return ret;
+		return(0);
 	}
 
 	int initFilters(Dictionary<String ^,Object ^> ^options)

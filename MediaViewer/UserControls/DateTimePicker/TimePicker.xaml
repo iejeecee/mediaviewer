@@ -10,7 +10,17 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>            
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="Button">
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="True">
+                        <Setter Property="Foreground" Value="Black" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Foreground" Value="Gray"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Name="mainGrid">
@@ -26,10 +36,10 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Button Grid.Row="0" Name="upButton" Height="{Binding ElementName=valueTextBox, Path=ActualHeight, Converter={StaticResource mathConverter}, ConverterParameter=x/2}" Width="12" ToolTip="Increase">
-                <Image Source="pack://application:,,,/Resources/Icons/up arrow.ico" Width="7" Height="7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}"/>
             </Button>
             <Button Grid.Row="1" Name="downButton" Height="{Binding ElementName=valueTextBox, Path=ActualHeight, Converter={StaticResource mathConverter}, ConverterParameter=x/2}" Width="12" ToolTip="Decrease">
-                <Image Source="pack://application:,,,/Resources/Icons/down arrow.ico" Width="7" Height="7" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="{Binding Foreground, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=Button}}"/>
             </Button>
         </Grid>
     </Grid>

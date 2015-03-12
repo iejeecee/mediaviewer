@@ -57,12 +57,21 @@ namespace MediaViewer.GridImage.ImageCollage
             headerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             headerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             headerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
+            headerGrid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
             Grid.SetRow(headerGrid, 0);
             mainGrid.Children.Add(headerGrid);
 
+            TextBlock name = new TextBlock();
+            name.TextWrapping = TextWrapping.Wrap;
+            name.Margin = new Thickness(margin);
+            name.FontSize = Vm.FontSize;
+            name.Text = Vm.Filename;
+
+            Grid.SetRow(name, 0);
+            headerGrid.Children.Add(name);
+
             TextBlock header = new TextBlock();
-            header.TextTrimming = TextTrimming.CharacterEllipsis;
-            //header.FontFamily = new FontFamily(fontFamily);
+            header.TextTrimming = TextTrimming.CharacterEllipsis;      
             header.Margin = new Thickness(margin);
             header.FontSize = Vm.FontSize;
 
@@ -78,7 +87,7 @@ namespace MediaViewer.GridImage.ImageCollage
 
             header.Text = Items.Count + " Items, Size: " + MiscUtils.formatSizeBytes(sizeBytes);
 
-            Grid.SetRow(header, 0);
+            Grid.SetRow(header, 1);
             headerGrid.Children.Add(header);
 
             if (Vm.IsCommentEnabled && !String.IsNullOrEmpty(Vm.Comment))
@@ -91,12 +100,12 @@ namespace MediaViewer.GridImage.ImageCollage
 
                 comment.Text = Vm.Comment;
 
-                Grid.SetRow(comment, 1);
+                Grid.SetRow(comment, 2);
                 headerGrid.Children.Add(comment);
             }
 
             Separator seperator = new Separator();
-            Grid.SetRow(seperator, 2);
+            Grid.SetRow(seperator, 3);
             headerGrid.Children.Add(seperator);
 
         }

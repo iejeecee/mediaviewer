@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaDatabaseTest", "MediaD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VideoPlayerControl", "VideoPlayerControl\VideoPlayerControl.csproj", "{68A8983C-F256-4B89-99C4-65FC81B7F0F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PluginTest", "PluginTest\PluginTest.csproj", "{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleEarthGeoTagPlugin", "PluginTest\GoogleEarthGeoTagPlugin.csproj", "{5C5AAEBB-4EE1-4F2C-B55A-A05231E74A1C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaViewer.Infrastructure", "MediaViewer.Infrastructure\MediaViewer.Infrastructure.csproj", "{A4D7C456-6180-4196-9A48-128894B6A32A}"
 EndProject

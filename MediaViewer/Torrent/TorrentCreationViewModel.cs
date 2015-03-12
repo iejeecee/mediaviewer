@@ -15,6 +15,8 @@ using System.ComponentModel.Composition;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
+using MediaViewer.Model.Utils;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.Torrent
 {
@@ -36,13 +38,63 @@ namespace MediaViewer.Torrent
             IsCommentEnabled = false;
 
             OutputPathHistory = new ObservableCollection<string>();
+            InputPathHistory = new ObservableCollection<string>();
             AnnounceURLHistory = settings.TorrentAnnounceHistory;
             if (AnnounceURLHistory.Count > 0)
             {
                 AnnounceURL = AnnounceURLHistory[0];
             }
 
-            DirectoryPickerCommand = new Command(new Action(() =>
+            InputDirectoryPickerCommand = new Command(new Action(async () =>
+            {
+                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
+                vm.MovePath = String.IsNullOrEmpty(InputPath) ? PathRoot : InputPath;
+                vm.MovePathHistory = InputPathHistory;
+
+                if (directoryPicker.ShowDialog() == true)
+                {                    
+                    InputPath = vm.MovePath;
+                    TorrentName = Path.GetFileName(InputPath);
+
+                    ScanFilesViewModel scanFilesViewModel = new ScanFilesViewModel();
+                    NonCancellableOperationProgressView progressView = new NonCancellableOperationProgressView();
+                    progressView.DataContext = scanFilesViewModel;
+
+                    ObservableCollection<MediaFileItem> items = new ObservableCollection<MediaFileItem>();
+
+                    await Task.Factory.StartNew(() =>
+                    {
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => {
+
+                            progressView.ShowDialog();
+
+                        }));
+
+                        try
+                        {
+                            items = scanFilesViewModel.getInputMedia(InputPath);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Log.Error("Error reading: " + inputPath, e);
+                            MessageBox.Show("Error reading: " + inputPath + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        }
+                        finally
+                        {
+                            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+                            {
+                                progressView.Close();
+                            }));
+                        }
+                    });                                              
+
+                    Media = items;                                      
+                }
+
+            }));
+
+            OutputDirectoryPickerCommand = new Command(new Action(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
@@ -74,8 +126,8 @@ namespace MediaViewer.Torrent
                 });
         }
 
-        
-   
+       
+           
         String announceURL;
 
         public String AnnounceURL
@@ -113,7 +165,15 @@ namespace MediaViewer.Torrent
             SetProperty(ref comment, value);
             }
         }
-      
+
+        String inputPath;
+
+        public String InputPath
+        {
+            get { return inputPath; }
+            set { SetProperty(ref inputPath, value); }
+        }
+
         String outputPath;
 
         public String OutputPath
@@ -136,12 +196,12 @@ namespace MediaViewer.Torrent
                 
             }
         }
-        ICollection<MediaFileItem> media;
+        ObservableCollection<MediaFileItem> media;
 
-        public ICollection<MediaFileItem> Media
+        public ObservableCollection<MediaFileItem> Media
         {
             get { return media; }
-            set { media = value;
+            set { SetProperty(ref media, value);
             getPathRoot();
             }
         }
@@ -155,35 +215,25 @@ namespace MediaViewer.Torrent
             }
         }
 
-        Command cancelCommand;
-
-        public Command CancelCommand
-        {
-            get { return cancelCommand; }
-            set { cancelCommand = value; }
-        }
-        Command okCommand;
-
-        public Command OkCommand
-        {
-            get { return okCommand; }
-            set { okCommand = value; }
-        }
-
-        Command directoryPickerCommand;
-
-        public Command DirectoryPickerCommand
-        {
-            get { return directoryPickerCommand; }
-            set { directoryPickerCommand = value; }
-        }
-
+        public Command CancelCommand { get; set; }
+        public Command OkCommand { get; set; }
+        public Command InputDirectoryPickerCommand { get; set; }
+        public Command OutputDirectoryPickerCommand { get; set; }
+       
         ObservableCollection<String> outputPathHistory;
 
         public ObservableCollection<String> OutputPathHistory
         {
             get { return outputPathHistory; }
-            set { outputPathHistory = value; }
+            set { SetProperty(ref outputPathHistory, value); }
+        }
+
+        ObservableCollection<String> inputPathHistory;
+
+        public ObservableCollection<String> InputPathHistory
+        {
+            get { return inputPathHistory; }
+            set { SetProperty(ref inputPathHistory, value); }
         }
 
         String torrentName;
@@ -199,8 +249,13 @@ namespace MediaViewer.Torrent
         {
             if (media == null || media.Count == 0)
             {
-                pathRoot = "";
+                OutputPath = PathRoot;
+                OkCommand.IsExecutable = false;
                 return;
+            }
+            else
+            {
+                OkCommand.IsExecutable = true;
             }
 
             pathRoot = MediaViewer.Model.Utils.FileUtils.getPathWithoutFileName(Media.ElementAt(0).Location);
@@ -230,7 +285,7 @@ namespace MediaViewer.Torrent
                 pathRoot = newPathRoot;
             }
 
-            OutputPath = pathRoot = pathRoot.TrimEnd(new char[]{'\\','/'});
+            InputPath = OutputPath = pathRoot = pathRoot.TrimEnd(new char[]{'\\','/'});
 
             if (Media.Count == 1)
             {

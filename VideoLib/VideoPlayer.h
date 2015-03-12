@@ -62,8 +62,7 @@ namespace VideoLib {
 			
 		};
 
-		delegate void LogCallbackDelegate(
-			int level, String ^message);
+		delegate void LogCallbackDelegate(int level, String ^message);
 
 		property VideoLib::FrameQueue ^FrameQueue {
 

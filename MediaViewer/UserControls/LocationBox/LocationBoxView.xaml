@@ -61,10 +61,8 @@
                     </Menu.ItemsPanel>
                 </Menu>
                 <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    ToolTip="History">
-                    <Button.Content>
-                        <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>
-                    </Button.Content>
+                    ToolTip="History">                   
+                        <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>                    
                 </Button>
                 <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15"  Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
                     ToolTip="Favorites">

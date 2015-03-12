@@ -183,6 +183,9 @@ namespace MediaViewer
 
             navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, location);
 
+            Uri VideoToolbarViewUri = new Uri(typeof(VideoToolbarView).FullName, UriKind.Relative);
+
+            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, VideoToolbarViewUri);
         }
     }
 }

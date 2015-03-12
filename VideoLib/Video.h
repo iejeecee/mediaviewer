@@ -73,6 +73,20 @@ protected:
 		logCallback(level, fullMessage.c_str());
 	
     }
+
+	virtual void addStream(VideoLib::Stream *stream) {
+
+		this->stream.push_back(stream);
+
+		if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_VIDEO) {
+
+			videoIdx = this->stream.size() - 1;
+
+		} else if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_AUDIO) {
+
+			audioIdx = this->stream.size() - 1;
+		}
+	}
 	
 public:
 
@@ -96,31 +110,13 @@ public:
 				
 				delete stream[i];
 			}
-			
-			avformat_close_input(&formatContext);
-
+						
 			stream.clear();		
 		} 
-
-		formatContext = NULL;
-
+	
 		videoIdx = -1;
 		audioIdx = -1;
 	
-	}
-
-	void addStream(VideoLib::Stream *stream) {
-
-		this->stream.push_back(stream);
-
-		if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_VIDEO) {
-
-			videoIdx = this->stream.size() - 1;
-
-		} else if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_AUDIO) {
-
-			audioIdx = this->stream.size() - 1;
-		}
 	}
 
 	AVFormatContext *getFormatContext() const {
@@ -146,6 +142,12 @@ public:
 	void setAudioStreamIndex(int idx) {
 
 		audioIdx = idx;
+	}
+
+
+	int getNrStreams() const {
+
+		return(stream.size());
 	}
 
 	AVStream *getVideoStream() const {

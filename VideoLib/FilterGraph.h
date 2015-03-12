@@ -245,30 +245,19 @@ public:
 		
 	}
 
-	int filterFrame(AVFrame *input, AVFrame *output)
-	{
-		int result;	
-				
+	void pushFrame(AVFrame *input) {
+					
 		// push the decoded frame into the filtergraph 
-		result = av_buffersrc_add_frame_flags(buffersrc_ctx, input, 0);
+		int result = av_buffersrc_add_frame_flags(buffersrc_ctx, input, 0);
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Error adding frame to filtergraph");			
 		}
-/*		
-		AVFilterBufferRef *bufferRef;
+	}
 
-        result = av_buffersink_get_buffer_ref(buffersink_ctx, &bufferRef, 0);
-        if (result < 0) {
-            
-			return(0);
-        }
-       
-        avfilter_copy_buf_props(output, bufferRef);
-*/
+	bool pullFrame(AVFrame *output) {
 
-		// pull filtered frames from the filtergraph										
-		result = av_buffersink_get_frame(buffersink_ctx, output);
+		int result = av_buffersink_get_frame(buffersink_ctx, output);
 		if (result < 0) {
 
 			// if no more frames for output - returns AVERROR(EAGAIN)
@@ -276,15 +265,15 @@ public:
 			// rewrite retcode to 0 to show it as normal procedure completion				
 			if (result == AVERROR(EAGAIN) || result == AVERROR_EOF) {
 
-				result = 0;
+				return(false);
 			}
 			
-			return(result);
+			throw gcnew VideoLib::VideoLibException("Error pulling frame from filtergraph");	
 		}
 	  
 		output->pict_type = AV_PICTURE_TYPE_NONE;
-			
-		return(1);			
+
+		return(true);
 	}
 	
 	AVFilterContext *getBufferSourceContext() const {

@@ -314,7 +314,6 @@ namespace VideoPlayerControl
 
             bool skipVideoFrame = false;
             
-
 restartvideo:
 			
 			double actualDelay = 0.04;

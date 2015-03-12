@@ -228,9 +228,7 @@ namespace MediaViewer.Torrent
 
                 filesList.Add(fileDictionary);
             }
-
           
-
             info["name"] = new BString(vm.TorrentName);
             info["files"] = filesList;
 

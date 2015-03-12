@@ -1,8 +1,8 @@
 ﻿<Window x:Class="MediaViewer.Torrent.TorrentCreationView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
-        Title="Create Torrent File" SizeToContent="WidthAndHeight" Width="350" Icon="/MediaViewer;component/Resources/Icons/torrent.ico">
+        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"       
+        Title="Create Torrent File" Width="450" Icon="/MediaViewer;component/Resources/Icons/torrent.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -10,7 +10,7 @@
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
-            </Style>
+            </Style>            
         </ResourceDictionary>
     </Window.Resources>
     <Window.Background>
@@ -24,6 +24,7 @@
         <GroupBox Grid.Row="0" Header="Torrent Options">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -36,35 +37,47 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <Label Grid.Row="0" Grid.Column="0" Content="Included Files" Style="{StaticResource labelStyle}"/>
-                <ListBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Media}" DisplayMemberPath="Location" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled" MinHeight="200"/>
-                <Label Grid.Row="1" Grid.Column="0" Content="Torrent Name" Style="{StaticResource labelStyle}"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding TorrentName}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,2,0,2"/>
-                <Label Grid.Row="2" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
-                <ComboBox Grid.Row="2" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Center"                         
+                <Label Grid.Row="0" Grid.Column="0" Content="Source" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="0" x:Name="inputPathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Center"                         
+			        Text="{Binding InputPath, Mode=TwoWay}"
+			        ItemsSource="{Binding InputPathHistory}"
+			        ToolTip="{Binding InputPath}"
+			        IsReadOnly="True" IsEditable="True"/>
+                <Button Grid.Row="0" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
+			        HorizontalAlignment="Right"					
+			        Command="{Binding InputDirectoryPickerCommand}"
+			        ToolTip="Change Directory">
+                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
+                </Button>
+                <Label Grid.Row="1" Grid.Column="0" Content="Included Files" Style="{StaticResource labelStyle}"/>
+                <ListBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Media}" DisplayMemberPath="Location" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Torrent Name" Style="{StaticResource labelStyle}"/>
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TorrentName}" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,2,0,2"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="3" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Center"                         
 			        Text="{Binding OutputPath, Mode=TwoWay}"
 			        ItemsSource="{Binding OutputPathHistory}"
 			        ToolTip="{Binding OutputPath}"
 			        IsReadOnly="True" IsEditable="True"
 			        />
-                <Button Grid.Row="2" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
+                <Button Grid.Row="3" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
 			        HorizontalAlignment="Right"					
-			        Command="{Binding DirectoryPickerCommand}"
+			        Command="{Binding OutputDirectoryPickerCommand}"
 			        ToolTip="Change Directory">
                     <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
                 </Button>                
-                <Label Grid.Row="3" Grid.Column="0" Content="Announce URL" Style="{StaticResource labelStyle}"/>
-                <ComboBox Grid.Row="3" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,2,0,2"                         
+                <Label Grid.Row="4" Grid.Column="0" Content="Announce URL" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,2,0,2"                         
 			        Text="{Binding AnnounceURL, Mode=TwoWay}"
 			        ItemsSource="{Binding AnnounceURLHistory}"
 			        ToolTip="{Binding OutputPath}"
 			        IsEditable="True"
 			        />                             
-                <Label Grid.Row="4" Grid.Column="0" Content="Private" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding IsPrivate}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>                
-                <Label Grid.Row="5" Grid.Column="0" Content="Comment" Style="{StaticResource labelStyle}"/>
-                <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Comment}" Margin="0,2,0,2" VerticalAlignment="Center" IsEnabled="{Binding IsCommentEnabled}"/>
-                <CheckBox Grid.Row="5" Grid.Column="2" IsChecked="{Binding IsCommentEnabled}"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,2,2,2"/>
+                <Label Grid.Row="5" Grid.Column="0" Content="Private" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding IsPrivate}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>                
+                <Label Grid.Row="6" Grid.Column="0" Content="Comment" Style="{StaticResource labelStyle}"/>
+                <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Comment}" Margin="0,2,0,2" VerticalAlignment="Center" IsEnabled="{Binding IsCommentEnabled}"/>
+                <CheckBox Grid.Row="6" Grid.Column="2" IsChecked="{Binding IsCommentEnabled}"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,2,2,2"/>
             </Grid>
         </GroupBox>        
         <Button Grid.Row="1" Grid.ColumnSpan="3" Width="50" Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,5,60,5"/>

@@ -143,6 +143,12 @@ public:
 
 		Video::close();
 
+		if(formatContext != NULL) {
+
+			avformat_close_input(&formatContext);
+			formatContext = NULL;
+		}
+
 		if(frame != NULL) {
 
 			av_free(frame);
@@ -253,8 +259,7 @@ public:
 		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 		if(audioIdx >= 0) {
 				
-			stream[audioIdx]->open();
-		
+			stream[audioIdx]->open();		
 		}
 			
 		frame = avcodec_alloc_frame();
@@ -620,7 +625,8 @@ public:
 
 		} else {
 
-			videoFilterGraph->filterFrame(input, output);
+			videoFilterGraph->pushFrame(input);
+			videoFilterGraph->pullFrame(output);
 		}
 	}
 	
@@ -647,7 +653,8 @@ public:
 							
 		} else {
 
-			audioFilterGraph->filterFrame(input,output);
+			audioFilterGraph->pushFrame(input);
+			audioFilterGraph->pullFrame(output);
 			length = av_samples_get_buffer_size(NULL,
 								audioConvertNrChannels,
 								output->nb_samples,

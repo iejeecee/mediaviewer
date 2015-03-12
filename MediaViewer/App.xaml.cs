@@ -29,7 +29,7 @@ namespace MediaViewer
             SplashScreen = new SplashScreen("Resources/Images/splash.png");
 
 #if !DEBUG
-              SplashScreen.Show(false, true);
+              SplashScreen.Show(true, true);
 #endif
 
             ThemeHelper.SetTheme("classic", "");

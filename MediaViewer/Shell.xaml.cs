@@ -31,6 +31,9 @@ using Microsoft.Practices.ServiceLocation;
 using MediaViewer.About;
 using MediaViewer.MediaDatabase.DbSettings;
 using MediaViewer.Model.Utils.Windows;
+using MediaViewer.MediaDatabase;
+using System.Data.Entity;
+using MediaViewer.MediaDatabase.DbCommands;
 
 
 
@@ -71,7 +74,9 @@ namespace MediaViewer
             this.Closing += Shell_Closing;
 
             //RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-         
+
+            //InitializeDb.initialize();
+          
         }
 
         public void OnImportsSatisfied()

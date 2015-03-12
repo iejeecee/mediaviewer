@@ -282,7 +282,6 @@ namespace VideoLib {
 			}
 		}
 
-
 		FrameQueue(VideoDecoder *videoDecoder) {
 
 			lockObject = gcnew Object();
@@ -323,6 +322,7 @@ namespace VideoLib {
 			
 			singleFrameEvent = gcnew AutoResetEvent(false);
 			continueSingleFrameEvent = gcnew AutoResetEvent(false);
+					
 		}
 
 		~FrameQueue() {
@@ -397,7 +397,7 @@ namespace VideoLib {
 
 				packetQueue[(int)QueueID::FREE_PACKETS]->Enqueue(packetData[i]);
 			}
-			
+				
 		}
 		
 		void flush() {		
@@ -603,6 +603,8 @@ namespace VideoLib {
 			addPacket(QueueID::AUDIO_PACKETS, packet);
 		}
 
+		
+
 		VideoFrame ^getDecodedVideoFrame() {
 
 			int frameFinished = 0;
@@ -631,14 +633,14 @@ namespace VideoLib {
 
 					Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
 				}
-
+			
 				if(frameFinished)
-				{
+				{					
 					videoDecoder->convertVideoFrame(videoFrame->AVLibFrameData, convertedVideoFrame->AVLibFrameData);					
 
 					convertedVideoFrame->Pts = synchronizeVideo(
 						videoFrame->AVLibFrameData->repeat_pict, 
-						videoPacket->AVLibPacketData->dts);
+						videoPacket->AVLibPacketData->dts);					
 				}
 
 				addFreePacket(videoPacket);
