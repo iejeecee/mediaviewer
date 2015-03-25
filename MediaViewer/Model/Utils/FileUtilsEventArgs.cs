@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Utils
 {
-    class FileUtilsEventArgs : System.EventArgs
+    public class FileUtilsEventArgs : System.EventArgs
     {
 
         private string filePath;

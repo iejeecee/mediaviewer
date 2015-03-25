@@ -14,11 +14,16 @@ namespace MediaViewer.MediaDatabase
     
     public partial class Thumbnail
     {
+        public Thumbnail()
+        {
+            this.BaseMetadata = new HashSet<BaseMetadata>();
+        }
+    
         public int Id { get; set; }
         public byte[] ImageData { get; set; }
         public short Width { get; set; }
         public short Height { get; set; }
     
-        public virtual BaseMedia BaseMedia { get; set; }
+        public virtual ICollection<BaseMetadata> BaseMetadata { get; set; }
     }
 }

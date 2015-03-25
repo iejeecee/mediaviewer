@@ -13,7 +13,7 @@ namespace MediaViewer.MediaGrid
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            BaseMedia media = (BaseMedia)value;
+            BaseMetadata media = (BaseMetadata)value;
 
             if (media == null || media.Thumbnail == null) 
             {

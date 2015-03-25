@@ -24,13 +24,14 @@ using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Infrastructure.Global.Commands;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Concurrency;
+using MediaViewer.Model.metadata.Metadata;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataUpdateViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
     {
         AppSettings Settings { get; set; }            
-        MediaState MediaState {get;set;}       
+        MediaFileState MediaFileState {get;set;}       
         IEventAggregator EventAggregator { get; set; }
 
         class Counter
@@ -64,7 +65,7 @@ namespace MediaViewer.MetaData
         public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {
             Settings = settings;
-            MediaState = mediaFileWatcher.MediaState;
+            MediaFileState = mediaFileWatcher.MediaFileState;
             EventAggregator = eventAggregator;
 
             WindowIcon = "pack://application:,,,/Resources/Icons/info.ico";
@@ -142,14 +143,14 @@ namespace MediaViewer.MetaData
                 item.RWLock.EnterUpgradeableReadLock();
                 try
                 {
-                    if (item.Media == null)
+                    if (item.Metadata == null)
                     {
                         ItemInfo = "Loading MetaData: " + item.Location;
 
-                        MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO |
-                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+                        item.readMetadata(MetadataFactory.ReadOptions.AUTO |
+                            MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
 
-                        if (item.Media is UnknownMedia)
+                        if (item.Metadata == null || item.Metadata is UnknownMetadata)
                         {
                             // reload metaData in metadataviewmodel      
                             String error = "Could not open file and/or read it's metadata: " + item.Location;
@@ -161,11 +162,11 @@ namespace MediaViewer.MetaData
                     }
 
 
-                    if (item.Media != null && !(item.Media is UnknownMedia))
+                    if (item.Metadata != null && !(item.Metadata is UnknownMetadata))
                     {
-                        isModified = item.Media.IsModified;
+                        isModified = item.Metadata.IsModified;
 
-                        BaseMedia media = item.Media;
+                        BaseMetadata media = item.Metadata;
 
                         if (state.RatingEnabled)
                         {
@@ -261,7 +262,7 @@ namespace MediaViewer.MetaData
                         {
                             // Save metadata changes
                             ItemInfo = "Saving MetaData: " + item.Location;
-                            MediaState.writeMetadata(item, MediaFactory.WriteOptions.AUTO, this);
+                            item.writeMetadata(MetadataFactory.WriteOptions.AUTO, this);
 
                             string info = "Completed updating Metadata for: " + item.Location;
 
@@ -281,16 +282,16 @@ namespace MediaViewer.MetaData
                         oldFilename = Path.GetFileNameWithoutExtension(item.Location);
                         String ext = Path.GetExtension(item.Location);
 
-                        newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Media);
+                        newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Metadata);
                         newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
                         newPath = newPath.TrimEnd('\\');
 
                         if (state.ImportedEnabled == true)
                         {
-                            if (item.Media.IsImported == true && state.IsImported == false)
+                            if (item.Metadata.IsImported == true && state.IsImported == false)
                             {
                                 ItemInfo = "Exporting: " + item.Location;
-                                MediaState.export(item, TokenSource.Token);
+                                MediaFileState.export(item, TokenSource.Token);
 
                                 string info = "Exported: " + item.Location;
 
@@ -299,16 +300,16 @@ namespace MediaViewer.MetaData
                             }
                         }
 
-                        MediaState.move(item, newPath + "\\" + newFilename + ext, this);
+                        MediaFileState.move(item, newPath + "\\" + newFilename + ext, this);
 
                         if (state.ImportedEnabled == true)
                         {
-                            if (item.Media.IsImported == false && state.IsImported == true)
+                            if (item.Metadata.IsImported == false && state.IsImported == true)
                             {
                                 ItemInfo = "Importing: " + item.Location;
-                                MediaState.import(item, TokenSource.Token);
+                                MediaFileState.import(item, TokenSource.Token);
 
-                                string info = "Imported: " + item.Media.Location;
+                                string info = "Imported: " + item.Metadata.Location;
 
                                 InfoMessages.Add(info);
                                 Logger.Log.Info(info);
@@ -323,14 +324,14 @@ namespace MediaViewer.MetaData
                     }
                     catch (Exception e)
                     {
-                        if (item.Media != null)
+                        if (item.Metadata != null)
                         {
-                            item.Media.clear();
+                            item.Metadata.clear();
                         }
 
                         // reload metaData in metadataviewmodel
-                        item.readMetaData(MediaFactory.ReadOptions.AUTO |
-                            MediaFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+                        item.readMetadata(MetadataFactory.ReadOptions.AUTO |
+                            MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
 
                         ItemInfo = "Error updating file: " + item.Location;
                         InfoMessages.Add(ItemInfo + " " + e.Message);
@@ -377,7 +378,7 @@ namespace MediaViewer.MetaData
 
         }
 
-        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, BaseMedia media)
+        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, BaseMetadata media)
         {
             if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
             {
@@ -451,15 +452,15 @@ namespace MediaViewer.MetaData
                             int width = 0;
                             int height = 0;
 
-                            if (media != null && media is ImageMedia)
+                            if (media != null && media is ImageMetadata)
                             {
-                                width = (media as ImageMedia).Width;
-                                height = (media as ImageMedia).Height;
+                                width = (media as ImageMetadata).Width;
+                                height = (media as ImageMetadata).Height;
                             }
-                            else if (media != null && media is VideoMedia)
+                            else if (media != null && media is VideoMetadata)
                             {
-                                width = (media as VideoMedia).Width;
-                                height = (media as VideoMedia).Height;
+                                width = (media as VideoMetadata).Width;
+                                height = (media as VideoMetadata).Height;
                             }
 
                             outputFileName += width.ToString() + "x" + height.ToString();

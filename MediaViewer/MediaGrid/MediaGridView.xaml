@@ -65,16 +65,12 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                    <!--<MediaGrid:MediaGridItemView DataContext="{Binding}" SelectableMediaFileItem="{Binding}" Padding="2" 
-                                                 Tag="{Binding Path=DataContext.MediaStateCollectionView, ElementName=mediaGrid}" MaxHeight="150" 
-                                                 ExtraInfoType="{Binding Path=DataContext.MediaStateCollectionView.SortModes.CurrentItem, ElementName=mediaGrid}"
-                                                 IsGridLoaded="{Binding Path=DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=mediaGrid}"/>-->
-                    <MediaGrid:MediaGridItemView2 DataContext="{Binding}" SelectableMediaFileItem="{Binding}"
+                    <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->                   
+                    <MediaGrid:MediaGridItemView DataContext="{Binding}" SelectableMediaItem="{Binding}"
                                                  Tag="{Binding Path=DataContext.MediaStateCollectionView, ElementName=mediaGrid}" MaxHeight="150"                                                  
                                                  IsGridLoaded="{Binding Path=DataContext.MediaState.UIMediaCollection.IsLoading, ElementName=mediaGrid}" Padding="1,1,1,1"
                                                  ExtraInfoType="{Binding Path=DataContext.MediaStateCollectionView.SortModes.CurrentItem, ElementName=mediaGrid}">                       
-                    </MediaGrid:MediaGridItemView2>
+                    </MediaGrid:MediaGridItemView>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>

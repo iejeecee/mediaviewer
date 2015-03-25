@@ -22,7 +22,7 @@ namespace MediaViewer.Model.Media.Metadata
             set { progress = value; }
         }
 
-        public virtual void writeMetadata(BaseMedia media, ICancellableOperationProgress progress)
+        public virtual void writeMetadata(BaseMetadata media, ICancellableOperationProgress progress)
         {
             Progress = progress;
 
@@ -73,7 +73,7 @@ namespace MediaViewer.Model.Media.Metadata
             return (true);
         }
 
-        protected virtual void write(XMPLib.MetaData xmpMetaDataWriter, BaseMedia media) {
+        protected virtual void write(XMPLib.MetaData xmpMetaDataWriter, BaseMetadata media) {
         
             if (!string.IsNullOrEmpty(media.Title))
             {

@@ -26,15 +26,15 @@ namespace MediaViewer.Import
     {
         
      
-        MediaState MediaState
+        MediaFileState MediaFileState
         {
             get;
             set;
         }
      
-        public ImportProgressViewModel(MediaState mediaState) {
+        public ImportProgressViewModel(MediaFileState mediaFileState) {
 
-            MediaState = mediaState;
+            MediaFileState = mediaFileState;
 
             WindowTitle = "Importing Media";
             WindowIcon = "pack://application:,,,/Resources/Icons/import.ico";
@@ -193,7 +193,7 @@ namespace MediaViewer.Import
 
                     ItemInfo = "Importing: " + mediaFile.Location;
 
-                    MediaState.import(mediaFile, CancellationToken);
+                    MediaFileState.import(mediaFile, CancellationToken);
 
                     ItemProgress = 100;
                     TotalProgress++;

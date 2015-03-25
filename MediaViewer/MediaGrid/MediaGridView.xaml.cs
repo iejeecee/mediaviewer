@@ -28,6 +28,7 @@ using System.Windows.Controls.Primitives;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Global.Events;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.MediaGrid
 {
@@ -38,61 +39,60 @@ namespace MediaViewer.MediaGrid
     public partial class MediaGridView : UserControl, IRegionMemberLifetime, INavigationAware
     {
         VirtualizingTilePanel panel;
-        
-        IEventAggregator EventAggregator { get; set; }
-
+              
         MediaGridViewModel ViewModel {get;set;}
-          
-        [ImportingConstructor]
-        public MediaGridView(IRegionManager regionManager, IEventAggregator eventAggregator)
+ 
+        public MediaGridView()
         {           
-            InitializeComponent();
-
-            EventAggregator = eventAggregator;
+            InitializeComponent();         
 
             panel = null;           
-           
+                       
         }
 
         void ImageGridView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             if (e.OldValue is MediaGridViewModel)
             {
-                MediaGridViewModel oldImageGridViewModel = e.OldValue as MediaGridViewModel;
+                MediaGridViewModel oldMediaGridViewModel = e.OldValue as MediaGridViewModel;
 
-                oldImageGridViewModel.MediaStateCollectionView.Cleared -= imageGridViewModel_Cleared;
-                oldImageGridViewModel.MediaStateCollectionView.SelectionChanged -= imageGridViewModel_SelectionChanged;
-                           
+                oldMediaGridViewModel.MediaStateCollectionView.Cleared -= imageGridViewModel_Cleared;                                          
             }
 
             if (e.NewValue is MediaGridViewModel)
             {
-                MediaGridViewModel imageGridViewModel = e.NewValue as MediaGridViewModel;
+                MediaGridViewModel mediaGridViewModel = e.NewValue as MediaGridViewModel;
 
-                imageGridViewModel.MediaStateCollectionView.Cleared += imageGridViewModel_Cleared;
-                imageGridViewModel.MediaStateCollectionView.SelectionChanged += imageGridViewModel_SelectionChanged;
+                mediaGridViewModel.MediaStateCollectionView.Cleared += imageGridViewModel_Cleared;
 
-                //itemsControl.ItemsSource = MediaCollectionView.Media;
-                //filterComboBox.ItemsSource = MediaCollectionView.FilterModes;               
-                //sortComboBox.ItemsSource = MediaCollectionView.SortModes;
-                                                       
+                ViewModel = mediaGridViewModel;
             }
-            
+            else
+            {
+                ViewModel = null;
+            }
         }
 
-        private void imageGridViewModel_SelectionChanged(object sender, EventArgs e)
+        public int NrColumns
         {
-            List<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
-           
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Publish(selectedItems);
+            get { return (int)GetValue(NrColumnsProperty); }
+            set { SetValue(NrColumnsProperty, value); }
         }
 
+        // Using a DependencyProperty as the backing store for NrColumns.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty NrColumnsProperty =
+            DependencyProperty.Register("NrColumns", typeof(int), typeof(MediaGridView), new PropertyMetadata(4,nrColumnsChangedCallback));
+
+        private static void nrColumnsChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+               
         private void imageGridViewModel_PrevPageCommand(object sender, EventArgs e)
         {
             if (panel != null)
             {
-                panel.PageUp();
-              
+                panel.PageUp();              
             }
         }
 
@@ -131,8 +131,7 @@ namespace MediaViewer.MediaGrid
         private void virtualizingTilePanel_Loaded(object sender, RoutedEventArgs e)
         {
             panel = sender as VirtualizingTilePanel;
-            
-            
+                        
         }
 
         public bool KeepAlive
@@ -147,15 +146,12 @@ namespace MediaViewer.MediaGrid
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-
             ViewModel.OnNavigatedFrom(navigationContext);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            ViewModel = (MediaGridViewModel)navigationContext.Parameters["viewModel"];
-
-            DataContext = ViewModel;
+        {            
+            DataContext = navigationContext.Parameters["viewModel"];
 
             ViewModel.OnNavigatedTo(navigationContext);
                                

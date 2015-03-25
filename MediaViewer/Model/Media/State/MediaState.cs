@@ -1,7 +1,9 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.Mvvm;
@@ -20,13 +22,17 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.State
 {
+    public enum MediaStateType
+    {
+        Directory,
+        SearchResult,
+        Other
+    }
  
-    public class MediaState : BindableBase, IMediaState, IDisposable
+    public class MediaState : BindableBase, IDisposable
     {
         
-
-        public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
-        public event EventHandler<MediaStateChangedEventArgs> NrImportedItemsChanged;        
+        public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;        
         public event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
 
         MediaLockedCollection uiMediaCollection;
@@ -82,7 +88,7 @@ namespace MediaViewer.Model.Media.State
         }
 
   
-        public void addUIState(IEnumerable<MediaFileItem> items)
+        public void addUIState(IEnumerable<MediaItem> items)
         {
             if (items.Count() == 0) return;
          
@@ -107,7 +113,7 @@ namespace MediaViewer.Model.Media.State
             }
         }
 
-        public void renameUIState(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations)
+        public void renameUIState(IEnumerable<MediaItem> oldItems, IEnumerable<String> newLocations)
         {
 
             if (oldItems.Count() == 0 || newLocations.Count() == 0) return;
@@ -125,20 +131,17 @@ namespace MediaViewer.Model.Media.State
             {
                 if (DebugOutput) Logger.Log.Info("end rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
                 UIMediaCollection.ExitWriteLock();
-
-                //if (success)
-                //{
-                    // redraw the UI since sorting order might have changed
-                fireEvents(MediaStateChangedAction.Modified, null);                    
-                //}
+              
+                // redraw the UI since sorting order might have changed
+                fireEvents(MediaStateChangedAction.Modified, null);                                  
             }
         }
 
-        public void removeUIState(IEnumerable<MediaFileItem> removeItems)
+        public void removeUIState(IEnumerable<MediaItem> removeItems)
         {
             if (removeItems.Count() == 0) return;
         
-            List<MediaFileItem> removed = new List<MediaFileItem>();
+            List<MediaItem> removed = new List<MediaItem>();
 
             UIMediaCollection.EnterWriteLock();
             if (DebugOutput) Logger.Log.Info("begin remove event: " + removeItems.ElementAt(0).Location);
@@ -160,13 +163,11 @@ namespace MediaViewer.Model.Media.State
         }
 
         public void clearUIState(String stateInfo, DateTime stateDateTime, MediaStateType stateType) 
-        {
-                   
+        {                   
             UIMediaCollection.EnterWriteLock();
 
             try
-            {
-         
+            {         
                 UIMediaCollection.Clear();
 
                 MediaStateInfo = stateInfo;
@@ -174,245 +175,26 @@ namespace MediaViewer.Model.Media.State
                 MediaStateType = stateType;
 
                 NrItemsInState = 0;
-                NrLoadedItemsInState = 0;
-              
+                NrLoadedItemsInState = 0;              
             }
             finally
             {
                 UIMediaCollection.ExitWriteLock();
 
-                fireEvents(MediaStateChangedAction.Clear, null);
-                
+                fireEvents(MediaStateChangedAction.Clear, null);                
             }
         }
 
-        public void delete(IEnumerable<MediaFileItem> removeItems, CancellationToken token)
-        {
-            List<String> deletedImportedLocations = new List<String>();
-            List<MediaFileItem> deletedItems = new List<MediaFileItem>();
-           
-            try
-            {
-                foreach (MediaFileItem item in removeItems)
-                {
-               
-                    if (token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
-                    bool isImported = item.delete();
-
-                    if (isImported)
-                    {
-                        deletedImportedLocations.Add(item.Location);
-                    }
-                  
-                    deletedItems.Add(item);
-                }
-
-            }
-            finally
-            {
-                if (MediaFileWatcher.Instance.IsWatcherEnabled == false)
-                {
-                    // if the watcher is not enabled remove the items from the state ourselves
-                    removeUIState(deletedItems);
-                }
-
-                if (deletedImportedLocations.Count > 0)
-                {
-                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Remove, deletedImportedLocations));
-                }
-             
-            }
-        }
-
-        public void move(MediaFileItem item, String location, ICancellableOperationProgress progress)
-        {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-
-            List<String> locationDummy = new List<string>();
-            locationDummy.Add(location);
-
-            move(dummy, locationDummy, progress);
-        }
-
-        public void move(IEnumerable<MediaFileItem> items, IEnumerable<String> locations,
-            ICancellableOperationProgress progress)
-        {
-           
-            List<String> deletedImportedLocations = new List<String>();
-            List<MediaFileItem> addedImportedItems = new List<MediaFileItem>();
-   
-            try
-            {
-                var itemsEnum = items.GetEnumerator();
-                var locationsEnum = locations.GetEnumerator();
-
-                while (itemsEnum.MoveNext() && locationsEnum.MoveNext())
-                {
-                    if (progress.CancellationToken.IsCancellationRequested)
-                    {
-                        return;
-                    }
-                  
-                    MediaFileItem item = itemsEnum.Current;
-                    String location = locationsEnum.Current;
-             
-                    if (!item.Location.Equals(location))
-                    {
-                        String oldLocation = item.Location;
-
-                        bool isImported = item.move(location, progress);
-                        if (MediaFileWatcher.Instance.IsWatcherEnabled &&
-                            !FileUtils.getPathWithoutFileName(location).Equals(MediaFileWatcher.Instance.Path))
-                        {
-                            List<MediaFileItem> removeList = new List<MediaFileItem>();
-                            removeList.Add(item);
-
-                            removeUIState(removeList);
-                        }
-                        
-                        if (isImported)
-                        {
-                            deletedImportedLocations.Add(oldLocation);
-                            addedImportedItems.Add(item);
-                        }
-                    }
-             
-                }
-
-            }
-            finally
-            {
-                if (deletedImportedLocations.Count > 0)
-                {
-                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Replace, addedImportedItems, deletedImportedLocations));
-                }
-
-            }
-
-        }
-
-        void fireEvents(MediaStateChangedAction action, IEnumerable<MediaFileItem> files)
+        protected void fireEvents(MediaStateChangedAction action, IEnumerable<MediaItem> files)
         {
             MediaStateChangedEventArgs args = new MediaStateChangedEventArgs(action, files);
 
             OnNrItemsInStateChanged(args);
 
         }
-            
-
-        public void import(MediaFileItem item, CancellationToken token)
-        {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-            import(dummy, token);
-
-        }
-
-        public void import(IEnumerable<MediaFileItem> items, CancellationToken token)
-        {
-            List<MediaFileItem> importedItems = new List<MediaFileItem>();
-
-            try
-            {
-                foreach (MediaFileItem item in items)
-                {
-                    if (token.IsCancellationRequested) return;               
-
-                    if (item.Media == null)
-                    {
-                        Task task = item.readMetaDataAsync(MediaFactory.ReadOptions.AUTO |
-                                MediaFactory.ReadOptions.GENERATE_THUMBNAIL, token);
-                        task.Wait();
-                        if (item.Media == null || item.Media is UnknownMedia)
-                        {
-                            throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
-                        }
-                    }
-
-                    bool success = item.import(token);
-                    if (success)
-                    {
-                        importedItems.Add(item);
-                    }
-                                     
-                }
-
-            }
-            finally
-            {
-                if (importedItems.Count > 0)
-                {
-                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Add, importedItems));
-                }          
-            }
-        }
-
-
-        public void export(MediaFileItem item, CancellationToken token)
-        {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-            export(dummy, token);
-        }
-
-        public void export(IEnumerable<MediaFileItem> items, CancellationToken token)
-        {
-            List<MediaFileItem> exportedItems = new List<MediaFileItem>();
-          
-            try
-            {
-                foreach (MediaFileItem item in items)
-                {
-                    if (token.IsCancellationRequested) return;
-              
-                    bool success = item.export(token);
-                    if (success)
-                    {
-                        exportedItems.Add(item);
-                    }
-               
-                }
-
-            }
-            finally
-            {
-                if (exportedItems.Count > 0)
-                {
-                    OnNrImportedItemsChanged(new MediaStateChangedEventArgs(
-                        MediaStateChangedAction.Remove, exportedItems));
-                }             
-            }
-        }
-        
-
-        public void writeMetadata(MediaFileItem item, MediaFactory.WriteOptions options, ICancellableOperationProgress progress)
-        {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-            writeMetadata(dummy, options, progress);
-        }
-
-        public void writeMetadata(IEnumerable<MediaFileItem> items, MediaFactory.WriteOptions options, ICancellableOperationProgress progress)
-        {                 
-            foreach (MediaFileItem item in items)
-            {
-                if (progress.CancellationToken.IsCancellationRequested) return;
-
-                item.writeMetaData(options, progress);                  
-            }
-           
-        }
 
         void item_PropertyChanged(Object sender, PropertyChangedEventArgs e)
-        {        
+        {
             if (ItemPropertiesChanged != null)
             {
                 ItemPropertiesChanged(sender, e);
@@ -425,44 +207,6 @@ namespace MediaViewer.Model.Media.State
             {
                 NrItemsInStateChanged(this, args);
             }
-        }
-      
-
-        void OnNrImportedItemsChanged(MediaStateChangedEventArgs args)
-        {
-            if (NrImportedItemsChanged != null)
-            {
-                NrImportedItemsChanged(this, args);
-            }
-        }
-
-        public void readMetadata(MediaFileItem item, MediaFactory.ReadOptions options, CancellationToken token)
-        {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-            readMetadata(dummy, options, token);
-        }
-
-        public void readMetadata(IEnumerable<MediaFileItem> items, MediaFactory.ReadOptions options, CancellationToken token)
-        {
-            UIMediaCollection.EnterReaderLock();
-
-            try
-            {
-                foreach (MediaFileItem item in items)
-                {               
-                    item.readMetaData(options, token);                    
-                }
-            }
-            finally
-            {
-                UIMediaCollection.ExitReaderLock();
-            }
-        }
-
-        public void writeMetadata(IEnumerable<MediaFileItem> items)
-        {
-            throw new NotImplementedException();
         }
 
         MediaStateType mediaStateType;

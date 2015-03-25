@@ -20,6 +20,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.ServiceLocation;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.MediaGrid
 {
@@ -38,19 +39,19 @@ namespace MediaViewer.MediaGrid
             EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
         }
 
-        public SelectableMediaFileItem SelectableMediaFileItem
+        public SelectableMediaItem SelectableMediaItem
         {
-            get { return (SelectableMediaFileItem)GetValue(MediaFileItemProperty); }
+            get { return (SelectableMediaItem)GetValue(MediaFileItemProperty); }
             set { SetValue(MediaFileItemProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for SelectableMediaFileItem.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MediaFileItemProperty =
-            DependencyProperty.Register("SelectableMediaFileItem", typeof(SelectableMediaFileItem), typeof(MediaGridItemBasicView), new PropertyMetadata(null));
+            DependencyProperty.Register("SelectableMediaItem", typeof(SelectableMediaItem), typeof(MediaGridItemBasicView), new PropertyMetadata(null));
 
         private void viewMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = SelectableMediaFileItem.Item;
+            MediaItem item = SelectableMediaItem.Item;
 
             if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(item.Location))
             {
@@ -98,7 +99,7 @@ namespace MediaViewer.MediaGrid
 
         private void browseMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = SelectableMediaFileItem.Item;
+            MediaItem item = SelectableMediaItem.Item;
 
             String location = FileUtils.getPathWithoutFileName(item.Location);
 
@@ -107,7 +108,7 @@ namespace MediaViewer.MediaGrid
 
         private void openInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            MediaFileItem item = SelectableMediaFileItem.Item;
+            MediaItem item = SelectableMediaItem.Item;
 
             String location = FileUtils.getPathWithoutFileName(item.Location);
 
@@ -118,7 +119,7 @@ namespace MediaViewer.MediaGrid
 
         private void imageGridItem_Checked(object sender, RoutedEventArgs e)
         {
-            SelectableMediaFileItem item = (SelectableMediaFileItem)DataContext;
+            SelectableMediaItem item = (SelectableMediaItem)DataContext;
 
             if (item.IsSelected == true) return;
           
@@ -131,7 +132,7 @@ namespace MediaViewer.MediaGrid
 
         private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
         {
-            SelectableMediaFileItem item = (SelectableMediaFileItem)DataContext;
+            SelectableMediaItem item = (SelectableMediaItem)DataContext;
 
             item.IsSelected = false;
          

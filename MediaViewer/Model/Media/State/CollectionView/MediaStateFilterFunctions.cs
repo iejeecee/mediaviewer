@@ -16,26 +16,26 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
     class MediaStateFilterFunctions
     {
-        public static Func<SelectableMediaFileItem, bool> getFilter(MediaStateFilterMode mode)
+        public static Func<SelectableMediaItem, bool> getFilter(MediaStateFilterMode mode)
         {
-            Func<SelectableMediaFileItem, bool> filter = null;
+            Func<SelectableMediaItem, bool> filter = null;
 
             switch (mode)
             {
                 case MediaStateFilterMode.None:
-                    filter = new Func<SelectableMediaFileItem, bool>((item) =>
+                    filter = new Func<SelectableMediaItem, bool>((item) =>
                     {
                         return (true);
                     });
                     break;
                 case MediaStateFilterMode.Video:
-                    filter = new Func<SelectableMediaFileItem, bool>((item) =>
+                    filter = new Func<SelectableMediaItem, bool>((item) =>
                     {
                         return (Utils.MediaFormatConvert.isVideoFile(item.Item.Location));                        
                     });
                     break;
                 case MediaStateFilterMode.Images:
-                    filter = new Func<SelectableMediaFileItem, bool>((item) =>
+                    filter = new Func<SelectableMediaItem, bool>((item) =>
                     {
                         return (Utils.MediaFormatConvert.isImageFile(item.Item.Location)); 
                     });

@@ -252,6 +252,31 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
              if (existingTag == null)
              {
+
+                 List<Tag> childTags = new List<Tag>();
+
+                 // check if all child tags exist, if not create them
+                 foreach (Tag newChildTag in mergeTag.ChildTags)
+                 {
+                     Tag existingChildTag = getTagByName(newChildTag.Name);
+
+                     if (existingChildTag == null)
+                     {
+                         newChildTag.ChildTags.Clear();
+                         newChildTag.TagCategory = null;
+                         existingChildTag = create(newChildTag);
+                     }
+
+                     childTags.Add(existingChildTag);
+                 }
+
+                 mergeTag.ChildTags.Clear();
+
+                 foreach (Tag tag in childTags)
+                 {
+                     mergeTag.ChildTags.Add(tag);
+                 }
+
                  create(mergeTag);
              }
              else

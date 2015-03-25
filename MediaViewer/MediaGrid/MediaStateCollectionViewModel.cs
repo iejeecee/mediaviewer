@@ -11,9 +11,9 @@ namespace MediaViewer.MediaGrid
 {
     public class MediaStateCollectionViewModel : BindableBase
     {
-        IMediaState mediaState;
+        MediaState mediaState;
 
-        public IMediaState MediaState
+        public MediaState MediaState
         {
             get
             {
@@ -33,7 +33,7 @@ namespace MediaViewer.MediaGrid
         }
 
 
-        public MediaStateCollectionViewModel(IMediaState mediaState)
+        public MediaStateCollectionViewModel(MediaState mediaState)
         {
             if (mediaState == null)
             {

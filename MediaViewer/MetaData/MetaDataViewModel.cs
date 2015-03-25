@@ -24,6 +24,7 @@ using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.MetaData
 {
@@ -240,7 +241,7 @@ namespace MediaViewer.MetaData
                 
             });
 
-            mediaFileWatcher.MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+            mediaFileWatcher.MediaFileState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
           
             FilenameHistory = settings.FilenameHistory;           
 
@@ -667,10 +668,10 @@ namespace MediaViewer.MetaData
                
         void grabData()
         {                       
-            if (items.Count == 1 && Items.ElementAt(0).Media != null)
+            if (items.Count == 1 && Items.ElementAt(0).Metadata != null)
             {
 
-                BaseMedia media = Items.ElementAt(0).Media;
+                BaseMetadata media = Items.ElementAt(0).Metadata;
 
                 if (media.SupportsXMPMetadata == false)
                 {
@@ -682,9 +683,9 @@ namespace MediaViewer.MetaData
 
                 DynamicProperties.Clear();
 
-                if (media is VideoMedia)
+                if (media is VideoMetadata)
                 {
-                    getVideoProperties(DynamicProperties, media as VideoMedia);
+                    getVideoProperties(DynamicProperties, media as VideoMetadata);
                 }
                 
                 Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
@@ -739,7 +740,7 @@ namespace MediaViewer.MetaData
                                                
         }
 
-        private void getExifProperties(ObservableCollection<Tuple<string, string>> p, BaseMedia media)
+        private void getExifProperties(ObservableCollection<Tuple<string, string>> p, BaseMetadata media)
         {
             int nrProps = p.Count;
            
@@ -756,9 +757,9 @@ namespace MediaViewer.MetaData
                 p.Add(new Tuple<string, string>("Metadata Modified", media.MetadataModifiedDate.ToString()));
             }
                       
-            if (media is ImageMedia)
+            if (media is ImageMetadata)
             {
-                foreach (Tuple<string, string> item in FormatMetaData.formatProperties(media as ImageMedia))
+                foreach (Tuple<string, string> item in FormatMetaData.formatProperties(media as ImageMetadata))
                 {
                     p.Add(item);
                 }
@@ -781,7 +782,7 @@ namespace MediaViewer.MetaData
             
         }    
 
-        void getVideoProperties(ObservableCollection<Tuple<String, String>> p, VideoMedia video)
+        void getVideoProperties(ObservableCollection<Tuple<String, String>> p, VideoMetadata video)
         {
            
             p.Add(new Tuple<string, string>("", "VIDEO"));
@@ -820,17 +821,23 @@ namespace MediaViewer.MetaData
             EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
         }
 
-        private void globalMediaBatchSelectionEvent(ICollection<MediaFileItem> selectedItems)
+        private void globalMediaBatchSelectionEvent(ICollection<MediaItem> selectedItems)
         {
-            Items = selectedItems;
+            List<MediaFileItem> items = new List<MediaFileItem>();
+            foreach (MediaItem item in selectedItems)
+            {
+                items.Add(item as MediaFileItem);
+            }
+
+            Items = items;
         }
 
-        private void globalMediaSelectionEvent(MediaFileItem selectedItem)
+        private void globalMediaSelectionEvent(MediaItem selectedItem)
         {
             List<MediaFileItem> selectedItems = new List<MediaFileItem>();
             if (selectedItem != null)
             {
-                selectedItems.Add(selectedItem);
+                selectedItems.Add(selectedItem as MediaFileItem);
             }
 
             Items = selectedItems;

@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Model.Collections;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -21,15 +22,15 @@ namespace MediaViewer.Model.Media.State
     /// Also makes sure the items in the collection are unique
     /// </summary>
     /// <typeparam name="MediaFileItem"></typeparam>
-    public class MediaLockedCollection : LockedObservableCollection<MediaFileItem>
+    public class MediaLockedCollection : LockedObservableCollection<MediaItem>
     {               
-        MediaFileItemLoader itemLoader;
+        MediaItemMetadataLoader itemLoader;
                               
         public MediaLockedCollection(bool autoLoadItems = false)
         {                             
             if (autoLoadItems == true)
             {
-                itemLoader = new MediaFileItemLoader();
+                itemLoader = new MediaItemMetadataLoader();
                 Task.Factory.StartNew(() => itemLoader.loadLoop());
 
                 itemLoader.ItemFinishedLoading += itemLoader_ItemFinishedLoading;
@@ -46,7 +47,7 @@ namespace MediaViewer.Model.Media.State
             try
             {
                 // check to make sure the loaded item is actually in the current state
-                if(Contains(sender as MediaFileItem)) {
+                if(Contains(sender as MediaItem)) {
                     NrLoadedItems++;
 
                     if (NrLoadedItems == Count)
@@ -109,7 +110,7 @@ namespace MediaViewer.Model.Media.State
         }
 
 
-        public bool RenameRange(IEnumerable<MediaFileItem> oldItems, IEnumerable<String> newLocations)
+        public bool RenameRange(IEnumerable<MediaItem> oldItems, IEnumerable<String> newLocations)
         {                      
             bool success = true;
 
@@ -120,7 +121,7 @@ namespace MediaViewer.Model.Media.State
               
             for (int i = 0; i < nrOldItems; i++)
             {                   
-                MediaFileItem oldItem = this.FirstOrDefault((elem) => {
+                MediaItem oldItem = this.FirstOrDefault((elem) => {
                     return(oldItems.ElementAt(i).Location.Equals(elem.Location));
                 });
 
@@ -137,13 +138,13 @@ namespace MediaViewer.Model.Media.State
            
         }
 
-        override protected void afterItemAdded(MediaFileItem item)
+        override protected void afterItemAdded(MediaItem item)
         {
             base.afterItemAdded(item);
 
             if (AutoLoadItems)
             {
-                if (item.ItemState == MediaFileItemState.LOADED)
+                if (item.ItemState == MediaItemState.LOADED)
                 {
                     NrLoadedItems++;
                 }
@@ -154,13 +155,13 @@ namespace MediaViewer.Model.Media.State
             }
         }
 
-        override protected void beforeItemRemoved(MediaFileItem item)
+        override protected void beforeItemRemoved(MediaItem item)
         {
             base.beforeItemRemoved(item);
 
             if (AutoLoadItems)
             {
-                if (item.ItemState != MediaFileItemState.LOADING)
+                if (item.ItemState != MediaItemState.LOADING)
                 {
                     NrLoadedItems--;
                 }

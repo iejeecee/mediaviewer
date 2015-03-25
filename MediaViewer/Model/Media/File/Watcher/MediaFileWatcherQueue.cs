@@ -13,7 +13,6 @@ namespace MediaViewer.Model.Media.File.Watcher
     class MediaFileWatcherQueue : IDisposable
     {
         
-
         class OrderedFileEvent
         {
 
@@ -193,13 +192,13 @@ namespace MediaViewer.Model.Media.File.Watcher
         {
             if (removed.Count > 0)
             {
-                MediaFileWatcher.MediaState.removeUIState(removed);
+                MediaFileWatcher.MediaFileState.removeUIState(removed);
                 removed.Clear();
             }
 
             if (created.Count > 0)
             {
-                MediaFileWatcher.MediaState.addUIState(created);
+                MediaFileWatcher.MediaFileState.addUIState(created);
                 created.Clear();
             }
 
@@ -211,7 +210,7 @@ namespace MediaViewer.Model.Media.File.Watcher
 
             if (renamedOldFiles.Count > 0 || renamedNewLocations.Count > 0)
             {
-                MediaFileWatcher.MediaState.renameUIState(renamedOldFiles, renamedNewLocations);
+                MediaFileWatcher.MediaFileState.renameUIState(renamedOldFiles, renamedNewLocations);
                 renamedOldFiles.Clear();
                 renamedNewLocations.Clear();
             }

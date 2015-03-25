@@ -22,20 +22,30 @@ namespace MediaViewer.Import
     /// </summary>
     [Export]
     public partial class ImportView : Window
-    {
-      
+    {      
         public ImportView()
         {
             InitializeComponent();
+         
+            DataContextChanged += ImportView_DataContextChanged;
+        }
 
-            ImportViewModel vm = new ImportViewModel(MediaFileWatcher.Instance);
+        void vm_ClosingRequest(object sender, CloseableBindableBase.DialogEventArgs e)
+        {
+            this.Close();
+        }
 
-            vm.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((o, e) =>
+        void ImportView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue != null)
             {
-                this.Close();
-            });
+                (e.OldValue as CloseableBindableBase).ClosingRequest -= vm_ClosingRequest;
+            }
 
-            DataContext = vm;     
+            if (e.NewValue != null)
+            {
+                (e.NewValue as CloseableBindableBase).ClosingRequest += vm_ClosingRequest;
+            }
         }
     }
 }

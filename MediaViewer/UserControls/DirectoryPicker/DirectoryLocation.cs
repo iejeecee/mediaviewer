@@ -23,8 +23,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
     class DirectoryLocation : Location, INonCancellableOperationProgress
     {
 
-        public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask, MediaState state)
-            : base(infoGatherTask, state)
+        public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask, MediaFileState mediaFileState)
+            : base(infoGatherTask, mediaFileState)
         {        
             Name = info.Name;
             CreationDate = info.CreationTime;
@@ -205,7 +205,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 {
                     FileUtils.walkDirectoryTree(new DirectoryInfo(location.FullName), getFiles, mediaFilesToDelete, true);
 
-                    MediaState.delete(mediaFilesToDelete, tokenSource.Token);
+                    MediaFileState.delete(mediaFilesToDelete, tokenSource.Token);
 
                     FileUtils fileUtils = new FileUtils();
                     fileUtils.deleteDirectory(location.FullName);

@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Mvvm;
@@ -17,9 +18,9 @@ namespace MediaViewer.MediaGrid
     public class MediaStackPanelViewModel : MediaStateCollectionViewModel, IPageable
     {
         protected IEventAggregator EventAggregator { get; set; }
-        MediaFileItem selectedItem;
+        MediaItem selectedItem;
 
-        public MediaStackPanelViewModel(IMediaState mediaState, IEventAggregator eventAggregator)
+        public MediaStackPanelViewModel(MediaState mediaState, IEventAggregator eventAggregator)
             : base(mediaState)
         {
             IsVisible = false;
@@ -80,7 +81,7 @@ namespace MediaViewer.MediaGrid
 
                 if (selectedItem != null)
                 {
-                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(selectedItem)) + 1;
+                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem)) + 1;
                 }
                 else
                 {
@@ -190,7 +191,7 @@ namespace MediaViewer.MediaGrid
 
                         int index = newPage.Value - 1;
 
-                        MediaFileItem item = MediaStateCollectionView.Media[index].Item;
+                        MediaItem item = MediaStateCollectionView.Media[index].Item;
                         
                         EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Publish(item);                                       
                     }

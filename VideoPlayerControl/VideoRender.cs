@@ -320,8 +320,13 @@ namespace VideoPlayerControl
                     TimeSpan time = new TimeSpan(0, 0, Math.Max(positionSeconds + offsetSeconds, 0));
                     String timeString = "";
 
+                    if (time.Days > 0)
+                    {
+                        timeString += time.Days + "d";
+                    }
+
                     if(time.Hours > 0) {
-                        timeString += time.TotalHours + "h";
+                        timeString += time.Hours + "h";
                     }
 
                     if(time.Minutes > 0) {

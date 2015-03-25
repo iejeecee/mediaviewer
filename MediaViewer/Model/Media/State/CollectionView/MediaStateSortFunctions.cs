@@ -2,6 +2,7 @@
 using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,117 +44,118 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
     class MediaStateSortFunctions
     {
-        public static Func<SelectableMediaFileItem, SelectableMediaFileItem, int> getSortFunction(MediaStateSortMode sortMode)
+        public static Func<SelectableMediaItem, SelectableMediaItem, int> getSortFunction(MediaStateSortMode sortMode)
         {
 
-            Func<SelectableMediaFileItem, SelectableMediaFileItem, int> sortFunc = null;
+            Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc = null;
 
             switch (sortMode)
             {
                 case MediaStateSortMode.Name:
 
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
-                        {
-                            int result = System.IO.Path.GetFileName(a.Item.Location).CompareTo(System.IO.Path.GetFileName(b.Item.Location));
+                        {                                                                                            
+                            int result = Path.GetFileName(a.Item.Location).CompareTo(Path.GetFileName(b.Item.Location));
+                         
                             return (result);
                         });
                     break;
                 case MediaStateSortMode.Size:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return(onEquals(a.Item.Media.SizeBytes.CompareTo(b.Item.Media.SizeBytes), a, b));
+                            return(onEquals(a.Item.Metadata.SizeBytes.CompareTo(b.Item.Metadata.SizeBytes), a, b));
                        
                         });
                     break;
                 case MediaStateSortMode.Rating:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
                  
-                            return (onEquals(Nullable.Compare(a.Item.Media.Rating, b.Item.Media.Rating), a, b));
+                            return (onEquals(Nullable.Compare(a.Item.Metadata.Rating, b.Item.Metadata.Rating), a, b));
 
                         });
                     break;
                 case MediaStateSortMode.Imported:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
            
-                            return (onEquals(a.Item.Media.IsImported.CompareTo(b.Item.Media.IsImported), a, b));
+                            return (onEquals(a.Item.Metadata.IsImported.CompareTo(b.Item.Metadata.IsImported), a, b));
                         });
                     break;
                 case MediaStateSortMode.Tags:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (onEquals(a.Item.Media.Tags.Count.CompareTo(b.Item.Media.Tags.Count),a,b));
+                            return (onEquals(a.Item.Metadata.Tags.Count.CompareTo(b.Item.Metadata.Tags.Count),a,b));
 
                         });
                     break;
                 case MediaStateSortMode.FileDate:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                        (a, b) =>
                        {
                            int result = hasMediaTest(a, b);
                            if (result != 0) return result;
 
-                           return (onEquals(a.Item.Media.FileDate.CompareTo(b.Item.Media.FileDate),a,b));
+                           return (onEquals(a.Item.Metadata.FileDate.CompareTo(b.Item.Metadata.FileDate),a,b));
                        });
                     break;
                 case MediaStateSortMode.MimeType:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (onEquals(a.Item.Media.MimeType.CompareTo(b.Item.Media.MimeType),a,b));
+                            return (onEquals(a.Item.Metadata.MimeType.CompareTo(b.Item.Metadata.MimeType),a,b));
                         });
                     break;
                 case MediaStateSortMode.LastModified:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (onEquals(a.Item.Media.LastModifiedDate.CompareTo(b.Item.Media.LastModifiedDate),a,b));
+                            return (onEquals(a.Item.Metadata.LastModifiedDate.CompareTo(b.Item.Metadata.LastModifiedDate),a,b));
                         });
                     break;
                 case MediaStateSortMode.CreationDate:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (onEquals(Nullable.Compare(a.Item.Media.CreationDate, b.Item.Media.CreationDate),a,b));
+                            return (onEquals(Nullable.Compare(a.Item.Metadata.CreationDate, b.Item.Metadata.CreationDate),a,b));
                         });
                     break;
                 case MediaStateSortMode.SoftWare:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            return (onEquals(Compare(a.Item.Media.Software, b.Item.Media.Software),a,b));
+                            return (onEquals(Compare(a.Item.Metadata.Software, b.Item.Metadata.Software),a,b));
                         });
                     break;
                 case MediaStateSortMode.Width:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
@@ -162,29 +164,29 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int widthA;
                             int widthB;
 
-                            if (a.Item.Media is ImageMedia)
+                            if (a.Item.Metadata is ImageMetadata)
                             {
-                                widthA = (a.Item.Media as ImageMedia).Width;
+                                widthA = (a.Item.Metadata as ImageMetadata).Width;
                             }
                             else
                             {
-                                widthA = (a.Item.Media as VideoMedia).Width;
+                                widthA = (a.Item.Metadata as VideoMetadata).Width;
                             }
 
-                            if (b.Item.Media is ImageMedia)
+                            if (b.Item.Metadata is ImageMetadata)
                             {
-                                widthB = (b.Item.Media as ImageMedia).Width;
+                                widthB = (b.Item.Metadata as ImageMetadata).Width;
                             }
                             else
                             {
-                                widthB = (b.Item.Media as VideoMedia).Width;
+                                widthB = (b.Item.Metadata as VideoMetadata).Width;
                             }
 
                             return (onEquals(widthA.CompareTo(widthB),a,b));
                         });
                     break;
                 case MediaStateSortMode.Height:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
@@ -193,218 +195,218 @@ namespace MediaViewer.Model.Media.State.CollectionView
                             int heightA;
                             int heightB;
 
-                            if (a.Item.Media is ImageMedia)
+                            if (a.Item.Metadata is ImageMetadata)
                             {
-                                heightA = (a.Item.Media as ImageMedia).Height;
+                                heightA = (a.Item.Metadata as ImageMetadata).Height;
                             }
                             else
                             {
-                                heightA = (a.Item.Media as VideoMedia).Height;
+                                heightA = (a.Item.Metadata as VideoMetadata).Height;
                             }
 
-                            if (b.Item.Media is ImageMedia)
+                            if (b.Item.Metadata is ImageMetadata)
                             {
-                                heightB = (b.Item.Media as ImageMedia).Height;
+                                heightB = (b.Item.Metadata as ImageMetadata).Height;
                             }
                             else
                             {
-                                heightB = (b.Item.Media as VideoMedia).Height;
+                                heightB = (b.Item.Metadata as VideoMetadata).Height;
                             }
 
                             return (onEquals(heightA.CompareTo(heightB),a,b));
                         });
                     break;
                 case MediaStateSortMode.Duration:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aDuration = a.Item.Media is VideoMedia ? new Nullable<int>((a.Item.Media as VideoMedia).DurationSeconds) : null;
-                            Nullable<int> bDuration = b.Item.Media is VideoMedia ? new Nullable<int>((b.Item.Media as VideoMedia).DurationSeconds) : null;
+                            Nullable<int> aDuration = a.Item.Metadata is VideoMetadata ? new Nullable<int>((a.Item.Metadata as VideoMetadata).DurationSeconds) : null;
+                            Nullable<int> bDuration = b.Item.Metadata is VideoMetadata ? new Nullable<int>((b.Item.Metadata as VideoMetadata).DurationSeconds) : null;
 
                             return (onEquals(Nullable.Compare<int>(aDuration, bDuration),a,b));
                         });
                     break;
                 case MediaStateSortMode.FramesPerSecond:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<double> aFPS = a.Item.Media is VideoMedia ? new Nullable<double>((a.Item.Media as VideoMedia).FramesPerSecond) : null;
-                            Nullable<double> bFPS = b.Item.Media is VideoMedia ? new Nullable<double>((b.Item.Media as VideoMedia).FramesPerSecond) : null;
+                            Nullable<double> aFPS = a.Item.Metadata is VideoMetadata ? new Nullable<double>((a.Item.Metadata as VideoMetadata).FramesPerSecond) : null;
+                            Nullable<double> bFPS = b.Item.Metadata is VideoMetadata ? new Nullable<double>((b.Item.Metadata as VideoMetadata).FramesPerSecond) : null;
 
                             return (onEquals(Nullable.Compare<double>(aFPS, bFPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.VideoCodec:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aVideoCodec = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).VideoCodec : "";
-                            String bVideoCodec = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).VideoCodec : "";
+                            String aVideoCodec = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).VideoCodec : "";
+                            String bVideoCodec = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).VideoCodec : "";
 
                             return (onEquals(aVideoCodec.CompareTo(bVideoCodec),a,b));
                         });
                     break;
                 case MediaStateSortMode.AudioCodec:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aAudioCodec = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).AudioCodec : null;
-                            String bAudioCodec = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).AudioCodec : null;
+                            String aAudioCodec = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).AudioCodec : null;
+                            String bAudioCodec = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).AudioCodec : null;
 
                             return (onEquals(Compare(aAudioCodec, bAudioCodec),a,b));
                         });
                     break;
                 case MediaStateSortMode.PixelFormat:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aPixelFormat = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).PixelFormat : null;
-                            String bPixelFormat = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).PixelFormat : null;
+                            String aPixelFormat = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).PixelFormat : null;
+                            String bPixelFormat = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).PixelFormat : null;
 
                             return (onEquals(Compare(aPixelFormat, bPixelFormat),a,b));
                         });
                     break;
                 case MediaStateSortMode.BitsPerSample:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<short> aBPS = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).BitsPerSample : null;
-                            Nullable<short> bBPS = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).BitsPerSample : null;
+                            Nullable<short> aBPS = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).BitsPerSample : null;
+                            Nullable<short> bBPS = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).BitsPerSample : null;
 
                             return (onEquals(Nullable.Compare(aBPS, bBPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.SamplesPerSecond:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aSPS = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).SamplesPerSecond : null;
-                            Nullable<int> bSPS = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).SamplesPerSecond : null;
+                            Nullable<int> aSPS = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).SamplesPerSecond : null;
+                            Nullable<int> bSPS = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).SamplesPerSecond : null;
 
                             return (onEquals(Nullable.Compare(aSPS, bSPS),a,b));
                         });
                     break;
                 case MediaStateSortMode.NrChannels:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aNrChannels = a.Item.Media is VideoMedia ? (a.Item.Media as VideoMedia).NrChannels : null;
-                            Nullable<int> bNrChannels = b.Item.Media is VideoMedia ? (b.Item.Media as VideoMedia).NrChannels : null;
+                            Nullable<int> aNrChannels = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).NrChannels : null;
+                            Nullable<int> bNrChannels = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).NrChannels : null;
 
                             return (onEquals(Nullable.Compare(aNrChannels, bNrChannels),a,b));
                         });
                     break;
                 case MediaStateSortMode.CameraMake:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).CameraMake : null;
-                            String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).CameraMake : null;
+                            String aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).CameraMake : null;
+                            String bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).CameraMake : null;
 
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.CameraModel:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).CameraModel : null;
-                            String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).CameraModel : null;
+                            String aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).CameraModel : null;
+                            String bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).CameraModel : null;
 
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.Lens:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).Lens : null;
-                            String bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).Lens : null;
+                            String aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).Lens : null;
+                            String bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).Lens : null;
 
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.FocalLength:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).FocalLength : null;
-                            Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).FocalLength : null;
+                            Nullable<double> aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).FocalLength : null;
+                            Nullable<double> bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).FocalLength : null;
 
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.FNumber:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).FNumber : null;
-                            Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).FNumber : null;
+                            Nullable<double> aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).FNumber : null;
+                            Nullable<double> bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).FNumber : null;
 
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.ExposureTime:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<double> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).ExposureTime : null;
-                            Nullable<double> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).ExposureTime : null;
+                            Nullable<double> aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).ExposureTime : null;
+                            Nullable<double> bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).ExposureTime : null;
 
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
                 case MediaStateSortMode.ISOSpeedRating:
-                    sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>(
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aVal = a.Item.Media is ImageMedia ? (a.Item.Media as ImageMedia).ISOSpeedRating : null;
-                            Nullable<int> bVal = b.Item.Media is ImageMedia ? (b.Item.Media as ImageMedia).ISOSpeedRating : null;
+                            Nullable<int> aVal = a.Item.Metadata is ImageMetadata ? (a.Item.Metadata as ImageMetadata).ISOSpeedRating : null;
+                            Nullable<int> bVal = b.Item.Metadata is ImageMetadata ? (b.Item.Metadata as ImageMetadata).ISOSpeedRating : null;
 
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
@@ -434,7 +436,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             else return (false);
         }
 
-        static int onEquals(int result, SelectableMediaFileItem a, SelectableMediaFileItem b)
+        static int onEquals(int result, SelectableMediaItem a, SelectableMediaItem b)
         {
             if (result == 0)
             {
@@ -446,10 +448,10 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        static int hasMediaTest(SelectableMediaFileItem a, SelectableMediaFileItem b)
+        static int hasMediaTest(SelectableMediaItem a, SelectableMediaItem b)
         {
-            if (a.Item.Media != null && b.Item.Media != null) return 0;
-            if (a.Item.Media == null) return 1;
+            if (a.Item.Metadata != null && b.Item.Metadata != null) return 0;
+            if (a.Item.Metadata == null) return 1;
             else return -1;
         }
 

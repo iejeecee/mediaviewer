@@ -24,12 +24,7 @@ namespace MediaViewer.MediaDatabase
                 SetProperty(ref image, value);
             }
         }
-
-        public Thumbnail()
-        {
-
-        }
-
+      
         public Thumbnail(BitmapSource source)
         {
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();

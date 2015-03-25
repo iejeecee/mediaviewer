@@ -26,6 +26,7 @@ using MediaViewer.Model.Mvvm;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.ImagePanel
 {
@@ -394,44 +395,42 @@ namespace MediaViewer.ImagePanel
               
 
         private void loadImage(String location)
-        {
-                    
-            //BaseMedia media = null;
-          
+        {                                        
             try
             {
                 IsLoading = true;
 
-                //MediaFileItem item = MediaFileItem.Factory.create((String)location);
-                
-                //item.readMetaData(
-                //    MediaFactory.ReadOptions.AUTO | MediaFactory.ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ | MediaFactory.ReadOptions.GENERATE_THUMBNAIL, loadImageCTS.Token);
-
                 if (loadImageCTS.IsCancellationRequested) return;
 
-                //media = item.Media;
+                BitmapImage loadedImage = new BitmapImage();
 
-                BitmapImage loadedImage = null;
+                if (FileUtils.isUrl(location))
+                {
+                    MemoryStream data = new MemoryStream();
+                    String mimeType;
 
-                //if (media is ImageMedia && media.Data != null)
-                //{
-                    loadedImage = new BitmapImage();
+                    StreamUtils.download(new Uri(location), data, out mimeType, loadImageCTS.Token);
 
+                    loadedImage.BeginInit();
+                    //loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    loadedImage.CacheOption = BitmapCacheOption.OnLoad;
+                    loadedImage.StreamSource = data;
+                    loadedImage.EndInit();
+
+                }
+                else
+                {
                     loadedImage.BeginInit();
                     loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     loadedImage.CacheOption = BitmapCacheOption.OnLoad;
                     loadedImage.UriSource = new Uri(location);
                     loadedImage.EndInit();
+                }
 
-                    loadedImage.Freeze();
-
-                    //imageFile = (ImageMedia)media;
-
-                    //updatePaging();
-
-                    CurrentLocation = location;
-                    Logger.Log.Info("Image loaded: " + location);
-                //}
+                loadedImage.Freeze();
+                              
+                CurrentLocation = location;
+                Logger.Log.Info("Image loaded: " + location);             
 
                 if (IsResetSettingsOnLoad)
                 {
@@ -605,7 +604,7 @@ namespace MediaViewer.ImagePanel
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
         }
 
-        private void imageView_MediaSelectionEvent(MediaFileItem item)
+        private void imageView_MediaSelectionEvent(MediaItem item)
         {
             if (String.Equals(CurrentLocation, item.Location)) return;
 

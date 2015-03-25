@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
@@ -12,7 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -45,171 +45,171 @@ namespace MediaViewer.MediaGrid
         {
             ExtraItemInfoView view = d as ExtraItemInfoView;
             MediaStateSortMode infoType = (MediaStateSortMode)e.NewValue;
-            MediaFileItem item = (view.DataContext as SelectableMediaFileItem).Item;
+            MediaItem item = (view.DataContext as SelectableMediaItem).Item;
 
             String info = null;
 
-            if (item.Media != null)
+            if (item.Metadata != null)
             {
-                VideoMedia videoMedia = item.Media is VideoMedia ? item.Media as VideoMedia : null;
-                ImageMedia imageMedia = item.Media is ImageMedia ? item.Media as ImageMedia : null;
+                VideoMetadata VideoMetadata = item.Metadata is VideoMetadata ? item.Metadata as VideoMetadata : null;
+                ImageMetadata ImageMetadata = item.Metadata is ImageMetadata ? item.Metadata as ImageMetadata : null;
 
                 switch (infoType)
                 {
                     case MediaStateSortMode.Name:
                         break;
                     case MediaStateSortMode.Size:
-                        info = MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(item.Media.SizeBytes);
+                        info = MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(item.Metadata.SizeBytes);
                         break;
                     case MediaStateSortMode.Rating:
 
-                        if(item.Media.Rating.HasValue) {
-                            view.rating.Value = item.Media.Rating.Value / 5;
+                        if(item.Metadata.Rating.HasValue) {
+                            view.rating.Value = item.Metadata.Rating.Value / 5;
                             view.rating.Visibility = Visibility.Visible;
                         }
                         break;
                     case MediaStateSortMode.Imported:
                         break;
                     case MediaStateSortMode.Tags:
-                        if (item.Media.Tags.Count > 0)
+                        if (item.Metadata.Tags.Count > 0)
                         {
-                            info = item.Media.Tags.Count.ToString() + " tag";
+                            info = item.Metadata.Tags.Count.ToString() + " tag";
 
-                            if (item.Media.Tags.Count > 1)
+                            if (item.Metadata.Tags.Count > 1)
                             {
                                 info += "s";
                             }
                         }
                         break;
                     case MediaStateSortMode.MimeType:
-                        info = item.Media.MimeType;
+                        info = item.Metadata.MimeType;
                         break;
                     case MediaStateSortMode.FileDate:
-                        info = item.Media.FileDate.ToString(dateFormat);
+                        info = item.Metadata.FileDate.ToString(dateFormat);
                         break;  
                     case MediaStateSortMode.LastModified:
-                        info = item.Media.LastModifiedDate.ToString(dateFormat);                       
+                        info = item.Metadata.LastModifiedDate.ToString(dateFormat);                       
                         break;                        
                     case MediaStateSortMode.CreationDate:
-                        if (item.Media.CreationDate.HasValue)
+                        if (item.Metadata.CreationDate.HasValue)
                         {
-                            info = item.Media.CreationDate.Value.ToString(dateFormat);
+                            info = item.Metadata.CreationDate.Value.ToString(dateFormat);
                         }
                         break;
                     case MediaStateSortMode.SoftWare:
-                        if (item.Media.Software != null)
+                        if (item.Metadata.Software != null)
                         {
-                            info = item.Media.Software;
+                            info = item.Metadata.Software;
                         }
                         break;
                     case MediaStateSortMode.Width:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {                          
-                            info = imageMedia.Width.ToString() + " x " + imageMedia.Height.ToString();
+                            info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
                         }
                         else
                         {                         
-                            info = videoMedia.Width.ToString() + " x " + videoMedia.Height.ToString();
+                            info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
                         }
                         break;                        
                     case MediaStateSortMode.Height:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.Width.ToString() + " x " + imageMedia.Height.ToString();
+                            info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
                         }
                         else
                         {
-                            info = videoMedia.Width.ToString() + " x " + videoMedia.Height.ToString();
+                            info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
                         }                   
                         break;
                     case MediaStateSortMode.Duration:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = MiscUtils.formatTimeSeconds(videoMedia.DurationSeconds);
+                            info = MiscUtils.formatTimeSeconds(VideoMetadata.DurationSeconds);
                         }                        
                         break;
                     case MediaStateSortMode.FramesPerSecond:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.FramesPerSecond.ToString("0.00") + " FPS";
+                            info = VideoMetadata.FramesPerSecond.ToString("0.00") + " FPS";
                         }
                         break;
                     case MediaStateSortMode.VideoCodec:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.VideoCodec;
+                            info = VideoMetadata.VideoCodec;
                         }
                         break;
                     case MediaStateSortMode.AudioCodec:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.AudioCodec;
+                            info = VideoMetadata.AudioCodec;
                         }
                         break;
                     case MediaStateSortMode.PixelFormat:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.PixelFormat;
+                            info = VideoMetadata.PixelFormat;
                         }
                         break;
                     case MediaStateSortMode.BitsPerSample:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.BitsPerSample.HasValue ? videoMedia.BitsPerSample + "bit" : "";
+                            info = VideoMetadata.BitsPerSample.HasValue ? VideoMetadata.BitsPerSample + "bit" : "";
                         }
                         break;
                     case MediaStateSortMode.SamplesPerSecond:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.SamplesPerSecond.HasValue ? videoMedia.SamplesPerSecond + "hz" : "";
+                            info = VideoMetadata.SamplesPerSecond.HasValue ? VideoMetadata.SamplesPerSecond + "hz" : "";
                         }
                         break;
                     case MediaStateSortMode.NrChannels:
-                        if (videoMedia != null)
+                        if (VideoMetadata != null)
                         {
-                            info = videoMedia.NrChannels.HasValue ? videoMedia.NrChannels.Value.ToString() + " chan" : "";
+                            info = VideoMetadata.NrChannels.HasValue ? VideoMetadata.NrChannels.Value.ToString() + " chan" : "";
                         }
                         break;
                     case MediaStateSortMode.CameraMake:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.CameraMake != null ? imageMedia.CameraMake : "";
+                            info = ImageMetadata.CameraMake != null ? ImageMetadata.CameraMake : "";
                         }
                         break;
                     case MediaStateSortMode.CameraModel:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.CameraModel != null ? imageMedia.CameraModel : "";
+                            info = ImageMetadata.CameraModel != null ? ImageMetadata.CameraModel : "";
                         }
                         break;
                     case MediaStateSortMode.Lens:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.Lens != null ? imageMedia.Lens : "";
+                            info = ImageMetadata.Lens != null ? ImageMetadata.Lens : "";
                         }
                         break;
                     case MediaStateSortMode.ISOSpeedRating:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.ISOSpeedRating.HasValue ? "ISO: " + imageMedia.ISOSpeedRating.Value : "";
+                            info = ImageMetadata.ISOSpeedRating.HasValue ? "ISO: " + ImageMetadata.ISOSpeedRating.Value : "";
                         }
                         break;
                     case MediaStateSortMode.FNumber:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.FNumber.HasValue ? "f/" + imageMedia.FNumber.Value : "";
+                            info = ImageMetadata.FNumber.HasValue ? "f/" + ImageMetadata.FNumber.Value : "";
                         }
                         break;
                     case MediaStateSortMode.ExposureTime:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.ExposureTime.HasValue ? "1/" + 1/imageMedia.ExposureTime.Value + "s" : "";
+                            info = ImageMetadata.ExposureTime.HasValue ? "1/" + 1/ImageMetadata.ExposureTime.Value + "s" : "";
                         }
                         break;
                     case MediaStateSortMode.FocalLength:
-                        if (imageMedia != null)
+                        if (ImageMetadata != null)
                         {
-                            info = imageMedia.FocalLength.HasValue ? imageMedia.FocalLength.Value + "mm" : "";
+                            info = ImageMetadata.FocalLength.HasValue ? ImageMetadata.FocalLength.Value + "mm" : "";
                         }
                         break;
                     default:

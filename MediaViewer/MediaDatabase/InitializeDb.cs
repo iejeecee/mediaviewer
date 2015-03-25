@@ -24,12 +24,12 @@ namespace MediaViewer.MediaDatabase
 
         private static void createIndexes()
         {
-            using (MediaDbCommands db = new MediaDbCommands())
+            using (MetadataDbCommands db = new MetadataDbCommands())
             {
                 var query = new StringBuilder();
-                query.Append(db.CreateIndex<BaseMedia>(x => x.Id));
-                query.Append(db.CreateIndex<VideoMedia>(x => x.Id));
-                query.Append(db.CreateIndex<ImageMedia>(x => x.Id));
+                query.Append(db.CreateIndex<BaseMetadata>(x => x.Id));
+                query.Append(db.CreateIndex<VideoMetadata>(x => x.Id));
+                query.Append(db.CreateIndex<ImageMetadata>(x => x.Id));
                 query.Append(db.CreateIndex<Tag>(x => x.Id));
 
                 String result = query.ToString();

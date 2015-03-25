@@ -19,7 +19,7 @@ namespace MediaViewer.MediaDatabase
             this.Used = 0;
             this.ChildTags = new HashSet<Tag>();
             this.ParentTags = new HashSet<Tag>();
-            this.BaseMedias = new HashSet<BaseMedia>();
+            this.BaseMetadatas = new HashSet<BaseMetadata>();
         }
     
         public int Id { get; set; }
@@ -31,6 +31,6 @@ namespace MediaViewer.MediaDatabase
         public virtual TagCategory TagCategory { get; set; }
         public virtual ICollection<Tag> ChildTags { get; set; }
         public virtual ICollection<Tag> ParentTags { get; set; }
-        public virtual ICollection<BaseMedia> BaseMedias { get; set; }
+        public virtual ICollection<BaseMetadata> BaseMetadatas { get; set; }
     }
 }

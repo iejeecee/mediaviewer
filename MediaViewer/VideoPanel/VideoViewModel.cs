@@ -32,6 +32,7 @@ using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.Infrastructure.Global.Events;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.VideoPanel
 {
@@ -560,7 +561,7 @@ namespace MediaViewer.VideoPanel
 
         }
 
-        private void videoView_MediaSelectionEvent(MediaFileItem item)
+        private void videoView_MediaSelectionEvent(MediaItem item)
         {
             if (String.Equals(CurrentLocation, item.Location)) return;
 

@@ -251,7 +251,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         protected virtual string GetTableName(Type type)
         {
-            //return ("BaseMediaSet");
+            //return ("BaseMetadataSet");
 
             var metadata = ((IObjectContextAdapter)this.db).ObjectContext.MetadataWorkspace;
             var objectItemCollection = ((ObjectItemCollection)metadata.GetItemCollection(DataSpace.OSpace));

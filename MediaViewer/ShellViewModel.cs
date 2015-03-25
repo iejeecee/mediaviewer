@@ -90,13 +90,13 @@ namespace MediaViewer
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            ImageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
-            ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
+            imageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
+            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
-            VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaState, EventAggregator);
-            VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
+            videoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
+            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
 
             MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator, AppSettings.Instance);
 
@@ -118,7 +118,8 @@ namespace MediaViewer
 
         public void navigateToImageView(String location = null)
         {
-            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is ImageView)
+            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is ImageView &&
+                String.Compare(location,ImageViewModel.CurrentLocation) == 0)
             {
                 //active view is already imageview
                 return;
@@ -137,7 +138,7 @@ namespace MediaViewer
 
             RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, ImageToolbarViewUri, navigationParams);
 
-            navigateToMediaStackPanelView(ImageMediaStackPanelViewModel, location);
+            navigateToMediaStackPanelView(imageMediaStackPanelViewModel, location);
 
         }
 
@@ -181,7 +182,7 @@ namespace MediaViewer
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, VideoViewUri, navigationParams);
 
-            navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, location);
+            navigateToMediaStackPanelView(videoMediaStackPanelViewModel, location);
 
             Uri VideoToolbarViewUri = new Uri(typeof(VideoToolbarView).FullName, UriKind.Relative);
 

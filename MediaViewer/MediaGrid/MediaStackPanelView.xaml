@@ -75,7 +75,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                        <MediaGrid:MediaGridItemBasicView DataContext="{Binding}" SelectableMediaFileItem="{Binding}"  
+                        <MediaGrid:MediaGridItemBasicView DataContext="{Binding}" SelectableMediaItem="{Binding}"  
                                                 Tag="{Binding ElementName=mediaStackPanel, Path=DataContext.MediaStateCollectionView}" Width="100" Height="100"/>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>

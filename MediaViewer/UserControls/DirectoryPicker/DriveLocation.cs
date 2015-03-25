@@ -15,8 +15,8 @@ namespace MediaViewer.UserControls.DirectoryPicker
     {
         static DriveIdleMonitor driveIdleMonitor = new DriveIdleMonitor();
      
-        public DriveLocation(DriveInfo info, InfoGatherTask infoGatherTask, MediaState mediaState)
-            : base(infoGatherTask, mediaState)
+        public DriveLocation(DriveInfo info, InfoGatherTask infoGatherTask, MediaFileState mediaFileState)
+            : base(infoGatherTask, mediaFileState)
         {
            
             switch (info.DriveType)

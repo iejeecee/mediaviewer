@@ -18,7 +18,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
     {
         public event EventHandler<Location> NodePropertyChanged;
         
-        public RootLocation(InfoGatherTask infoGatherTask, MediaState mediaState) : base(infoGatherTask, mediaState)
+        public RootLocation(InfoGatherTask infoGatherTask, MediaFileState mediaFileState) : base(infoGatherTask, mediaFileState)
         {            
             LazyLoading = true;
                       
@@ -51,7 +51,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 DriveInfo[] drivesArray = DriveInfo.GetDrives();
                 foreach (DriveInfo driveInfo in drivesArray)
                 {
-                    Location drive = new DriveLocation(driveInfo, infoGatherTask, MediaFileWatcher.Instance.MediaState);
+                    Location drive = new DriveLocation(driveInfo, infoGatherTask, MediaFileWatcher.Instance.MediaFileState);
 
                     drives.Add(drive);
                 }

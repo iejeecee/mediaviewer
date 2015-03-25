@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,13 +14,13 @@ namespace MediaViewer.MediaGrid
     {
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            MediaFileItemState state = (MediaFileItemState)value;
+            MediaItemState state = (MediaItemState)value;
 
              bool isLoading = false;
 
-             if (state == MediaFileItemState.LOADING ||
-                 state == MediaFileItemState.EMPTY ||
-                 state == MediaFileItemState.TIMED_OUT)
+             if (state == MediaItemState.LOADING ||
+                 state == MediaItemState.EMPTY ||
+                 state == MediaItemState.TIMED_OUT)
              {
               
                  isLoading = true;

@@ -29,7 +29,8 @@
 
 #include <string>
 #include <vector>
-#include "XMP_Const.h"
+#include "..\..\mediaviewer external libs\XMP-Toolkit-SDK-CC201412\public\include\XMP_Environment.h"
+#include "..\..\mediaviewer external libs\XMP-Toolkit-SDK-CC201412\public\include\XMP_Const.h"
 
 namespace XMPDLL {
 

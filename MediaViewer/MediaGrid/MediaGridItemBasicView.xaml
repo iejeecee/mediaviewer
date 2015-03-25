@@ -21,17 +21,17 @@ d:DesignHeight="300" d:DesignWidth="300">
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="root">
-        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
+        <ToggleButton HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" IsChecked="{Binding Parent.SelectableMediaItem.IsSelected, ElementName=root, Mode=OneWay}" Checked="imageGridItem_Checked" Unchecked="imageGridItem_Unchecked" >
             <ToggleButton.Style>
                 <Style>
                     <Style.Triggers>                       
-                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
+                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                             <Setter Property="UIElement.IsEnabled" Value="false"/>
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="true">
+                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.IsSelected, ElementName=root}" Value="true">
                             <Setter Property="Control.Background" Value="{StaticResource imageGridItemSelectedBackgroundColor}" />
                         </DataTrigger>
-                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="false">
+                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.IsSelected, ElementName=root}" Value="false">
                             <Setter Property="Control.Background" Value="{StaticResource imageGridItemBackgroundColor}" />
                         </DataTrigger>
                     </Style.Triggers>
@@ -48,18 +48,18 @@ d:DesignHeight="300" d:DesignWidth="300">
                     <MenuItem Header="Open Location" Click="openInExplorerMenuItem_Click"/>
                 </ContextMenu>
             </ToggleButton.ContextMenu>
-            <Grid ToolTip="{Binding Parent.SelectableMediaFileItem.Item.Media.DefaultFormatCaption, ElementName=root}">
+            <Grid ToolTip="{Binding Parent.SelectableMediaItem.Item.Metadata.DefaultFormatCaption, ElementName=root}">
                 <Border BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border.Style>
                         <Style>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="true">
+                                <DataTrigger Binding="{Binding Parent.SelectableMediaItem.IsSelected, ElementName=root}" Value="true">
                                     <Setter Property="Border.BorderBrush" Value="Red" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.IsSelected, ElementName=root}" Value="false">
+                                <DataTrigger Binding="{Binding Parent.SelectableMediaItem.IsSelected, ElementName=root}" Value="false">
                                     <Setter Property="Border.BorderBrush" Value="Black" />
                                 </DataTrigger>                             
-                                <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
+                                <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                     <Setter Property="Border.BorderBrush" Value="{x:Null}"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -75,10 +75,10 @@ d:DesignHeight="300" d:DesignWidth="300">
                             <Loading:LoadingView.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                             <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Visible"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="false">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="false">
                                             <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Collapsed"/>
                                         </DataTrigger>
                                     </Style.Triggers>
@@ -89,26 +89,26 @@ d:DesignHeight="300" d:DesignWidth="300">
                             <Image.Style>
                                 <Style>
                                     <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root, Converter={StaticResource isLoadingConverter}}" Value="true">
                                             <Setter Property="Image.Visibility" Value="Hidden"/>
                                             <Setter Property="Image.Source" Value="{x:Null}"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="ERROR">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="ERROR">
                                             <Setter Property="Image.Visibility" Value="Visible"/>
                                             <Setter Property="Image.Stretch" Value="None"/>
-                                            <Setter Property="Image.Source" Value="{Binding Item.Media, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                            <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
                                             <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="LOADED">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="LOADED">
                                             <Setter Property="Image.Visibility" Value="Visible"/>
                                             <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Item.Media.Thumbnail.Image}"/>
+                                            <Setter Property="Image.Source" Value="{Binding Item.Metadata.Thumbnail.Image}"/>
                                             <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                         </DataTrigger>
-                                        <DataTrigger Binding="{Binding Parent.SelectableMediaFileItem.Item.ItemState, ElementName=root}" Value="FILE_NOT_FOUND">
+                                        <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="FILE_NOT_FOUND">
                                             <Setter Property="Image.Visibility" Value="Visible"/>
                                             <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Item.Media, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                            <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
                                             <Setter Property="UIElement.Effect" Value="{StaticResource grayscaleEffect}"/>
                                         </DataTrigger>
                                     </Style.Triggers>

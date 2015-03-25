@@ -52,9 +52,9 @@ namespace MediaViewer.UserControls.DirectoryPicker
             {
                 Location location = locationQueue.Take(token);
 
-                using (MediaDbCommands mediaCommand = new MediaDbCommands())
+                using (MetadataDbCommands mediaCommand = new MetadataDbCommands())
                 {                                   
-                    location.NrImported = mediaCommand.getNrMediaInLocation(location.FullName);
+                    location.NrImported = mediaCommand.getNrMetadataInLocation(location.FullName);
                 }
             }
           

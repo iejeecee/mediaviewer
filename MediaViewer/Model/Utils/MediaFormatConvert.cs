@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Utils
 {
-    class MediaFormatConvert
+    public class MediaFormatConvert
     {
 
         public static Dictionary<string, string> extToMimeType;

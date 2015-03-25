@@ -15,9 +15,9 @@ using MediaViewer.MediaDatabase.DataTransferObjects;
 using AutoMapper;
 using System.Windows;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Export;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Import;
 
 namespace MediaViewer.MediaDatabase.DbSettings
 {
@@ -45,9 +45,9 @@ namespace MediaViewer.MediaDatabase.DbSettings
             {
                 int result = 0;
 
-                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
                 {
-                    result = mediaCommands.getNrVideos();
+                    result = mediaCommands.getNrVideoMetadata();
                 }
 
                 return (result);
@@ -64,9 +64,9 @@ namespace MediaViewer.MediaDatabase.DbSettings
             {
                 int result = 0;
 
-                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
                 {
-                    result = mediaCommands.getNrImages();
+                    result = mediaCommands.getNrImageMetadata();
                 }
 
                 return (result);
@@ -83,9 +83,9 @@ namespace MediaViewer.MediaDatabase.DbSettings
             {
                 int result = 0;
 
-                using (MediaDbCommands mediaCommands = new MediaDbCommands())
+                using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
                 {
-                    result = mediaCommands.getNrMedia();
+                    result = mediaCommands.getNrMetadata();
                 }
 
                 return (result);
@@ -164,21 +164,21 @@ namespace MediaViewer.MediaDatabase.DbSettings
             MessageBoxResult result = MessageBox.Show("Are you sure you want to clear all Media from the database?", "Clear All Media", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No);
             if (result == MessageBoxResult.No) return;
 
-            List<BaseMedia> media;
+            List<BaseMetadata> media;
 
-            using (MediaDbCommands mediaCommands = new MediaDbCommands())
+            using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
             {
-                media = mediaCommands.getAllMedia();
+                media = mediaCommands.getAllMetadata();
             }
 
             List<MediaFileItem> items = new List<MediaFileItem>();
 
-            foreach (BaseMedia m in media)
+            foreach (BaseMetadata m in media)
             {
                 items.Add(MediaFileItem.Factory.create(m.Location));
             }
 
-            ExportViewModel export = new ExportViewModel(MediaFileWatcher.Instance.MediaState);
+            ExportProgressViewModel export = new ExportProgressViewModel(MediaFileWatcher.Instance.MediaFileState);
 
             CancellableOperationProgressView exportView = new CancellableOperationProgressView();
             exportView.DataContext = export;

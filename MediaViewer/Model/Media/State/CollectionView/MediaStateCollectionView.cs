@@ -1,5 +1,6 @@
 ﻿using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
@@ -29,7 +30,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
       
         int sortedItemEnd;
 
-        public MediaStateCollectionView(IMediaState mediaState)
+        public MediaStateCollectionView(MediaState mediaState)
         {                      
             MediaState = mediaState;
 
@@ -41,12 +42,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             sortedItemEnd = 0;
 
-            sortFunc = new Func<SelectableMediaFileItem, SelectableMediaFileItem, int>((a, b) =>
+            sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
             {
                 return (a.ToString().CompareTo(b.ToString()));
             });
 
-            filter = new Func<SelectableMediaFileItem,bool>((a) => {
+            filter = new Func<SelectableMediaItem,bool>((a) => {
 
                 return (true);
             });
@@ -67,11 +68,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         public SelectableMediaLockedCollection Media { get; protected set; }
           
-        public IMediaState MediaState { get; protected set; }
+        public MediaState MediaState { get; protected set; }
 
-        protected Func<SelectableMediaFileItem, SelectableMediaFileItem, int> sortFunc;
+        protected Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc;
 
-        public Func<SelectableMediaFileItem, SelectableMediaFileItem, int> SortFunc
+        public Func<SelectableMediaItem, SelectableMediaItem, int> SortFunc
         {
             get { return sortFunc; }
             set
@@ -87,9 +88,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        protected Func<SelectableMediaFileItem, bool> filter;
+        protected Func<SelectableMediaItem, bool> filter;
 
-        public Func<SelectableMediaFileItem, bool> Filter
+        public Func<SelectableMediaItem, bool> Filter
         {
             get { return filter; }
             set
@@ -105,7 +106,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        public int getSelectedItem(out MediaFileItem selectedItem)
+        public int getSelectedItem(out MediaItem selectedItem)
         {           
             Media.EnterReaderLock();
             try
@@ -128,14 +129,14 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        public List<MediaFileItem> getSelectedItems()
+        public List<MediaItem> getSelectedItems()
         {
-            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
+            List<MediaItem> selectedItems = new List<MediaItem>();
 
             Media.EnterReaderLock();
             try
             {
-                foreach (SelectableMediaFileItem item in Media)
+                foreach (SelectableMediaItem item in Media)
                 {
                     if (item.IsSelected)
                     {
@@ -161,7 +162,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
     
         protected virtual void MediaState_ItemPropertiesChanged(object sender, PropertyChangedEventArgs e)
         {
-            MediaFileItem item = sender as MediaFileItem;
+            MediaItem item = sender as MediaItem;
 
             reSort(item);
      
@@ -206,7 +207,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         }
 
-        protected void reSort(MediaFileItem item)
+        protected void reSort(MediaItem item)
         {
 
             int index = 0;
@@ -215,7 +216,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
+                SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
                 index = Media.IndexOf(selectableItem);
                 newIndex = index;
@@ -256,7 +257,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                foreach (SelectableMediaFileItem selectableItem in Media)
+                foreach (SelectableMediaItem selectableItem in Media)
                 {
                     selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
 
@@ -282,17 +283,17 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        public void selectRange(MediaFileItem end)
+        public void selectRange(MediaItem end)
         {
             bool selectionChanged = false;
 
             Media.EnterWriteLock();
             try
             {
-                MediaFileItem start = null;
+                MediaItem start = null;
 
                 int startIndex = getSelectedItem(out start);
-                int endIndex = Media.IndexOf(new SelectableMediaFileItem(end));
+                int endIndex = Media.IndexOf(new SelectableMediaItem(end));
                 
                 if(endIndex == -1) {
 
@@ -343,7 +344,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                foreach (SelectableMediaFileItem selectableItem in Media)
+                foreach (SelectableMediaItem selectableItem in Media)
                 {
                     selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
 
@@ -369,16 +370,16 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
         
-        public void setIsSelected(MediaFileItem item, bool isSelected = true)
+        public void setIsSelected(MediaItem item, bool isSelected = true)
         {
            
-            SelectableMediaFileItem temp = new SelectableMediaFileItem(item);
+            SelectableMediaItem temp = new SelectableMediaItem(item);
 
             Media.EnterWriteLock();
             try
             {
 
-                foreach (SelectableMediaFileItem selectableItem in Media)
+                foreach (SelectableMediaItem selectableItem in Media)
                 {
                     if (selectableItem.Equals(temp))
                     {
@@ -395,12 +396,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
             
         }
 
-        protected void remove(IEnumerable<MediaFileItem> items)
+        protected void remove(IEnumerable<MediaItem> items)
         {
             Media.EnterWriteLock();
             try
             {
-                foreach (MediaFileItem item in items)
+                foreach (MediaItem item in items)
                 {
                     remove(item);
                 }
@@ -411,7 +412,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        protected void remove(MediaFileItem item)
+        protected void remove(MediaItem item)
         {
             bool selectionChanged = false;
             bool isItemRemoved = false;
@@ -419,7 +420,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
+                SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
                 int index = Media.IndexOf(selectableItem);
 
@@ -457,7 +458,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             
         }
 
-        protected void add(IEnumerable<MediaFileItem> items)
+        protected void add(IEnumerable<MediaItem> items)
         {
             Media.EnterWriteLock();
             try
@@ -466,12 +467,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 // instead of firing off a whole bunch of itemchanged events
                 if (this.Media.Count == 0 && items.Count() > 1)
                 {                   
-                    List<SelectableMediaFileItem> temp = new List<SelectableMediaFileItem>();
-                    List<MediaFileItem> filteredItems = new List<MediaFileItem>();
+                    List<SelectableMediaItem> temp = new List<SelectableMediaItem>();
+                    List<MediaItem> filteredItems = new List<MediaItem>();
 
-                    foreach (MediaFileItem item in items)
+                    foreach (MediaItem item in items)
                     {
-                        SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);                        
+                        SelectableMediaItem selectableItem = new SelectableMediaItem(item);                        
                        
                         if (Filter(selectableItem))
                         {
@@ -489,7 +490,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 }
                 else
                 {
-                    foreach (MediaFileItem item in items)
+                    foreach (MediaItem item in items)
                     {
                         add(item);
                     }
@@ -501,14 +502,14 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        protected void add(MediaFileItem item)
+        protected void add(MediaItem item)
         {
             bool isItemAdded = false;
 
             Media.EnterWriteLock();
             try
             {
-                SelectableMediaFileItem selectableItem = new SelectableMediaFileItem(item);
+                SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
                 if (Filter(selectableItem) && !Media.Contains(selectableItem))
                 {
@@ -530,12 +531,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         }
         
-        int insertSorted(SelectableMediaFileItem selectableItem)
+        int insertSorted(SelectableMediaItem selectableItem)
         {
             Media.EnterWriteLock();
             try
             {
-                int newIndex = CollectionsSort.insertIntoSortedCollection<SelectableMediaFileItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
+                int newIndex = CollectionsSort.insertIntoSortedCollection<SelectableMediaItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
 
                 sortedItemEnd++;
 
@@ -555,7 +556,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             Media.EnterWriteLock();
             try
             {
-                foreach (SelectableMediaFileItem selectableItem in Media)
+                foreach (SelectableMediaItem selectableItem in Media)
                 {
                     selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
 

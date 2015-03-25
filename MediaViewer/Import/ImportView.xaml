@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:Search="clr-namespace:MediaViewer.Search"
-        Title="Import" SizeToContent="WidthAndHeight" Width="500" Icon="/MediaViewer;component/Resources/Icons/Import.ico">
+        Title="{Binding Title}" Height="500" Width="500" Icon="/MediaViewer;component/Resources/Icons/Import.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,51 +18,72 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">      
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+        <Grid.RowDefinitions>          
+            <RowDefinition Height="*"/>        
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DataGrid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
-                  VerticalAlignment="Stretch" ItemsSource="{Binding IncludeLocations}" Background="LightGray" 
-                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedIncludeLocation}" VerticalScrollBarVisibility="Visible" MinHeight="200">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Include Locations" Binding="{Binding Location, Mode=OneWay}" />
-                <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
-                <DataGridComboBoxColumn Header="Media Filter" SelectedValueBinding="{Binding MediaType}" ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}"/>
-            </DataGrid.Columns>
-            <DataGrid.RowStyle>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                </Style>
-            </DataGrid.RowStyle>
-        </DataGrid>
-        <StackPanel Grid.Row="1" Orientation="Horizontal">
-        <Button Grid.Column="1" Content="Add" Width="50" Margin="5,5,5,5" VerticalAlignment="Top" Command="{Binding AddIncludeLocationCommand}"/>
-        <Button Grid.Column="1" Content="Remove" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding RemoveIncludeLocationCommand}"/>
-        <Button Grid.Column="1" Content="Clear" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding ClearIncludeLocationsCommand}"/>
-        </StackPanel>
-        <DataGrid Grid.Row="2" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
+        <GroupBox Grid.Row="0" Header="Include">            
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>                       
+                <DataGrid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
+                            VerticalAlignment="Stretch" ItemsSource="{Binding IncludeLocations}" Background="LightGray" 
+                            EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedIncludeLocation}" VerticalScrollBarVisibility="Visible">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Locations" Binding="{Binding Location, Mode=OneWay}" />
+                        <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
+                        <DataGridComboBoxColumn Header="Media Filter" SelectedValueBinding="{Binding MediaType}" ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}"/>
+                    </DataGrid.Columns>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        </Style>
+                    </DataGrid.RowStyle>
+                </DataGrid>
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Button Content="Add" Width="50" Margin="5,5,5,5" VerticalAlignment="Top" Command="{Binding AddIncludeLocationCommand}"/>
+                    <Button Content="Remove" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding RemoveIncludeLocationCommand}"/>
+                    <Button Content="Clear" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding ClearIncludeLocationsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="Exclude">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <DataGrid Grid.Row="0" Grid.Column="0" HorizontalAlignment="Stretch" Margin="5,5,5,5" 
                   VerticalAlignment="Stretch" ItemsSource="{Binding ExcludeLocations}" Background="LightGray" 
-                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedExcludeLocation}" VerticalScrollBarVisibility="Visible" MinHeight="200">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Exclude Locations" Binding="{Binding Location, Mode=OneWay}" />
-                <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
-                <DataGridComboBoxColumn Header="Media Filter" SelectedValueBinding="{Binding MediaType}" ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}"/>
-            </DataGrid.Columns>            
-            <DataGrid.RowStyle>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-                </Style>
-            </DataGrid.RowStyle>
-        </DataGrid>
-        <StackPanel Grid.Row="3" Orientation="Horizontal">
-        <Button Content="Add" Width="50" Margin="5,5,5,5" VerticalAlignment="Top" Command="{Binding AddExcludeLocationCommand}"/>
-        <Button Content="Remove" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding RemoveExcludeLocationCommand}"/>
-        <Button Content="Clear" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding ClearExcludeLocationsCommand}"/>
-        </StackPanel>
-        <Button Grid.Row="3" Grid.Column="0" Content="Ok" Width="50" Margin="5,5,60,5" VerticalAlignment="Center" HorizontalAlignment="Right" Command="{Binding OkCommand}"/>
-        <Button Grid.Row="3" Grid.Column="1" Content="Cancel" Width="50" Margin="0,5,5,5" VerticalAlignment="Center" HorizontalAlignment="Right" Command="{Binding CancelCommand}"/>
+                  EnableRowVirtualization="False" AutoGenerateColumns="False" SelectedItem="{Binding SelectedExcludeLocation}" VerticalScrollBarVisibility="Visible">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Locations" Binding="{Binding Location, Mode=OneWay}" />
+                        <DataGridCheckBoxColumn Header="Recurse Subdirs" Binding="{Binding IsRecursive}" />
+                        <DataGridComboBoxColumn Header="Media Filter" SelectedValueBinding="{Binding MediaType}" ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}"/>
+                    </DataGrid.Columns>
+                    <DataGrid.RowStyle>
+                        <Style TargetType="DataGridRow">
+                            <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+                        </Style>
+                    </DataGrid.RowStyle>
+                </DataGrid>
+                <StackPanel Grid.Row="1" Orientation="Horizontal">
+                    <Button Content="Add" Width="50" Margin="5,5,5,5" VerticalAlignment="Top" Command="{Binding AddExcludeLocationCommand}"/>
+                    <Button Content="Remove" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding RemoveExcludeLocationCommand}"/>
+                    <Button Content="Clear" Width="50" Margin="0,5,5,5" VerticalAlignment="Top" Command="{Binding ClearExcludeLocationsCommand}"/>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Ok" Width="50" Margin="5,5,5,5" VerticalAlignment="Center" HorizontalAlignment="Right" Command="{Binding OkCommand}"/>
+            <Button Grid.Column="1" Content="Cancel" Width="50" Margin="0,5,5,5" VerticalAlignment="Center" HorizontalAlignment="Right" Command="{Binding CancelCommand}"/>
+        </Grid>        
     </Grid>
 </Window>

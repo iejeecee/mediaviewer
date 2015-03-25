@@ -16,7 +16,9 @@ namespace MediaViewer.Infrastructure
         public const String MediaFileBrowserPluginRegion = "MediaFileBrowserPluginRegion";
         public const String MediaFileBrowserContentRegion = "MediaFileBrowserContentRegion";
         public const String MediaFileBrowserRightTabRegion = "MediaFileBrowserRightTabRegion";
+        public const String MediaFileBrowserToolBarRegion = "MediaFileBrowserToolBarRegion";
 
         public const String GlobalSettingsRegion = "GlobalSettingsRegion";
+        
     }
 }

@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 {
     public sealed class DefaultMediaStateCollectionView : MediaStateCollectionView
     {
-        public DefaultMediaStateCollectionView(IMediaState mediaState)
+        public DefaultMediaStateCollectionView(MediaState mediaState)
             : base(mediaState)
         {
             filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.None);
@@ -73,7 +74,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         override protected void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            MediaFileItem item = sender as MediaFileItem;
+            MediaItem item = sender as MediaItem;
             MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
 
             if (e.PropertyName.Equals("Location"))
@@ -83,9 +84,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     reSort(item);
                 }
             }
-            else if (e.PropertyName.Equals("Media"))
+            else if (e.PropertyName.Equals("Metadata"))
             {
-                if (item.Media != null && sortMode != MediaStateSortMode.Name)
+                if (item.Metadata != null && sortMode != MediaStateSortMode.Name)
                 {
                     reSort(item);
                 }

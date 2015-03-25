@@ -21,24 +21,24 @@ namespace MediaViewer.Model.Media.File.Watcher
     {
         
 
-        MediaState mediaState;
+        MediaFileState mediaFileState;
         /// <summary>
         /// All the mediafiles that are currently being watched using a mediafilewatcher
         /// Several event's can be fired on changes to the file(s)
         /// Note that mediafilewatcher becomes unstable if the program is slow or many events are happening at once
         /// events will start missing and/or be send out of order.
         /// </summary>
-        public MediaState MediaState
+        public MediaFileState MediaFileState
         {
             get
             {
-                return (mediaState);
+                return (mediaFileState);
             }
 
             private set
             {
 
-                this.mediaState = value;
+                this.mediaFileState = value;
             }
         }
 
@@ -49,7 +49,7 @@ namespace MediaViewer.Model.Media.File.Watcher
         protected MediaFileWatcher()
         {
             watcher = new FileSystemWatcher();
-            mediaState = new MediaState();                     
+            mediaFileState = new MediaFileState();                     
                     
             /* Watch for changes in LastAccess and LastWrite times, and 
             the renaming of files or directories. */
@@ -106,9 +106,9 @@ namespace MediaViewer.Model.Media.File.Watcher
                     watcher.Dispose();
                 }
 
-                if (mediaState != null)
+                if (mediaFileState != null)
                 {
-                    mediaState.Dispose();
+                    mediaFileState.Dispose();
                 }
             }
         }
@@ -144,8 +144,8 @@ namespace MediaViewer.Model.Media.File.Watcher
                 }
             }
 
-            mediaState.clearUIState(imageDirInfo.Name, imageDirInfo.CreationTime, MediaStateType.Directory);
-            mediaState.addUIState(items);
+            mediaFileState.clearUIState(imageDirInfo.Name, imageDirInfo.CreationTime, MediaStateType.Directory);
+            mediaFileState.addUIState(items);
        
         }
 
@@ -205,9 +205,6 @@ namespace MediaViewer.Model.Media.File.Watcher
             }
 
         }
-
-       
-               
-
+                      
     }
 }

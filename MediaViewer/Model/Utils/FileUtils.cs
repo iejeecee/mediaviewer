@@ -20,7 +20,7 @@ using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer.Model.Utils
 {
-    class FileUtils
+    public class FileUtils
     {
 
         

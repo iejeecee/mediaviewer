@@ -22,11 +22,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
     {
       
         protected InfoGatherTask infoGatherTask;
-        protected MediaState MediaState { get; set; }
+        protected MediaFileState MediaFileState { get; set; }
 
-        protected Location(InfoGatherTask infoGatherTask, MediaState state)
+        protected Location(InfoGatherTask infoGatherTask, MediaFileState state)
         {
-            MediaState = state;
+            MediaFileState = state;
             this.infoGatherTask = infoGatherTask;
 
             state.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
@@ -104,7 +104,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
                         continue;
                     }
                     
-                    Location directory = new DirectoryLocation(dirInfo, infoGatherTask, MediaState);
+                    Location directory = new DirectoryLocation(dirInfo, infoGatherTask, MediaFileState);
 
                     directories.Add(directory);
                 }

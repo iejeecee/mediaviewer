@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.State
 {
-    public class SelectableMediaLockedCollection : LockedObservableCollection<SelectableMediaFileItem>
+    public class SelectableMediaLockedCollection : LockedObservableCollection<SelectableMediaItem>
     {
-        override protected void afterItemAdded(SelectableMediaFileItem item)
+        override protected void afterItemAdded(SelectableMediaItem item)
         {
             item.Item.PropertyChanged += item_PropertyChanged;
         }
 
-        override protected void beforeItemRemoved(SelectableMediaFileItem item)
+        override protected void beforeItemRemoved(SelectableMediaItem item)
         {
             item.Item.PropertyChanged -= item_PropertyChanged;
         }

@@ -1,11 +1,11 @@
-﻿using MediaViewer.Infrastructure.Logging;
+﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
+using MediaViewer.Search;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -19,234 +19,239 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace MediaViewer.Export
+namespace MediaViewer.Import
 {
-
-    class ExportViewModel : CloseableBindableBase, ICancellableOperationProgress
+    class ExportViewModel : CloseableBindableBase
     {
-        
-     
-        MediaState MediaState
+        public ExportViewModel(MediaFileWatcher mediaFileWatcher)
         {
-            get;
-            set;
-        }
-      
-        public ExportViewModel(MediaState mediaState)
-        {
+            Title = "Export Media";
 
-            MediaState = mediaState;
+            OkCommand = new Command(async () =>
+            {
+                CancellableOperationProgressView progress = new CancellableOperationProgressView();
+                ExportProgressViewModel vm = new ExportProgressViewModel(mediaFileWatcher.MediaFileState);
+                progress.DataContext = vm;
+                progress.Show();
+                Task t = vm.exportAsync(IncludeLocations, ExcludeLocations);
+                OnClosingRequest();
+                await t;
+            });
 
-            WindowTitle = "Exporting Media";
-            WindowIcon = "pack://application:,,,/Resources/Icons/export.ico";
-
-            InfoMessages = new ObservableCollection<string>();
-            ItemInfo = "";
-
-            OkCommand = new Command(() =>
+            CancelCommand = new Command(() =>
             {
                 OnClosingRequest();
             });
 
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            CancellationToken = tokenSource.Token;
+            IncludeLocations = new ObservableCollection<ImportExportLocation>();
 
-            CancelCommand = new Command(() =>
+            IncludeLocations.Add(new ImportExportLocation(mediaFileWatcher.Path));
+
+            AddIncludeLocationCommand = new Command(new Action(() =>
             {
-                tokenSource.Cancel();
-            });
+                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
 
-            OkCommand.IsExecutable = false;
-            CancelCommand.IsExecutable = true;
-        }
-
-        public async Task exportAsync(ICollection<MediaFileItem> items)
-        {
-            TotalProgressMax = items.Count;
-            TotalProgress = 0;
-
-
-            await Task.Factory.StartNew(() =>
-            {
-                export(items);
-
-            }, cancellationToken);
-
-            OkCommand.IsExecutable = true;
-            CancelCommand.IsExecutable = false;
-
-        }
-
-        void export(ICollection<MediaFileItem> items)
-        {
-            foreach (MediaFileItem item in items)
-            {
-                try
+                if (SelectedIncludeLocation == null)
                 {
-                    if (CancellationToken.IsCancellationRequested) return;
-                    ItemProgress = 0;
-
-                    if (item.Media == null)
-                    {
-                        ItemInfo = "Reading Metadata: " + item.Location;
-
-                        MediaState.readMetadata(item, MediaFactory.ReadOptions.AUTO, CancellationToken);
-                        if (item.Media is UnknownMedia)
-                        {
-                            ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
-                            InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                            Logger.Log.Error("Could not open file and/or read it's metadata: " + item.Location);
-                        }
-                    }
-
-                    if (item.Media.IsImported == false)
-                    {
-                        InfoMessages.Add("Skipping non-imported file: " + item.Location);
-                        ItemProgress = 100;
-                        TotalProgress++;
-                        continue;
-                    }
-
-                    ItemInfo = "Exporting: " + item.Location;
-
-                    MediaState.export(item, CancellationToken);
-
-                    ItemProgress = 100;
-                    TotalProgress++;
-                    InfoMessages.Add("Exported: " + item.Location);
+                    vm.MovePath = mediaFileWatcher.Path;
                 }
-                catch (Exception e)
+                else
                 {
-                    ItemInfo = "Error exporting file: " + item.Location;
-                    InfoMessages.Add("Error exporting file: " + item.Location + " " + e.Message);
-                    Logger.Log.Error("Error exporting file: " + item.Location, e);
-                    MessageBox.Show("Error exporting file: " + item.Location + "\n\n" + e.Message,
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-
+                    vm.MovePath = SelectedIncludeLocation.Location;
                 }
-            }
-        }
-      
-        public Command OkCommand {get;set;}
-          
-        public Command CancelCommand {get;set;}
-   
 
-        String itemInfo;
+                if (directoryPicker.ShowDialog() == true)
+                {
+                    ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
+                    if (!IncludeLocations.Contains(newLocation))
+                    {
+                        IncludeLocations.Add(newLocation);
+                    }
+                }
 
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {            
-                SetProperty(ref itemInfo, value);            
-            }
-        }
+                if (IncludeLocations.Count > 0)
+                {
+                    OkCommand.IsExecutable = true;
+                }
 
-        ObservableCollection<String> infoMessages;
+            }));
 
-        public ObservableCollection<String> InfoMessages
-        {
-            get { return infoMessages; }
-            set
+            RemoveIncludeLocationCommand = new Command(new Action(() =>
             {
-                SetProperty(ref infoMessages, value);          
-            }
-        }
+                for (int i = IncludeLocations.Count() - 1; i >= 0; i--)
+                {
+                    if (IncludeLocations[i].IsSelected == true)
+                    {
+                        IncludeLocations.RemoveAt(i);
+                    }
+                }
 
-        CancellationToken cancellationToken;
+                if (IncludeLocations.Count == 0)
+                {
+                    OkCommand.IsExecutable = false;
+                }
+            }));
 
-        public CancellationToken CancellationToken
-        {
-            get { return cancellationToken; }
-            set { cancellationToken = value; }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
+            ClearIncludeLocationsCommand = new Command(new Action(() =>
             {
-                return (totalProgress);
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);       
-            }
-        }
+                IncludeLocations.Clear();
+                OkCommand.IsExecutable = false;
+            }));
 
-        int totalProgressMax;
+            ExcludeLocations = new ObservableCollection<ImportExportLocation>();
 
-        public int TotalProgressMax
-        {
-            get
+            AddExcludeLocationCommand = new Command(new Action(() =>
             {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);            
-            }
-        }
+                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
 
-        int itemProgress;
+                if (SelectedExcludeLocation == null)
+                {
+                    vm.MovePath = mediaFileWatcher.Path;
+                }
+                else
+                {
+                    vm.MovePath = SelectedExcludeLocation.Location;
+                }
 
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {
-                SetProperty(ref itemProgress, value);             
-            }
-        }
+                if (directoryPicker.ShowDialog() == true)
+                {
+                    ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
+                    if (!ExcludeLocations.Contains(newLocation))
+                    {
+                        ExcludeLocations.Add(newLocation);
+                    }
+                }
 
-        int itemProgressMax;
+            }));
 
-        public int ItemProgressMax
-        {
-            get
+            RemoveExcludeLocationCommand = new Command(new Action(() =>
             {
-                return (itemProgressMax);
-            }
-            set
+                for (int i = ExcludeLocations.Count() - 1; i >= 0; i--)
+                {
+                    if (ExcludeLocations[i].IsSelected == true)
+                    {
+                        ExcludeLocations.RemoveAt(i);
+                    }
+                }
+
+            }));
+
+            ClearExcludeLocationsCommand = new Command(new Action(() =>
             {
-                SetProperty(ref itemProgressMax, value);         
-            }
+                ExcludeLocations.Clear();
+            }));
         }
 
-        string windowTitle;
+        ObservableCollection<ImportExportLocation> includeLocations;
 
-        public string WindowTitle
+        public ObservableCollection<ImportExportLocation> IncludeLocations
         {
-            get
-            {
-                return (windowTitle);
-            }
+            get { return includeLocations; }
             set
             {
-                SetProperty(ref windowTitle, value);         
+                SetProperty(ref includeLocations, value);
             }
         }
 
-        string windowIcon;
+        ImportExportLocation selectedIncludeLocation;
 
-        public string WindowIcon
+        public ImportExportLocation SelectedIncludeLocation
         {
-            get
-            {
-                return (windowIcon);
-            }
+            get { return selectedIncludeLocation; }
             set
             {
-                SetProperty(ref windowIcon, value);          
+                SetProperty(ref selectedIncludeLocation, value);
             }
         }
+
+        Command addIncludeLocationCommand;
+
+        public Command AddIncludeLocationCommand
+        {
+            get { return addIncludeLocationCommand; }
+            set { addIncludeLocationCommand = value; }
+        }
+
+        Command removeIncludeLocationCommand;
+
+        public Command RemoveIncludeLocationCommand
+        {
+            get { return removeIncludeLocationCommand; }
+            set { removeIncludeLocationCommand = value; }
+        }
+
+        Command clearIncludeLocationsCommand;
+
+        public Command ClearIncludeLocationsCommand
+        {
+            get { return clearIncludeLocationsCommand; }
+            set { clearIncludeLocationsCommand = value; }
+        }
+
+        ObservableCollection<ImportExportLocation> excludeLocations;
+
+        public ObservableCollection<ImportExportLocation> ExcludeLocations
+        {
+            get { return excludeLocations; }
+            set
+            {
+                SetProperty(ref excludeLocations, value);
+            }
+        }
+
+        ImportExportLocation selectedExcludeLocation;
+
+        public ImportExportLocation SelectedExcludeLocation
+        {
+            get { return selectedExcludeLocation; }
+            set
+            {
+                SetProperty(ref selectedExcludeLocation, value);
+            }
+        }
+
+        Command addExcludeLocationCommand;
+
+        public Command AddExcludeLocationCommand
+        {
+            get { return addExcludeLocationCommand; }
+            set { addExcludeLocationCommand = value; }
+        }
+
+        Command removeExcludeLocationCommand;
+
+        public Command RemoveExcludeLocationCommand
+        {
+            get { return removeExcludeLocationCommand; }
+            set { removeExcludeLocationCommand = value; }
+        }
+
+        Command clearExcludeLocationsCommand;
+
+        public Command ClearExcludeLocationsCommand
+        {
+            get { return clearExcludeLocationsCommand; }
+            set { clearExcludeLocationsCommand = value; }
+        }
+
+        String title;
+
+        public String Title
+        {
+            get { return title; }
+            set { SetProperty(ref title, value); }
+        }
+
+        public Command OkCommand { get; set; }
+        public Command CancelCommand { get; set; }
+
+
     }
 
 
+    
+
 }
+

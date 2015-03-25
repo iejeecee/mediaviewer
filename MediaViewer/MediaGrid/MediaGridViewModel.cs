@@ -23,6 +23,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.MediaFileBrowser;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Global.Events;
+using MediaViewer.Model.Media.Base;
 
 
 namespace MediaViewer.MediaGrid
@@ -32,11 +33,20 @@ namespace MediaViewer.MediaGrid
     {
         IEventAggregator EventAggregator { get; set; }
         
-        public MediaGridViewModel(IMediaState mediaState, IEventAggregator eventAggregator) : base(mediaState)
+        public MediaGridViewModel(MediaState mediaState, IEventAggregator eventAggregator) 
+            : base(mediaState)
         {
             EventAggregator = eventAggregator;
             NrGridColumns = 4;
 
+            MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
+        }
+
+        protected virtual void MediaStateCollectionView_SelectionChanged(object sender, EventArgs e)
+        {
+            List<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
+
+            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Publish(selectedItems);
         }
         
         int nrGridColumns;

@@ -22,6 +22,7 @@ using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Mvvm;
 using System.ComponentModel;
 using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.MediaGrid
 {
@@ -139,15 +140,15 @@ namespace MediaViewer.MediaGrid
             //ViewModel.FilterMode = options.FilterMode;
         }
 
-        void selectItem(MediaFileItem item)
+        void selectItem(MediaItem item)
         {
-            ICollection<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
+            ICollection<MediaItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
             if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item)) return;
 
             ViewModel.MediaStateCollectionView.deselectAll();
             ViewModel.MediaStateCollectionView.setIsSelected(item, true);
 
-            scrollToIndex = ViewModel.MediaStateCollectionView.Media.IndexOf(new SelectableMediaFileItem(item));
+            scrollToIndex = ViewModel.MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(item));
 
             if (scrollViewer != null)
             {
@@ -174,7 +175,7 @@ namespace MediaViewer.MediaGrid
 
             if (ViewModel.IsEnabled == false) return;
 
-            ICollection<MediaFileItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
+            ICollection<MediaItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
 
             String location = (String)navigationContext.Parameters["location"];
             if (!String.IsNullOrEmpty(location))

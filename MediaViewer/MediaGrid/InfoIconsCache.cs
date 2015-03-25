@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -122,25 +123,25 @@ namespace MediaViewer.MediaGrid
             return (newCombinations);
         }
 
-        public BitmapSource getInfoIconsBitmap(MediaFileItem item)
+        public BitmapSource getInfoIconsBitmap(MediaItem item)
         {
             BitmapSource bitmap = null;
 
             String key = "";
 
-            if (item.ItemState != MediaFileItemState.LOADED)
+            if (item.ItemState != MediaItemState.LOADED)
             {
                 return (bitmap);
             }
 
-            if (item.Media != null)
+            if (item.Metadata != null)
             {
-                if (item.Media.IsImported)
+                if (item.Metadata.IsImported)
                 {
                     key += '0';
                 }
 
-                if (!item.Media.SupportsXMPMetadata)
+                if (!item.Metadata.SupportsXMPMetadata)
                 {
                     key += '1';
                 }

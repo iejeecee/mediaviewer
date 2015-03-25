@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace MediaViewer.GridImage.ImageCollage
@@ -28,9 +27,9 @@ namespace MediaViewer.GridImage.ImageCollage
                 }
                 else 
                 {
-                    if (item.Media != null && item.Media.Thumbnail != null)
+                    if (item.Metadata != null && item.Metadata.Thumbnail != null)
                     {
-                        images.Add(item.Media.Thumbnail.Image);
+                        images.Add(item.Metadata.Thumbnail.Image);
                     }
                 }
             }
@@ -40,7 +39,7 @@ namespace MediaViewer.GridImage.ImageCollage
 
         public PictureGridImage(ImageCollageViewModel vm, List<MediaFileItem> items, bool useThumbs = false) :
             base(vm.MaxWidth, (int)Math.Ceiling(vm.Media.Count / (double)vm.NrColumns), 
-                vm.NrColumns, getImages(items, useThumbs), Stretch.Uniform)
+                vm.NrColumns, getImages(items, useThumbs), System.Windows.Media.Stretch.Uniform)
         {                                 
             Items = items;
             Vm = vm;           
@@ -79,9 +78,9 @@ namespace MediaViewer.GridImage.ImageCollage
 
             foreach (MediaFileItem item in Items)
             {
-                if (item.Media != null)
+                if (item.Metadata != null)
                 {
-                    sizeBytes += item.Media.SizeBytes;
+                    sizeBytes += item.Metadata.SizeBytes;
                 }
             }
 
@@ -129,10 +128,10 @@ namespace MediaViewer.GridImage.ImageCollage
 
             cell.Children.Add(name);
 
-            if (item.Media == null) return;
+            if (item.Metadata == null) return;
 
-            VideoMedia videoInfo = item.Media as VideoMedia;
-            ImageMedia imageInfo = item.Media as ImageMedia;
+            VideoMetadata videoInfo = item.Metadata as VideoMetadata;
+            ImageMetadata imageInfo = item.Metadata as ImageMetadata;
 
             TextBlock info = new TextBlock();
             info.TextTrimming = TextTrimming.CharacterEllipsis;
@@ -150,7 +149,7 @@ namespace MediaViewer.GridImage.ImageCollage
                 infoText += imageInfo.Width + "x" + imageInfo.Height;
             }
 
-            infoText += ", " + MiscUtils.formatSizeBytes(item.Media.SizeBytes);
+            infoText += ", " + MiscUtils.formatSizeBytes(item.Metadata.SizeBytes);
 
             info.Text = infoText;
 

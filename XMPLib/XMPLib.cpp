@@ -94,7 +94,7 @@ bool MetaData::errorCallback(void *context, XMP_StringPtr filePath, XMP_ErrorSev
 	bool result = true;
 
 	if(managedErrorCallback != nullptr) {
-
+		
 		result = managedErrorCallback->Invoke(gcnew String(filePath), errorSeverity, cause, gcnew String(message));
 	}
 

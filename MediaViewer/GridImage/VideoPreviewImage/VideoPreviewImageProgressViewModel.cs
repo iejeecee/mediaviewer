@@ -1,7 +1,9 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -108,10 +110,10 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                             InfoMessages.Add("Skipping: " + item.Location + " is not a video file.");
                             continue;
                         }
-                        if (item.Media == null)
+                        if (item.Metadata == null)
                         {
-                            item.readMetaData(MediaFactory.ReadOptions.AUTO, CancellationToken);
-                            if (item.ItemState != MediaFileItemState.LOADED)
+                            item.readMetadata(MetadataFactory.ReadOptions.AUTO, CancellationToken);
+                            if (item.ItemState != MediaItemState.LOADED)
                             {
                                 InfoMessages.Add("Skipping: " + item.Location + " could not read metadata.");
                                 continue;
@@ -205,12 +207,12 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 metaData.ApplicationName = App.getAppInfoString();
                 metaData.DateTaken = DateTime.Now.ToString("R");
 
-                if (item.Media.Tags.Count > 0)
+                if (item.Metadata.Tags.Count > 0)
                 {
 
                     List<String> tags = new List<string>();
 
-                    foreach (Tag tag in item.Media.Tags)
+                    foreach (Tag tag in item.Metadata.Tags)
                     {
                         tags.Add(tag.Name);
                     }
@@ -218,39 +220,39 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                     metaData.Keywords = new ReadOnlyCollection<string>(tags);
                 }
 
-                if (item.Media.Title != null)
+                if (item.Metadata.Title != null)
                 {
-                    metaData.Title = item.Media.Title;
+                    metaData.Title = item.Metadata.Title;
                 }
 
-                if (item.Media.Copyright != null)
+                if (item.Metadata.Copyright != null)
                 {
-                    metaData.Copyright = item.Media.Copyright;
+                    metaData.Copyright = item.Metadata.Copyright;
                 }
 
-                if (item.Media.Description != null)
+                if (item.Metadata.Description != null)
                 {
-                    metaData.Subject = item.Media.Description;
+                    metaData.Subject = item.Metadata.Description;
                 }
 
-                if (item.Media.Author != null)
+                if (item.Metadata.Author != null)
                 {
                     List<String> author = new List<string>();
-                    author.Add(item.Media.Author);
+                    author.Add(item.Metadata.Author);
 
                     metaData.Author = new ReadOnlyCollection<string>(author);
                 }
 
-                if (item.Media.Rating != null)
+                if (item.Metadata.Rating != null)
                 {
-                    metaData.Rating = (int)item.Media.Rating.Value;
+                    metaData.Rating = (int)item.Metadata.Rating.Value;
                 }
 
                 // rendertargetbitmap has to be executed on the UI thread
                 // if it's run on a non-UI thread there will be a memory leak
                 App.Current.Dispatcher.Invoke(() =>
                     {
-                        VideoGridImage gridImage = new VideoGridImage(item.Media as VideoMedia, asyncState, thumbs);
+                        VideoGridImage gridImage = new VideoGridImage(item.Metadata as VideoMetadata, asyncState, thumbs);
                         bitmap = gridImage.createGridImage(asyncState.MaxPreviewImageWidth);
                     });
 

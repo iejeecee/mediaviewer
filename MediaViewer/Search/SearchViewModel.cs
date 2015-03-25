@@ -1,8 +1,10 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
+using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Commands;
@@ -109,18 +111,18 @@ namespace MediaViewer.Search
             List<MediaFileItem> results = dbSearch(searchQuery);
 
             mediaFileWatcher.IsWatcherEnabled = false;
-            mediaFileWatcher.MediaState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
-            mediaFileWatcher.MediaState.addUIState(results);
+            mediaFileWatcher.MediaFileState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
+            mediaFileWatcher.MediaFileState.addUIState(results);
         }
 
         public List<MediaFileItem> dbSearch(SearchQuery searchQuery)
         {
-            using (MediaDbCommands mediaCommands = new MediaDbCommands())
+            using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
             {
-                List<BaseMedia> results = mediaCommands.findMediaByQuery(searchQuery);
+                List<BaseMetadata> results = mediaCommands.findMetadataByQuery(searchQuery);
                 List<MediaFileItem> items = new List<MediaFileItem>();
 
-                foreach (BaseMedia result in results)
+                foreach (BaseMetadata result in results)
                 {
                     items.Add(MediaFileItem.Factory.create(result.Location));
                 }
@@ -133,8 +135,9 @@ namespace MediaViewer.Search
 
         public List<MediaFileItem> diskTagSearch(List<Tag> tags, bool recurseSubDirectories, CancellationToken token)
         {
+            List<MediaFileItem> matches = new List<MediaFileItem>();
 
-            String searchPath = mediaFileWatcher.Path;
+            /*String searchPath = mediaFileWatcher.Path;
 
             List<MediaFileItem> mediaItems = new List<MediaFileItem>();
             List<MediaFileItem> matches = new List<MediaFileItem>();
@@ -145,20 +148,20 @@ namespace MediaViewer.Search
 
             foreach (MediaFileItem item in mediaItems)
             {
-                Task task = item.readMetaDataAsync(MediaFactory.ReadOptions.READ_FROM_DISK, token);
+                Task task = item.readMetaDataAsync(MetadataFactory.ReadOptions.READ_FROM_DISK, token);
                 task.Wait();
-                if (item.ItemState == MediaFileItemState.LOADED)
+                if (item.ItemState == MediaItemState.LOADED)
                 {
                     foreach (Tag tag in tags)
                     {                      
-                        if (item.Media.Tags.Contains(tag, new IgnoreCaseComparer()))
+                        if (item.Metadata.Tags.Contains(tag, new IgnoreCaseComparer()))
                         {
                             matches.Add(item);
                             continue;
                         }
                     }
                 }
-            }
+            }*/
 
 
             return (matches);

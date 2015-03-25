@@ -24,15 +24,15 @@ namespace MediaViewer.Import
    
     class ImportViewModel : CloseableBindableBase
     {
-        
-  
+          
         public ImportViewModel(MediaFileWatcher mediaFileWatcher)
         {
+            Title = "Import Media";
             
             OkCommand = new Command(async () =>
             {
                 CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                ImportProgressViewModel vm = new ImportProgressViewModel(mediaFileWatcher.MediaState);
+                ImportProgressViewModel vm = new ImportProgressViewModel(mediaFileWatcher.MediaFileState);
                 progress.DataContext = vm;
                 progress.Show();
                 Task t = vm.importAsync(IncludeLocations, ExcludeLocations);
@@ -235,70 +235,19 @@ namespace MediaViewer.Import
             get { return clearExcludeLocationsCommand; }
             set { clearExcludeLocationsCommand = value; }
         }
-            
+
+        String title;
+
+        public String Title
+        {
+            get { return title; }
+            set { SetProperty(ref title, value); }
+        }
+
         public Command OkCommand { get; set; }            
         public Command CancelCommand {get;set;}
         
          
-    }
-
-
-    class ImportExportLocation : BindableBase, IEquatable<ImportExportLocation>
-    {
-        public ImportExportLocation(String location)
-        {
-            this.location = location;
-            IsRecursive = true;
-            MediaType = Search.MediaType.All;
-            IsSelected = false;
-        }
-
-        String location;
-
-        public String Location
-        {
-            get { return location; }      
-        }
-
-        bool isSelected;
-
-        public bool IsSelected
-        {
-            get { return isSelected; }
-            set { 
-                SetProperty(ref isSelected, value);
-            }
-        }
-
-        bool isRecursive;
-
-        public bool IsRecursive
-        {
-            get { return isRecursive; }
-            set { 
-                SetProperty(ref isRecursive, value);
-            }
-        }
-
-        MediaType mediaType;
-
-        public MediaType MediaType
-        {
-            get { return mediaType; }
-            set { 
-                SetProperty(ref mediaType, value);
-            }
-        }
-
-        public bool Equals(ImportExportLocation other)
-        {
-            if (other == null)
-            {
-                throw new ArgumentException();
-            }
-
-            return (other.Location.Equals(Location));
-        }
     }
  
 }

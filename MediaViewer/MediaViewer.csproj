@@ -205,22 +205,33 @@
     <Compile Include="GridImage\ImageCollage\ImageCollageViewModel.cs" />
     <Compile Include="GridImage\ImageCollage\PictureGridImage.cs" />
     <Compile Include="GridImage\VideoPreviewImage\VideoGridImage.cs" />
+    <Compile Include="Import\ExportViewModel.cs" />
+    <Compile Include="Import\ImportExportLocation.cs" />
+    <Compile Include="MediaDatabase\BaseMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsView.xaml.cs">
       <DependentUpon>DbSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsViewModel.cs" />
     <Compile Include="MediaDatabase\DbSettings\TagOperationsViewModel.cs" />
+    <Compile Include="MediaDatabase\ImageMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="MediaDatabase\InitializeDb.cs" />
+    <Compile Include="MediaDatabase\UnknownMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaGrid\InfoIconsCache.cs" />
-    <Compile Include="MediaGrid\MediaGridItemView2.xaml.cs">
-      <DependentUpon>MediaGridItemView2.xaml</DependentUpon>
+    <Compile Include="MediaGrid\MediaGridItemView.xaml.cs">
+      <DependentUpon>MediaGridItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaGrid\MediaStackPanelViewModel.cs" />
     <Compile Include="MediaGrid\MediaStateCollectionViewModel.cs" />
-    <Compile Include="MediaDatabase\BaseMedia.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaGrid\RatingCache.cs" />
     <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
     <Compile Include="Model\Collections\LockedObservableCollection.cs" />
@@ -229,6 +240,9 @@
     <Compile Include="Model\Global\Events\GlobalCommandEvent.cs" />
     <Compile Include="Model\Global\Events\MediaBrowserEvent.cs" />
     <Compile Include="Model\Global\Events\MediaSelectionEvent.cs" />
+    <Compile Include="Model\Media\Base\MediaItem.cs" />
+    <Compile Include="Model\Media\Base\MediaItemFactory.cs" />
+    <Compile Include="Model\Media\File\MediaFileState.cs" />
     <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateFilterFunctions.cs" />
@@ -274,9 +288,6 @@
     <Compile Include="MediaGrid\MediaStateInfoView.xaml.cs">
       <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\MediaGridItemView.xaml.cs">
-      <DependentUpon>MediaGridItemView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="MediaGrid\ThumbnailSelectorConverter.cs" />
     <Compile Include="ImagePanel\BrightnessView.xaml.cs">
       <DependentUpon>BrightnessView.xaml</DependentUpon>
@@ -287,7 +298,7 @@
     <Compile Include="ImagePanel\ImageNavigationItemView.xaml.cs">
       <DependentUpon>ImageNavigationItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Import\ExportViewModel.cs" />
+    <Compile Include="Import\ExportProgressViewModel.cs" />
     <Compile Include="Import\ImportProgressViewModel.cs" />
     <Compile Include="Import\ImportView.xaml.cs">
       <DependentUpon>ImportView.xaml</DependentUpon>
@@ -296,9 +307,9 @@
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
-    <Compile Include="Model\Media\State\CollectionView\SelectableMediaFileItem.cs" />
+    <Compile Include="Model\Media\State\CollectionView\SelectableMediaItem.cs" />
     <Compile Include="Model\Media\State\MediaStateChangedEventArgs.cs" />
-    <Compile Include="Model\Media\File\MediaFileItemLoader.cs" />
+    <Compile Include="Model\Media\Base\MediaItemMetadataLoader.cs" />
     <Compile Include="MediaViewerBootstrapper.cs" />
     <Compile Include="Model\Concurrency\PriorityScheduler.cs" />
     <Compile Include="Model\Mvvm\CloseableBindableBase.cs" />
@@ -312,6 +323,7 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\Settings\SettingsViewModel.cs" />
+    <Compile Include="Model\Utils\StreamUtils.cs" />
     <Compile Include="Model\Utils\Windows\ColorUtils.cs" />
     <Compile Include="Model\Utils\WPF\ThemeHelper.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
@@ -364,11 +376,8 @@
     <Compile Include="Import\ImportViewModel.cs" />
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
-    <Compile Include="MediaDatabase\DbCommands\MediaDbCommands.cs" />
-    <Compile Include="MediaDatabase\ImageMedia.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\ImageMediaPartial.cs" />
+    <Compile Include="MediaDatabase\DbCommands\MetadataDbCommands.cs" />
+    <Compile Include="MediaDatabase\ImageMetadataPartial.cs" />
     <Compile Include="MediaDatabase\ImageProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -387,7 +396,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>
     </Compile>
-    <Compile Include="MediaDatabase\BaseMediaPartial.cs" />
+    <Compile Include="MediaDatabase\BaseMetadataPartial.cs" />
     <Compile Include="MediaDatabase\PresetMetadata.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -406,14 +415,8 @@
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
-    <Compile Include="MediaDatabase\UnknownMedia.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\UnknownMediaPartial.cs" />
-    <Compile Include="MediaDatabase\VideoMedia.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoMediaPartial.cs" />
+    <Compile Include="MediaDatabase\UnknownMetadataPartial.cs" />
+    <Compile Include="MediaDatabase\VideoMetadataPartial.cs" />
     <Compile Include="MediaDatabase\VideoProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -424,10 +427,9 @@
     <Compile Include="Model\Media\Metadata\MetadataWriter.cs" />
     <Compile Include="Model\Media\Metadata\VideoMetadataReader.cs" />
     <Compile Include="Model\Media\Metadata\VideoMetadataWriter.cs" />
-    <Compile Include="Model\Media\State\IMediaState.cs" />
     <Compile Include="Model\Media\State\MediaLockedCollection.cs" />
     <Compile Include="Model\Media\File\MediaFileItem.cs" />
-    <Compile Include="Model\Media\File\MediaFileItemState.cs" />
+    <Compile Include="Model\Media\Base\MediaItemState.cs" />
     <Compile Include="Model\Collections\ObservableRangeCollection.cs" />
     <Compile Include="MediaGrid\MediaGridView.xaml.cs">
       <DependentUpon>MediaGridView.xaml</DependentUpon>
@@ -446,7 +448,7 @@
       <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
-    <Compile Include="Model\Media\File\MediaFactory.cs" />
+    <Compile Include="Model\Media\Metadata\MetadataFactory.cs" />
     <Compile Include="Model\Media\File\Watcher\MediaFileWatcherQueue.cs" />
     <Compile Include="ImagePanel\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
@@ -626,7 +628,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaGridItemView2.xaml">
+    <Page Include="MediaGrid\MediaGridItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -647,10 +649,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MediaGrid\MediaStateInfoView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MediaGrid\MediaGridItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -683,6 +681,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Progress\NonCancellableOperationProgressView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Base.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -885,6 +887,7 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <None Include="ClassDiagram1.cd" />
     <None Include="MediaDatabase\MediaDatabase.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>

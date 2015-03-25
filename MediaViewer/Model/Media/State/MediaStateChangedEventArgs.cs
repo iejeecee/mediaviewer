@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Collections.Generic;
@@ -34,21 +35,21 @@ namespace MediaViewer.Model.Media.State
            
         }
 
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, MediaFileItem item)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, MediaItem item)
         {
             this.action = action;
 
             if (action == MediaStateChangedAction.Add)
             {
-                NewItems = new List<MediaFileItem>() {item};
+                NewItems = new List<MediaItem>() {item};
             }
             else if (action == MediaStateChangedAction.Remove)
             {
-                OldItems = new List<MediaFileItem>() { item };
+                OldItems = new List<MediaItem>() { item };
             }
         }
         
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaFileItem> items)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> items)
         {
             this.action = action;
 
@@ -69,7 +70,7 @@ namespace MediaViewer.Model.Media.State
             OldLocations = locations;            
         }
    
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaFileItem> newItems, IEnumerable<String> oldLocations)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> newItems, IEnumerable<String> oldLocations)
         {
             this.action = action;
 
@@ -94,17 +95,17 @@ namespace MediaViewer.Model.Media.State
             private set { oldLocations = value; }
         }
 
-        IEnumerable<MediaFileItem> oldItems;
+        IEnumerable<MediaItem> oldItems;
 
-        public IEnumerable<MediaFileItem> OldItems
+        public IEnumerable<MediaItem> OldItems
         {
             get { return oldItems; }
             private set { oldItems = value; }
         }
 
-        IEnumerable<MediaFileItem> newItems;
+        IEnumerable<MediaItem> newItems;
 
-        public IEnumerable<MediaFileItem> NewItems
+        public IEnumerable<MediaItem> NewItems
         {
             get { return newItems; }
             private set { newItems = value; }

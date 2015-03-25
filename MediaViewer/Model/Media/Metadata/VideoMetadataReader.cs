@@ -1,6 +1,7 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.metadata.Metadata;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +17,10 @@ namespace MediaViewer.Model.Media.Metadata
     class VideoMetadataReader : MetadataReader
     {
        
-        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media, 
+        public override void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, 
             CancellationToken token, int timeoutSeconds)
         {
-            VideoMedia video = media as VideoMedia;
+            VideoMetadata video = media as VideoMetadata;
 
             VideoPreview videoPreview = null;
             List<String> fsMetaData = null;
@@ -72,7 +73,7 @@ namespace MediaViewer.Model.Media.Metadata
 
                 try
                 {
-                    if (options.HasFlag(MediaFactory.ReadOptions.GENERATE_THUMBNAIL) && videoPreview != null)
+                    if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) && videoPreview != null)
                     {
                         generateThumbnail(videoPreview, video, token, timeoutSeconds);
                     }
@@ -107,7 +108,7 @@ namespace MediaViewer.Model.Media.Metadata
             }
         }
 
-        public void generateThumbnail(VideoPreview videoPreview, VideoMedia video, 
+        public void generateThumbnail(VideoPreview videoPreview, VideoMetadata video, 
             CancellationToken token, int timeoutSeconds)
          {
 
@@ -137,7 +138,7 @@ namespace MediaViewer.Model.Media.Metadata
          static List<String> descriptionMatch = new List<string>() {"description","comment"};
          static List<String> authorMatch = new List<string>() {"artist","album_artist"};
 
-         void parseFFMpegMetaData(List<string> fsMetaData, VideoMedia video)
+         void parseFFMpegMetaData(List<string> fsMetaData, VideoMetadata video)
          {
              if (fsMetaData == null) return;
 
@@ -202,7 +203,7 @@ namespace MediaViewer.Model.Media.Metadata
              }
          }
 
-         private bool supportsXMPMetadata(VideoMedia video, List<string> fsMetaData)                  
+         private bool supportsXMPMetadata(VideoMetadata video, List<string> fsMetaData)                  
          {
             
              // XMP Metadata does not support matroska

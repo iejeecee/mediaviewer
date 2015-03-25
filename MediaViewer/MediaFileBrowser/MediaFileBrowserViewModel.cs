@@ -16,7 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.Import;
-using MediaViewer.Export;
 using MediaViewer.ImagePanel;
 using VideoPlayerControl;
 using MediaViewer.VideoPanel;
@@ -41,6 +40,7 @@ using MediaViewer.Infrastructure;
 using MediaViewer.Infrastructure.Global.Events;
 using System.Collections.ObjectModel;
 using MediaViewer.UserControls.LocationBox;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -173,19 +173,19 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            ImageMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
-            ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
-            ImageMediaStackPanelViewModel.IsVisible = true;
+            imageMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
+            imageMediaStackPanelViewModel.IsVisible = true;
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
-            VideoMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
-            VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
-            VideoMediaStackPanelViewModel.IsVisible = true;
+            videoMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
+            videoMediaStackPanelViewModel.IsVisible = true;
 
-            MediaGridViewModel = new MediaGrid.MediaGridViewModel(mediaFileWatcher.MediaState, EventAggregator);
+            MediaGridViewModel = new MediaGrid.MediaGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
 
-            DummyMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaState, EventAggregator);
+            DummyMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             DummyMediaStackPanelViewModel.IsEnabled = false;
 
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
@@ -193,20 +193,16 @@ namespace MediaViewer.MediaFileBrowser
             ImportSelectedItemsCommand = new Command(() =>
             {          
                 ImportView import = new ImportView();
+                import.DataContext = new ImportViewModel(MediaFileWatcher.Instance);
                 import.ShowDialog();          
             });
 
-            ExportSelectedItemsCommand = new Command(async () =>
+            ExportSelectedItemsCommand = new Command(() =>
             {
-               
-                if (SelectedItems.Count == 0) return;
-
-                CancellableOperationProgressView export = new CancellableOperationProgressView();
-                ExportViewModel vm = new ExportViewModel(mediaFileWatcher.MediaState);
-                export.DataContext = vm;
-                export.Show();            
-                await vm.exportAsync(SelectedItems);
-
+                ImportView export = new ImportView();
+                export.DataContext = new ExportViewModel(MediaFileWatcher.Instance);
+                export.ShowDialog();
+              
             });
 
             ExpandCommand = new Command<MediaFileItem>((item) =>
@@ -215,7 +211,7 @@ namespace MediaViewer.MediaFileBrowser
                 {                   
                     if (SelectedItems.Count == 0) return;
 
-                    item = SelectedItems.ElementAt(0);
+                    item = SelectedItems.ElementAt(0) as MediaFileItem;
                 }
                
                 if (MediaFormatConvert.isImageFile(item.Location))
@@ -311,17 +307,23 @@ namespace MediaViewer.MediaFileBrowser
             
         }
 
-        private void mediaFileBrowser_MediaSelectionEvent(MediaFileItem selectedItem)
+        private void mediaFileBrowser_MediaSelectionEvent(MediaItem selectedItem)
         {
-            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
-            selectedItems.Add(selectedItem);
+            List<MediaFileItem> selectedItems = new List<MediaFileItem>();           
+            selectedItems.Add(selectedItem as MediaFileItem);
 
             SelectedItems = selectedItems;
         }
 
-        private void mediaFileBrowser_MediaBatchSelectionEvent(ICollection<MediaFileItem> selectedItems)
+        private void mediaFileBrowser_MediaBatchSelectionEvent(ICollection<MediaItem> selectedItems)
         {
-            SelectedItems = selectedItems;
+            List<MediaFileItem> items = new List<MediaFileItem>();
+            foreach (MediaItem item in selectedItems)
+            {
+                items.Add(item as MediaFileItem);
+            }
+
+            SelectedItems = items;
         }
 
          
@@ -414,7 +416,7 @@ namespace MediaViewer.MediaFileBrowser
               
                 try
                 {
-                    MediaFileWatcher.Instance.MediaState.delete(SelectedItems, tokenSource.Token);
+                    MediaFileWatcher.Instance.MediaFileState.delete(SelectedItems, tokenSource.Token);
                     
                 }
                 catch (Exception ex)
@@ -471,7 +473,7 @@ namespace MediaViewer.MediaFileBrowser
             }, navigationParams);
 
 
-            Shell.ShellViewModel.navigateToMediaStackPanelView(VideoMediaStackPanelViewModel, item.Location);
+            Shell.ShellViewModel.navigateToMediaStackPanelView(videoMediaStackPanelViewModel, item.Location);
            
         }
 
@@ -489,7 +491,7 @@ namespace MediaViewer.MediaFileBrowser
        
             }, navigationParams);
 
-            Shell.ShellViewModel.navigateToMediaStackPanelView(ImageMediaStackPanelViewModel, item.Location);
+            Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel, item.Location);
         }
                    
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
@@ -540,13 +542,13 @@ namespace MediaViewer.MediaFileBrowser
                 }
                 else if (CurrentViewModel is ImageViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(ImageMediaStackPanelViewModel);
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel);
                     newTitle = ImageViewModel.CurrentLocation;
                     if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
                 }
                 else if (CurrentViewModel is VideoViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(VideoMediaStackPanelViewModel);
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(videoMediaStackPanelViewModel);
                     newTitle = VideoViewModel.CurrentLocation;
                     if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
                 }

@@ -453,7 +453,7 @@ public class FormatMetaData
     }
 
 
-    public static List<Tuple<String, String>> formatProperties(VideoMedia video)
+    public static List<Tuple<String, String>> formatProperties(VideoMetadata video)
     {
         List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
        
@@ -465,7 +465,7 @@ public class FormatMetaData
         return (propList);
     }
 
-    public static List<Tuple<String, String>> formatProperties(ImageMedia image)
+    public static List<Tuple<String, String>> formatProperties(ImageMetadata image)
     {
         // http://ptgmedia.pearsoncmg.com/images/art_evening_lrmetadata/elementLinks/fig04.jpg
 

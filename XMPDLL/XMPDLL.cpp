@@ -57,8 +57,7 @@ namespace XMPDLL {
 
 		SXMPMeta meta;
 		SXMPFiles myFile;
-				
-	
+					
 	public:
 
 		XMPFileImpl(XMPFiles_ErrorCallbackProc errorProc, XMP_ProgressReportProc progressProc, void *context) {
@@ -98,11 +97,9 @@ namespace XMPDLL {
 			
 			// Options to open the file with - read only and use a file handler
 			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
-
-			bool ok;									
-		
+												
 			// First we try and open the file
-			ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
+			bool ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
 			if(!ok)
 			{
 				// Now try using packet scanning
@@ -112,12 +109,14 @@ namespace XMPDLL {
 			
 			if(ok)
 			{			
-				myFile.GetXMP(&meta);
-			    return(true);
+				myFile.GetXMP(&meta);			
+			   
+			} else {
+
+				myFile.CloseFile();
 			}
 
-			myFile.CloseFile();
-			return(false);
+			return(ok);
 		}
 
 		

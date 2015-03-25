@@ -30,7 +30,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             return (images);
         }
 
-        public VideoGridImage(VideoMedia video, VideoPreviewImageViewModel vm, List<VideoThumb> thumbs) :
+        public VideoGridImage(VideoMetadata video, VideoPreviewImageViewModel vm, List<VideoThumb> thumbs) :
             base(vm.MaxPreviewImageWidth,vm.NrRows, vm.NrColumns, getImages(thumbs))
         {                                 
             Video = video;
@@ -39,7 +39,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
         }
 
         List<VideoThumb> Thumbs { get; set; }
-        VideoMedia Video { get; set; }
+        VideoMetadata Video { get; set; }
         VideoPreviewImageViewModel Vm { get; set; }
 
         override protected void createHeader(Grid mainGrid, String fontFamily, int margin)

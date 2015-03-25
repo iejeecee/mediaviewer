@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 09/08/2014 19:56:31
+-- Date Created: 03/20/2015 15:15:10
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -32,23 +32,23 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_TagTag_Tag1]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[TagTag] DROP CONSTRAINT [FK_TagTag_Tag1];
 GO
-IF OBJECT_ID(N'[dbo].[FK_BaseMediaTag_BaseMedia]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMediaTag] DROP CONSTRAINT [FK_BaseMediaTag_BaseMedia];
+IF OBJECT_ID(N'[dbo].[FK_BaseMetadataTag_BaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataTag] DROP CONSTRAINT [FK_BaseMetadataTag_BaseMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[FK_BaseMediaTag_Tag]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMediaTag] DROP CONSTRAINT [FK_BaseMediaTag_Tag];
+IF OBJECT_ID(N'[dbo].[FK_BaseMetadataTag_Tag]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataTag] DROP CONSTRAINT [FK_BaseMetadataTag_Tag];
 GO
-IF OBJECT_ID(N'[dbo].[FK_BaseMediaThumbnail]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[ThumbnailSet] DROP CONSTRAINT [FK_BaseMediaThumbnail];
+IF OBJECT_ID(N'[dbo].[FK_ThumbnailBaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataSet] DROP CONSTRAINT [FK_ThumbnailBaseMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[FK_ImageMedia_inherits_BaseMedia]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMediaSet_ImageMedia] DROP CONSTRAINT [FK_ImageMedia_inherits_BaseMedia];
+IF OBJECT_ID(N'[dbo].[FK_ImageMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataSet_ImageMetadata] DROP CONSTRAINT [FK_ImageMetadata_inherits_BaseMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[FK_VideoMedia_inherits_BaseMedia]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMediaSet_VideoMedia] DROP CONSTRAINT [FK_VideoMedia_inherits_BaseMedia];
+IF OBJECT_ID(N'[dbo].[FK_VideoMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataSet_VideoMetadata] DROP CONSTRAINT [FK_VideoMetadata_inherits_BaseMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[FK_UnknownMedia_inherits_BaseMedia]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMediaSet_UnknownMedia] DROP CONSTRAINT [FK_UnknownMedia_inherits_BaseMedia];
+IF OBJECT_ID(N'[dbo].[FK_UnknownMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata] DROP CONSTRAINT [FK_UnknownMetadata_inherits_BaseMetadata];
 GO
 
 -- --------------------------------------------------
@@ -61,8 +61,8 @@ GO
 IF OBJECT_ID(N'[dbo].[TagCategorySet]', 'U') IS NOT NULL
     DROP TABLE [dbo].[TagCategorySet];
 GO
-IF OBJECT_ID(N'[dbo].[BaseMediaSet]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BaseMediaSet];
+IF OBJECT_ID(N'[dbo].[BaseMetadataSet]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataSet];
 GO
 IF OBJECT_ID(N'[dbo].[PresetMetadataSet]', 'U') IS NOT NULL
     DROP TABLE [dbo].[PresetMetadataSet];
@@ -70,14 +70,14 @@ GO
 IF OBJECT_ID(N'[dbo].[ThumbnailSet]', 'U') IS NOT NULL
     DROP TABLE [dbo].[ThumbnailSet];
 GO
-IF OBJECT_ID(N'[dbo].[BaseMediaSet_ImageMedia]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BaseMediaSet_ImageMedia];
+IF OBJECT_ID(N'[dbo].[BaseMetadataSet_ImageMetadata]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataSet_ImageMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[BaseMediaSet_VideoMedia]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BaseMediaSet_VideoMedia];
+IF OBJECT_ID(N'[dbo].[BaseMetadataSet_VideoMetadata]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataSet_VideoMetadata];
 GO
-IF OBJECT_ID(N'[dbo].[BaseMediaSet_UnknownMedia]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BaseMediaSet_UnknownMedia];
+IF OBJECT_ID(N'[dbo].[BaseMetadataSet_UnknownMetadata]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataSet_UnknownMetadata];
 GO
 IF OBJECT_ID(N'[dbo].[PresetMetadataTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[PresetMetadataTag];
@@ -85,8 +85,8 @@ GO
 IF OBJECT_ID(N'[dbo].[TagTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[TagTag];
 GO
-IF OBJECT_ID(N'[dbo].[BaseMediaTag]', 'U') IS NOT NULL
-    DROP TABLE [dbo].[BaseMediaTag];
+IF OBJECT_ID(N'[dbo].[BaseMetadataTag]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataTag];
 GO
 
 -- --------------------------------------------------
@@ -111,8 +111,8 @@ CREATE TABLE [dbo].[TagCategorySet] (
 );
 GO
 
--- Creating table 'BaseMediaSet'
-CREATE TABLE [dbo].[BaseMediaSet] (
+-- Creating table 'BaseMetadataSet'
+CREATE TABLE [dbo].[BaseMetadataSet] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [Location] nvarchar(max)  NOT NULL,
     [Title] nvarchar(max)  NULL,
@@ -131,7 +131,8 @@ CREATE TABLE [dbo].[BaseMediaSet] (
     [TimeStamp] TIMESTAMP  NOT NULL,
     [Latitude] nvarchar(max)  NULL,
     [Longitude] nvarchar(max)  NULL,
-    [FileDate] datetime  NOT NULL
+    [FileDate] datetime  NOT NULL,
+    [ThumbnailId] int  NULL
 );
 GO
 
@@ -161,13 +162,12 @@ CREATE TABLE [dbo].[ThumbnailSet] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [ImageData] varbinary(max)  NOT NULL,
     [Width] smallint  NOT NULL,
-    [Height] smallint  NOT NULL,
-    [BaseMedia_Id] int  NOT NULL
+    [Height] smallint  NOT NULL
 );
 GO
 
--- Creating table 'BaseMediaSet_ImageMedia'
-CREATE TABLE [dbo].[BaseMediaSet_ImageMedia] (
+-- Creating table 'BaseMetadataSet_ImageMetadata'
+CREATE TABLE [dbo].[BaseMetadataSet_ImageMetadata] (
     [Width] int  NOT NULL,
     [Height] int  NOT NULL,
     [LightSource] smallint  NULL,
@@ -198,8 +198,8 @@ CREATE TABLE [dbo].[BaseMediaSet_ImageMedia] (
 );
 GO
 
--- Creating table 'BaseMediaSet_VideoMedia'
-CREATE TABLE [dbo].[BaseMediaSet_VideoMedia] (
+-- Creating table 'BaseMetadataSet_VideoMetadata'
+CREATE TABLE [dbo].[BaseMetadataSet_VideoMetadata] (
     [Width] int  NOT NULL,
     [Height] int  NOT NULL,
     [BitsPerSample] smallint  NULL,
@@ -219,8 +219,8 @@ CREATE TABLE [dbo].[BaseMediaSet_VideoMedia] (
 );
 GO
 
--- Creating table 'BaseMediaSet_UnknownMedia'
-CREATE TABLE [dbo].[BaseMediaSet_UnknownMedia] (
+-- Creating table 'BaseMetadataSet_UnknownMetadata'
+CREATE TABLE [dbo].[BaseMetadataSet_UnknownMetadata] (
     [Id] int  NOT NULL
 );
 GO
@@ -239,9 +239,9 @@ CREATE TABLE [dbo].[TagTag] (
 );
 GO
 
--- Creating table 'BaseMediaTag'
-CREATE TABLE [dbo].[BaseMediaTag] (
-    [BaseMedias_Id] int  NOT NULL,
+-- Creating table 'BaseMetadataTag'
+CREATE TABLE [dbo].[BaseMetadataTag] (
+    [BaseMetadatas_Id] int  NOT NULL,
     [Tags_Id] int  NOT NULL
 );
 GO
@@ -262,9 +262,9 @@ ADD CONSTRAINT [PK_TagCategorySet]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
--- Creating primary key on [Id] in table 'BaseMediaSet'
-ALTER TABLE [dbo].[BaseMediaSet]
-ADD CONSTRAINT [PK_BaseMediaSet]
+-- Creating primary key on [Id] in table 'BaseMetadataSet'
+ALTER TABLE [dbo].[BaseMetadataSet]
+ADD CONSTRAINT [PK_BaseMetadataSet]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -280,21 +280,21 @@ ADD CONSTRAINT [PK_ThumbnailSet]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
--- Creating primary key on [Id] in table 'BaseMediaSet_ImageMedia'
-ALTER TABLE [dbo].[BaseMediaSet_ImageMedia]
-ADD CONSTRAINT [PK_BaseMediaSet_ImageMedia]
+-- Creating primary key on [Id] in table 'BaseMetadataSet_ImageMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_ImageMetadata]
+ADD CONSTRAINT [PK_BaseMetadataSet_ImageMetadata]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
--- Creating primary key on [Id] in table 'BaseMediaSet_VideoMedia'
-ALTER TABLE [dbo].[BaseMediaSet_VideoMedia]
-ADD CONSTRAINT [PK_BaseMediaSet_VideoMedia]
+-- Creating primary key on [Id] in table 'BaseMetadataSet_VideoMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_VideoMetadata]
+ADD CONSTRAINT [PK_BaseMetadataSet_VideoMetadata]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
--- Creating primary key on [Id] in table 'BaseMediaSet_UnknownMedia'
-ALTER TABLE [dbo].[BaseMediaSet_UnknownMedia]
-ADD CONSTRAINT [PK_BaseMediaSet_UnknownMedia]
+-- Creating primary key on [Id] in table 'BaseMetadataSet_UnknownMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata]
+ADD CONSTRAINT [PK_BaseMetadataSet_UnknownMetadata]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -310,10 +310,10 @@ ADD CONSTRAINT [PK_TagTag]
     PRIMARY KEY NONCLUSTERED ([ParentTags_Id], [ChildTags_Id] ASC);
 GO
 
--- Creating primary key on [BaseMedias_Id], [Tags_Id] in table 'BaseMediaTag'
-ALTER TABLE [dbo].[BaseMediaTag]
-ADD CONSTRAINT [PK_BaseMediaTag]
-    PRIMARY KEY NONCLUSTERED ([BaseMedias_Id], [Tags_Id] ASC);
+-- Creating primary key on [BaseMetadatas_Id], [Tags_Id] in table 'BaseMetadataTag'
+ALTER TABLE [dbo].[BaseMetadataTag]
+ADD CONSTRAINT [PK_BaseMetadataTag]
+    PRIMARY KEY NONCLUSTERED ([BaseMetadatas_Id], [Tags_Id] ASC);
 GO
 
 -- --------------------------------------------------
@@ -380,66 +380,66 @@ ON [dbo].[TagTag]
     ([ChildTags_Id]);
 GO
 
--- Creating foreign key on [BaseMedias_Id] in table 'BaseMediaTag'
-ALTER TABLE [dbo].[BaseMediaTag]
-ADD CONSTRAINT [FK_BaseMediaTag_BaseMedia]
-    FOREIGN KEY ([BaseMedias_Id])
-    REFERENCES [dbo].[BaseMediaSet]
+-- Creating foreign key on [BaseMetadatas_Id] in table 'BaseMetadataTag'
+ALTER TABLE [dbo].[BaseMetadataTag]
+ADD CONSTRAINT [FK_BaseMetadataTag_BaseMetadata]
+    FOREIGN KEY ([BaseMetadatas_Id])
+    REFERENCES [dbo].[BaseMetadataSet]
         ([Id])
     ON DELETE NO ACTION ON UPDATE NO ACTION;
 GO
 
--- Creating foreign key on [Tags_Id] in table 'BaseMediaTag'
-ALTER TABLE [dbo].[BaseMediaTag]
-ADD CONSTRAINT [FK_BaseMediaTag_Tag]
+-- Creating foreign key on [Tags_Id] in table 'BaseMetadataTag'
+ALTER TABLE [dbo].[BaseMetadataTag]
+ADD CONSTRAINT [FK_BaseMetadataTag_Tag]
     FOREIGN KEY ([Tags_Id])
     REFERENCES [dbo].[TagSet]
         ([Id])
     ON DELETE NO ACTION ON UPDATE NO ACTION;
 
--- Creating non-clustered index for FOREIGN KEY 'FK_BaseMediaTag_Tag'
-CREATE INDEX [IX_FK_BaseMediaTag_Tag]
-ON [dbo].[BaseMediaTag]
+-- Creating non-clustered index for FOREIGN KEY 'FK_BaseMetadataTag_Tag'
+CREATE INDEX [IX_FK_BaseMetadataTag_Tag]
+ON [dbo].[BaseMetadataTag]
     ([Tags_Id]);
 GO
 
--- Creating foreign key on [BaseMedia_Id] in table 'ThumbnailSet'
-ALTER TABLE [dbo].[ThumbnailSet]
-ADD CONSTRAINT [FK_BaseMediaThumbnail]
-    FOREIGN KEY ([BaseMedia_Id])
-    REFERENCES [dbo].[BaseMediaSet]
+-- Creating foreign key on [ThumbnailId] in table 'BaseMetadataSet'
+ALTER TABLE [dbo].[BaseMetadataSet]
+ADD CONSTRAINT [FK_ThumbnailBaseMetadata]
+    FOREIGN KEY ([ThumbnailId])
+    REFERENCES [dbo].[ThumbnailSet]
         ([Id])
     ON DELETE NO ACTION ON UPDATE NO ACTION;
 
--- Creating non-clustered index for FOREIGN KEY 'FK_BaseMediaThumbnail'
-CREATE INDEX [IX_FK_BaseMediaThumbnail]
-ON [dbo].[ThumbnailSet]
-    ([BaseMedia_Id]);
+-- Creating non-clustered index for FOREIGN KEY 'FK_ThumbnailBaseMetadata'
+CREATE INDEX [IX_FK_ThumbnailBaseMetadata]
+ON [dbo].[BaseMetadataSet]
+    ([ThumbnailId]);
 GO
 
--- Creating foreign key on [Id] in table 'BaseMediaSet_ImageMedia'
-ALTER TABLE [dbo].[BaseMediaSet_ImageMedia]
-ADD CONSTRAINT [FK_ImageMedia_inherits_BaseMedia]
+-- Creating foreign key on [Id] in table 'BaseMetadataSet_ImageMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_ImageMetadata]
+ADD CONSTRAINT [FK_ImageMetadata_inherits_BaseMetadata]
     FOREIGN KEY ([Id])
-    REFERENCES [dbo].[BaseMediaSet]
+    REFERENCES [dbo].[BaseMetadataSet]
         ([Id])
     ON DELETE CASCADE ON UPDATE NO ACTION;
 GO
 
--- Creating foreign key on [Id] in table 'BaseMediaSet_VideoMedia'
-ALTER TABLE [dbo].[BaseMediaSet_VideoMedia]
-ADD CONSTRAINT [FK_VideoMedia_inherits_BaseMedia]
+-- Creating foreign key on [Id] in table 'BaseMetadataSet_VideoMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_VideoMetadata]
+ADD CONSTRAINT [FK_VideoMetadata_inherits_BaseMetadata]
     FOREIGN KEY ([Id])
-    REFERENCES [dbo].[BaseMediaSet]
+    REFERENCES [dbo].[BaseMetadataSet]
         ([Id])
     ON DELETE CASCADE ON UPDATE NO ACTION;
 GO
 
--- Creating foreign key on [Id] in table 'BaseMediaSet_UnknownMedia'
-ALTER TABLE [dbo].[BaseMediaSet_UnknownMedia]
-ADD CONSTRAINT [FK_UnknownMedia_inherits_BaseMedia]
+-- Creating foreign key on [Id] in table 'BaseMetadataSet_UnknownMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata]
+ADD CONSTRAINT [FK_UnknownMetadata_inherits_BaseMetadata]
     FOREIGN KEY ([Id])
-    REFERENCES [dbo].[BaseMediaSet]
+    REFERENCES [dbo].[BaseMetadataSet]
         ([Id])
     ON DELETE CASCADE ON UPDATE NO ACTION;
 GO

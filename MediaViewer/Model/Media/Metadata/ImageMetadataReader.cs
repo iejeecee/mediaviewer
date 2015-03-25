@@ -1,6 +1,7 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -18,10 +19,10 @@ namespace MediaViewer.Model.Media.Metadata
     {
         
 
-        public override void readMetadata(Stream data, MediaFactory.ReadOptions options, BaseMedia media, 
+        public override void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, 
             CancellationToken token, int timeoutSeconds)
         {
-            ImageMedia image = media as ImageMedia;
+            ImageMetadata image = media as ImageMetadata;
             media.SizeBytes = data.Length;
 
             BitmapDecoder bitmapDecoder = null;
@@ -37,7 +38,7 @@ namespace MediaViewer.Model.Media.Metadata
                 image.Width = frame.PixelWidth;
                 image.Height = frame.PixelHeight;
 
-                if (options.HasFlag(MediaFactory.ReadOptions.GENERATE_THUMBNAIL))
+                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL))
                 {
                     generateThumbnail(data, frame, image);
                 }
@@ -66,7 +67,7 @@ namespace MediaViewer.Model.Media.Metadata
           
         }
 
-        public void generateThumbnail(Stream data, BitmapFrame frame, ImageMedia image)
+        public void generateThumbnail(Stream data, BitmapFrame frame, ImageMetadata image)
         {
 
             BitmapSource thumb = frame.Thumbnail;
@@ -137,11 +138,11 @@ namespace MediaViewer.Model.Media.Metadata
             return (result);
         }
 
-        protected override void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, BaseMedia media) {
+        protected override void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, BaseMetadata media) {
 
             base.readXMPMetadata(xmpMetaDataReader, media);
 
-            ImageMedia image = media as ImageMedia;
+            ImageMetadata image = media as ImageMetadata;
 
             
             Nullable<int> intVal = new Nullable<int>();
