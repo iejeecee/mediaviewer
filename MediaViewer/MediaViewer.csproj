@@ -226,13 +226,19 @@
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
-    <Compile Include="MediaGrid\InfoIconsCache.cs" />
-    <Compile Include="MediaGrid\MediaGridItemView.xaml.cs">
+    <Compile Include="MediaFileGrid\MediaFileGridView.xaml.cs">
+      <DependentUpon>MediaFileGridView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaFileGrid\MediaFileGridViewModel.cs" />
+    <Compile Include="MediaFileStackPanel\MediaFileStackPanelView.xaml.cs">
+      <DependentUpon>MediaFileStackPanelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
+    <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\MediaStackPanelViewModel.cs" />
-    <Compile Include="MediaGrid\MediaStateCollectionViewModel.cs" />
-    <Compile Include="MediaGrid\RatingCache.cs" />
+    <Compile Include="MediaFileStackPanel\MediaFileStackPanelViewModel.cs" />
+    <Compile Include="UserControls\MediaGridItem\RatingCache.cs" />
     <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
     <Compile Include="Model\Collections\LockedObservableCollection.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
@@ -243,10 +249,10 @@
     <Compile Include="Model\Media\Base\MediaItem.cs" />
     <Compile Include="Model\Media\Base\MediaItemFactory.cs" />
     <Compile Include="Model\Media\File\MediaFileState.cs" />
-    <Compile Include="Model\Media\State\CollectionView\DefaultMediaStateCollectionView.cs" />
+    <Compile Include="Model\Media\File\MediaFileStateCollectionView.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionView.cs" />
-    <Compile Include="Model\Media\State\CollectionView\MediaStateFilterFunctions.cs" />
-    <Compile Include="Model\Media\State\CollectionView\MediaStateSortFunctions.cs" />
+    <Compile Include="Model\Media\File\MediaStateFilterFunctions.cs" />
+    <Compile Include="Model\Media\File\MediaStateSortFunctions.cs" />
     <Compile Include="Converters\BooleanNegatorConverter.cs" />
     <Compile Include="Converters\BooleanToScrollBarVisibilityConverter.cs" />
     <Compile Include="Converters\BooleanToVisibilityConverter.cs" />
@@ -260,21 +266,18 @@
     <Compile Include="Converters\EnumToBooleanConverter.cs" />
     <Compile Include="Converters\FormatSizeBytesConverter.cs" />
     <Compile Include="Converters\NegatedEnumToBooleanConverter.cs" />
-    <Compile Include="Converters\PathToFileNameConverter.cs" />
+    <Compile Include="UserControls\MediaGridItem\PathToFilenameConverter.cs" />
     <Compile Include="Converters\ToStringConverter.cs" />
     <Compile Include="Effects\BrightnessContrastEffect.cs" />
     <Compile Include="Effects\GrayscaleEffect.cs" />
     <Compile Include="Effects\PixelShaderEffect.cs" />
-    <Compile Include="MediaGrid\ExtraItemInfoView.xaml.cs">
-      <DependentUpon>ExtraItemInfoView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MediaGrid\MediaGridItemBasicView.xaml.cs">
+    <Compile Include="UserControls\MediaGridItem\MediaGridItemBasicView.xaml.cs">
       <DependentUpon>MediaGridItemBasicView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\MediaStackPanelView.xaml.cs">
+    <Compile Include="UserControls\MediaStackPanel\MediaStackPanelView.xaml.cs">
       <DependentUpon>MediaStackPanelView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\IsLoadingConverter.cs" />
+    <Compile Include="UserControls\MediaGridItem\IsLoadingConverter.cs" />
     <Compile Include="ImagePanel\ImageToolbarView.xaml.cs">
       <DependentUpon>ImageToolbarView.xaml</DependentUpon>
     </Compile>
@@ -285,10 +288,10 @@
     <Compile Include="MediaFileBrowser\MediaFileBrowserNavigationItemView.xaml.cs">
       <DependentUpon>MediaFileBrowserNavigationItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\MediaStateInfoView.xaml.cs">
+    <Compile Include="UserControls\MediaStateInfo\MediaStateInfoView.xaml.cs">
       <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\ThumbnailSelectorConverter.cs" />
+    <Compile Include="UserControls\MediaGridItem\ThumbnailSelectorConverter.cs" />
     <Compile Include="ImagePanel\BrightnessView.xaml.cs">
       <DependentUpon>BrightnessView.xaml</DependentUpon>
     </Compile>
@@ -368,8 +371,6 @@
     </Compile>
     <Compile Include="UserControls\DateTimePicker\DateTimePickerBase.cs" />
     <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="GenericEventArgs\GEventArgs.cs" />
-    <Compile Include="GenericEventArgs\ModifiableGEventArgs.cs" />
     <Compile Include="Converters\EnumConverter.cs" />
     <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
     <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
@@ -431,10 +432,9 @@
     <Compile Include="Model\Media\File\MediaFileItem.cs" />
     <Compile Include="Model\Media\Base\MediaItemState.cs" />
     <Compile Include="Model\Collections\ObservableRangeCollection.cs" />
-    <Compile Include="MediaGrid\MediaGridView.xaml.cs">
+    <Compile Include="UserControls\MediaGrid\MediaGridView.xaml.cs">
       <DependentUpon>MediaGridView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MediaGrid\MediaGridViewModel.cs" />
     <Compile Include="Input\InputView.xaml.cs">
       <DependentUpon>InputView.xaml</DependentUpon>
     </Compile>
@@ -620,19 +620,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\ExtraItemInfoView.xaml">
+    <Page Include="MediaFileGrid\MediaFileGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaGridItemBasicView.xaml">
+    <Page Include="MediaFileStackPanel\MediaFileStackPanelView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaGridItemView.xaml">
+    <Page Include="UserControls\MediaGridItem\MediaGridItemBasicView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaStackPanelView.xaml">
+    <Page Include="UserControls\MediaGridItem\MediaGridItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MediaStackPanel\MediaStackPanelView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -648,7 +652,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaStateInfoView.xaml">
+    <Page Include="UserControls\MediaStateInfo\MediaStateInfoView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -704,7 +708,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MediaGrid\MediaGridView.xaml">
+    <Page Include="UserControls\MediaGrid\MediaGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -887,7 +891,6 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="ClassDiagram1.cd" />
     <None Include="MediaDatabase\MediaDatabase.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>

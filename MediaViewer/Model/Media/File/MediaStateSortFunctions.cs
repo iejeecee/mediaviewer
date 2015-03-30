@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State.CollectionView
+namespace MediaViewer.Model.Media.File
 {
     public enum MediaStateSortMode
     {
@@ -46,7 +47,6 @@ namespace MediaViewer.Model.Media.State.CollectionView
     {
         public static Func<SelectableMediaItem, SelectableMediaItem, int> getSortFunction(MediaStateSortMode sortMode)
         {
-
             Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc = null;
 
             switch (sortMode)

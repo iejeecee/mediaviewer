@@ -1,6 +1,14 @@
-﻿using Microsoft.Practices.Prism.Regions;
+﻿using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.Model.Global.Events;
+using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Utils;
+using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,90 +21,55 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel.Composition;
-using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.State.CollectionView;
-using MediaViewer.Model.Media.File;
-using MediaViewer.UserControls.Pager;
-using Microsoft.Practices.Prism.Mvvm;
-using System.ComponentModel;
-using MediaViewer.Infrastructure.Global.Events;
-using MediaViewer.Model.Media.Base;
 
-namespace MediaViewer.MediaGrid
-{
-    /// <summary>
-    /// Interaction logic for MediaStackPanelView.xaml
-    /// </summary>
+namespace MediaViewer.MediaFileStackPanel
+{    
     [Export]
-    public partial class MediaStackPanelView : UserControl, INavigationAware   
+    public partial class MediaFileStackPanelView : UserControl, INavigationAware   
     {
-        ScrollViewer scrollViewer;
-        int scrollToIndex;
-
-        MediaStackPanelViewModel ViewModel { get; set; }
+        MediaFileStackPanelViewModel ViewModel { get; set; }
         IEventAggregator EventAggregator { get; set; }
 
         [ImportingConstructor]
-        public MediaStackPanelView(IEventAggregator eventAggregator)
+        public MediaFileStackPanelView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
 
             EventAggregator = eventAggregator;
 
-            itemsControl.Height = itemsControl.Height + SystemParameters.HorizontalScrollBarHeight;
-
             eventAggregator.GetEvent<MediaBrowserDisplayEvent>().Subscribe(imageStackPanelView_DisplayEvent, ThreadOption.UIThread);
             eventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(selectItem, ThreadOption.UIThread);
             eventAggregator.GetEvent<ToggleFullScreenEvent>().Subscribe(toggleFullScreen, ThreadOption.UIThread);
-
-            scrollToIndex = -1;           
-                      
         }
 
-        private void toggleFullScreen(bool isFullScreen)
+        void selectItem(MediaItem item)
         {
-            if (isFullScreen)
-            {
-                mainGrid.Visibility = System.Windows.Visibility.Collapsed;
-            }
-            else
-            {
-                mainGrid.Visibility = System.Windows.Visibility.Visible;
-            }
+            ICollection<MediaItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
+            if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item)) return;
+
+            ViewModel.MediaStateCollectionView.deselectAll();
+            ViewModel.MediaStateCollectionView.setIsSelected(item, true);
+            
         }
 
-        private void imageStackPanelView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void mediaStackPanel_MediaItemClick(Object sender, SelectableMediaItem selectableItem)
         {
-            if (e.OldValue is MediaStackPanelViewModel)
-            {
-                MediaStackPanelViewModel imageStackPanelViewModel = e.OldValue as MediaStackPanelViewModel;                                        
-            }
+            MediaItem item = selectableItem.Item;
 
-            if (e.NewValue is MediaStackPanelViewModel)
+            if (MediaFormatConvert.isImageFile(item.Location))
             {
-                MediaStackPanelViewModel imageStackPanelViewModel = e.NewValue as MediaStackPanelViewModel;                                                                                                           
+                Shell.ShellViewModel.navigateToImageView(item.Location);
             }
-        }
-     
-        private void scrollViewer_Loaded(object sender, EventArgs e)
-        {
-            scrollViewer = (ScrollViewer)sender;
-
-            if (scrollToIndex != -1)
+            else if (MediaFormatConvert.isVideoFile(item.Location))
             {
-                scrollViewer.ScrollToHorizontalOffset(scrollToIndex);
-                
+                Shell.ShellViewModel.navigateToVideoView(item.Location);
             }
-         
         }
 
         private void imageStackPanelView_DisplayEvent(MediaBrowserDisplayOptions options)
         {
             if (options.IsHidden != null)
             {
-
                 if (options.IsHidden == true)
                 {
                     if (collapseToggleButton.IsChecked.Value == false)
@@ -123,8 +96,8 @@ namespace MediaViewer.MediaGrid
                 else
                 {
                     collapseToggleButton.Visibility = Visibility.Visible;
-                }                               
-            } 
+                }
+            }
 
             if (options.FilterMode != null)
             {
@@ -134,27 +107,22 @@ namespace MediaViewer.MediaGrid
             if (options.SelectedItem != null)
             {
                 selectItem(options.SelectedItem);
-                
+
             }
 
             //ViewModel.FilterMode = options.FilterMode;
         }
 
-        void selectItem(MediaItem item)
+        private void toggleFullScreen(bool isFullScreen)
         {
-            ICollection<MediaItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
-            if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item)) return;
-
-            ViewModel.MediaStateCollectionView.deselectAll();
-            ViewModel.MediaStateCollectionView.setIsSelected(item, true);
-
-            scrollToIndex = ViewModel.MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(item));
-
-            if (scrollViewer != null)
+            if (isFullScreen)
             {
-                scrollViewer.ScrollToHorizontalOffset(scrollToIndex);
+                mainGrid.Visibility = System.Windows.Visibility.Collapsed;
             }
-           
+            else
+            {
+                mainGrid.Visibility = System.Windows.Visibility.Visible;
+            }
         }
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
@@ -164,12 +132,12 @@ namespace MediaViewer.MediaGrid
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            
+         
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            ViewModel = (MediaStackPanelViewModel)navigationContext.Parameters["viewModel"];
+            ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];
 
             DataContext = ViewModel;
 
@@ -179,7 +147,7 @@ namespace MediaViewer.MediaGrid
 
             String location = (String)navigationContext.Parameters["location"];
             if (!String.IsNullOrEmpty(location))
-            {                
+            {
                 MediaFileItem item = MediaFileItem.Factory.create(location);
 
                 if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item))
@@ -194,15 +162,13 @@ namespace MediaViewer.MediaGrid
                 }
             }
             else
-            {               
+            {
                 if (selectedItems.Count > 0)
                 {
                     // Send a selection event to inform other views
                     EventAggregator.GetEvent<MediaSelectionEvent>().Publish(selectedItems.ElementAt(0));
-                }                
+                }
             }
-                      
-        }        
-  
+        }
     }
 }

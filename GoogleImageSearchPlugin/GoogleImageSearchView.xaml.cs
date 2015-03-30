@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.Model.Media.State;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -20,16 +21,29 @@ namespace GoogleImageSearchPlugin
     /// </summary>
     public partial class GoogleImageSearchView : Window
     {
+        GoogleImageSearchViewModel vm;
+
         public GoogleImageSearchView()
         {
             InitializeComponent();
 
-            dummyTest();
+            DataContext = vm = new GoogleImageSearchViewModel();
+
+            vm.ClosingRequest += vm_ClosingRequest;
+
+            this.Closing += googleImageSearchView_Closing;
         }
 
-        void dummyTest()
+        void googleImageSearchView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            
+            vm.MediaStateCollectionView.MediaState.clearUIState("Empty",DateTime.Now,MediaStateType.SearchResult);
         }
+
+        void vm_ClosingRequest(object sender, MediaViewer.Model.Mvvm.CloseableBindableBase.DialogEventArgs e)
+        {           
+            this.Close();
+        }
+
+      
     }
 }

@@ -14,7 +14,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using MediaViewer.GenericEventArgs;
 using MediaViewer.Progress;
 using MediaViewer.Infrastructure.Logging;
 

@@ -1,11 +1,12 @@
 ﻿using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State.CollectionView
+namespace MediaViewer.Model.Media.File
 {
     public enum MediaStateFilterMode
     {

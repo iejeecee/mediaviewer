@@ -57,16 +57,14 @@ namespace MediaViewer.Model.Media.State
         public MediaState()
         {
             uiMediaCollection = new MediaLockedCollection(true);
-            uiMediaCollection.ItemPropertyChanged += item_PropertyChanged;
+            uiMediaCollection.ItemPropertyChanged += item_PropertyChanged;          
                    
             debugOutput = false;
 
             MediaStateInfo = "Empty";
             MediaStateDateTime = DateTime.Now;
             MediaStateType = MediaStateType.Directory;
-
-            NrItemsInState = 0;
-            NrLoadedItemsInState = 0;
+      
         }
 
         public void Dispose()
@@ -99,8 +97,7 @@ namespace MediaViewer.Model.Media.State
             try
             {
                 UIMediaCollection.AddRange(items);             
-            
-                NrItemsInState = UIMediaCollection.Count;
+                           
             }
             finally
             {
@@ -149,8 +146,7 @@ namespace MediaViewer.Model.Media.State
             try
             {
                 removed = UIMediaCollection.RemoveRange(removeItems);
-           
-                NrItemsInState = UIMediaCollection.Count;
+                         
             }
             finally
             {
@@ -173,9 +169,7 @@ namespace MediaViewer.Model.Media.State
                 MediaStateInfo = stateInfo;
                 MediaStateDateTime = stateDateTime;
                 MediaStateType = stateType;
-
-                NrItemsInState = 0;
-                NrLoadedItemsInState = 0;              
+                        
             }
             finally
             {
@@ -242,26 +236,6 @@ namespace MediaViewer.Model.Media.State
             }
         }
 
-        int nrLoadedItemsInState;
-
-        public int NrLoadedItemsInState
-        {
-            protected set
-            {
-                SetProperty(ref nrLoadedItemsInState, value);
-            }
-            get { return (nrLoadedItemsInState); }
-        }
-
-        int nrItemsInState;
-
-        public int NrItemsInState
-        {
-            protected set
-            {              
-                SetProperty(ref nrItemsInState, value);
-            }
-            get { return (nrItemsInState); }
-        }
+        
     }
 }

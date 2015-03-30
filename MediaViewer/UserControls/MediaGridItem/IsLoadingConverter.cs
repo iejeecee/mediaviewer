@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 
-namespace MediaViewer.MediaGrid
+namespace MediaViewer.UserControls.MediaGridItem
 {
     class IsLoadingConverter : IValueConverter
     {

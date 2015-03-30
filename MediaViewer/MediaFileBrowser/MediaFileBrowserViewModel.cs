@@ -1,5 +1,4 @@
-﻿using MediaViewer.MediaGrid;
-using MediaViewer.Input;
+﻿using MediaViewer.Input;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.DirectoryPicker;
@@ -41,6 +40,8 @@ using MediaViewer.Infrastructure.Global.Events;
 using System.Collections.ObjectModel;
 using MediaViewer.UserControls.LocationBox;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.MediaFileGrid;
+using MediaViewer.MediaFileStackPanel;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -73,9 +74,9 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-        MediaStackPanelViewModel imageMediaStackPanelViewModel;
+        MediaFileStackPanelViewModel imageMediaStackPanelViewModel;
 
-        public MediaStackPanelViewModel ImageMediaStackPanelViewModel
+        public MediaFileStackPanelViewModel ImageMediaStackPanelViewModel
         {
             get { return imageMediaStackPanelViewModel; }
             set {  
@@ -93,9 +94,9 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-        MediaStackPanelViewModel videoMediaStackPanelViewModel;
+        MediaFileStackPanelViewModel videoMediaStackPanelViewModel;
 
-        public MediaStackPanelViewModel VideoMediaStackPanelViewModel
+        public MediaFileStackPanelViewModel VideoMediaStackPanelViewModel
         {
             get { return videoMediaStackPanelViewModel; }
             set {  
@@ -103,19 +104,19 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-        MediaGridViewModel mediaGridViewModel;
+        MediaFileGridViewModel mediaFileGridViewModel;
 
-        public MediaGridViewModel MediaGridViewModel
+        public MediaFileGridViewModel MediaFileGridViewModel
         {
-            get { return mediaGridViewModel; }
+            get { return mediaFileGridViewModel; }
             set {  
-            SetProperty(ref mediaGridViewModel, value);
+            SetProperty(ref mediaFileGridViewModel, value);
             }
         }
 
-        MediaStackPanelViewModel dummyMediaStackPanelViewModel;
+        MediaFileStackPanelViewModel dummyMediaStackPanelViewModel;
 
-        public MediaStackPanelViewModel DummyMediaStackPanelViewModel
+        public MediaFileStackPanelViewModel DummyMediaStackPanelViewModel
         {
             get { return dummyMediaStackPanelViewModel; }
             set
@@ -173,19 +174,19 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            imageMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
             imageMediaStackPanelViewModel.IsVisible = true;
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
-            videoMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
             videoMediaStackPanelViewModel.IsVisible = true;
 
-            MediaGridViewModel = new MediaGrid.MediaGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
 
-            DummyMediaStackPanelViewModel = new MediaStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             DummyMediaStackPanelViewModel.IsEnabled = false;
 
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
@@ -293,7 +294,7 @@ namespace MediaViewer.MediaFileBrowser
                 BrowsePath = location;
             });
            
-            NavigateToImageGridCommand = new Command(navigateToMediaGrid);
+            NavigateToImageGridCommand = new Command(navigateToMediaFileGrid);
             NavigateToImageViewCommand = new Command<MediaFileItem>(navigateToImageView);
             NavigateToVideoViewCommand = new Command<MediaFileItem>(navigateToVideoView);
 
@@ -441,16 +442,16 @@ namespace MediaViewer.MediaFileBrowser
 
         }
 
-        public void navigateToMediaGrid()
+        public void navigateToMediaFileGrid()
         {
-            Uri mediaGridViewUri = new Uri(typeof(MediaGridView).FullName, UriKind.Relative);
+            Uri mediaFileGridViewUri = new Uri(typeof(MediaFileGridView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();        
-            navigationParams.Add("viewModel", MediaGridViewModel);
+            navigationParams.Add("viewModel", MediaFileGridViewModel);
 
-            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, mediaGridViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, mediaFileGridViewUri, (result) =>
             {
-                CurrentViewModel = MediaGridViewModel;
+                CurrentViewModel = MediaFileGridViewModel;
            
             }, navigationParams);
 
@@ -529,13 +530,13 @@ namespace MediaViewer.MediaFileBrowser
             if (CurrentViewModel == null)
             {
                 navigateToMetaData();
-                navigateToMediaGrid();
+                navigateToMediaFileGrid();
 
                 newTitle = BrowsePath;
             }
             else
             {
-                if (CurrentViewModel is MediaGridViewModel)
+                if (CurrentViewModel is MediaFileGridViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
                     newTitle = BrowsePath;

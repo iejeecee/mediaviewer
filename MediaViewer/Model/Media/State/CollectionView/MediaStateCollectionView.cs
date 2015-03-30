@@ -27,10 +27,13 @@ namespace MediaViewer.Model.Media.State.CollectionView
         public event EventHandler<int> ItemResorted;
         public event EventHandler SelectionChanged;
         public event EventHandler Cleared;
-      
+
+        public ListCollectionView FilterModes { get; set; }
+        public ListCollectionView SortModes { get; set; }
+
         int sortedItemEnd;
 
-        public MediaStateCollectionView(MediaState mediaState)
+        protected MediaStateCollectionView(MediaState mediaState)
         {                      
             MediaState = mediaState;
 
@@ -128,6 +131,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 Media.ExitReaderLock();
             }
         }
+
+        public virtual Object getExtraInfo(SelectableMediaItem item)
+        {
+            return (null);
+        }
+
 
         public List<MediaItem> getSelectedItems()
         {

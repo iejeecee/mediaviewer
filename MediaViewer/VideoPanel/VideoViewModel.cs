@@ -25,7 +25,6 @@ using System.IO;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Regions;
-using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.VideoTranscode;
 using MediaViewer.Infrastructure.Video.TranscodeOptions;
@@ -33,6 +32,8 @@ using MediaViewer.Infrastructure.Global.Events;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.UserControls.MediaGrid;
+using MediaViewer.MediaFileGrid;
 
 namespace MediaViewer.VideoPanel
 {
@@ -528,7 +529,7 @@ namespace MediaViewer.VideoPanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            if (navigationContext.Uri.Equals(new Uri(typeof(MediaGridView).FullName, UriKind.Relative)))
+            if (navigationContext.Uri.Equals(new Uri(typeof(MediaFileGridView).FullName, UriKind.Relative)))
             {
 
                 CloseCommand.Execute();

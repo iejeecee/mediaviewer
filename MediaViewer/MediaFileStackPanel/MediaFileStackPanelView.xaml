@@ -4,37 +4,20 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:Pager="clr-namespace:MediaViewer.UserControls.Pager" 
-             x:Class="MediaViewer.MediaGrid.MediaStackPanelView"             
-             x:Name="mediaStackPanel"
-             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
-             xmlns:effects="clr-namespace:MediaViewer.Effects"
-             xmlns:MediaGrid="clr-namespace:MediaViewer.MediaGrid"
+             x:Class="MediaViewer.MediaFileStackPanel.MediaFileStackPanelView"             
+             x:Name="mediaFileStackPanel"
+             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"            
+             xmlns:MediaStackPanel="clr-namespace:MediaViewer.UserControls.MediaStackPanel"
+             xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              mc:Ignorable="d"         
-             d:DesignWidth="400"    
-    DataContextChanged="imageStackPanelView_DataContextChanged">
+             d:DesignWidth="400">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
-            <MediaGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>            
-            <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
-                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Visible" />
-                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Disabled" />
-                <Setter Property="Background" Value="{StaticResource imageGridBackgroundColor}"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="{x:Type ItemsControl}">
-                            <ScrollViewer CanContentScroll="True" Loaded="scrollViewer_Loaded">                               
-                                <ItemsPresenter/>
-                            </ScrollViewer>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
+            </ResourceDictionary.MergedDictionaries>                                
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="mainGrid" Background="{StaticResource imageGridBackgroundColor}">
@@ -55,7 +38,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <MediaGrid:MediaStateInfoView Grid.Column="0" MediaStateType="{Binding MediaState.MediaStateType}" MediaStateDateTime="{Binding MediaState.MediaStateDateTime}" MediaStateInfo="{Binding MediaState.MediaStateInfo}" NrItemsInState="{Binding MediaState.NrItemsInState}" NrLoadedItemsInState="{Binding MediaState.UIMediaCollection.NrLoadedItems}" IsFlatMode="True"/>
+                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView.MediaState}" IsFlatMode="True"/>
                     <Pager:PagerView x:Name="pager" Grid.ColumnSpan="3" HorizontalAlignment="Center" NrPages="{Binding NrPages}"
                                      CurrentPage="{Binding CurrentPage}" NextPageCommand="{Binding NextPageCommand}"
                                      FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"
@@ -65,21 +48,18 @@
                               ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
             </Border>
-            <ItemsControl x:Name="itemsControl" Grid.Row="1" HorizontalAlignment="Stretch" Height="100" 
-                          ItemsSource="{Binding MediaStateCollectionView.Media}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel x:Name="virtualizingStackPanel" VerticalAlignment="Top" VirtualizationMode="Recycling" Orientation="Horizontal"/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
-                        <MediaGrid:MediaGridItemBasicView DataContext="{Binding}" SelectableMediaItem="{Binding}"  
-                                                Tag="{Binding ElementName=mediaStackPanel, Path=DataContext.MediaStateCollectionView}" Width="100" Height="100"/>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>            
+            <MediaStackPanel:MediaStackPanelView Grid.Row="1" MediaStateCollectionView="{Binding MediaStateCollectionView}" MediaItemClick="mediaStackPanel_MediaItemClick">
+                <MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Browse Location" 
+                                  Command="{Binding Path=PlacementTarget.Tag.BrowseLocationCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding}"/>
+                        <MenuItem Header="Open Location" 
+                                  Command="{Binding Path=PlacementTarget.Tag.OpenLocationCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding}"/>
+                    </ContextMenu>
+                </MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
+            </MediaStackPanel:MediaStackPanelView>
         </Grid>
         <Grid Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource booleanToVisibilityConverter}}">
             <ToggleButton  x:Name="collapseToggleButton" Grid.Column="0" Height="10" 
@@ -110,3 +90,4 @@
         </Grid>
     </Grid>
 </UserControl>
+

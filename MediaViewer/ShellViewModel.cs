@@ -1,5 +1,4 @@
 ﻿using MediaViewer.Model.Global.Events;
-using MediaViewer.MediaGrid;
 using MediaViewer.ImagePanel;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File.Watcher;
@@ -16,6 +15,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure;
+using MediaViewer.MediaFileStackPanel;
 
 namespace MediaViewer
 {
@@ -35,9 +35,9 @@ namespace MediaViewer
             }
         }
 
-        MediaStackPanelViewModel imageMediaStackPanelViewModel;
+        MediaFileStackPanelViewModel imageMediaStackPanelViewModel;
 
-        public MediaStackPanelViewModel ImageMediaStackPanelViewModel
+        public MediaFileStackPanelViewModel ImageMediaStackPanelViewModel
         {
             get { return imageMediaStackPanelViewModel; }
             set
@@ -57,9 +57,9 @@ namespace MediaViewer
             }
         }
 
-        MediaStackPanelViewModel videoMediaStackPanelViewModel;
+        MediaFileStackPanelViewModel videoMediaStackPanelViewModel;
 
-        public MediaStackPanelViewModel VideoMediaStackPanelViewModel
+        public MediaFileStackPanelViewModel VideoMediaStackPanelViewModel
         {
             get { return videoMediaStackPanelViewModel; }
             set
@@ -90,12 +90,12 @@ namespace MediaViewer
             ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
             ImageViewModel.IsEffectsEnabled = false;
 
-            imageMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
+            imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
-            videoMediaStackPanelViewModel = new MediaStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
+            videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
 
             MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator, AppSettings.Instance);
@@ -103,9 +103,9 @@ namespace MediaViewer
            
         }
 
-        public void navigateToMediaStackPanelView(MediaStackPanelViewModel viewModel, String location = null)
+        public void navigateToMediaStackPanelView(MediaFileStackPanelViewModel viewModel, String location = null)
         {
-            Uri ImageViewUri = new Uri(typeof(MediaStackPanelView).FullName, UriKind.Relative);
+            Uri ImageViewUri = new Uri(typeof(MediaFileStackPanelView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
 

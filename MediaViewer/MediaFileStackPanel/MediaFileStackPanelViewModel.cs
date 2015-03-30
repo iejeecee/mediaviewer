@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Global.Events;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
@@ -6,23 +7,34 @@ using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.MediaGrid
+namespace MediaViewer.MediaFileStackPanel
 {
-    public class MediaStackPanelViewModel : MediaStateCollectionViewModel, IPageable
+    public class MediaFileStackPanelViewModel : BindableBase, IPageable
     {
+        MediaStateCollectionView mediaStateCollectionView;
+
+        public MediaStateCollectionView MediaStateCollectionView
+        {
+            get { return mediaStateCollectionView; }
+            set { SetProperty(ref mediaStateCollectionView, value); }
+        }
+
         protected IEventAggregator EventAggregator { get; set; }
         MediaItem selectedItem;
 
-        public MediaStackPanelViewModel(MediaState mediaState, IEventAggregator eventAggregator)
-            : base(mediaState)
+        public MediaFileStackPanelViewModel(MediaFileState mediaState, IEventAggregator eventAggregator)            
         {
+            MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);
+
             IsVisible = false;
             IsEnabled = true;
 
@@ -56,6 +68,24 @@ namespace MediaViewer.MediaGrid
             {               
                 CurrentPage = MediaStateCollectionView.Media.Count;               
             });
+
+            BrowseLocationCommand = new Command<SelectableMediaItem>((selectableItem) =>
+                {
+                    MediaItem item = selectableItem.Item;
+
+                    String location = FileUtils.getPathWithoutFileName(item.Location);
+
+                    EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(location);
+                });
+
+            OpenLocationCommand = new Command<SelectableMediaItem>((selectableItem) =>
+                {
+                    MediaItem item = selectableItem.Item;
+
+                    String location = FileUtils.getPathWithoutFileName(item.Location);
+
+                    Process.Start(location);
+                });
 
             selectedItem = null;
         }
@@ -225,5 +255,8 @@ namespace MediaViewer.MediaGrid
         public Command PrevPageCommand { get; set; }
         public Command FirstPageCommand { get; set; }
         public Command LastPageCommand { get; set; }
+
+        public Command<SelectableMediaItem> BrowseLocationCommand { get; set; }
+        public Command<SelectableMediaItem> OpenLocationCommand { get; set; }
     }
 }

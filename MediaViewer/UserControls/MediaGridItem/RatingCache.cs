@@ -10,7 +10,7 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace MediaViewer.MediaGrid
+namespace MediaViewer.UserControls.MediaGridItem
 {
     class RatingCache
     {

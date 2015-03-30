@@ -1,0 +1,51 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid" 
+             xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
+             x:Class="MediaViewer.MediaFileGrid.MediaFileGridView" 
+             xmlns:MediaFileGrid="clr-namespace:MediaViewer.MediaFileGrid"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300"
+            x:Name="mediaFileGridView">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Border Grid.Row="0" BorderThickness="1,1,1,1" BorderBrush="{StaticResource imageGridBorderColor}" Background="{StaticResource imageGridBorderColor2}">
+            <Grid Height="40">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView.MediaState}"/>
+                <Label Content="Filter" Grid.Column="1" VerticalAlignment="Center"/>
+                <ComboBox x:Name="filterComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
+                <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>
+                <ComboBox x:Name="sortComboBox" Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
+            </Grid>
+        </Border>
+        <MediaGrid:MediaGridView Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">
+            <MediaGrid:MediaGridView.MediaItemContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="View" Command="{Binding Path=PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                                CommandParameter="{Binding}"/>
+                    <Separator/>
+                    <MenuItem Header="Select All" Command="{Binding Path=PlacementTarget.Tag.SelectAllCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
+                    <MenuItem Header="Deselect All" Command="{Binding Path=PlacementTarget.Tag.DeselectAllCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
+                    <Separator/>
+                    <MenuItem Header="Browse Location" Command="{Binding Path=PlacementTarget.Tag.BrowseLocationCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                               CommandParameter="{Binding}"/>
+                    <MenuItem Header="Open Location" Command="{Binding Path=PlacementTarget.Tag.OpenLocationCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                               CommandParameter="{Binding}"/>
+                </ContextMenu>
+            </MediaGrid:MediaGridView.MediaItemContextMenu>
+        </MediaGrid:MediaGridView>
+    </Grid>
+</UserControl>

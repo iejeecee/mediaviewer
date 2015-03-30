@@ -4,10 +4,9 @@ xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
 xmlns:effects="clr-namespace:MediaViewer.Effects"
-xmlns:MediaGrid="clr-namespace:MediaViewer.MediaGrid"
-xmlns:TextBlock="clr-namespace:MediaViewer.UserControls.TextBlockOld"
+xmlns:MediaGridItem="clr-namespace:MediaViewer.UserControls.MediaGridItem"
 xmlns:Media="clr-namespace:System.Windows.Media;assembly=PresentationCore"
-xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" x:Class="MediaViewer.MediaGrid.MediaGridItemBasicView"
+xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" x:Class="MediaViewer.UserControls.MediaGridItem.MediaGridItemBasicView"
 mc:Ignorable="d"
 d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -16,8 +15,8 @@ d:DesignHeight="300" d:DesignWidth="300">
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <effects:GrayscaleEffect x:Key="grayscaleEffect"/>
-            <MediaGrid:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
-            <MediaGrid:IsLoadingConverter x:Key="isLoadingConverter"/>
+            <MediaGridItem:ThumbnailSelectorConverter x:Key="thumbnailSelector"/>
+            <MediaGridItem:IsLoadingConverter x:Key="isLoadingConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="root">
@@ -36,18 +35,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                         </DataTrigger>
                     </Style.Triggers>
                 </Style>
-            </ToggleButton.Style>
-            <ToggleButton.ContextMenu>
-                <ContextMenu>
-                    <MenuItem Header="View" Click="viewMenuItem_Click"/>
-                    <Separator/>
-                    <MenuItem x:Name="selectAllMenuItem" Header="Select All" Click="selectAllMenuItem_Click"/>
-                    <MenuItem Header="Deselect All" Click="deselectAllMenuItem_Click"/>
-                    <Separator/>
-                    <MenuItem Header="Browse Location" Click="browseMenuItem_Click"/>
-                    <MenuItem Header="Open Location" Click="openInExplorerMenuItem_Click"/>
-                </ContextMenu>
-            </ToggleButton.ContextMenu>
+            </ToggleButton.Style>          
             <Grid ToolTip="{Binding Parent.SelectableMediaItem.Item.Metadata.DefaultFormatCaption, ElementName=root}">
                 <Border BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Border.Style>

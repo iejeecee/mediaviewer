@@ -9,8 +9,7 @@
     <Converters:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
     <Converters:NegatedEnumToBooleanConverter x:Key="negatedEnumToBooleanConverter"/>
     <Converters:FormatSizeBytesConverter x:Key="formatSizeBytesConverter"/>
-    <Converters:PathNameConverter x:Key="pathNameConverter"/>
-    <Converters:PathToFileNameConverter x:Key="pathToFileNameConverter"/>
+    <Converters:PathNameConverter x:Key="pathNameConverter"/> 
     <Converters:MathConverter x:Key="mathConverter"/>
     <Converters:BooleanToScrollBarVisibilityConverter x:Key="booleanToScrollBarVisibilityConverter"/>
     <Converters:BooleanToVisibilityConverter x:Key="visibilityConverter"/>

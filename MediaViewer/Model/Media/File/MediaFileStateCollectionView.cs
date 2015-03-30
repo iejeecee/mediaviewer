@@ -1,60 +1,145 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
+using MediaViewer.UserControls.MediaGridItem;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace MediaViewer.MediaGrid
+namespace MediaViewer.Model.Media.File
 {
-    /// <summary>
-    /// Interaction logic for ExtraImageGridItemInfoView.xaml
-    /// </summary>
-    public partial class ExtraItemInfoView : UserControl
+    public sealed class MediaFileStateCollectionView : MediaStateCollectionView
     {
-        const string dateFormat = "MMM d, yyyy";
+        static RatingCache RatingCache { get; set; }
 
-        public ExtraItemInfoView()
+        static MediaFileStateCollectionView()
         {
-            InitializeComponent();
-        }
-               
-        public MediaStateSortMode InfoType
-        {
-            get { return (MediaStateSortMode)GetValue(InfoTypeProperty); }
-            set { SetValue(InfoTypeProperty, value); }
+            RatingCache = new RatingCache();
         }
 
-        // Using a DependencyProperty as the backing store for InfoType.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty InfoTypeProperty =
-            DependencyProperty.Register("InfoType", typeof(MediaStateSortMode), typeof(ExtraItemInfoView), new PropertyMetadata(MediaStateSortMode.Name, extraImageGridItemInfoView_InfoTypeChangedCallback));
-
-        private static void extraImageGridItemInfoView_InfoTypeChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        public MediaFileStateCollectionView(MediaState mediaState)
+            : base(mediaState)
         {
-            ExtraItemInfoView view = d as ExtraItemInfoView;
-            MediaStateSortMode infoType = (MediaStateSortMode)e.NewValue;
-            MediaItem item = (view.DataContext as SelectableMediaItem).Item;
+            filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.None);
+            sortFunc = MediaStateSortFunctions.getSortFunction(MediaStateSortMode.Name);
 
-            String info = null;
+            FilterModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateFilterMode)));         
+            SortModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateSortMode)));
+
+            SortModes.CurrentChanged += (s, e) =>
+            {
+                MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
+
+                SortFunc = MediaStateSortFunctions.getSortFunction(sortMode);        
+            };
+
+            SortModes.Filter = mediaStateSortModeCollectionViewFilter;
+
+            FilterModes.CurrentChanged += (s, e) =>
+            {
+                MediaStateFilterMode filterMode = (MediaStateFilterMode)FilterModes.CurrentItem;
+                MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
+
+                Filter = MediaStateFilterFunctions.getFilter(filterMode);
+
+                SortModes.Refresh();
+
+                switch (filterMode)
+                {
+                    case MediaStateFilterMode.None:
+                        if (!MediaStateSortFunctions.isAllSortMode(sortMode))
+                        {
+                            SortModes.MoveCurrentToFirst();
+                        }
+                        break;
+                    case MediaStateFilterMode.Video:
+                        if (!MediaStateSortFunctions.isVideoSortMode(sortMode))
+                        {
+                            SortModes.MoveCurrentToFirst();
+                        }
+                        break;
+                    case MediaStateFilterMode.Images:
+                        if (!MediaStateSortFunctions.isImageSortMode(sortMode))
+                        {
+                            SortModes.MoveCurrentToFirst();
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+       
+            };
+                                    
+            FilterModes.MoveCurrentTo(MediaStateFilterMode.None);
+            
+        }
+
+        override protected void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            MediaItem item = sender as MediaItem;
+            MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
+
+            if (e.PropertyName.Equals("Location"))
+            {
+                if (sortMode == MediaStateSortMode.Name)
+                {
+                    reSort(item);
+                }
+            }
+            else if (e.PropertyName.Equals("Metadata"))
+            {
+                if (item.Metadata != null && sortMode != MediaStateSortMode.Name)
+                {
+                    reSort(item);
+                }
+            }
+            
+        }
+
+      
+        private bool mediaStateSortModeCollectionViewFilter(object item)
+        {
+            MediaStateSortMode mode = (MediaStateSortMode)item;
+
+            switch ((MediaStateFilterMode)FilterModes.CurrentItem)
+            {
+                case MediaStateFilterMode.None:
+                    return (MediaStateSortFunctions.isAllSortMode(mode));
+                case MediaStateFilterMode.Video:
+                    return (MediaStateSortFunctions.isVideoSortMode(mode));
+                case MediaStateFilterMode.Images:
+                    return (MediaStateSortFunctions.isImageSortMode(mode));
+                default:
+                    break;
+            }
+
+            return (false);
+        }
+
+        public override object getExtraInfo(SelectableMediaItem selectableItem)
+        {            
+            string dateFormat = "MMM d, yyyy";
+
+            MediaItem item = selectableItem.Item;
+
+            Object info = null;
 
             if (item.Metadata != null)
             {
                 VideoMetadata VideoMetadata = item.Metadata is VideoMetadata ? item.Metadata as VideoMetadata : null;
                 ImageMetadata ImageMetadata = item.Metadata is ImageMetadata ? item.Metadata as ImageMetadata : null;
 
-                switch (infoType)
+                switch ((MediaStateSortMode)SortModes.CurrentItem)
                 {
                     case MediaStateSortMode.Name:
                         break;
@@ -64,8 +149,10 @@ namespace MediaViewer.MediaGrid
                     case MediaStateSortMode.Rating:
 
                         if(item.Metadata.Rating.HasValue) {
-                            view.rating.Value = item.Metadata.Rating.Value / 5;
-                            view.rating.Visibility = Visibility.Visible;
+
+                            int nrStars = (int)item.Metadata.Rating.Value;
+
+                            info = RatingCache.RatingBitmap[nrStars];                                              
                         }
                         break;
                     case MediaStateSortMode.Imported:
@@ -217,20 +304,8 @@ namespace MediaViewer.MediaGrid
                 }
             }
 
-            view.infoTextBlock.Text = info;
-            view.infoTextBlock.ToolTip = info;
-
-            if (infoType != MediaStateSortMode.Rating)
-            {
-                view.rating.Visibility = Visibility.Collapsed;
-                view.infoTextBlock.Visibility = Visibility.Visible;
-            }
-            else
-            {          
-                view.infoTextBlock.Visibility = Visibility.Collapsed;
-            }
-           
+            return (info);
+        
         }
-
     }
 }

@@ -15,9 +15,8 @@ using System.Windows.Media.Imaging;
 namespace GoogleImageSearchPlugin
 {
     class ImageResultItem : MediaItem
-    {       
-            
-        Bing.ImageResult imageInfo;
+    {
+        public Bing.ImageResult ImageInfo { protected set; get; }
 
         static String titleToFilename(String title, Bing.ImageResult imageResult)
         {
@@ -35,9 +34,9 @@ namespace GoogleImageSearchPlugin
 
 
         public ImageResultItem(Bing.ImageResult imageResult) :
-            base(imageResult.MediaUrl,MediaItemState.EMPTY)//base(titleToFilename(imageResult.Title, imageResult), MediaItemState.EMPTY)
+            base(imageResult.Title,MediaItemState.EMPTY)//base(titleToFilename(imageResult.Title, imageResult), MediaItemState.EMPTY)
         {            
-            imageInfo = imageResult;
+            ImageInfo = imageResult;
         }
 
         public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
@@ -50,7 +49,7 @@ namespace GoogleImageSearchPlugin
             {
                 ItemState = MediaItemState.LOADING;
 
-                StreamUtils.download(new Uri(imageInfo.Thumbnail.MediaUrl), data, out mimeType, token);
+                StreamUtils.download(new Uri(ImageInfo.Thumbnail.MediaUrl), data, out mimeType, token);
 
                 BitmapDecoder decoder = BitmapDecoder.Create(data,
                                     BitmapCreateOptions.PreservePixelFormat,
@@ -61,11 +60,11 @@ namespace GoogleImageSearchPlugin
                 ImageMetadata metaData = new ImageMetadata();
                 metaData.Thumbnail = new Thumbnail(bitmapSource);
 
-                metaData.Location = imageInfo.MediaUrl;
-                metaData.Width = imageInfo.Width.HasValue ? imageInfo.Width.Value : 0;
-                metaData.Height = imageInfo.Height.HasValue ? imageInfo.Height.Value : 0;
-                metaData.SizeBytes = imageInfo.FileSize.HasValue ? imageInfo.FileSize.Value : 0;
-                metaData.MimeType = imageInfo.ContentType;
+                metaData.Location = ImageInfo.MediaUrl;
+                metaData.Width = ImageInfo.Width.HasValue ? ImageInfo.Width.Value : 0;
+                metaData.Height = ImageInfo.Height.HasValue ? ImageInfo.Height.Value : 0;
+                metaData.SizeBytes = ImageInfo.FileSize.HasValue ? ImageInfo.FileSize.Value : 0;
+                metaData.MimeType = ImageInfo.ContentType;
 
                 Metadata = metaData;
 

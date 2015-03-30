@@ -34,8 +34,7 @@ namespace GoogleImageSearchPlugin
         {
             this.IsEnabled = false;
 
-            GoogleImageSearchView imageSearch = new GoogleImageSearchView();
-            imageSearch.DataContext = new GoogleImageSearchViewModel();
+            GoogleImageSearchView imageSearch = new GoogleImageSearchView();            
             imageSearch.Closed += imageSearch_Closed;
 
             imageSearch.Show();

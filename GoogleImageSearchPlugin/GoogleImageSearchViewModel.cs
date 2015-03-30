@@ -1,11 +1,14 @@
-﻿using MediaViewer.MediaGrid;
+﻿using MediaViewer;
+using MediaViewer.MediaFileGrid;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -17,7 +20,7 @@ using System.Windows.Data;
 namespace GoogleImageSearchPlugin
 {
   
-    class GoogleImageSearchViewModel : MediaGridViewModel
+    class GoogleImageSearchViewModel : CloseableBindableBase
     {
         string[] safeSearch = { "Strict", "Moderate", "Off" };
         string[] size = { "All", "Small", "Medium", "Large" };
@@ -29,11 +32,15 @@ namespace GoogleImageSearchPlugin
         const String rootUri = "https://api.datamarket.azure.com/Bing/Search";
       
         public Command SearchCommand { get; set; }
+        public Command CloseCommand { get; set; }
+        public Command SelectAllCommand { get; set; }
+        public Command DeselectAllCommand { get; set; }
+        public Command<SelectableMediaItem> ViewCommand { get; set; }
+        public Command<SelectableMediaItem> ViewSourceCommand { get; set; }
        
-        public GoogleImageSearchViewModel() :
-            base(new MediaState(), null)
+        public GoogleImageSearchViewModel()           
         {        
-            NrGridColumns = 4;
+            NrColumns = 4;
 
             SearchCommand = new Command(() =>
             {
@@ -47,6 +54,42 @@ namespace GoogleImageSearchPlugin
                 }
             });
 
+            ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
+                {
+                    ImageResultItem item = (ImageResultItem)selectableItem.Item;
+                    
+                    if(item.ImageInfo.ContentType.Equals("image/animatedgif")) {
+
+                        Shell.ShellViewModel.navigateToVideoView(item.ImageInfo.MediaUrl);  
+
+                    } else {
+
+                        Shell.ShellViewModel.navigateToImageView(item.ImageInfo.MediaUrl);     
+                    }
+                });
+
+            ViewSourceCommand = new Command<SelectableMediaItem>((selectableItem) =>
+                {
+                    ImageResultItem item = (ImageResultItem)selectableItem.Item;
+
+                    Process.Start(item.ImageInfo.SourceUrl);
+                });
+
+            SelectAllCommand = new Command(() =>
+            {
+                MediaStateCollectionView.selectAll();
+            });
+
+            DeselectAllCommand = new Command(() =>
+            {
+                MediaStateCollectionView.deselectAll();
+            });
+
+            CloseCommand = new Command(() =>
+            {             
+                OnClosingRequest();
+            });
+
             Size = new ListCollectionView(size);
             SafeSearch = new ListCollectionView(safeSearch);
             Layout = new ListCollectionView(layout);
@@ -54,13 +97,26 @@ namespace GoogleImageSearchPlugin
             People = new ListCollectionView(people);
             Color = new ListCollectionView(color);
 
-            MediaState.MediaStateType = MediaStateType.SearchResult;
+            MediaStateCollectionView = new ImageResultCollectionView(new MediaState());
+            MediaStateCollectionView.MediaState.MediaStateType = MediaStateType.SearchResult;
         }
 
-        protected override void MediaStateCollectionView_SelectionChanged(object sender, EventArgs e)
+        MediaStateCollectionView mediaStateCollectionView;
+
+        public MediaStateCollectionView MediaStateCollectionView
         {
-           // do nothing
+            get { return mediaStateCollectionView; }
+            set { SetProperty(ref mediaStateCollectionView, value); }
         }
+
+        int nrColumns;
+
+        public int NrColumns
+        {
+            get { return nrColumns; }
+            set { SetProperty(ref nrColumns, value); }
+        }
+
       
         String query;
 
@@ -134,7 +190,7 @@ namespace GoogleImageSearchPlugin
                 SearchCommand.IsExecutable = true;
                 var imageResults = imageQuery.EndExecute(asyncResults);
 
-                MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+                MediaStateCollectionView.MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
 
                 List<MediaItem> results = new List<MediaItem>();
 
@@ -143,7 +199,7 @@ namespace GoogleImageSearchPlugin
                     results.Add(new ImageResultItem(image));
                 }
 
-                MediaState.addUIState(results);
+                MediaStateCollectionView.MediaState.addUIState(results);
 
             });
                                                     

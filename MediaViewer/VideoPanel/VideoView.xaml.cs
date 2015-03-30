@@ -1,5 +1,4 @@
 ﻿using MediaViewer.Model.Global.Events;
-using MediaViewer.MediaGrid;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.PubSubEvents;

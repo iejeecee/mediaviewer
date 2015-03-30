@@ -1,5 +1,4 @@
 ﻿using MediaViewer.DirectoryPicker;
-using MediaViewer.MediaGrid;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Collections.Sort;

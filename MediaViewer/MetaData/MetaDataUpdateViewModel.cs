@@ -1,5 +1,4 @@
-﻿using MediaViewer.MediaGrid;
-using MediaViewer.MediaDatabase;
+﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Progress;

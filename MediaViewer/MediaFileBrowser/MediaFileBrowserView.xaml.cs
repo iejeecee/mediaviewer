@@ -14,7 +14,6 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.MediaGrid;
 using MediaViewer.Input;
 using MediaViewer.Model.Media.File;
 using MediaViewer.UserControls.Pager;
@@ -32,6 +31,8 @@ using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Infrastructure;
 using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.UserControls.MediaGrid;
+using MediaViewer.MediaFileGrid;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -135,7 +136,7 @@ namespace MediaViewer.MediaFileBrowser
         {
             if (MediaFileBrowserViewModel == null) return;
           
-            if (e.Uri.ToString().StartsWith(typeof(MediaGridView).FullName))
+            if (e.Uri.ToString().StartsWith(typeof(MediaFileGridView).FullName))
             {
                 MediaFileBrowserViewModel.ExpandCommand.IsExecutable = true;
                 MediaFileBrowserViewModel.ContractCommand.IsExecutable = false;

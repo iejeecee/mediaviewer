@@ -1,0 +1,57 @@
+﻿<UserControl
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:Name="mediaGridView" x:Class="MediaViewer.UserControls.MediaGrid.MediaGridView"
+             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"
+             xmlns:effects="clr-namespace:MediaViewer.Effects"
+             xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
+             xmlns:MediaGridItem="clr-namespace:MediaViewer.UserControls.MediaGridItem"
+             xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
+             mc:Ignorable="d"             
+             d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>                 
+            <Style x:Key="{x:Type ItemsControl}" TargetType="{x:Type ItemsControl}">
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                <Setter Property="Background" Value="{StaticResource imageGridBackgroundColor}"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ItemsControl}">
+                            <ScrollViewer CanContentScroll="True">
+                                <!--IsDeferredScrollingEnabled="True"-->
+                                <ItemsPresenter/>
+                            </ScrollViewer>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <Grid>        
+        <ItemsControl x:Name="itemsControl" ItemsSource="{Binding ElementName=mediaGridView, Path=MediaStateCollectionView.Media}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Layout:VirtualizingTilePanel x:Name="virtualizingTilePanel" Columns="{Binding ElementName=mediaGridView, Path=NrColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->                   
+                    <MediaGridItem:MediaGridItemView DataContext="{Binding}" SelectableMediaItem="{Binding}" Click="mediaGridItem_Click"                                                 
+                                                 Tag="{Binding Path=DataContext, ElementName=mediaGridView}" MaxHeight="150"                                                  
+                                                 Padding="1,1,1,1"
+                                                 MediaStateCollectionView="{Binding Path=MediaStateCollectionView, ElementName=mediaGridView}"
+                                                 ContextMenu="{Binding Path=MediaItemContextMenu,ElementName=mediaGridView}">                       
+                    </MediaGridItem:MediaGridItemView>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </Grid>
+</UserControl>

@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using MediaViewer.MediaGrid;
 using System.Windows.Data;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Media.State;

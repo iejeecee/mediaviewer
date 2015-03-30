@@ -1,5 +1,4 @@
-﻿using MediaViewer.MediaGrid;
-using MediaViewer.Model.Media.File;
+﻿using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.MetaData.Tree;
 using System;

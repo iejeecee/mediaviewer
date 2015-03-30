@@ -104,6 +104,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GoogleImageSearchViewModel.cs" />
+    <Compile Include="ImageResultCollectionView.cs" />
     <Compile Include="ImageResultItem.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

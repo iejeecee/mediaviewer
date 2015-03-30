@@ -1,5 +1,4 @@
 ﻿using MediaViewer.Logging;
-using MediaViewer.MediaGrid;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;

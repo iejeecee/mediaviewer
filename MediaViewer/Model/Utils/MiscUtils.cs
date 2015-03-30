@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Utils
 {
-    class MiscUtils
+    public class MiscUtils
     {
         public static void DebugOut(string msg)
         {

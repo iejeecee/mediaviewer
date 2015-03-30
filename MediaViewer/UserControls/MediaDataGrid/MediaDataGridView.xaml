@@ -26,7 +26,7 @@
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
-                <DataGridTextColumn Header="Name" Binding="{Binding Location, Converter={StaticResource pathToFileNameConverter}}"/>
+                <DataGridTextColumn Header="Name" />
                 <DataGridTextColumn Header="Size" Binding="{Binding Media.SizeBytes, Converter={StaticResource formatSizeBytesConverter}}"/>
                 <DataGridTextColumn Header="File Date" Binding="{Binding Media.FileDate}"/>            
             </DataGrid.Columns>
