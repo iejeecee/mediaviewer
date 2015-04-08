@@ -17,11 +17,11 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.DirectoryPicker
 {
-    class DirectoryPickerViewModel : CloseableBindableBase
+    public class DirectoryPickerViewModel : CloseableBindableBase
     {            
         public DirectoryPickerViewModel()
         {
-            MovePathHistory = new ObservableCollection<string>();
+            PathHistory = new ObservableCollection<string>();
 
             OkCommand = new Command(new Action(() =>
             {
@@ -108,24 +108,24 @@ namespace MediaViewer.DirectoryPicker
             }
         }
 
-        String movePath;
+        String selectedPath;
 
-        public String MovePath
+        public String SelectedPath
         {
-            get { return movePath; }
+            get { return selectedPath; }
             set
             {              
-                SetProperty(ref movePath, value);
+                SetProperty(ref selectedPath, value);
             }
         }
-        ObservableCollection<String> movePathHistory;
+        ObservableCollection<String> pathHistory;
 
-        public ObservableCollection<String> MovePathHistory
+        public ObservableCollection<String> PathHistory
         {
-            get { return movePathHistory; }
+            get { return pathHistory; }
             set
             {               
-                SetProperty(ref movePathHistory, value);
+                SetProperty(ref pathHistory, value);
             }
         }
 

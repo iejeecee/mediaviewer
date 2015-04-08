@@ -44,6 +44,7 @@ namespace MediaViewer.MetaData
             Copyright = "";
             Creation = null;
             IsImported = false;
+            Geotag = new GeoTagCoordinatePair();
 
             lock (itemsLock)
             {
@@ -130,16 +131,16 @@ namespace MediaViewer.MetaData
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = String.IsNullOrEmpty(Location) ? mediaFileWatcher.Path : Location;
+                vm.SelectedPath = String.IsNullOrEmpty(Location) ? mediaFileWatcher.Path : Location;
                 lock (Items)
                 {
                     vm.SelectedItems = new List<MediaFileItem>(Items);
                 }
-                vm.MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
+                vm.PathHistory = settings.MetaDataUpdateDirectoryHistory;
               
                 if (directoryPicker.ShowDialog() == true)
                 {                    
-                    Location = vm.MovePath;                    
+                    Location = vm.SelectedPath;                    
                 }
 
             }));
@@ -550,6 +551,22 @@ namespace MediaViewer.MetaData
             }
         }
 
+        GeoTagCoordinatePair geotag;
+
+        public GeoTagCoordinatePair Geotag
+        {
+            get { return geotag; }
+            set { SetProperty(ref geotag, value); }
+        }
+
+        bool isGeotagEnabled;
+
+        public bool IsGeotagEnabled
+        {
+            get { return isGeotagEnabled; }
+            set { SetProperty(ref isGeotagEnabled,value); }
+        }
+
         bool isImported;
 
         public bool IsImported
@@ -624,6 +641,7 @@ namespace MediaViewer.MetaData
                     CopyrightEnabled = false;
                     CreationEnabled = false;
                     ImportedEnabled = false;
+                    IsGeotagEnabled = false;
 
                 }
             }
@@ -648,6 +666,7 @@ namespace MediaViewer.MetaData
                     CopyrightEnabled = false;
                     CreationEnabled = false;
                     ImportedEnabled = false;
+                    IsGeotagEnabled = false;
                 }
                 else if(IsEnabled == true)
                 {               
@@ -658,6 +677,7 @@ namespace MediaViewer.MetaData
                     CopyrightEnabled = true;
                     CreationEnabled = true;
                     ImportedEnabled = true;
+                    IsGeotagEnabled = true;
                 }
 
             }
@@ -694,7 +714,9 @@ namespace MediaViewer.MetaData
                 Copyright = media.Copyright;
                 Creation = media.CreationDate;
                 IsImported = media.IsImported;
-
+             
+                Geotag = new GeoTagCoordinatePair(media.Latitude, media.Longitude);                  
+                
                 lock (tagsLock)
                 {
                     Tags.Clear();
@@ -706,7 +728,6 @@ namespace MediaViewer.MetaData
                 }
 
                 getExifProperties(DynamicProperties, media);
-
 
                 SelectedMetaDataPreset = noPresetMetaData;
                 IsEnabled = true;

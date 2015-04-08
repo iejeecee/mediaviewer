@@ -367,7 +367,8 @@ protected:
 
 		if(streamMode == StreamOptions::Discard) {
 
-			streamInfo.push_back(new StreamInfo());				
+			streamInfo.push_back(new StreamInfo());	
+			return;
 		}
 													
 		if(streamMode == StreamOptions::Copy) {

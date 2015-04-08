@@ -209,6 +209,18 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
+                        if(state.IsGeoTagEnabled && !EqualityComparer<String>.Default.Equals(media.Latitude, state.Latitude))
+                        {
+                            media.Latitude = state.Latitude;
+                            isModified = true;
+                        }
+
+                        if (state.IsGeoTagEnabled && !EqualityComparer<String>.Default.Equals(media.Longitude, state.Longitude))
+                        {
+                            media.Longitude = state.Longitude;
+                            isModified = true;
+                        }
+
                         if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
                         {
                             media.Tags.Clear();
@@ -643,7 +655,7 @@ namespace MediaViewer.MetaData
             Description = vm.Description;
             DescriptionEnabled = vm.DescriptionEnabled;
             Filename = vm.Filename;
-            isEnabled = vm.IsEnabled;
+            IsEnabled = vm.IsEnabled;
 
             lock (vm.Items)
             {
@@ -659,172 +671,37 @@ namespace MediaViewer.MetaData
             Tags = new List<Tag>(vm.Tags);
             AddTags = new List<Tag>(vm.AddTags);
             RemoveTags = new List<Tag>(vm.RemoveTags);
+
+            IsGeoTagEnabled = vm.IsGeotagEnabled;
+            Latitude = vm.Geotag.LatCoord;
+            Longitude = vm.Geotag.LonCoord;
         }
 
-        String location;
+        public String Location { get; set; }
+        public String Author { get; set; }
+        public bool AuthorEnabled { get; set; }
+        public bool BatchMode { get; set; }
+        public String Copyright { get; set; }
+        public bool CopyrightEnabled { get; set; }
+        public String Description { get; set; }
+        public bool DescriptionEnabled { get; set; }
+        public String Filename { get; set; }
+        public bool IsEnabled { get; set; }
+        public List<MediaFileItem> ItemList { get; set; }
+        public Nullable<double> Rating { get; set; }
+        public bool RatingEnabled { get; set; }
+        public String Title { get; set; }
+        public bool TitleEnabled { get; set; }
+        public List<Tag> Tags { get; set; }
+        public List<Tag> AddTags { get; set; }
+        public List<Tag> RemoveTags { get; set; }
+        public Nullable<DateTime> Creation { get; set; }
+        public bool CreationEnabled { get; set; }
+        public bool IsImported { get; set; }
+        public bool ImportedEnabled { get; set; }
+        public String Latitude { get; set; }
+        public String Longitude { get; set; }
+        public bool IsGeoTagEnabled { get; set; }
 
-        public String Location
-        {
-            get { return location; }
-            set { location = value; }
-        }
-
-        String author;
-
-        public String Author
-        {
-            get { return author; }
-            set { author = value; }
-        }
-        bool authorEnabled;
-
-        public bool AuthorEnabled
-        {
-            get { return authorEnabled; }
-            set { authorEnabled = value; }
-        }
-        bool batchMode;
-
-        public bool BatchMode
-        {
-            get { return batchMode; }
-            set { batchMode = value; }
-        }
-        String copyright;
-
-        public String Copyright
-        {
-            get { return copyright; }
-            set { copyright = value; }
-        }
-        bool copyrightEnabled;
-
-        public bool CopyrightEnabled
-        {
-            get { return copyrightEnabled; }
-            set { copyrightEnabled = value; }
-        }
-        String description;
-
-        public String Description
-        {
-            get { return description; }
-            set { description = value; }
-        }
-        bool descriptionEnabled;
-
-        public bool DescriptionEnabled
-        {
-            get { return descriptionEnabled; }
-            set { descriptionEnabled = value; }
-        }
-
-        String filename;
-
-        public String Filename
-        {
-            get { return filename; }
-            set { filename = value; }
-        }
-
-        bool isEnabled;
-
-        public bool IsEnabled
-        {
-            get { return isEnabled; }
-            set { isEnabled = value; }
-        }
-        List<MediaFileItem> itemList;
-
-        public List<MediaFileItem> ItemList
-        {
-            get { return itemList; }
-            set { itemList = value; }
-        }
-        Nullable<double> rating;
-
-        public Nullable<double> Rating
-        {
-            get { return rating; }
-            set { rating = value; }
-        }
-        bool ratingEnabled;
-
-        public bool RatingEnabled
-        {
-            get { return ratingEnabled; }
-            set { ratingEnabled = value; }
-        }
-        String title;
-
-        public String Title
-        {
-            get { return title; }
-            set { title = value; }
-        }
-        bool titleEnabled;
-
-        public bool TitleEnabled
-        {
-            get { return titleEnabled; }
-            set { titleEnabled = value; }
-        }
-
-        List<Tag> tags;
-
-        public List<Tag> Tags
-        {
-            get { return tags; }
-            set { tags = value; }
-        }
-
-        List<Tag> addTags;
-
-        public List<Tag> AddTags
-        {
-            get { return addTags; }
-            set { addTags = value; }
-        }
-
-        List<Tag> removeTags;
-
-        public List<Tag> RemoveTags
-        {
-            get { return removeTags; }
-            set { removeTags = value; }
-        }
-
-        Nullable<DateTime> creation;
-
-        public Nullable<DateTime> Creation
-        {
-            get { return creation; }
-            set { creation = value; }
-        }
-
-        bool creationEnabled;
-
-        public bool CreationEnabled
-        {
-            get { return creationEnabled; }
-            set { creationEnabled = value; }
-        }
-
-        bool isImported;
-
-        public bool IsImported
-        {
-            get { return isImported; }
-            set { isImported = value; }
-        }
-        bool importedEnabled;
-
-        public bool ImportedEnabled
-        {
-            get { return importedEnabled; }
-            set { importedEnabled = value; }
-        }
-
-        
     }
 }

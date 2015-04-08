@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Practices.Prism.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,29 +7,86 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.Metadata
 {
-    public class GeoTagCoordinatePair
+    public class GeoTagCoordinatePair 
     {
+        public event EventHandler GeoTagChanged;
 
-        private GeoTagCoordinate latitude;
+        GeoTagCoordinate Latitude { get; set;}
+        GeoTagCoordinate Longitude { get; set; }
 
-        public GeoTagCoordinate Latitude
+        public GeoTagCoordinatePair(double? latitude, double? longitude)
         {
-            get { return latitude; }
-            set { latitude = value; }
+            initialize();
+
+            Latitude.Decimal = latitude;
+            Longitude.Decimal = longitude;
         }
-        private GeoTagCoordinate longitude;
 
-        public GeoTagCoordinate Longitude
+        public GeoTagCoordinatePair(string latitude, string longitude)
         {
-            get { return longitude; }
-            set { longitude = value; }
+            initialize();
+
+            Latitude.Coord = latitude;
+            Longitude.Coord = longitude;
         }
 
         public GeoTagCoordinatePair()
         {
+            initialize();
+        }
 
-            latitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LATITUDE);
-            longitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LONGITUDE);
+        void initialize()
+        {
+            Latitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LATITUDE);
+            Longitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LONGITUDE);
+        }
+
+        public void set(double? latitude, double? longitude)
+        {
+            Latitude.Decimal = latitude;
+            Longitude.Decimal = longitude;
+
+            OnGeoTagChanged();
+        }
+
+        void OnGeoTagChanged()
+        {
+            if (GeoTagChanged != null)
+            {
+                GeoTagChanged(this, EventArgs.Empty);
+            }
+        }
+
+        public String LatCoord
+        {
+            get
+            {
+                return (Latitude.Coord);
+            }
+        }
+
+        public double? LatDecimal
+        {
+            get
+            {
+                return (Latitude.Decimal);
+            }
+        }
+
+        public String LonCoord
+        {
+            get
+            {
+                return (Longitude.Coord);
+            }
+        }
+
+        public double? LonDecimal
+        {
+            get
+            {
+                return (Longitude.Decimal);
+            }
         }
 
     }

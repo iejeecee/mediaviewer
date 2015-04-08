@@ -49,12 +49,12 @@ namespace MediaViewer.Torrent
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = String.IsNullOrEmpty(InputPath) ? PathRoot : InputPath;
-                vm.MovePathHistory = InputPathHistory;
+                vm.SelectedPath = String.IsNullOrEmpty(InputPath) ? PathRoot : InputPath;
+                vm.PathHistory = InputPathHistory;
 
                 if (directoryPicker.ShowDialog() == true)
                 {                    
-                    InputPath = vm.MovePath;
+                    InputPath = vm.SelectedPath;
                     TorrentName = Path.GetFileName(InputPath);
 
                     ScanFilesViewModel scanFilesViewModel = new ScanFilesViewModel();
@@ -98,12 +98,12 @@ namespace MediaViewer.Torrent
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = OutputPath;
-                vm.MovePathHistory = OutputPathHistory;
+                vm.SelectedPath = OutputPath;
+                vm.PathHistory = OutputPathHistory;
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    OutputPath = vm.MovePath;
+                    OutputPath = vm.SelectedPath;
                 }
 
             }));

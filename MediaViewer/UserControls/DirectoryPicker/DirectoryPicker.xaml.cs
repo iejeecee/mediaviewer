@@ -49,6 +49,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
            
             scrollToNodeOnTreeViewVisible = null;
             //SharpTreeView temp;
+         
             
         }
 
@@ -60,6 +61,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
         void root_NodePropertyChanged(object sender, Location e)
         {
             SelectedLocation = e.FullName;
+            
         }
 
         private void treeView_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -143,15 +145,17 @@ namespace MediaViewer.UserControls.DirectoryPicker
             {
                 String newFolder = FileUtils.getUniqueDirectoryName(selectedNode.FullName);
 
+                selectedNode.IsExpanded = true;
+
                 DirectoryInfo newFolderInfo = System.IO.Directory.CreateDirectory(newFolder);
 
-                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask, MediaFileWatcher.Instance.MediaFileState);
+                DirectoryLocation child = new DirectoryLocation(newFolderInfo, infoGatherTask, MediaFileWatcher.Instance.MediaFileState);                                         
+                            
                 CollectionsSort.insertIntoSortedCollection(selectedNode.Children, child);
                 infoGatherTask.addLocation(child);
-
-                selectedNode.IsExpanded = true;
-                treeView.SelectedItem = child;
-                treeView.ScrollIntoView(child);
+               
+                //treeView.SelectedItem = child;
+                //treeView.ScrollIntoView(child);
             }
             catch (Exception ex)
             {

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -14,6 +13,10 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Model.Media.State;
 using System.ComponentModel;
+using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base;
+using System.Collections.Generic;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.UserControls.MediaStateInfo
 {
@@ -31,15 +34,15 @@ namespace MediaViewer.UserControls.MediaStateInfo
             infoImage.Source = (ImageSource)Resources["folder"];
         }
 
-        public MediaViewer.Model.Media.State.MediaState MediaState
+        public MediaStateCollectionView MediaState
         {
-            get { return (MediaViewer.Model.Media.State.MediaState)GetValue(MediaStateProperty); }
+            get { return (MediaStateCollectionView)GetValue(MediaStateProperty); }
             set { SetValue(MediaStateProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MediaState.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty MediaStateProperty =
-            DependencyProperty.Register("MediaState", typeof(MediaViewer.Model.Media.State.MediaState), typeof(MediaStateInfoView), new PropertyMetadata(null, mediaStateChangedCallback));
+            DependencyProperty.Register("MediaState", typeof(MediaStateCollectionView), typeof(MediaStateInfoView), new PropertyMetadata(null, mediaStateChangedCallback));
 
         private static void mediaStateChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
@@ -47,22 +50,52 @@ namespace MediaViewer.UserControls.MediaStateInfo
 
             if (e.OldValue != null)
             {
-                MediaViewer.Model.Media.State.MediaState oldState = (MediaViewer.Model.Media.State.MediaState)e.OldValue;
+                MediaStateCollectionView oldState = (MediaStateCollectionView)e.OldValue;
 
-                oldState.PropertyChanged -= view.mediaState_PropertyChanged;
-                ((INotifyPropertyChanged)oldState.UIMediaCollection).PropertyChanged -= view.uiMediaCollection_PropertyChanged;
+                WeakEventManager<MediaViewer.Model.Media.State.MediaState, PropertyChangedEventArgs>.RemoveHandler(oldState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
+                WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.RemoveHandler(oldState.MediaState.UIMediaCollection, "PropertyChanged", view.uiMediaCollection_PropertyChanged);
+                WeakEventManager<MediaStateCollectionView, EventArgs>.RemoveHandler(oldState, "SelectionChanged", view.selectionChanged);
             }
 
             if (e.NewValue != null)
             {
-                MediaViewer.Model.Media.State.MediaState newState = (MediaViewer.Model.Media.State.MediaState)e.NewValue;
+                MediaStateCollectionView newState = (MediaStateCollectionView)e.NewValue;
 
-                newState.PropertyChanged += view.mediaState_PropertyChanged;
-                ((INotifyPropertyChanged)newState.UIMediaCollection).PropertyChanged += view.uiMediaCollection_PropertyChanged;
+                WeakEventManager<MediaViewer.Model.Media.State.MediaState, PropertyChangedEventArgs>.AddHandler(newState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
+                WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.AddHandler(newState.MediaState.UIMediaCollection, "PropertyChanged", view.uiMediaCollection_PropertyChanged);
+                WeakEventManager<MediaStateCollectionView, EventArgs>.AddHandler(newState, "SelectionChanged", view.selectionChanged);
 
-                view.initialize(newState);
-                
+                view.initialize(newState.MediaState);                
             }
+        }
+
+        private void selectionChanged(object sender, EventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                List<MediaItem> selectedItems = MediaState.getSelectedItems();
+
+                long totalSizeBytes = 0;
+                int nrSelectedItems = selectedItems.Count;
+
+                foreach (MediaItem item in selectedItems)
+                {
+                    if (item.Metadata != null)
+                    {
+                        totalSizeBytes += item.Metadata.SizeBytes;
+                    }
+                }
+
+                String info = selectedItems.Count  +" selected";
+                
+                if(nrSelectedItems > 0) {
+
+                    info += " (" + MiscUtils.formatSizeBytes(totalSizeBytes) + ")";
+                }
+
+                nrItemsSelectedLabel.Content = info;
+
+            }));
         }
 
         void initialize(MediaViewer.Model.Media.State.MediaState state)
@@ -71,9 +104,10 @@ namespace MediaViewer.UserControls.MediaStateInfo
             dateTimeLabel.Content = state.MediaStateDateTime.ToString(dateFormat);
             setMediaStateType(state.MediaStateType);
             setNrItemsInStateLabel(state.UIMediaCollection.NrLoadedItems, state.UIMediaCollection.Count);
+            nrItemsSelectedLabel.Content = "0 selected";
         }
 
-        private void mediaState_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void mediaState_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             MediaViewer.Model.Media.State.MediaState state = (MediaViewer.Model.Media.State.MediaState)sender;
 

@@ -48,12 +48,12 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = OutputPath;
-                vm.MovePathHistory = OutputPathHistory;
+                vm.SelectedPath = OutputPath;
+                vm.PathHistory = OutputPathHistory;
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    OutputPath = vm.MovePath;
+                    OutputPath = vm.SelectedPath;
                 }
 
             }));

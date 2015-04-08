@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.Metadata
 {
-    public class GeoTagCoordinate : BindableBase
+    public class GeoTagCoordinate 
     {
         public enum CoordinateType
         {
@@ -15,13 +15,7 @@ namespace MediaViewer.Model.Media.Metadata
             LONGITUDE
         }
 
-        private int degrees;
-        private int minutes;
-        private int seconds;
-        private int secondsFraction;
-        private System.Char direction;
-
-        private double decimalVal;
+        Char direction;
 
         public CoordinateType CoordType { get; private set; }
 
@@ -37,19 +31,33 @@ namespace MediaViewer.Model.Media.Metadata
             {
                 direction = 'N';
             }
+
+            Coord = null;
+            Decimal = null;
         }
+
+        int degrees;
+        int minutes;
+        int seconds;
+        int secondsFraction;
 
         public string Coord
         {
 
             set
             {
+                if (value == null)
+                {
+                    Decimal = null;                            
+                    return;
+                }
+
                 degrees = 0;
                 minutes = 0;
                 seconds = 0;
                 secondsFraction = 0;
                 direction = '0';
-                decimalVal = 0;
+                dec = 0;
 
                 int s1 = value.IndexOf(",");
                 int s2 = value.LastIndexOf(",");
@@ -72,7 +80,7 @@ namespace MediaViewer.Model.Media.Metadata
 
                     seconds = (int)((secondsFraction / d) * 60);
 
-                    decimalVal = degrees + ((minutes + secondsFraction / d) / 60);
+                    dec = degrees + ((minutes + secondsFraction / d) / 60);
 
                 }
                 else
@@ -80,7 +88,7 @@ namespace MediaViewer.Model.Media.Metadata
                     seconds = temp;
                     secondsFraction = 0;
 
-                    decimalVal = degrees + (minutes / 60.0) + (seconds / 3600.0);
+                    dec = degrees + (minutes / 60.0) + (seconds / 3600.0);
                 }
 
                 direction = Char.ToUpper(value[value.Length - 1]);
@@ -88,15 +96,15 @@ namespace MediaViewer.Model.Media.Metadata
                 if (direction == 'W' || direction == 'S')
                 {
 
-                    decimalVal *= -1;
+                    dec *= -1;
                 }
-
-                OnPropertyChanged("Coord");
-                OnPropertyChanged("Decimal");
+                       
             }
 
             get
             {
+                if (Decimal == null) return (null);
+
                 string result = string.Format("{0},{1}.{2}{3}",
                     Convert.ToString(degrees),
                     Convert.ToString(minutes),
@@ -107,31 +115,36 @@ namespace MediaViewer.Model.Media.Metadata
             }
         }
 
-   
+        private double? dec;
 
-        public double Decimal
+        public double? Decimal
         {
             get
             {
-                return (decimalVal);
+                return (dec);
             }
 
             set
             {
+   
+                this.dec = value;
 
-                this.decimalVal = value;
+                if (value == null)
+                {                                   
+                    return;
+                }
 
-                degrees = (int)Math.Truncate(Math.Abs(decimalVal));
+                degrees = (int)Math.Truncate(Math.Abs(dec.Value));
 
-                minutes = ((int)Math.Truncate(Math.Abs(decimalVal) * 60)) % 60;
+                minutes = ((int)Math.Truncate(Math.Abs(dec.Value) * 60)) % 60;
 
-                double fract = (Math.Abs(decimalVal) * 3600) / 60;
+                double fract = (Math.Abs(dec.Value) * 3600) / 60;
                 fract = fract - Math.Floor(fract);
 
                 seconds = (int)(fract * 60);
                 secondsFraction = (int)(fract * 10000);
 
-                if (decimalVal < 0)
+                if (dec < 0)
                 {
                     if (CoordType == CoordinateType.LATITUDE)
                     {
@@ -153,9 +166,7 @@ namespace MediaViewer.Model.Media.Metadata
                         direction = 'E';
                     }
                 }
-
-                OnPropertyChanged("Coord");
-                OnPropertyChanged("Decimal");
+        
             }
         }
 

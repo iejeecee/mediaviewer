@@ -43,7 +43,14 @@ namespace MediaViewer.UserControls.MediaGridItem
                 InfoIconsCache = new InfoIconsCache();              
 
                 EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
-            }            
+            }
+
+            Unloaded += (s, e) =>
+            {
+                // make sure the propertychanged even is removed in case the mediaitem is not garbage collected
+                // to prevent it being attached multiple times
+                WeakEventManager<MediaItem, PropertyChangedEventArgs>.RemoveHandler(SelectableMediaItem.Item, "PropertyChanged", mediaItem_PropertyChanged);
+            };
         }
 
         public SelectableMediaItem SelectableMediaItem

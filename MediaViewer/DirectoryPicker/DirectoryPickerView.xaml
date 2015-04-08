@@ -14,14 +14,14 @@
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}" Margin="0,0,-0.333,-2.667">
-        <GroupBox Header="Destination Path" HorizontalAlignment="Stretch" Margin="0,0,0,30" VerticalAlignment="Stretch">
+        <GroupBox Header="Path" HorizontalAlignment="Stretch" Margin="0,0,0,30" VerticalAlignment="Stretch">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <LocationBox:LocationBoxView Grid.Row="0" Location="{Binding MovePath, Mode=TwoWay}" LocationHistory="{Binding MovePathHistory}" FavoriteLocations="{Binding FavoriteLocations}" IsUpdateHistory="False" HorizontalAlignment="Stretch"/>             
-                <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryBrowser" VerticalAlignment="Stretch" SelectedLocation="{Binding MovePath, Mode=TwoWay}"/>               
+                <LocationBox:LocationBoxView Grid.Row="0" Location="{Binding SelectedPath, Mode=TwoWay}" LocationHistory="{Binding PathHistory}" FavoriteLocations="{Binding FavoriteLocations}" IsUpdateHistory="False" HorizontalAlignment="Stretch"/>             
+                <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryBrowser" VerticalAlignment="Stretch" SelectedLocation="{Binding SelectedPath, Mode=TwoWay}"/>               
             </Grid>
         </GroupBox>
         <Button Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" Margin="0,0,81,5" VerticalAlignment="Bottom" Width="75"/>

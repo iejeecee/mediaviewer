@@ -200,7 +200,9 @@ namespace MediaViewer.UserControls.TagPicker
               
         private void addTag(string tagName)
         {
-            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;          
+            if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) return;
+
+            tagName = tagName.Trim();
 
             addTagAutoCompleteBox.Text = "";
 

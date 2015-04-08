@@ -8,8 +8,9 @@
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
              xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
              xmlns:HyperlinkTextBox="clr-namespace:MediaViewer.UserControls.HyperlinkTextBox"
-             xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"  x:Class="MediaViewer.MetaData.MetaDataView"
+             xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
+             xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor"  x:Class="MediaViewer.MetaData.MetaDataView" 
              mc:Ignorable="d" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -71,13 +72,14 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="4" Grid.Column="0" Content="Preset" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="4" x:Name="presetComboBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
 					SelectedItem="{Binding SelectedMetaDataPreset, Mode=TwoWay}"
 					ItemsSource="{Binding MetaDataPresets}"                    
 					IsEnabled="{Binding IsEnabled}" IsEditable="False"
-                    DisplayMemberPath="Name"
+					DisplayMemberPath="Name"
                     />
                 <Button Grid.Row="4" x:Name="metadataPresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
@@ -91,7 +93,7 @@
 					Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
 					ItemsSource="{Binding FilenameHistory}"
 					IsEnabled="{Binding IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}" 
-                    IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
+					IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
                 <Button Grid.Row="0" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
@@ -137,7 +139,7 @@
                 <Label Grid.Row="8" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"/>
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="descriptionTextBox" Grid.Row="8" Grid.Column="1" 
 					Margin="5, 5, 5, 5" Height="70" WordWrap="True"
-                    VerticalScrollBarVisibility="Auto"
+					VerticalScrollBarVisibility="Auto"
 					Text="{Binding Description}"                     
 					IsEnabled="{Binding DescriptionEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
                 <CheckBox Grid.Row="8" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
@@ -160,54 +162,60 @@
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="11" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}"/>
                 <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
-                                                   Value="{Binding Creation, Mode=TwoWay}"
-                                                   IsEnabled="{Binding CreationEnabled}"/>
+					Value="{Binding Creation, Mode=TwoWay}"
+					IsEnabled="{Binding CreationEnabled}"/>
                 <CheckBox Grid.Row="11" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CreationEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="12" Grid.Column="0" Content="Imported" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="12" Grid.Column="1" Margin="5,5,5,5"
-					IsChecked="{Binding IsImported}"
-                    IsEnabled="{Binding ImportedEnabled}"/>
+                <Label Grid.Row="12" Grid.Column="0" Content="Geotag" Style="{StaticResource labelStyle}"/>
+                <GeoTagEditor:GeoTagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,5,5,5" Coordinate="{Binding Geotag}"
+                                               IsEnabled="{Binding IsGeotagEnabled}"/>
                 <CheckBox Grid.Row="12" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+					IsChecked="{Binding IsGeotagEnabled}"
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
+                <Label Grid.Row="13" Grid.Column="0" Content="Imported" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="13" Grid.Column="1" Margin="5,5,5,5"
+					IsChecked="{Binding IsImported}"
+					IsEnabled="{Binding ImportedEnabled}"/>
+                <CheckBox Grid.Row="13" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding ImportedEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="13" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
+                <Label Grid.Row="14" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
                        />
-                <TagPicker:TagPickerView Grid.Row="13" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags}"
 					IsEnabled="{Binding IsEnabled}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
-                <Label Grid.Row="14" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
-					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-                       />
-                <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
-					Tags="{Binding AddTags}"                                       
-					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
-                <Label Grid.Row="15" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+                <Label Grid.Row="15" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
                        />
                 <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+					Tags="{Binding AddTags}"                                       
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
+                <Label Grid.Row="16" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
+                       />
+                <TagPicker:TagPickerView Grid.Row="16" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>               
-                <Button Grid.Row="16" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>
+                <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding WriteMetaDataCommand}"
-					ToolTip="Save Metadata To Disk"/>
+					ToolTip="Save Metadata To Disk"/>                
             </Grid>
             <Separator Grid.Row="1">
                 <Separator.Style>
                     <Style>
                         <Style.Triggers>
-                            <DataTrigger Binding="{Binding DynamicProperties.Count, Converter={StaticResource isEqualConverter}, ConverterParameter={StaticResource intZero}}" Value="true">
-                                <Setter Property="Control.Visibility" Value="Collapsed"/>
+                            <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="true">
+                                <Setter Property="UIElement.Visibility" Value="Collapsed"/>
                             </DataTrigger>
-                            <DataTrigger Binding="{Binding DynamicProperties.Count, Converter={StaticResource isEqualConverter}, ConverterParameter={StaticResource intZero}}" Value="false">
-                                <Setter Property="Control.Visibility" Value="Visible"/>
+                            <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="false">
+                                <Setter Property="UIElement.Visibility" Value="Visible"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -222,13 +230,13 @@
                                     <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0" Content="{Binding Path=.Item1}" Style="{StaticResource labelStyle}"/>
-                                <TextBlock Grid.Column="1" Text="{Binding Path=.Item2}" Margin="5"/>
+                                <Label Grid.Column="0" Content="{Binding .Item1}" Style="{StaticResource labelStyle}"/>
+                                <TextBlock Grid.Column="1" Text="{Binding .Item2}" Margin="5"/>
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-            </Grid>         
+            </Grid>
         </Grid>
     </ScrollViewer>
 </UserControl>

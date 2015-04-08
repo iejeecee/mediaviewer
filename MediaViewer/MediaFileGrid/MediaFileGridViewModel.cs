@@ -15,6 +15,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaViewer.MediaFileGrid
 {
@@ -48,7 +49,7 @@ namespace MediaViewer.MediaFileGrid
             SelectAllCommand = new Command(() =>
             {
                 MediaStateCollectionView.selectAll();
-            });
+            }, false);
 
             DeselectAllCommand = new Command(() =>
             {
@@ -73,7 +74,19 @@ namespace MediaViewer.MediaFileGrid
                     Process.Start(location);
                 });
 
-            
+            WeakEventManager<MediaLockedCollection, EventArgs>.AddHandler(MediaStateCollectionView.MediaState.UIMediaCollection, "IsLoadingChanged", mediaCollection_IsLoadingChanged);
+        }
+
+        private void mediaCollection_IsLoadingChanged(object sender, EventArgs e)
+        {
+            if (MediaStateCollectionView.MediaState.UIMediaCollection.IsLoading)
+            {
+                SelectAllCommand.IsExecutable = false;
+            }
+            else
+            {
+                SelectAllCommand.IsExecutable = true;
+            }
         }
 
         protected void MediaStateCollectionView_SelectionChanged(object sender, EventArgs e)

@@ -14,7 +14,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaViewer.MediaFileStackPanel
 {
@@ -86,6 +88,20 @@ namespace MediaViewer.MediaFileStackPanel
 
                     Process.Start(location);
                 });
+
+            DeleteCommand = new Command<SelectableMediaItem>((selectableItem) =>
+            {
+                if(MessageBox.Show("Delete:\n\n" + selectableItem.Item.Location,"Delete file",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No) == MessageBoxResult.Yes) 
+                {
+
+                    List<MediaFileItem> item = new List<MediaFileItem>();
+                    item.Add(selectableItem.Item as MediaFileItem);
+                    CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+                    mediaState.delete(item, tokenSource.Token);
+
+                }
+            });
 
             selectedItem = null;
         }
@@ -258,5 +274,6 @@ namespace MediaViewer.MediaFileStackPanel
 
         public Command<SelectableMediaItem> BrowseLocationCommand { get; set; }
         public Command<SelectableMediaItem> OpenLocationCommand { get; set; }
+        public Command<SelectableMediaItem> DeleteCommand { get; set; }
     }
 }

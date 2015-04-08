@@ -90,6 +90,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Maps.MapControl.WPF">
+      <HintPath>..\packages\Microsoft.Maps.MapControl.WPF.1.0.0.3\lib\net40-Client\Microsoft.Maps.MapControl.WPF.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Practices.Prism.Composition">
       <HintPath>..\packages\Prism.Composition.5.0.0\lib\NET45\Microsoft.Practices.Prism.Composition.dll</HintPath>
     </Reference>
@@ -233,6 +236,12 @@
     <Compile Include="MediaFileStackPanel\MediaFileStackPanelView.xaml.cs">
       <DependentUpon>MediaFileStackPanelView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\GeoTagEditor\BingMapsKey.cs" />
+    <Compile Include="UserControls\GeoTagEditor\BingMapsService.cs" />
+    <Compile Include="UserControls\GeoTagEditor\GeoTagEditorView.xaml.cs">
+      <DependentUpon>GeoTagEditorView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\GeoTagEditor\LocationResult.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
@@ -625,6 +634,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MediaFileStackPanel\MediaFileStackPanelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\GeoTagEditor\GeoTagEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

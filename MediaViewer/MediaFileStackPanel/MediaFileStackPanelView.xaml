@@ -38,7 +38,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView.MediaState}" IsFlatMode="True"/>
+                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView}" IsFlatMode="True"/>
                     <Pager:PagerView x:Name="pager" Grid.ColumnSpan="3" HorizontalAlignment="Center" NrPages="{Binding NrPages}"
                                      CurrentPage="{Binding CurrentPage}" NextPageCommand="{Binding NextPageCommand}"
                                      FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"
@@ -57,6 +57,10 @@
                         <MenuItem Header="Open Location" 
                                   Command="{Binding Path=PlacementTarget.Tag.OpenLocationCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
                                   CommandParameter="{Binding}"/>
+                        <Separator/>
+                        <MenuItem Header="Delete" 
+                                  Command="{Binding Path=PlacementTarget.Tag.DeleteCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                                  CommandParameter="{Binding}"/>
                     </ContextMenu>
                 </MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
             </MediaStackPanel:MediaStackPanelView>
@@ -71,7 +75,7 @@
                                 <Setter Property="ToolTip" Value="Show Browser"/>
                                 <Setter Property="Content">
                                     <Setter.Value>
-                                        <Image Source="pack://application:,,,/Resources/Icons/up arrow.ico"/>
+                                        <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
@@ -79,7 +83,7 @@
                                 <Setter Property="ToolTip" Value="Hide Browser"/>
                                 <Setter Property="Content">
                                     <Setter.Value>
-                                        <Image Source="pack://application:,,,/Resources/Icons/down arrow.ico"/>
+                                        <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>

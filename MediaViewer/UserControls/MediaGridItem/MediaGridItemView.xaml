@@ -70,11 +70,11 @@ d:DesignHeight="300" d:DesignWidth="300">
                                 </Style.Triggers>
                             </Style>
                         </Border.Style>
-                        <Grid>
+                        <Grid>                            
                             <Image x:Name="image" RenderOptions.BitmapScalingMode="LowQuality">
                                 <Image.Style>
                                     <Style>
-                                        <Style.Triggers>
+                                        <Style.Triggers>                                        
                                             <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="LOADED">
                                                 <Setter Property="Image.Visibility" Value="Visible"/>
                                                 <Setter Property="Image.Stretch" Value="Uniform"/>

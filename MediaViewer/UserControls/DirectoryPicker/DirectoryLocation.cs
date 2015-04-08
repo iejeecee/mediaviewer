@@ -1,6 +1,7 @@
 ﻿using ICSharpCode.TreeView;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
@@ -34,7 +35,24 @@ namespace MediaViewer.UserControls.DirectoryPicker
             //ImageUrl = "pack://application:,,,/Resources/Icons/mediafolder.ico";
             NrImported = 0;                    
                                            
-            LazyLoading = true;                     
+            LazyLoading = true;
+           
+            PropertyChanged += propertyChanged;
+        }
+
+        private void propertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName.Equals("Text"))
+            {
+                SharpTreeNode parent = Parent;
+
+                if (Parent != null && Parent.Children.Count > 1)
+                {
+                    parent.Children.Remove(this);
+                    CollectionsSort.insertIntoSortedCollection(parent.Children, this);
+                }
+
+            }
         }
 
         public override bool ShowExpander
@@ -87,8 +105,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 return true;
             }
         }
+
         public override bool SaveEditText(string newName)
-        {           
+        {
+            if (Name.Equals(newName)) return(false);
+
             List<MediaFileItem> mediaFilesToMove = new List<MediaFileItem>();
             CancellationTokenSource tokenSource = new CancellationTokenSource();
                    

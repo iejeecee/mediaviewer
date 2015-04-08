@@ -182,7 +182,7 @@ namespace MediaViewer.Model.Media.Metadata
                 {
 
                     Tag newTag = new Tag();
-                    newTag.Name = tagName;
+                    newTag.Name = tagName.Trim();
 
                     media.Tags.Add(newTag);
 /*

@@ -24,7 +24,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView.MediaState}"/>
+                <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView}"/>
                 <Label Content="Filter" Grid.Column="1" VerticalAlignment="Center"/>
                 <ComboBox x:Name="filterComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
                 <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>

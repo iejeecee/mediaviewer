@@ -58,12 +58,13 @@ namespace MediaViewer.VideoTranscode
                 {
                     DirectoryPickerView directoryPicker = new DirectoryPickerView();
                     DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                    vm.MovePath = OutputPath;
-                    vm.MovePathHistory = OutputPathHistory;
+                    vm.InfoString = "Select Transcode Output Path";
+                    vm.SelectedPath = OutputPath;
+                    vm.PathHistory = OutputPathHistory;
 
                     if (directoryPicker.ShowDialog() == true)
                     {
-                        OutputPath = vm.MovePath;
+                        OutputPath = vm.SelectedPath;
                     }
 
                 });

@@ -48,6 +48,7 @@ namespace MediaViewer.Model.Utils
 
             }
 
+            mimeTypeToExt["image/animatedgif"] = "gif";
             mimeTypeToExt["video/vnd.avi"] = "avi";
             mimeTypeToExt["video/msvideo"] = "avi";
             mimeTypeToExt["video/x-msvideo"] = "avi";

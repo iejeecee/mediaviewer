@@ -30,9 +30,10 @@
                 </Grid.ColumnDefinitions>
                 <Label Name="infoLabel" Grid.Row="0" Grid.Column="0" VerticalContentAlignment="Center" VerticalAlignment="Center">
                     <TextBlock Name="infoLabelTextBlock" TextTrimming="CharacterEllipsis"/>
-                </Label>
-                <Label Name="nrItemsLabel" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+                </Label>                
                 <Label Name="dateTimeLabel" Grid.Row="1" Grid.Column="0" FontSize="8" FontWeight="Bold" VerticalContentAlignment="Center" VerticalAlignment="Center"/>
+                <Label Name="nrItemsLabel" Grid.Row="0" Grid.Column="1" VerticalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Name="nrItemsSelectedLabel" Grid.Row="1" Grid.Column="1" FontSize="8" FontWeight="Bold" VerticalContentAlignment="Center" VerticalAlignment="Center" HorizontalAlignment="Left"/>
             </Grid>
         </Grid>
     </Grid>

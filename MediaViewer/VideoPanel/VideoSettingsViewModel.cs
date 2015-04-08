@@ -28,12 +28,12 @@ namespace MediaViewer.VideoPanel
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                vm.MovePath = VideoScreenShotLocation;
-                vm.MovePathHistory = VideoScreenShotLocationHistory;
+                vm.SelectedPath = VideoScreenShotLocation;
+                vm.PathHistory = VideoScreenShotLocationHistory;
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    VideoScreenShotLocation = vm.MovePath;
+                    VideoScreenShotLocation = vm.SelectedPath;
                 }
             });
                                             

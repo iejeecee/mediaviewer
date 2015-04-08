@@ -21,18 +21,19 @@ namespace MediaViewer.DirectoryPicker
     /// </summary>
     public partial class DirectoryPickerView : Window
     {
-       
-        DirectoryPickerViewModel directoryPickerViewModel;
+
+        public DirectoryPickerViewModel DirectoryPickerViewModel { get; protected set; }
 
         public DirectoryPickerView()
         {
             InitializeComponent();
 
-            directoryPickerViewModel = new DirectoryPickerViewModel();
-            DataContext = directoryPickerViewModel;
-            directoryBrowser.DataContext = directoryPickerViewModel;
+            DirectoryPickerViewModel = new DirectoryPickerViewModel();
+            DataContext = DirectoryPickerViewModel;
+            directoryBrowser.DataContext = DirectoryPickerViewModel;
 
-            directoryPickerViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s,e) => {
+            DirectoryPickerViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s, e) =>
+            {
 
                 if (e.DialogMode == CloseableBindableBase.DialogMode.CANCEL)
                 {
@@ -57,7 +58,7 @@ namespace MediaViewer.DirectoryPicker
         {
             if (e.AddedItems.Count > 0)
             {
-                directoryPickerViewModel.MovePath = (String)e.AddedItems[0];
+                DirectoryPickerViewModel.SelectedPath = (String)e.AddedItems[0];
             }
                   
         }

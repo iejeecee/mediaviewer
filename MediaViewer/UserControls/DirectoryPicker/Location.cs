@@ -166,7 +166,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             set { name = value;
          
             RaisePropertyChanged("Name");
-            RaisePropertyChanged("Text");
+            //RaisePropertyChanged("Text");
             }
         }
 

@@ -23,7 +23,9 @@ namespace MediaViewer.Model.Media.State
     /// </summary>
     /// <typeparam name="MediaFileItem"></typeparam>
     public class MediaLockedCollection : LockedObservableCollection<MediaItem>
-    {               
+    {
+        public event EventHandler IsLoadingChanged;
+
         MediaItemMetadataLoader itemLoader;
                               
         public MediaLockedCollection(bool autoLoadItems = false)
@@ -72,8 +74,16 @@ namespace MediaViewer.Model.Media.State
         public bool IsLoading
         {
             get { return isLoading; }
-            set { isLoading = value;
-                OnPropertyChanged(new PropertyChangedEventArgs("IsLoading"));           
+            set {
+                if (isLoading == value) return;
+
+                isLoading = value;
+                OnPropertyChanged(new PropertyChangedEventArgs("IsLoading"));
+
+                if (IsLoadingChanged != null)
+                {
+                    IsLoadingChanged(this, EventArgs.Empty);
+                }
             }
         }
 
@@ -82,7 +92,11 @@ namespace MediaViewer.Model.Media.State
         public int NrLoadedItems
         {
             get { return nrLoadedItems; }
-            protected set { nrLoadedItems = value;
+            protected set {
+                
+                if (nrLoadedItems == value) return;
+
+                nrLoadedItems = value;
                 OnPropertyChanged(new PropertyChangedEventArgs("NrLoadedItems"));           
             }
         }

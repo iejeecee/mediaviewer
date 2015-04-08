@@ -56,16 +56,16 @@ namespace MediaViewer.Import
 
                 if (SelectedIncludeLocation == null)
                 {
-                    vm.MovePath = mediaFileWatcher.Path;
+                    vm.SelectedPath = mediaFileWatcher.Path;
                 }
                 else
                 {
-                    vm.MovePath = SelectedIncludeLocation.Location;
+                    vm.SelectedPath = SelectedIncludeLocation.Location;
                 }
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
+                    ImportExportLocation newLocation = new ImportExportLocation(vm.SelectedPath);
                     if (!IncludeLocations.Contains(newLocation))
                     {
                         IncludeLocations.Add(newLocation);
@@ -110,16 +110,16 @@ namespace MediaViewer.Import
 
                 if (SelectedExcludeLocation == null)
                 {
-                    vm.MovePath = mediaFileWatcher.Path;
+                    vm.SelectedPath = mediaFileWatcher.Path;
                 }
                 else
                 {
-                    vm.MovePath = SelectedExcludeLocation.Location;
+                    vm.SelectedPath = SelectedExcludeLocation.Location;
                 }
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    ImportExportLocation newLocation = new ImportExportLocation(vm.MovePath);
+                    ImportExportLocation newLocation = new ImportExportLocation(vm.SelectedPath);
                     if (!ExcludeLocations.Contains(newLocation))
                     {
                         ExcludeLocations.Add(newLocation);
