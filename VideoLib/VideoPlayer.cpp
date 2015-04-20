@@ -33,7 +33,7 @@ VideoPlayer::~VideoPlayer() {
 }
 
 
-void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
+void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat) {
 
 	try {
 
@@ -43,38 +43,38 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 
 		videoDecoder->open(videoLocation);
 
-		AVPixelFormat convertToFormat = PIX_FMT_YUV420P;
+		AVPixelFormat outputPixelFormat = PIX_FMT_YUV420P;
 
 		switch(videoFormat) {
 
-		case DecodedVideoFormat::YUV420P:
+		case OutputPixelFormat::YUV420P:
 			{
-				convertToFormat = PIX_FMT_YUV420P;
+				outputPixelFormat = PIX_FMT_YUV420P;
 				break;
 			}
-		case DecodedVideoFormat::ARGB:
+		case OutputPixelFormat::ARGB:
 			{
-				convertToFormat = PIX_FMT_ARGB;
+				outputPixelFormat = PIX_FMT_ARGB;
 				break;
 			}
-		case DecodedVideoFormat::RGBA:
+		case OutputPixelFormat::RGBA:
 			{
-				convertToFormat = PIX_FMT_RGBA;
+				outputPixelFormat = PIX_FMT_RGBA;
 				break;
 			}
-		case DecodedVideoFormat::ABGR:
+		case OutputPixelFormat::ABGR:
 			{
-				convertToFormat = PIX_FMT_ABGR;
+				outputPixelFormat = PIX_FMT_ABGR;
 				break;
 			}
-		case DecodedVideoFormat::BGRA:
+		case OutputPixelFormat::BGRA:
 			{
-				convertToFormat = PIX_FMT_BGRA;
+				outputPixelFormat = PIX_FMT_BGRA;
 				break;
 			}
 		}
 
-		videoDecoder->initImageConverter(convertToFormat,
+		videoDecoder->setVideoOutputFormat(outputPixelFormat,
 			videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
 
 		int channelLayout;
@@ -118,7 +118,7 @@ void VideoPlayer::open(String ^videoLocation, DecodedVideoFormat videoFormat) {
 				}
 		}
 
-		videoDecoder->initAudioConverter(videoDecoder->getAudioSamplesPerSecond(),
+		videoDecoder->setAudioOutputFormat(videoDecoder->getAudioSamplesPerSecond(),
 			channelLayout, format);
 
 		frameQueue->initialize();

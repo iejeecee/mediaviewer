@@ -166,7 +166,8 @@ namespace MediaViewer
 
         public void navigateToVideoView(String location = null, int? offsetSeconds = null)
         {
-            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView)
+            if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView &&
+                String.Compare(location, VideoViewModel.CurrentLocation) == 0)
             {
                 //active view is already videoview
                 return;

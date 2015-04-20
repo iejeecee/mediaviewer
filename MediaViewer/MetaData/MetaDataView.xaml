@@ -9,6 +9,7 @@
              xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
              xmlns:HyperlinkTextBox="clr-namespace:MediaViewer.UserControls.HyperlinkTextBox"
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
              xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor"  x:Class="MediaViewer.MetaData.MetaDataView" 
              mc:Ignorable="d" d:DesignWidth="300">
@@ -40,203 +41,205 @@
             <sys:Int32 x:Key="intZero">0</sys:Int32>
         </ResourceDictionary>
     </UserControl.Resources>
-    <ScrollViewer Background="{StaticResource uiElementBackgroundColor}" Foreground="{StaticResource uiElementForegroundColor}">
-        <Grid x:Name="mainGrid">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+    <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2">
+        <ScrollViewer Background="{StaticResource uiElementBackgroundColor}" Foreground="{StaticResource uiElementForegroundColor}">
+            <Grid x:Name="mainGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Label Grid.Row="4" Grid.Column="0" Content="Preset" Style="{StaticResource labelStyle}"/>
-                <ComboBox Grid.Row="4" x:Name="presetComboBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Row="4" Grid.Column="0" Content="Preset" Style="{StaticResource labelStyle}"/>
+                    <ComboBox Grid.Row="4" x:Name="presetComboBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
 					SelectedItem="{Binding SelectedMetaDataPreset, Mode=TwoWay}"
 					ItemsSource="{Binding MetaDataPresets}"                    
 					IsEnabled="{Binding IsEnabled}" IsEditable="False"
 					DisplayMemberPath="Name"
                     />
-                <Button Grid.Row="4" x:Name="metadataPresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+                    <Button Grid.Row="4" x:Name="metadataPresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding MetaDataPresetsCommand}"
 					ToolTip="Create Preset">
-                    <Image Source="pack://application:,,,/Resources/Icons/text.ico"/>
-                </Button>
-                <Label Grid.Row="0" Grid.Column="0" Content="Filename" Style="{StaticResource labelStyle}"/>
-                <MetaData:ExtendedComboBox Grid.Row="0" x:Name="fileNameTextBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
+                        <Image Source="pack://application:,,,/Resources/Icons/text.ico"/>
+                    </Button>
+                    <Label Grid.Row="0" Grid.Column="0" Content="Filename" Style="{StaticResource labelStyle}"/>
+                    <MetaData:ExtendedComboBox Grid.Row="0" x:Name="fileNameTextBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
 					Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
 					ItemsSource="{Binding FilenameHistory}"
 					IsEnabled="{Binding IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}" 
 					IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
-                <Button Grid.Row="0" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+                    <Button Grid.Row="0" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding FilenamePresetsCommand}"
 					ToolTip="Preset Filename">
-                    <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
-                </Button>
-                <Label Grid.Row="1" Grid.Column="0" Content="Path" Style="{StaticResource labelStyle}"/>
-                <ComboBox Grid.Row="1" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5"  VerticalAlignment="Top"                         
+                        <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
+                    </Button>
+                    <Label Grid.Row="1" Grid.Column="0" Content="Path" Style="{StaticResource labelStyle}"/>
+                    <ComboBox Grid.Row="1" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5"  VerticalAlignment="Top"                         
 					Text="{Binding Location, Mode=TwoWay}"
 					ItemsSource="{Binding MovePathHistory}"
 					ToolTip="{Binding Location}"
 					IsEnabled="{Binding IsEnabled}" IsReadOnly="True" IsEditable="True"
                     />
-                <Button Grid.Row="1" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+                    <Button Grid.Row="1" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
 					HorizontalAlignment="Right"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding DirectoryPickerCommand}"
 					ToolTip="Change Directory">
-                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
-                </Button>
-                <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
-                <Label Grid.Row="5" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"/>
-                <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
+                        <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
+                    </Button>
+                    <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
+                    <Label Grid.Row="5" Grid.Column="0" Content="Rating" Style="{StaticResource labelStyle}"/>
+                    <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
 					Value="{Binding Rating, Mode=TwoWay}" 
 					IsEnabled="{Binding RatingEnabled}">
-                    <inputtoolkit:Rating.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="Clear" Command="{Binding ClearRatingCommand}" />
-                        </ContextMenu>
-                    </inputtoolkit:Rating.ContextMenu>
-                </inputtoolkit:Rating>
-                <CheckBox Grid.Row="5" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                        <inputtoolkit:Rating.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Clear" Command="{Binding ClearRatingCommand}" />
+                            </ContextMenu>
+                        </inputtoolkit:Rating.ContextMenu>
+                    </inputtoolkit:Rating>
+                    <CheckBox Grid.Row="5" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding RatingEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="7" Grid.Column="0" Content="Title" Style="{StaticResource labelStyle}"/>
-                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" VerticalAlignment="Top"
+                    <Label Grid.Row="7" Grid.Column="0" Content="Title" Style="{StaticResource labelStyle}"/>
+                    <HyperlinkTextBox:HyperlinkTextBoxView x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" VerticalAlignment="Top"
 					Text="{Binding Title, Converter={StaticResource removeNewlinesConverter}}"
 					IsEnabled="{Binding TitleEnabled}" WordWrap="False" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
-                <CheckBox Grid.Row="7" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="7" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding TitleEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="8" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"/>
-                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="descriptionTextBox" Grid.Row="8" Grid.Column="1" 
+                    <Label Grid.Row="8" Grid.Column="0" Content="Description" Style="{StaticResource labelStyle}"/>
+                    <HyperlinkTextBox:HyperlinkTextBoxView x:Name="descriptionTextBox" Grid.Row="8" Grid.Column="1" 
 					Margin="5, 5, 5, 5" Height="70" WordWrap="True"
 					VerticalScrollBarVisibility="Auto"
 					Text="{Binding Description}"                     
 					IsEnabled="{Binding DescriptionEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
-                <CheckBox Grid.Row="8" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="8" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding DescriptionEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="9" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}"/>
-                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
+                    <Label Grid.Row="9" Grid.Column="0" Content="Author" Style="{StaticResource labelStyle}"/>
+                    <HyperlinkTextBox:HyperlinkTextBoxView x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
 					Text="{Binding Author, Converter={StaticResource removeNewlinesConverter}}"
 					IsEnabled="{Binding AuthorEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
-                <CheckBox Grid.Row="9" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="9" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding AuthorEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="10" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}"/>
-                <HyperlinkTextBox:HyperlinkTextBoxView x:Name="copyrightTextBox" Grid.Row="10" Grid.Column="1"
+                    <Label Grid.Row="10" Grid.Column="0" Content="Copyright" Style="{StaticResource labelStyle}"/>
+                    <HyperlinkTextBox:HyperlinkTextBoxView x:Name="copyrightTextBox" Grid.Row="10" Grid.Column="1"
 					VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35" WordWrap="True"
 					Text="{Binding Copyright}"
 					IsEnabled="{Binding CopyrightEnabled}" Style="{StaticResource baseHyperlinkTextBoxStyle}"/>
-                <CheckBox Grid.Row="10" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="10" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CopyrightEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="11" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}"/>
-                <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
+                    <Label Grid.Row="11" Grid.Column="0" Content="Creation" Style="{StaticResource labelStyle}"/>
+                    <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
 					Value="{Binding Creation, Mode=TwoWay}"
 					IsEnabled="{Binding CreationEnabled}"/>
-                <CheckBox Grid.Row="11" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="11" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding CreationEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="12" Grid.Column="0" Content="Geotag" Style="{StaticResource labelStyle}"/>
-                <GeoTagEditor:GeoTagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,5,5,5" Coordinate="{Binding Geotag}"
+                    <Label Grid.Row="12" Grid.Column="0" Content="Geotag" Style="{StaticResource labelStyle}"/>
+                    <GeoTagEditor:GeoTagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,5,5,5" Coordinate="{Binding Geotag}"
                                                IsEnabled="{Binding IsGeotagEnabled}"/>
-                <CheckBox Grid.Row="12" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="12" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding IsGeotagEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="13" Grid.Column="0" Content="Imported" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="13" Grid.Column="1" Margin="5,5,5,5"
+                    <Label Grid.Row="13" Grid.Column="0" Content="Imported" Style="{StaticResource labelStyle}"/>
+                    <CheckBox Grid.Row="13" Grid.Column="1" Margin="5,5,5,5"
 					IsChecked="{Binding IsImported}"
 					IsEnabled="{Binding ImportedEnabled}"/>
-                <CheckBox Grid.Row="13" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
+                    <CheckBox Grid.Row="13" Grid.Column="2" Style="{StaticResource checkBoxStyle}"
 					IsChecked="{Binding ImportedEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
-                <Label Grid.Row="14" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
+                    <Label Grid.Row="14" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
                        />
-                <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                    <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags}"
 					IsEnabled="{Binding IsEnabled}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
-                <Label Grid.Row="15" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
+                    <Label Grid.Row="15" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
                        />
-                <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                    <TagPicker:TagPickerView Grid.Row="15" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding AddTags}"                                       
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
-                <Label Grid.Row="16" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
+                    <Label Grid.Row="16" Grid.Column="0" Content="Remove Tags" Style="{StaticResource labelStyle}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
                        />
-                <TagPicker:TagPickerView Grid.Row="16" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
+                    <TagPicker:TagPickerView Grid.Row="16" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>
-                <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
+                    <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding WriteMetaDataCommand}"
-					ToolTip="Save Metadata To Disk"/>                
+					ToolTip="Save Metadata To Disk"/>
+                </Grid>
+                <Separator Grid.Row="1">
+                    <Separator.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="true">
+                                    <Setter Property="UIElement.Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="false">
+                                    <Setter Property="UIElement.Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Separator.Style>
+                </Separator>
+                <Grid Grid.Row="2" Grid.IsSharedSizeScope="True">
+                    <ItemsControl ItemsSource="{Binding DynamicProperties}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Column="0" Content="{Binding .Item1}" Style="{StaticResource labelStyle}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding .Item2}" Margin="5"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Grid>
             </Grid>
-            <Separator Grid.Row="1">
-                <Separator.Style>
-                    <Style>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="true">
-                                <Setter Property="UIElement.Visibility" Value="Collapsed"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding DynamicProperties.Count, ConverterParameter={StaticResource intZero}, Converter={StaticResource isEqualConverter}}" Value="false">
-                                <Setter Property="UIElement.Visibility" Value="Visible"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Separator.Style>
-            </Separator>
-            <Grid Grid.Row="2" Grid.IsSharedSizeScope="True">
-                <ItemsControl ItemsSource="{Binding DynamicProperties}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
-                                    <ColumnDefinition/>
-                                </Grid.ColumnDefinitions>
-                                <Label Grid.Column="0" Content="{Binding .Item1}" Style="{StaticResource labelStyle}"/>
-                                <TextBlock Grid.Column="1" Text="{Binding .Item2}" Margin="5"/>
-                            </Grid>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Grid>
-        </Grid>
-    </ScrollViewer>
+        </ScrollViewer>
+    </mwt:ClassicBorderDecorator>
 </UserControl>

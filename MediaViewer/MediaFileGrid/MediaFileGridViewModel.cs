@@ -31,7 +31,6 @@ namespace MediaViewer.MediaFileGrid
             MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);
             MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
             
-
             ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
             {
                 MediaItem item = selectableItem.Item;

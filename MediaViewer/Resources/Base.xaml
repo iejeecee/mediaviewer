@@ -16,7 +16,7 @@
 
     <SolidColorBrush x:Key="uiElementBackgroundColor" Color="#FFD6DBE9"/>
     <SolidColorBrush x:Key="uiElementForegroundColor" Color="Black"/>
-    <SolidColorBrush x:Key="uiElementLabelColor" Color="#FF4D4D4D"/>
+    <SolidColorBrush x:Key="uiElementLabelColor" Color="Black"/>
     <SolidColorBrush x:Key="uiElementBorderColor" Color="#FF475B7E"/>
     <SolidColorBrush x:Key="uiElementBorderTextColor" Color="White"/>
 

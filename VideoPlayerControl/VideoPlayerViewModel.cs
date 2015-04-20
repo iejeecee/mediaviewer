@@ -24,9 +24,9 @@ namespace VideoPlayerControl
       
         Control owner;
 
-        VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat;
+        VideoLib.VideoPlayer.OutputPixelFormat decodedVideoFormat;
 
-        public VideoLib.VideoPlayer.DecodedVideoFormat DecodedVideoFormat
+        public VideoLib.VideoPlayer.OutputPixelFormat DecodedVideoFormat
         {
             get
             {
@@ -212,7 +212,7 @@ namespace VideoPlayerControl
         public log4net.ILog Log { get; set; }
              
         public VideoPlayerViewModel(Control owner,
-            VideoLib.VideoPlayer.DecodedVideoFormat decodedVideoFormat = VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P)
+            VideoLib.VideoPlayer.OutputPixelFormat decodedVideoFormat = VideoLib.VideoPlayer.OutputPixelFormat.YUV420P)
         {
        
             this.owner = owner;

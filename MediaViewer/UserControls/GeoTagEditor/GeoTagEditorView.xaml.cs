@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Model.Media.Metadata;
+using MediaViewer.Model.Utils;
 using Microsoft.Maps.MapControl.WPF;
 using System;
 using System.Collections.Generic;
@@ -28,10 +29,12 @@ namespace MediaViewer.UserControls.GeoTagEditor
     /// </summary>
     public partial class GeoTagEditorView : UserControl
     {
+        static string geoTagClipboardFormat = "geoTagCoordinatePair";
+
         Pushpin Pin { get; set; }
         String SessionKey { get; set; }
 
-        /*static GeoTagEditorView()
+        static GeoTagEditorView()
         {
             UserControl.IsEnabledProperty.OverrideMetadata(typeof(GeoTagEditorView), new UIPropertyMetadata(true, isEnabledChangedCallback));
         }
@@ -39,8 +42,11 @@ namespace MediaViewer.UserControls.GeoTagEditor
         private static void isEnabledChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             GeoTagEditorView view = (GeoTagEditorView)d;
-            view.toggleMapButton.IsChecked = false;
-        }*/
+            if ((bool)e.NewValue == false)
+            {
+                view.toggleMapButton.IsChecked = false;
+            }
+        }
 
         public GeoTagEditorView()
         {
@@ -112,7 +118,7 @@ namespace MediaViewer.UserControls.GeoTagEditor
             view.showValues();
         }
 
-        void showValues(bool isZoomAndCenterMap = false)
+        void showValues(bool isNewValue = false)
         {
             latTextBox.Text = Coordinate.LatCoord;
             lonTextBox.Text = Coordinate.LonCoord;
@@ -121,15 +127,17 @@ namespace MediaViewer.UserControls.GeoTagEditor
             {               
                 map.Children.Remove(Pin);
                 map.ZoomLevel = 1;
+                findLocationComboBox.ItemsSource = null;
                 return;
             }
          
             Pin.Location = new Location(Coordinate.LatDecimal.Value, Coordinate.LonDecimal.Value);  
             
-            if (isZoomAndCenterMap)
+            if (isNewValue)
             {
                 map.Center = Pin.Location;
-                map.ZoomLevel = 12;
+                map.ZoomLevel = 16;
+                findLocationComboBox.ItemsSource = null;
             }
                          
             if (!map.Children.Contains(Pin))
@@ -149,9 +157,43 @@ namespace MediaViewer.UserControls.GeoTagEditor
             mapGrid.Visibility = System.Windows.Visibility.Collapsed;
         }
 
+        private void geoTagContextMenu_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            ContextMenu contextMenu = (ContextMenu)Resources["geoTagContextMenu"];
+                                  
+            ((MenuItem)contextMenu.Items[0]).IsEnabled = !Coordinate.IsEmpty;
+            ((MenuItem)contextMenu.Items[2]).IsEnabled = !Coordinate.IsEmpty;                       
+            ((MenuItem)contextMenu.Items[3]).IsEnabled = Clipboard.ContainsData(geoTagClipboardFormat);
+            
+        }
+
         private void clearMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            Coordinate.set(null, null);
+            Coordinate.clear();
+        }
+
+        private void copyMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (!Coordinate.IsEmpty)
+            {
+                String text = Coordinate.LatCoord + " " + Coordinate.LonCoord;
+                Clipboard.SetData(geoTagClipboardFormat, text);  
+            }        
+        }
+
+        private void pasteMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            String coord = Clipboard.GetData(geoTagClipboardFormat) as String;
+
+            if (coord != null)
+            {
+                char[] seperator = new char[]{' '};
+
+                string[] values = coord.Split(seperator);
+
+                Coordinate.set(values[0], values[1]);
+            }
+            
         }
 
         private void map_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -173,8 +215,7 @@ namespace MediaViewer.UserControls.GeoTagEditor
         private void map_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
             e.Handled = true;
-            map.ZoomLevel += e.Delta / 500.0;
-          
+            map.ZoomLevel = MiscUtils.clamp<double>(map.ZoomLevel + e.Delta / 500.0, 1, 20);           
         }
 
         private async void findLocationComboBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -220,7 +261,7 @@ namespace MediaViewer.UserControls.GeoTagEditor
             }
             catch (Exception e)
             {
-                MessageBox.Show("Error finding location\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error searching location\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -238,5 +279,39 @@ namespace MediaViewer.UserControls.GeoTagEditor
 
             map.SetView(location.BoundingBox);
         }
+
+        private void mapRoadMode_Click(object sender, RoutedEventArgs e)
+        {
+            map.Mode = new RoadMode();            
+            mapAerialWithLabelsMode.IsChecked = false;
+            mapAerialMode.IsChecked = false;
+        }
+
+        private void mapAerialMode_Click(object sender, RoutedEventArgs e)
+        {
+            map.Mode = new AerialMode();
+            mapRoadMode.IsChecked = false;
+            mapAerialWithLabelsMode.IsChecked = false;          
+        }
+
+        private void mapAerialWithLabelsMode_Click(object sender, RoutedEventArgs e)
+        {
+            map.Mode = new AerialMode(true);
+            mapRoadMode.IsChecked = false;          
+            mapAerialMode.IsChecked = false;
+        }
+
+        private void centerMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            map.Center = Pin.Location;
+            map.ZoomLevel = 16;
+        }
+
+        private void map_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {           
+           centerMenuItem.IsEnabled = !Coordinate.IsEmpty;            
+        }
+
+        
     }
 }

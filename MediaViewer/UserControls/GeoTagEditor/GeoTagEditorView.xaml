@@ -8,6 +8,14 @@
              mc:Ignorable="d" 
              x:Name="geoTagEditor"
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>        
+        <ContextMenu x:Key="geoTagContextMenu">
+            <MenuItem x:Name="clearMenuItem" Header="Clear" Click="clearMenuItem_Click"/>
+            <Separator/>
+            <MenuItem x:Name="copyMenuItem" Header="Copy" Click="copyMenuItem_Click"/>
+            <MenuItem x:Name="pasteMenuItem" Header="Paste" Click="pasteMenuItem_Click"/>
+        </ContextMenu>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,20 +27,10 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" x:Name="latTextBox" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalAlignment="Top" IsReadOnly="True">
-                <TextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Clear" Click="clearMenuItem_Click"/>
-                    </ContextMenu>
-                </TextBox.ContextMenu>
-            </TextBox>
-            <TextBox  Grid.Column="1" x:Name="lonTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Left" IsReadOnly="True">
-                <TextBox.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Clear" Click="clearMenuItem_Click"/>
-                    </ContextMenu>
-                </TextBox.ContextMenu>
-            </TextBox>
+            <TextBox Grid.Column="0" x:Name="latTextBox" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalAlignment="Top" IsReadOnly="True"
+                     ContextMenu="{StaticResource geoTagContextMenu}" ContextMenuOpening="geoTagContextMenu_ContextMenuOpening"/>                        
+            <TextBox Grid.Column="1" x:Name="lonTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Left" IsReadOnly="True"
+                     ContextMenu="{StaticResource geoTagContextMenu}" ContextMenuOpening="geoTagContextMenu_ContextMenuOpening"/>                
             <ToggleButton Grid.Column="2" x:Name="toggleMapButton" Width="20" Height="19" VerticalAlignment="Top" Checked="toggleMapButton_Checked" Unchecked="toggleMapButton_Unchecked" ToolTip="Toggle Map">
                 <ToggleButton.Content>
                     <Image Source="pack://application:,,,/Resources/Icons/geotag.ico"/>
@@ -45,14 +43,25 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" BorderStyle="Sunken">
-                <m:Map  x:Name="map" MinHeight="200"/>
+                <m:Map  x:Name="map" MinHeight="200" ContextMenuOpening="map_ContextMenuOpening">
+                    <m:Map.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem x:Name="centerMenuItem" Header="Center" Click="centerMenuItem_Click"/>
+                            <MenuItem Header="Mode">
+                                <MenuItem x:Name="mapRoadMode" Header="Road" IsCheckable="True" IsChecked="True" Click="mapRoadMode_Click"/>
+                                <MenuItem x:Name="mapAerialMode" Header="Aerial" IsCheckable="True" Click="mapAerialMode_Click"/>
+                                <MenuItem x:Name="mapAerialWithLabelsMode" Header="Aerial With Labels" IsCheckable="True" Click="mapAerialWithLabelsMode_Click"/>
+                            </MenuItem>                        
+                        </ContextMenu>
+                    </m:Map.ContextMenu>
+                </m:Map>
             </mwt:ClassicBorderDecorator>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" x:Name="findLocationComboBox" PreviewKeyDown="findLocationComboBox_PreviewKeyDown" DisplayMemberPath="Name" SelectionChanged="findLocationComboBox_SelectionChanged" IsEditable="True"/>
+                <ComboBox Grid.Column="0" x:Name="findLocationComboBox" PreviewKeyDown="findLocationComboBox_PreviewKeyDown" DisplayMemberPath="Name" SelectionChanged="findLocationComboBox_SelectionChanged" IsEditable="True" IsTextSearchEnabled="False"/>
                 <Button Grid.Column="1" x:Name="findLocationButton" ToolTip="Find Location" Height="19" Click="findLocationButton_Click">
                     <Button.Content>
                         <Image Source="pack://application:,,,/Resources/Icons/searchblack.ico"/>

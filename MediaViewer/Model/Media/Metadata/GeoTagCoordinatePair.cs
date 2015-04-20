@@ -41,10 +41,34 @@ namespace MediaViewer.Model.Media.Metadata
             Longitude = new GeoTagCoordinate(GeoTagCoordinate.CoordinateType.LONGITUDE);
         }
 
+        public void set(String latitude, String longitude)
+        {
+            Latitude.Coord = latitude;
+            Longitude.Coord = longitude;
+
+            OnGeoTagChanged();
+        }
+
         public void set(double? latitude, double? longitude)
         {
             Latitude.Decimal = latitude;
             Longitude.Decimal = longitude;
+
+            OnGeoTagChanged();
+        }
+
+        public bool IsEmpty
+        {
+            get
+            {
+                return (Latitude.Decimal == null && Longitude.Decimal == null);
+            }
+        }
+
+        public void clear()
+        {
+            Latitude.Decimal = null;
+            Longitude.Decimal = null;
 
             OnGeoTagChanged();
         }
@@ -88,6 +112,8 @@ namespace MediaViewer.Model.Media.Metadata
                 return (Longitude.Decimal);
             }
         }
+
+       
 
     }
 }

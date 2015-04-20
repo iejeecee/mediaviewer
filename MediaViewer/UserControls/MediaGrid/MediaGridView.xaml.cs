@@ -114,8 +114,8 @@ namespace MediaViewer.UserControls.MediaGrid
             }
             else
             {
-                MediaStateCollectionView.deselectAll();
-                selectableItem.IsSelected = true;
+                MediaStateCollectionView.selectExclusive(selectableItem.Item);
+           
             }
         }
                

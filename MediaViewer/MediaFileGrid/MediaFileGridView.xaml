@@ -5,6 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid" 
              xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              x:Class="MediaViewer.MediaFileGrid.MediaFileGridView" 
              xmlns:MediaFileGrid="clr-namespace:MediaViewer.MediaFileGrid"
              mc:Ignorable="d" 
@@ -15,7 +16,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Border Grid.Row="0" BorderThickness="1,1,1,1" BorderBrush="{StaticResource imageGridBorderColor}" Background="{StaticResource imageGridBorderColor2}">
+        <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2" Background="{StaticResource imageGridBorderColor2}" BorderStyle="Raised">
             <Grid Height="40">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -30,7 +31,7 @@
                 <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>
                 <ComboBox x:Name="sortComboBox" Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
             </Grid>
-        </Border>
+        </mwt:ClassicBorderDecorator>
         <MediaGrid:MediaGridView Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">
             <MediaGrid:MediaGridView.MediaItemContextMenu>
                 <ContextMenu>

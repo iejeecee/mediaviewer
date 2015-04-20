@@ -24,7 +24,7 @@ namespace VideoPlayerControl
         {          
             InitializeComponent();
          
-            viewModel = new VideoPlayerViewModel(this, VideoLib.VideoPlayer.DecodedVideoFormat.YUV420P);
+            viewModel = new VideoPlayerViewModel(this, VideoLib.VideoPlayer.OutputPixelFormat.YUV420P);
                    
         }
 

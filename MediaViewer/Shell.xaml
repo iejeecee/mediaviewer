@@ -11,7 +11,13 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>           
         </Grid.RowDefinitions>      
-        <ToolBarPanel Grid.Row="1" x:Name="toolBarPanel" Background="{StaticResource menuBackgroundColor}" Orientation="Horizontal">
+        <ToolBarPanel Grid.Row="1" x:Name="toolBarPanel" Orientation="Horizontal">
+            <ToolBarPanel.Background>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="#FFD6DBE9" Offset="0"/>
+                    <GradientStop Color="LightGray" Offset="1"/>
+                </LinearGradientBrush>
+            </ToolBarPanel.Background>
             <ToolBar>
                 <ItemsControl regions:RegionManager.RegionName="MainNavigationToolBarRegion" Background="{StaticResource menuBackgroundColor}">
                     <ItemsControl.ItemsPanel>

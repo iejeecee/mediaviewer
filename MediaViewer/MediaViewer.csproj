@@ -201,6 +201,10 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="Converters\IsEqualConverter.cs" />
     <Compile Include="Converters\RemoveNewlinesConverter.cs" />
+    <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">
+      <DependentUpon>GeotagFileBrowserView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="GeotagFileBrowser\GeotagFileBrowserViewModel.cs" />
     <Compile Include="GridImage\ImageCollage\ImageCollageProgressViewModel.cs" />
     <Compile Include="GridImage\ImageCollage\ImageCollageView.xaml.cs">
       <DependentUpon>ImageCollageView.xaml</DependentUpon>
@@ -618,6 +622,10 @@
     </Compile>
     <Compile Include="VideoTranscode\VideoTranscodeViewModel.cs" />
     <Page Include="About\AboutView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="GeotagFileBrowser\GeotagFileBrowserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

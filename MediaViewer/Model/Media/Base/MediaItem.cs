@@ -40,7 +40,7 @@ namespace MediaViewer.Model.Media.Base
             ItemState = state;
        
             id = Guid.NewGuid();
-    
+          
         }
 
         public void Dispose()
@@ -182,5 +182,6 @@ namespace MediaViewer.Model.Media.Base
         }
 
         public abstract void readMetadata(MetadataFactory.ReadOptions options, CancellationToken token);
+
     }
 }

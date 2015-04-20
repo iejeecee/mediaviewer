@@ -222,7 +222,7 @@ public:
 		int decodingTimeOut = 0)
 	{
 
-		initImageConverter(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
+		setVideoOutputFormat(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
 
 		double duration = getDurationSeconds();
 

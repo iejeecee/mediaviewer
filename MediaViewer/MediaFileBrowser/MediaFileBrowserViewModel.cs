@@ -42,6 +42,7 @@ using MediaViewer.UserControls.LocationBox;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.MediaFileGrid;
 using MediaViewer.MediaFileStackPanel;
+using MediaViewer.GeotagFileBrowser;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -49,8 +50,6 @@ namespace MediaViewer.MediaFileBrowser
     public class MediaFileBrowserViewModel : BindableBase
     {
 
-        
-           
         private MediaFileWatcher mediaFileWatcher;
         private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
 
@@ -125,6 +124,25 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
+        GeotagFileBrowserViewModel geotagFileBrowserViewModel;
+
+        internal GeotagFileBrowserViewModel GeotagFileBrowserViewModel
+        {
+            get { return geotagFileBrowserViewModel; }
+            set { SetProperty(ref geotagFileBrowserViewModel, value); }
+        }
+
+        MediaFileStackPanelViewModel geotagFileBrowserStackPanelViewModel;
+
+        public MediaFileStackPanelViewModel GeotagFileBrowserStackPanelViewModel
+        {
+            get { return geotagFileBrowserStackPanelViewModel; }
+            set
+            {
+                SetProperty(ref geotagFileBrowserStackPanelViewModel, value);
+            }
+        }
+
         private double maxImageScale;
 
         public double MaxImageScale
@@ -184,6 +202,11 @@ namespace MediaViewer.MediaFileBrowser
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
             videoMediaStackPanelViewModel.IsVisible = true;
 
+            GeotagFileBrowserViewModel = new GeotagFileBrowserViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+
+            GeotagFileBrowserStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            GeotagFileBrowserStackPanelViewModel.IsVisible = true;
+
             MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
 
             DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
@@ -225,16 +248,22 @@ namespace MediaViewer.MediaFileBrowser
                 {
                     navigateToVideoView(item);
                 }
-
                 
             });
 
             ContractCommand = new Command(() =>
                 {
                     NavigateBackCommand.Execute(null);
+                   
                 });
 
             ContractCommand.IsExecutable = false;
+
+            GeotagFileBrowserCommand = new Command(() =>
+                {
+                    navigateToGeotagFileBrowser();
+                   
+                });
 
             CreateImageCollageCommand = new Command(() =>
             {
@@ -394,6 +423,7 @@ namespace MediaViewer.MediaFileBrowser
         public Command CreateTorrentFileCommand { get; set; }
         public Command TranscodeVideoCommand { get; set; }
         public Command DeleteSelectedItemsCommand { get; set; }
+        public Command GeotagFileBrowserCommand { get; set; }
         public Command ImportSelectedItemsCommand { get; set; }
         public Command ExportSelectedItemsCommand { get; set; }
         public Command<MediaFileItem> ExpandCommand { get; set; }
@@ -480,21 +510,38 @@ namespace MediaViewer.MediaFileBrowser
 
         public void navigateToImageView(MediaFileItem item)
         {
-            Uri ImageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
+            Uri imageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
             navigationParams.Add("location", item != null ? item.Location : null);
             navigationParams.Add("viewModel", ImageViewModel);
            
-            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, ImageViewUri, (result) =>
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, imageViewUri, (result) =>
             {
                 CurrentViewModel = ImageViewModel;
        
             }, navigationParams);
 
-            Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel, item.Location);
+            Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel, item != null ? item.Location : null);
         }
-                   
+
+
+        public void navigateToGeotagFileBrowser()
+        {
+            Uri geotagFileBrowserUri = new Uri(typeof(GeotagFileBrowserView).FullName, UriKind.Relative);
+
+            NavigationParameters navigationParams = new NavigationParameters();           
+            navigationParams.Add("viewModel", GeotagFileBrowserViewModel);
+
+            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, geotagFileBrowserUri, (result) =>
+            {
+                CurrentViewModel = GeotagFileBrowserViewModel;
+
+            }, navigationParams);
+
+            Shell.ShellViewModel.navigateToMediaStackPanelView(GeotagFileBrowserStackPanelViewModel);
+        }
+
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
         {
 

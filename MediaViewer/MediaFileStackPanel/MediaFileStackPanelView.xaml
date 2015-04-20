@@ -6,7 +6,8 @@
              xmlns:Pager="clr-namespace:MediaViewer.UserControls.Pager" 
              x:Class="MediaViewer.MediaFileStackPanel.MediaFileStackPanelView"             
              x:Name="mediaFileStackPanel"
-             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"            
+             xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"   
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              xmlns:MediaStackPanel="clr-namespace:MediaViewer.UserControls.MediaStackPanel"
              xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
@@ -30,7 +31,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <Border Grid.Row="0" BorderThickness="1" Background="{StaticResource imageGridBorderColor}" BorderBrush="{StaticResource imageGridBorderColor}">
+            <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2">
                 <Grid Background="{StaticResource imageGridBorderColor2}" Height="25">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -47,7 +48,7 @@
                     <ComboBox x:Name="sortComboBox" Grid.Column="3" Margin="2,2,2,2"  HorizontalAlignment="Stretch" VerticalAlignment="Center"
                               ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
-            </Border>
+            </mwt:ClassicBorderDecorator>
             <MediaStackPanel:MediaStackPanelView Grid.Row="1" MediaStateCollectionView="{Binding MediaStateCollectionView}" MediaItemClick="mediaStackPanel_MediaItemClick">
                 <MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
                     <ContextMenu>

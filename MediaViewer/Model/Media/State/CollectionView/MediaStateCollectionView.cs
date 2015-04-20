@@ -292,6 +292,52 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
+        public void selectExclusive(MediaItem item)
+        {
+            bool selectionChanged = false;
+
+            Media.EnterWriteLock();
+
+            SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+            try
+            {
+                foreach (SelectableMediaItem media in Media)
+                {
+                    if (media.IsSelected)
+                    {
+                        if(!media.Equals(selectableItem)) {
+
+                            media.SelectionChanged -= selectableItem_SelectionChanged;
+                            media.IsSelected = false;
+                            media.SelectionChanged += selectableItem_SelectionChanged;
+
+                            selectionChanged = true;
+                        }
+
+                    }
+                    else if (media.Equals(selectableItem))
+                    {
+                        media.SelectionChanged -= selectableItem_SelectionChanged;
+                        media.IsSelected = true;
+                        media.SelectionChanged += selectableItem_SelectionChanged;
+
+                        selectionChanged = true;
+                    }
+
+                }
+               
+            }
+            finally
+            {
+                Media.ExitWriteLock();
+            }
+
+            if (selectionChanged)
+            {
+                OnSelectionChanged();
+            }
+        }
+
         public void selectRange(MediaItem end)
         {
             bool selectionChanged = false;

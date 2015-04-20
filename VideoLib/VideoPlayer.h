@@ -1,7 +1,6 @@
 #include "VideoDecoder.h"
 #include "VideoFrame.h"
-//#include "FrameQueue.h"
-#include "FrameQueue2.h"
+#include "FrameQueue.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -37,7 +36,7 @@ namespace VideoLib {
 		};
 
 
-		enum class DecodedVideoFormat {
+		enum class OutputPixelFormat {
 			YUV420P,
 			ARGB,     
 			RGBA,      
@@ -108,7 +107,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getAudioConvertSampleRate());
+				return(videoDecoder->getOutputSampleRate());
 			}
 		}
 
@@ -116,7 +115,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getAudioConvertBytesPerSample());
+				return(videoDecoder->getOutputBytesPerSample());
 			}
 		}
 
@@ -124,7 +123,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getAudioConvertNrChannels());
+				return(videoDecoder->getOutputNrChannels());
 			}
 		}
 
@@ -167,7 +166,7 @@ namespace VideoLib {
 		VideoPlayer();
 		~VideoPlayer();
 
-		void open(String ^videoLocation, DecodedVideoFormat format);
+		void open(String ^videoLocation, OutputPixelFormat format);
 		bool seek(double posSeconds);
 		DemuxPacketsResult demuxPacket();
 		void close();

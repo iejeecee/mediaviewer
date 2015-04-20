@@ -18,13 +18,18 @@ protected:
 	SwsContext *imageConvertContext;
 	SwrContext *audioConvertContext;
 
-	AVPixelFormat imageConvertFormat;
+	// video
+	AVPixelFormat inPixelFormat, outPixelFormat;
+	int inWidth, outWidth;
+	int	inHeight, outHeight;
 
-	int64_t audioConvertChannelLayout;
-	int audioConvertNrChannels;
-	int audioConvertSampleRate;
-	int audioConvertBytesPerSample;
-	AVSampleFormat audioConvertFormat;
+	// audio
+	int inSampleRate, outSampleRate;
+	int64_t inChannelLayout, outChannelLayout;
+	AVSampleFormat inSampleFormat, outSampleFormat;
+
+	int outNrChannels;
+	int outBytesPerSample;
 	
 	AVFrame *convertedFrame;
 	uint8_t *convertedFrameBuffer;
@@ -49,8 +54,6 @@ protected:
 
 	int durationSeconds;
 
-	
-
 	FilterGraph *videoFilterGraph;
 	FilterGraph *audioFilterGraph;
 
@@ -74,6 +77,12 @@ public:
 		LANCZOS = SWS_LANCZOS,
 		SPLINE = SWS_SPLINE
 	};
+
+private:
+
+	SamplingMode samplingMode;
+
+public:
 
 	enum VideoDecodeMode {		
 		DECODE_KEY_FRAMES_ONLY,
@@ -109,13 +118,17 @@ public:
 
 		durationSeconds = 0;
 
-		imageConvertFormat = AV_PIX_FMT_YUV420P;
+		outPixelFormat = inPixelFormat = AV_PIX_FMT_YUV420P;
+		inWidth = outWidth = 0;
+		inHeight = outHeight = 0;
 
-		audioConvertFormat = AV_SAMPLE_FMT_S16;
-		audioConvertNrChannels = 0;
-		audioConvertSampleRate = 0;
-		audioConvertChannelLayout = 0;
-		audioConvertBytesPerSample = 0;
+		outSampleFormat = inSampleFormat = AV_SAMPLE_FMT_S16;
+		outNrChannels = 0;
+		outSampleRate = inSampleRate = 0;
+		outChannelLayout = inChannelLayout = 0;
+		outBytesPerSample = 0;
+
+		samplingMode = X;
 
 		videoFilterGraph = NULL;
 		audioFilterGraph = NULL;	
@@ -190,6 +203,18 @@ public:
 			delete audioFilterGraph;
 			audioFilterGraph = NULL;
 		}
+
+		outPixelFormat = inPixelFormat = AV_PIX_FMT_YUV420P;
+		inWidth = outWidth = 0;
+		inHeight = outHeight = 0;
+
+		outSampleFormat = inSampleFormat = AV_SAMPLE_FMT_S16;
+		outNrChannels = 0;
+		outSampleRate = inSampleRate = 0;
+		outChannelLayout = inChannelLayout = 0;
+		outBytesPerSample = 0;
+
+		samplingMode = X;
 
 		startTime = 0;
 	
@@ -284,7 +309,7 @@ public:
 			durationSeconds  = getVideoStream()->duration * av_q2d(getVideoStream()->time_base);
 		}
 		
-		if(durationSeconds < 0) {
+		if(durationSeconds < 0 && strcmp(stream[videoIdx]->getCodec()->name,"gif") != 0) {
 		
 			throw gcnew VideoLib::VideoLibException("can't determine video duration");
 		}
@@ -343,44 +368,34 @@ public:
 		return(durationSeconds);
 	}
 
-	SwsContext *getImageConvertContext() const {
+	AVPixelFormat getOutputPixelFormat() const {
 
-		return(imageConvertContext);
+		return(outPixelFormat);
 	}
 
-	AVPixelFormat getImageConvertFormat() const {
+	AVSampleFormat getOutputSampleFormat() const {
 
-		return(imageConvertFormat);
+		return(outSampleFormat);
 	}
 
-	SwrContext *getAudioConvertContext() const {
+	int getOutputSampleRate() const {
 
-		return(audioConvertContext);
+		return(outSampleRate);
 	}
 
-	AVSampleFormat getAudioConvertFormat() const {
+	int64_t getOutputChannelLayout() const {
 
-		return(audioConvertFormat);
+		return(outChannelLayout);
 	}
 
-	int getAudioConvertSampleRate() const {
+	int getOutputNrChannels() const {
 
-		return(audioConvertSampleRate);
+		return(outNrChannels);
 	}
 
-	int64_t getAudioConvertChannelLayout() const {
+	int getOutputBytesPerSample() const {
 
-		return(audioConvertChannelLayout);
-	}
-
-	int getAudioConvertNrChannels() const {
-
-		return(audioConvertNrChannels);
-	}
-
-	int getAudioConvertBytesPerSample() const {
-
-		return(audioConvertBytesPerSample);
+		return(outBytesPerSample);
 	}
 
 	FilterGraph *getVideoFilterGraph() const {
@@ -496,81 +511,106 @@ public:
 		
 	}
 
+	int getWidth() const {
 
-
-	void initImageConverter(AVPixelFormat format, int dstWidth, int dstHeight, 
-		SamplingMode sampling, bool useFilterGraph = false) 
-	{
-
-		if(useFilterGraph == false) {
-
-			convertedFrame = avcodec_alloc_frame();
-			if(convertedFrame == NULL)
-			{
-				throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
-			}
-
-			int numBytes = avpicture_get_size(format, dstWidth, dstHeight);
-			convertedFrameBuffer = (uint8_t*)av_malloc(numBytes);
-
-			avpicture_fill((AVPicture*)convertedFrame, convertedFrameBuffer, format, dstWidth, dstHeight);
-
-			imageConvertContext = sws_getContext(
-				getVideoCodecContext()->width,
-				getVideoCodecContext()->height,
-				getVideoCodecContext()->pix_fmt,
-				dstWidth,
-				dstHeight,
-				format,
-				sampling,
-				NULL,
-				NULL,
-				NULL);
-
-			if(imageConvertContext == NULL) {
-
-				throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
-
-			} else {
-
-				imageConvertFormat = format;
-			}
-
-		} else {
-			
-			videoFilterGraph = new FilterGraph(getVideoCodecContext(), format, sampling);
-			videoFilterGraph->createGraph("null");
-		}
-		
+		return(hasVideo() ? getVideoCodecContext()->width : 0);
 	}
 
-	bool initAudioConverter(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
-		AVSampleFormat sampleFormat = AV_SAMPLE_FMT_S16, bool useFilterGraph = false) 
+	int getHeight() const {
+
+		return(hasVideo() ? getVideoCodecContext()->height : 0);
+	}
+
+	void setVideoOutputFormat(AVPixelFormat pixelFormat, int width, int height, 
+		SamplingMode sampling) 
 	{
+		outPixelFormat = pixelFormat;
+		outWidth = width;
+		outHeight = height;
+		samplingMode = sampling;
+		
+		if(convertedFrame != NULL) {
 
-		if(hasAudio() == false) {
-
-			return(false);
+			avcodec_free_frame(&convertedFrame);
+			convertedFrame = NULL;
 		}
 
-		audioConvertFormat = sampleFormat;
-		audioConvertChannelLayout = channelLayout;
-		audioConvertSampleRate = sampleRate;
-		audioConvertNrChannels = av_get_channel_layout_nb_channels(channelLayout);
-		audioConvertBytesPerSample = av_get_bytes_per_sample(sampleFormat);
+		convertedFrame = avcodec_alloc_frame();
+		if(convertedFrame == NULL)
+		{
+			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
+		}
 
-		if(useFilterGraph == false) {
-			
-			int64_t inChannelLayout = getAudioCodecContext()->channel_layout;
-			AVSampleFormat inSampleFormat = getAudioCodecContext()->sample_fmt;	
-			int inSampleRate = getAudioCodecContext()->sample_rate;
+		int numBytes = avpicture_get_size(outPixelFormat, outWidth, outHeight);
+		convertedFrameBuffer = (uint8_t*)av_malloc(numBytes);
 
-			// Note that AVCodecContext::channel_layout may or may not be set by libavcodec. Because of this,
-			// we won't use it, and will instead try to guess the layout from the number of channels.
+		avpicture_fill((AVPicture*)convertedFrame, convertedFrameBuffer, outPixelFormat, outWidth, outHeight);
+
+	}
+
+	void convertVideoFrame(AVFrame *input, AVFrame *output)
+	{				
+		if(input->format == -1) {
+			//incorrect frame
+			return;
+		}
+
+		imageConvertContext = sws_getCachedContext(imageConvertContext, input->width, input->height, (AVPixelFormat)input->format,
+			outWidth, outHeight, outPixelFormat, samplingMode, NULL, NULL, NULL);
+
+		if(imageConvertContext == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
+		} 
+		
+		// convert frame to the right format
+		sws_scale(imageConvertContext,
+			input->data,
+			input->linesize,
+			0,
+			input->height,
+			output->data,
+			output->linesize);	
+	}
+	
+	void setAudioOutputFormat(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
+		AVSampleFormat sampleFormat = AV_SAMPLE_FMT_S16)
+	{
+		outSampleFormat = sampleFormat;
+		outChannelLayout = channelLayout;
+		outSampleRate = sampleRate;
+		outNrChannels = av_get_channel_layout_nb_channels(channelLayout);
+		outBytesPerSample = av_get_bytes_per_sample(sampleFormat);
+	}
+
+	int convertAudioFrame(AVFrame *input, AVFrame *output) 
+	{
+		if(input->format == -1) {
+			//incorrect frame
+			return(0);
+		}
+
+		if(input->channel_layout != inChannelLayout ||
+			input->sample_rate != inSampleRate ||
+			input->format != inSampleFormat) 
+		{
+			if(audioConvertContext != NULL) {
+
+				swr_free(&audioConvertContext);
+				audioConvertContext = NULL;
+			}
+				
+			inChannelLayout = input->channel_layout;
+			inSampleRate = input->sample_rate;
+			inSampleFormat = (AVSampleFormat)input->format;	
+		}
+
+		if(audioConvertContext == NULL) {
+
 			audioConvertContext = swr_alloc_set_opts(NULL,
-				channelLayout,
-				sampleFormat,
-				sampleRate,
+				outChannelLayout,
+				outSampleFormat,
+				outSampleRate,
 				inChannelLayout,
 				inSampleFormat,
 				inSampleRate,
@@ -587,81 +627,21 @@ public:
 				throw gcnew VideoLib::VideoLibException("Unable to initialize audio convert context");
 			}
 
-			return(true);
-
-		} else {
-
-			audioFilterGraph = new FilterGraph(getAudioCodecContext(), sampleFormat, channelLayout, sampleRate);
-			audioFilterGraph->createGraph("anull");
-
-			return(true);
 		}
-	}
-
-	int getWidth() const {
-
-		return(hasVideo() ? getVideoCodecContext()->width : 0);
-	}
-
-	int getHeight() const {
-
-		return(hasVideo() ? getVideoCodecContext()->height : 0);
-	}
-
-
-	void convertVideoFrame(AVFrame *input, AVFrame *output)
-	{
-
-		if(imageConvertContext != NULL) {
-
-			// convert frame to the right format
-			sws_scale(imageConvertContext,
-				input->data,
-				input->linesize,
-				0,
-				input->height,
-				output->data,
-				output->linesize);
-
-		} else {
-
-			videoFilterGraph->pushFrame(input);
-			videoFilterGraph->pullFrame(output);
-		}
-	}
 	
-
-	int convertAudioFrame(AVFrame *input, AVFrame *output) 
-	{
-		int length;
-
-		if(audioConvertContext != NULL) {
-						
-			int numSamplesOut = swr_convert(audioConvertContext,
-											output->data,
-											input->nb_samples,
-											(const unsigned char**)input->extended_data,
-											input->nb_samples);
-			// audio length does not equal linesize, because some extra
-			// padding bytes may be added for alignment.
-			// Instead av_samples_get_buffer_size needs to be used
-			length = av_samples_get_buffer_size(NULL,
-												audioConvertNrChannels,
-												numSamplesOut,
-												audioConvertFormat, 1);
-		
-							
-		} else {
-
-			audioFilterGraph->pushFrame(input);
-			audioFilterGraph->pullFrame(output);
-			length = av_samples_get_buffer_size(NULL,
-								audioConvertNrChannels,
-								output->nb_samples,
-								audioConvertFormat, 1);
-			
-		}
-			
+		int numSamplesOut = swr_convert(audioConvertContext,
+										output->data,
+										input->nb_samples,
+										(const unsigned char**)input->extended_data,
+										input->nb_samples);
+		// audio length does not equal linesize, because some extra
+		// padding bytes may be added for alignment.
+		// Instead av_samples_get_buffer_size needs to be used
+		int length = av_samples_get_buffer_size(NULL,
+											outNrChannels,
+											numSamplesOut,
+											outSampleFormat, 1);									
+					
 		return(length);
 	}
 	

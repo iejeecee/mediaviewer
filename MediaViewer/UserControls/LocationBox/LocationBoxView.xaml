@@ -23,7 +23,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Height="27">                
-        <mwt:ClassicBorderDecorator Grid.Column="2" BorderThickness="2,2,2,2" BorderStyle="Sunken">
+        <mwt:ClassicBorderDecorator Grid.Column="2" BorderThickness="2" BorderStyle="Sunken">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

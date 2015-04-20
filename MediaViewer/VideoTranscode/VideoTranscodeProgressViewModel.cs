@@ -109,44 +109,55 @@ namespace MediaViewer.VideoTranscode
             TotalProgressMax = Items.Count;
             TotalProgress = 0;
             itemProgressMax = 100;
-
-            try
-            {
-                Dictionary<String, Object> options = getOptions();
+           
+            Dictionary<String, Object> options = getOptions();
                 
-                foreach (MediaFileItem input in Items)
+            foreach (MediaFileItem input in Items)
+            {
+                ItemProgress = 0;
+                ItemInfo = "Transcoding: " + input.Location;
+
+                if (CancellationToken.IsCancellationRequested) break;
+                if (!MediaFormatConvert.isVideoFile(input.Location))
                 {
-                    ItemProgress = 0;
-                    ItemInfo = "Transcoding: " + input.Location;
-
-                    if (CancellationToken.IsCancellationRequested) break;
-                    if (!MediaFormatConvert.isVideoFile(input.Location))
-                    {
-                        InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
-                        TotalProgress++;
-                        continue;
-                    }
-
-                    String outLocation = AsyncState.OutputPath + "\\" + Path.GetFileNameWithoutExtension(input.Location);
-
-                    outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
-                                       
-                    outLocation = FileUtils.getUniqueFileName(outLocation);
-                                       
-                    videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options, 
-                        transcodeProgressCallback);
-                    
-                    ItemProgress = 100;
+                    InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
                     TotalProgress++;
-
-                    InfoMessages.Add("Finished Transcoding: " + input.Location + " -> " + outLocation);
+                    continue;
                 }
 
+                String outLocation = AsyncState.OutputPath + "\\" + Path.GetFileNameWithoutExtension(input.Location);
+
+                outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
+                                       
+                outLocation = FileUtils.getUniqueFileName(outLocation);
+
+                try
+                {
+                    videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options,
+                        transcodeProgressCallback);
+                }
+                catch (Exception e)
+                {
+                    InfoMessages.Add("Error transcoding: " + e.Message);
+
+                    try
+                    {
+                        File.Delete(outLocation);
+                    }
+                    catch (Exception ex)
+                    {
+                        InfoMessages.Add("Error deleting: " + outLocation + " " + ex.Message);
+                    }
+                    
+                    return;
+                }
+                    
+                ItemProgress = 100;
+                TotalProgress++;
+
+                InfoMessages.Add("Finished Transcoding: " + input.Location + " -> " + outLocation);
             }
-            catch (Exception e)
-            {
-                InfoMessages.Add("Error transcoding: " + e.Message);
-            }
+
         }
 
         void transcodeProgressCallback(double progress)
