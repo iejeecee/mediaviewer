@@ -40,5 +40,6 @@ namespace MediaViewer.MediaDatabase
         public Nullable<double> FocalLength { get; set; }
         public Nullable<int> ISOSpeedRating { get; set; }
         public Nullable<short> Contrast { get; set; }
+        public Nullable<short> Orientation { get; set; }
     }
 }

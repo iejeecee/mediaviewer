@@ -9,8 +9,9 @@
              xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:Relation="clr-namespace:MediaViewer.UserControls.Relation" 
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
              xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
-             xmlns:MetaData="clr-namespace:MediaViewer.MetaData" x:Class="MediaViewer.Search.SearchView"
+             xmlns:MetaData="clr-namespace:MediaViewer.MetaData"
              xmlns:inputtoolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"           
+             xmlns:GeoLocationPicker="clr-namespace:MediaViewer.UserControls.GeoLocationPicker" x:Class="MediaViewer.Search.SearchView"           
              mc:Ignorable="d" 
              d:DesignWidth="300" d:DesignHeight="600">
     <UserControl.Resources>
@@ -37,7 +38,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <ScrollViewer Background="{StaticResource uiElementBackgroundColor}">
-        <Grid>
+        <Grid Grid.IsSharedSizeScope="True">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -45,7 +46,7 @@
             </Grid.RowDefinitions>
             <Grid Grid.Row="0">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="labelColumnGroup"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -53,8 +54,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="19.667"/>
-                    <RowDefinition Height="121.667"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -68,42 +72,51 @@
 					ItemsSource="{Binding Source={StaticResource mediaTypeEnum}}" SelectedItem="{Binding Query.SearchType}"/>
                 <Label Grid.Row="2" Grid.Column="0" Content="Tags" Style="{StaticResource labelStyle}" Grid.RowSpan="2"/>
                 <TagPicker:TagPickerView Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                        Tags="{Binding Query.Tags}" AddLinkedTags="false" AcceptOnlyExistingTags="true" Grid.RowSpan="2"/>
-                <Label Grid.Row="4" Grid.Column="0"  Content="Rating" Style="{StaticResource labelStyle}"/>
-                <inputtoolkit:Rating Grid.Row="4" Grid.Column="1" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
+					Tags="{Binding Query.Tags}" AddLinkedTags="false" AcceptOnlyExistingTags="true" Grid.RowSpan="2"/>
+                <Label Grid.Row="4" Grid.Column="0"  Content="Location" Style="{StaticResource labelStyle}"/>
+                <GeoLocationPicker:GeoLocationPickerView Grid.Row="4" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" Grid.ColumnSpan="3" GeoLocationRect="{Binding Query.GeoLocationRect}"/>
+                <Label Grid.Row="5" Grid.Column="0"  Content="Rating" Style="{StaticResource labelStyle}"/>
+                <inputtoolkit:Rating Grid.Row="5" Grid.Column="1" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
 					Value="{Binding Query.RatingStart, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </inputtoolkit:Rating.LayoutTransform>
                     <inputtoolkit:Rating.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="Clear" Command="{Binding ClearRatingStartCommand}" />
                         </ContextMenu>
                     </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
-                <Label Grid.Row="4" Grid.Column="1"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,1.666,0,1.334"/>
-                <inputtoolkit:Rating Grid.Row="4" Grid.Column="3" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
+                <Label Grid.Row="5" Grid.Column="1"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center" Grid.ColumnSpan="2" Margin="0,1.666,0,1.334"/>
+                <inputtoolkit:Rating Grid.Row="5" Grid.Column="3" ItemCount="5" Margin="5,5,5,5" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" 
 					Value="{Binding Query.RatingEnd, Mode=TwoWay}" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <inputtoolkit:Rating.LayoutTransform>
                         <ScaleTransform ScaleX="0.8" ScaleY="0.8"/>
                     </inputtoolkit:Rating.LayoutTransform>
                     <inputtoolkit:Rating.ContextMenu>
-                        <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                        <ContextMenu DataContext="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                             <MenuItem Header="Clear" Command="{Binding ClearRatingEndCommand}" />
                         </ContextMenu>
                     </inputtoolkit:Rating.ContextMenu>
                 </inputtoolkit:Rating>
-                <Label Grid.Row="4" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}" Margin="0,25.666,0,0" Grid.RowSpan="2"/>
-                <DateTimePicker:DateTimePicker Grid.Row="5" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>
-                <Label Grid.Row="5" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
-                <DateTimePicker:DateTimePicker Grid.Row="5" Grid.Column="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationEnd}" Min="{Binding Query.CreationStart}"/>
-                <Button Grid.Row="6" Grid.Column="3" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
-					Width="50" HorizontalAlignment="Right" Margin="5,5,5,5" Content="Search">
-                </Button>
+                <Label Grid.Row="6" Grid.Column="0"  Content="Creation" Style="{StaticResource labelStyle}"/>
+                <DateTimePicker:DateTimePicker Grid.Row="6" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationStart}" Max="{Binding Query.CreationEnd}"/>
+                <Label Grid.Row="6" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
+                <DateTimePicker:DateTimePicker Grid.Row="6" Grid.Column="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.CreationEnd}" Min="{Binding Query.CreationStart}"/>
+                <Label Grid.Row="7" Grid.Column="0"  Content="File Date" Style="{StaticResource labelStyle}"/>
+                <DateTimePicker:DateTimePicker Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.FileDateStart}" Max="{Binding Query.FileDateEnd}"/>
+                <Label Grid.Row="7" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
+                <DateTimePicker:DateTimePicker Grid.Row="7" Grid.Column="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.FileDateEnd}" Min="{Binding Query.FileDateStart}"/>
+                <Label Grid.Row="8" Grid.Column="0"  Content="Nr Tags" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="8" Grid.Column="1" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.NrTagsStart}" Min="0" Max="{Binding Query.NrTagsEnd}"/>
+                <Label Grid.Row="8" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}" VerticalAlignment="Center"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="8" Grid.Column="3" Margin="5,5,5,5" HorizontalAlignment="Stretch" VerticalAlignment="Center" Value="{Binding Query.NrTagsEnd}" Min="{Binding Query.NrTagsStart}"/>
+                <Button Grid.Row="9" Grid.Column="3" x:Name="searchButton" ToolTip="Search" Command="{Binding SearchCommand}" CommandParameter="{Binding Query}"
+					Width="50" HorizontalAlignment="Right" Margin="5,5,5,5" Content="Search"/>                
             </Grid>
             <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Video}, Converter={StaticResource enumToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="labelColumnGroup"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
@@ -133,18 +146,18 @@
                 <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="1" Value="{Binding Query.DurationSecondsStart}" Min="0" Max="{Binding Query.DurationSecondsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="4" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
                 <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="3" Value="{Binding Query.DurationSecondsEnd}" Min="{Binding Query.DurationSecondsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
-                <Label Grid.Row="5" Grid.Column="0"  Content="Frames Per Second" Style="{StaticResource labelStyle}"/>
+                <Label Grid.Row="5" Grid.Column="0"  Content="Fps" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="1" Value="{Binding Query.FramesPerSecondStart}" Min="0" Max="{Binding Query.FramesPerSecondEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="5" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:FloatSpinner Grid.Row="5" Grid.Column="3" Value="{Binding Query.FramesPerSecondEnd}" Min="{Binding Query.FramesPerSecondStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
-                <Label Grid.Row="6" Grid.Column="0"  Content="Nr Channels" Style="{StaticResource labelStyle}"/>
+                <Label Grid.Row="6" Grid.Column="0"  Content="Channels" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="6" Grid.Column="1" Value="{Binding Query.NrChannelsStart}" Min="0" Max="{Binding Query.NrChannelsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
                 <Label Grid.Row="6" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="6" Grid.Column="3" Value="{Binding Query.NrChannelsEnd}" Min="{Binding Query.NrChannelsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
             </Grid>
             <Grid Grid.Row="2" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Images}, Converter={StaticResource enumToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="labelColumnGroup"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>

@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Media.Imaging;
 using System.IO;
 using SharpDX.Direct3D9;
+using MediaViewer.Infrastructure.Utils;
 
 namespace VideoPlayerControl
 {
@@ -341,7 +342,7 @@ namespace VideoPlayerControl
                     metaData.Title = uri.ToString();
                     metaData.DateTaken = DateTime.Now.ToString("R");
 
-                    BitmapSource bitmapSource = System.Windows.Media.Imaging.BitmapSource.Create(
+                    BitmapSource image = System.Windows.Media.Imaging.BitmapSource.Create(
                         width,
                         height,
                         96,
@@ -352,9 +353,13 @@ namespace VideoPlayerControl
                         height * stream.Pitch,
                         stream.Pitch
                     );
+                   
+                    float scale = ImageUtils.resizeRectangle(width, height, 240, 180);
 
-                    encoder.Frames.Add(BitmapFrame.Create(bitmapSource, null, metaData, null));
-                                                     
+                    TransformedBitmap thumbnail = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale,scale));
+                   
+                    encoder.Frames.Add(BitmapFrame.Create(image, thumbnail, metaData, null));
+                                                                        
                     FileStream outputFile = new FileStream(screenShotName, FileMode.Create);
                     //encoder.QualityLevel = asyncState.JpegQuality;
                     encoder.Save(outputFile);

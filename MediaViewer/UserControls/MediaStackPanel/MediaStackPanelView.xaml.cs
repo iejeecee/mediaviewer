@@ -133,5 +133,22 @@ namespace MediaViewer.UserControls.MediaStackPanel
         {           
             selectableItem.IsSelected = false;         
         }
+
+        private void itemsControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (scrollViewer != null)
+            {
+                if (e.Delta > 0)
+                {
+                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + 1);
+                }
+                else
+                {
+                    scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset - 1);
+                }
+            }
+
+            e.Handled = true;
+        }
     }
 }

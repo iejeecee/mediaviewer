@@ -31,9 +31,9 @@ namespace MediaViewer.UserControls.GeoTagEditor
     {
         static string geoTagClipboardFormat = "geoTagCoordinatePair";
 
+        bool IsToolTipLocationSet { get; set; }
         Pushpin Pin { get; set; }
-        String SessionKey { get; set; }
-
+      
         static GeoTagEditorView()
         {
             UserControl.IsEnabledProperty.OverrideMetadata(typeof(GeoTagEditorView), new UIPropertyMetadata(true, isEnabledChangedCallback));
@@ -52,19 +52,55 @@ namespace MediaViewer.UserControls.GeoTagEditor
         {
             InitializeComponent();
             
-            map.CredentialsProvider = new ApplicationIdCredentialsProvider(BingMapsKey.key);
+            map.CredentialsProvider = new ApplicationIdCredentialsProvider(BingMapsKey.Key);
             map.PreviewMouseDoubleClick += map_PreviewMouseDoubleClick;
             map.PreviewMouseWheel += map_PreviewMouseWheel;
-
-            SessionKey = null;
             
             map.CredentialsProvider.GetCredentials((c) =>
             {
-                SessionKey = c.ApplicationId;
+                BingMapsKey.SessionKey = c.ApplicationId;
             });
 
             Pin = new Pushpin();
-           
+            Pin.ToolTip = "Finding Location...";
+            Pin.ToolTipOpening += Pin_ToolTipOpening;
+
+            IsToolTipLocationSet = false;
+        }
+
+        async void Pin_ToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            if (IsToolTipLocationSet) return;
+
+            Pin.ToolTip = "Finding Location...";
+            Location location = new Location(Coordinate.LatDecimal.Value, Coordinate.LonDecimal.Value);
+
+            Task<LocationResult> t = Task.Factory.StartNew<LocationResult>(() =>
+            {
+                return BingMapsService.findLocation(location, BingMapsKey.SessionKey);
+            });
+
+            try
+            {
+                await t;
+
+                if (t.Result != null)
+                {
+                    Pin.ToolTip = t.Result.Name;
+                    IsToolTipLocationSet = true;
+                }
+                else
+                {
+                    Pin.ToolTip = "Unknown location";
+                    IsToolTipLocationSet = false;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                Pin.ToolTip = "Error: " + ex.Message;
+                IsToolTipLocationSet = false;
+            }
         }
        
         public GeoTagCoordinatePair Coordinate
@@ -91,10 +127,13 @@ namespace MediaViewer.UserControls.GeoTagEditor
             if (e.NewValue != null)
             {
                 GeoTagCoordinatePair coord = (GeoTagCoordinatePair)e.NewValue;
-                             
+
                 view.showValues(true);
                 WeakEventManager<GeoTagCoordinatePair, EventArgs>.AddHandler(coord, "GeoTagChanged", view.coordinateChanged);
+
+                view.IsToolTipLocationSet = false;
             }
+            
         }
 
         private void coordinateChanged(object sender, EventArgs e)
@@ -123,14 +162,20 @@ namespace MediaViewer.UserControls.GeoTagEditor
             latTextBox.Text = Coordinate.LatCoord;
             lonTextBox.Text = Coordinate.LonCoord;
 
+            if (mapGrid.Visibility != System.Windows.Visibility.Visible)
+            {
+                // don't do unneccesary requests
+                return;
+            }
+
             if (Coordinate.LatCoord == null)
-            {               
+            {             
                 map.Children.Remove(Pin);
                 map.ZoomLevel = 1;
                 findLocationComboBox.ItemsSource = null;
                 return;
             }
-         
+                  
             Pin.Location = new Location(Coordinate.LatDecimal.Value, Coordinate.LonDecimal.Value);  
             
             if (isNewValue)
@@ -144,12 +189,13 @@ namespace MediaViewer.UserControls.GeoTagEditor
             {
                 map.Children.Add(Pin);
             }
-                        
+                                    
         }
 
         private void toggleMapButton_Checked(object sender, RoutedEventArgs e)
         {
             mapGrid.Visibility = System.Windows.Visibility.Visible;
+            showValues(true);
         }
 
         private void toggleMapButton_Unchecked(object sender, RoutedEventArgs e)
@@ -209,7 +255,8 @@ namespace MediaViewer.UserControls.GeoTagEditor
             Location pinLocation = map.ViewportPointToLocation(mousePosition);
 
             Coordinate.set(pinLocation.Latitude, pinLocation.Longitude);
-           
+
+            IsToolTipLocationSet = false;
         }
 
         private void map_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
@@ -238,7 +285,7 @@ namespace MediaViewer.UserControls.GeoTagEditor
 
             Task<List<LocationResult>> t = Task.Factory.StartNew<List<LocationResult>>(() =>
             {
-                return BingMapsService.findLocations(location, usermapView, SessionKey);                
+                return BingMapsService.findLocations(location, BingMapsKey.SessionKey, usermapView);                
             });
 
             try
@@ -311,6 +358,7 @@ namespace MediaViewer.UserControls.GeoTagEditor
         {           
            centerMenuItem.IsEnabled = !Coordinate.IsEmpty;            
         }
+        
 
         
     }

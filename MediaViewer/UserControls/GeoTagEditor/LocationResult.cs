@@ -25,10 +25,8 @@ namespace MediaViewer.UserControls.GeoTagEditor
         public LocationRect BoundingBox { get; set; }
         public String Confidence { get; set; }
         public String Matchcode { get; set; }
-
-        public double SqrdDistToMapCenter { get; set; }
-
-        public LocationResult(XmlNode location, XmlNamespaceManager nsmgr, Location mapCenter)
+      
+        public LocationResult(XmlNode location, XmlNamespaceManager nsmgr)
         {
            
             Name = location.SelectSingleNode("ns:Name",nsmgr).InnerText;
@@ -50,8 +48,12 @@ namespace MediaViewer.UserControls.GeoTagEditor
             Location corner2 = new Location(double.Parse(northLat, CultureInfo.InvariantCulture),double.Parse(eastLon, CultureInfo.InvariantCulture));
 
             BoundingBox = new LocationRect(corner1,corner2);
+           
+        }
 
-            SqrdDistToMapCenter = Math.Pow(lat - mapCenter.Latitude, 2) + Math.Pow(lon - mapCenter.Longitude, 2);
+        public double getSqrdDistToLocation(Location loc)
+        {
+            return Math.Pow(Geotag.Latitude - loc.Latitude, 2) + Math.Pow(Geotag.Longitude - loc.Longitude, 2);
         }
     }
 }

@@ -209,13 +209,13 @@ namespace MediaViewer.MetaData
                             isModified = true;
                         }
 
-                        if(state.IsGeoTagEnabled && !EqualityComparer<String>.Default.Equals(media.Latitude, state.Latitude))
+                        if(state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Latitude, state.Latitude) == 0))
                         {
                             media.Latitude = state.Latitude;
                             isModified = true;
                         }
 
-                        if (state.IsGeoTagEnabled && !EqualityComparer<String>.Default.Equals(media.Longitude, state.Longitude))
+                        if (state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Longitude, state.Longitude) == 0))
                         {
                             media.Longitude = state.Longitude;
                             isModified = true;
@@ -673,8 +673,8 @@ namespace MediaViewer.MetaData
             RemoveTags = new List<Tag>(vm.RemoveTags);
 
             IsGeoTagEnabled = vm.IsGeotagEnabled;
-            Latitude = vm.Geotag.LatCoord;
-            Longitude = vm.Geotag.LonCoord;
+            Latitude = vm.Geotag.LatDecimal;
+            Longitude = vm.Geotag.LonDecimal;
         }
 
         public String Location { get; set; }
@@ -699,8 +699,8 @@ namespace MediaViewer.MetaData
         public bool CreationEnabled { get; set; }
         public bool IsImported { get; set; }
         public bool ImportedEnabled { get; set; }
-        public String Latitude { get; set; }
-        public String Longitude { get; set; }
+        public Nullable<double> Latitude { get; set; }
+        public Nullable<double> Longitude { get; set; }
         public bool IsGeoTagEnabled { get; set; }
 
     }

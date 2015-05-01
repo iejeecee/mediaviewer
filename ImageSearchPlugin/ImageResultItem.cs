@@ -55,6 +55,7 @@ namespace ImageSearchPlugin
                                     BitmapCreateOptions.PreservePixelFormat,
                                     BitmapCacheOption.OnLoad);
                 BitmapSource bitmapSource = decoder.Frames[0];
+               
                 bitmapSource.Freeze();
 
                 ImageMetadata metaData = new ImageMetadata();
@@ -88,5 +89,33 @@ namespace ImageSearchPlugin
             }
            
         }
+
+        /*class RawMetadataItem
+        {
+            public String location;
+            public Object value;
+        }
+        List<RawMetadataItem> RawMetadataItems { get; set; }
+
+        private void CaptureMetadata(BitmapMetadata bitmapMetadata, string query)
+        {            
+            if (bitmapMetadata != null)
+            {
+                foreach (string relativeQuery in bitmapMetadata)
+                {
+                    string fullQuery = query + relativeQuery;
+                    object metadataQueryReader = bitmapMetadata.GetQuery(relativeQuery);
+                    RawMetadataItem metadataItem = new RawMetadataItem();
+                    metadataItem.location = fullQuery;
+                    metadataItem.value = metadataQueryReader;
+                    RawMetadataItems.Add(metadataItem);
+                    BitmapMetadata innerBitmapMetadata = metadataQueryReader as BitmapMetadata;
+                    if (innerBitmapMetadata != null)
+                    {
+                        CaptureMetadata(innerBitmapMetadata, fullQuery);
+                    }
+                }
+            }
+        }*/
     }
 }

@@ -8,6 +8,8 @@ namespace MediaViewer.UserControls.GeoTagEditor
 {
     class BingMapsKey
     {
-        public static String key = "Ai0qYnZanXnBILjsnkh9zeWyegskc4IH_Ptl1Q-vwVPYupce6O8tLj5XB0sdqR-X";
+        public static String Key = "Ai0qYnZanXnBILjsnkh9zeWyegskc4IH_Ptl1Q-vwVPYupce6O8tLj5XB0sdqR-X";
+        public static String SessionKey = null;
+        
     }
 }

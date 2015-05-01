@@ -47,7 +47,7 @@ namespace MediaViewer.MediaDatabase
                 sb.Append(Width);
                 sb.Append("x");
                 sb.Append(Height);
-                sb.Append(", " + PixelFormat + ", " + FramesPerSecond.ToString() + " fps");
+                sb.Append(", " + PixelFormat + ", " + FramesPerSecond.ToString("0.00") + " fps");
                 sb.AppendLine();
                 sb.AppendLine();
 
@@ -71,9 +71,8 @@ namespace MediaViewer.MediaDatabase
                 sb.AppendLine(MiscUtils.formatTimeSeconds(DurationSeconds));
                 sb.AppendLine();
 
-                sb.AppendLine("Size");
-                sb.AppendLine(MiscUtils.formatSizeBytes(SizeBytes));
-                sb.AppendLine();
+                sb.AppendLine("Size:");
+                sb.Append(MiscUtils.formatSizeBytes(SizeBytes));         
 
                 return (sb.ToString());
             }

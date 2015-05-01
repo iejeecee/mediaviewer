@@ -64,19 +64,6 @@ public class FormatMetaData
 
 		format.Add(i.name, i);
 
-		i = new FormatInfo("Orientation", "");
-
-		i.lookup["1"] = "0th row at top, 0th column at left";
-		i.lookup["2"] = "0th row at top, 0th column at right";
-		i.lookup["3"] = "0th row at bottom, 0th column at right";
-		i.lookup["4"] = "0th row at bottom, 0th column at left";
-		i.lookup["5"] = "0th row at left, 0th column at top";
-		i.lookup["6"] = "0th row at right, 0th column at top";
-		i.lookup["7"] = "0th row at right, 0th column at bottom";
-		i.lookup["8"] = "0th row at left, 0th column at bottom";
-
-		format.Add(i.name, i);
-
 		i = new FormatInfo("PhotometricInterpretation", "");;
 		i.lookup["2"] = "RGB";
 		i.lookup["6"] = "YCbCr";
@@ -418,6 +405,18 @@ public class FormatMetaData
         i.lookup["True"] = "Fired";
 
         format.Add(i.name, i);
+
+        i = new FormatInfo("Orientation", "");
+        i.lookup["1"] = "Horizontal";
+        i.lookup["2"] = "Mirror horizontal";
+        i.lookup["3"] = "Rotate 180°";
+        i.lookup["4"] = "Mirror vertical";
+        i.lookup["5"] = "Mirror horizontal, rotate 270°";
+        i.lookup["6"] = "Rotate 90°";
+        i.lookup["7"] = "Mirror horizontal, rotate 90°";
+        i.lookup["8"] = "Rotate 270°";
+
+        format.Add(i.name, i);
 	}
 
     private static XMPLib.MetaDataProperty findProp(String path, List<XMPLib.MetaDataProperty> props)
@@ -515,6 +514,7 @@ public class FormatMetaData
         addPropIfExists("Make", image.CameraMake, propList);
         addPropIfExists("Model", image.CameraModel, propList);
         addPropIfExists("SerialNumber", image.SerialNumber, propList);
+        addPropIfExists("Orientation", image.Orientation, propList);
   
         return (propList);
     }

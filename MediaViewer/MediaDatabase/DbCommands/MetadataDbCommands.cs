@@ -80,22 +80,37 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (result == null)
             {
-                return (new List<BaseMetadata>());
+                result = allItems(query);
             }
 
-            // creation
+            // media creation date
 
             if (query.CreationStart != null && query.CreationEnd == null)
             {
                 result = result.Where(m => m.CreationDate >= query.CreationStart.Value);
             }
-            else if (query.CreationStart == null && query.CreationEnd!= null)
+            else if (query.CreationStart == null && query.CreationEnd != null)
             {
                 result = result.Where(m => m.CreationDate <= query.CreationEnd.Value);
             }
             else if (query.CreationStart != null && query.CreationEnd != null)
             {
                 result = result.Where(m => (m.CreationDate >= query.CreationStart.Value) && (m.CreationDate <= query.CreationEnd.Value));
+            }
+
+            // file creation date
+
+            if (query.FileDateStart != null && query.FileDateEnd == null)
+            {
+                result = result.Where(m => m.FileDate >= query.FileDateStart.Value);
+            }
+            else if (query.FileDateStart == null && query.FileDateEnd != null)
+            {
+                result = result.Where(m => m.FileDate <= query.FileDateEnd.Value);
+            }
+            else if (query.FileDateStart != null && query.FileDateEnd != null)
+            {
+                result = result.Where(m => (m.FileDate >= query.FileDateStart.Value) && (m.FileDate <= query.FileDateEnd.Value));
             }
 
             // rating
@@ -113,6 +128,32 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 result = result.Where(m => (m.Rating >= query.RatingStart.Value * 5) && (m.Rating <= query.RatingEnd.Value * 5));
             }
 
+            // nr tags
+
+            if (query.NrTagsStart != null && query.NrTagsEnd == null)
+            {
+                result = result.Where(m => m.Tags.Count >= query.NrTagsStart.Value);
+            }
+            else if (query.NrTagsStart == null && query.NrTagsEnd != null)
+            {
+                result = result.Where(m => m.Tags.Count <= query.NrTagsEnd.Value);
+            }
+            else if (query.NrTagsStart != null && query.NrTagsEnd != null)
+            {
+                result = result.Where(m => (m.Tags.Count >= query.NrTagsStart.Value) && (m.Tags.Count <= query.NrTagsEnd.Value));
+            }
+
+            // is inside geo location rectangle
+            if (query.GeoLocationRect != null)
+            {
+                result = result.Where(m =>
+                    (m.Latitude <= query.GeoLocationRect.North) &&
+                    (m.Latitude >= query.GeoLocationRect.South) &&
+                    (m.Longitude >= query.GeoLocationRect.West) &&
+                    (m.Longitude <= query.GeoLocationRect.East));
+            }
+
+
             if (query.SearchType == MediaType.Video)
             {               
                 result = videoQueryFilter(result, query);
@@ -123,6 +164,26 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
            
             return(result.ToList());
+        }
+
+        IQueryable<BaseMetadata> allItems(SearchQuery query)
+        {
+            IQueryable<BaseMetadata> result = null;
+
+            if (query.SearchType == MediaType.All)
+            {
+                result = Db.BaseMetadataSet.Include("Tags");
+            }
+            else if (query.SearchType == MediaType.Images)
+            {
+                result = Db.BaseMetadataSet.Include("Tags").OfType<ImageMetadata>();
+            }
+            else if (query.SearchType == MediaType.Video)
+            {
+                result = Db.BaseMetadataSet.Include("Tags").OfType<VideoMetadata>();
+            }
+
+            return (result);
         }
 
         IQueryable<BaseMetadata> textQuery(SearchQuery query)

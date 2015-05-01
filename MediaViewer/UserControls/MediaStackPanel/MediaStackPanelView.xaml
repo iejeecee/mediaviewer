@@ -33,7 +33,7 @@
     </UserControl.Resources>
     <Grid>        
         <ItemsControl x:Name="itemsControl" HorizontalAlignment="Stretch" Height="100" 
-                        ItemsSource="{Binding Path=MediaStateCollectionView.Media,ElementName=mediaStackPanel}">
+                        ItemsSource="{Binding Path=MediaStateCollectionView.Media,ElementName=mediaStackPanel}" PreviewMouseWheel="itemsControl_PreviewMouseWheel">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <VirtualizingStackPanel x:Name="virtualizingStackPanel" VerticalAlignment="Top" VirtualizationMode="Recycling" Orientation="Horizontal"/>

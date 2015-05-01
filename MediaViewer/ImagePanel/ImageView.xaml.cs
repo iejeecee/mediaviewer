@@ -124,33 +124,30 @@ namespace MediaViewer.ImagePanel
         }
 
         private void imageViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            App.Current.Dispatcher.BeginInvoke(new Action(() =>
+        {           
+            ImageViewModel imageViewModel = (ImageViewModel)sender;
+
+            // Due to the device independent nature of WPF, images are 
+            // scaled according to the dpi value stored in the image file.
+            // But since nobody ever bothers to set this correctly 
+            // undo the scaling and display the image at it's pixel by pixel size
+            if (e.PropertyName.Equals("Image"))
             {
-
-                ImageViewModel imageViewModel = (ImageViewModel)sender;
-
-                // Due to the device independent nature of WPF, images are 
-                // scaled according to the dpi value stored in the image file.
-                // But since nobody ever bothers to set this correctly 
-                // undo the scaling and display the image at it's pixel by pixel size
-                if (e.PropertyName.Equals("Image"))
+                if (imageViewModel.Image != null)
                 {
-                    if (imageViewModel.Image != null)
-                    {
-                        scrollViewer.ScrollToHorizontalOffset(0);
-                        scrollViewer.ScrollToVerticalOffset(0);
+                    scrollViewer.ScrollToHorizontalOffset(0);
+                    scrollViewer.ScrollToVerticalOffset(0);
 
-                        calcScale(imageViewModel.Image, imageViewModel);
-                        setScale(imageViewModel, true);
-                    }
-                }
-                else if (e.PropertyName.Equals("SelectedScaleMode"))
-                {
+                    calcScale(imageViewModel.Image, imageViewModel);
                     setScale(imageViewModel, true);
                 }
-
-            }));
+            }
+            else if (e.PropertyName.Equals("SelectedScaleMode"))
+            {
+                //calcScale(imageViewModel.Image, imageViewModel);
+                setScale(imageViewModel, true);
+            }
+           
         }
        
         private void calcScale(BitmapImage image, ImageViewModel vm)
@@ -162,18 +159,18 @@ namespace MediaViewer.ImagePanel
 
             double heightScale = scrollViewer.ActualHeight / image.Height;
 
-            if (image.Width * heightScale > scrollViewer.ActualWidth)
-            {
+            //if (image.Width * heightScale > scrollViewer.ActualWidth)
+            //{
                 fitHeightScale = (scrollViewer.ActualHeight - SystemParameters.ScrollHeight) / image.Height;             
-            }
+            //}
 
             // fitwidthscale
             double widthScale = scrollViewer.ActualWidth / image.Width;
 
-            if (image.Height * fitWidthScale > scrollViewer.ActualHeight)
-            {
+            //if (image.Height * fitWidthScale > scrollViewer.ActualHeight)
+            //{
                 fitWidthScale = (scrollViewer.ActualWidth - SystemParameters.ScrollWidth) / image.Width;              
-            }
+            //}
 
             // autofitscale
             widthScale = (scrollViewer.ActualWidth - 3) / image.Width;

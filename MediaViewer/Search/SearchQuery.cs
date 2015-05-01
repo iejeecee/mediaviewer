@@ -1,6 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.UserControls.Relation;
+using Microsoft.Maps.MapControl.WPF;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -44,7 +45,14 @@ namespace MediaViewer.Search
 
             CreationStart = null;
             CreationEnd = null;
-      
+
+            FileDateStart = null;
+            FileDateEnd = null;
+
+            NrTagsStart = null;
+            NrTagsEnd = null;
+
+            GeoLocationRect = null;
         }
 
         public bool IsEmpty
@@ -66,6 +74,11 @@ namespace MediaViewer.Search
                     return (false);
                 }
 
+                if (this.FileDateEnd != null || this.FileDateStart != null)
+                {
+                    return (false);
+                }
+
                 if (this.DurationSecondsEnd != null || this.DurationSecondsStart != null)
                 {
                     return (false);
@@ -76,7 +89,7 @@ namespace MediaViewer.Search
                     return (false);
                 }
 
-                if (this.NrChannelsEnd != null || this.NrChannelsStart!= null)
+                if (this.NrChannelsEnd != null || this.NrChannelsStart != null)
                 {
                     return (false);
                 }
@@ -102,6 +115,16 @@ namespace MediaViewer.Search
                 }
 
                 if (this.VideoWidthEnd != null || this.VideoWidthStart != null)
+                {
+                    return (false);
+                }
+
+                if (NrTagsStart != null || NrTagsEnd != null)
+                {
+                    return (false);
+                }
+
+                if (GeoLocationRect != null)
                 {
                     return (false);
                 }
@@ -139,30 +162,7 @@ namespace MediaViewer.Search
                 SetProperty(ref text, value);
             }
         }
-
-        public void parseQuery()
-        {
-            /*TagDbCommands tagCommands = new TagDbCommands();
-
-            tags = new List<Tag>();
-
-            foreach (String tagName in Text.Split(','))
-            {
-                String tagNameTrimmed = tagName.Trim();
-
-                Tag dbTag = tagCommands.getTagByName(tagNameTrimmed);
-
-                if (dbTag == null)
-                {
-                    Tags.Add(new Tag() { Name = tagNameTrimmed });
-                }
-                else
-                {
-                    Tags.Add(dbTag);
-                }
-            }*/
-        }
-
+      
         Nullable<int> videoWidthStart;
 
         public Nullable<int> VideoWidthStart
@@ -295,6 +295,49 @@ namespace MediaViewer.Search
             }
         }
 
+        Nullable<DateTime> fileDateStart;
+
+        public Nullable<DateTime> FileDateStart
+        {
+            get { return fileDateStart; }
+            set
+            {
+                SetProperty(ref fileDateStart, value);
+            }
+        }
+        Nullable<DateTime> fileDateEnd;
+
+        public Nullable<DateTime> FileDateEnd
+        {
+            get { return fileDateEnd; }
+            set
+            {
+                SetProperty(ref fileDateEnd, value);
+            }
+        }
+
+        Nullable<int> nrTagsStart;
+
+        public Nullable<int> NrTagsStart
+        {
+            get { return nrTagsStart; }
+            set
+            {
+                SetProperty(ref nrTagsStart, value);
+            }
+        }
+
+        Nullable<int> nrTagsEnd;
+
+        public Nullable<int> NrTagsEnd
+        {
+            get { return nrTagsEnd; }
+            set
+            {
+                SetProperty(ref nrTagsEnd, value);
+            }
+        }
+
         Nullable<int> imageWidthStart;
 
         public Nullable<int> ImageWidthStart
@@ -355,6 +398,16 @@ namespace MediaViewer.Search
             get { return ratingEnd; }
             set {  
                 SetProperty(ref ratingEnd, value);
+            }
+        }
+
+        LocationRect geoLocationRect;
+
+        public LocationRect GeoLocationRect
+        {
+            get { return geoLocationRect; }
+            set { 
+                SetProperty(ref geoLocationRect, value);
             }
         }
     }

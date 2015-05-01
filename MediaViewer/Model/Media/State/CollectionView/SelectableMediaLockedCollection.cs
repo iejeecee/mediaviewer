@@ -13,12 +13,12 @@ namespace MediaViewer.Model.Media.State
     {
         override protected void afterItemAdded(SelectableMediaItem item)
         {
-            item.Item.PropertyChanged += item_PropertyChanged;
+            item.MediaItemPropertyChanged += item_PropertyChanged;
         }
 
         override protected void beforeItemRemoved(SelectableMediaItem item)
         {
-            item.Item.PropertyChanged -= item_PropertyChanged;
+            item.MediaItemPropertyChanged -= item_PropertyChanged;
         }
     }
 }

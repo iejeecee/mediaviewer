@@ -46,7 +46,7 @@ namespace VideoLib {
 
 		VideoFrame ^videoFrame, ^convertedVideoFrame;
 		AudioFrame ^audioFrame, ^convertedAudioFrame;
-		Packet ^tempAudioPacket;
+		Packet ^audioPacket;
 		
 		array<Queue<Packet ^> ^> ^packetQueue;
 		array<int> ^maxPackets;
@@ -132,6 +132,8 @@ namespace VideoLib {
 							packetQueueStopped[id] = true;
 							Monitor::PulseAll(lockObject);							
 						}
+
+						packet = nullptr;
 						
 						return(false);
 					} 
@@ -323,7 +325,8 @@ namespace VideoLib {
 			
 			singleFrameEvent = gcnew AutoResetEvent(false);
 			continueSingleFrameEvent = gcnew AutoResetEvent(false);
-					
+				
+			audioPacket = nullptr;
 		}
 
 		~FrameQueue() {
@@ -399,6 +402,7 @@ namespace VideoLib {
 				packetQueue[(int)QueueID::FREE_PACKETS]->Enqueue(packetData[i]);
 			}
 				
+			audioPacket = nullptr;
 		}
 		
 		void flush() {		
@@ -418,6 +422,8 @@ namespace VideoLib {
 					packetData[i]->free();
 					packetQueue[(int)QueueID::FREE_PACKETS]->Enqueue(packetData[i]);					
 				}
+
+				audioPacket = nullptr;
 
 			} finally {
 
@@ -663,44 +669,57 @@ namespace VideoLib {
 		AudioFrame ^getDecodedAudioFrame() {
 
 			int frameFinished = 0;		
+			
+			// a single audio packet can contain multiple frames
+			while(1) {
 
-			while(!frameFinished) {
+				if(audioPacket == nullptr || audioPacket->AVLibPacketData->size == 0) {
 
-				Packet ^audioPacket = nullptr;
+					if(audioPacket != nullptr) {
 
-				bool success = getPacket(QueueID::AUDIO_PACKETS, audioPacket);
-				if(success == false) {
+						addFreePacket(audioPacket);					
+					}
 
-					return(nullptr);
+					bool success = getPacket(QueueID::AUDIO_PACKETS, audioPacket);
+					if(success == false) {
+
+						return(nullptr);
+					}
 				}
 
-				avcodec_get_frame_defaults(audioFrame->AVLibFrameData);
+				while(audioPacket->AVLibPacketData->size > 0) {
 
-				int ret = avcodec_decode_audio4(videoDecoder->getAudioCodecContext(), 
-					audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);
-						
-				if(ret < 0) {
+					avcodec_get_frame_defaults(audioFrame->AVLibFrameData);
 
-					Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");
-				}
+					int bytesConsumed = avcodec_decode_audio4(videoDecoder->getAudioCodecContext(), 
+						audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);						
+					if(bytesConsumed < 0) {
 
-				if(frameFinished)
-				{									
-					convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
+						Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");
+						// skip this packet and play silence
+						frameFinished = true;
+						audioPacket->AVLibPacketData->size = 0;
+
+					} else {
+
+						audioPacket->AVLibPacketData->size -= bytesConsumed;
+						audioPacket->AVLibPacketData->data += bytesConsumed;
+					}
+
+					if(frameFinished)
+					{									
+						convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
 					
-					convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
-							audioPacket->AVLibPacketData->dts);
+						convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
+								audioPacket->AVLibPacketData->dts);
 
-					convertedAudioFrame->copyAudioDataToManagedMemory();
+						convertedAudioFrame->copyAudioDataToManagedMemory();
 
+						return(convertedAudioFrame);
+					}
 				}
-
-				addFreePacket(audioPacket);
+				
 			}
-
-
-			return(convertedAudioFrame);
-
 
 		}
 

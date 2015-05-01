@@ -25,6 +25,17 @@ namespace MediaViewer.Model.Media.Metadata
             ImageMetadata image = media as ImageMetadata;
             media.SizeBytes = data.Length;
 
+            if (!FileUtils.isUrl(image.Location))
+            {
+                image.SupportsXMPMetadata = true;
+
+                base.readMetadata(data, options, media, token, timeoutSeconds);
+            }
+            else
+            {
+                image.SupportsXMPMetadata = false;
+            }
+
             BitmapDecoder bitmapDecoder = null;
          
             try
@@ -54,17 +65,6 @@ namespace MediaViewer.Model.Media.Metadata
                 data.Position = 0;
             }
 
-            if (!FileUtils.isUrl(image.Location))
-            {
-                image.SupportsXMPMetadata = true;
-
-                base.readMetadata(data, options, media, token, timeoutSeconds);
-            }
-            else
-            {
-                image.SupportsXMPMetadata = false;
-            }
-          
         }
 
         public void generateThumbnail(Stream data, BitmapFrame frame, ImageMetadata image)
@@ -78,14 +78,48 @@ namespace MediaViewer.Model.Media.Metadata
 
                 var tempImage = new BitmapImage();
                 tempImage.BeginInit();
-                tempImage.CacheOption = BitmapCacheOption.OnLoad;          
+                tempImage.CacheOption = BitmapCacheOption.OnLoad;
                 tempImage.StreamSource = data;
                 tempImage.DecodePixelWidth = MAX_THUMBNAIL_WIDTH;
                 tempImage.EndInit();
 
                 thumb = tempImage;
             }
+           
+            double angle = 0;
 
+            if (image.Orientation != null)
+            {
+                switch (image.Orientation.Value)
+                {
+                    case 8:
+                        {
+                            angle = 270;
+                            break;
+                        }
+                    case 3:
+                        {
+                            angle = 180;
+                            break;
+                        }
+                    case 6:
+                        {
+                            angle = 90;
+                            break;
+                        }
+                    default:
+                        {
+                            angle = 0;
+                            break;
+                        }
+                }
+            }
+
+            if (angle != 0)
+            {
+                thumb = new TransformedBitmap(thumb.Clone(), new System.Windows.Media.RotateTransform(angle));
+            }
+            
             image.Thumbnail = new Thumbnail(thumb);
 
         }
@@ -143,7 +177,6 @@ namespace MediaViewer.Model.Media.Metadata
             base.readXMPMetadata(xmpMetaDataReader, media);
 
             ImageMetadata image = media as ImageMetadata;
-
             
             Nullable<int> intVal = new Nullable<int>();
             String temp = "";
@@ -225,6 +258,16 @@ namespace MediaViewer.Model.Media.Metadata
             else
             {
                 image.Sharpness = (short)intVal;
+            }
+
+            xmpMetaDataReader.getProperty_Int(Consts.XMP_NS_TIFF, "Orientation", ref intVal);
+            if (intVal == null)
+            {
+                image.Orientation = null;
+            }
+            else
+            {
+                image.Orientation = (short)intVal;
             }
 
             string subjectDistance = "";

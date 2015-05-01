@@ -27,6 +27,7 @@ using MediaViewer.MediaFileBrowser;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure.Global.Events;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Infrastructure.Utils;
 
 namespace MediaViewer.ImagePanel
 {
@@ -58,7 +59,11 @@ namespace MediaViewer.ImagePanel
 
                 try
                 {
-                    await Task.Factory.StartNew(() => loadImage(fileName), loadImageCTS.Token);
+                    Task<BitmapImage> t = Task<BitmapImage>.Factory.StartNew(() => loadImage(fileName), loadImageCTS.Token);
+
+                    await t;
+
+                    Image = t.Result;
                 }
                 catch (TaskCanceledException)
                 {
@@ -392,44 +397,60 @@ namespace MediaViewer.ImagePanel
 
             Transform = transformMatrix;
         }
-              
 
-        private void loadImage(String location)
-        {                                        
+
+        private BitmapImage loadImage(String location)
+        {
+
+            BitmapImage loadedImage = null;
+    
             try
             {
                 IsLoading = true;
 
-                if (loadImageCTS.IsCancellationRequested) return;
+                if (loadImageCTS.IsCancellationRequested)
+                {
+                    return (loadedImage);
+                }
 
-                BitmapImage loadedImage = new BitmapImage();
+                CurrentLocation = location;
+                
+                loadedImage = new BitmapImage();
 
                 if (FileUtils.isUrl(location))
                 {
-                    MemoryStream data = new MemoryStream();
+                    Stream data = new MemoryStream();
                     String mimeType;
 
                     StreamUtils.download(new Uri(location), data, out mimeType, loadImageCTS.Token);
+                    Rotation rotation = getRotation(data);
+                    data.Position = 0;
 
-                    loadedImage.BeginInit();
-                    //loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
+                    loadedImage.BeginInit();                   
                     loadedImage.CacheOption = BitmapCacheOption.OnLoad;
                     loadedImage.StreamSource = data;
+                    loadedImage.Rotation = rotation;
                     loadedImage.EndInit();
 
+                    data.Close();
                 }
                 else
                 {
+                    Stream data = File.Open(location, FileMode.Open);
+                    Rotation rotation = getRotation(data);
+                    data.Close();
+
                     loadedImage.BeginInit();
                     loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
                     loadedImage.CacheOption = BitmapCacheOption.OnLoad;
                     loadedImage.UriSource = new Uri(location);
+                    loadedImage.Rotation = rotation;
                     loadedImage.EndInit();
+                   
                 }
 
                 loadedImage.Freeze();
-                              
-                CurrentLocation = location;
+                  
                 Logger.Log.Info("Image loaded: " + location);             
 
                 if (IsResetSettingsOnLoad)
@@ -437,33 +458,49 @@ namespace MediaViewer.ImagePanel
                     resetSettings();
                 }
 
-                Image = loadedImage;
-          
-                IsLoading = false;
-               
+                return(loadedImage);                   
+                               
             }
             catch (TaskCanceledException)
             {
                 Logger.Log.Info("Cancelled loading image:" + (String)location);
+
+                return (null);
             }
             catch (Exception e)
             {
                 CurrentLocation = null;
                 Logger.Log.Error("Error decoding image:" + (String)location, e);
-                MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);               
 
-                Image = null;
+                return (null);
             }
             finally
-            {
-                //if (media != null)
-                //{
-                 //   media.close();
-                //}
+            {              
                 EventAggregator.GetEvent<TitleChangedEvent>().Publish(location == null ? null : Path.GetFileName(CurrentLocation));
                 IsLoading = false;
             }
 
+        }
+
+        Rotation getRotation(Stream data)
+        {
+            BitmapDecoder decoder = BitmapDecoder.Create(data,
+                    BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+
+            BitmapMetadata meta = decoder.Frames[0].Metadata as BitmapMetadata;
+
+            Rotation? image = ImageUtils.getOrientationFromMetatdata(meta);
+           
+            if (image != null)
+            {
+                return (image.Value);
+            }
+            else
+            {
+                return (Rotation.Rotate0);
+            }
+            
         }
 
         public enum ScaleMode

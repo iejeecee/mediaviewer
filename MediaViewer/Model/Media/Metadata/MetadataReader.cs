@@ -138,10 +138,11 @@ namespace MediaViewer.Model.Media.Metadata
 
             xmpMetaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLatitude", ref latitude);
             xmpMetaDataReader.getProperty(Consts.XMP_NS_EXIF, "GPSLongitude", ref longitude);
-
-            media.Longitude = longitude;
-            media.Latitude = latitude;
-       
+           
+            GeoTagCoordinatePair geoPair = new GeoTagCoordinatePair(latitude, longitude);
+            media.Latitude = geoPair.LatDecimal;
+            media.Longitude = geoPair.LonDecimal;
+            
 /*
             List<MetaDataProperty> tiffProps = new List<MetaDataProperty>();
 

@@ -49,7 +49,7 @@ namespace MediaViewer.MediaDatabase
 
                 sb.AppendLine("Size:");
                 sb.Append(MiscUtils.formatSizeBytes(SizeBytes));
-
+               
                 return (sb.ToString());
             }
         }

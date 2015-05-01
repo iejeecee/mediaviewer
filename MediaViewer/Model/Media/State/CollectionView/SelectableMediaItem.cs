@@ -4,6 +4,7 @@ using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,11 +14,22 @@ namespace MediaViewer.Model.Media.State.CollectionView
     public class SelectableMediaItem : BindableBase, IComparable<SelectableMediaItem>, IEquatable<SelectableMediaItem>
     {
         public event EventHandler SelectionChanged;
+        public event PropertyChangedEventHandler MediaItemPropertyChanged;
 
         public SelectableMediaItem(MediaItem item)
         {
             Item = item;
-            IsSelected = false;         
+            IsSelected = false;
+
+            item.PropertyChanged += item_PropertyChanged;
+        }
+
+        void item_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (MediaItemPropertyChanged != null)
+            {
+                MediaItemPropertyChanged(this, e);
+            }
         }
 
         MediaItem item;

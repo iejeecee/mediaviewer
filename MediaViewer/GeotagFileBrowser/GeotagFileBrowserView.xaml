@@ -5,13 +5,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <ContentControl Grid.Row="1" Content="{Binding Map}">
             <ContentControl.ContextMenu>
                 <ContextMenu>
                     <MenuItem Header="View Selected" Command="{Binding MapViewSelectedCommand}"/>
                     <MenuItem Header="Reset View" Command="{Binding ResetMapViewCommand}"/>                   
-                    <MenuItem Header="Mode">
+                    <MenuItem Header="Media Mode">
+                        <MenuItem x:Name="mediaPinMode" Header="Pins" IsCheckable="True" IsChecked="{Binding IsMediaPinMode}" Command="{Binding MediaPinModeCommand}"/>
+                        <MenuItem x:Name="mediaThumbnailMode" Header="Thumbnails" IsCheckable="True" IsChecked="{Binding IsMediaThumbnailMode}" Command="{Binding MediaThumbnailModeCommand}"/>
+                    </MenuItem>
+                    <MenuItem Header="Map Mode">
                         <MenuItem x:Name="mapRoadMode" Header="Road" IsCheckable="True" IsChecked="{Binding IsRoadMode}" Command="{Binding MapRoadModeCommand}"/>
                         <MenuItem x:Name="mapAerialMode" Header="Aerial" IsCheckable="True" IsChecked="{Binding IsAerialMode}" Command="{Binding MapAerialModeCommand}"/>
                         <MenuItem x:Name="mapAerialWithLabelsMode" Header="Aerial With Labels" IsCheckable="True" IsChecked="{Binding IsAerialModeWithLabels}" Command="{Binding MapAerialModeWithLabelsCommand}"/>

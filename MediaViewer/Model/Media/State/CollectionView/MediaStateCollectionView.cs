@@ -22,7 +22,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 {
     public class MediaStateCollectionView : BindableBase {
 
-        public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;
+        public event EventHandler<MediaStateCollectionViewChangedEventArgs> NrItemsInStateChanged;
         public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
         public event EventHandler<int> ItemResorted;
         public event EventHandler SelectionChanged;
@@ -472,11 +472,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
             bool selectionChanged = false;
             bool isItemRemoved = false;
 
+            SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+
             Media.EnterWriteLock();
             try
-            {
-                SelectableMediaItem selectableItem = new SelectableMediaItem(item);
-
+            {                
                 int index = Media.IndexOf(selectableItem);
 
                 if (index >= 0)
@@ -503,7 +503,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             if (isItemRemoved)
             {
-                OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Remove, item));
+                OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Remove, selectableItem));
             }
 
             if (selectionChanged)
@@ -522,8 +522,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 // instead of firing off a whole bunch of itemchanged events
                 if (this.Media.Count == 0 && items.Count() > 1)
                 {                   
-                    List<SelectableMediaItem> temp = new List<SelectableMediaItem>();
-                    List<MediaItem> filteredItems = new List<MediaItem>();
+                    List<SelectableMediaItem> filteredItems = new List<SelectableMediaItem>();
+                    
 
                     foreach (MediaItem item in items)
                     {
@@ -532,16 +532,14 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         if (Filter(selectableItem))
                         {
                             selectableItem.SelectionChanged += selectableItem_SelectionChanged;
-                            CollectionsSort.insertIntoSortedCollection(temp, selectableItem, sortFunc);
-
-                            filteredItems.Add(item);
+                            CollectionsSort.insertIntoSortedCollection(filteredItems, selectableItem, sortFunc);                         
                         }
                     }
 
-                    Media.AddRange(temp);
+                    Media.AddRange(filteredItems);
                     sortedItemEnd = Media.Count;
 
-                    OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, filteredItems));
+                    OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, filteredItems));
                 }
                 else
                 {
@@ -561,11 +559,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
         {
             bool isItemAdded = false;
 
+            SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+
             Media.EnterWriteLock();
             try
-            {
-                SelectableMediaItem selectableItem = new SelectableMediaItem(item);
-
+            {                
                 if (Filter(selectableItem) && !Media.Contains(selectableItem))
                 {
                     insertSorted(selectableItem);
@@ -581,7 +579,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             if (isItemAdded)
             {
-                OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Add, item));
+                OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, selectableItem));
             }
 
         }
@@ -634,7 +632,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 OnSelectionChanged();
             }
 
-            OnNrItemsInStateChanged(new MediaStateChangedEventArgs(MediaStateChangedAction.Clear));
+            OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Clear));
 
         }
 
@@ -658,7 +656,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        private void OnNrItemsInStateChanged(MediaStateChangedEventArgs args)
+        private void OnNrItemsInStateChanged(MediaStateCollectionViewChangedEventArgs args)
         {
             if (NrItemsInStateChanged != null)
             {

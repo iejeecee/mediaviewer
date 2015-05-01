@@ -154,23 +154,19 @@ namespace MediaViewer.Model.Media.Metadata
                     Consts.PropOptions.XMP_PropArrayIsUnordered, tag.Name, 0);
             }
 
-            if (media.Latitude != null)
+            GeoTagCoordinatePair geoTag = new GeoTagCoordinatePair(media.Latitude, media.Longitude);
+
+            if (!geoTag.IsEmpty)
             {
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", media.Latitude, 0);
+                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", geoTag.LatCoord, 0);
+                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLongitude", geoTag.LonCoord, 0);
             }
             else
             {
                 xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLatitude");
-            }
-
-            if (media.Longitude != null)
-            {
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLongitude", media.Longitude, 0);
-            }
-            else
-            {
                 xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLongitude");
             }
+           
 /*
             if (HasGeoTag == true)
             {

@@ -15,6 +15,12 @@ using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Mvvm;
 using System.Windows.Threading;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Controls;
+using System.Windows;
+using System.Windows.Input;
+using MediaViewer.Model.Utils;
+using MediaViewer.Model.Media.State.CollectionView;
 
 namespace MediaViewer.GeotagFileBrowser
 {
@@ -22,8 +28,9 @@ namespace MediaViewer.GeotagFileBrowser
     class GeotagFileBrowserViewModel : BindableBase, IMediaFileBrowserContentViewModel
     {       
         public Map Map { get; set; }
-        MediaFileState MediaFileState {get;set;}
+        MediaStateCollectionView MediaCollectionView { get; set; }
         IEventAggregator EventAggregator { get; set; }
+        MapLayer imageLayer,pinLayer;
 
         bool isRoadMode;
 
@@ -49,22 +56,47 @@ namespace MediaViewer.GeotagFileBrowser
             }
         }
 
+        bool isMediaPinMode;
+
+        public bool IsMediaPinMode
+        {
+            get { return isMediaPinMode; }
+            set { SetProperty(ref isMediaPinMode, value); }
+        }
+
+        bool isMediaThumbnailMode;
+
+        public bool IsMediaThumbnailMode
+        {
+            get { return isMediaThumbnailMode; }
+            set { SetProperty(ref isMediaThumbnailMode, value); }
+        }
+
+        public Command MediaThumbnailModeCommand { get; set; }
+        public Command MediaPinModeCommand { get; set; }
         public Command ResetMapViewCommand { get; set; }
         public Command MapRoadModeCommand { get; set; }        
         public Command MapAerialModeCommand { get; set; }
         public Command MapViewSelectedCommand { get; set; }
         public Command MapAerialModeWithLabelsCommand { get; set; }
 
-        Brush defaultPushpinBackground;
-        Brush selectedPushpinBackground;
+        Brush defaultPushpinBackground, selectedPushpinBackground, defaultImageBackground, selectedImageBackground;
 
-        public GeotagFileBrowserViewModel(MediaFileState mediaFileState, IEventAggregator eventAggregator)
+        public GeotagFileBrowserViewModel(MediaStateCollectionView mediaFileState, IEventAggregator eventAggregator)
         {
             Map = new Map();
-            Map.CredentialsProvider = new ApplicationIdCredentialsProvider(BingMapsKey.key);
-            Map.PreviewMouseDoubleClick += Map_PreviewMouseDoubleClick;
-                        
-            MediaFileState = mediaFileState;
+            Map.CredentialsProvider = new ApplicationIdCredentialsProvider(BingMapsKey.Key);
+            Map.CredentialsProvider.GetCredentials((c) =>
+            {
+                BingMapsKey.SessionKey = c.ApplicationId;
+            });
+
+           
+
+            //Map.PreviewMouseWheel += map_PreviewMouseWheel;
+            Map.PreviewMouseDoubleClick += map_PreviewMouseDoubleClick;
+
+            MediaCollectionView = mediaFileState;
             EventAggregator = eventAggregator;
 
             IsRoadMode = true;
@@ -101,10 +133,10 @@ namespace MediaViewer.GeotagFileBrowser
 
             MapViewSelectedCommand = new Command(() =>
                 {
-                    foreach(Pushpin pin in Map.Children) 
-                    {
-                        if(pin.Background.Equals(selectedPushpinBackground)) {
-
+                    foreach(Pushpin pin in pinLayer.Children) 
+                    {                      
+                        if (pin.Background.Equals(selectedPushpinBackground))
+                        {
                             Map.Center = pin.Location;
                             Map.ZoomLevel = 12;
                             return;
@@ -112,48 +144,133 @@ namespace MediaViewer.GeotagFileBrowser
                     }
                 });
 
+            MediaThumbnailModeCommand = new Command(() =>
+                {
+                    imageLayer.Visibility = Visibility.Visible;
+                    pinLayer.Visibility = Visibility.Collapsed;
+                    IsMediaThumbnailMode = true;
+                    IsMediaPinMode = false;
+
+                });
+
+            MediaPinModeCommand = new Command(() =>
+                {
+                    imageLayer.Visibility = Visibility.Collapsed;
+                    pinLayer.Visibility = Visibility.Visible;
+
+                    IsMediaThumbnailMode = false;
+                    IsMediaPinMode = true;
+                });
+
             Pushpin dummy = new Pushpin();
 
             defaultPushpinBackground = dummy.Background;
             selectedPushpinBackground = new SolidColorBrush(Colors.Red);
 
+            defaultImageBackground = new SolidColorBrush(Colors.Black);
+            selectedImageBackground = new SolidColorBrush(Colors.Red);
+
+            imageLayer = new MapLayer();
+            pinLayer = new MapLayer();
+
+            Map.Children.Add(imageLayer);
+            Map.Children.Add(pinLayer);
+
+            MediaPinModeCommand.Execute();
+            
         }
 
-        private void Map_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        private void map_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            e.Handled = true;
-        }
-
-        bool mapHasPushpin(MediaItem item)
-        {
-            foreach (Pushpin pin in Map.Children)
+            if (e.Delta > 0)
             {
-                if ((pin.Tag as MediaItem).Equals(item))
+               
+                Point mousePosition = e.GetPosition(Map);
+                //Convert the mouse coordinates to a locatoin on the map
+                Location mouseLocation = Map.ViewportPointToLocation(mousePosition);
+                
+
+                Map.Center = mouseLocation;
+            }
+
+            e.Handled = true;
+            Map.ZoomLevel = MiscUtils.clamp<double>(Map.ZoomLevel + e.Delta / 500.0, 1, 20);
+            
+        }
+
+        private void map_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            //e.Handled = true;
+        }
+
+        bool mapContainsItem(MediaItem item)
+        {
+            foreach (FrameworkElement elem in pinLayer.Children)
+            {
+                if (elem.Tag.Equals(item))
                 {
-                    return (true);
+                    return(true);
                 }
             }
 
-            return (false);
+            return (false); 
         }
 
-        void addPushpin(MediaItem item)
-        {                       
+        void mapAddItem(SelectableMediaItem media)
+        {
+            MediaItem item = media.Item;
+
             item.RWLock.EnterReadLock();
             try
             {
-                if (item.Metadata == null || mapHasPushpin(item)) return;
+                if (item.Metadata == null || item.HasGeoTag == false || mapContainsItem(item)) return;
                 GeoTagCoordinatePair coord = new GeoTagCoordinatePair(item.Metadata.Latitude, item.Metadata.Longitude);
                        
                 if (!coord.IsEmpty)
                 {
+                    Location itemLocation = new Location(coord.LatDecimal.Value, coord.LonDecimal.Value);
+                  
+                    Border border = new Border();
+                    border.BorderThickness = new Thickness(8);                      
+                    border.Tag = item;
+                    border.MaxWidth = 100;
+                    border.MaxHeight = 100;
+                    if (media.IsSelected)
+                    {
+                        border.Background = selectedImageBackground;
+                    }
+                    else
+                    {
+                        border.Background = defaultImageBackground;
+                    }
+                       
+                    Image image = new Image();                      
+                    image.Tag = item;
+                    image.Source = item.Metadata.Thumbnail.Image;                    
+                    image.PreviewMouseDown += item_PreviewMouseDown;
+                    image.ToolTip = item.Metadata.DefaultFormatCaption;
+
+                    border.Child = image;
+
+                    imageLayer.AddChild(border, itemLocation, PositionOrigin.Center);
+                  
                     Pushpin pin = new Pushpin();
-                    pin.Tag = item;
-                    pin.PreviewMouseDoubleClick += pin_PreviewMouseDoubleClick;
-                    pin.Location = new Location(coord.LatDecimal.Value, coord.LonDecimal.Value);
+                    pin.Tag = item;                  
+                    pin.ToolTip = item.Metadata.DefaultFormatCaption;
+                    pin.PreviewMouseDown += item_PreviewMouseDown;
+                    pin.Location = itemLocation;
 
-                    Map.Children.Add(pin);
+                    if (media.IsSelected)
+                    {
+                        pin.Background = selectedPushpinBackground;                        
+                    }
+                    else
+                    {
+                        pin.Background = defaultPushpinBackground;
+                    }
 
+                    pinLayer.AddChild(pin,itemLocation,PositionOrigin.BottomCenter);
+                    
                 }
             }
             finally
@@ -163,74 +280,113 @@ namespace MediaViewer.GeotagFileBrowser
               
         }
 
-        void removePushpin(MediaItem item)
+        void mapRemoveItem(SelectableMediaItem media)
         {
-            foreach (Pushpin pin in Map.Children)
+            for (int i = 0; i < pinLayer.Children.Count; i++)
             {
-                if ((pin.Tag as MediaItem).Equals(item))
-                {                    
-                    Map.Children.Remove(pin);                      
+                if ((pinLayer.Children[i] as FrameworkElement).Tag.Equals(media.Item))
+                {
+                    pinLayer.Children.RemoveAt(i);
+                    imageLayer.Children.RemoveAt(i);
+
                     return;
                 }
             }
+            
         }
 
-        void loadItems()
+        FrameworkElement mapSelectItem(MediaItem item)
         {
-            MediaFileState.UIMediaCollection.EnterReaderLock();
+            FrameworkElement selected = null;
+           
+            for(int i = 0; i < pinLayer.Children.Count; i++)
+            {
+                if ((pinLayer.Children[i] as FrameworkElement).Tag.Equals(item))
+                {
+                    (pinLayer.Children[i] as Pushpin).Background = selectedPushpinBackground;
+                    (imageLayer.Children[i] as Border).Background = selectedImageBackground;
+
+                    selected = pinLayer.Children[i] as FrameworkElement;
+                }
+                else
+                {
+                    (pinLayer.Children[i] as Pushpin).Background = defaultPushpinBackground;
+                    (imageLayer.Children[i] as Border).Background = defaultImageBackground;                                  
+                }
+
+            }
+
+            return (selected);
+        }
+       
+
+        void mapLoadItems()
+        {
+            MediaCollectionView.MediaState.UIMediaCollection.EnterReaderLock();
             try
             {
-                foreach (MediaFileItem item in MediaFileState.UIMediaCollection)
+                foreach (SelectableMediaItem media in MediaCollectionView.Media)
                 {
-                    if (item.ItemState == MediaItemState.LOADED)
+                    if (media.Item.ItemState == MediaItemState.LOADED)
                     {
-                        item.RWLock.EnterReadLock();
-                        addPushpin(item);
-                        item.RWLock.ExitReadLock();
+                        media.Item.RWLock.EnterReadLock();
+                        mapAddItem(media);
+                        media.Item.RWLock.ExitReadLock();
                     }
                 }
             }
             finally
             {
-                MediaFileState.UIMediaCollection.ExitReaderLock();
+                MediaCollectionView.MediaState.UIMediaCollection.ExitReaderLock();
             }
         }
 
-        void pin_PreviewMouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        void mapClearItems()
         {
-            Pushpin pin = (Pushpin)sender;
-            MediaItem item = pin.Tag as MediaItem;
+            pinLayer.Children.Clear();
+            imageLayer.Children.Clear();
+        }
 
-            selectPin(item);
-            EventAggregator.GetEvent<MediaSelectionEvent>().Publish(item);
+        void item_PreviewMouseDown(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left && e.ClickCount == 2)
+            {
+                FrameworkElement elem = (FrameworkElement)sender;
+                MediaItem item = elem.Tag as MediaItem;
+
+                mapSelectItem(item);
+                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(item);
+
+                e.Handled = true;
+            }
         }
 
         public void OnNavigatedTo(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
         {
-            loadItems();
+            mapLoadItems();
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaSelectionEvent);
-            MediaFileState.ItemPropertiesChanged += MediaFileState_ItemPropertiesChanged;
-            MediaFileState.NrItemsInStateChanged += MediaFileState_NrItemsInStateChanged;
+            MediaCollectionView.ItemPropertyChanged += MediaCollectionView_ItemPropertyChanged;
+            MediaCollectionView.NrItemsInStateChanged += MediaCollectionView_NrItemsInStateChanged;
         }
 
-        private void MediaFileState_NrItemsInStateChanged(object sender, Model.Media.State.MediaStateChangedEventArgs e)
+        private void MediaCollectionView_NrItemsInStateChanged(object sender, MediaStateCollectionViewChangedEventArgs e)
         {
             switch (e.Action)
             {
                 case MediaViewer.Model.Media.State.MediaStateChangedAction.Add:
-                    foreach (MediaItem item in e.NewItems)
+                    foreach (SelectableMediaItem item in e.NewItems)
                     {
-                        App.Current.Dispatcher.Invoke(new Action(() => addPushpin(item)));
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => mapAddItem(item)));
                     }
                     break;
                 case MediaViewer.Model.Media.State.MediaStateChangedAction.Remove:
-                    foreach (MediaItem item in e.NewItems)
+                    foreach (SelectableMediaItem item in e.NewItems)
                     {
-                        App.Current.Dispatcher.Invoke(new Action(() => removePushpin(item)));
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => mapRemoveItem(item)));
                     }
                     break;
                 case MediaViewer.Model.Media.State.MediaStateChangedAction.Clear:
-                    App.Current.Dispatcher.Invoke(new Action(() => Map.Children.Clear()));
+                    App.Current.Dispatcher.BeginInvoke(new Action(() => mapClearItems()));                                         
                     break;
                 case MediaViewer.Model.Media.State.MediaStateChangedAction.Modified:
                     break;
@@ -241,20 +397,17 @@ namespace MediaViewer.GeotagFileBrowser
             }
         }
 
-        private void MediaFileState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void MediaCollectionView_ItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            MediaFileItem item = (MediaFileItem)sender;
-           
-            if (e.PropertyName.Equals("HasGeoTag"))
-            {               
-                if (item.HasGeoTag)
-                {
-                    App.Current.Dispatcher.Invoke(new Action(() => addPushpin(item)));
-                }
-                else
-                {
-                    App.Current.Dispatcher.Invoke(new Action(() => removePushpin(item)));
-                }               
+            SelectableMediaItem item = (SelectableMediaItem)sender;
+
+            if (e.PropertyName.Equals("Metadata"))
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() => {
+                    mapRemoveItem(item);
+                    mapAddItem(item);
+                }));
+
             }
        
         }
@@ -262,39 +415,25 @@ namespace MediaViewer.GeotagFileBrowser
         public void OnNavigatedFrom(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
         {
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(mediaSelectionEvent);
-            MediaFileState.ItemPropertiesChanged -= MediaFileState_ItemPropertiesChanged;
-            MediaFileState.NrItemsInStateChanged -= MediaFileState_NrItemsInStateChanged;
-            Map.Children.Clear();
+            MediaCollectionView.ItemPropertyChanged -= MediaCollectionView_ItemPropertyChanged;
+            MediaCollectionView.NrItemsInStateChanged -= MediaCollectionView_NrItemsInStateChanged;
+            mapClearItems();
         }
 
-        Pushpin selectPin(MediaItem item)
-        {
-            Pushpin selected = null;
-
-            foreach (Pushpin pin in Map.Children)
-            {
-                if ((pin.Tag as MediaItem).Equals(item))
-                {
-                    pin.Background = selectedPushpinBackground;
-                    selected = pin;
-                }
-                else
-                {
-                    pin.Background = defaultPushpinBackground;
-                }
-
-            }
-
-            return (selected);
-        }
+        
 
         void mediaSelectionEvent(MediaItem item)
         {
-            Pushpin pin = selectPin(item);
+            FrameworkElement elem = mapSelectItem(item);
 
-            if (pin != null)
+            if (elem != null)
             {
-                Map.Center = pin.Location;
+                item.RWLock.EnterReadLock();
+                if (item.Metadata.Latitude != null)
+                {
+                    Map.Center = new Location(item.Metadata.Latitude.Value, item.Metadata.Longitude.Value);
+                }
+                item.RWLock.ExitReadLock();
             }
             
         }

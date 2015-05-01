@@ -787,12 +787,12 @@ namespace MediaViewer.MetaData
 
             if (media.Latitude != null)
             {
-                p.Add(new Tuple<string, string>("GPS Latitude", media.Latitude));
+                p.Add(new Tuple<string, string>("GPS Latitude", media.Latitude.Value.ToString("0.00000")));
             }
 
             if (media.Longitude != null)
             {
-                p.Add(new Tuple<string, string>("GPS Longitude", media.Longitude));
+                p.Add(new Tuple<string, string>("GPS Longitude", media.Longitude.Value.ToString("0.00000")));
             }
             
             if (p.Count > nrProps)

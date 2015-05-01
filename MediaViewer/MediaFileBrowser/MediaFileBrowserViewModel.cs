@@ -202,10 +202,10 @@ namespace MediaViewer.MediaFileBrowser
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
             videoMediaStackPanelViewModel.IsVisible = true;
 
-            GeotagFileBrowserViewModel = new GeotagFileBrowserViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-
             GeotagFileBrowserStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             GeotagFileBrowserStackPanelViewModel.IsVisible = true;
+
+            GeotagFileBrowserViewModel = new GeotagFileBrowserViewModel(GeotagFileBrowserStackPanelViewModel.MediaStateCollectionView, EventAggregator);
 
             MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
 
@@ -599,6 +599,11 @@ namespace MediaViewer.MediaFileBrowser
                     Shell.ShellViewModel.navigateToMediaStackPanelView(videoMediaStackPanelViewModel);
                     newTitle = VideoViewModel.CurrentLocation;
                     if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
+                }
+                else if (CurrentViewModel is GeotagFileBrowserViewModel)
+                {
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(geotagFileBrowserStackPanelViewModel);
+                    newTitle = BrowsePath;
                 }
                 
                 CurrentViewModel.OnNavigatedTo(navigationContext);                

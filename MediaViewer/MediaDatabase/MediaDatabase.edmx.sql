@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 03/20/2015 15:15:10
+-- Date Created: 04/29/2015 23:32:54
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -129,8 +129,8 @@ CREATE TABLE [dbo].[BaseMetadataSet] (
     [Software] nvarchar(max)  NULL,
     [SupportsXMPMetadata] bit  NOT NULL,
     [TimeStamp] TIMESTAMP  NOT NULL,
-    [Latitude] nvarchar(max)  NULL,
-    [Longitude] nvarchar(max)  NULL,
+    [Latitude] float  NULL,
+    [Longitude] float  NULL,
     [FileDate] datetime  NOT NULL,
     [ThumbnailId] int  NULL
 );
@@ -194,6 +194,7 @@ CREATE TABLE [dbo].[BaseMetadataSet_ImageMetadata] (
     [FocalLength] float  NULL,
     [ISOSpeedRating] int  NULL,
     [Contrast] smallint  NULL,
+    [Orientation] smallint  NULL,
     [Id] int  NOT NULL
 );
 GO

@@ -1,21 +1,12 @@
-﻿<UserControl x:Class="MediaViewer.UserControls.GeoTagEditor.GeoTagEditorView"
+﻿<UserControl x:Class="MediaViewer.UserControls.GeoLocationPicker.GeoLocationPickerView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:m="clr-namespace:Microsoft.Maps.MapControl.WPF;assembly=Microsoft.Maps.MapControl.WPF"
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              mc:Ignorable="d" 
-             x:Name="geoTagEditor"
              d:DesignHeight="300" d:DesignWidth="300">
-    <UserControl.Resources>        
-        <ContextMenu x:Key="geoTagContextMenu">
-            <MenuItem x:Name="clearMenuItem" Header="Clear" Click="clearMenuItem_Click"/>
-            <Separator/>
-            <MenuItem x:Name="copyMenuItem" Header="Copy" Click="copyMenuItem_Click"/>
-            <MenuItem x:Name="pasteMenuItem" Header="Paste" Click="pasteMenuItem_Click"/>
-        </ContextMenu>
-    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -24,34 +15,35 @@
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>               
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" x:Name="latTextBox" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" VerticalAlignment="Top" IsReadOnly="True"
-                     ContextMenu="{StaticResource geoTagContextMenu}" ContextMenuOpening="geoTagContextMenu_ContextMenuOpening"/>                        
-            <TextBox Grid.Column="1" x:Name="lonTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Top" HorizontalContentAlignment="Left" IsReadOnly="True"
-                     ContextMenu="{StaticResource geoTagContextMenu}" ContextMenuOpening="geoTagContextMenu_ContextMenuOpening"/>                
-            <ToggleButton Grid.Column="2" x:Name="toggleMapButton" Width="20" Height="19" VerticalAlignment="Top" Checked="toggleMapButton_Checked" Unchecked="toggleMapButton_Unchecked" ToolTip="Toggle Map">
+            <TextBox Grid.Column="0" x:Name="selectedLocationTextBox" HorizontalAlignment="Stretch" IsReadOnly="True" ContextMenuOpening="selectedLocationTextBox_ContextMenuOpening">
+                <TextBox.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="clearMenuItem" Header="Clear" Click="clearMenuItem_Click"/>
+                    </ContextMenu>
+                </TextBox.ContextMenu>
+            </TextBox>
+            <ToggleButton Grid.Column="1" x:Name="toggleMapButton" Width="20" Height="19" VerticalAlignment="Top" Checked="toggleMapButton_Checked" Unchecked="toggleMapButton_Unchecked" ToolTip="Toggle Map">
                 <ToggleButton.Content>
                     <Image Source="pack://application:,,,/Resources/Icons/geotag.ico"/>
                 </ToggleButton.Content>
             </ToggleButton>
         </Grid>
-        <Grid x:Name="mapGrid" Grid.Row="1" Visibility="Collapsed">
+        <Grid x:Name="mapGrid" Visibility="Collapsed" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" BorderStyle="Sunken">
-                <m:Map  x:Name="map" MinHeight="200" ContextMenuOpening="map_ContextMenuOpening">
+            </Grid.RowDefinitions>            
+            <mwt:ClassicBorderDecorator Grid.Row="0"  BorderThickness="2,2,2,2" BorderStyle="Sunken">
+                <m:Map  x:Name="map">
                     <m:Map.ContextMenu>
-                        <ContextMenu>
-                            <MenuItem x:Name="centerMenuItem" Header="Center" Click="centerMenuItem_Click"/>
+                        <ContextMenu>                           
                             <MenuItem Header="Mode">
                                 <MenuItem x:Name="mapRoadMode" Header="Road" IsCheckable="True" IsChecked="True" Click="mapRoadMode_Click"/>
                                 <MenuItem x:Name="mapAerialMode" Header="Aerial" IsCheckable="True" Click="mapAerialMode_Click"/>
                                 <MenuItem x:Name="mapAerialWithLabelsMode" Header="Aerial With Labels" IsCheckable="True" Click="mapAerialWithLabelsMode_Click"/>
-                            </MenuItem>                        
+                            </MenuItem>
                         </ContextMenu>
                     </m:Map.ContextMenu>
                 </m:Map>
@@ -59,14 +51,14 @@
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>                    
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <ComboBox Grid.Column="0" x:Name="findLocationComboBox" PreviewKeyDown="findLocationComboBox_PreviewKeyDown" DisplayMemberPath="Name" SelectionChanged="findLocationComboBox_SelectionChanged" IsEditable="True" IsTextSearchEnabled="False"/>
-                <Button Grid.Column="1" x:Name="findLocationButton" ToolTip="Find Location" Height="19" Click="findLocationButton_Click">
+                <Button Grid.Column="1" x:Name="findLocationButton" ToolTip="Find Location" Width="20" Height="19" Click="findLocationButton_Click">
                     <Button.Content>
                         <Image Source="pack://application:,,,/Resources/Icons/searchblack.ico"/>
                     </Button.Content>
-                </Button>                
+                </Button>
             </Grid>
         </Grid>
     </Grid>

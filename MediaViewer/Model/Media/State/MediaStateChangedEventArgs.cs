@@ -9,106 +9,43 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.State
 {
-    public enum MediaStateChangedAction
-    {
-        Add,
-        Remove,
-        Clear,
-        Modified,
-        Replace   
-    }
 
-    public class MediaStateChangedEventArgs : EventArgs
+
+    public class MediaStateChangedEventArgs : MediaStateChangedEventArgsBase<MediaItem>
     {
 
-        public MediaStateChangedEventArgs(MediaStateChangedAction action)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action) :
+            base(action)
         {
-            this.action = action;
-
-            if (action != MediaStateChangedAction.Clear)
-            {
-                throw new ArgumentException("Only MediaStateChangedAction.Clear can use constructor without items");
-            }
-
-            NewItems = null;
-            OldItems = null;
+           
            
         }
 
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, MediaItem item)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, MediaItem item) :
+            base(action, item)
         {
-            this.action = action;
-
-            if (action == MediaStateChangedAction.Add)
-            {
-                NewItems = new List<MediaItem>() {item};
-            }
-            else if (action == MediaStateChangedAction.Remove)
-            {
-                OldItems = new List<MediaItem>() { item };
-            }
-        }
-        
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> items)
-        {
-            this.action = action;
-
-            if (action == MediaStateChangedAction.Add)
-            {
-                NewItems = items;
-            }
-            else if (action == MediaStateChangedAction.Remove)
-            {
-                OldItems = items;
-            }
+            
         }
 
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<String> locations)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> items) :
+            base(action, items)
         {
-            this.action = action;
-           
-            OldLocations = locations;            
+            
+        }
+
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<String> locations) :
+            base(action, locations)
+        {
+                       
         }
    
-        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> newItems, IEnumerable<String> oldLocations)
+        public MediaStateChangedEventArgs(MediaStateChangedAction action, IEnumerable<MediaItem> newItems, IEnumerable<String> oldLocations) :            
+            base(action, newItems, oldLocations)
         {
-            this.action = action;
-
-            this.newItems = newItems;
-            this.oldLocations = oldLocations;
+            
            
         }
 
-        MediaStateChangedAction action;
-
-        public MediaStateChangedAction Action
-        {
-            get { return action; }
-            private set { action = value; }
-        }
-      
-        IEnumerable<String> oldLocations;
-
-        public IEnumerable<String> OldLocations
-        {
-            get { return oldLocations; }
-            private set { oldLocations = value; }
-        }
-
-        IEnumerable<MediaItem> oldItems;
-
-        public IEnumerable<MediaItem> OldItems
-        {
-            get { return oldItems; }
-            private set { oldItems = value; }
-        }
-
-        IEnumerable<MediaItem> newItems;
-
-        public IEnumerable<MediaItem> NewItems
-        {
-            get { return newItems; }
-            private set { newItems = value; }
-        }
+        
     }
 }

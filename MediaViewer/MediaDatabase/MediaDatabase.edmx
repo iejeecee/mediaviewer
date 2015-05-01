@@ -100,8 +100,8 @@
     <Property Name="Software" Type="nvarchar(max)" Nullable="true" />
     <Property Name="SupportsXMPMetadata" Type="bit" Nullable="false" DefaultValue="true" />
     <Property Name="TimeStamp" Type="varbinary(max)" StoreGeneratedPattern="Computed" Nullable="false" />
-    <Property Name="Latitude" Type="nvarchar(max)" Nullable="true" />
-    <Property Name="Longitude" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Latitude" Type="float" Nullable="true" />
+    <Property Name="Longitude" Type="float" Nullable="true" />
     <Property Name="FileDate" Type="datetime" Nullable="false" />
     <Property Name="ThumbnailId" Type="int" Nullable="true" />
   </EntityType>
@@ -165,6 +165,7 @@
     <Property Name="FocalLength" Type="float" Nullable="true" />
     <Property Name="ISOSpeedRating" Type="int" Nullable="true" />
     <Property Name="Contrast" Type="smallint" Nullable="true" />
+    <Property Name="Orientation" Type="smallint" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="BaseMetadataSet_VideoMetadata">
@@ -442,8 +443,8 @@
           <Property Type="String" Name="Software" Nullable="true" />
           <Property Type="Boolean" Name="SupportsXMPMetadata" Nullable="false" DefaultValue="true" />
           <Property Type="Binary" Name="TimeStamp" Nullable="false" ConcurrencyMode="Fixed" annotation:StoreGeneratedPattern="Computed" />
-          <Property Type="String" Name="Latitude" Nullable="true" />
-          <Property Type="String" Name="Longitude" Nullable="true" />
+          <Property Type="Double" Name="Latitude" Nullable="true" />
+          <Property Type="Double" Name="Longitude" Nullable="true" />
           <Property Type="DateTime" Name="FileDate" Nullable="false" />
           <NavigationProperty Name="Tags" Relationship="MediaDatabase.BaseMetadataTag" FromRole="BaseMetadata" ToRole="Tag" />
           <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.ThumbnailBaseMetadata" FromRole="BaseMetadata" ToRole="Thumbnail" />
@@ -532,6 +533,7 @@
           <Property Type="Double" Name="FocalLength" Nullable="true" />
           <Property Type="Int32" Name="ISOSpeedRating" Nullable="true" />
           <Property Type="Int16" Name="Contrast" Nullable="true" />
+          <Property Type="Int16" Name="Orientation" Nullable="true" />
         </EntityType>
         <EntityType Name="VideoMetadata" BaseType="MediaDatabase.BaseMetadata" >
           <Property Type="Int32" Name="Width" Nullable="false" />
@@ -647,6 +649,7 @@
           <ScalarProperty Name="FocalLength" ColumnName="FocalLength" />
           <ScalarProperty Name="ISOSpeedRating" ColumnName="ISOSpeedRating" />
           <ScalarProperty Name="Contrast" ColumnName="Contrast" />
+          <ScalarProperty Name="Orientation" ColumnName="Orientation" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.VideoMetadata)">
