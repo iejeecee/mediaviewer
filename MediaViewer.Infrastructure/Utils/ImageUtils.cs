@@ -27,6 +27,18 @@ namespace MediaViewer.Infrastructure.Utils
             return (center);
         }
 
+
+        public static RectangleF centerRectangle(RectangleF outer, RectangleF inner)
+        {
+
+            RectangleF center = new RectangleF(outer.X, outer.Y, inner.Width, inner.Height);
+
+            center.X += (outer.Width - inner.Width) / 2;
+            center.Y += (outer.Height - inner.Height) / 2;
+
+            return (center);
+        }
+
         /// <summary>
         /// returns scale required to scale input to desired size
         /// </summary>
@@ -138,6 +150,25 @@ namespace MediaViewer.Infrastructure.Utils
             return (bitmap);
         }
 
+        public static Rotation getBitmapRotation(Stream data)
+        {
+            BitmapDecoder decoder = BitmapDecoder.Create(data,
+                    BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
+
+            BitmapMetadata meta = decoder.Frames[0].Metadata as BitmapMetadata;
+
+            Rotation? image = ImageUtils.getOrientationFromMetatdata(meta);
+
+            if (image != null)
+            {
+                return (image.Value);
+            }
+            else
+            {
+                return (Rotation.Rotate0);
+            }
+
+        }
       
 
         public static Rotation? getOrientationFromMetatdata(BitmapMetadata meta)

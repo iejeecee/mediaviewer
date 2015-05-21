@@ -25,11 +25,6 @@
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
-    <ImagePanel:DegreesConverter x:Key="degreesConverter"/>    
-    <ImagePanel:ScaleConverter x:Key="scaleConverter"/>
-    <ImagePanel:RotationEnumToStringConverter x:Key="rotationEnumToStringConverter"/>
-    <ImagePanel:ScaleEnumToStringConverter x:Key="scaleEnumToStringConverter"/>
-
     <VideoPanel:TimeConverter x:Key="timeConverter"/>
 
     <LinearGradientBrush x:Key="flat3DBorderBrush" StartPoint="0.499,0" EndPoint="0.501,1">

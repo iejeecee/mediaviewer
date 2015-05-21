@@ -10,7 +10,7 @@ using System.Windows;
 
 namespace MediaViewer.Torrent
 {
-    class ScanFilesViewModel : BindableBase, INonCancellableOperationProgress
+    class ScanFilesViewModel : NonCancellableOperationProgressBase
     {
         public ScanFilesViewModel()
         {
@@ -21,62 +21,7 @@ namespace MediaViewer.Torrent
             WindowIcon = "pack://application:,,,/Resources/Icons/torrent.ico";
         }
 
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return (windowTitle);
-            }
-            set
-            {
-                SetProperty(ref windowTitle, value);
-            }
-        }
-
-        String windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return(windowIcon);
-            }
-            set
-            {
-                SetProperty(ref windowIcon, value);
-            }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);   
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);   
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);
-            }
-        }
-
+        
         public ObservableCollection<MediaFileItem> getInputMedia(string inputPath)
         {
             ObservableCollection<MediaFileItem> items = new ObservableCollection<MediaFileItem>();

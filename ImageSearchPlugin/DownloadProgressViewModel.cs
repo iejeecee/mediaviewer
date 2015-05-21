@@ -14,27 +14,12 @@ using System.Threading.Tasks;
 
 namespace ImageSearchPlugin
 {
-    class DownloadProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
+    class DownloadProgressViewModel : CancellableOperationProgressBase
     {
         public DownloadProgressViewModel()
         {
             WindowTitle = "Image Search Download";
-            WindowIcon = "pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search.ico";
-
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            CancellationToken = tokenSource.Token;
-
-            OkCommand = new Command(() =>
-            {
-                OnClosingRequest();
-            });
-
-            CancelCommand = new Command(() =>
-                {
-                    tokenSource.Cancel();
-                });
-
-            InfoMessages = new ObservableCollection<string>();
+            WindowIcon = "pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search.ico";       
         }
 
         public void startDownload(String outputPath, List<MediaItem> items)
@@ -100,120 +85,6 @@ namespace ImageSearchPlugin
             ItemProgressMax = (int)totalBytes;
             ItemProgress = (int)bytesDownloaded;
         }
-
-
-        public Command OkCommand { get; set; }
-        public Command CancelCommand { get; set; }
-
-        String itemInfo;
-
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {
-                SetProperty(ref itemInfo, value);
-            }
-        }
-
-        ObservableCollection<String> infoMessages;
-
-        public ObservableCollection<String> InfoMessages
-        {
-            get { return infoMessages; }
-            set
-            {
-                SetProperty(ref infoMessages, value);
-            }
-        }
-
-        CancellationToken cancellationToken;
-
-        public CancellationToken CancellationToken
-        {
-            get { return cancellationToken; }
-            set { cancellationToken = value; }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {
-                SetProperty(ref itemProgress, value);
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return (itemProgressMax);
-            }
-            set
-            {
-                SetProperty(ref itemProgressMax, value);
-            }
-        }
-
-        String windowTitle;
-
-        public String WindowTitle
-        {
-            get { return windowTitle; }
-            set
-            {
-                SetProperty(ref windowTitle, value);
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-                SetProperty(ref windowIcon, value);
-            }
-        }
+        
     }
 }

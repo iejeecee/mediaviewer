@@ -14,35 +14,24 @@ using System.Threading.Tasks;
 using System.Windows;
 
 
-namespace MediaViewer.VideoTranscode
+namespace MediaViewer.Transcode.Video
 {
-    class VideoTranscodeProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
+    class VideoTranscodeProgressViewModel : CancellableOperationProgressBase
     {
         VideoTranscodeViewModel AsyncState { get; set; }
         ICollection<MediaFileItem> Items { get; set; }
 
-        public VideoTranscodeProgressViewModel(ICollection<MediaFileItem> items, VideoTranscodeViewModel vm)
+        public VideoTranscodeProgressViewModel(VideoTranscodeViewModel vm)
         {
             WindowIcon = "pack://application:,,,/Resources/Icons/videotranscode.ico";
             WindowTitle = "Video Transcoding Progress";
 
             AsyncState = vm;
-            Items = items;
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
+            Items = vm.Items;
 
-            CancellationToken = tokenSource.Token;
-
-            CancelCommand = new Command(() =>
-            {
-                tokenSource.Cancel();
-            });
-
-            OkCommand = new Command(() =>
-                {
-                    OnClosingRequest();
-                },false);
-
-            InfoMessages = new ObservableCollection<string>();
+            CancelCommand.IsExecutable = true;
+            OkCommand.IsExecutable = false;
+                    
         }
 
         public async Task startTranscodeAsync()
@@ -108,7 +97,7 @@ namespace MediaViewer.VideoTranscode
             videoTranscoder.setLogCallback(logCallback, true, VideoLib.VideoTranscoder.LogLevel.LOG_LEVEL_INFO);
             TotalProgressMax = Items.Count;
             TotalProgress = 0;
-            itemProgressMax = 100;
+            ItemProgressMax = 100;
            
             Dictionary<String, Object> options = getOptions();
                 
@@ -164,126 +153,6 @@ namespace MediaViewer.VideoTranscode
         {
             ItemProgress = (int)(progress * 100);
         }
-
-        string itemInfo;
-
-        public string ItemInfo
-        {
-            get
-            {
-                return itemInfo;
-            }
-            set
-            {
-                SetProperty(ref itemInfo, value);
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return itemProgress;
-            }
-            set
-            {
-                SetProperty(ref itemProgress, value);
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return itemProgressMax;
-            }
-            set
-            {
-                SetProperty(ref itemProgressMax, value);
-            }
-        }
-
-
-        ObservableCollection<string> infoMessages;
-
-        public System.Collections.ObjectModel.ObservableCollection<string> InfoMessages
-        {
-            get
-            {
-                return infoMessages;
-            }
-            set
-            {
-
-                SetProperty(ref infoMessages, value);
-            }
-        }
-
-        public Command OkCommand {get;set;}
-        public Command CancelCommand { get; set; }
-
-        public System.Threading.CancellationToken CancellationToken { get; set; }
-
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return(windowTitle);
-            }
-
-            set {
-
-                SetProperty(ref windowTitle, value);
-            }
-        }
-
-        String windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-
-                SetProperty(ref windowIcon, value);
-            }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);
-            }
-        }
+       
     }
 }

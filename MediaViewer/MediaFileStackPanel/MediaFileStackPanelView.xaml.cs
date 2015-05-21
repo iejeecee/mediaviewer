@@ -132,12 +132,14 @@ namespace MediaViewer.MediaFileStackPanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-         
+            ViewModel.MediaStateCollectionView.Cleared -= MediaStateCollectionView_Cleared;
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];
+            ViewModel.MediaStateCollectionView.Cleared += MediaStateCollectionView_Cleared;
+
 
             DataContext = ViewModel;
 
@@ -168,6 +170,14 @@ namespace MediaViewer.MediaFileStackPanel
                     // Send a selection event to inform other views
                     EventAggregator.GetEvent<MediaSelectionEvent>().Publish(selectedItems.ElementAt(0));
                 }
+            }
+        }
+
+        void MediaStateCollectionView_Cleared(object sender, EventArgs e)
+        {
+            if (mediaStackPanel.scrollViewer != null)
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() => mediaStackPanel.scrollViewer.ScrollToHorizontalOffset(0)));
             }
         }
     }

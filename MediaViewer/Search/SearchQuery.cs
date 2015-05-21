@@ -1,6 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.UserControls.Relation;
 using Microsoft.Maps.MapControl.WPF;
 using Microsoft.Practices.Prism.Mvvm;
 using System;

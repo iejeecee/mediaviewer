@@ -22,10 +22,9 @@ using System.Windows;
 namespace MediaViewer.Import
 {
 
-    class ImportProgressViewModel : CloseableBindableBase, ICancellableOperationProgress
+    class ImportProgressViewModel : CancellableOperationProgressBase
     {
-        
-     
+             
         MediaFileState MediaFileState
         {
             get;
@@ -39,21 +38,7 @@ namespace MediaViewer.Import
             WindowTitle = "Importing Media";
             WindowIcon = "pack://application:,,,/Resources/Icons/import.ico";
 
-            InfoMessages = new ObservableCollection<string>();
             ItemInfo = "";
-
-            OkCommand = new Command(() =>
-            {
-                OnClosingRequest();
-            });
-
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-            CancellationToken = tokenSource.Token;
-
-            CancelCommand = new Command(() =>
-            {
-                tokenSource.Cancel();
-            });
 
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
@@ -68,7 +53,7 @@ namespace MediaViewer.Import
             {
                 import(includeLocations, excludeLocations);
 
-            }, cancellationToken);
+            }, CancellationToken);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
@@ -212,121 +197,6 @@ namespace MediaViewer.Import
             }
         }
       
-        public Command OkCommand {get;set;}           
-        public Command CancelCommand {get;set;}
-     
-        CancellationToken cancellationToken;
-
-        public CancellationToken CancellationToken
-        {
-            get { return cancellationToken; }
-            set { cancellationToken = value; }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);          
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);       
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {
-                SetProperty(ref itemProgress, value);              
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return (itemProgressMax);
-            }
-            set
-            {
-                SetProperty(ref itemProgressMax, value);           
-            }
-        }
-
-        String itemInfo;
-
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {
-                SetProperty(ref itemInfo, value);           
-            }
-        }
-
-        ObservableCollection<String> infoMessages;
-
-        public ObservableCollection<String> InfoMessages
-        {
-            get { return infoMessages; }
-            set
-            {
-                SetProperty(ref infoMessages, value);           
-            }
-        }
-
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return (windowTitle);
-            }
-            set
-            {
-                SetProperty(ref windowTitle, value);       
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-                SetProperty(ref windowIcon, value);             
-            }
-        }
+        
     }
 }

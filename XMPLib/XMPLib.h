@@ -99,16 +99,22 @@ namespace XMPLib {
 		void putXMP();
 
 		bool doesPropertyExists(String ^nameSpace, String ^propName);
-		void getProperty(String ^nameSpace, String ^propName, String^ %propValue);
 		void deleteProperty(String ^nameSpace, String ^propName);
+
+		void getProperty(String ^nameSpace, String ^propName, String^ %propValue);		
 		void getProperty_Date(String ^nameSpace, String ^propName, Nullable<DateTime> %propValue);
 		void getProperty_Bool(String ^nameSpace, String ^propName, Nullable<bool> %propValue);
 		void getProperty_Float(String ^nameSpace, String ^propName, Nullable<double> %propValue);
 		void getProperty_Int(String ^nameSpace, String ^propName, Nullable<long> %propValue);
 		void getProperty_Int64(String ^nameSpace, String ^propName, Nullable<Int64> %propValue);
+
 		void setProperty(String ^nameSpace, String ^propName, String ^propValue, Consts::PropOptions options);
 		void setProperty_Date(String ^nameSpace, String ^propName, DateTime propValue);
-		
+		void setProperty_Bool(String ^nameSpace, String ^propName, bool propValue);
+		void setProperty_Float(String ^nameSpace, String ^propName, double propValue);
+		void setProperty_Int(String ^nameSpace, String ^propName, long propValue);
+		void setProperty_Int64(String ^nameSpace, String ^propName, Int64 propValue);
+
 		int countArrayItems(String ^nameSpace, String ^arrayName);
 		void getArrayItem(String ^nameSpace, String ^arrayName, int item, String^ %itemValue);
 		bool doesArrayItemExist(String ^nameSpace, String ^arrayName, int item);
@@ -120,6 +126,8 @@ namespace XMPLib {
 			String ^fieldName, String ^%fieldValue);
 		void setStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
 			String ^fieldName, String ^fieldValue, XMP_OptionBits options);
+		void deleteStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
+			String ^fieldName);
 
 		void getLocalizedText(String ^nameSpace, String ^textName, String ^genericLang,  String ^specificLang, String ^ %itemValue);
 		void setLocalizedText(String ^nameSpace, String ^textName, String ^genericLang, String ^specificLang, String ^itemValue);

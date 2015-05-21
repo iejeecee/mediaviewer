@@ -12,14 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace MediaViewer.ImagePanel
+namespace MediaViewer
 {
     /// <summary>
-    /// Interaction logic for BrightnessView.xaml
+    /// Interaction logic for TestWindow.xaml
     /// </summary>
-    public partial class BrightnessView : Window
+    public partial class TestWindow : Window
     {
-        public BrightnessView()
+        public TestWindow()
         {
             InitializeComponent();
         }

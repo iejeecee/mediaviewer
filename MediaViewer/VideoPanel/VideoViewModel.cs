@@ -26,7 +26,7 @@ using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.VideoTranscode;
+using MediaViewer.Transcode.Video;
 using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.Infrastructure.Global.Events;
 using Microsoft.Practices.ServiceLocation;

@@ -2,93 +2,12 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"       
-             xmlns:Effects="clr-namespace:MediaViewer.Effects"
-             xmlns:gif="http://wpfanimatedgif.codeplex.com"
-             xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" x:Class="MediaViewer.ImagePanel.ImageView"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"               
+             xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading" xmlns:ImagePanel="clr-namespace:MediaViewer.UserControls.ImagePanel" x:Class="MediaViewer.ImagePanel.ImageView"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300" DataContextChanged="imageView_DataContextChanged">
-    <UserControl.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </UserControl.Resources>
-    <Grid x:Name="mainGrid" Background="{StaticResource imageGridBackgroundColor}">
-        <ScrollViewer x:Name="scrollViewer" HorizontalAlignment="Stretch" Margin="0,0,0,0" VerticalAlignment="Stretch" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" PanningMode="Both" SizeChanged="scrollViewer_SizeChanged">
-            <ScrollViewer.Style>
-                <Style>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="true">
-                            <Setter Property="ScrollViewer.Visibility" Value="Hidden"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="false">
-                            <Setter Property="ScrollViewer.Visibility" Value="Visible"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </ScrollViewer.Style>
-            <Grid x:Name="gridContainer" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  PreviewMouseMove="gridContainer_PreviewMouseMove" PreviewMouseLeftButtonDown="gridContainer_PreviewMouseLeftButtonDown" PreviewMouseLeftButtonUp="gridContainer_PreviewMouseLeftButtonUp" MouseLeave="gridContainer_MouseLeave">
-                <!--gif:ImageBehavior.AnimatedSource="{Binding Image}"-->
-                <Image x:Name="pictureBox" HorizontalAlignment="Center" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"
-					ScrollViewer.CanContentScroll="True" 
-					ScrollViewer.HorizontalScrollBarVisibility="Auto" 
-					ScrollViewer.VerticalScrollBarVisibility="Auto" 
-					SnapsToDevicePixels="True"                                         
-                       >
-                    <Image.Style>
-                        <Style>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding IsLoading}" Value="false">
-                                    <Setter Property="Image.Source" Value="{Binding Image}"/>
-                                </DataTrigger>                           
-                                <DataTrigger Binding="{Binding IsLoading}" Value="true">
-                                    <Setter Property="Image.Source" Value="{x:Null}"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsEffectsEnabled}" Value="false">
-                                    <Setter Property="UIElement.Effect" Value="{x:Null}"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding IsEffectsEnabled}" Value="true">
-                                    <Setter Property="UIElement.Effect">
-                                        <Setter.Value>
-                                            <Effects:BrightnessContrastEffect Brightness="{Binding Brightness}" Contrast="{Binding Contrast}"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Image.Style>
-                    <Image.LayoutTransform>
-                        <MatrixTransform Matrix="{Binding Transform}"/>
-                    </Image.LayoutTransform>
-                </Image>
-            </Grid>
-        </ScrollViewer>
-        <Loading:LoadingView HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-            <Loading:LoadingView.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
-                    <SkewTransform/>
-                    <RotateTransform/>
-                    <TranslateTransform/>
-                </TransformGroup>
-            </Loading:LoadingView.RenderTransform>
-            <Loading:LoadingView.Effect>
-                <DropShadowEffect ShadowDepth="4" Direction="330" Color="Black" Opacity="0.5" BlurRadius="4"/>
-            </Loading:LoadingView.Effect>
-            <Loading:LoadingView.Style>
-                <Style>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="true">
-                            <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Visible"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding IsLoading}" Value="false">
-                            <Setter Property="Loading:LoadingView.VisibilityAndAnimate" Value="Collapsed"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Loading:LoadingView.Style>
-        </Loading:LoadingView>
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid x:Name="mainGrid">
+        <ImagePanel:ImagePanelView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Location="{Binding Location}" ImageScaleMode="{Binding SelectedScaleMode}" 
+                                   FlipX="{Binding FlipX}" FlipY="{Binding FlipY}" RotationDegrees="{Binding RotationDegrees}" PreviewMouseLeftButtonDown="imagePanel_PreviewMouseLeftButtonDown"/>
     </Grid>
 </UserControl>

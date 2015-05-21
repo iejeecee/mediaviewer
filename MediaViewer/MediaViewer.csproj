@@ -56,6 +56,46 @@
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Aga.Controls, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b1d788d229eb5990, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -232,7 +272,11 @@
     <Compile Include="MediaDatabase\VideoMetadata.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelViewModel.cs" />
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
+    <Compile Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelView.xaml.cs">
+      <DependentUpon>MediaFileBrowserImagePanelView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="MediaFileGrid\MediaFileGridView.xaml.cs">
       <DependentUpon>MediaFileGridView.xaml</DependentUpon>
     </Compile>
@@ -243,6 +287,16 @@
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionViewChangedEventArgs.cs" />
     <Compile Include="Model\Media\State\MediaStateChangedAction.cs" />
     <Compile Include="Model\Media\State\MediaStateChangedEventArgsBase.cs" />
+    <Compile Include="TestWindow.xaml.cs">
+      <DependentUpon>TestWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Transcode\Image\ImageTranscodeProgressViewModel.cs" />
+    <Compile Include="Transcode\Image\ImageTranscoder.cs" />
+    <Compile Include="Transcode\Image\ImageTranscodeView.xaml.cs">
+      <DependentUpon>ImageTranscodeView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Transcode\Image\ImageTranscodeViewModel.cs" />
+    <Compile Include="Transcode\Image\OptionsVisibilityConverter.cs" />
     <Compile Include="UserControls\GeoLocationPicker\GeoLocationPickerView.xaml.cs">
       <DependentUpon>GeoLocationPickerView.xaml</DependentUpon>
     </Compile>
@@ -252,6 +306,10 @@
       <DependentUpon>GeoTagEditorView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\GeoTagEditor\LocationResult.cs" />
+    <Compile Include="UserControls\ImagePanel\ImagePanelView.xaml.cs">
+      <DependentUpon>ImagePanelView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\ImagePanel\ScaleMode.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
@@ -311,12 +369,6 @@
       <DependentUpon>MediaStateInfoView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\MediaGridItem\ThumbnailSelectorConverter.cs" />
-    <Compile Include="ImagePanel\BrightnessView.xaml.cs">
-      <DependentUpon>BrightnessView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ImagePanel\ContrastView.xaml.cs">
-      <DependentUpon>ContrastView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="ImagePanel\ImageNavigationItemView.xaml.cs">
       <DependentUpon>ImageNavigationItemView.xaml</DependentUpon>
     </Compile>
@@ -364,7 +416,7 @@
     <Compile Include="Progress\CancellableOperationProgressView.xaml.cs">
       <DependentUpon>CancellableOperationProgressView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Progress\INonCancellableOperationProgress.cs" />
+    <Compile Include="Progress\NonCancellableOperationProgressBase.cs" />
     <Compile Include="Progress\NonCancellableOperationProgressView.xaml.cs">
       <DependentUpon>NonCancellableOperationProgressView.xaml</DependentUpon>
     </Compile>
@@ -391,8 +443,6 @@
     <Compile Include="UserControls\DateTimePicker\DateTimePickerBase.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Converters\EnumConverter.cs" />
-    <Compile Include="ImagePanel\RotationEnumToStringConverter.cs" />
-    <Compile Include="ImagePanel\ScaleEnumToStringConverter.cs" />
     <Compile Include="Import\ImportViewModel.cs" />
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
@@ -473,12 +523,6 @@
       <DependentUpon>ImageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImagePanel\ImageViewModel.cs" />
-    <Compile Include="ImagePanel\RotationView.xaml.cs">
-      <DependentUpon>RotationView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="ImagePanel\ScaleView.xaml.cs">
-      <DependentUpon>ScaleView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Model\Media\State\MediaStateException.cs" />
     <Compile Include="MetaData\ExtendedComboBox.cs" />
     <Compile Include="MetaData\FilenamePresetsView.xaml.cs">
@@ -535,8 +579,6 @@
     <Compile Include="MetaData\Tree\MetaDataTreeProperty.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeStructNode.cs" />
     <Compile Include="MetaData\Tree\MetaDataTreeValue.cs" />
-    <Compile Include="ImagePanel\DegreesConverter.cs" />
-    <Compile Include="ImagePanel\ScaleConverter.cs" />
     <Compile Include="Model\Media\File\Watcher\MediaFileWatcher.cs" />
     <Compile Include="MetaData\MetaDataView.xaml.cs">
       <DependentUpon>MetaDataView.xaml</DependentUpon>
@@ -560,7 +602,7 @@
     <Compile Include="UserControls\Pager\PagerView.xaml.cs">
       <DependentUpon>PagerView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Progress\ICancellableOperationProgress.cs" />
+    <Compile Include="Progress\CancellableOperationProgressBase.cs" />
     <Compile Include="Search\SearchQuery.cs" />
     <Compile Include="Search\SearchViewModel.cs" />
     <Compile Include="Search\SearchView.xaml.cs">
@@ -568,10 +610,6 @@
     </Compile>
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
-    <Compile Include="UserControls\Relation\RelationEnum.cs" />
-    <Compile Include="UserControls\Relation\RelationView.xaml.cs">
-      <DependentUpon>RelationView.xaml</DependentUpon>
-    </Compile>
     <Compile Include="UserControls\TagTreePicker\CategoryItem.cs" />
     <Compile Include="UserControls\TagTreePicker\TagTreePickerItem.cs" />
     <Compile Include="UserControls\TagTreePicker\TagTreePickerView.xaml.cs">
@@ -621,12 +659,12 @@
       <DependentUpon>VideoPreviewImageView.xaml</DependentUpon>
     </Compile>
     <Compile Include="GridImage\VideoPreviewImage\VideoPreviewImageViewModel.cs" />
-    <Compile Include="VideoTranscode\IsOptionsEnabledConverter.cs" />
-    <Compile Include="VideoTranscode\VideoTranscodeProgressViewModel.cs" />
-    <Compile Include="VideoTranscode\VideoTranscodeView.xaml.cs">
+    <Compile Include="Transcode\Video\IsOptionsEnabledConverter.cs" />
+    <Compile Include="Transcode\Video\VideoTranscodeProgressViewModel.cs" />
+    <Compile Include="Transcode\Video\VideoTranscodeView.xaml.cs">
       <DependentUpon>VideoTranscodeView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VideoTranscode\VideoTranscodeViewModel.cs" />
+    <Compile Include="Transcode\Video\VideoTranscodeViewModel.cs" />
     <Page Include="About\AboutView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -643,6 +681,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MediaFileGrid\MediaFileGridView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -651,11 +693,23 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="TestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Transcode\Image\ImageTranscodeView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\GeoLocationPicker\GeoLocationPickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\GeoTagEditor\GeoTagEditorView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\ImagePanel\ImagePanelView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -684,14 +738,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\MediaStateInfo\MediaStateInfoView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanel\BrightnessView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanel\ContrastView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -752,14 +798,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="ImagePanel\ImageView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanel\RotationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="ImagePanel\ScaleView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -855,10 +893,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="UserControls\Relation\RelationView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="UserControls\TagTreePicker\TagTreePickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -895,7 +929,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VideoTranscode\VideoTranscodeView.xaml">
+    <Page Include="Transcode\Video\VideoTranscodeView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1106,6 +1140,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\imageconvert.ico" />
     <Resource Include="Resources\Icons\pin.ico" />
     <Resource Include="Resources\Icons\computer.ico" />
     <Resource Include="Resources\Icons\star.ico" />

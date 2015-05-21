@@ -82,13 +82,29 @@ namespace XMPDLL {
 		virtual void deleteProperty(const std::string &nameSpace, 
 			const std::string &propName) = 0;
 
+		virtual void setProperty(const std::string &nameSpace, 
+			const std::string &propName, 
+			const std::string &propValue, XMP_OptionBits options = 0) = 0;
+
 		virtual void setProperty_Date(const std::string &nameSpace, 
 			const std::string &propName, 
 			const XMP_DateTime &propValue) = 0;
 
-		virtual void setProperty(const std::string &nameSpace, 
-			const std::string &propName, 
-			const std::string &propValue, XMP_OptionBits options = 0) = 0;
+		virtual void setProperty_Bool(const std::string &nameSpace,
+						    const std::string &propName,
+						    bool propValue) = 0;
+
+		virtual void setProperty_Float(const std::string &nameSpace,
+						    const std::string &propName,
+						    double propValue) = 0;
+
+		virtual void setProperty_Int(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int32 propValue)  = 0;
+
+		virtual void setProperty_Int64(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int64 propValue) = 0;
 
 		virtual bool doesPropertyExists(const std::string &nameSpace, 
 			const std::string &propName) const = 0;
@@ -133,6 +149,11 @@ namespace XMPDLL {
 			const std::string &fieldName,
 			const std::string &fieldValue,
 			XMP_OptionBits options = 0) = 0;
+
+		virtual void deleteStructField(const std::string &nameSpace,
+			const std::string &structName,
+			const std::string &fieldNameSpace,
+			const std::string &fieldName) = 0;
 
 		virtual bool getLocalizedText(const std::string &nameSpace, 
 			const std::string &textName, 

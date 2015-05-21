@@ -27,7 +27,7 @@ using MediaViewer.Model.metadata.Metadata;
 
 namespace MediaViewer.MetaData
 {
-    class MetaDataUpdateViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
+    class MetaDataUpdateViewModel : CancellableOperationProgressBase
     {
         AppSettings Settings { get; set; }            
         MediaFileState MediaFileState {get;set;}       
@@ -52,58 +52,19 @@ namespace MediaViewer.MetaData
         public const string resolutionMarker = "resolution";
         public const string dateMarker = "date:";
         public const string defaultDateFormat = "g";
-
-        CancellationTokenSource tokenSource;
-
-        public CancellationTokenSource TokenSource
-        {
-            get { return tokenSource; }
-            set { tokenSource = value; }
-        }
-
+     
         public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {
             Settings = settings;
             MediaFileState = mediaFileWatcher.MediaFileState;
             EventAggregator = eventAggregator;
 
+            WindowTitle = "Updating Metadata";
             WindowIcon = "pack://application:,,,/Resources/Icons/info.ico";
 
-            InfoMessages = new ObservableCollection<string>();
-            tokenSource = new CancellationTokenSource();
-            CancellationToken = tokenSource.Token;
-
-            CancelCommand = new Command(() =>
-            {
-                TokenSource.Cancel();
-            });
-
             CancelCommand.IsExecutable = true;
-
-            OkCommand = new Command(() =>
-            {
-                OnClosingRequest();
-            });
-
             OkCommand.IsExecutable = false;
-            WindowTitle = "Updating Metadata";          
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool safe)
-        {
-            if (safe)
-            {
-                if (tokenSource != null)
-                {
-                    tokenSource.Dispose();
-                    tokenSource = null;
-                }
-            }
+                    
         }
 
         public async Task writeMetaDataAsync(MetaDataUpdateViewModelAsyncState state)
@@ -117,7 +78,7 @@ namespace MediaViewer.MetaData
                 GlobalCommands.MetaDataUpdateCommand.Execute(state);
                 writeMetaData(state);
 
-            }, cancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+            }, CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
@@ -302,7 +263,7 @@ namespace MediaViewer.MetaData
                             if (item.Metadata.IsImported == true && state.IsImported == false)
                             {
                                 ItemInfo = "Exporting: " + item.Location;
-                                MediaFileState.export(item, TokenSource.Token);
+                                MediaFileState.export(item, CancellationToken);
 
                                 string info = "Exported: " + item.Location;
 
@@ -318,7 +279,7 @@ namespace MediaViewer.MetaData
                             if (item.Metadata.IsImported == false && state.IsImported == true)
                             {
                                 ItemInfo = "Importing: " + item.Location;
-                                MediaFileState.import(item, TokenSource.Token);
+                                MediaFileState.import(item, CancellationToken);
 
                                 string info = "Imported: " + item.Metadata.Location;
 
@@ -524,120 +485,7 @@ namespace MediaViewer.MetaData
 
             return (outputFileName);
         }
-
-        public Command OkCommand { get; set; }
-        public Command CancelCommand { get; set; }
-        
-        String itemInfo;
-
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {             
-                SetProperty(ref itemInfo, value);
-            }
-        }
-
-        ObservableCollection<String> infoMessages;
-
-        public ObservableCollection<String> InfoMessages
-        {
-            get { return infoMessages; }
-            set
-            {             
-                SetProperty(ref infoMessages, value);
-            }
-        }
-
-        CancellationToken cancellationToken;
-
-        public CancellationToken CancellationToken
-        {
-            get { return cancellationToken; }
-            set { cancellationToken = value; }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {          
-                SetProperty(ref totalProgress, value);
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {               
-                SetProperty(ref totalProgressMax, value);
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {           
-                SetProperty(ref itemProgress, value);
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return (itemProgressMax);
-            }
-            set
-            {            
-                SetProperty(ref itemProgressMax, value);
-            }
-        }
-       
-        String windowTitle;
-
-        public String WindowTitle
-        {
-            get { return windowTitle; }
-            set
-            {            
-                SetProperty(ref windowTitle, value);
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {             
-                SetProperty(ref windowIcon, value);
-            }
-        }
+   
     }
 
     public class MetaDataUpdateViewModelAsyncState

@@ -22,58 +22,20 @@ using VideoLib;
 
 namespace MediaViewer.GridImage.ImageCollage
 {
-    public class ImageCollageProgressViewModel : CloseableBindableBase, ICancellableOperationProgress, IDisposable
+    public class ImageCollageProgressViewModel : CancellableOperationProgressBase, IDisposable
     {
            
         public ImageCollageViewModel AsyncState {get;set;}
-       
-        CancellationTokenSource tokenSource;
 
         public ImageCollageProgressViewModel()
         {
             WindowTitle = "Image Collage";
             WindowIcon = "pack://application:,,,/Resources/Icons/collage.ico";
-          
-            InfoMessages = new ObservableCollection<string>();
-            tokenSource = new CancellationTokenSource();
-            CancellationToken = tokenSource.Token;
-
-            OkCommand = new Command(() =>
-            {
-                OnClosingRequest();
-            });
-
-            CancelCommand = new Command(() =>
-            {
-                if (tokenSource != null)
-                {
-                    tokenSource.Cancel();
-                }
-            });
-
+            
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
         }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool cleanupManaged)
-        {
-            if (cleanupManaged)
-            {          
-                if (tokenSource != null)
-                {
-                    tokenSource.Dispose();
-                    tokenSource = null;
-                }
-            }
-
-        }
-
+        
         public async Task generateImage()
         {          
             await Task.Factory.StartNew(() =>
@@ -161,124 +123,6 @@ namespace MediaViewer.GridImage.ImageCollage
         {
             ItemProgress += 1;
         }
-     
-        public Command OkCommand { get; set; }
-        public Command CancelCommand { get; set; }
-
-        CancellationToken cancellationToken;
-
-        public CancellationToken CancellationToken
-        {
-            get { return cancellationToken; }
-            set { cancellationToken = value; }
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {
-                SetProperty(ref totalProgress, value);
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax, value);
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {
-                SetProperty(ref itemProgress, value);
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return (itemProgressMax);
-            }
-            set
-            {
-                SetProperty(ref itemProgressMax, value);
-            }
-        }
-
-        String itemInfo;
-
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {
-                SetProperty(ref itemInfo, value);
-            }
-        }
-
-        ObservableCollection<String> infoMessages;
-
-        public ObservableCollection<String> InfoMessages
-        {
-            get { return infoMessages; }
-            set
-            {
-                SetProperty(ref infoMessages, value);
-            }
-        }
-
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return (windowTitle);
-            }
-            set
-            {
-                SetProperty(ref windowTitle, value);
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-                SetProperty(ref windowIcon, value);
-            }
-        }
-
-
+ 
     }
 }

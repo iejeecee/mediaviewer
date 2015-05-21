@@ -28,7 +28,7 @@ namespace MediaViewer.Progress
 
             Closing += new System.ComponentModel.CancelEventHandler((s, e) =>
             {
-                (DataContext as ICancellableOperationProgress).CancelCommand.Execute();
+                (DataContext as CancellableOperationProgressBase).CancelCommand.Execute();
             });
         }
 

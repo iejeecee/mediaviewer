@@ -1,0 +1,131 @@
+﻿<Window x:Class="MediaViewer.Transcode.Image.ImageTranscodeView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ImageTranscode="clr-namespace:MediaViewer.Transcode.Image"
+        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner"
+        Title="Transcode Image(s)" Width="300" SizeToContent="Height" Icon="/MediaViewer;component/Resources/Icons/imageconvert.ico">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <Style TargetType="{x:Type Label}" x:Key="labelStyle" BasedOn="{StaticResource {x:Type Label}}">
+                <Setter Property="HorizontalAlignment" Value="Right"/>
+            </Style>  
+            <ImageTranscode:OptionsVisibilityConverter x:Key="optionsVisibilityConverter"/>
+        </ResourceDictionary>
+    </Window.Resources>
+    <Window.Background>
+        <StaticResource ResourceKey="imageGridBackgroundColorBrush"/>
+    </Window.Background>
+    <Grid Grid.IsSharedSizeScope="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Header="Transcode Options">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="B"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="0" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Center"                         
+			        Text="{Binding OutputPath, Mode=TwoWay}"
+			        ItemsSource="{Binding OutputPathHistory}"
+			        ToolTip="{Binding OutputPath}"
+			        IsReadOnly="True" IsEditable="True"
+			        />
+                <Button Grid.Row="0" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
+			        HorizontalAlignment="Right"					
+			        Command="{Binding DirectoryPickerCommand}"
+			        ToolTip="Change Directory">
+                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
+                </Button>
+                <Label Grid.Row="1" Grid.Column="0" Content="Format" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" x:Name="formatComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         			        
+			        ItemsSource="{Binding OutputFormatCollectionView}"			       
+			        IsReadOnly="True" IsEditable="True" IsSynchronizedWithCurrentItem="True"
+			        />
+                <Label Grid.Row="2" Grid.Column="0" Content="Width" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding Width}" Min="32" VerticalAlignment="Center" TextAlignment="Left"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Height" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Height}" Min="32" VerticalAlignment="Center" TextAlignment="Left"/>
+                <Label Grid.Row="4" Grid.Column="0" Content="Metadata" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="4" Grid.Column="1" IsChecked="{Binding IsCopyMetadata}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Header="Jpeg Options" Visibility="{Binding OutputFormatCollectionView/, Converter={StaticResource optionsVisibilityConverter}, ConverterParameter='JPG'}">          
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="B"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Quality" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="0" Grid.Column="1" Value="{Binding JpegQuality}" Min="1" Max="100" VerticalAlignment="Center" TextAlignment="Left"/>
+                <Label Grid.Row="1" Grid.Column="0" Content="Rotation" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         			        
+			        ItemsSource="{Binding JpegRotationCollectionView}"			       
+			        IsReadOnly="True" IsEditable="True"/>
+                <Label Grid.Row="2" Grid.Column="0" Content="Flip X" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding FlipVertical}" VerticalAlignment="Center"/>
+                <Label Grid.Row="3" Grid.Column="0" Content="Flip Y" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding FlipHorizontal}" VerticalAlignment="Center"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="2" Header="PNG Options" Visibility="{Binding OutputFormatCollectionView/, Converter={StaticResource optionsVisibilityConverter}, ConverterParameter='PNG'}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="B"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>                    
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Interlacing" Style="{StaticResource labelStyle}"/>               
+                <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         			        
+			        ItemsSource="{Binding PngInterlacingCollectionView}"			       
+			        IsReadOnly="True" IsEditable="True"/>
+            </Grid>
+        </GroupBox>     
+        <GroupBox Grid.Row="3" Header="TIFF Options" Visibility="{Binding OutputFormatCollectionView/, Converter={StaticResource optionsVisibilityConverter}, ConverterParameter='TIFF'}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="A"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="B"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Content="Compression" Style="{StaticResource labelStyle}"/>
+                <ComboBox Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center"                         			        
+			        ItemsSource="{Binding TiffCompressionCollectionView}"			       
+			        IsReadOnly="True" IsEditable="True"/>
+            </Grid>
+        </GroupBox>
+        <Button Grid.Row="4" Grid.Column="0" Width="50" Content="Defaults" Command="{Binding DefaultsCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Set Default Values" Margin="5,5,5,5"/>
+        <Button Grid.Row="4" Grid.ColumnSpan="3" Width="50" Content="Ok" Command="{Binding OkCommand}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="5,5,60,5"/>
+        <Button Grid.Row="4" Grid.ColumnSpan="3" Width="50" Content="Cancel" Command="{Binding CancelCommand}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="5,5,5,5"/>
+    </Grid>
+</Window>
+

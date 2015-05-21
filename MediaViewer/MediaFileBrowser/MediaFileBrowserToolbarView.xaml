@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:regions="http://www.codeplex.com/CompositeWPF"
              mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="130">
+             d:DesignHeight="50" d:DesignWidth="150">
     <Grid>
         <ToolBar Background="{StaticResource menuBackgroundColor}">
             <Button x:Name="importButton" Height="16" ToolTip="Import" Command="{Binding ImportSelectedItemsCommand}">
@@ -25,6 +25,9 @@
             </Button>
             <Button Height="16" ToolTip="Transcode Video" Command="{Binding TranscodeVideoCommand}">
                 <Image Source="pack://application:,,,/Resources/Icons/videotranscode.ico"/>
+            </Button>
+            <Button Height="16" ToolTip="Transcode Image" Command="{Binding TranscodeImageCommand}">
+                <Image Source="pack://application:,,,/Resources/Icons/imageconvert.ico"/>
             </Button>
             <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserToolBarRegion">
                 <ItemsControl.ItemsPanel>

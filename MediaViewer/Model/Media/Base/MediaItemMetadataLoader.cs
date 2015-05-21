@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Concurrency;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.metadata.Metadata;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -142,7 +143,7 @@ namespace MediaViewer.Model.Media.Base
                         item.readMetadata(MetadataFactory.ReadOptions.AUTO |
                                 MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
 
-                    }).ContinueWith((result) =>
+                    },tokenSource.Token,TaskCreationOptions.None, PriorityScheduler.BelowNormal).ContinueWith((result) =>
                     {                                                
                         Monitor.Enter(queuedItems);
                         nrLoadingTasks--;

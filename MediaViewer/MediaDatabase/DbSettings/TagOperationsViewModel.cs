@@ -15,28 +15,18 @@ using System.Xml;
 
 namespace MediaViewer.MediaDatabase.DbSettings
 {
-    class TagOperationsViewModel : CloseableBindableBase, ICancellableOperationProgress
+    class TagOperationsViewModel : CancellableOperationProgressBase
     {
         public TagOperationsViewModel()
         {           
             WindowIcon = "pack://application:,,,/Resources/Icons/tag.ico";
-
-            TokenSource = new CancellationTokenSource();
-
-            InfoMessages = new ObservableCollection<String>();
-
-            CancelCommand = new Command(() =>
-            {
-                TokenSource.Cancel();
-            });
-
-            OkCommand = new Command(new Action(() => OnClosingRequest()));
+                               
             OkCommand.IsExecutable = false;
 
             TotalProgress = 0;
             TotalProgressMax = 1;
             ItemProgress = 0;
-            itemProgressMax = 100;
+            ItemProgressMax = 100;
         }
      
         public void import(String filename)
@@ -67,7 +57,7 @@ namespace MediaViewer.MediaDatabase.DbSettings
                 {
                     foreach (Tag tag in tags)
                     {
-                        if (TokenSource.Token.IsCancellationRequested == true) return;
+                        if (CancellationToken.IsCancellationRequested == true) return;
 
                         ItemInfo = "Merging: " + tag.Name;
                         ItemProgress = 0;
@@ -197,132 +187,6 @@ namespace MediaViewer.MediaDatabase.DbSettings
                 OkCommand.IsExecutable = true;
                 CancelCommand.IsExecutable = false;
             }));
-        }
-
-        CancellationTokenSource TokenSource
-        {
-            get;
-            set;
-        }
-
-        int totalProgress;
-
-        public int TotalProgress
-        {
-            get
-            {
-                return (totalProgress);
-            }
-            set
-            {               
-                SetProperty(ref totalProgress, value);        
-            }
-        }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                SetProperty(ref totalProgressMax,value);
-              
-            }
-        }
-
-        int itemProgress;
-
-        public int ItemProgress
-        {
-            get
-            {
-                return (itemProgress);
-            }
-            set
-            {
-                SetProperty(ref itemProgress,value);              
-            }
-        }
-
-        int itemProgressMax;
-
-        public int ItemProgressMax
-        {
-            get
-            {
-                return (itemProgressMax);
-            }
-            set
-            {
-                SetProperty(ref itemProgressMax,value);          
-            }
-        }
-
-        String itemInfo;
-
-        public String ItemInfo
-        {
-            get { return itemInfo; }
-            set
-            {
-                SetProperty(ref itemInfo, value);               
-            }
-        }
-      
-        public System.Collections.ObjectModel.ObservableCollection<string> InfoMessages
-        {
-            get;
-            set;
-        }
-
-        public Command OkCommand
-        {
-            get;
-            set;
-        }
-
-        public Command CancelCommand
-        {
-            get;
-            set;
-        }
-
-        public System.Threading.CancellationToken CancellationToken
-        {
-            get;
-            set;
-        }
-
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return (windowTitle);
-            }
-            set
-            {
-                SetProperty(ref windowTitle, value);              
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-                SetProperty(ref windowIcon, value);               
-            }
         }
 
     }

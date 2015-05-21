@@ -21,6 +21,8 @@ using System.Windows;
 using System.Windows.Input;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Infrastructure.Global.Events;
+using System.IO;
 
 namespace MediaViewer.GeotagFileBrowser
 {
@@ -316,6 +318,8 @@ namespace MediaViewer.GeotagFileBrowser
 
             }
 
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Path.GetFileName(item.Location));
+
             return (selected);
         }
        
@@ -434,8 +438,9 @@ namespace MediaViewer.GeotagFileBrowser
                     Map.Center = new Location(item.Metadata.Latitude.Value, item.Metadata.Longitude.Value);
                 }
                 item.RWLock.ExitReadLock();
+                
             }
-            
+           
         }
     }
 }

@@ -28,174 +28,89 @@ using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure.Global.Events;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Infrastructure.Utils;
+using System.Windows.Data;
 
 namespace MediaViewer.ImagePanel
 {
 
-    public class ImageViewModel : BindableBase, IMediaFileBrowserContentViewModel, IDisposable
-    {
-        
-
-        CancellationTokenSource loadImageCTS; 
-           
-        public event EventHandler SetNormalScaleEvent;
-        public event EventHandler SetBestFitScaleEvent;
-
+    public class ImageViewModel : BindableBase
+    {        
         IEventAggregator EventAggregator { get; set; }
-          
+        List<String> scaleModes = new List<string>(){"Unscaled","Auto","Fit Width","Fith Height"};
+        List<String> rotationModes = new List<string>() { "None", "90°", "180°", "270°" };
+
         public ImageViewModel(IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator;
-
-            loadImageCTS = new CancellationTokenSource();
+        
             isLoading = false;
-            currentLocation = null;
-
-            loadImageAsyncCommand = new Command<String>(new Action<String>(async (fileName) =>
-            {
-                // cancel previously running load requests          
-                loadImageCTS.Cancel();
-                loadImageCTS = new CancellationTokenSource();
-
-                try
-                {
-                    Task<BitmapImage> t = Task<BitmapImage>.Factory.StartNew(() => loadImage(fileName), loadImageCTS.Token);
-
-                    await t;
-
-                    Image = t.Result;
-                }
-                catch (TaskCanceledException)
-                {
-                
-                }
-
-            }));
-
-        
-            Rotate90DegreesCommand = new Command(() =>
-            {
-                RotationDegrees += 90;
-            });
-
-            RotateMinus90DegreesCommand = new Command(() =>
-            {
-                RotationDegrees -= 90;
-            });
-
-            ResetRotationDegreesCommand = new Command(() => { RotationDegrees = 0; });
-      
-            setIdentityTransform();
-            SelectedScaleMode = ScaleMode.NONE;
   
-            SelectedRotationMode = RotationMode.NONE;
-            CustomRotation = 0;
-                         
-            SetCustomRotationCommand = new Command(() =>
-            {
-                SelectedRotationMode = RotationMode.CUSTOM;
-                RotationView custom = new RotationView();
-                custom.DataContext = this;
-                custom.ShowDialog();
-            });
+            SelectedScaleMode = UserControls.ImagePanel.ScaleMode.UNSCALED;
 
-            SetCustomScaleCommand = new Command(() =>
-            {
-                SelectedScaleMode = ScaleMode.CUSTOM;
-                ScaleView custom = new ScaleView();
-                custom.DataContext = this;
-                custom.ShowDialog();
-            });
+            ScaleModes = new ListCollectionView(scaleModes);
+            ScaleModes.CurrentChanged += ScaleModes_CurrentChanged;
 
-            SetBrightnessCommand = new Command(() =>
-                {
-                    BrightnessView brightnessView = new BrightnessView();
-                    brightnessView.DataContext = this;
-                    brightnessView.ShowDialog();
-                });
+            RotationModes = new ListCollectionView(rotationModes);
+            RotationModes.CurrentChanged += RotationModes_CurrentChanged;
 
-            ResetBrightnessCommand = new Command(() =>
-                {
-                    Brightness = 0;
-                });
-
-            SetContrastCommand = new Command(() =>
-                {
-                    ContrastView contrastView = new ContrastView();
-                    contrastView.DataContext = this;
-                    contrastView.ShowDialog();
-
-                });
-            ResetContrastCommand = new Command(() =>
-                {
-                    Contrast = 1;
-                });
-
-            SetNormalScaleCommand = new Command(() =>
-            {
-                if (SetNormalScaleEvent != null)
-                {
-                    SetNormalScaleEvent(this, EventArgs.Empty);
-                }
-            });
-
-            SetBestFitScaleCommand = new Command(() =>
-            {
-                if (SetBestFitScaleEvent != null)
-                {
-                    SetBestFitScaleEvent(this, EventArgs.Empty);
-                }
-            });
-
-            Brightness = 0;
-            Contrast = 1;
-            minScale = 0;
-            maxScale = 1;
-        
-            IsEffectsEnabled = true;
-            IsResetSettingsOnLoad = true;
-         
         }
 
-        public void Dispose()
+        void RotationModes_CurrentChanged(object sender, EventArgs e)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool safe)
-        {
-            if (safe)
+            switch ((string)RotationModes.CurrentItem)
             {
-                if (loadImageCTS != null)
-                {
-                    loadImageCTS.Dispose();
-                    loadImageCTS = null;
-                }
+                case "None":
+                    {
+                        RotationDegrees = 0;
+                        break;
+                    }
+                case "90°":
+                    {
+                        RotationDegrees = 90;
+                        break;
+                    }
+                case "180°":
+                    {
+                        RotationDegrees = 180;
+                        break;
+                    }
+                case "270°":
+                    {
+                        RotationDegrees = 270;
+                        break;
+                    }
             }
         }
 
-        void resetSettings()
+        void ScaleModes_CurrentChanged(object sender, EventArgs e)
         {
-            Brightness = 0;
-            Contrast = 1;
-            RotationDegrees = 0;
-            FlipX = false;
-            FlipY = false;
-
-            SelectedRotationMode = RotationMode.NONE;
-            CustomRotation = 0;
-        }
-
-        bool isEffectsEnabled;
-
-        public bool IsEffectsEnabled
-        {
-            get { return isEffectsEnabled; }
-            set {  
-            SetProperty(ref isEffectsEnabled, value);
+            switch ((string)ScaleModes.CurrentItem)
+            {
+                case "Unscaled":
+                    {
+                        SelectedScaleMode = UserControls.ImagePanel.ScaleMode.UNSCALED;
+                        break;
+                    }
+                case "Auto":
+                    {
+                        SelectedScaleMode = UserControls.ImagePanel.ScaleMode.FIT_HEIGHT_AND_WIDTH;
+                        break;
+                    }
+                case "Fit Width":
+                    {
+                        SelectedScaleMode = UserControls.ImagePanel.ScaleMode.FIT_WIDTH;
+                        break;
+                    }
+                case "Fith Height":
+                    {
+                        SelectedScaleMode = UserControls.ImagePanel.ScaleMode.FIT_HEIGHT;
+                        break;
+                    }
             }
         }
+
+        public ListCollectionView ScaleModes { get; set; }
+        public ListCollectionView RotationModes { get; set; }
 
         bool flipX;
 
@@ -205,7 +120,7 @@ namespace MediaViewer.ImagePanel
             set
             {              
                 SetProperty(ref flipX, value);
-                updateTransform();
+             
             }
         }
 
@@ -216,8 +131,7 @@ namespace MediaViewer.ImagePanel
             get { return flipY; }
             set
             {            
-                SetProperty(ref flipY, value);
-                updateTransform();
+                SetProperty(ref flipY, value);          
             }
         }
 
@@ -232,29 +146,6 @@ namespace MediaViewer.ImagePanel
             }
         }
 
-        BitmapImage image;
-
-        public BitmapImage Image
-        {
-            get { return image; }
-            set
-            {                              
-                SetProperty(ref image, value);
-            }
-        }
-
-        Matrix transform;
-
-        public Matrix Transform
-        {
-            get { return transform; }
-            set
-            {                
-                SetProperty(ref transform, value);
-            }
-        }
-      
-    
         double rotationDegrees;
 
         public double RotationDegrees
@@ -262,46 +153,8 @@ namespace MediaViewer.ImagePanel
             get { return rotationDegrees; }
             set
             {
-                double tempRotationDegrees = value;
-
-                if (tempRotationDegrees < 0)
-                {
-                    tempRotationDegrees = 360 + (tempRotationDegrees + Math.Floor(tempRotationDegrees / 360) * 360);
-                }
-                else if (tempRotationDegrees >= 360)
-                {
-                    tempRotationDegrees = tempRotationDegrees - Math.Floor(tempRotationDegrees / 360) * 360;
-                }
-
-                SetProperty(ref rotationDegrees, tempRotationDegrees);
-                updateTransform();
+                SetProperty(ref rotationDegrees, value);           
             }
-        }
-
-        public Command ResetRotationDegreesCommand { get; set; }              
-        public Command SetBrightnessCommand {get; set;}
-        public Command ResetBrightnessCommand { get; set; }       
-        public Command SetContrastCommand { get; set; }           
-        public Command ResetContrastCommand { get; set; }              
-        public Command Rotate90DegreesCommand {get; set;}
-        public Command RotateMinus90DegreesCommand { get; set; }
-       
-        bool isResetSettingsOnLoad;
-
-        public bool IsResetSettingsOnLoad
-        {
-            get { return isResetSettingsOnLoad; }
-            set {  
-            SetProperty(ref isResetSettingsOnLoad, value);
-            }
-        }
-
-        Command setCustomScaleCommand;
-
-        public Command SetCustomScaleCommand
-        {
-            get { return setCustomScaleCommand; }
-            set { setCustomScaleCommand = value; }
         }
 
         double scale;
@@ -310,313 +163,29 @@ namespace MediaViewer.ImagePanel
         {
             get { return scale; }
             set
-            {
-                double clampedScale = MiscUtils.clamp(value,MinScale,MaxScale);
-                SetProperty(ref scale, clampedScale);
-                updateTransform();
+            {               
+                SetProperty(ref scale, value);              
             }
         }
 
-        double brightness;
+        String location;
 
-        public double Brightness
+        public String Location
         {
-            get { return brightness; }
-            set { 
-                SetProperty(ref brightness, value);
-            }
-        }
-        double contrast;
-
-        public double Contrast
-        {
-            get { return contrast; }
-            set {  
-                SetProperty(ref contrast, value);
-            }
-        }
-
-        Command<String> loadImageAsyncCommand;
-
-        public Command<String> LoadImageAsyncCommand
-        {
-            get { return loadImageAsyncCommand; }
-        }
-
-        Command setBestFitScaleCommand;
-
-        public Command SetBestFitScaleCommand
-        {
-            get { return setBestFitScaleCommand; }
-            set { setBestFitScaleCommand = value; }
-        }
-
-        Command setNormalScaleCommand;
-
-        public Command SetNormalScaleCommand
-        {
-            get { return setNormalScaleCommand; }
-            set { setNormalScaleCommand = value; }
-        }
-
-        String currentLocation;
-
-        public String CurrentLocation
-        {
-            get { return currentLocation; }
+            get { return location; }
             private set {  
-                SetProperty(ref currentLocation, value);
+                SetProperty(ref location, value);
             }
         }
 
-        void setIdentityTransform()
-        {
-            RotationDegrees = 0;
-            Scale = 1;
-            FlipX = false;
-            FlipY = false;
+        MediaViewer.UserControls.ImagePanel.ScaleMode selectedScaleMode;
 
-            updateTransform();
-
-        }
-
-        void updateTransform()
-        {
-            Matrix transformMatrix = Matrix.Identity;
-            if (flipX == true)
-            {
-                transformMatrix.M11 *= -1;
-            }
-
-            if (flipY == true)
-            {
-                transformMatrix.M22 *= -1;
-            }
-            transformMatrix.Scale(Scale, Scale);
-            transformMatrix.Rotate(RotationDegrees);
-
-            Transform = transformMatrix;
-        }
-
-
-        private BitmapImage loadImage(String location)
-        {
-
-            BitmapImage loadedImage = null;
-    
-            try
-            {
-                IsLoading = true;
-
-                if (loadImageCTS.IsCancellationRequested)
-                {
-                    return (loadedImage);
-                }
-
-                CurrentLocation = location;
-                
-                loadedImage = new BitmapImage();
-
-                if (FileUtils.isUrl(location))
-                {
-                    Stream data = new MemoryStream();
-                    String mimeType;
-
-                    StreamUtils.download(new Uri(location), data, out mimeType, loadImageCTS.Token);
-                    Rotation rotation = getRotation(data);
-                    data.Position = 0;
-
-                    loadedImage.BeginInit();                   
-                    loadedImage.CacheOption = BitmapCacheOption.OnLoad;
-                    loadedImage.StreamSource = data;
-                    loadedImage.Rotation = rotation;
-                    loadedImage.EndInit();
-
-                    data.Close();
-                }
-                else
-                {
-                    Stream data = File.Open(location, FileMode.Open);
-                    Rotation rotation = getRotation(data);
-                    data.Close();
-
-                    loadedImage.BeginInit();
-                    loadedImage.CreateOptions = BitmapCreateOptions.IgnoreImageCache;
-                    loadedImage.CacheOption = BitmapCacheOption.OnLoad;
-                    loadedImage.UriSource = new Uri(location);
-                    loadedImage.Rotation = rotation;
-                    loadedImage.EndInit();
-                   
-                }
-
-                loadedImage.Freeze();
-                  
-                Logger.Log.Info("Image loaded: " + location);             
-
-                if (IsResetSettingsOnLoad)
-                {
-                    resetSettings();
-                }
-
-                return(loadedImage);                   
-                               
-            }
-            catch (TaskCanceledException)
-            {
-                Logger.Log.Info("Cancelled loading image:" + (String)location);
-
-                return (null);
-            }
-            catch (Exception e)
-            {
-                CurrentLocation = null;
-                Logger.Log.Error("Error decoding image:" + (String)location, e);
-                MessageBox.Show("Error loading image: " + location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);               
-
-                return (null);
-            }
-            finally
-            {              
-                EventAggregator.GetEvent<TitleChangedEvent>().Publish(location == null ? null : Path.GetFileName(CurrentLocation));
-                IsLoading = false;
-            }
-
-        }
-
-        Rotation getRotation(Stream data)
-        {
-            BitmapDecoder decoder = BitmapDecoder.Create(data,
-                    BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.None);
-
-            BitmapMetadata meta = decoder.Frames[0].Metadata as BitmapMetadata;
-
-            Rotation? image = ImageUtils.getOrientationFromMetatdata(meta);
-           
-            if (image != null)
-            {
-                return (image.Value);
-            }
-            else
-            {
-                return (Rotation.Rotate0);
-            }
-            
-        }
-
-        public enum ScaleMode
-        {
-            NONE,  // display the image in 1 to 1 pixel ratio   
-            CUSTOM,
-            RELATIVE,
-            AUTO, // automatically scale the image to fit it's surroundings
-            FIT_HEIGHT, 
-            FIT_WIDTH     
-        }
-
-        ScaleMode selectedScaleMode;
-
-        public ScaleMode SelectedScaleMode
+        public MediaViewer.UserControls.ImagePanel.ScaleMode SelectedScaleMode
         {
             get { return selectedScaleMode; }
             set
             {                                                
                 SetProperty(ref selectedScaleMode, value);
-            }
-        }
-       
-        public enum RotationMode
-        {
-            NONE,
-            CW_90,
-            CW_180,
-            CCW_90,
-            CUSTOM
-        }
-
-        RotationMode selectedRotationMode;
-
-        public RotationMode SelectedRotationMode
-        {
-            get { return selectedRotationMode; }
-            set
-            {
-                SetProperty(ref selectedRotationMode, value);
-             
-                switch (selectedRotationMode)
-                {
-                    case RotationMode.NONE:
-                        {
-                            RotationDegrees = 0;
-                            break;
-                        }
-                    case RotationMode.CW_90:
-                        {
-                            RotationDegrees = 90;
-                            break;
-                        }
-                    case RotationMode.CW_180:
-                        {
-                            RotationDegrees = 180;
-                            break;
-                        }
-                    case RotationMode.CCW_90:
-                        {
-                            RotationDegrees = -90;
-                            break;
-                        }
-                    case RotationMode.CUSTOM:
-                        {
-                            RotationDegrees = CustomRotation;
-                            break;
-                        }
-
-                }
-            
-                
-            }
-        }
-
-
-        float customRotation;
-
-        public float CustomRotation
-        {
-            get { return customRotation; }
-            set
-            {
-                SetProperty(ref customRotation, value);               
-                RotationDegrees = customRotation;                
-            }
-        }
-        
-        Command setCustomRotationCommand;
-
-        public Command SetCustomRotationCommand
-        {
-            get { return setCustomRotationCommand; }
-            set { setCustomRotationCommand = value; }
-        }
-
-        double minScale;
-
-        public double MinScale
-        {
-            get { return minScale; }
-            set
-            {
-                SetProperty(ref minScale, value);
-                Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);           
-            }
-        }
-        double maxScale;
-
-        public double MaxScale
-        {
-            get { return maxScale; }
-            set
-            {
-                SetProperty(ref maxScale, value);
-                Scale = MiscUtils.clamp(Scale, MinScale, MaxScale);           
             }
         }
 
@@ -626,12 +195,10 @@ namespace MediaViewer.ImagePanel
 
             if (!String.IsNullOrEmpty(location))
             {
-                LoadImageAsyncCommand.Execute(location);
+                Location = location;
             }
-            else
-            {
-                EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentLocation == null ? "" : CurrentLocation);
-            }
+
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
         }
@@ -643,9 +210,11 @@ namespace MediaViewer.ImagePanel
 
         private void imageView_MediaSelectionEvent(MediaItem item)
         {
-            if (String.Equals(CurrentLocation, item.Location)) return;
+            if (String.Equals(Location, item.Location)) return;
 
-            LoadImageAsyncCommand.Execute(item.Location);
+            Location =  item.Location;
+
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
         }
     }
 

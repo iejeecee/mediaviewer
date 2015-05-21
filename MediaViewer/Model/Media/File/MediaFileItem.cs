@@ -99,7 +99,7 @@ namespace MediaViewer.Model.Media.File
         }
 
                          
-        public void writeMetadata(MetadataFactory.WriteOptions options, ICancellableOperationProgress progress)
+        public void writeMetadata(MetadataFactory.WriteOptions options, CancellableOperationProgressBase progress)
         {
             // this can be a read lock since the mediafileitem instance is not modified during writing to disk.
             // but we don't want multiple writes at the same time so we use the upgradablereadlock
@@ -253,7 +253,7 @@ namespace MediaViewer.Model.Media.File
         /// <param name="progress"></param>
         /// <param name="updateLocationOnly">if true, don't physically move the item</param>
         /// <returns></returns>
-        public bool move(String newLocation, ICancellableOperationProgress progress)
+        public bool move(String newLocation, CancellableOperationProgressBase progress)
         {
             RWLock.EnterUpgradeableReadLock();
             try

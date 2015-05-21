@@ -223,7 +223,7 @@ namespace MediaViewer.Model.metadata.Metadata
             return (metadata);
         }
 
-        public static void write(BaseMetadata metadata, WriteOptions options, ICancellableOperationProgress progress)
+        public static void write(BaseMetadata metadata, WriteOptions options, CancellableOperationProgressBase progress)
         {
            
             if (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DISK))

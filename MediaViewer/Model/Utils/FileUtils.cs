@@ -109,7 +109,7 @@ namespace MediaViewer.Model.Utils
             int fileProgress = (int)((100 * totalBytesTransferred) / totalFileSize);
 
             GCHandle h = GCHandle.FromIntPtr(data);
-            ICancellableOperationProgress progress = (ICancellableOperationProgress)h.Target;
+            CancellableOperationProgressBase progress = (CancellableOperationProgressBase)h.Target;
 
             if (fileProgress != progress.ItemProgress)
             {
@@ -122,7 +122,7 @@ namespace MediaViewer.Model.Utils
 
         }
 
-        public bool copyFile(string source, string destination, ICancellableOperationProgress progress)
+        public bool copyFile(string source, string destination, CancellableOperationProgressBase progress)
         {
 
             GCHandle handle = GCHandle.Alloc(progress);
@@ -182,7 +182,7 @@ namespace MediaViewer.Model.Utils
             }
         }
 
-        public void copy(StringCollection sourcePaths, StringCollection destPaths, ICancellableOperationProgress progress)
+        public void copy(StringCollection sourcePaths, StringCollection destPaths, CancellableOperationProgressBase progress)
         {
             if (sourcePaths.Count != destPaths.Count)
             {
@@ -227,7 +227,7 @@ namespace MediaViewer.Model.Utils
 
         }
        
-        public void moveFile(string source, string destination, ICancellableOperationProgress progress)
+        public void moveFile(string source, string destination, CancellableOperationProgressBase progress)
         {
             if (progress.CancellationToken.IsCancellationRequested) return;
             
@@ -268,7 +268,7 @@ namespace MediaViewer.Model.Utils
 
         }
 
-        public void move(StringCollection sourcePaths, StringCollection destPaths, ICancellableOperationProgress progress)
+        public void move(StringCollection sourcePaths, StringCollection destPaths, CancellableOperationProgressBase progress)
         {
 
             if (progress.CancellationToken.IsCancellationRequested) return;

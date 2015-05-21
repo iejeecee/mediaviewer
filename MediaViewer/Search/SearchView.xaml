@@ -6,7 +6,7 @@
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Search="clr-namespace:MediaViewer.Search"
              xmlns:ValidationRules="clr-namespace:MediaViewer.ValidationRules"
-             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:Relation="clr-namespace:MediaViewer.UserControls.Relation" 
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" 
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
              xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
              xmlns:MetaData="clr-namespace:MediaViewer.MetaData"

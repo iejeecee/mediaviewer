@@ -12,17 +12,10 @@ namespace MediaViewer.Model.Media.Metadata
 {
     abstract class MetadataWriter 
     {
+
+        protected CancellableOperationProgressBase Progress { get; set; }
         
-
-        private ICancellableOperationProgress progress;
-
-        protected ICancellableOperationProgress Progress
-        {
-            get { return progress; }
-            set { progress = value; }
-        }
-
-        public virtual void writeMetadata(BaseMetadata media, ICancellableOperationProgress progress)
+        public virtual void writeMetadata(BaseMetadata media, CancellableOperationProgressBase progress)
         {
             Progress = progress;
 
@@ -55,9 +48,11 @@ namespace MediaViewer.Model.Media.Metadata
 
         private bool progressCallback(float elapsedTime, float fractionDone, float secondsToGo)
         {
-            progress.ItemProgress = (int)(progress.ItemProgressMax * fractionDone);
+            if (Progress == null) return (true);
 
-            if (progress.CancellationToken.IsCancellationRequested)
+            Progress.ItemProgress = (int)(Progress.ItemProgressMax * fractionDone);
+
+            if (Progress.CancellationToken.IsCancellationRequested)
             {
                 return (false);
             }
@@ -77,9 +72,7 @@ namespace MediaViewer.Model.Media.Metadata
         
             if (!string.IsNullOrEmpty(media.Title))
             {
-
                 xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", media.Title);
-
             }
 
             if (media.Rating != null)
@@ -167,45 +160,6 @@ namespace MediaViewer.Model.Media.Metadata
                 xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLongitude");
             }
            
-/*
-            if (HasGeoTag == true)
-            {
-                string latitude = geoTag.Latitude.Coord;
-                string longitude = geoTag.Longitude.Coord;
-
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLatitude", latitude, 0);
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_EXIF, "GPSLongitude", longitude, 0);
-
-            }
-            else
-            {
-
-                //// remove a potentially existing geotag
-                if (xmpMetaDataWriter.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLatitude") && xmpMetaDataWriter.doesPropertyExists(Consts.XMP_NS_EXIF, "GPSLongitude"))
-                {
-
-                    xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLatitude");
-                    xmpMetaDataWriter.deleteProperty(Consts.XMP_NS_EXIF, "GPSLongitude");
-                }
-
-                string latString = "geo:lat=";
-                string lonString = "geo:lon=";
-
-                for (int i = xmpMetaDataWriter.countArrayItems(Consts.XMP_NS_DC, "subject"); i > 0; i--)
-                {
-
-                    string value = "";
-
-                    xmpMetaDataWriter.getArrayItem(Consts.XMP_NS_DC, "subject", i, ref value);
-
-                    if (value.StartsWith(latString) || value.StartsWith(lonString))
-                    {
-
-                        xmpMetaDataWriter.deleteArrayItem(Consts.XMP_NS_DC, "subject", i);
-                    }
-                }
-            }
-*/
             if (xmpMetaDataWriter.canPutXMP())
             {
 

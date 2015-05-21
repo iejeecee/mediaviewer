@@ -87,8 +87,8 @@ namespace MediaViewer
             EventAggregator = eventAggregator;
 
             ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
-            ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.NONE;
-            ImageViewModel.IsEffectsEnabled = false;
+            ImageViewModel.SelectedScaleMode = UserControls.ImagePanel.ScaleMode.UNSCALED;
+          
 
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
@@ -119,7 +119,7 @@ namespace MediaViewer
         public void navigateToImageView(String location = null)
         {
             if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is ImageView &&
-                String.Compare(location,ImageViewModel.CurrentLocation) == 0)
+                String.Compare(location,ImageViewModel.Location) == 0)
             {
                 //active view is already imageview
                 return;

@@ -396,8 +396,9 @@ protected:
 
 						height = int(((float)width / dec_ctx->width) * dec_ctx->height);
 					}
-				}
 
+				} 
+				
 				if(options->ContainsKey("height")) {
 
 					height = (int)options["height"];

@@ -1,9 +1,9 @@
-﻿<Window x:Class="MediaViewer.VideoTranscode.VideoTranscodeView"
+﻿<Window x:Class="MediaViewer.Transcode.Video.VideoTranscodeView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
         xmlns:Formats="clr-namespace:MediaViewer.Infrastructure.Video.TranscodeOptions;assembly=MediaViewer.Infrastructure"
-        xmlns:VideoTranscode="clr-namespace:MediaViewer.VideoTranscode"
+        xmlns:VideoTranscode="clr-namespace:MediaViewer.Transcode.Video"
         xmlns:System="clr-namespace:System;assembly=mscorlib"
         Title="{Binding Title}" SizeToContent="Height" Width="350" Icon="{Binding IconUri}" ResizeMode="NoResize">
     <Window.Resources>

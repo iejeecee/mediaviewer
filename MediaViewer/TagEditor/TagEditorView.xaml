@@ -109,7 +109,7 @@
 						>
                         <ComboBox.ItemsSource>
                             <CompositeCollection>
-                                <x:Static Member="MetaData:TagEditorViewModel.NullCategory"/>
+                                <x:Static Member="TagEditor:TagEditorViewModel.NullCategory"/>
                                 <CollectionContainer Collection="{Binding Source={StaticResource categoriesViewSource}}"/>
                             </CompositeCollection>
                         </ComboBox.ItemsSource>

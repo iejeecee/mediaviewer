@@ -60,7 +60,7 @@ namespace MediaViewer.Model.Media.File
             }
         }
 
-        public void move(MediaFileItem item, String location, ICancellableOperationProgress progress)
+        public void move(MediaFileItem item, String location, CancellableOperationProgressBase progress)
         {
             List<MediaFileItem> dummy = new List<MediaFileItem>();
             dummy.Add(item);
@@ -72,7 +72,7 @@ namespace MediaViewer.Model.Media.File
         }
 
         public void move(IEnumerable<MediaFileItem> items, IEnumerable<String> locations,
-            ICancellableOperationProgress progress)
+            CancellableOperationProgressBase progress)
         {
 
             List<String> deletedImportedLocations = new List<String>();

@@ -97,7 +97,7 @@ namespace XMPDLL {
 			
 			// Options to open the file with - read only and use a file handler
 			XMP_OptionBits opts = options | kXMPFiles_OpenUseSmartHandler;
-												
+								
 			// First we try and open the file
 			bool ok = myFile.OpenFile(filenameUTF8, kXMP_UnknownFile, opts);
 			if(!ok)
@@ -219,11 +219,40 @@ namespace XMPDLL {
 		void setProperty(const std::string &nameSpace, const std::string &name, const std::string &value, XMP_OptionBits options) {
 
 			meta.SetProperty(nameSpace.c_str(), name.c_str(), value.c_str(), options);
+			
 		}
 
 		void setProperty_Date(const std::string &nameSpace, const std::string &propName, const XMP_DateTime &propValue) {
 
 			meta.SetProperty_Date(nameSpace.c_str(), propName.c_str(), propValue, NULL);
+		}
+
+		void setProperty_Bool(const std::string &nameSpace,
+						    const std::string &propName,
+						    bool propValue)
+		{
+			meta.SetProperty_Bool(nameSpace.c_str(),propName.c_str(),propValue, NULL);
+		}
+
+		void setProperty_Float(const std::string &nameSpace,
+						    const std::string &propName,
+						    double propValue) 
+		{
+			meta.SetProperty_Float(nameSpace.c_str(),propName.c_str(),propValue, NULL);
+		}
+
+		void setProperty_Int(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int32 propValue) 
+		{
+			meta.SetProperty_Int(nameSpace.c_str(),propName.c_str(),propValue, NULL);
+		}
+
+		void setProperty_Int64(const std::string &nameSpace,
+						    const std::string &propName,
+						    XMP_Int64 propValue) 
+		{
+			meta.SetProperty_Int64(nameSpace.c_str(),propName.c_str(),propValue, NULL);
 		}
 
 		bool doesPropertyExists(const std::string &nameSpace, const std::string &propName) const {
@@ -283,16 +312,14 @@ namespace XMPDLL {
 
 		void appendArrayItem(const std::string &nameSpace, const std::string &arrayName, XMP_OptionBits arrayOptions, const char *itemValue, XMP_OptionBits options) {
 
-			meta.AppendArrayItem(nameSpace.c_str(), arrayName.c_str(), arrayOptions, itemValue, options);
-		
-		
+			meta.AppendArrayItem(nameSpace.c_str(), arrayName.c_str(), arrayOptions, itemValue, options);				
 		}
 
 		void deleteArrayItem(const std::string &nameSpace, const std::string &arrayName, int index) {
 
-			meta.DeleteArrayItem(nameSpace.c_str(), arrayName.c_str(), index);
-				
+			meta.DeleteArrayItem(nameSpace.c_str(), arrayName.c_str(), index);				
 		}
+		
 
 		bool getStructField(const std::string &nameSpace,
 			const std::string &structName,
@@ -314,6 +341,14 @@ namespace XMPDLL {
 			XMP_OptionBits options = 0) 
 		{
 			meta.SetStructField(nameSpace.c_str(), structName.c_str(), fieldNameSpace.c_str(), fieldName.c_str(), fieldValue, options);
+		}
+
+		void deleteStructField(const std::string &nameSpace,
+			const std::string &structName,
+			const std::string &fieldNameSpace,
+			const std::string &fieldName) 
+		{
+			meta.DeleteStructField(nameSpace.c_str(),structName.c_str(),fieldNameSpace.c_str(),fieldName.c_str());
 		}
 		 
 		void iterate(XMP_OptionBits options, std::vector<XMPProperty> &properties) const {

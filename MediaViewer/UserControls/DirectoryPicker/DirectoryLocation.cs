@@ -21,7 +21,7 @@ using System.Windows.Threading;
 
 namespace MediaViewer.UserControls.DirectoryPicker
 {
-    class DirectoryLocation : Location, INonCancellableOperationProgress
+    class DirectoryLocation : Location
     {
 
         public DirectoryLocation(DirectoryInfo info, InfoGatherTask infoGatherTask, MediaFileState mediaFileState)
@@ -109,16 +109,10 @@ namespace MediaViewer.UserControls.DirectoryPicker
         public override bool SaveEditText(string newName)
         {
             if (Name.Equals(newName)) return(false);
-
-            List<MediaFileItem> mediaFilesToMove = new List<MediaFileItem>();
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-                   
-            TotalProgress = 0;
-            TotalProgressMax = 1;
-            WindowTitle = "Renaming directory " + Name + " to " + newName;
-            WindowIcon = "pack://application:,,,/Resources/Icons/folder_open.ico";
+           
             NonCancellableOperationProgressView progress = new NonCancellableOperationProgressView();
-            progress.DataContext = this;
+            RenameDirectoryViewModel renameDirectory = new RenameDirectoryViewModel(FullName, newName);
+            progress.DataContext = renameDirectory;
 
             Task<bool> task = Task<bool>.Run(() =>
             {
@@ -127,53 +121,21 @@ namespace MediaViewer.UserControls.DirectoryPicker
                     progress.ShowDialog();
                 }));
 
-                try
+                bool result = renameDirectory.doRename();
+             
+                Application.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    if (String.IsNullOrEmpty(newName) || String.IsNullOrWhiteSpace(newName))
-                    {
-                        throw new ArgumentException("Illegal directory name");
-                    }
+                    progress.Close();
+                }));
 
-                    String newFullName = FullName.Remove(FullName.LastIndexOf('\\')) + "\\" + newName;
-
-                    FileUtils.walkDirectoryTree(new DirectoryInfo(FullName), getFiles, mediaFilesToMove, true);
-
-                    TotalProgressMax = mediaFilesToMove.Count;
-                    
-                    System.IO.Directory.Move(FullName, newFullName);
-
-                    foreach (MediaFileItem mediaFile in mediaFilesToMove)
-                    {
-                        String newMediaLocation = mediaFile.Location.Replace(FullName, newFullName);
-
-                        mediaFile.Location = newMediaLocation;
-
-                        TotalProgress++;
-                    }
-              
-                    Name = newName;                    
-                    return (true); 
-
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error("Error renaming directory: " + FullName, e);
-                    MessageBox.Show("Error renaming directory: " + FullName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return (false); 
-                }
-                finally
-                {
-                    Application.Current.Dispatcher.BeginInvoke(new Action(() =>
-                    {
-                        progress.Close();
-                    }));
-                }
+                return (result);
             });
 
             WaitWithPumping(task);
 
             if (task.Result == true)
             {
+                Name = newName; 
                 nodePropertyChanged(this);
             }
             return (task.Result);
@@ -243,7 +205,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             }
         }
 
-        private bool getFiles(FileInfo info, object state)
+        private static bool getFiles(FileInfo info, object state)
         {
             List<MediaFileItem> items = (List<MediaFileItem>)state;
 
@@ -273,66 +235,67 @@ namespace MediaViewer.UserControls.DirectoryPicker
         }
          */
 
-
-        int totalProgress;
-
-        public int TotalProgress
+        class RenameDirectoryViewModel : NonCancellableOperationProgressBase
         {
-            get
+            String FullOldName { get; set; }
+            String NewName { get; set; }
+
+            public RenameDirectoryViewModel(String fullOldName, String newName)
             {
-                return (totalProgress);
+                TotalProgress = 0;
+                TotalProgressMax = 1;
+                NewName = newName;
+                FullOldName = fullOldName;
+
+                WindowTitle = "Renaming directory " + Path.GetDirectoryName(fullOldName) + " to " + newName;
+                WindowIcon = "pack://application:,,,/Resources/Icons/folder_open.ico";
             }
-            set
+
+            public bool doRename()
             {
-                totalProgress = value;
-                RaisePropertyChanged("TotalProgress");
-                
+                List<MediaFileItem> mediaFilesToMove = new List<MediaFileItem>();
+
+                try
+                {
+                    if (String.IsNullOrEmpty(NewName) || String.IsNullOrWhiteSpace(NewName))
+                    {
+                        throw new ArgumentException("Illegal directory name");
+                    }
+
+                    String newFullName = FullOldName.Remove(FullOldName.LastIndexOf('\\')) + "\\" + NewName;
+
+                    FileUtils.walkDirectoryTree(new DirectoryInfo(FullOldName), getFiles, mediaFilesToMove, true);
+
+                    TotalProgressMax = mediaFilesToMove.Count;
+
+                    System.IO.Directory.Move(FullOldName, newFullName);
+
+                    foreach (MediaFileItem mediaFile in mediaFilesToMove)
+                    {
+                        String newMediaLocation = mediaFile.Location.Replace(FullOldName, newFullName);
+
+                        mediaFile.Location = newMediaLocation;
+
+                        TotalProgress++;
+                    }
+                   
+                    return (true);
+
+                }
+                catch (Exception e)
+                {
+                    Logger.Log.Error("Error renaming directory: " + FullOldName, e);
+                    MessageBox.Show("Error renaming directory: " + FullOldName + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return (false);
+                }
+
             }
+
+            
+
         }
-
-        int totalProgressMax;
-
-        public int TotalProgressMax
-        {
-            get
-            {
-                return (totalProgressMax);
-            }
-            set
-            {
-                totalProgressMax = value;
-                RaisePropertyChanged("TotalProgressMax");
-            }
-        }
-
-        string windowTitle;
-
-        public string WindowTitle
-        {
-            get
-            {
-                return (windowTitle);
-            }
-            set
-            {
-                windowTitle = value;
-                RaisePropertyChanged("WindowTitle");
-            }
-        }
-
-        string windowIcon;
-
-        public string WindowIcon
-        {
-            get
-            {
-                return (windowIcon);
-            }
-            set
-            {
-                windowIcon = value;
-                RaisePropertyChanged("WindowIcon");
-            }
-        }
+       
     }
+
+
 }

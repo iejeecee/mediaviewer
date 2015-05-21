@@ -1,7 +1,6 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Search;
-using MediaViewer.UserControls.Relation;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;

@@ -382,6 +382,41 @@ void MetaData::setProperty(String ^nameSpace, String ^propName, String ^propValu
 		(XMP_OptionBits)options);
 }
 
+void MetaData::setProperty_Bool(String ^nameSpace, String ^propName, bool propValue)
+{	
+	xmpFile->setProperty_Bool(
+		marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		propValue);
+}
+
+void MetaData::setProperty_Float(String ^nameSpace, String ^propName, double propValue)
+{
+	xmpFile->setProperty_Float(
+		marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		propValue);
+
+}
+
+void MetaData::setProperty_Int(String ^nameSpace, String ^propName, long propValue)
+{
+	xmpFile->setProperty_Int(
+		marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		propValue);
+
+}	
+
+void MetaData::setProperty_Int64(String ^nameSpace, String ^propName, Int64 propValue)
+{
+	xmpFile->setProperty_Int64(
+		marshal_as<std::string>(nameSpace),
+		marshal_as<std::string>(propName),
+		propValue);
+}
+
+
 bool MetaData::doesPropertyExists(String ^nameSpace, String ^propName) {
 
 	bool exists = xmpFile->doesPropertyExists(marshal_as<std::string>(nameSpace),
@@ -620,6 +655,16 @@ void MetaData::setStructField(String ^nameSpace, String ^structName, String ^fie
 
 }
 
+void MetaData::deleteStructField(String ^nameSpace, String ^structName, String ^fieldNameSpace, 
+					String ^fieldName) 
+{
+
+	xmpFile->deleteStructField(
+		marshal_as<std::string>(nameSpace), 
+		marshal_as<std::string>(structName), 
+		marshal_as<std::string>(fieldNameSpace), 
+		marshal_as<std::string>(fieldName));
+}
 
 DateTime MetaData::convertToDate(String ^dateString) {
 

@@ -34,7 +34,7 @@ namespace MediaViewer.UserControls.MediaStackPanel
     {
         public event EventHandler<SelectableMediaItem> MediaItemClick;
 
-        ScrollViewer scrollViewer;
+        public ScrollViewer scrollViewer;
         int scrollToIndex;
   
         public MediaStackPanelView()
@@ -138,7 +138,7 @@ namespace MediaViewer.UserControls.MediaStackPanel
         {
             if (scrollViewer != null)
             {
-                if (e.Delta > 0)
+                if (e.Delta < 0)
                 {
                     scrollViewer.ScrollToHorizontalOffset(scrollViewer.HorizontalOffset + 1);
                 }

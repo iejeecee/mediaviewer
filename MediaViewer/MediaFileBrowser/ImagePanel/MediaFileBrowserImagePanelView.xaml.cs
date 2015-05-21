@@ -1,7 +1,9 @@
-﻿//http://bjorn.kuiper.nu/2011/05/11/tips-tricks-listening-to-dependency-property-change-notifications-of-a-given-element/
-using Microsoft.Practices.Prism.Mvvm;
+﻿using MediaViewer.Infrastructure.Global.Events;
+using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,37 +16,27 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.ComponentModel.Composition;
-using Microsoft.Practices.Prism.Regions;
-using MediaViewer.Model.Media.File;
-using MediaViewer.MediaFileBrowser;
-using Microsoft.Practices.Prism.PubSubEvents;
-using MediaViewer.Model.Global.Events;
-using MediaViewer.Infrastructure.Global.Events;
 
-namespace MediaViewer.ImagePanel
+namespace MediaViewer.MediaFileBrowser.ImagePanel
 {
     /// <summary>
-    /// Interaction logic for ImageView.xaml
+    /// Interaction logic for MediaFileBrowserImagePanelView.xaml
     /// </summary>
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    public partial class ImageView : UserControl, IRegionMemberLifetime, INavigationAware
+    public partial class MediaFileBrowserImagePanelView : UserControl, IRegionMemberLifetime, INavigationAware
     {
-        bool IsFullScreen { get; set; }
-
-        ImageViewModel ViewModel { get; set; }
+        IMediaFileBrowserContentViewModel ViewModel { get; set; }
         IEventAggregator EventAggregator { get; set; }
 
         [ImportingConstructor]
-        public ImageView(IEventAggregator eventAggregator)
+        public MediaFileBrowserImagePanelView(IEventAggregator eventAggregator)
         {
+            InitializeComponent();
             EventAggregator = eventAggregator;
 
-            InitializeComponent();
-                     
             IsFullScreen = false;
-           
+
         }
 
         private void imagePanel_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -67,15 +59,39 @@ namespace MediaViewer.ImagePanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            ViewModel.OnNavigatedFrom(navigationContext);            
+            ViewModel.OnNavigatedFrom(navigationContext);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            ViewModel = (ImageViewModel)navigationContext.Parameters["viewModel"];
+            ViewModel = (MediaFileBrowserImagePanelViewModel)navigationContext.Parameters["viewModel"];
             DataContext = ViewModel;
 
-            ViewModel.OnNavigatedTo(navigationContext);              
-        }       
+            ViewModel.OnNavigatedTo(navigationContext);
+        }
+
+        bool isFullScreen;
+
+        bool IsFullScreen
+        {
+            get
+            {
+                return (isFullScreen);
+            }
+
+            set
+            {
+                if (value == true)
+                {
+                    controlsGrid.Visibility = System.Windows.Visibility.Collapsed;
+                }
+                else
+                {
+                    controlsGrid.Visibility = System.Windows.Visibility.Visible;
+                }
+
+                isFullScreen = value;
+            }
+        }
     }
 }

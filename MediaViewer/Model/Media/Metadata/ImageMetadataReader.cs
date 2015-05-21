@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.metadata.Metadata;
@@ -69,8 +70,36 @@ namespace MediaViewer.Model.Media.Metadata
 
         public void generateThumbnail(Stream data, BitmapFrame frame, ImageMetadata image)
         {
-
             BitmapSource thumb = frame.Thumbnail;
+
+            Rotation rotation = Rotation.Rotate0;
+
+            if (image.Orientation != null)
+            {
+                switch (image.Orientation.Value)
+                {
+                    case 8:
+                        {
+                            rotation = Rotation.Rotate270;
+                            break;
+                        }
+                    case 3:
+                        {
+                            rotation = Rotation.Rotate180;
+                            break;
+                        }
+                    case 6:
+                        {
+                            rotation = Rotation.Rotate90;
+                            break;
+                        }
+                    default:
+                        {
+                            rotation = Rotation.Rotate0; 
+                            break;
+                        }
+                }
+            }
 
             if (thumb == null)
             {
@@ -80,45 +109,31 @@ namespace MediaViewer.Model.Media.Metadata
                 tempImage.BeginInit();
                 tempImage.CacheOption = BitmapCacheOption.OnLoad;
                 tempImage.StreamSource = data;
+                tempImage.Rotation = rotation;
                 tempImage.DecodePixelWidth = MAX_THUMBNAIL_WIDTH;
                 tempImage.EndInit();
 
                 thumb = tempImage;
             }
-           
-            double angle = 0;
-
-            if (image.Orientation != null)
+            else
             {
-                switch (image.Orientation.Value)
+                data.Position = 0;
+
+                Rotation? result = ImageUtils.getOrientationFromMetatdata(thumb.Metadata as BitmapMetadata);
+
+                if (result != null)
                 {
-                    case 8:
-                        {
-                            angle = 270;
-                            break;
-                        }
-                    case 3:
-                        {
-                            angle = 180;
-                            break;
-                        }
-                    case 6:
-                        {
-                            angle = 90;
-                            break;
-                        }
-                    default:
-                        {
-                            angle = 0;
-                            break;
-                        }
+                    rotation = result.Value;
                 }
-            }
 
-            if (angle != 0)
-            {
-                thumb = new TransformedBitmap(thumb.Clone(), new System.Windows.Media.RotateTransform(angle));
-            }
+                if (rotation != Rotation.Rotate0)
+                {
+                    double angle = (int)rotation * 90;
+
+                    thumb = new TransformedBitmap(thumb.Clone(), new System.Windows.Media.RotateTransform(angle));
+                }
+
+            }                                   
             
             image.Thumbnail = new Thumbnail(thumb);
 
@@ -376,9 +391,6 @@ namespace MediaViewer.Model.Media.Metadata
                 image.Contrast = (short)intVal;
             }
         }
-
-        
-
 
     }
 }

@@ -350,7 +350,7 @@ namespace MediaViewer.UserControls.TagPicker
             }
 
             if (selectedTags.Count == 1 && EnableLinkingTags)
-            {
+            {                
                 contextMenuUnlink.IsEnabled = true;
             }
             else if (EnableLinkingTags)
@@ -553,13 +553,19 @@ namespace MediaViewer.UserControls.TagPicker
         private void tag_ToolTipOpening(object sender, ToolTipEventArgs e)
         {
             ToggleButton button = sender as ToggleButton;
-            String tooltip = (button.Tag as Tag).Name;
+            Tag selectedTag = (button.Tag as Tag);
+
+            String tooltip = selectedTag.Name;
+            if (selectedTag.TagCategory != null)
+            {
+                tooltip += " (" + selectedTag.TagCategory.Name + ")";
+            }            
 
             try
             {
                 using (TagDbCommands tagCommands = new TagDbCommands())
                 {
-                    Tag tag = tagCommands.getTagByName((button.Tag as Tag).Name);
+                    Tag tag = tagCommands.getTagByName(selectedTag.Name);
                     if (tag == null) return;
 
                     foreach (Tag child in tag.ChildTags)

@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using MediaViewer.Model.Utils;
 
-namespace MediaViewer.VideoTranscode
+namespace MediaViewer.Transcode.Video
 {
     public class VideoTranscodeViewModel : CloseableBindableBase
     {
@@ -31,7 +31,7 @@ namespace MediaViewer.VideoTranscode
             OkCommand = new Command(async () =>
                 {                    
                     CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                    VideoTranscodeProgressViewModel vm = new VideoTranscodeProgressViewModel(Items, this);
+                    VideoTranscodeProgressViewModel vm = new VideoTranscodeProgressViewModel(this);
                     progress.DataContext = vm;
                     vm.WindowIcon = IconUri;
 

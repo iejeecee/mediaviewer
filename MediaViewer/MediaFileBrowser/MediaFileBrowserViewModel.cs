@@ -32,7 +32,7 @@ using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.GridImage.ImageCollage;
-using MediaViewer.VideoTranscode;
+using MediaViewer.Transcode.Video;
 using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure;
@@ -43,6 +43,8 @@ using MediaViewer.Model.Media.Base;
 using MediaViewer.MediaFileGrid;
 using MediaViewer.MediaFileStackPanel;
 using MediaViewer.GeotagFileBrowser;
+using MediaViewer.MediaFileBrowser.ImagePanel;
+using MediaViewer.Transcode.Image;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -63,9 +65,9 @@ namespace MediaViewer.MediaFileBrowser
             }
         }
 
-        ImageViewModel imageViewModel;
+        MediaFileBrowserImagePanelViewModel imageViewModel;
 
-        public ImageViewModel ImageViewModel
+        public MediaFileBrowserImagePanelViewModel ImageViewModel
         {
             get { return imageViewModel; }
             private set {  
@@ -186,11 +188,10 @@ namespace MediaViewer.MediaFileBrowser
             Settings = settings;
 
             BrowsePathHistory = Settings.BrowsePathHistory;            
-            FavoriteLocations = Settings.FavoriteLocations;            
-                 
-            ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
-            ImageViewModel.SelectedScaleMode = ImagePanel.ImageViewModel.ScaleMode.RELATIVE;
-            ImageViewModel.IsEffectsEnabled = false;
+            FavoriteLocations = Settings.FavoriteLocations;
+
+            ImageViewModel = new MediaFileBrowserImagePanelViewModel(eventAggregator);
+            ImageViewModel.SelectedScaleMode = MediaViewer.UserControls.ImagePanel.ScaleMode.FIT_HEIGHT_AND_WIDTH;
 
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
@@ -280,6 +281,17 @@ namespace MediaViewer.MediaFileBrowser
                 if (SelectedItems.Count == 0) return;
 
                 VideoTranscodeView transcode = new VideoTranscodeView();
+                transcode.ViewModel.Items = SelectedItems;
+                transcode.ViewModel.OutputPath = BrowsePath;
+
+                transcode.ShowDialog();
+            });
+
+            TranscodeImageCommand = new Command(() =>
+            {
+                if (SelectedItems.Count == 0) return;
+
+                ImageTranscodeView transcode = new ImageTranscodeView();
                 transcode.ViewModel.Items = SelectedItems;
                 transcode.ViewModel.OutputPath = BrowsePath;
 
@@ -422,6 +434,7 @@ namespace MediaViewer.MediaFileBrowser
         public Command CreateVideoPreviewImagesCommand {get;set;}
         public Command CreateTorrentFileCommand { get; set; }
         public Command TranscodeVideoCommand { get; set; }
+        public Command TranscodeImageCommand { get; set; }
         public Command DeleteSelectedItemsCommand { get; set; }
         public Command GeotagFileBrowserCommand { get; set; }
         public Command ImportSelectedItemsCommand { get; set; }
@@ -510,7 +523,7 @@ namespace MediaViewer.MediaFileBrowser
 
         public void navigateToImageView(MediaFileItem item)
         {
-            Uri imageViewUri = new Uri(typeof(ImageView).FullName, UriKind.Relative);
+            Uri imageViewUri = new Uri(typeof(MediaFileBrowserImagePanelView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
             navigationParams.Add("location", item != null ? item.Location : null);
@@ -588,10 +601,10 @@ namespace MediaViewer.MediaFileBrowser
                     Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
                     newTitle = BrowsePath;
                 }
-                else if (CurrentViewModel is ImageViewModel)
+                else if (CurrentViewModel is MediaFileBrowserImagePanelViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel);
-                    newTitle = ImageViewModel.CurrentLocation;
+                    newTitle = ImageViewModel.Location;
                     if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
                 }
                 else if (CurrentViewModel is VideoViewModel)
