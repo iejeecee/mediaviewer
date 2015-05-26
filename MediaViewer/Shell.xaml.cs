@@ -150,7 +150,7 @@ namespace MediaViewer
                 Logger.Log.Error("Error in command line argument: " + App.Args[0], e);
                 ShellViewModel.navigateToMediaFileBrowser();
             }
-        
+       
         }
 
         private void metaData_logCallback(XMPLib.MetaData.LogLevel level, string message)

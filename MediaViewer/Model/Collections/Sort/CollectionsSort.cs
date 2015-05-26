@@ -70,7 +70,6 @@ namespace MediaViewer.Model.Collections.Sort
 
         public static int insertIntoSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
         {
-
             int newIndex = insertIntoSortedCollection<T>(list, item, compareFunc, 0, list.Count);
 
             return (newIndex);
@@ -85,6 +84,58 @@ namespace MediaViewer.Model.Collections.Sort
 
 
             return (newIndex);
+        }
+
+        public static int itemIndexSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc, int start, int end)
+        {            
+            if (list.Count == 0)
+            {                
+                return (-1);
+            }
+
+            int mid = start;
+            int low = start;
+            int high = end - 1;
+
+            while (low <= high)
+            {
+                mid = (high + low) / 2;
+
+                int val = compareFunc(item, list[mid]);
+
+                if (val < 0)
+                {
+                    high = mid - 1;
+                }
+                else if (val > 0)
+                {
+                    low = mid + 1;
+                }
+                else
+                {
+                    return(mid);
+                }
+
+            }
+           
+            return (-1);
+        }
+
+        public static int itemIndexSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
+        {
+            int index = itemIndexSortedCollection(list, item, compareFunc, 0, list.Count);
+
+            return (index);
+        }
+
+        public static int itemIndexSortedCollection<T>(IList<T> list, T item)
+        {
+            int index = itemIndexSortedCollection(list, item, (a, b) =>
+            {
+                return (a.ToString().CompareTo(b.ToString()));
+            }, 0, list.Count);
+
+            return (index);
         }
     }
 }

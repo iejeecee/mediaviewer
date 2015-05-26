@@ -172,7 +172,7 @@ namespace MediaViewer.MediaFileBrowser
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            MediaFileBrowserViewModel.OnNavigatedFrom(navigationContext);
+            MediaFileBrowserViewModel.OnNavigatedFrom(navigationContext);           
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
@@ -180,7 +180,8 @@ namespace MediaViewer.MediaFileBrowser
             MediaFileBrowserViewModel = (MediaFileBrowserViewModel)navigationContext.Parameters["viewModel"];
             DataContext = MediaFileBrowserViewModel;
 
-            MediaFileBrowserViewModel.OnNavigatedTo(navigationContext);            
+            MediaFileBrowserViewModel.OnNavigatedTo(navigationContext);
+
         }
     }
         

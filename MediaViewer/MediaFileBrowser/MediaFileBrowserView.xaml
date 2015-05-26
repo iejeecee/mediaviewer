@@ -11,22 +11,21 @@
              xmlns:MediaDataGrid="clr-namespace:MediaViewer.UserControls.MediaDataGrid"
              xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
+             xmlns:TagTreePicker="clr-namespace:MediaViewer.UserControls.TagTreePicker"
+             xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="903.333">
+             d:DesignHeight="250" d:DesignWidth="903.333">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <MediaFileBrowser:ImageOptionsVisibilityConverter x:Key="imageOptionsVisibilityConverter"/>
-            <!--http://stackoverflow.com/questions/14357503/how-to-add-tab-items-programmatically-to-tab-control-in-prism-->
-            <Style x:Key="MyTabItemStyle" TargetType="{x:Type TabItem}">
-                <Setter Property="Header" Value="{Binding Content.DataContext, Converter={StaticResource toStringConverter}, RelativeSource={RelativeSource Self}}"/>                
+            <!--http://stackoverflow.com/questions/14357503/how-to-add-tab-items-programmatically-to-tab-control-in-prism-->           
+            <Style TargetType="{x:Type Expander}">
+                <Setter Property="Background" Value="{StaticResource imageGridBackgroundColorBrush}"/>
             </Style>
-            <Style TargetType="{x:Type TabControl}">
-                <Setter Property="ItemContainerStyle" Value="{StaticResource MyTabItemStyle}"/>
-            </Style>            
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="mainGrid" Background="{StaticResource appBackgroundColor}">
@@ -35,28 +34,38 @@
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <TabControl x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <TabItem Header="Browse">
-                <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-                    <LocationBox:LocationBoxView Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Location="{Binding BrowsePath, Mode=TwoWay}" LocationHistory="{Binding BrowsePathHistory}" FavoriteLocations="{Binding FavoriteLocations}"/>
-                    <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                </Grid>
-            </TabItem>
-            <TabItem Header="Search">
-                <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2">
-                    <Search:SearchView Grid.Column="0"/>
+        <Layout:ExpanderPanel x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Expander IsExpanded="True" Layout:ExpanderPanel.ElemHeight="2">
+                <Expander.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <RadioButton x:Name="browseRadioButton" Grid.Column="0" GroupName="a" Content="Browse" Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}" IsChecked="True"/>
+                        <RadioButton x:Name="searchRadioButton" Grid.Column="1" GroupName="a" Content="Search" Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}"/>
+                    </Grid>
+                </Expander.Header>                
+                <Grid Margin="5">
+                    <Grid Visibility="{Binding IsChecked,ElementName=browseRadioButton,Converter={StaticResource booleanToVisibilityConverter}}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <LocationBox:LocationBoxView Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Location="{Binding BrowsePath, Mode=TwoWay}" LocationHistory="{Binding BrowsePathHistory}" FavoriteLocations="{Binding FavoriteLocations}"/>                                                   
+                        <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                    </Grid>
+                    <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2" Visibility="{Binding IsChecked,ElementName=searchRadioButton,Converter={StaticResource booleanToVisibilityConverter}}">
+                        <Search:SearchView/>
+                    </mwt:ClassicBorderDecorator>
+                </Grid>                                
+            </Expander>        
+            <Expander Header="Tags" Layout:ExpanderPanel.ElemHeight="1">
+                <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2" Margin="5">
+                    <TagTreePicker:TagTreePickerView MediaStateCollectionView="{Binding MediaFileGridViewModel.MediaStateCollectionView}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                 </mwt:ClassicBorderDecorator>
-            </TabItem>
-            <TabItem Header="Selection">
-                <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2">
-                    <MediaDataGrid:MediaDataGridView RowDoubleClick="selectedMediaDataGridView_RowDoubleClick"/>
-                </mwt:ClassicBorderDecorator>
-            </TabItem>
-        </TabControl>
+            </Expander>           
+        </Layout:ExpanderPanel>
         <GridSplitter x:Name="leftGridSplitter" Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
             <Grid.RowDefinitions>
@@ -64,8 +73,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
-            <ContentControl regions:RegionManager.RegionName="MediaFileBrowserContentRegion"                            
-				Grid.Row="0"/>            
+            <ContentControl regions:RegionManager.RegionName="MediaFileBrowserContentRegion" Grid.Row="0"/>
             <Grid Grid.Row="2" x:Name="miscOptionsGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -82,22 +90,22 @@
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0" Width="30" Height="20" Margin="2,0,0,0">
                             <Button.Style>
-                                <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="Button">
+                                <Style BasedOn="{StaticResource {x:Type Button}}" TargetType="{x:Type Button}">
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding ExpandCommand.IsExecutable}" Value="true">
-                                            <Setter Property="ButtonBase.Command" Value="{Binding ExpandCommand}"/>
-                                            <Setter Property="ButtonBase.CommandParameter" Value="{x:Null}"/>
-                                            <Setter Property="FrameworkElement.ToolTip" Value="Media View"/>
-                                            <Setter Property="ContentControl.Content">
+                                            <Setter Property="Command" Value="{Binding ExpandCommand}"/>
+                                            <Setter Property="CommandParameter" Value="{x:Null}"/>
+                                            <Setter Property="ToolTip" Value="Media View"/>
+                                            <Setter Property="Content">
                                                 <Setter.Value>
                                                     <Image Source="pack://application:,,,/Resources/Icons/expand.ico"/>
                                                 </Setter.Value>
                                             </Setter>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding ContractCommand.IsExecutable}" Value="true">
-                                            <Setter Property="ButtonBase.Command" Value="{Binding ContractCommand}"/>
-                                            <Setter Property="FrameworkElement.ToolTip" Value="Grid View"/>
-                                            <Setter Property="ContentControl.Content">
+                                            <Setter Property="Command" Value="{Binding ContractCommand}"/>
+                                            <Setter Property="ToolTip" Value="Grid View"/>
+                                            <Setter Property="Content">
                                                 <Setter.Value>
                                                     <Image Source="pack://application:,,,/Resources/Icons/gridview.ico"/>
                                                 </Setter.Value>
@@ -108,9 +116,7 @@
                             </Button.Style>
                         </Button>
                         <Button Grid.Column="1" Width="30" Height="20" Margin="2,0,0,0" Command="{Binding GeotagFileBrowserCommand}" ToolTip="View Map">
-                            <Button.Content>
-                                <Image Source="pack://application:,,,/Resources/Icons/geotag.ico"/>
-                            </Button.Content>
+                            <Image Source="pack://application:,,,/Resources/Icons/geotag.ico"/>
                         </Button>
                         <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserPluginRegion"
 							Grid.Column="2" Margin="2,0,0,0" VerticalAlignment="Center" VerticalContentAlignment="Center"/>
@@ -123,10 +129,6 @@
             <Grid/>
         </Grid>
         <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
-        <TabControl x:Name="rightTabControl"
-			regions:RegionManager.RegionName="MediaFileBrowserRightTabRegion"                     
-			Grid.Column="2"  
-            HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-			Margin="2,0,0,0"/>        
+        <Layout:ExpanderPanel x:Name="rightTabControl" Grid.Column="2" regions:RegionManager.RegionName="rightExpanderPanelRegion" Margin="2,0,0,0"/>                   
     </Grid>
 </UserControl>

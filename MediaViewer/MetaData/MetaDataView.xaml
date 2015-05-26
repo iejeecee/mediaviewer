@@ -40,8 +40,7 @@
             </ContextMenu>
             <sys:Int32 x:Key="intZero">0</sys:Int32>
         </ResourceDictionary>
-    </UserControl.Resources>
-    <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2">
+    </UserControl.Resources>    
         <ScrollViewer Background="{StaticResource uiElementBackgroundColor}" Foreground="{StaticResource uiElementForegroundColor}">
             <Grid x:Name="mainGrid">
                 <Grid.RowDefinitions>
@@ -241,5 +240,4 @@
                 </Grid>
             </Grid>
         </ScrollViewer>
-    </mwt:ClassicBorderDecorator>
 </UserControl>

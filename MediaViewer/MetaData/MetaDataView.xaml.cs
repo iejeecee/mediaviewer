@@ -34,96 +34,18 @@ namespace MediaViewer.MetaData
     {
 
         MetaDataViewModel MetaDataViewModel { get; set; }     
-        IEventAggregator EventAggregator { get; set; }
-       
-        [ImportingConstructor]
+        
+        [ImportingConstructor] 
         public MetaDataView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
 
-            EventAggregator = eventAggregator;
-
             MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance, eventAggregator);
-                                     
-            dynamicElements = new List<UIElement>();
-            dynamicRows = new List<RowDefinition>();
-
+                                                
             DataContext = MetaDataViewModel;
-
          
-        }
-                  
-        List<RowDefinition> dynamicRows;
-        List<UIElement> dynamicElements;
-
-        void displayDynamicProperties(List<Tuple<String, String>> additionalProps)
-        {
-           /* App.Current.Dispatcher.BeginInvoke(new Action(() =>
-            {
-                foreach (RowDefinition row in dynamicRows)
-                {
-                    miscGrid.RowDefinitions.Remove(row);
-                }
-
-                dynamicRows.Clear();
-
-                foreach (UIElement elem in dynamicElements)
-                {
-                    miscGrid.Children.Remove(elem);
-                }
-
-                dynamicElements.Clear();
-
-                foreach (Tuple<String, String> prop in additionalProps)
-                {
-
-                    RowDefinition row;
-
-                    if (String.IsNullOrEmpty(prop.Item1))
-                    {
-                        row = new RowDefinition();
-                        row.Height = GridLength.Auto;
-
-                        miscGrid.RowDefinitions.Add(row);
-                        dynamicRows.Add(row);
-
-                        Separator seperator = new Separator();
-                        dynamicElements.Add(seperator);
-
-                        miscGrid.Children.Add(seperator);
-                        Grid.SetRow(seperator, miscGrid.RowDefinitions.Count - 1);
-                        Grid.SetColumnSpan(seperator, 3);
-
-                    }
-
-                    row = new RowDefinition();
-                    row.Height = GridLength.Auto;
-
-                    miscGrid.RowDefinitions.Add(row);
-                    dynamicRows.Add(row);
-
-                    Label label = new Label();
-                    label.Style = Resources["labelStyle"] as Style;
-                    label.Content = prop.Item1;
-
-                    miscGrid.Children.Add(label);
-                    dynamicElements.Add(label);
-                    Grid.SetColumn(label, 0);
-                    Grid.SetRow(label, miscGrid.RowDefinitions.Count - 1);
-
-                    TextBlock value = new TextBlock();
-                    value.Text = prop.Item2;
-                    value.Margin = new Thickness(5, 5, 5, 5);
-
-                    miscGrid.Children.Add(value);
-                    dynamicElements.Add(value);
-                    Grid.SetColumn(value, 1);
-                    Grid.SetRow(value, miscGrid.RowDefinitions.Count - 1);
-
-                }
-            }));*/
-        }
-
+        }                       
+        
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
         {
             TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().

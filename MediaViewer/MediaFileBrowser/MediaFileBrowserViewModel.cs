@@ -474,17 +474,13 @@ namespace MediaViewer.MediaFileBrowser
 
         }
 
-        public void navigateToMetaData()
+        void navigateToMetaData()
         {
-            Uri MetaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
+            Uri metaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
 
-            RegionManager.RequestNavigate(RegionNames.MediaFileBrowserRightTabRegion, MetaDataViewUri, (result) =>
-            {
-           
-            });
-
+            RegionManager.RequestNavigate("rightExpanderPanelRegion", metaDataViewUri);
         }
-
+     
         public void navigateToMediaFileGrid()
         {
             Uri mediaFileGridViewUri = new Uri(typeof(MediaFileGridView).FullName, UriKind.Relative);

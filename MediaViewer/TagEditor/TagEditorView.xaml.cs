@@ -42,13 +42,13 @@ namespace MediaViewer.TagEditor
 
             tagEditorViewModel.ImportCommand.Executed += (s,e) =>
             {
-                tagTreePicker.reloadAll();
+              //  tagTreePicker.reloadAll();
             };
         }
 
         private void window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            tagTreePicker.unregisterMessages();          
+            //tagTreePicker.unregisterMessages();          
         }
        
     }

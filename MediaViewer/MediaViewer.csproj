@@ -310,6 +310,9 @@
       <DependentUpon>ImagePanelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\ImagePanel\ScaleMode.cs" />
+    <Compile Include="UserControls\Layout\ExpanderPanel.cs" />
+    <Compile Include="UserControls\Layout\ExpanderPanelRegionAdapter.cs" />
+    <Compile Include="UserControls\Layout\IExpanderPanelAware.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
@@ -610,8 +613,6 @@
     </Compile>
     <Compile Include="UserControls\NumberSpinner\IntegerSpinnerBase.cs" />
     <Compile Include="UserControls\NumberSpinner\SpinnerBase.cs" />
-    <Compile Include="UserControls\TagTreePicker\CategoryItem.cs" />
-    <Compile Include="UserControls\TagTreePicker\TagTreePickerItem.cs" />
     <Compile Include="UserControls\TagTreePicker\TagTreePickerView.xaml.cs">
       <DependentUpon>TagTreePickerView.xaml</DependentUpon>
     </Compile>

@@ -93,8 +93,6 @@ namespace MediaViewer.GeotagFileBrowser
                 BingMapsKey.SessionKey = c.ApplicationId;
             });
 
-           
-
             //Map.PreviewMouseWheel += map_PreviewMouseWheel;
             Map.PreviewMouseDoubleClick += map_PreviewMouseDoubleClick;
 
@@ -332,10 +330,8 @@ namespace MediaViewer.GeotagFileBrowser
                 foreach (SelectableMediaItem media in MediaCollectionView.Media)
                 {
                     if (media.Item.ItemState == MediaItemState.LOADED)
-                    {
-                        media.Item.RWLock.EnterReadLock();
-                        mapAddItem(media);
-                        media.Item.RWLock.ExitReadLock();
+                    {                       
+                        mapAddItem(media);                    
                     }
                 }
             }
@@ -384,7 +380,7 @@ namespace MediaViewer.GeotagFileBrowser
                     }
                     break;
                 case MediaViewer.Model.Media.State.MediaStateChangedAction.Remove:
-                    foreach (SelectableMediaItem item in e.NewItems)
+                    foreach (SelectableMediaItem item in e.OldItems)
                     {
                         App.Current.Dispatcher.BeginInvoke(new Action(() => mapRemoveItem(item)));
                     }

@@ -24,11 +24,13 @@ using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.Base;
+using Microsoft.Practices.ServiceLocation;
+using MediaViewer.UserControls.Layout;
 
 namespace MediaViewer.MetaData
 {
 
-    public class MetaDataViewModel : BindableBase
+    public class MetaDataViewModel : BindableBase, IExpanderPanelAware
     {             
         
         
@@ -66,11 +68,6 @@ namespace MediaViewer.MetaData
                 RemoveTags.Clear();
             }
             
-        }
-
-        public override string ToString()
-        {
-            return ("Metadata");
         }
 
         IEventAggregator EventAggregator { get; set; }
@@ -247,6 +244,11 @@ namespace MediaViewer.MetaData
 
             MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
 
+            Header = "Metadata";
+            ElementHeight = 1;
+            IsAddBorder = true;
+            IsIntiallyExpanded = true;
+        
         }
 
         private void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -862,6 +864,11 @@ namespace MediaViewer.MetaData
 
             Items = selectedItems;
         }
+
+        public string Header { get; set; }        
+        public int ElementHeight { get; set; }
+        public bool IsAddBorder { get; set; }
+        public bool IsIntiallyExpanded { get; set; }
         
     }
    

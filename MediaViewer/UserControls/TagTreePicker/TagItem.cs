@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.UserControls.TagTreePicker
 {
-    public class TagItem : TagTreePickerItem, IComparable<TagItem>, IEquatable<TagItem>
+    public class TagItem :  BindableBase, IComparable<TagItem>, IEquatable<TagItem>
     {
         Tag tag;
 
@@ -18,59 +19,58 @@ namespace MediaViewer.UserControls.TagTreePicker
             set { tag = value; }
         }
 
+        public TagItem(String name, int used, String category)
+        {           
+            Name = name;
+            Count = used;
+            Category = category;
+            Tag = new Tag();
+        }
+
         public TagItem(Tag tag)
         {
             this.tag = tag;
             Name = tag.Name;       
-            Used = tag.Used;
+            Count = 1;
 
-            LazyLoading = true;
-         
+            if (tag.TagCategory != null)
+            {
+                Category = tag.TagCategory.Name;
+            }
+            else
+            {
+                Category = "None";
+            }
         }
 
-        public override long? Used
+        string name;
+
+        public string Name
         {
-            get { return Tag.Used; }
-            set { }
+            get { return name; }
+            set { SetProperty(ref name, value); }
         }
 
-        public override object Text
+        string category;
+
+        public string Category
+        {
+            get { return category; }
+            set { SetProperty(ref category, value); }
+        }
+
+        int count;
+
+        public int Count
         {
             get
-            {               
-                return Name;
-            }
-        }
-
-        public override object Icon
-        {
-            get
             {
-                return loadIcon("tag.ico");
+                return count;
             }
-        }
 
-        protected override void LoadChildren()
-        {
-            try
+            set
             {
-                if (Parent is TagItem == false)
-                {
-                    using (TagDbCommands tagCommands = new TagDbCommands())
-                    {
-                        Tag temp = tagCommands.getTagById(Tag.Id);
-
-                        foreach (Tag child in temp.ChildTags)
-                        {
-                            Children.Add(new TagItem(child));
-                        }
-                    }
-                }
-
-                IsLoaded = true;
-            }
-            catch
-            {
+                SetProperty(ref count, value);
             }
         }
 
@@ -88,6 +88,11 @@ namespace MediaViewer.UserControls.TagTreePicker
         {
         
             return (other.Tag.Id == Tag.Id);
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
 
     }

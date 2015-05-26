@@ -1,7 +1,10 @@
-﻿using Aga.Controls.Tree;
+﻿//https://diptimayapatra.wordpress.com/2010/03/05/grouping-in-datagrid-in-wpf/
+using Aga.Controls.Tree;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
+using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.TagEditor;
 using Microsoft.Practices.Prism.PubSubEvents;
@@ -29,180 +32,152 @@ namespace MediaViewer.UserControls.TagTreePicker
     public partial class TagTreePickerView : UserControl
     {
         IEventAggregator EventAggregator { get; set; }
+        ObservableCollection<TagItem> Tags;
     
         public TagTreePickerView()
         {
             InitializeComponent();
-            EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
+            //EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
 
-            treeView.Root = new CategoryItem(null);
+            Tags = new ObservableCollection<TagItem>();
 
-            EventAggregator.GetEvent<TagCategoryCreatedEvent>().Subscribe(addCategory);
-            EventAggregator.GetEvent<TagCategoryDeletedEvent>().Subscribe(removeCategory);
-            EventAggregator.GetEvent<TagCategoryUpdatedEvent>().Subscribe(updateCategory);
-
-            EventAggregator.GetEvent<TagCreatedEvent>().Subscribe(addTag);
-            EventAggregator.GetEvent<TagDeletedEvent>().Subscribe(removeTag);
-            EventAggregator.GetEvent<TagUpdatedEvent>().Subscribe(updateTag);
-            
+            dataGrid.ItemsSource = new ListCollectionView(Tags);
         }
+
+        public MediaStateCollectionView MediaStateCollectionView
+        {
+            get { return (MediaStateCollectionView)GetValue(MediaStateCollectionViewProperty); }
+            set { SetValue(MediaStateCollectionViewProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MediaStateCollectionView.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MediaStateCollectionViewProperty =
+            DependencyProperty.Register("MediaStateCollectionView", typeof(MediaStateCollectionView), typeof(TagTreePickerView), new PropertyMetadata(null, mediaStateCollectionViewChangedCallback));
+
+        private static void mediaStateCollectionViewChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            TagTreePickerView view = (TagTreePickerView)d;
+
+            if (e.OldValue != null)
+            {
+                MediaStateCollectionView oldCollectionView = (MediaStateCollectionView)e.OldValue;
+                oldCollectionView.ItemPropertyChanged -= view.mediaCollectionView_ItemPropertyChanged;
+                oldCollectionView.NrItemsInStateChanged -= view.mediaCollectionView_NrItemsInStateChanged;
+                //WeakEventManager<MediaStateCollectionView, EventArgs>.RemoveHandler(oldCollectionView, "Cleared", view.mediaGridViewModel_Cleared);
+            }
+
+            if (e.NewValue != null)
+            {
+                MediaStateCollectionView newCollectionView = (MediaStateCollectionView)e.NewValue;
+                newCollectionView.ItemPropertyChanged += view.mediaCollectionView_ItemPropertyChanged;
+                newCollectionView.NrItemsInStateChanged += view.mediaCollectionView_NrItemsInStateChanged;
+
+                //WeakEventManager<MediaStateCollectionView, EventArgs>.AddHandler(newCollectionView, "Cleared", view.mediaGridViewModel_Cleared);
+            }
        
-        public void unregisterMessages() {
-
-            EventAggregator.GetEvent<TagCategoryCreatedEvent>().Unsubscribe(addCategory);
-            EventAggregator.GetEvent<TagCategoryDeletedEvent>().Unsubscribe(removeCategory);
-            EventAggregator.GetEvent<TagCategoryUpdatedEvent>().Unsubscribe(updateCategory);
-
-            EventAggregator.GetEvent<TagCreatedEvent>().Unsubscribe(addTag);
-            EventAggregator.GetEvent<TagDeletedEvent>().Unsubscribe(removeTag);
-            EventAggregator.GetEvent<TagUpdatedEvent>().Unsubscribe(updateTag);
+            view.buildTagList();
         }
 
-        public ObservableRangeCollection<Tag> SelectedTags
+        private void mediaCollectionView_NrItemsInStateChanged(object sender, MediaStateCollectionViewChangedEventArgs e)
         {
-            get { return (ObservableRangeCollection<Tag>)GetValue(SelectedTagsProperty); }
-            set { SetValue(SelectedTagsProperty, value); }
+            switch (e.Action)
+            {
+                case MediaViewer.Model.Media.State.MediaStateChangedAction.Add:
+                    foreach (SelectableMediaItem item in e.NewItems)
+                    {
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => addTags(item)));
+                    }
+                    break;
+                case MediaViewer.Model.Media.State.MediaStateChangedAction.Remove:
+                    foreach (SelectableMediaItem item in e.OldItems)
+                    {
+                        App.Current.Dispatcher.BeginInvoke(new Action(() => removeTags(item)));
+                    }
+                    break;
+                case MediaViewer.Model.Media.State.MediaStateChangedAction.Clear:
+                    App.Current.Dispatcher.BeginInvoke(new Action(() =>  clearTags()));
+                    break;
+                case MediaViewer.Model.Media.State.MediaStateChangedAction.Modified:
+                    break;
+                case MediaViewer.Model.Media.State.MediaStateChangedAction.Replace:
+                    break;
+                default:
+                    break;
+            }
         }
 
-        // Using a DependencyProperty as the backing store for SelectedTag.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedTagsProperty =
-            DependencyProperty.Register("SelectedTags", typeof(ObservableRangeCollection<Tag>), typeof(TagTreePickerView), new PropertyMetadata(new ObservableRangeCollection<Tag>()));
-
-
-        public ObservableRangeCollection<TagCategory> SelectedCategories
+        private void mediaCollectionView_ItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            get { return (ObservableRangeCollection<TagCategory>)GetValue(SelectedCategoriesProperty); }
-            set { SetValue(SelectedCategoriesProperty, value); }
+            SelectableMediaItem item = (SelectableMediaItem)sender;
+
+            if (e.PropertyName.Equals("Metadata"))
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    addTags(item);
+                }));
+
+            }
         }
 
-        // Using a DependencyProperty as the backing store for SelectedCategory.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty SelectedCategoriesProperty =
-            DependencyProperty.Register("SelectedCategories", typeof(ObservableRangeCollection<TagCategory>), typeof(TagTreePickerView), new PropertyMetadata(new ObservableRangeCollection<TagCategory>()));
-                
+        void clearTags()
+        {
+            Tags.Clear();
+        }
+
+        void removeTags(SelectableMediaItem item)
+        {
+
+        }
+
+        void addTags(SelectableMediaItem item)
+        {
+            if (item.Item.Metadata == null) return;
+
+            item.Item.RWLock.EnterReadLock();
+            try
+            {                
+                foreach (Tag tag in item.Item.Metadata.Tags)
+                {
+                    TagItem tagItem = new TagItem(tag);
+
+                    int pos = CollectionsSort.itemIndexSortedCollection(Tags,tagItem);
+
+                    if (pos == -1)
+                    {
+                        CollectionsSort.insertIntoSortedCollection(Tags, new TagItem(tag));
+                    }
+                    else
+                    {
+                        Tags[pos].Count++;
+                    }
+                }
+            }
+            finally
+            {
+                item.Item.RWLock.ExitReadLock();
+            }
+        }
+
+        void buildTagList()
+        {
+            MediaStateCollectionView.MediaState.UIMediaCollection.EnterReaderLock();
+            try
+            {
+                foreach (SelectableMediaItem media in MediaStateCollectionView.Media)
+                {
+                    if (media.Item.ItemState == MediaItemState.LOADED)
+                    {
+                        addTags(media);                        
+                    }
+                }
+            }
+            finally
+            {
+                MediaStateCollectionView.MediaState.UIMediaCollection.ExitReaderLock();
+            }
+        }
+
         
-        private void treeView_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {           
-            if (treeView.SelectedItems.Count == 0)
-            {
-                SelectedTags.Clear(); 
-                SelectedCategories.Clear(); 
-                return;
-            }
-
-            List<Tag> selectedTags = new List<Tag>();
-            List<TagCategory> selectedCategories = new List<TagCategory>();
-
-            foreach (TagTreePickerItem item in treeView.SelectedItems)
-            {               
-                if (item is TagItem)
-                {
-                    selectedTags.Add((item as TagItem).Tag);
-                }
-                else if (item is CategoryItem)
-                {
-                    selectedCategories.Add((item as CategoryItem).Category);
-                }
-            }
-
-            SelectedTags.ReplaceRange(selectedTags);
-            SelectedCategories.ReplaceRange(selectedCategories);
-        }
-
-        int getNrCategories()
-        {
-            int result = 0;
-            TagTreePickerItem root = treeView.Root as TagTreePickerItem;
-
-            foreach (TagTreePickerItem item in root.Children)
-            {
-                if (item is CategoryItem)
-                {
-                    result++;
-                }
-            }
-
-            return (result);
-        }
-
-        private void updateTag(Tag tag)
-        {
-            removeTag(tag);
-            addTag(tag);
-        }
-
-        private void removeTag(Tag tag)
-        {
-            TagTreePickerItem root = treeView.Root as TagTreePickerItem;
-            TagItem item = root.findTag(tag.Id);
-            if (item != null)
-            {
-                TagTreePickerItem parent = item.Parent as TagTreePickerItem;
-                parent.DeleteWithoutConfirmation(new TagTreePickerItem[] { item });
-            }
-        }
-
-        private void addTag(Tag tag)
-        {
-            if (tag.TagCategory == null)
-            {
-                CollectionsSort.insertIntoSortedCollection(treeView.Root.Children, new TagItem(tag),
-                    compareTreeNodes, getNrCategories(), treeView.Root.Children.Count); 
-             
-            }
-            else
-            {
-                TagTreePickerItem root = treeView.Root as TagTreePickerItem;
-                CategoryItem item = root.findCategory(tag.TagCategory.Id);
-
-                if (item != null && item.IsLoaded)
-                {
-                    CollectionsSort.insertIntoSortedCollection(item.Children, new TagItem(tag), compareTreeNodes);                   
-                }
-            }
-        }
-
-        private void updateCategory(TagCategory category)
-        {
-            removeCategory(category);
-            addCategory(category);
-        }
-
-        private void removeCategory(TagCategory category)
-        {
-            TagTreePickerItem root = treeView.Root as TagTreePickerItem;
-            CategoryItem item = root.findCategory(category.Id);
-
-            if (item != null)
-            {
-                TagTreePickerItem parent = item.Parent as TagTreePickerItem;
-                parent.DeleteWithoutConfirmation(new TagTreePickerItem[] { item });                
-            }
-        }
-
-        private void addCategory(TagCategory category)
-        {
-            CollectionsSort.insertIntoSortedCollection(treeView.Root.Children, new CategoryItem(category),
-                    compareTreeNodes, 0, getNrCategories());             
-        }
-
-        private int compareTreeNodes(ICSharpCode.TreeView.SharpTreeNode a, ICSharpCode.TreeView.SharpTreeNode b)
-        {
-            if (a.GetType() == typeof(TagItem) && b.GetType() == typeof(CategoryItem))
-            {
-                return (1);
-            }
-
-            if (a.GetType() == typeof(CategoryItem) && b.GetType() == typeof(TagItem))
-            {
-                return (-1);
-            }
-
-            return(a.ToString().CompareTo(b.ToString()));
-        }
-
-        public void reloadAll()
-        {
-            treeView.Root = new CategoryItem(null);
-        }
     }
 }

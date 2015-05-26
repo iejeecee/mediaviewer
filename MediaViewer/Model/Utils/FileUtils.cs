@@ -483,11 +483,9 @@ namespace MediaViewer.Model.Utils
 
                 if (fHandle != IntPtr.Zero && fHandle.ToInt64() != -1L)
                 {
-
                     Microsoft.Win32.SafeHandles.SafeFileHandle handle = new Microsoft.Win32.SafeHandles.SafeFileHandle(fHandle, true);
 
                     return new FileStream(handle, access);
-
                 }
 
                 if (errorCode != ERROR_SHARING_VIOLATION)
