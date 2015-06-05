@@ -128,7 +128,7 @@ namespace GeoTagPlugin
 
 		    GeoTagFileItem data = null;
 
-            Items.EnterReaderLock();
+            Items.EnterReadLock();
             try
             {
                 foreach (GeoTagFileItem item in Items)
@@ -144,13 +144,13 @@ namespace GeoTagPlugin
             }
             finally
             {
-                Items.ExitReaderLock();                
+                Items.ExitReadLock();                
             }
 	    }
 
         public GeoTagFileItem get(MediaFileItem mediaItem)
         {
-            Items.EnterReaderLock();
+            Items.EnterReadLock();
             try
             {
                 foreach (GeoTagFileItem geoTagItem in Items)
@@ -165,7 +165,7 @@ namespace GeoTagPlugin
             }
             finally
             {
-                Items.ExitReaderLock();
+                Items.ExitReadLock();
             }
         }
 

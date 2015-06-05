@@ -26,7 +26,13 @@ namespace MediaViewer.Model.Collections.Sort
             if (list.Count == 0)
             {
                 list.Add(item);
-                return(newIndex);
+                return (newIndex);
+            }
+
+            if (start == end)
+            {
+                list.Insert(start, item);
+                return (start);
             }
 
             int mid = start;
@@ -56,11 +62,11 @@ namespace MediaViewer.Model.Collections.Sort
 
             if (compareFunc(item, list[mid]) >= 0)
             {
-                newIndex = mid + 1;               
+                newIndex = mid + 1;
             }
             else
             {
-                newIndex = mid;              
+                newIndex = mid;
             }
 
             list.Insert(newIndex, item);
@@ -86,10 +92,10 @@ namespace MediaViewer.Model.Collections.Sort
             return (newIndex);
         }
 
-        public static int itemIndexSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc, int start, int end)
-        {            
+        public static int indexOfItemSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc, int start, int end)
+        {
             if (list.Count == 0)
-            {                
+            {
                 return (-1);
             }
 
@@ -113,29 +119,31 @@ namespace MediaViewer.Model.Collections.Sort
                 }
                 else
                 {
-                    return(mid);
+                    return (mid);
                 }
 
             }
-           
+
             return (-1);
         }
 
-        public static int itemIndexSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
+        public static int indexOfItemSortedCollection<T>(IList<T> list, T item, Func<T, T, int> compareFunc)
         {
-            int index = itemIndexSortedCollection(list, item, compareFunc, 0, list.Count);
+            int index = indexOfItemSortedCollection(list, item, compareFunc, 0, list.Count);
 
             return (index);
         }
 
-        public static int itemIndexSortedCollection<T>(IList<T> list, T item)
+        public static int indexOfItemSortedCollection<T>(IList<T> list, T item)
         {
-            int index = itemIndexSortedCollection(list, item, (a, b) =>
+            int index = indexOfItemSortedCollection(list, item, (a, b) =>
             {
                 return (a.ToString().CompareTo(b.ToString()));
             }, 0, list.Count);
 
             return (index);
         }
+    
+
     }
 }

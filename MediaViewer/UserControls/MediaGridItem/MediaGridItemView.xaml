@@ -53,7 +53,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                                ToolTip="{Binding Parent.SelectableMediaItem.Item.Location, Converter={StaticResource pathToFilenameConverter}, ElementName=root}"/>
                     <TextBlock x:Name="extension" Grid.Column="1" Text="{Binding Parent.SelectableMediaItem.Item.Location, ConverterParameter=ext, Converter={StaticResource pathToFilenameConverter}, ElementName=root}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
                 </Grid>
-                <Grid ToolTip="{Binding Parent.SelectableMediaItem.Item.Metadata.DefaultFormatCaption, ElementName=root}" Grid.Row="1">
+                <Grid Grid.Row="1">
                     <Border BorderThickness="2,2,2,2" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Border.Style>
                             <Style>
@@ -79,12 +79,14 @@ d:DesignHeight="300" d:DesignWidth="300">
                                                 <Setter Property="Image.Visibility" Value="Visible"/>
                                                 <Setter Property="Image.Stretch" Value="Uniform"/>
                                                 <Setter Property="Image.Source" Value="{Binding Item.Metadata.Thumbnail.Image}"/>
+                                                <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
                                                 <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                             </DataTrigger>
                                             <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="ERROR">
                                                 <Setter Property="Image.Visibility" Value="Visible"/>
                                                 <Setter Property="Image.Stretch" Value="None"/>
                                                 <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                                <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
                                                 <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                             </DataTrigger>
                                         </Style.Triggers>

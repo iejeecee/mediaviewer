@@ -40,62 +40,88 @@ namespace MediaViewer.Model.Media.File
                 return (location);
             }
             set
-            {                              
-                RWLock.EnterWriteLock();
-                try
+            {
+                bool isLocationChanged;
+                bool isMetadataChanged;
+
+                setLocation(value, out isLocationChanged, out isMetadataChanged);
+
+                if (isLocationChanged)
                 {
-                    String oldLocation = location; 
-                    String newLocation = value;
-                    
-                    if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(newLocation))
+                    OnPropertyChanged("Location");
+                }
+
+                if (isMetadataChanged)
+                {
+                    OnPropertyChanged("Metadata");
+                }
+            }
+        }
+
+        void setLocation(String newLocation, out bool isLocationChanged, out bool isMetadataChanged)
+        {
+            isMetadataChanged = false;
+            isLocationChanged = false;
+
+            RWLock.EnterWriteLock();
+            try
+            {
+                String oldLocation = location;               
+
+                if (!String.IsNullOrEmpty(oldLocation) && !String.IsNullOrEmpty(newLocation))
+                {
+                    // check if newLocation has changed
+                    if (oldLocation.Equals(newLocation)) return;
+
+                    // update newLocation in dictionary
+                    Factory.renameInDictionary(oldLocation, newLocation);
+
+                    // update newLocation in the database
+                    // Note: don't use the base class getters/setters for metadata to
+                    // prevent triggering a onpropertychanged event while holding a write lock
+                    if (metadata != null)
                     {
-                        // check if newLocation has changed
-                        if (oldLocation.Equals(newLocation)) return;
-                     
-                        // update newLocation in dictionary
-                        Factory.renameInDictionary(oldLocation, newLocation);
+                        metadata.Location = newLocation;
 
-                        // update newLocation in the database
-                        if (Metadata != null)
-                        {
-                            Metadata.Location = newLocation;
-
-                            if (Metadata.IsImported)
-                            {
-                                using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
-                                {
-                                    Metadata = metadataCommands.update(Metadata);
-                                }
-                            }
-                        }
-                        else
+                        if (metadata.IsImported)
                         {
                             using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
                             {
-                                Metadata = metadataCommands.findMetadataByLocation(oldLocation);
-                                if (Metadata != null)
-                                {
-                                    Metadata.Location = newLocation;
-                                    Metadata = metadataCommands.update(Metadata);
-                                }
+                                metadata = metadataCommands.update(metadata);
+                                isMetadataChanged = true;
                             }
-
                         }
                     }
-                    else if (String.IsNullOrEmpty(newLocation) && !String.IsNullOrEmpty(oldLocation))
+                    else
                     {
-                        Factory.deleteFromDictionary(oldLocation);
-                    }
+                        using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
+                        {
+                            metadata = metadataCommands.findMetadataByLocation(oldLocation);
+                            if (metadata != null)
+                            {
+                                metadata.Location = newLocation;
+                                metadata = metadataCommands.update(Metadata);
+                            }
 
-                    SetProperty(ref location, newLocation);                                             
+                            isMetadataChanged = true;
+                        }
+
+                    }
                 }
-                finally
+                else if (String.IsNullOrEmpty(newLocation) && !String.IsNullOrEmpty(oldLocation))
                 {
-                    RWLock.ExitWriteLock();
-                      
+                    Factory.deleteFromDictionary(oldLocation);
                 }
-                               
+
+                location = newLocation;
             }
+            finally
+            {
+                RWLock.ExitWriteLock();
+
+                isLocationChanged = true;
+            }
+
         }
 
                          
@@ -103,51 +129,66 @@ namespace MediaViewer.Model.Media.File
         {
             // this can be a read lock since the mediafileitem instance is not modified during writing to disk.
             // but we don't want multiple writes at the same time so we use the upgradablereadlock
+            bool metadataChanged = false;
+            bool varsChanged = false;
+
             RWLock.EnterUpgradeableReadLock();
             try
             {
                 if (Metadata != null)
                 {
                     MetadataFactory.write(Metadata, options, progress);
+                    metadataChanged = true;
 
-                    checkVariables(Metadata);
+                    RWLock.EnterWriteLock();
+                    varsChanged = checkVariables(Metadata);
+                    RWLock.ExitWriteLock();
                 }
             }
             finally
-            {            
-                RWLock.ExitUpgradeableReadLock();
-                OnPropertyChanged("Metadata");               
+            {
+                RWLock.ExitUpgradeableReadLock();                                         
+            }
+
+            if (metadataChanged)
+            {
+                OnPropertyChanged("Metadata");
+            }
+
+            if (varsChanged)
+            {
+                OnPropertyChanged("HasTags");
+                OnPropertyChanged("HasGeoTag");
             }
 
         }
 
         public override void readMetadata(MetadataFactory.ReadOptions options, CancellationToken token)
         {
-            BaseMetadata metadata = null;
-            MediaItemState result = MediaItemState.LOADED;
+            BaseMetadata metadataTemp = null;
+            MediaItemState itemStateTemp = MediaItemState.LOADED;
 
-            RWLock.EnterUpgradeableReadLock();           
-            try
-            {
-                ItemState = MediaItemState.LOADING;
+            ItemState = MediaItemState.LOADING;
 
-                metadata = MetadataFactory.read(Location, options, token);
+            try {
+                
+                metadataTemp = MetadataFactory.read(Location, options, token);
 
-                if (metadata == null || metadata is UnknownMetadata)
+                if (metadataTemp == null || metadataTemp is UnknownMetadata)
                 {
-                    result = MediaItemState.ERROR;
+                    itemStateTemp = MediaItemState.ERROR;
                 }
                 else {
 
-                    if (metadata.MetadataReadError != null)
+                    if (metadataTemp.MetadataReadError != null)
                     {
-                        if (metadata.MetadataReadError is FileNotFoundException)
+                        if (metadataTemp.MetadataReadError is FileNotFoundException)
                         {
-                            result = MediaItemState.FILE_NOT_FOUND;
+                            itemStateTemp = MediaItemState.FILE_NOT_FOUND;
                         }
                         else
                         {
-                            result = MediaItemState.ERROR;
+                            itemStateTemp = MediaItemState.ERROR;
                         }
                     }                   
                 }
@@ -155,46 +196,60 @@ namespace MediaViewer.Model.Media.File
             }
             catch(TimeoutException) {
 
-                result = MediaItemState.TIMED_OUT;              
+                itemStateTemp = MediaItemState.TIMED_OUT;              
             }
             catch (Exception e)
             {
-                result = MediaItemState.ERROR;
+                itemStateTemp = MediaItemState.ERROR;
                 Logger.Log.Info("Error loading image grid item:" + Location, e);
             }
             finally
-            {               
-                Metadata = metadata;
-                ItemState = result;
+            {
+                RWLock.EnterWriteLock();
 
-                checkVariables(metadata);
+                metadata = metadataTemp;
+                itemState = itemStateTemp;
 
-                RWLock.ExitUpgradeableReadLock();
+                bool changed = checkVariables(metadata);  
+
+                RWLock.ExitWriteLock();
+
+                OnPropertyChanged("ItemState");
+                OnPropertyChanged("Metadata");                
+
+                if (changed)
+                {
+                    OnPropertyChanged("HasTags");
+                    OnPropertyChanged("HasGeoTag");
+                }
+                                           
             }
         }
 
-
-        void checkVariables(BaseMetadata metadata)
+        // function should only be called inside a write lock
+        bool checkVariables(BaseMetadata metadata)
         {
-            if (metadata == null) return;
+            if (metadata == null) return(false);
 
             if (metadata.Tags.Count > 0)
             {
-                HasTags = true;
+                hasTags = true;
             }
             else
             {
-                HasTags = false;
+                hasTags = false;
             }
 
             if (metadata.Longitude != null && metadata.Latitude != null)
             {
-                HasGeoTag = true;
+                hasGeoTag = true;
             }
             else
             {
-                HasGeoTag = false;
+                hasGeoTag = false;
             }
+
+            return (true);
 
         }
         
@@ -229,12 +284,12 @@ namespace MediaViewer.Model.Media.File
                         metadataCommands.delete(Metadata);
                     }
 
-                    Metadata = null;
+                    metadata = null;
 
                     isImported = true;
                 }
 
-                ItemState = MediaItemState.DELETED;
+                itemState = MediaItemState.DELETED;
                 //Factory.deleteFromDictionary(location);
 
                 return (isImported);
@@ -242,6 +297,9 @@ namespace MediaViewer.Model.Media.File
             finally
             {
                 RWLock.ExitWriteLock();
+
+                OnPropertyChanged("Metadata");
+                OnPropertyChanged("ItemState");
             }
            
         }
@@ -255,17 +313,18 @@ namespace MediaViewer.Model.Media.File
         /// <returns></returns>
         public bool move(String newLocation, CancellableOperationProgressBase progress)
         {
+            bool isLocationChanged = false;
+            bool isMetadataChanged = false; 
+
             RWLock.EnterUpgradeableReadLock();
             try
-            {
-                
+            {                
                 bool isImported = false;
 
                 if (ItemState == MediaItemState.DELETED)
                 {
                     return (isImported);
                 }
-
                
                 FileUtils fileUtils = new FileUtils();
 
@@ -273,14 +332,24 @@ namespace MediaViewer.Model.Media.File
                            
                 // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
                 // If location is changed to it's new location it will not be be found in the current mediastate. 
-                // So only update the location when mediafilewatcher is not active.
-                Location = newLocation;
-                             
+                // So only update the location when mediafilewatcher is not active.               
+                setLocation(newLocation, out isLocationChanged, out isMetadataChanged);
+                                             
                 return (isImported = Metadata.IsImported);
             }
             finally
             {
                 RWLock.ExitUpgradeableReadLock();
+
+                if (isLocationChanged)
+                {
+                    OnPropertyChanged("Location");
+                }
+
+                if (isMetadataChanged)
+                {
+                    OnPropertyChanged("Metadata");
+                }
             }
             
         }
@@ -291,7 +360,6 @@ namespace MediaViewer.Model.Media.File
             RWLock.EnterUpgradeableReadLock();
             try
             {
-
                 if (ItemState == MediaItemState.DELETED || Metadata == null || Metadata.IsImported == true)
                 {
                     return (false);
@@ -299,25 +367,26 @@ namespace MediaViewer.Model.Media.File
 
                 using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
                 {
-                    Metadata = metadataCommands.create(Metadata);
-                }
-
-                return (true);
+                    RWLock.EnterWriteLock();
+                    metadata = metadataCommands.create(Metadata);
+                    RWLock.ExitWriteLock();
+                }                
             }
             finally
             {
                 RWLock.ExitUpgradeableReadLock();
             }
 
-            
+            OnPropertyChanged("Metadata");
+
+            return (true);
         }
 
         public bool export(CancellationToken token)
         {
-            RWLock.EnterUpgradeableReadLock();
+            RWLock.EnterReadLock();
             try
             {
-
                 if (ItemState == MediaItemState.DELETED || Metadata == null || Metadata.IsImported == false)
                 {
                     return (false);
@@ -326,16 +395,16 @@ namespace MediaViewer.Model.Media.File
                 using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
                 {
                     metadataCommands.delete(Metadata);
-                    OnPropertyChanged("Media");
-                }
-
-                return (true);
+                   
+                }               
             }
             finally
             {
-                RWLock.ExitUpgradeableReadLock();
+                RWLock.ExitReadLock();
             }
-            
+
+            OnPropertyChanged("Metadata");
+            return (true);
         }
        
  

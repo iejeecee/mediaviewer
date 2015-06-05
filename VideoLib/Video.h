@@ -80,11 +80,11 @@ protected:
 
 		if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_VIDEO) {
 
-			videoIdx = this->stream.size() - 1;
+			videoIdx = int(this->stream.size() - 1);
 
 		} else if(stream->getCodecContext()->codec_type == AVMEDIA_TYPE_AUDIO) {
 
-			audioIdx = this->stream.size() - 1;
+			audioIdx = int(this->stream.size() - 1);
 		}
 	}
 	
@@ -147,7 +147,7 @@ public:
 
 	int getNrStreams() const {
 
-		return(stream.size());
+		return((int)stream.size());
 	}
 
 	AVStream *getVideoStream() const {

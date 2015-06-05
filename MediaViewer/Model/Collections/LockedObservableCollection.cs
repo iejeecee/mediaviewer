@@ -74,12 +74,12 @@ namespace MediaViewer.Model.Collections
             }
         }
 
-        public void EnterReaderLock()
+        public void EnterReadLock()
         {
             rwLock.EnterReadLock();
         }
 
-        public void ExitReaderLock()
+        public void ExitReadLock()
         {
             rwLock.ExitReadLock();
         }

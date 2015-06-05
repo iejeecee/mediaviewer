@@ -608,7 +608,7 @@ protected:
 
 				streamInfo[i]->filterGraph->createGraph(value.c_str());				
 
-			} else {
+			} else if(input->getFormatContext()->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
 
 				if((StreamOptions)options["audioStreamMode"] != StreamOptions::Encode) continue;
 

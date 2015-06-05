@@ -17,6 +17,13 @@ using System.Windows.Data;
 
 namespace MediaViewer.Model.Media.File
 {
+    public enum MediaFilterMode
+    {
+        None,
+        Video,
+        Images
+    }
+
     public sealed class MediaFileStateCollectionView : MediaStateCollectionView
     {
         static RatingCache RatingCache { get; set; }
@@ -28,97 +35,173 @@ namespace MediaViewer.Model.Media.File
 
         public MediaFileStateCollectionView(MediaState mediaState)
             : base(mediaState)
-        {
-            filter = MediaStateFilterFunctions.getFilter(MediaStateFilterMode.None);
-            sortFunc = MediaStateSortFunctions.getSortFunction(MediaStateSortMode.Name);
+        {           
+            Filter = filterFunc;
 
-            FilterModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateFilterMode)));         
-            SortModes = new ListCollectionView(Enum.GetValues(typeof(MediaStateSortMode)));
+            MediaFilter = MediaFilterMode.None;
+            TagFilter = new List<Tag>();
+
+            SortFunc = MediaFileSortFunctions.getSortFunction(MediaSortMode.Name);
+            
+            FilterModes = new ListCollectionView(Enum.GetValues(typeof(MediaFilterMode)));         
+            SortModes = new ListCollectionView(Enum.GetValues(typeof(MediaSortMode)));
 
             SortModes.CurrentChanged += (s, e) =>
             {
-                MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
+                MediaSortMode sortMode = (MediaSortMode)SortModes.CurrentItem;
 
-                SortFunc = MediaStateSortFunctions.getSortFunction(sortMode);        
+                SortFunc = MediaFileSortFunctions.getSortFunction(sortMode);
+
+                refresh();
             };
 
             SortModes.Filter = mediaStateSortModeCollectionViewFilter;
 
             FilterModes.CurrentChanged += (s, e) =>
             {
-                MediaStateFilterMode filterMode = (MediaStateFilterMode)FilterModes.CurrentItem;
-                MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
-
-                Filter = MediaStateFilterFunctions.getFilter(filterMode);
+                MediaFilter = (MediaFilterMode)FilterModes.CurrentItem;
+                MediaSortMode sortMode = (MediaSortMode)SortModes.CurrentItem;                
 
                 SortModes.Refresh();
 
-                switch (filterMode)
+                bool isRefreshed = false;
+
+                switch (MediaFilter)
                 {
-                    case MediaStateFilterMode.None:
-                        if (!MediaStateSortFunctions.isAllSortMode(sortMode))
+                    case MediaFilterMode.None:
+                        if (!MediaFileSortFunctions.isAllSortMode(sortMode))
                         {
                             SortModes.MoveCurrentToFirst();
+                            isRefreshed = true;
                         }
                         break;
-                    case MediaStateFilterMode.Video:
-                        if (!MediaStateSortFunctions.isVideoSortMode(sortMode))
+                    case MediaFilterMode.Video:
+                        if (!MediaFileSortFunctions.isVideoSortMode(sortMode))
                         {
                             SortModes.MoveCurrentToFirst();
+                            isRefreshed = true;
                         }
                         break;
-                    case MediaStateFilterMode.Images:
-                        if (!MediaStateSortFunctions.isImageSortMode(sortMode))
+                    case MediaFilterMode.Images:
+                        if (!MediaFileSortFunctions.isImageSortMode(sortMode))
                         {
                             SortModes.MoveCurrentToFirst();
+                            isRefreshed = true;
                         }
                         break;
                     default:
                         break;
                 }
 
+                if (!isRefreshed)
+                {
+                    refresh();
+                }
        
             };
                                     
-            FilterModes.MoveCurrentTo(MediaStateFilterMode.None);
+            FilterModes.MoveCurrentTo(MediaFilterMode.None);
             
+        }
+
+        bool filterFunc(SelectableMediaItem item) 
+        {                  
+            item.Item.RWLock.EnterReadLock();
+            try
+            {
+                switch (MediaFilter)
+                {
+                    case MediaFilterMode.None:
+                        break;                           
+                    case MediaFilterMode.Video:
+                        if (!Utils.MediaFormatConvert.isVideoFile(item.Item.Location))
+                        {
+                            return (false);
+                        }
+                        break;
+                    case MediaFilterMode.Images:
+                        if (!Utils.MediaFormatConvert.isImageFile(item.Item.Location))
+                        {
+                            return (false);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+
+
+                // tag filter
+                MediaItem media = item.Item;
+
+                if (TagFilter.Count == 0) return (true);
+                if (media.ItemState == Base.MediaItemState.LOADING) return (true);
+
+                foreach (Tag tag in TagFilter)
+                {
+                    if (!media.Metadata.Tags.Contains(tag))
+                    {
+                        return (false);
+                    }
+                }
+
+                return (true);
+            }
+            finally
+            {
+                item.Item.RWLock.ExitReadLock();
+            }            
+        }
+        
+        MediaFilterMode mediaFilter;
+
+        public MediaFilterMode MediaFilter
+        {
+            get { return mediaFilter; }
+            set { SetProperty(ref mediaFilter, value); }
+        }
+
+        List<Tag> tagFilter;
+
+        public List<Tag> TagFilter
+        {
+            get { return tagFilter; }
+            set { tagFilter = value; }
         }
 
         override protected void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             MediaItem item = sender as MediaItem;
-            MediaStateSortMode sortMode = (MediaStateSortMode)SortModes.CurrentItem;
+            MediaSortMode sortMode = (MediaSortMode)SortModes.CurrentItem;
 
             if (e.PropertyName.Equals("Location"))
             {
-                if (sortMode == MediaStateSortMode.Name)
+                if (sortMode == MediaSortMode.Name)
                 {
                     reSort(item);
                 }
             }
             else if (e.PropertyName.Equals("Metadata"))
             {
-                if (item.Metadata != null && sortMode != MediaStateSortMode.Name)
+                if (item.Metadata != null)
                 {
                     reSort(item);
                 }
             }
             
         }
-
-      
+              
         private bool mediaStateSortModeCollectionViewFilter(object item)
         {
-            MediaStateSortMode mode = (MediaStateSortMode)item;
+            MediaSortMode mode = (MediaSortMode)item;
 
-            switch ((MediaStateFilterMode)FilterModes.CurrentItem)
+            switch (MediaFilter)
             {
-                case MediaStateFilterMode.None:
-                    return (MediaStateSortFunctions.isAllSortMode(mode));
-                case MediaStateFilterMode.Video:
-                    return (MediaStateSortFunctions.isVideoSortMode(mode));
-                case MediaStateFilterMode.Images:
-                    return (MediaStateSortFunctions.isImageSortMode(mode));
+                case MediaFilterMode.None:
+                    return (MediaFileSortFunctions.isAllSortMode(mode));
+                case MediaFilterMode.Video:
+                    return (MediaFileSortFunctions.isVideoSortMode(mode));
+                case MediaFilterMode.Images:
+                    return (MediaFileSortFunctions.isImageSortMode(mode));
                 default:
                     break;
             }
@@ -139,14 +222,14 @@ namespace MediaViewer.Model.Media.File
                 VideoMetadata VideoMetadata = item.Metadata is VideoMetadata ? item.Metadata as VideoMetadata : null;
                 ImageMetadata ImageMetadata = item.Metadata is ImageMetadata ? item.Metadata as ImageMetadata : null;
 
-                switch ((MediaStateSortMode)SortModes.CurrentItem)
+                switch ((MediaSortMode)SortModes.CurrentItem)
                 {
-                    case MediaStateSortMode.Name:
+                    case MediaSortMode.Name:
                         break;
-                    case MediaStateSortMode.Size:
+                    case MediaSortMode.Size:
                         info = MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(item.Metadata.SizeBytes);
                         break;
-                    case MediaStateSortMode.Rating:
+                    case MediaSortMode.Rating:
 
                         if(item.Metadata.Rating.HasValue) {
 
@@ -155,9 +238,9 @@ namespace MediaViewer.Model.Media.File
                             info = RatingCache.RatingBitmap[nrStars];                                              
                         }
                         break;
-                    case MediaStateSortMode.Imported:
+                    case MediaSortMode.Imported:
                         break;
-                    case MediaStateSortMode.Tags:
+                    case MediaSortMode.Tags:
                         if (item.Metadata.Tags.Count > 0)
                         {
                             info = item.Metadata.Tags.Count.ToString() + " tag";
@@ -168,28 +251,28 @@ namespace MediaViewer.Model.Media.File
                             }
                         }
                         break;
-                    case MediaStateSortMode.MimeType:
+                    case MediaSortMode.MimeType:
                         info = item.Metadata.MimeType;
                         break;
-                    case MediaStateSortMode.FileDate:
+                    case MediaSortMode.FileDate:
                         info = item.Metadata.FileDate.ToString(dateFormat);
                         break;  
-                    case MediaStateSortMode.LastModified:
+                    case MediaSortMode.LastModified:
                         info = item.Metadata.LastModifiedDate.ToString(dateFormat);                       
                         break;                        
-                    case MediaStateSortMode.CreationDate:
+                    case MediaSortMode.CreationDate:
                         if (item.Metadata.CreationDate.HasValue)
                         {
                             info = item.Metadata.CreationDate.Value.ToString(dateFormat);
                         }
                         break;
-                    case MediaStateSortMode.SoftWare:
+                    case MediaSortMode.SoftWare:
                         if (item.Metadata.Software != null)
                         {
                             info = item.Metadata.Software;
                         }
                         break;
-                    case MediaStateSortMode.Width:
+                    case MediaSortMode.Width:
                         if (ImageMetadata != null)
                         {                          
                             info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
@@ -199,7 +282,7 @@ namespace MediaViewer.Model.Media.File
                             info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
                         }
                         break;                        
-                    case MediaStateSortMode.Height:
+                    case MediaSortMode.Height:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
@@ -209,91 +292,91 @@ namespace MediaViewer.Model.Media.File
                             info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
                         }                   
                         break;
-                    case MediaStateSortMode.Duration:
+                    case MediaSortMode.Duration:
                         if (VideoMetadata != null)
                         {
                             info = MiscUtils.formatTimeSeconds(VideoMetadata.DurationSeconds);
                         }                        
                         break;
-                    case MediaStateSortMode.FramesPerSecond:
+                    case MediaSortMode.FramesPerSecond:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.FramesPerSecond.ToString("0.00") + " FPS";
                         }
                         break;
-                    case MediaStateSortMode.VideoCodec:
+                    case MediaSortMode.VideoCodec:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.VideoCodec;
                         }
                         break;
-                    case MediaStateSortMode.AudioCodec:
+                    case MediaSortMode.AudioCodec:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.AudioCodec;
                         }
                         break;
-                    case MediaStateSortMode.PixelFormat:
+                    case MediaSortMode.PixelFormat:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.PixelFormat;
                         }
                         break;
-                    case MediaStateSortMode.BitsPerSample:
+                    case MediaSortMode.BitsPerSample:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.BitsPerSample.HasValue ? VideoMetadata.BitsPerSample + "bit" : "";
                         }
                         break;
-                    case MediaStateSortMode.SamplesPerSecond:
+                    case MediaSortMode.SamplesPerSecond:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.SamplesPerSecond.HasValue ? VideoMetadata.SamplesPerSecond + "hz" : "";
                         }
                         break;
-                    case MediaStateSortMode.NrChannels:
+                    case MediaSortMode.NrChannels:
                         if (VideoMetadata != null)
                         {
                             info = VideoMetadata.NrChannels.HasValue ? VideoMetadata.NrChannels.Value.ToString() + " chan" : "";
                         }
                         break;
-                    case MediaStateSortMode.CameraMake:
+                    case MediaSortMode.CameraMake:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.CameraMake != null ? ImageMetadata.CameraMake : "";
                         }
                         break;
-                    case MediaStateSortMode.CameraModel:
+                    case MediaSortMode.CameraModel:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.CameraModel != null ? ImageMetadata.CameraModel : "";
                         }
                         break;
-                    case MediaStateSortMode.Lens:
+                    case MediaSortMode.Lens:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.Lens != null ? ImageMetadata.Lens : "";
                         }
                         break;
-                    case MediaStateSortMode.ISOSpeedRating:
+                    case MediaSortMode.ISOSpeedRating:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.ISOSpeedRating.HasValue ? "ISO: " + ImageMetadata.ISOSpeedRating.Value : "";
                         }
                         break;
-                    case MediaStateSortMode.FNumber:
+                    case MediaSortMode.FNumber:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.FNumber.HasValue ? "f/" + ImageMetadata.FNumber.Value : "";
                         }
                         break;
-                    case MediaStateSortMode.ExposureTime:
+                    case MediaSortMode.ExposureTime:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.ExposureTime.HasValue ? "1/" + 1/ImageMetadata.ExposureTime.Value + "s" : "";
                         }
                         break;
-                    case MediaStateSortMode.FocalLength:
+                    case MediaSortMode.FocalLength:
                         if (ImageMetadata != null)
                         {
                             info = ImageMetadata.FocalLength.HasValue ? ImageMetadata.FocalLength.Value + "mm" : "";

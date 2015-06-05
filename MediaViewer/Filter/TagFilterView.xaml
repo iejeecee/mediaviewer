@@ -1,4 +1,4 @@
-﻿<UserControl x:Class="MediaViewer.UserControls.TagTreePicker.TagTreePickerView"
+﻿<UserControl x:Class="MediaViewer.Filter.TagFilterView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -20,10 +20,22 @@
     </UserControl.Resources>
     <Grid>
         <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" EnableRowVirtualization="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                  AlternationCount="2" GridLinesVisibility="Vertical" AlternatingRowBackground="LightGray" BorderThickness="0">
+                  AlternationCount="2" GridLinesVisibility="Vertical" AlternatingRowBackground="LightGray" BorderThickness="0,0,0,1">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
-                <DataGridTextColumn Header="Count" Binding="{Binding Count}" SortDirection="Descending"/>
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="True"/>
+                <DataGridCheckBoxColumn Header="Filter" Binding="{Binding IsFilter, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>                             
+                                <Button x:Name="clearFilterButton" Content="{Binding Content, RelativeSource=
+                                             {RelativeSource Mode=TemplatedParent}}"
+                                        ToolTip="Clear Filter"
+                                        Click="clearFilterButton_Click" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>                                                                                  
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridCheckBoxColumn.HeaderTemplate>
+                </DataGridCheckBoxColumn>
             </DataGrid.Columns>
             <!--<DataGrid.GroupStyle>
                 <GroupStyle ContainerStyle="{StaticResource groupHeaderStyle}">

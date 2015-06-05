@@ -1,7 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Mvvm;
-using MediaViewer.UserControls.TagTreePicker;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
 using System.Collections.Generic;

@@ -22,9 +22,9 @@ namespace MediaViewer.MediaFileStackPanel
 {
     public class MediaFileStackPanelViewModel : BindableBase, IPageable
     {
-        MediaStateCollectionView mediaStateCollectionView;
+        MediaFileStateCollectionView mediaStateCollectionView;
 
-        public MediaStateCollectionView MediaStateCollectionView
+        public MediaFileStateCollectionView MediaStateCollectionView
         {
             get { return mediaStateCollectionView; }
             set { SetProperty(ref mediaStateCollectionView, value); }
@@ -120,7 +120,7 @@ namespace MediaViewer.MediaFileStackPanel
         private void mediaState_SelectionChanged(object sender, EventArgs e)
         {           
           
-            MediaStateCollectionView.Media.EnterReaderLock();
+            MediaStateCollectionView.Media.EnterReadLock();
             try
             {                
                 MediaStateCollectionView.getSelectedItem(out selectedItem);
@@ -137,14 +137,14 @@ namespace MediaViewer.MediaFileStackPanel
             }
             finally
             {
-                MediaStateCollectionView.Media.ExitReaderLock();
+                MediaStateCollectionView.Media.ExitReadLock();
             }
                        
         }
      
         private void mediaState_NrItemsInStateChanged(object sender, EventArgs e)
         {       
-             MediaStateCollectionView.Media.EnterReaderLock();
+             MediaStateCollectionView.Media.EnterReadLock();
              try
              {
                  NrPages = MediaStateCollectionView.Media.Count();
@@ -161,7 +161,7 @@ namespace MediaViewer.MediaFileStackPanel
              }
              finally
              {
-                 MediaStateCollectionView.Media.ExitReaderLock();
+                 MediaStateCollectionView.Media.ExitReadLock();
              }
         }
 
@@ -230,7 +230,7 @@ namespace MediaViewer.MediaFileStackPanel
 
                 if (newPage.HasValue) {
                                    
-                    MediaStateCollectionView.Media.EnterReaderLock();
+                    MediaStateCollectionView.Media.EnterReadLock();
                     try
                     {
                         newPage = MiscUtils.clamp<int>(newPage.Value, 1, MediaStateCollectionView.Media.Count);
@@ -243,7 +243,7 @@ namespace MediaViewer.MediaFileStackPanel
                     }
                     finally
                     {
-                        MediaStateCollectionView.Media.ExitReaderLock();
+                        MediaStateCollectionView.Media.ExitReadLock();
                     }
 
                 }

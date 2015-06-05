@@ -23,7 +23,7 @@ namespace MediaViewer.Search
 
         public SearchQuery()
         {
-            Text = "Search";
+            Text = null;
             SearchType = MediaType.All;
             Tags = new ObservableCollection<Tag>();
 

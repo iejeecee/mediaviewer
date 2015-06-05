@@ -117,7 +117,7 @@ namespace MediaViewer.Model.Media.State
 
             bool success = false;
 
-            UIMediaCollection.EnterWriteLock();
+            UIMediaCollection.EnterReadLock();
             if (DebugOutput) Logger.Log.Info("begin rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
 
             try
@@ -127,7 +127,7 @@ namespace MediaViewer.Model.Media.State
             finally
             {
                 if (DebugOutput) Logger.Log.Info("end rename event " + oldItems.ElementAt(0).Location + " " + newLocations.ElementAt(0));
-                UIMediaCollection.ExitWriteLock();
+                UIMediaCollection.ExitReadLock();
               
                 // redraw the UI since sorting order might have changed
                 fireEvents(MediaStateChangedAction.Modified, null);                                  

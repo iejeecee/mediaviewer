@@ -10,8 +10,7 @@
              xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
              xmlns:MediaDataGrid="clr-namespace:MediaViewer.UserControls.MediaDataGrid"
              xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"
-             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
-             xmlns:TagTreePicker="clr-namespace:MediaViewer.UserControls.TagTreePicker"
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"          
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
              mc:Ignorable="d" 
@@ -34,7 +33,8 @@
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <Layout:ExpanderPanel x:Name="browserTabControl" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Layout:ExpanderPanel x:Name="leftExpanderPanel" Grid.Column="0" HorizontalAlignment="Stretch" 
+                              VerticalAlignment="Stretch" regions:RegionManager.RegionName="leftExpanderPanelRegion">
             <Expander IsExpanded="True" Layout:ExpanderPanel.ElemHeight="2">
                 <Expander.Header>
                     <Grid>
@@ -59,12 +59,7 @@
                         <Search:SearchView/>
                     </mwt:ClassicBorderDecorator>
                 </Grid>                                
-            </Expander>        
-            <Expander Header="Tags" Layout:ExpanderPanel.ElemHeight="1">
-                <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2" Margin="5">
-                    <TagTreePicker:TagTreePickerView MediaStateCollectionView="{Binding MediaFileGridViewModel.MediaStateCollectionView}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                </mwt:ClassicBorderDecorator>
-            </Expander>           
+            </Expander>                          
         </Layout:ExpanderPanel>
         <GridSplitter x:Name="leftGridSplitter" Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
@@ -129,6 +124,6 @@
             <Grid/>
         </Grid>
         <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
-        <Layout:ExpanderPanel x:Name="rightTabControl" Grid.Column="2" regions:RegionManager.RegionName="rightExpanderPanelRegion" Margin="2,0,0,0"/>                   
+        <Layout:ExpanderPanel x:Name="rightExpanderPanel" Grid.Column="2" regions:RegionManager.RegionName="rightExpanderPanelRegion" Margin="2,0,0,0"/>                   
     </Grid>
 </UserControl>

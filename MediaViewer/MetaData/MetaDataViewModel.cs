@@ -30,7 +30,7 @@ using MediaViewer.UserControls.Layout;
 namespace MediaViewer.MetaData
 {
 
-    public class MetaDataViewModel : BindableBase, IExpanderPanelAware
+    public class MetaDataViewModel : BindableBase
     {             
         
         
@@ -244,10 +244,7 @@ namespace MediaViewer.MetaData
 
             MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
 
-            Header = "Metadata";
-            ElementHeight = 1;
-            IsAddBorder = true;
-            IsIntiallyExpanded = true;
+            
         
         }
 
@@ -865,10 +862,7 @@ namespace MediaViewer.MetaData
             Items = selectedItems;
         }
 
-        public string Header { get; set; }        
-        public int ElementHeight { get; set; }
-        public bool IsAddBorder { get; set; }
-        public bool IsIntiallyExpanded { get; set; }
+        
         
     }
    

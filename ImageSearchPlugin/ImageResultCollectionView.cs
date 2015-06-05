@@ -17,6 +17,7 @@ namespace ImageSearchPlugin
             Width,
             Height,
             Size,
+            Location,
             MimeType
         }
 
@@ -35,8 +36,17 @@ namespace ImageSearchPlugin
                         {
                             ImageResultItem itemA = (ImageResultItem)a.Item;
                             ImageResultItem itemB = (ImageResultItem)b.Item;
-
+                            
                             return (itemA.ImageInfo.Title.CompareTo(itemB.ImageInfo.Title));                            
+                        });
+                        break;
+                    case SortMode.Location:
+                        SortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
+                        {
+                            ImageResultItem itemA = (ImageResultItem)a.Item;
+                            ImageResultItem itemB = (ImageResultItem)b.Item;
+
+                            return (itemA.ImageInfo.SourceUrl.CompareTo(itemB.ImageInfo.SourceUrl));
                         });
                         break;
                     case SortMode.Width:
@@ -78,7 +88,8 @@ namespace ImageSearchPlugin
                     default:
                         break;
                 }
-                
+
+                refresh();
             };
         }
 
@@ -100,6 +111,9 @@ namespace ImageSearchPlugin
                     break;
                 case SortMode.MimeType:
                     info = item.ImageInfo.ContentType;
+                    break;
+                case SortMode.Location:
+                    info = item.ImageInfo.SourceUrl;
                     break;
                 default:
                     break;

@@ -11,6 +11,7 @@ namespace MediaViewer.Model.Global.Events
 {
     public class MediaBrowserPathChangedEvent : PubSubEvent<String> { }
     public class MediaBrowserDisplayEvent : PubSubEvent<MediaBrowserDisplayOptions> { }
+    public class MediaBrowserActiveMediaStateCollectionViewChangedEvent : PubSubEvent<MediaFileStateCollectionView> { }
 
     public class MediaBrowserDisplayOptions
     {
@@ -26,7 +27,7 @@ namespace MediaViewer.Model.Global.Events
 
         public Nullable<bool> IsHidden { get; set; }
              
-        public Nullable<MediaStateFilterMode> FilterMode { get; set; }
+        public Nullable<MediaFilterMode> FilterMode { get; set; }
 
         public MediaFileItem SelectedItem { get; set; }
 

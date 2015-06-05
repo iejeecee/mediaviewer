@@ -86,8 +86,8 @@ namespace MediaViewer.MediaFileBrowser
 
             if (isFullScreen)
             {
-                browserTabControl.Visibility = System.Windows.Visibility.Collapsed;
-                rightTabControl.Visibility = System.Windows.Visibility.Collapsed;
+                leftExpanderPanel.Visibility = System.Windows.Visibility.Collapsed;
+                rightExpanderPanel.Visibility = System.Windows.Visibility.Collapsed;
                 miscOptionsGrid.Visibility = System.Windows.Visibility.Collapsed;
 
                 leftColumnWidth = mainGrid.ColumnDefinitions[0].Width;
@@ -100,8 +100,8 @@ namespace MediaViewer.MediaFileBrowser
             }
             else
             {
-                browserTabControl.Visibility = System.Windows.Visibility.Visible;
-                rightTabControl.Visibility = System.Windows.Visibility.Visible;
+                leftExpanderPanel.Visibility = System.Windows.Visibility.Visible;
+                rightExpanderPanel.Visibility = System.Windows.Visibility.Visible;
                 miscOptionsGrid.Visibility = System.Windows.Visibility.Visible;
 
                 leftGridSplitter.Visibility = System.Windows.Visibility.Visible;

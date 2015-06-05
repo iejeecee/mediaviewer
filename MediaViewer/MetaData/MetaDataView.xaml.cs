@@ -23,6 +23,7 @@ using System.ComponentModel.Composition;
 using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.Prism.PubSubEvents;
+using MediaViewer.UserControls.Layout;
 
 namespace MediaViewer.MetaData
 {
@@ -30,7 +31,7 @@ namespace MediaViewer.MetaData
     /// Interaction logic for MetaDataView.xaml
     /// </summary>
     [Export]
-    public partial class MetaDataView : UserControl, IRegionMemberLifetime, INavigationAware
+    public partial class MetaDataView : UserControl, IRegionMemberLifetime, INavigationAware, IExpanderPanelAware
     {
 
         MetaDataViewModel MetaDataViewModel { get; set; }     
@@ -43,7 +44,11 @@ namespace MediaViewer.MetaData
             MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance, eventAggregator);
                                                 
             DataContext = MetaDataViewModel;
-         
+
+            Header = "Metadata";
+            ElementHeight = 1;
+            IsAddBorder = true;
+            IsIntiallyExpanded = true;
         }                       
         
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
@@ -143,6 +148,11 @@ namespace MediaViewer.MetaData
         {
             MetaDataViewModel.OnNavigatedTo(navigationContext);            
         }
+
+        public string Header { get; set; }
+        public int ElementHeight { get; set; }
+        public bool IsAddBorder { get; set; }
+        public bool IsIntiallyExpanded { get; set; }
         
     }
 }

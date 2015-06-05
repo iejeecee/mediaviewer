@@ -45,6 +45,7 @@ using MediaViewer.MediaFileStackPanel;
 using MediaViewer.GeotagFileBrowser;
 using MediaViewer.MediaFileBrowser.ImagePanel;
 using MediaViewer.Transcode.Image;
+using MediaViewer.Filter;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -194,13 +195,13 @@ namespace MediaViewer.MediaFileBrowser
             ImageViewModel.SelectedScaleMode = MediaViewer.UserControls.ImagePanel.ScaleMode.FIT_HEIGHT_AND_WIDTH;
 
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
+            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
             imageMediaStackPanelViewModel.IsVisible = true;
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
             videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
+            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
             videoMediaStackPanelViewModel.IsVisible = true;
 
             GeotagFileBrowserStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
@@ -371,32 +372,23 @@ namespace MediaViewer.MediaFileBrowser
          
         public string BrowsePath
         {
-
             set
-            {
-              
+            {              
                 FileInfo fileInfo = new FileInfo(value);
 
                 string pathWithoutFileName;
 
                 if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
                 {
-
                     pathWithoutFileName = value;
-
                 }
                 else
                 {
-
                     pathWithoutFileName = FileUtils.getPathWithoutFileName(value);
-
                 }
-               
-                
-                
+                                               
                 if (mediaFileWatcher.Path.Equals(pathWithoutFileName))
                 {
-
                     return;
                 }
 
@@ -445,23 +437,19 @@ namespace MediaViewer.MediaFileBrowser
         public Command<MediaFileItem> NavigateToImageViewCommand { get; set; }
         public Command<MediaFileItem> NavigateToVideoViewCommand { get; set; }
         public ICommand NavigateBackCommand { get; set; }
-
       
         private void deleteSelectedItems()
         {
-
             CancellationTokenSource tokenSource = new CancellationTokenSource();         
             if (SelectedItems.Count == 0) return;
 
             if (MessageBox.Show("Are you sure you want to permanently delete " + SelectedItems.Count.ToString() + " file(s)?",
                 "Delete Media", MessageBoxButton.YesNo, MessageBoxImage.Question)
                 == MessageBoxResult.Yes)
-            {
-              
+            {              
                 try
                 {
-                    MediaFileWatcher.Instance.MediaFileState.delete(SelectedItems, tokenSource.Token);
-                    
+                    MediaFileWatcher.Instance.MediaFileState.delete(SelectedItems, tokenSource.Token);                    
                 }
                 catch (Exception ex)
                 {
@@ -474,13 +462,25 @@ namespace MediaViewer.MediaFileBrowser
 
         }
 
-        void navigateToMetaData()
+        void initialize()
         {
+            // add metadata view
+
             Uri metaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate("rightExpanderPanelRegion", metaDataViewUri);
+
+            // add tag filter
+            Uri tagFilterViewUri = new Uri(typeof(TagFilterView).FullName, UriKind.Relative);
+
+            NavigationParameters navigationParams = new NavigationParameters();
+            navigationParams.Add("MediaStateCollectionView", MediaFileGridViewModel.MediaStateCollectionView);
+
+            RegionManager.RequestNavigate("leftExpanderPanelRegion", tagFilterViewUri, navigationParams);
+
+            navigateToMediaFileGrid();
         }
-     
+           
         public void navigateToMediaFileGrid()
         {
             Uri mediaFileGridViewUri = new Uri(typeof(MediaFileGridView).FullName, UriKind.Relative);
@@ -491,6 +491,7 @@ namespace MediaViewer.MediaFileBrowser
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, mediaFileGridViewUri, (result) =>
             {
                 CurrentViewModel = MediaFileGridViewModel;
+                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(MediaFileGridViewModel.MediaStateCollectionView);
            
             }, navigationParams);
 
@@ -509,6 +510,7 @@ namespace MediaViewer.MediaFileBrowser
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>
             {
                 CurrentViewModel = VideoViewModel;
+                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(VideoMediaStackPanelViewModel.MediaStateCollectionView);
           
             }, navigationParams);
 
@@ -528,12 +530,12 @@ namespace MediaViewer.MediaFileBrowser
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, imageViewUri, (result) =>
             {
                 CurrentViewModel = ImageViewModel;
+                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(ImageMediaStackPanelViewModel.MediaStateCollectionView);
        
             }, navigationParams);
 
             Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel, item != null ? item.Location : null);
         }
-
 
         public void navigateToGeotagFileBrowser()
         {
@@ -545,6 +547,7 @@ namespace MediaViewer.MediaFileBrowser
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, geotagFileBrowserUri, (result) =>
             {
                 CurrentViewModel = GeotagFileBrowserViewModel;
+                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(GeotagFileBrowserStackPanelViewModel.MediaStateCollectionView);
 
             }, navigationParams);
 
@@ -553,11 +556,7 @@ namespace MediaViewer.MediaFileBrowser
 
         private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
         {
-
-            // if(mediaFileWatcher.Path.Equals(e.OldFullPath)) {
-
-            BrowsePath = e.FullPath;
-            //}
+            BrowsePath = e.FullPath;       
         }
 
         string title;
@@ -585,8 +584,7 @@ namespace MediaViewer.MediaFileBrowser
 
             if (CurrentViewModel == null)
             {
-                navigateToMetaData();
-                navigateToMediaFileGrid();
+                initialize();
 
                 newTitle = BrowsePath;
             }

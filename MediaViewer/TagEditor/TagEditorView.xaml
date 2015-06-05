@@ -4,7 +4,7 @@
         xmlns:toolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Input.Toolkit"
         xmlns:TagEditor="clr-namespace:MediaViewer.TagEditor"
         xmlns:TagPicker="clr-namespace:MediaViewer.UserControls.TagPicker"
-        xmlns:TagTreePicker="clr-namespace:MediaViewer.UserControls.TagTreePicker" xmlns:AutoCompleteBox="clr-namespace:MediaViewer.UserControls.AutoCompleteBox" x:Class="MediaViewer.TagEditor.TagEditorView"
+        xmlns:AutoCompleteBox="clr-namespace:MediaViewer.UserControls.AutoCompleteBox" x:Class="MediaViewer.TagEditor.TagEditorView"
         Title="Tag Editor" Height="490.667" Width="600" Icon="/MediaViewer;component/Resources/Icons/tag.ico" Closing="window_Closing">
     <Window.Resources>
         <ResourceDictionary>

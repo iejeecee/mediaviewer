@@ -16,6 +16,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure;
 using MediaViewer.MediaFileStackPanel;
+using MediaViewer.Model.Collections.Sort;
 
 namespace MediaViewer
 {
@@ -91,16 +92,15 @@ namespace MediaViewer
           
 
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
-            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Images);
+            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
             videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
-            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaStateFilterMode.Video);
+            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
 
             MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator, AppSettings.Instance);
-
-           
+        
         }
 
         public void navigateToMediaStackPanelView(MediaFileStackPanelViewModel viewModel, String location = null)

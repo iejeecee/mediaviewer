@@ -79,13 +79,17 @@ namespace MediaViewer.Model.Media.Base
             {
                 rwLock.EnterWriteLock();
                 try
-                {                
-                    SetProperty(ref location, value);
+                {                                   
+                    if (object.Equals(location, value)) return; 
+
+                    location = value;                   
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
                 }
+
+                OnPropertyChanged("Location");
             }
         }
 
@@ -116,7 +120,7 @@ namespace MediaViewer.Model.Media.Base
 
         }
 
-        MediaItemState itemState;
+        protected MediaItemState itemState;
 
         /// <summary>
         /// Current state of the mediafileitem
@@ -129,16 +133,20 @@ namespace MediaViewer.Model.Media.Base
                 rwLock.EnterWriteLock();
                 try
                 {
-                    SetProperty(ref itemState, value);
+                    if (object.Equals(itemState, value)) return;
+
+                    itemState = value;     
                 }
                 finally
                 {
                     rwLock.ExitWriteLock();
                 }
+
+                OnPropertyChanged("ItemState");
             }
         }
 
-        BaseMetadata metadata;
+        protected BaseMetadata metadata;
 
         public BaseMetadata Metadata
         {
@@ -148,36 +156,64 @@ namespace MediaViewer.Model.Media.Base
                 RWLock.EnterWriteLock();
                 try
                 {
-                    SetProperty(ref metadata, value);
+                    if (object.Equals(metadata, value)) return;
+
+                    metadata = value;
                 }
                 finally
                 {
                     RWLock.ExitWriteLock();
-
                 }
+
+                OnPropertyChanged("Metadata");
             }
         }
 
-        bool hasGeoTag;
+        protected bool hasGeoTag;
 
         public bool HasGeoTag
         {
             get { return hasGeoTag; }
             protected set
             {
-                SetProperty(ref hasGeoTag, value);
+
+                RWLock.EnterWriteLock();
+                try
+                {
+                    if (object.Equals(hasGeoTag, value)) return;
+
+                    hasGeoTag = value;
+                }
+                finally
+                {
+                    RWLock.ExitWriteLock();
+                }
+
+                OnPropertyChanged("HasGeoTag");
             }
         }
 
 
-        bool hasTags;
+        protected bool hasTags;
 
         public bool HasTags
         {
             get { return hasTags; }
             protected set
             {
-                SetProperty(ref hasTags, value);
+                RWLock.EnterWriteLock();
+                try
+                {
+                    if (object.Equals(hasTags, value)) return;
+
+                    hasTags = value;
+                }
+                finally
+                {
+                    RWLock.ExitWriteLock();
+                }
+
+                OnPropertyChanged("HasTags");
             }
         }
 

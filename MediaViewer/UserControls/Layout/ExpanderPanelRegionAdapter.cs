@@ -41,9 +41,9 @@ namespace MediaViewer.UserControls.Layout
 
                         FrameworkElement content = element;
 
-                        if (element.DataContext is IExpanderPanelAware)
+                        if (element is IExpanderPanelAware)
                         {
-                            IExpanderPanelAware options = element.DataContext as IExpanderPanelAware;
+                            IExpanderPanelAware options = element as IExpanderPanelAware;
 
                             expander.Header = options.Header;
                             expander.IsExpanded = options.IsIntiallyExpanded;

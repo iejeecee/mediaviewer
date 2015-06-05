@@ -37,6 +37,15 @@ namespace MediaViewer.MediaDatabase
             return (other.Name.Equals(Name));
         }
 
+        public override int GetHashCode()
+        {
+            return Name.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Tag);
+        }
         
     }
 

@@ -1,6 +1,8 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Utils;
+using MediaViewer.Model.Utils.Strings;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.File
 {
-    public enum MediaStateSortMode
+    public enum MediaSortMode
     {
         Name,
         Size,
@@ -43,25 +45,26 @@ namespace MediaViewer.Model.Media.File
         ISOSpeedRating
     }
 
-    class MediaStateSortFunctions
+    class MediaFileSortFunctions
     {
-        public static Func<SelectableMediaItem, SelectableMediaItem, int> getSortFunction(MediaStateSortMode sortMode)
+        public static Func<SelectableMediaItem, SelectableMediaItem, int> getSortFunction(MediaSortMode sortMode)
         {
             Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc = null;
 
             switch (sortMode)
             {
-                case MediaStateSortMode.Name:
+                case MediaSortMode.Name:
 
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
-                        {                                                                                            
-                            int result = Path.GetFileName(a.Item.Location).CompareTo(Path.GetFileName(b.Item.Location));
-                         
+                        {                                                     
+                            int result = NaturalSortOrder.CompareNatural(Path.GetFileName(a.Item.Location),
+                                Path.GetFileName(b.Item.Location));
+     
                             return (result);
                         });
                     break;
-                case MediaStateSortMode.Size:
+                case MediaSortMode.Size:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -72,7 +75,7 @@ namespace MediaViewer.Model.Media.File
                        
                         });
                     break;
-                case MediaStateSortMode.Rating:
+                case MediaSortMode.Rating:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -83,7 +86,7 @@ namespace MediaViewer.Model.Media.File
 
                         });
                     break;
-                case MediaStateSortMode.Imported:
+                case MediaSortMode.Imported:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -93,7 +96,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(a.Item.Metadata.IsImported.CompareTo(b.Item.Metadata.IsImported), a, b));
                         });
                     break;
-                case MediaStateSortMode.Tags:
+                case MediaSortMode.Tags:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -104,7 +107,7 @@ namespace MediaViewer.Model.Media.File
 
                         });
                     break;
-                case MediaStateSortMode.FileDate:
+                case MediaSortMode.FileDate:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                        (a, b) =>
                        {
@@ -114,7 +117,7 @@ namespace MediaViewer.Model.Media.File
                            return (onEquals(a.Item.Metadata.FileDate.CompareTo(b.Item.Metadata.FileDate),a,b));
                        });
                     break;
-                case MediaStateSortMode.MimeType:
+                case MediaSortMode.MimeType:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -124,7 +127,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(a.Item.Metadata.MimeType.CompareTo(b.Item.Metadata.MimeType),a,b));
                         });
                     break;
-                case MediaStateSortMode.LastModified:
+                case MediaSortMode.LastModified:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -134,7 +137,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(a.Item.Metadata.LastModifiedDate.CompareTo(b.Item.Metadata.LastModifiedDate),a,b));
                         });
                     break;
-                case MediaStateSortMode.CreationDate:
+                case MediaSortMode.CreationDate:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -144,7 +147,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(a.Item.Metadata.CreationDate, b.Item.Metadata.CreationDate),a,b));
                         });
                     break;
-                case MediaStateSortMode.SoftWare:
+                case MediaSortMode.SoftWare:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -154,7 +157,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(a.Item.Metadata.Software, b.Item.Metadata.Software),a,b));
                         });
                     break;
-                case MediaStateSortMode.Width:
+                case MediaSortMode.Width:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -185,7 +188,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(widthA.CompareTo(widthB),a,b));
                         });
                     break;
-                case MediaStateSortMode.Height:
+                case MediaSortMode.Height:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -216,7 +219,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(heightA.CompareTo(heightB),a,b));
                         });
                     break;
-                case MediaStateSortMode.Duration:
+                case MediaSortMode.Duration:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -229,7 +232,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare<int>(aDuration, bDuration),a,b));
                         });
                     break;
-                case MediaStateSortMode.FramesPerSecond:
+                case MediaSortMode.FramesPerSecond:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -242,7 +245,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare<double>(aFPS, bFPS),a,b));
                         });
                     break;
-                case MediaStateSortMode.VideoCodec:
+                case MediaSortMode.VideoCodec:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -255,7 +258,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(aVideoCodec.CompareTo(bVideoCodec),a,b));
                         });
                     break;
-                case MediaStateSortMode.AudioCodec:
+                case MediaSortMode.AudioCodec:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -268,7 +271,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(aAudioCodec, bAudioCodec),a,b));
                         });
                     break;
-                case MediaStateSortMode.PixelFormat:
+                case MediaSortMode.PixelFormat:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -281,7 +284,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(aPixelFormat, bPixelFormat),a,b));
                         });
                     break;
-                case MediaStateSortMode.BitsPerSample:
+                case MediaSortMode.BitsPerSample:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -294,7 +297,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aBPS, bBPS),a,b));
                         });
                     break;
-                case MediaStateSortMode.SamplesPerSecond:
+                case MediaSortMode.SamplesPerSecond:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -307,7 +310,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aSPS, bSPS),a,b));
                         });
                     break;
-                case MediaStateSortMode.NrChannels:
+                case MediaSortMode.NrChannels:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -320,7 +323,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aNrChannels, bNrChannels),a,b));
                         });
                     break;
-                case MediaStateSortMode.CameraMake:
+                case MediaSortMode.CameraMake:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -333,7 +336,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.CameraModel:
+                case MediaSortMode.CameraModel:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -346,7 +349,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.Lens:
+                case MediaSortMode.Lens:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -359,7 +362,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.FocalLength:
+                case MediaSortMode.FocalLength:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -372,7 +375,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.FNumber:
+                case MediaSortMode.FNumber:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -385,7 +388,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.ExposureTime:
+                case MediaSortMode.ExposureTime:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -398,7 +401,7 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
-                case MediaStateSortMode.ISOSpeedRating:
+                case MediaSortMode.ISOSpeedRating:
                     sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
                         (a, b) =>
                         {
@@ -418,21 +421,21 @@ namespace MediaViewer.Model.Media.File
             return (sortFunc);
         }
 
-        public static bool isAllSortMode(MediaStateSortMode mode)
+        public static bool isAllSortMode(MediaSortMode mode)
         {
-            if ((int)mode <= (int)MediaStateSortMode.SoftWare) return (true);
+            if ((int)mode <= (int)MediaSortMode.SoftWare) return (true);
             else return (false);
         }
 
-        public static bool isVideoSortMode(MediaStateSortMode mode)
+        public static bool isVideoSortMode(MediaSortMode mode)
         {
-            if ((int)mode <= (int)MediaStateSortMode.NrChannels) return (true);
+            if ((int)mode <= (int)MediaSortMode.NrChannels) return (true);
             else return (false);
         }
 
-        public static bool isImageSortMode(MediaStateSortMode mode)
+        public static bool isImageSortMode(MediaSortMode mode)
         {
-            if ((int)mode <= (int)MediaStateSortMode.Height || (int)mode >= (int)MediaStateSortMode.CameraMake) return (true);
+            if ((int)mode <= (int)MediaSortMode.Height || (int)mode >= (int)MediaSortMode.CameraMake) return (true);
             else return (false);
         }
 

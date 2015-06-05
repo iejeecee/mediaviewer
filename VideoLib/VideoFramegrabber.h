@@ -123,7 +123,7 @@ public:
 		av_get_pix_fmt_string(buf, 64, getVideoCodecContext()->pix_fmt);
 		pixelFormat = std::string(buf);
 
-		int pos = pixelFormat.find_first_of(' ');
+		int pos = (int)pixelFormat.find_first_of(' ');
 		if(pos != std::string::npos) {
 
 			pixelFormat = pixelFormat.substr(0, pos);
