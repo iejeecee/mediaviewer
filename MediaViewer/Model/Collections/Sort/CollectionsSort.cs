@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -34,7 +35,7 @@ namespace MediaViewer.Model.Collections.Sort
                 list.Insert(start, item);
                 return (start);
             }
-
+        
             int mid = start;
             int low = start;
             int high = end - 1;

@@ -110,7 +110,7 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Grid.Column="1" Width="30" Height="20" Margin="2,0,0,0" Command="{Binding GeotagFileBrowserCommand}" ToolTip="View Map">
+                        <Button Grid.Column="1" Width="30" Height="20" Margin="2,0,0,0" Command="{Binding NavigateToGeotagFileBrowserCommand}" ToolTip="View Map">
                             <Image Source="pack://application:,,,/Resources/Icons/geotag.ico"/>
                         </Button>
                         <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserPluginRegion"

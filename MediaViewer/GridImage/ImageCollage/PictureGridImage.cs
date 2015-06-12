@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace MediaViewer.GridImage.ImageCollage
@@ -39,7 +40,7 @@ namespace MediaViewer.GridImage.ImageCollage
 
         public PictureGridImage(ImageCollageViewModel vm, List<MediaFileItem> items, bool useThumbs = false) :
             base(vm.MaxWidth, (int)Math.Ceiling(vm.Media.Count / (double)vm.NrColumns), 
-                vm.NrColumns, getImages(items, useThumbs), System.Windows.Media.Stretch.Uniform)
+                vm.NrColumns, getImages(items, useThumbs), vm.BackgroundColor, vm.FontColor, System.Windows.Media.Stretch.Uniform)
         {                                 
             Items = items;
             Vm = vm;           
@@ -64,6 +65,7 @@ namespace MediaViewer.GridImage.ImageCollage
             name.TextWrapping = TextWrapping.Wrap;
             name.Margin = new Thickness(margin);
             name.FontSize = Vm.FontSize;
+            name.Foreground = new SolidColorBrush(FontColor);
             name.Text = Vm.Filename;
 
             Grid.SetRow(name, 0);
@@ -73,6 +75,7 @@ namespace MediaViewer.GridImage.ImageCollage
             header.TextTrimming = TextTrimming.CharacterEllipsis;      
             header.Margin = new Thickness(margin);
             header.FontSize = Vm.FontSize;
+            header.Foreground = new SolidColorBrush(FontColor);
 
             long sizeBytes = 0;
 
@@ -96,8 +99,10 @@ namespace MediaViewer.GridImage.ImageCollage
                 //comment.FontFamily = new FontFamily(fontFamily);
                 comment.Margin = new Thickness(margin);
                 comment.FontSize = Vm.FontSize;
+                comment.Foreground = new SolidColorBrush(FontColor);
 
                 comment.Text = Vm.Comment;
+                
 
                 Grid.SetRow(comment, 2);
                 headerGrid.Children.Add(comment);
@@ -123,6 +128,7 @@ namespace MediaViewer.GridImage.ImageCollage
             name.VerticalAlignment = VerticalAlignment.Bottom;
 
             name.Text = Path.GetFileName(item.Location);
+            name.Foreground = new SolidColorBrush(FontColor);
 
             Grid.SetRow(name, 0);
 
@@ -131,12 +137,13 @@ namespace MediaViewer.GridImage.ImageCollage
             if (item.Metadata == null) return;
 
             VideoMetadata videoInfo = item.Metadata as VideoMetadata;
-            ImageMetadata imageInfo = item.Metadata as ImageMetadata;
+            MediaViewer.MediaDatabase.ImageMetadata imageInfo = item.Metadata as MediaViewer.MediaDatabase.ImageMetadata;
 
             TextBlock info = new TextBlock();
             info.TextTrimming = TextTrimming.CharacterEllipsis;
             info.HorizontalAlignment = HorizontalAlignment.Center;
             info.VerticalAlignment = VerticalAlignment.Top;
+            info.Foreground = new SolidColorBrush(FontColor);
 
             String infoText = "";
 

@@ -31,7 +31,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
         }
 
         public VideoGridImage(VideoMetadata video, VideoPreviewImageViewModel vm, List<VideoThumb> thumbs) :
-            base(vm.MaxPreviewImageWidth,vm.NrRows, vm.NrColumns, getImages(thumbs))
+            base(vm.MaxPreviewImageWidth,vm.NrRows, vm.NrColumns, getImages(thumbs), vm.BackgroundColor, vm.FontColor)
         {                                 
             Video = video;
             Vm = vm;
@@ -153,7 +153,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 Run labelRun = ((Run)labels[i].Inlines.First());
                 labelRun.FontFamily = new FontFamily(fontFamily);
                 labelRun.FontSize = Vm.FontSize;
-                labelRun.Foreground = new SolidColorBrush(Colors.Gray);
+                labelRun.Foreground = new SolidColorBrush(FontColor);
 
                 if (values[i] is TextBlock)
                 {
@@ -162,6 +162,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                     Run valueRun = (Run)value.Inlines.First();
                     valueRun.FontFamily = new FontFamily(fontFamily);
                     valueRun.FontSize = Vm.FontSize;
+                    valueRun.Foreground = new SolidColorBrush(FontColor);
                 }
             }
             

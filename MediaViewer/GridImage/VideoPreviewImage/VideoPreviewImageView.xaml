@@ -1,7 +1,7 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Class="MediaViewer.GridImage.VideoPreviewImage.VideoPreviewImageView"
+        xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" xmlns:ColorPicker="clr-namespace:MediaViewer.UserControls.ColorPicker" x:Class="MediaViewer.GridImage.VideoPreviewImage.VideoPreviewImageView"
         Title="Video Preview Image"  Icon="/MediaViewer;component/Resources/Icons/preview.ico"
         SizeToContent="Height" Width="350" ResizeMode="NoResize" >
     <Window.Resources>
@@ -36,6 +36,8 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -44,15 +46,15 @@
                 </Grid.ColumnDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="0" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Top"                         
-			        Text="{Binding OutputPath, Mode=TwoWay}"
-			        ItemsSource="{Binding OutputPathHistory}"
-			        ToolTip="{Binding OutputPath}"
-			        IsReadOnly="True" IsEditable="True"
+					Text="{Binding OutputPath, Mode=TwoWay}"
+					ItemsSource="{Binding OutputPathHistory}"
+					ToolTip="{Binding OutputPath}"
+					IsReadOnly="True" IsEditable="True"
 			        />
                 <Button Grid.Row="0" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
-			        HorizontalAlignment="Right"					
-			        Command="{Binding DirectoryPickerCommand}"
-			        ToolTip="Change Directory">
+					HorizontalAlignment="Right"					
+					Command="{Binding DirectoryPickerCommand}"
+					ToolTip="Change Directory">
                     <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
                 </Button>
                 <Label Grid.Row="1" Grid.Column="0" Content="Width (Pixels)" Style="{StaticResource labelStyle}"/>
@@ -65,19 +67,23 @@
                 <Label Grid.Row="4" Grid.Column="0" Content="Capture Interval" Style="{StaticResource labelStyle}"/>
                 <DateTimePicker:TimePicker Grid.Row="4" Grid.Column="1" Value="{Binding CaptureIntervalSeconds}" Max="3600" Min="1" IsEnabled="{Binding IsCaptureIntervalSecondsEnabled}" VerticalAlignment="Center" TextAlignment="Left"/>
                 <CheckBox Grid.Row="4" Grid.Column="2" IsChecked="{Binding IsCaptureIntervalSecondsEnabled}"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,2,2,2"/>
-                <Label Grid.Row="5" Grid.Column="0" Content="Add Header" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="5" Grid.Column="1" IsChecked="{Binding IsAddHeader}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>
-                <Label Grid.Row="6" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="6" Grid.Column="1" IsChecked="{Binding IsAddTags}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2" IsEnabled="{Binding IsAddHeader}"/>
-                <Label Grid.Row="7" Grid.Column="0" Content="Add Timestamps" Style="{StaticResource labelStyle}"/>
-                <CheckBox Grid.Row="7" Grid.Column="1" IsChecked="{Binding IsAddTimestamps}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>
-                <Label Grid.Row="8" Grid.Column="0" Content="Font Size" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="8" Grid.Column="1" Value="{Binding FontSize}" Max="100" Min="1" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding IsAddHeader}"/>
-                <Label Grid.Row="9" Grid.Column="0" Content="Jpeg Quality" Style="{StaticResource labelStyle}"/>
-                <NumberSpinner:IntegerSpinner Grid.Row="9" Grid.Column="1" Value="{Binding JpegQuality}" Max="100" Min="1" VerticalAlignment="Center" TextAlignment="Left"/>
-                <Label Grid.Row="10" Grid.Column="0" Content="Comment" Style="{StaticResource labelStyle}"/>
-                <TextBox Grid.Row="10" Grid.Column="1" Text="{Binding Comment}" Margin="0,2,0,2" IsEnabled="{Binding IsCommentEnabled}"/>
-                <CheckBox Grid.Row="10" Grid.Column="2" IsChecked="{Binding IsCommentEnabled}"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,2,2,2"/>
+                <Label Grid.Row="5" Grid.Column="0" Content="Background" Style="{StaticResource labelStyle}"/>
+                <ColorPicker:ColorPickerView Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" Color="{Binding BackgroundColor}"/>
+                <Label Grid.Row="6" Grid.Column="0" Content="Add Header" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="6" Grid.Column="1" IsChecked="{Binding IsAddHeader}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>
+                <Label Grid.Row="7" Grid.Column="0" Content="Add Tags" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="7" Grid.Column="1" IsChecked="{Binding IsAddTags}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2" IsEnabled="{Binding IsAddHeader}"/>
+                <Label Grid.Row="8" Grid.Column="0" Content="Add Timestamps" Style="{StaticResource labelStyle}"/>
+                <CheckBox Grid.Row="8" Grid.Column="1" IsChecked="{Binding IsAddTimestamps}" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,2,2,2"/>                
+                <Label Grid.Row="9" Grid.Column="0" Content="Font Color" Style="{StaticResource labelStyle}"/>
+                <ColorPicker:ColorPickerView Grid.Row="9" Grid.Column="1" HorizontalAlignment="Stretch"  VerticalAlignment="Top" Color="{Binding FontColor}" IsEnabled="{Binding IsAddHeader}"/>
+                <Label Grid.Row="10" Grid.Column="0" Content="Font Size" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="10" Grid.Column="1" Value="{Binding FontSize}" Max="100" Min="1" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding IsAddHeader}"/>
+                <Label Grid.Row="11" Grid.Column="0" Content="Jpeg Quality" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="11" Grid.Column="1" Value="{Binding JpegQuality}" Max="100" Min="1" VerticalAlignment="Center" TextAlignment="Left"/>
+                <Label Grid.Row="12" Grid.Column="0" Content="Comment" Style="{StaticResource labelStyle}"/>
+                <TextBox Grid.Row="12" Grid.Column="1" Text="{Binding Comment}" Margin="0,2,0,2" IsEnabled="{Binding IsCommentEnabled}"/>
+                <CheckBox Grid.Row="12" Grid.Column="2" IsChecked="{Binding IsCommentEnabled}"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2,2,2,2"/>                
             </Grid>
         </GroupBox>
         <Button Grid.Row="1" Grid.Column="0" Width="50" Content="Defaults" Command="{Binding DefaultsCommand}" HorizontalAlignment="Left" VerticalAlignment="Center" ToolTip="Set Default Values" Margin="5,5,5,5"/>

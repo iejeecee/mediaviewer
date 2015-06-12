@@ -10,40 +10,40 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\HTTP">
-      <UniqueIdentifier>{40d8c7d6-1c12-4fda-b863-13d67866a062}</UniqueIdentifier>
+      <UniqueIdentifier>{f601bb18-53d1-485f-8b22-d40daf872152}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ProgressForm">
-      <UniqueIdentifier>{bb115c5e-7ee4-4fab-ba35-87d471cbe60e}</UniqueIdentifier>
+      <UniqueIdentifier>{103ef84e-fd81-4c9d-894b-d77e02f1d536}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Concurrent">
-      <UniqueIdentifier>{53895936-7ba8-45ba-add6-4523d3eb363c}</UniqueIdentifier>
+      <UniqueIdentifier>{43e0e5b7-e2c3-42db-8645-1bde3faf4f9d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\PicasaFeed">
-      <UniqueIdentifier>{4a34015d-5edf-40de-a130-85ec0f079c63}</UniqueIdentifier>
+      <UniqueIdentifier>{fdefc874-59a8-4f29-beda-856033e8f8c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Utils">
-      <UniqueIdentifier>{304ea43b-e166-43c0-91dc-3d46dcdfa5a1}</UniqueIdentifier>
+      <UniqueIdentifier>{98143d6b-b045-4be2-9a23-339c4a81a87d}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\OAuth2">
-      <UniqueIdentifier>{15ce60fc-3a3a-40dc-b816-dc3249fb5b36}</UniqueIdentifier>
+      <UniqueIdentifier>{d26a5670-094a-4091-b53d-59a0bc7e7476}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Database">
-      <UniqueIdentifier>{2b39a910-ba9d-494d-9718-4e66f27e5a7f}</UniqueIdentifier>
+      <UniqueIdentifier>{5a1932cb-aa70-480d-93a9-5abc9bfcadef}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\MetaData">
-      <UniqueIdentifier>{69390ef2-4ea1-43e2-a52d-efb86841bf9c}</UniqueIdentifier>
+      <UniqueIdentifier>{f8b708ea-6806-4f82-99dc-9d524e4c6b65}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\MetaData\TreeViewAdv">
-      <UniqueIdentifier>{ee38f6cf-c590-4325-9dd4-9bb1b1e5aaaf}</UniqueIdentifier>
+      <UniqueIdentifier>{93a060fe-56bd-4974-a7e5-c05bcf5154d5}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\MediaFile">
-      <UniqueIdentifier>{f3e8ef58-7398-4c2b-9bde-be77a1c92af9}</UniqueIdentifier>
+      <UniqueIdentifier>{543b0ca1-3cde-40af-947d-fafa61023516}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\HRTimer">
-      <UniqueIdentifier>{2145882a-7c64-42f0-860e-cb888f4488b2}</UniqueIdentifier>
+      <UniqueIdentifier>{1cb907f6-2f2a-4ddb-a948-a1ca81d1d8e6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\MediaSearch">
-      <UniqueIdentifier>{059602b6-5a12-448e-992f-3bdda377e905}</UniqueIdentifier>
+      <UniqueIdentifier>{6af8bca2-78c6-48eb-b180-da5145ab026c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>

@@ -141,7 +141,19 @@ namespace MediaViewer.VideoPanel
                 videoTranscode.ViewModel.Items.Add(MediaFileItem.Factory.create(videoPlayer.VideoLocation));
                 videoTranscode.ViewModel.Title = "Cut Video";
                 videoTranscode.ViewModel.IconUri = "/MediaViewer;component/Resources/Icons/videocut.ico";
-                videoTranscode.ViewModel.OutputPath = FileUtils.getPathWithoutFileName(videoPlayer.VideoLocation);
+
+                String outputPath;
+
+                if(FileUtils.isUrl(videoPlayer.VideoLocation)) {
+
+                    outputPath = MediaFileWatcher.Instance.Path;
+
+                } else {
+
+                    outputPath = FileUtils.getPathWithoutFileName(videoPlayer.VideoLocation);
+                }
+
+                videoTranscode.ViewModel.OutputPath = outputPath;
                 videoTranscode.ViewModel.IsTimeRangeEnabled = IsTimeRangeEnabled;
                 videoTranscode.ViewModel.StartTimeRange = StartTimeRange;
                 videoTranscode.ViewModel.EndTimeRange = EndTimeRange;
@@ -168,8 +180,18 @@ namespace MediaViewer.VideoPanel
                 if (addCommandToQueue(ScreenShotCommand, null) == true) return;
 
                 try
-                {                   
-                    String screenShotName = System.IO.Path.GetFileNameWithoutExtension(CurrentLocation);
+                {
+                    String screenShotName;
+
+                    if (FileUtils.isUrl(CurrentLocation))
+                    {
+                        screenShotName = "videostream";
+                    }
+                    else
+                    {
+                        screenShotName = System.IO.Path.GetFileNameWithoutExtension(CurrentLocation);
+                    }
+
                     screenShotName += "." + "jpg";
 
                     String fullPath = VideoSettings.Settings.VideoScreenShotLocation + "\\" + screenShotName;

@@ -168,7 +168,7 @@ namespace ImageSearchPlugin
 
             GeoTag = new GeoTagCoordinatePair();
 
-            MediaStateCollectionView = new ImageResultCollectionView(new MediaState());
+            MediaStateCollectionView = new ImageResultCollectionView(new MediaState());        
             MediaStateCollectionView.MediaState.MediaStateType = MediaStateType.SearchResult;
 
             WeakEventManager<MediaLockedCollection, EventArgs>.AddHandler(MediaStateCollectionView.MediaState.UIMediaCollection, "IsLoadingChanged", mediaCollection_IsLoadingChanged);

@@ -90,7 +90,6 @@ namespace MediaViewer
             ImageViewModel = new ImagePanel.ImageViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = UserControls.ImagePanel.ScaleMode.UNSCALED;
           
-
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
 

@@ -39,7 +39,7 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView}" IsFlatMode="True"/>
+                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}" IsFlatMode="True"/> 
                     <Pager:PagerView x:Name="pager" Grid.ColumnSpan="3" HorizontalAlignment="Center" NrPages="{Binding NrPages}"
                                      CurrentPage="{Binding CurrentPage}" NextPageCommand="{Binding NextPageCommand}"
                                      FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"

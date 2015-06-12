@@ -18,28 +18,14 @@ namespace MediaViewer.Model.Media.File.Watcher
  
     public class MediaFileWatcher : IDisposable
     {
-        
-
-        MediaFileState mediaFileState;
+                
         /// <summary>
         /// All the mediafiles that are currently being watched using a mediafilewatcher
         /// Several event's can be fired on changes to the file(s)
         /// Note that mediafilewatcher becomes unstable if the program is slow or many events are happening at once
         /// events will start missing and/or be send out of order.
         /// </summary>
-        public MediaFileState MediaFileState
-        {
-            get
-            {
-                return (mediaFileState);
-            }
-
-            private set
-            {
-
-                this.mediaFileState = value;
-            }
-        }
+        public MediaFileState MediaFileState {get; protected set;}
 
         FileSystemWatcher watcher;
         MediaFileWatcherQueue fileWatcherQueue;
@@ -48,8 +34,8 @@ namespace MediaViewer.Model.Media.File.Watcher
         protected MediaFileWatcher()
         {
             watcher = new FileSystemWatcher();
-            mediaFileState = new MediaFileState();                     
-                    
+            MediaFileState = new MediaFileState();
+                               
             /* Watch for changes in LastAccess and LastWrite times, and 
             the renaming of files or directories. */
             watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
@@ -105,9 +91,9 @@ namespace MediaViewer.Model.Media.File.Watcher
                     watcher.Dispose();
                 }
 
-                if (mediaFileState != null)
+                if (MediaFileState != null)
                 {
-                    mediaFileState.Dispose();
+                    MediaFileState.Dispose();
                 }
             }
         }
@@ -143,8 +129,8 @@ namespace MediaViewer.Model.Media.File.Watcher
                 }
             }
 
-            mediaFileState.clearUIState(imageDirInfo.Name, imageDirInfo.CreationTime, MediaStateType.Directory);
-            mediaFileState.addUIState(items);
+            MediaFileState.clearUIState(imageDirInfo.Name, imageDirInfo.CreationTime, MediaStateType.Directory);
+            MediaFileState.addUIState(items);
        
         }
 

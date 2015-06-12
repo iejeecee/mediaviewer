@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Filter;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -33,13 +34,13 @@ namespace MediaViewer.Model.Media.File
             RatingCache = new RatingCache();
         }
 
-        public MediaFileStateCollectionView(MediaState mediaState)
-            : base(mediaState)
+        public MediaFileStateCollectionView(MediaFileState mediaState = null) :
+            base(mediaState)
         {           
             Filter = filterFunc;
 
             MediaFilter = MediaFilterMode.None;
-            TagFilter = new List<Tag>();
+            TagFilter = new List<TagItem>();
 
             SortFunc = MediaFileSortFunctions.getSortFunction(MediaSortMode.Name);
             
@@ -136,9 +137,9 @@ namespace MediaViewer.Model.Media.File
                 if (TagFilter.Count == 0) return (true);
                 if (media.ItemState == Base.MediaItemState.LOADING) return (true);
 
-                foreach (Tag tag in TagFilter)
+                foreach (TagItem tagItem in TagFilter)
                 {
-                    if (!media.Metadata.Tags.Contains(tag))
+                    if (!media.Metadata.Tags.Contains(tagItem.Tag))
                     {
                         return (false);
                     }
@@ -160,9 +161,9 @@ namespace MediaViewer.Model.Media.File
             set { SetProperty(ref mediaFilter, value); }
         }
 
-        List<Tag> tagFilter;
+        List<TagItem> tagFilter;
 
-        public List<Tag> TagFilter
+        public List<TagItem> TagFilter
         {
             get { return tagFilter; }
             set { tagFilter = value; }

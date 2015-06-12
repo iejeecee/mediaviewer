@@ -42,25 +42,24 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         int sortedItemEnd;
 
-        protected MediaStateCollectionView(MediaState mediaState)
-        {
-            MediaState = mediaState;
-            Media = new SelectableMediaLockedCollection();  
-
-            attachToMediaState(mediaState);
-                                                             
+        protected MediaStateCollectionView(MediaState mediaState = null)
+        {           
+            Media = new SelectableMediaLockedCollection();
+            this.MediaState = mediaState;
+                                                          
             sortedItemEnd = 0;
 
-            sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
+            SortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
             {
                 return (a.ToString().CompareTo(b.ToString()));
             });
 
-            filter = new Func<SelectableMediaItem,bool>((a) => {
+            Filter = new Func<SelectableMediaItem,bool>((a) => {
 
                 return (true);
             });
-            
+
+            SortDirection = ListSortDirection.Ascending;
         }
 
     
@@ -68,41 +67,47 @@ namespace MediaViewer.Model.Media.State.CollectionView
         {            
             OnItemPropertyChanged(sender, e);
         }
+        
+        public SelectableMediaLockedCollection Media { get; protected set; }
 
-        public virtual void attachToMediaState(MediaState mediaState)
+
+        MediaState mediaState;
+
+        /// <summary>
+        /// Set to null to de-attach from the current MediaState
+        /// </summary>
+        public MediaState MediaState
         {
-            if (mediaState == null)
+            get
             {
-                throw new ArgumentNullException("mediaState");
+                return (mediaState);
             }
 
-            MediaState = mediaState;
-            
-            MediaState.NrItemsInStateChanged += MediaState_NrItemsInStateChanged;
-            MediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+            set
+            {
+                if (mediaState != null)
+                {
+                    mediaState.NrItemsInStateChanged -= new EventHandler<MediaStateChangedEventArgs>(MediaState_NrItemsInStateChanged);
+                    mediaState.ItemPropertiesChanged -= MediaState_ItemPropertiesChanged;
 
-            Media.ItemPropertyChanged += Media_ItemPropertyChanged; 
+                    Media.ItemPropertyChanged -= Media_ItemPropertyChanged;                   
+                }
 
-            refresh();
+                SetProperty(ref mediaState, value);
 
-            
+                if (mediaState != null)
+                {
+                    mediaState.NrItemsInStateChanged += MediaState_NrItemsInStateChanged;
+                    mediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+
+                    Media.ItemPropertyChanged += Media_ItemPropertyChanged;
+
+                    refresh();
+                }            
+            }
         }
 
-        public virtual void detachFromMediaState()
-        {
-            MediaState.NrItemsInStateChanged -= new EventHandler<MediaStateChangedEventArgs>(MediaState_NrItemsInStateChanged);
-            MediaState.ItemPropertiesChanged -= MediaState_ItemPropertiesChanged;
-
-            Media.ItemPropertyChanged -= Media_ItemPropertyChanged;
-
-            MediaState = null;
-        }
-
-        public SelectableMediaLockedCollection Media { get; protected set; }
-          
-        public MediaState MediaState { get; protected set; }
-
-        Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc;
+        Func<SelectableMediaItem, SelectableMediaItem, int> sortFunc, ascendingSortFunc, descendingSortFunc;
 
         public Func<SelectableMediaItem, SelectableMediaItem, int> SortFunc
         {
@@ -114,7 +119,40 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     throw new ArgumentNullException("SortFunc");
                 }
 
-                sortFunc = value;                
+                ascendingSortFunc = value;
+                descendingSortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
+                    {
+                        return (ascendingSortFunc(a, b) * -1);
+                    });
+
+                if (SortDirection == ListSortDirection.Ascending)
+                {
+                    sortFunc = ascendingSortFunc;
+                }
+                else
+                {
+                    sortFunc = descendingSortFunc;
+                }
+            }
+        }
+
+        ListSortDirection sortDirection;
+
+        public ListSortDirection SortDirection
+        {
+            get { return sortDirection; }
+            set {
+               
+                if (value == ListSortDirection.Ascending)
+                {
+                    sortFunc = ascendingSortFunc;
+                }
+                else
+                {
+                    sortFunc = descendingSortFunc;
+                }
+
+                SetProperty(ref sortDirection, value); 
             }
         }
 
@@ -133,6 +171,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 filter = value;
             }
         }
+
+        
 
         public int getSelectedItem(out MediaItem selectedItem)
         {           

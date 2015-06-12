@@ -107,14 +107,25 @@ namespace MediaViewer.Transcode.Video
                 ItemInfo = "Transcoding: " + input.Location;
 
                 if (CancellationToken.IsCancellationRequested) break;
-                if (!MediaFormatConvert.isVideoFile(input.Location))
+                if (!MediaFormatConvert.isVideoFile(input.Location) && !FileUtils.isUrl(input.Location))
                 {
                     InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
                     TotalProgress++;
                     continue;
                 }
 
-                String outLocation = AsyncState.OutputPath + "\\" + Path.GetFileNameWithoutExtension(input.Location);
+                String outFilename;
+
+                if (FileUtils.isUrl(input.Location))
+                {
+                    outFilename = "videostream";
+                }
+                else
+                {
+                    outFilename = Path.GetFileNameWithoutExtension(input.Location);
+                }
+
+                String outLocation = AsyncState.OutputPath + "\\" + outFilename;
 
                 outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
                                        

@@ -85,6 +85,8 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
         void setDefaults(MediaFileWatcher mediaFileWatcher)
         {
+            BackgroundColor = Colors.White;
+            FontColor = Colors.Black;
             NrColumns = 3;
             NrRows = 16;
             MaxPreviewImageWidth = 1280;
@@ -300,6 +302,22 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             {                
                 SetProperty(ref isAddTimeStamps, value);
             }
+        }
+
+        System.Windows.Media.Color backgroundColor;
+
+        public System.Windows.Media.Color BackgroundColor
+        {
+            get { return backgroundColor; }
+            set { SetProperty(ref backgroundColor, value); }
+        }
+
+        System.Windows.Media.Color fontColor;
+
+        public System.Windows.Media.Color FontColor
+        {
+            get { return fontColor; }
+            set { SetProperty(ref fontColor, value); }
         }
     }
 }

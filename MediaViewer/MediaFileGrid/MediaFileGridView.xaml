@@ -25,11 +25,24 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaState="{Binding MediaStateCollectionView}"/>
+                <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}"/>
                 <Label Content="Filter" Grid.Column="1" VerticalAlignment="Center"/>
                 <ComboBox x:Name="filterComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
                 <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>
-                <ComboBox x:Name="sortComboBox" Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
+                <ComboBox x:Name="sortComboBox" Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}" IsReadOnly="False">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>                                                            
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
+                                    <Button.Content>
+                                        <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
+                                    </Button.Content>
+                                </Button>
+                                <TextBlock Text="{Binding}" />                                
+                            </StackPanel>                                                          
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
             </Grid>
         </mwt:ClassicBorderDecorator>
         <MediaGrid:MediaGridView Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">

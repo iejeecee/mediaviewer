@@ -133,17 +133,18 @@ namespace MediaViewer.MediaFileStackPanel
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
             ViewModel.MediaStateCollectionView.Cleared -= MediaStateCollectionView_Cleared;
+            ViewModel.OnNavigatedFrom(navigationContext);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];
-            ViewModel.MediaStateCollectionView.Cleared += MediaStateCollectionView_Cleared;
-
-
+            ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];                          
             DataContext = ViewModel;
 
             if (ViewModel.IsEnabled == false) return;
+
+            ViewModel.MediaStateCollectionView.Cleared += MediaStateCollectionView_Cleared;
+            ViewModel.OnNavigatedTo(navigationContext);   
 
             ICollection<MediaItem> selectedItems = ViewModel.MediaStateCollectionView.getSelectedItems();
 

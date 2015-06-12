@@ -7,6 +7,7 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -21,13 +22,15 @@ using System.Windows.Threading;
 namespace MediaViewer.Model.Media.File
 {
     public class MediaFileItem : MediaItem
-    {        
- 
+    {
+
+        ConcurrentQueue<String> eventBuffer;
 
         protected MediaFileItem(String location, MediaItemState state = MediaItemState.EMPTY)
             : base(location, state)
         {
-            
+            eventBuffer = new ConcurrentQueue<string>();
+            isBufferEvents = false;
         }
                       
         /// <summary>
@@ -48,12 +51,12 @@ namespace MediaViewer.Model.Media.File
 
                 if (isLocationChanged)
                 {
-                    OnPropertyChanged("Location");
+                    OnPropertyChangedBuffered("Location");
                 }
 
                 if (isMetadataChanged)
                 {
-                    OnPropertyChanged("Metadata");
+                    OnPropertyChangedBuffered("Metadata");
                 }
             }
         }
@@ -152,13 +155,13 @@ namespace MediaViewer.Model.Media.File
 
             if (metadataChanged)
             {
-                OnPropertyChanged("Metadata");
+                OnPropertyChangedBuffered("Metadata");
             }
 
             if (varsChanged)
             {
-                OnPropertyChanged("HasTags");
-                OnPropertyChanged("HasGeoTag");
+                OnPropertyChangedBuffered("HasTags");
+                OnPropertyChangedBuffered("HasGeoTag");
             }
 
         }
@@ -214,13 +217,13 @@ namespace MediaViewer.Model.Media.File
 
                 RWLock.ExitWriteLock();
 
-                OnPropertyChanged("ItemState");
-                OnPropertyChanged("Metadata");                
+                OnPropertyChangedBuffered("ItemState");
+                OnPropertyChangedBuffered("Metadata");                
 
                 if (changed)
                 {
-                    OnPropertyChanged("HasTags");
-                    OnPropertyChanged("HasGeoTag");
+                    OnPropertyChangedBuffered("HasTags");
+                    OnPropertyChangedBuffered("HasGeoTag");
                 }
                                            
             }
@@ -298,8 +301,8 @@ namespace MediaViewer.Model.Media.File
             {
                 RWLock.ExitWriteLock();
 
-                OnPropertyChanged("Metadata");
-                OnPropertyChanged("ItemState");
+                OnPropertyChangedBuffered("Metadata");
+                OnPropertyChangedBuffered("ItemState");
             }
            
         }
@@ -308,8 +311,7 @@ namespace MediaViewer.Model.Media.File
         /// returns true if the moved item was a imported item otherwise false
         /// </summary>
         /// <param name="newLocation"></param>
-        /// <param name="progress"></param>
-        /// <param name="updateLocationOnly">if true, don't physically move the item</param>
+        /// <param name="progress"></param>        
         /// <returns></returns>
         public bool move(String newLocation, CancellableOperationProgressBase progress)
         {
@@ -343,12 +345,12 @@ namespace MediaViewer.Model.Media.File
 
                 if (isLocationChanged)
                 {
-                    OnPropertyChanged("Location");
+                    OnPropertyChangedBuffered("Location");
                 }
 
                 if (isMetadataChanged)
                 {
-                    OnPropertyChanged("Metadata");
+                    OnPropertyChangedBuffered("Metadata");
                 }
             }
             
@@ -377,7 +379,7 @@ namespace MediaViewer.Model.Media.File
                 RWLock.ExitUpgradeableReadLock();
             }
 
-            OnPropertyChanged("Metadata");
+            OnPropertyChangedBuffered("Metadata");
 
             return (true);
         }
@@ -403,7 +405,7 @@ namespace MediaViewer.Model.Media.File
                 RWLock.ExitReadLock();
             }
 
-            OnPropertyChanged("Metadata");
+            OnPropertyChangedBuffered("Metadata");
             return (true);
         }
        
@@ -433,6 +435,49 @@ namespace MediaViewer.Model.Media.File
             }
 
         }
+
+        bool isBufferEvents;
+
+        /// <summary>
+        /// If true buffers propertychanged events
+        /// If false flush the buffered propertychanged events
+        /// </summary>
+        public bool IsBufferEvents
+        {
+            get { return isBufferEvents; }
+            set {
+                
+                isBufferEvents = value;
+                
+                // A event could be fired here before any queued events are flushed.
+                // resulting in events occuring out of order.             
+                if (value == false)
+                {
+                    // flush queued events
+                    String propertyName;
+
+                    while (eventBuffer.TryDequeue(out propertyName))
+                    {
+                        OnPropertyChanged(propertyName);
+                    }                    
+                }
+
+                
+            }
+        }
+
+        void OnPropertyChangedBuffered(String propertyName)
+        {
+            if (IsBufferEvents)
+            {
+                eventBuffer.Enqueue(propertyName);
+            }
+            else
+            {
+                OnPropertyChanged(propertyName);
+            }
+        }
+
 
         // factory to ensure mediafileitems are globally unique
         public class Factory

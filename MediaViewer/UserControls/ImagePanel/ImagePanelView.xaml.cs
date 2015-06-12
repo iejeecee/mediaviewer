@@ -127,7 +127,7 @@ namespace MediaViewer.UserControls.ImagePanel
                 }
                 else
                 {
-                    imageData = File.Open(location, FileMode.Open, FileAccess.Read);
+                    imageData = File.Open(location, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
                 }
 
                 Rotation rotation = ImageUtils.getBitmapRotation(imageData);

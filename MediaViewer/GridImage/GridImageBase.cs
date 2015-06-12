@@ -23,14 +23,20 @@ namespace MediaViewer.GridImage
         protected const int margin = 3;
         protected const int borderThickness = 2;
 
-        protected GridImageBase(int width, int nrRows, int nrColumns, List<BitmapSource> images, Stretch stretch = Stretch.UniformToFill)
+        protected GridImageBase(int width, int nrRows, int nrColumns, List<BitmapSource> images, 
+            Color backgroundColor, Color fontColor, Stretch stretch = Stretch.UniformToFill)
         {           
             NrRows = nrRows;
             NrColumns = nrColumns;
                                               
             Images = images;
             Stretch = stretch;
+            BackgroundColor = backgroundColor;
+            FontColor = fontColor;
         }
+
+        protected Color BackgroundColor { get; set; }
+        protected Color FontColor { get; set; }
 
         Stretch Stretch { get; set; }
         List<BitmapSource> Images { get; set; }
@@ -45,7 +51,7 @@ namespace MediaViewer.GridImage
             Grid mainGrid = new Grid();            
             mainGrid.HorizontalAlignment = HorizontalAlignment.Center;
             mainGrid.VerticalAlignment = VerticalAlignment.Center;
-            mainGrid.Background = new SolidColorBrush(Colors.White);
+            mainGrid.Background = new SolidColorBrush(BackgroundColor);
             mainGrid.Width = width;        
             RowDefinition headerRow = new RowDefinition() { Height = GridLength.Auto };
             RowDefinition imageRow = new RowDefinition() { Height = new GridLength(1, GridUnitType.Star) };

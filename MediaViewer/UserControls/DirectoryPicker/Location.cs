@@ -47,14 +47,12 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 }
             }
 
-            if (e.OldLocations != null)
+            if (e.OldItems != null)
             {
-
-                foreach (String location in e.OldLocations)
+                foreach (MediaFileItem item in e.OldItems)
                 {
-                    if (location.StartsWith(FullName))
+                    if (item.Location.StartsWith(FullName))
                     {
-
                         NrImported--;
                     }
                 }

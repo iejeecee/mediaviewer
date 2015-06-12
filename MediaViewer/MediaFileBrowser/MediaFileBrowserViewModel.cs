@@ -65,7 +65,7 @@ namespace MediaViewer.MediaFileBrowser
             SetProperty(ref currentViewModel, value);
             }
         }
-
+        
         MediaFileBrowserImagePanelViewModel imageViewModel;
 
         public MediaFileBrowserImagePanelViewModel ImageViewModel
@@ -115,7 +115,7 @@ namespace MediaViewer.MediaFileBrowser
             SetProperty(ref mediaFileGridViewModel, value);
             }
         }
-
+        
         MediaFileStackPanelViewModel dummyMediaStackPanelViewModel;
 
         public MediaFileStackPanelViewModel DummyMediaStackPanelViewModel
@@ -182,7 +182,7 @@ namespace MediaViewer.MediaFileBrowser
 
         public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator, AppSettings settings)
         {
-
+    
             this.mediaFileWatcher = mediaFileWatcher;
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
@@ -191,29 +191,27 @@ namespace MediaViewer.MediaFileBrowser
             BrowsePathHistory = Settings.BrowsePathHistory;            
             FavoriteLocations = Settings.FavoriteLocations;
 
+            MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+
+            DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);
+            DummyMediaStackPanelViewModel.IsEnabled = false;
+
             ImageViewModel = new MediaFileBrowserImagePanelViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = MediaViewer.UserControls.ImagePanel.ScaleMode.FIT_HEIGHT_AND_WIDTH;
 
-            imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-            imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
+            imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);            
             imageMediaStackPanelViewModel.IsVisible = true;
 
             VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
 
-            videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-            videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
+            videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);            
             videoMediaStackPanelViewModel.IsVisible = true;
 
-            GeotagFileBrowserStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
+            GeotagFileBrowserViewModel = new GeotagFileBrowserViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);
+
+            GeotagFileBrowserStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);
             GeotagFileBrowserStackPanelViewModel.IsVisible = true;
-
-            GeotagFileBrowserViewModel = new GeotagFileBrowserViewModel(GeotagFileBrowserStackPanelViewModel.MediaStateCollectionView, EventAggregator);
-
-            MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-
-            DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-            DummyMediaStackPanelViewModel.IsEnabled = false;
-
+                       
             DeleteSelectedItemsCommand = new Command(new Action(deleteSelectedItems));
       
             ImportSelectedItemsCommand = new Command(() =>
@@ -242,9 +240,7 @@ namespace MediaViewer.MediaFileBrowser
                
                 if (MediaFormatConvert.isImageFile(item.Location))
                 {
-
-                    navigateToImageView(item);
-              
+                    navigateToImageView(item);              
                 }
                 else if (MediaFormatConvert.isVideoFile(item.Location))
                 {
@@ -261,7 +257,7 @@ namespace MediaViewer.MediaFileBrowser
 
             ContractCommand.IsExecutable = false;
 
-            GeotagFileBrowserCommand = new Command(() =>
+            NavigateToGeotagFileBrowserCommand = new Command(() =>
                 {
                     navigateToGeotagFileBrowser();
                    
@@ -308,9 +304,7 @@ namespace MediaViewer.MediaFileBrowser
                     preview.ViewModel.Media = SelectedItems;
                     preview.ShowDialog();
                 });
-
       
-
             CreateTorrentFileCommand = new Command(() =>
                 {
                
@@ -336,11 +330,11 @@ namespace MediaViewer.MediaFileBrowser
                 BrowsePath = location;
             });
            
-            NavigateToImageGridCommand = new Command(navigateToMediaFileGrid);
+            NavigateToMediaFileGridCommand = new Command(navigateToMediaFileGrid);
             NavigateToImageViewCommand = new Command<MediaFileItem>(navigateToImageView);
             NavigateToVideoViewCommand = new Command<MediaFileItem>(navigateToVideoView);
 
-            NavigateBackCommand = NavigateToImageGridCommand;
+            NavigateBackCommand = NavigateToMediaFileGridCommand;
 
             SelectedItems = new List<MediaFileItem>();
 
@@ -427,15 +421,15 @@ namespace MediaViewer.MediaFileBrowser
         public Command CreateTorrentFileCommand { get; set; }
         public Command TranscodeVideoCommand { get; set; }
         public Command TranscodeImageCommand { get; set; }
-        public Command DeleteSelectedItemsCommand { get; set; }
-        public Command GeotagFileBrowserCommand { get; set; }
+        public Command DeleteSelectedItemsCommand { get; set; }        
         public Command ImportSelectedItemsCommand { get; set; }
         public Command ExportSelectedItemsCommand { get; set; }
         public Command<MediaFileItem> ExpandCommand { get; set; }
         public Command ContractCommand { get; set; }
-        public Command NavigateToImageGridCommand { get; set; }
+        public Command NavigateToMediaFileGridCommand { get; set; }
         public Command<MediaFileItem> NavigateToImageViewCommand { get; set; }
         public Command<MediaFileItem> NavigateToVideoViewCommand { get; set; }
+        public Command NavigateToGeotagFileBrowserCommand { get; set; }
         public ICommand NavigateBackCommand { get; set; }
       
         private void deleteSelectedItems()
@@ -514,7 +508,7 @@ namespace MediaViewer.MediaFileBrowser
           
             }, navigationParams);
 
-
+            VideoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
             Shell.ShellViewModel.navigateToMediaStackPanelView(videoMediaStackPanelViewModel, item.Location);
            
         }
@@ -534,6 +528,7 @@ namespace MediaViewer.MediaFileBrowser
        
             }, navigationParams);
 
+            ImageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
             Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel, item != null ? item.Location : null);
         }
 
@@ -551,6 +546,7 @@ namespace MediaViewer.MediaFileBrowser
 
             }, navigationParams);
 
+            GeotagFileBrowserStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.None);
             Shell.ShellViewModel.navigateToMediaStackPanelView(GeotagFileBrowserStackPanelViewModel);
         }
 

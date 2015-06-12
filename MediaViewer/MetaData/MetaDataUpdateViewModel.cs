@@ -99,135 +99,119 @@ namespace MediaViewer.MetaData
                 bool isModified = false;
 
                 ItemInfo = "Opening: " + item.Location;
-         
+
+                // prevent item firing events while holding a lock
+                item.IsBufferEvents = true;
                 item.RWLock.EnterUpgradeableReadLock();
                 try
                 {
-                    if (item.Metadata == null)
+                    if (item.Metadata == null || item.Metadata is UnknownMetadata)
                     {
-                        ItemInfo = "Loading MetaData: " + item.Location;
+                        throw new Exception("Missing or invalid metadata in media");                        
+                    }
+                   
+                    isModified = item.Metadata.IsModified;
 
-                        item.readMetadata(MetadataFactory.ReadOptions.AUTO |
-                            MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+                    BaseMetadata media = item.Metadata;
 
-                        if (item.Metadata == null || item.Metadata is UnknownMetadata)
+                    if (state.RatingEnabled)
+                    {
+                        Nullable<double> oldValue = media.Rating;
+
+                        media.Rating = state.Rating.HasValue == false ? null : state.Rating * 5;
+
+                        if (media.Rating != oldValue)
                         {
-                            // reload metaData in metadataviewmodel      
-                            String error = "Could not open file and/or read it's metadata: " + item.Location;
-
-                            ItemInfo = error;
-                            InfoMessages.Add(error);
-                            Logger.Log.Error(error);
+                            isModified = true;
                         }
                     }
 
-
-                    if (item.Metadata != null && !(item.Metadata is UnknownMetadata))
+                    if (state.TitleEnabled && !EqualityComparer<String>.Default.Equals(media.Title, state.Title))
                     {
-                        isModified = item.Metadata.IsModified;
+                        media.Title = state.Title;
+                        isModified = true;
+                    }
 
-                        BaseMetadata media = item.Metadata;
+                    if (state.DescriptionEnabled && !EqualityComparer<String>.Default.Equals(media.Description, state.Description))
+                    {
+                        media.Description = state.Description;
+                        isModified = true;
+                    }
 
-                        if (state.RatingEnabled)
+                    if (state.AuthorEnabled && !EqualityComparer<String>.Default.Equals(media.Author, state.Author))
+                    {
+                        media.Author = state.Author;
+                        isModified = true;
+                    }
+
+                    if (state.CopyrightEnabled && !EqualityComparer<String>.Default.Equals(media.Copyright, state.Copyright))
+                    {
+                        media.Copyright = state.Copyright;
+                        isModified = true;
+                    }
+
+                    if (state.CreationEnabled && !(Nullable.Compare<DateTime>(media.CreationDate, state.Creation) == 0))
+                    {
+                        media.CreationDate = state.Creation;
+                        isModified = true;
+                    }
+
+                    if(state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Latitude, state.Latitude) == 0))
+                    {
+                        media.Latitude = state.Latitude;
+                        isModified = true;
+                    }
+
+                    if (state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Longitude, state.Longitude) == 0))
+                    {
+                        media.Longitude = state.Longitude;
+                        isModified = true;
+                    }
+
+                    if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
+                    {
+                        media.Tags.Clear();
+                        foreach (Tag tag in state.Tags)
                         {
-                            Nullable<double> oldValue = media.Rating;
-
-                            media.Rating = state.Rating.HasValue == false ? null : state.Rating * 5;
-
-                            if (media.Rating != oldValue)
-                            {
-                                isModified = true;
-                            }
+                            media.Tags.Add(tag);
                         }
+                        isModified = true;
+                    }
+                    else if (state.BatchMode == true)
+                    {
+                        bool addedTag = false;
+                        bool removedTag = false;
 
-                        if (state.TitleEnabled && !EqualityComparer<String>.Default.Equals(media.Title, state.Title))
+                        foreach (Tag tag in state.AddTags)
                         {
-                            media.Title = state.Title;
-                            isModified = true;
-                        }
-
-                        if (state.DescriptionEnabled && !EqualityComparer<String>.Default.Equals(media.Description, state.Description))
-                        {
-                            media.Description = state.Description;
-                            isModified = true;
-                        }
-
-                        if (state.AuthorEnabled && !EqualityComparer<String>.Default.Equals(media.Author, state.Author))
-                        {
-                            media.Author = state.Author;
-                            isModified = true;
-                        }
-
-                        if (state.CopyrightEnabled && !EqualityComparer<String>.Default.Equals(media.Copyright, state.Copyright))
-                        {
-                            media.Copyright = state.Copyright;
-                            isModified = true;
-                        }
-
-                        if (state.CreationEnabled && !(Nullable.Compare<DateTime>(media.CreationDate, state.Creation) == 0))
-                        {
-                            media.CreationDate = state.Creation;
-                            isModified = true;
-                        }
-
-                        if(state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Latitude, state.Latitude) == 0))
-                        {
-                            media.Latitude = state.Latitude;
-                            isModified = true;
-                        }
-
-                        if (state.IsGeoTagEnabled && !(Nullable.Compare<double>(media.Longitude, state.Longitude) == 0))
-                        {
-                            media.Longitude = state.Longitude;
-                            isModified = true;
-                        }
-
-                        if (state.BatchMode == false && !state.Tags.SequenceEqual(media.Tags))
-                        {
-                            media.Tags.Clear();
-                            foreach (Tag tag in state.Tags)
+                            // Hashset compares items using their gethashcode function
+                            // which can be different for the same database entities created at different times
+                            if (!media.Tags.Contains(tag, EqualityComparer<Tag>.Default))
                             {
                                 media.Tags.Add(tag);
+                                addedTag = true;
                             }
-                            isModified = true;
                         }
-                        else if (state.BatchMode == true)
+
+                        foreach (Tag tag in state.RemoveTags)
                         {
-                            bool addedTag = false;
-                            bool removedTag = false;
+                            Tag removeTag = media.Tags.FirstOrDefault((t) => t.Name.Equals(tag.Name));
 
-                            foreach (Tag tag in state.AddTags)
+                            if (removeTag != null)
                             {
-                                // Hashset compares items using their gethashcode function
-                                // which can be different for the same database entities created at different times
-                                if (!media.Tags.Contains(tag, EqualityComparer<Tag>.Default))
-                                {
-                                    media.Tags.Add(tag);
-                                    addedTag = true;
-                                }
+                                media.Tags.Remove(removeTag);
+                                removedTag = true;
                             }
 
-                            foreach (Tag tag in state.RemoveTags)
-                            {
-                                Tag removeTag = media.Tags.FirstOrDefault((t) => t.Name.Equals(tag.Name));
+                        }
 
-                                if (removeTag != null)
-                                {
-                                    media.Tags.Remove(removeTag);
-                                    removedTag = true;
-                                }
-
-                            }
-
-                            if (removedTag || addedTag)
-                            {
-                                isModified = true;
-                            }
-
+                        if (removedTag || addedTag)
+                        {
+                            isModified = true;
                         }
 
                     }
-
+                    
                     try
                     {
                         if (isModified)
@@ -322,7 +306,8 @@ namespace MediaViewer.MetaData
                 }
                 finally
                 {
-                    item.RWLock.ExitUpgradeableReadLock();                
+                    item.RWLock.ExitUpgradeableReadLock();
+                    item.IsBufferEvents = false;
 
                     EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Publish(item);                  
                 }

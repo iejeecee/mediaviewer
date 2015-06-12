@@ -9,6 +9,7 @@ using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.PubSubEvents;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -27,16 +28,33 @@ namespace MediaViewer.MediaFileStackPanel
         public MediaFileStateCollectionView MediaStateCollectionView
         {
             get { return mediaStateCollectionView; }
-            set { SetProperty(ref mediaStateCollectionView, value); }
+            protected set { SetProperty(ref mediaStateCollectionView, value); }
         }
-
+     
         protected IEventAggregator EventAggregator { get; set; }
         MediaItem selectedItem;
 
-        public MediaFileStackPanelViewModel(MediaFileState mediaState, IEventAggregator eventAggregator)            
+        public MediaFileStackPanelViewModel(MediaFileState mediaState, IEventAggregator eventAggregator)
         {
             MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);
 
+            initialize(eventAggregator);
+        }
+
+        /// <summary>
+        /// Use a existing mediaFileStateCollectionView
+        /// </summary>
+        /// <param name="mediaFileStateCollectionView"></param>
+        /// <param name="eventAggregator"></param>
+        public MediaFileStackPanelViewModel(MediaFileStateCollectionView mediaFileStateCollectionView, IEventAggregator eventAggregator)            
+        {
+            MediaStateCollectionView = mediaFileStateCollectionView;
+
+            initialize(eventAggregator);
+        }
+
+        void initialize(IEventAggregator eventAggregator)
+        {
             IsVisible = false;
             IsEnabled = true;
 
@@ -46,10 +64,7 @@ namespace MediaViewer.MediaFileStackPanel
 
             EventAggregator = eventAggregator;
 
-            MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
-            MediaStateCollectionView.SelectionChanged += mediaState_SelectionChanged;
-            MediaStateCollectionView.ItemResorted += mediaState_ItemResorted;
-
+           
             NextPageCommand = new Command(() =>
             {
                 CurrentPage = CurrentPage + 1;
@@ -63,42 +78,42 @@ namespace MediaViewer.MediaFileStackPanel
             FirstPageCommand = new Command(() =>
             {
                 CurrentPage = 1;
-               
+
             });
 
             LastPageCommand = new Command(() =>
-            {               
-                CurrentPage = MediaStateCollectionView.Media.Count;               
+            {
+                CurrentPage = MediaStateCollectionView.Media.Count;
             });
 
             BrowseLocationCommand = new Command<SelectableMediaItem>((selectableItem) =>
-                {
-                    MediaItem item = selectableItem.Item;
+            {
+                MediaItem item = selectableItem.Item;
 
-                    String location = FileUtils.getPathWithoutFileName(item.Location);
+                String location = FileUtils.getPathWithoutFileName(item.Location);
 
-                    EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(location);
-                });
+                EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(location);
+            });
 
             OpenLocationCommand = new Command<SelectableMediaItem>((selectableItem) =>
-                {
-                    MediaItem item = selectableItem.Item;
+            {
+                MediaItem item = selectableItem.Item;
 
-                    String location = FileUtils.getPathWithoutFileName(item.Location);
+                String location = FileUtils.getPathWithoutFileName(item.Location);
 
-                    Process.Start(location);
-                });
+                Process.Start(location);
+            });
 
             DeleteCommand = new Command<SelectableMediaItem>((selectableItem) =>
             {
-                if(MessageBox.Show("Delete:\n\n" + selectableItem.Item.Location,"Delete file",MessageBoxButton.YesNo,MessageBoxImage.Question,MessageBoxResult.No) == MessageBoxResult.Yes) 
+                if (MessageBox.Show("Delete:\n\n" + selectableItem.Item.Location, "Delete file", MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) == MessageBoxResult.Yes)
                 {
 
                     List<MediaFileItem> item = new List<MediaFileItem>();
                     item.Add(selectableItem.Item as MediaFileItem);
                     CancellationTokenSource tokenSource = new CancellationTokenSource();
 
-                    mediaState.delete(item, tokenSource.Token);
+                    (MediaStateCollectionView.MediaState as MediaFileState).delete(item, tokenSource.Token);
 
                 }
             });
@@ -149,7 +164,7 @@ namespace MediaViewer.MediaFileStackPanel
              {
                  NrPages = MediaStateCollectionView.Media.Count();
 
-                 // if the number of items in the state changed has changed
+                 // if the number of items in the state has changed
                  // the index of the currently selected item, update the index            
                  int index = MediaStateCollectionView.getSelectedItem(out selectedItem);
 
@@ -275,5 +290,21 @@ namespace MediaViewer.MediaFileStackPanel
         public Command<SelectableMediaItem> BrowseLocationCommand { get; set; }
         public Command<SelectableMediaItem> OpenLocationCommand { get; set; }
         public Command<SelectableMediaItem> DeleteCommand { get; set; }
+        
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            MediaStateCollectionView.NrItemsInStateChanged -= mediaState_NrItemsInStateChanged;
+            MediaStateCollectionView.SelectionChanged -= mediaState_SelectionChanged;
+            MediaStateCollectionView.ItemResorted -= mediaState_ItemResorted;         
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+            MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
+            MediaStateCollectionView.SelectionChanged += mediaState_SelectionChanged;
+            MediaStateCollectionView.ItemResorted += mediaState_ItemResorted;
+
+            MediaStateCollectionView.refresh();
+        }
     }
 }

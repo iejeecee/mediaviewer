@@ -171,7 +171,8 @@
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>
-    <Reference Include="XMPLib, Version=1.0.5557.42656, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="XMPLib">
+      <HintPath>..\Debug\XMPLib.dll</HintPath>
       <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </Reference>

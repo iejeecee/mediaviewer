@@ -128,7 +128,7 @@ namespace MediaViewer.MediaFileBrowser
             }
             else
             {
-                MediaFileBrowserViewModel.NavigateBackCommand = MediaFileBrowserViewModel.NavigateToImageGridCommand;
+                MediaFileBrowserViewModel.NavigateBackCommand = MediaFileBrowserViewModel.NavigateToMediaFileGridCommand;
             }
         }
 

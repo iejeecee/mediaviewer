@@ -28,10 +28,12 @@
                     <DataGridCheckBoxColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel>                             
-                                <Button x:Name="clearFilterButton" Content="{Binding Content, RelativeSource=
-                                             {RelativeSource Mode=TemplatedParent}}"
-                                        ToolTip="Clear Filter"
-                                        Click="clearFilterButton_Click" Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}"/>                                                                                  
+                                <ToggleButton x:Name="clearToggleButton" 
+                                              Content="{Binding Content, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                              ToolTip="Clear Filter"                                       
+                                              Unchecked="clearToggleButton_Unchecked" 
+                                              Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+                                              IsEnabled="False"/>                                                                                  
                             </StackPanel>
                         </DataTemplate>
                     </DataGridCheckBoxColumn.HeaderTemplate>

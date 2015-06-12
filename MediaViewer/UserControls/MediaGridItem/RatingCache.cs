@@ -12,7 +12,7 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.UserControls.MediaGridItem
 {
-    class RatingCache
+    public class RatingCache
     {
         public List<BitmapSource> RatingBitmap { get; set; }
       

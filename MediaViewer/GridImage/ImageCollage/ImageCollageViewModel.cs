@@ -85,10 +85,12 @@ namespace MediaViewer.GridImage.ImageCollage
 
         void setDefaults(MediaFileWatcher mediaFileWatcher)
         {
+            BackgroundColor = Colors.LightGray;
+            FontColor = Colors.Black;
             NrColumns = 6;           
             MaxWidth = 1280;
             IsMaxGridHeightEnabled = true;
-            MaxGridHeight = 256;            
+            MaxGridHeight = 200;            
             OutputPath = mediaFileWatcher.Path;
             OutputPathHistory = Settings.ImageCollageOutputDirectoryHistory;                 
             IsCommentEnabled = false;
@@ -220,6 +222,22 @@ namespace MediaViewer.GridImage.ImageCollage
             {
                 SetProperty(ref isCommentEnabled, value);
             }
+        }
+
+        System.Windows.Media.Color backgroundColor;
+
+        public System.Windows.Media.Color BackgroundColor
+        {
+            get { return backgroundColor; }
+            set { SetProperty(ref backgroundColor, value); }
+        }
+
+        System.Windows.Media.Color fontColor;
+
+        public System.Windows.Media.Color FontColor
+        {
+            get { return fontColor; }
+            set { SetProperty(ref fontColor, value); }
         }
 
         string outputPath;

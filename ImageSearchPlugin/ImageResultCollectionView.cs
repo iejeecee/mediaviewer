@@ -22,7 +22,7 @@ namespace ImageSearchPlugin
         }
 
 
-        public ImageResultCollectionView(MediaState mediaState)
+        public ImageResultCollectionView(MediaState mediaState)     
             : base(mediaState)
         {
             SortModes = new System.Windows.Data.ListCollectionView(Enum.GetValues(typeof(SortMode)));
@@ -98,6 +98,7 @@ namespace ImageSearchPlugin
             String info = null;
 
             ImageResultItem item = (ImageResultItem)selectableItem.Item;
+            
 
             switch ((SortMode)SortModes.CurrentItem)
             {               

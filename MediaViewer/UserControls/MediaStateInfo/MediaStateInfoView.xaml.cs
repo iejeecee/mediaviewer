@@ -34,17 +34,17 @@ namespace MediaViewer.UserControls.MediaStateInfo
             infoImage.Source = (ImageSource)Resources["folder"];
         }
 
-        public MediaStateCollectionView MediaState
+        public MediaStateCollectionView MediaCollectionView
         {
-            get { return (MediaStateCollectionView)GetValue(MediaStateProperty); }
-            set { SetValue(MediaStateProperty, value); }
+            get { return (MediaStateCollectionView)GetValue(MediaCollectionViewProperty); }
+            set { SetValue(MediaCollectionViewProperty, value); }
         }
 
         // Using a DependencyProperty as the backing store for MediaState.  This enables animation, styling, binding, etc...
-        public static readonly DependencyProperty MediaStateProperty =
-            DependencyProperty.Register("MediaState", typeof(MediaStateCollectionView), typeof(MediaStateInfoView), new PropertyMetadata(null, mediaStateChangedCallback));
+        public static readonly DependencyProperty MediaCollectionViewProperty =
+            DependencyProperty.Register("MediaCollectionView", typeof(MediaStateCollectionView), typeof(MediaStateInfoView), new PropertyMetadata(null, mediaCollectionViewChangedCallback));
 
-        private static void mediaStateChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        private static void mediaCollectionViewChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             MediaStateInfoView view = (MediaStateInfoView)d;
 
@@ -73,7 +73,7 @@ namespace MediaViewer.UserControls.MediaStateInfo
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                List<MediaItem> selectedItems = MediaState.getSelectedItems();
+                List<MediaItem> selectedItems = MediaCollectionView.getSelectedItems();
 
                 long totalSizeBytes = 0;
                 int nrSelectedItems = selectedItems.Count;

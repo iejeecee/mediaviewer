@@ -28,7 +28,7 @@ namespace MediaViewer.MediaFileGrid
             EventAggregator = eventAggregator;
             NrColumns = 4;
 
-            MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);
+            MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);       
             MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
             
             ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
@@ -74,6 +74,8 @@ namespace MediaViewer.MediaFileGrid
                 });
 
             WeakEventManager<MediaLockedCollection, EventArgs>.AddHandler(MediaStateCollectionView.MediaState.UIMediaCollection, "IsLoadingChanged", mediaCollection_IsLoadingChanged);
+
+            PrevFilterMode = MediaFilterMode.None;
         }
 
         private void mediaCollection_IsLoadingChanged(object sender, EventArgs e)
@@ -123,14 +125,29 @@ namespace MediaViewer.MediaFileGrid
         public Command<SelectableMediaItem> BrowseLocationCommand { get; set; }
         public Command<SelectableMediaItem> OpenLocationCommand { get; set; }
 
+        MediaFilterMode PrevFilterMode { get; set; }
+
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
             EventAggregator.GetEvent<MediaBatchSelectionEvent>().Publish(MediaStateCollectionView.getSelectedItems());
+
+            // restore state
+            if (MediaStateCollectionView.MediaFilter != PrevFilterMode)
+            {
+                MediaItem item = null;
+                MediaStateCollectionView.getSelectedItem(out item);
+                MediaStateCollectionView.FilterModes.MoveCurrentTo(PrevFilterMode);
+
+                if (item != null)
+                {
+                    MediaStateCollectionView.setIsSelected(item, true);
+                }
+            }
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-           
+            PrevFilterMode = MediaStateCollectionView.MediaFilter;
         }
     }                                     
 }
