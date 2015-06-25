@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ImageSearchPlugin
 {
-    class AccountKey
+    class BingAccountKey
     {
         public static String accountKey = "SAmrxFFDOMOUwIqbWwWq/+I2QMDVv/KIpx9Zogjdkfo";
     }

@@ -38,6 +38,7 @@ namespace MediaViewer.Model.Utils
             extToMimeType["m4v"] = "video/x-m4v";
             extToMimeType["mkv"] = "video/x-matroska";
             extToMimeType["webm"] = "video/webm";
+            extToMimeType["m4a"] = "audio/mp4";
 
             foreach (KeyValuePair<string, string> pair in extToMimeType)
             {

@@ -17,6 +17,7 @@ using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure;
 using MediaViewer.MediaFileStackPanel;
 using MediaViewer.Model.Collections.Sort;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer
 {
@@ -115,10 +116,12 @@ namespace MediaViewer
         }
 
 
-        public void navigateToImageView(String location = null)
+        public void navigateToImageView(MediaItem item = null)
         {
+            String newLocation = item == null ? null : item.Location;
+
             if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is ImageView &&
-                String.Compare(location,ImageViewModel.Location) == 0)
+                String.Compare(newLocation, ImageViewModel.Location) == 0)
             {
                 //active view is already imageview
                 return;
@@ -129,7 +132,7 @@ namespace MediaViewer
             NavigationParameters navigationParams = new NavigationParameters();
 
             navigationParams.Add("viewModel", ImageViewModel);
-            navigationParams.Add("location", location);
+            navigationParams.Add("item", item);
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, ImageViewUri, navigationParams);
 
@@ -137,7 +140,7 @@ namespace MediaViewer
 
             RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, ImageToolbarViewUri, navigationParams);
 
-            navigateToMediaStackPanelView(imageMediaStackPanelViewModel, location);
+            navigateToMediaStackPanelView(imageMediaStackPanelViewModel, newLocation);
 
         }
 
@@ -163,10 +166,13 @@ namespace MediaViewer
            
         }
 
-        public void navigateToVideoView(String location = null, int? offsetSeconds = null)
+        public void navigateToVideoView(MediaItem item = null, int? offsetSeconds = null, MediaItem audio = null)
         {
+            String currentLocation = VideoViewModel.CurrentItem.IsEmpty ? null : VideoViewModel.CurrentItem.Video.Location;
+            String newLocation = item == null ? null : item.Location;
+
             if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView &&
-                String.Compare(location, VideoViewModel.CurrentLocation) == 0)
+                String.Compare(currentLocation, newLocation) == 0)
             {
                 //active view is already videoview
                 return;
@@ -177,12 +183,13 @@ namespace MediaViewer
             NavigationParameters navigationParams = new NavigationParameters();
 
             navigationParams.Add("viewModel", VideoViewModel);
-            navigationParams.Add("location", location);
+            navigationParams.Add("item", item);
             navigationParams.Add("offsetSeconds", offsetSeconds);
+            navigationParams.Add("audio", audio);
 
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, VideoViewUri, navigationParams);
 
-            navigateToMediaStackPanelView(videoMediaStackPanelViewModel, location);
+            navigateToMediaStackPanelView(videoMediaStackPanelViewModel, newLocation);
 
             Uri VideoToolbarViewUri = new Uri(typeof(VideoToolbarView).FullName, UriKind.Relative);
 

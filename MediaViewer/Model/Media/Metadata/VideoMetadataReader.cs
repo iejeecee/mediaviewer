@@ -31,7 +31,7 @@ namespace MediaViewer.Model.Media.Metadata
                 {
 
                     videoPreview = new VideoPreview();
-                    videoPreview.open(media.Location);
+                    videoPreview.open(media.Location, token);
 
                     video.DurationSeconds = videoPreview.DurationSeconds;
                     video.SizeBytes = videoPreview.SizeBytes;

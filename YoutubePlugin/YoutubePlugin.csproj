@@ -158,13 +158,15 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Item\VideoStreamInfo.cs" />
+    <Compile Include="DownloadProgressViewModel.cs" />
     <Compile Include="Item\YoutubeChannelItem.cs" />
     <Compile Include="Item\YoutubeVideoItem.cs" />
+    <Compile Include="Item\YoutubeVideoStreamedItem.cs" />
     <Compile Include="YoutubeApiKey.cs" />
     <Compile Include="YoutubeCollectionView.cs" />
     <Compile Include="Item\YoutubeItem.cs" />
     <Compile Include="Item\YoutubeItemMetadata.cs" />
+    <Compile Include="YoutubeItemInfoIconsCache.cs" />
     <Compile Include="YoutubeModule.cs" />
     <Compile Include="YoutubeView.xaml.cs">
       <DependentUpon>YoutubeView.xaml</DependentUpon>
@@ -222,7 +224,15 @@
   <ItemGroup>
     <Resource Include="Resources\Icons\youtube.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="Resources\Icons\hd.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\notsupported.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Icons\channel.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

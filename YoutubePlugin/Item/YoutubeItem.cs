@@ -1,6 +1,7 @@
 ﻿using Google.Apis.YouTube.v3.Data;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -17,18 +18,19 @@ using System.Windows.Media.Imaging;
 
 namespace YoutubePlugin.Item
 {
-    abstract class YoutubeItem : MediaItem
+    abstract class YoutubeItem : MediaStreamedItem
     {
         public int Relevance { get; protected set; }
-        protected SearchResult Result { get; set; }
+        public SearchResult SearchResult { get; set; }
       
         public YoutubeItem(SearchResult result, int relevance) :
-            base(result.Snippet.Title)
+            base(null,result.Snippet.Title)
         {
-            Result = result;
+            SearchResult = result;
             Relevance = relevance;
         }
 
+       
         protected BitmapSource loadThumbnail(out String mimeType, CancellationToken token)
         {
             MemoryStream data = new MemoryStream();
@@ -36,7 +38,7 @@ namespace YoutubePlugin.Item
 
             try
             {
-                StreamUtils.download(new Uri(Result.Snippet.Thumbnails.High.Url), data, out mimeType, token);
+                StreamUtils.readHttpRequest(new Uri(SearchResult.Snippet.Thumbnails.High.Url), data, out mimeType, token);
 
                 BitmapDecoder decoder = BitmapDecoder.Create(data,
                                     BitmapCreateOptions.PreservePixelFormat,
@@ -62,7 +64,7 @@ namespace YoutubePlugin.Item
 
             try
             {
-                StreamUtils.download(location, data, out mimeType, token);
+                StreamUtils.readHttpRequest(location, data, out mimeType, token);
 
                 var sr = new StreamReader(data);
                 var infoResponse = sr.ReadToEnd();

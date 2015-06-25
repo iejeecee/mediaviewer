@@ -31,13 +31,14 @@ namespace MediaViewer.Model.Media.Base
             get { return id; }
         }
 
-        protected MediaItem(String location, MediaItemState state = MediaItemState.EMPTY)
+        protected MediaItem(String location, String name = null, MediaItemState state = MediaItemState.EMPTY)
         {
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             this.id = Id;
             Location = location;           
             ItemState = state;
+            Name = name;
        
             id = Guid.NewGuid();
           
@@ -70,7 +71,7 @@ namespace MediaViewer.Model.Media.Base
         protected string location;
 
         /// <summary>
-        /// Location on disk of the mediafileitem
+        /// Location of the mediaitem (e.g. url or disk path)
         /// </summary>
         public virtual string Location
         {
@@ -90,6 +91,31 @@ namespace MediaViewer.Model.Media.Base
                 }
 
                 OnPropertyChanged("Location");
+            }
+        }
+
+        protected string name;
+        /// <summary>
+        /// Name of the media item
+        /// </summary>
+        public virtual string Name
+        {
+            get { return name; }
+            set
+            {
+                rwLock.EnterWriteLock();
+                try
+                {
+                    if (object.Equals(Name, value)) return;
+
+                    name = value;
+                }
+                finally
+                {
+                    rwLock.ExitWriteLock();
+                }
+
+                OnPropertyChanged("Name");
             }
         }
 

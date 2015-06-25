@@ -104,9 +104,9 @@ public:
 
 	}
 
-	virtual void open(String ^location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	virtual void open(String ^location, System::Threading::CancellationToken ^token) {
 
-		VideoDecoder::open(location, discardMode);
+		VideoDecoder::open(location, token, nullptr);
 
 		// get video metadata
 		durationSeconds = getDurationSeconds();

@@ -42,7 +42,7 @@ namespace VideoLib {
 
 		Object ^lockObject;
 
-		VideoDecoder *videoDecoder;
+		VideoDecoder *videoDecoder, *audioDecoder;
 
 		VideoFrame ^videoFrame, ^convertedVideoFrame;
 		AudioFrame ^audioFrame, ^convertedAudioFrame;
@@ -97,7 +97,7 @@ namespace VideoLib {
 			if(dts != AV_NOPTS_VALUE) {
 
 				// convert pts to seconds
-				pts = dts * av_q2d(videoDecoder->getAudioStream()->time_base);
+				pts = dts * av_q2d(audioDecoder->getAudioStream()->time_base);
 				// set clock to current pts;
 				audioClock = pts;
 
@@ -106,7 +106,7 @@ namespace VideoLib {
 				// if we aren't given a pts, set it to the clock 
 				pts = audioClock;
 				// calculate next pts in seconds
-				audioClock += sizeBytes / double(videoDecoder->getAudioBytesPerSecond());
+				audioClock += sizeBytes / double(audioDecoder->getAudioBytesPerSecond());
 			}
 
 			return(pts);
@@ -285,12 +285,10 @@ namespace VideoLib {
 			}
 		}
 
-		FrameQueue(VideoDecoder *videoDecoder) {
+		FrameQueue() {
 
 			lockObject = gcnew Object();
-
-			this->videoDecoder = videoDecoder;
-
+			
 			videoFrame = nullptr;
 			audioFrame = nullptr;
 
@@ -373,9 +371,12 @@ namespace VideoLib {
 		}
 
 		
-		void initialize() {
+		void initialize(VideoDecoder *videoDecoder, VideoDecoder *audioDecoder) {
 
 			release();
+
+			this->videoDecoder = videoDecoder;
+			this->audioDecoder = audioDecoder;
 
 			videoClock = 0;
 			audioClock = 0;
@@ -387,14 +388,14 @@ namespace VideoLib {
 				videoDecoder->getHeight(), 
 				videoDecoder->getOutputPixelFormat());
 			
-			if(videoDecoder->hasAudio()) {
+			if(audioDecoder->hasAudio()) {
 
 				audioFrame = gcnew AudioFrame();
 
 				convertedAudioFrame = gcnew AudioFrame(
-					videoDecoder->getOutputSampleFormat(),
-					videoDecoder->getOutputChannelLayout(),
-					videoDecoder->getOutputSampleRate());
+					audioDecoder->getOutputSampleFormat(),
+					audioDecoder->getOutputChannelLayout(),
+					audioDecoder->getOutputSampleRate());
 			} 
 
 			for(int i = 0; i < packetData->Length; i++) {
@@ -446,8 +447,8 @@ namespace VideoLib {
 				packetQueueStopped[(int)QueueID::VIDEO_PACKETS] = false;
 				packetQueuePaused[(int)QueueID::VIDEO_PACKETS] = false;	
 
-				packetQueuePaused[(int)QueueID::AUDIO_PACKETS] = !videoDecoder->hasAudio();
-				packetQueueStopped[(int)QueueID::AUDIO_PACKETS] = !videoDecoder->hasAudio();
+				packetQueuePaused[(int)QueueID::AUDIO_PACKETS] = !audioDecoder->hasAudio();
+				packetQueueStopped[(int)QueueID::AUDIO_PACKETS] = !audioDecoder->hasAudio();
 																
 				// wakeup threads waiting on empty queues			
 				Monitor::PulseAll(lockObject);
@@ -633,10 +634,10 @@ namespace VideoLib {
 					return(nullptr);
 				}
 			
-				avcodec_get_frame_defaults(videoFrame->AVLibFrameData);
+				videoFrame->setFrameDefaults();
 
-				int ret = avcodec_decode_video2(videoDecoder->getVideoCodecContext(), 
-					videoFrame->AVLibFrameData, &frameFinished, videoPacket->AVLibPacketData);
+				int ret = videoDecoder->decodeVideoFrame(videoFrame->AVLibFrameData, &frameFinished, 
+					videoPacket->AVLibPacketData);
 				if(ret < 0) {
 
 					Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
@@ -689,13 +690,12 @@ namespace VideoLib {
 
 				while(audioPacket->AVLibPacketData->size > 0) {
 
-					avcodec_get_frame_defaults(audioFrame->AVLibFrameData);
+					audioFrame->setFrameDefaults();
 
-					int bytesConsumed = avcodec_decode_audio4(videoDecoder->getAudioCodecContext(), 
-						audioFrame->AVLibFrameData, &frameFinished, audioPacket->AVLibPacketData);						
+					int bytesConsumed = audioDecoder->decodeAudioFrame(audioFrame->AVLibFrameData, 
+						&frameFinished, audioPacket->AVLibPacketData);						
 					if(bytesConsumed < 0) {
-
-						Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");
+					
 						// skip this packet and play silence
 						frameFinished = true;
 						audioPacket->AVLibPacketData->size = 0;
@@ -708,7 +708,7 @@ namespace VideoLib {
 
 					if(frameFinished)
 					{									
-						convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
+						convertedAudioFrame->Length = audioDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
 					
 						convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
 								audioPacket->AVLibPacketData->dts);

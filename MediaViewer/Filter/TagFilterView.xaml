@@ -24,16 +24,30 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" IsReadOnly="True"/>
                 <DataGridTextColumn Header="Count" Binding="{Binding Count}" IsReadOnly="True"/>
-                <DataGridCheckBoxColumn Header="Filter" Binding="{Binding IsFilter, UpdateSourceTrigger=PropertyChanged}">
+                <DataGridCheckBoxColumn Header="Include" Binding="{Binding IsIncluded, UpdateSourceTrigger=PropertyChanged}">
                     <DataGridCheckBoxColumn.HeaderTemplate>
                         <DataTemplate>
                             <StackPanel>                             
-                                <ToggleButton x:Name="clearToggleButton" 
+                                <ToggleButton x:Name="includeClearToggleButton" 
                                               Content="{Binding Content, RelativeSource={RelativeSource Mode=TemplatedParent}}"
                                               ToolTip="Clear Filter"                                       
-                                              Unchecked="clearToggleButton_Unchecked" 
+                                              Unchecked="includeClearToggleButton_Unchecked" 
                                               Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
                                               IsEnabled="False"/>                                                                                  
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridCheckBoxColumn.HeaderTemplate>
+                </DataGridCheckBoxColumn>
+                <DataGridCheckBoxColumn Header="Exclude" Binding="{Binding IsExcluded, UpdateSourceTrigger=PropertyChanged}">
+                    <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <ToggleButton x:Name="excludeClearToggleButton" 
+                                              Content="{Binding Content, RelativeSource={RelativeSource Mode=TemplatedParent}}"
+                                              ToolTip="Clear Filter"                                       
+                                              Unchecked="excludeClearToggleButton_Unchecked" 
+                                              Style="{StaticResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+                                              IsEnabled="False"/>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridCheckBoxColumn.HeaderTemplate>

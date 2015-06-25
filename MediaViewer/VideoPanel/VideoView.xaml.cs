@@ -24,6 +24,7 @@ using System.Windows.Shapes;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.VideoSlider;
 using MediaViewer.Infrastructure.Global.Events;
+using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.VideoPanel
 {
@@ -157,27 +158,12 @@ namespace MediaViewer.VideoPanel
             
         }
 
-        public void openAndPlay(String location)
-        {
-            try
-            {
-                ViewModel.OpenCommand.Execute(location);
-                ViewModel.PlayCommand.Execute();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         void updateTimeLine()
         {
             timeLineSlider.Value = ViewModel.PositionSeconds;
             timeLineSlider.Maximum = ViewModel.DurationSeconds;
         }
-
         
-
         private void timeLineSlider_MouseLeftButtonDownEvent(object sender, MouseButtonEventArgs e)
         {
             updateTimeLineSlider = false;
@@ -186,7 +172,6 @@ namespace MediaViewer.VideoPanel
 
         private void timeLineSlider_MouseLeftButtonUpEvent(object sender, MouseButtonEventArgs e)
         {
-
             VideoSliderView slider = sender as VideoSliderView;
             Point position = e.GetPosition(slider);
             double d = 1.0d / slider.ActualWidth * position.X;

@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -10,17 +11,17 @@ namespace MediaViewer.Model.Media.Base
 {
     class MediaItemFactory
     {
-        static MediaItem Create(String filename, MediaItemState state = MediaItemState.EMPTY)
+        public static MediaItem create(String location)
         {
             MediaItem item = null;
 
-            if (FileUtils.isUrl(filename))
+            if (FileUtils.isUrl(location))
             {
-
+                item = new MediaStreamedItem(location);
             }
             else
             {
-                item = MediaFileItem.Factory.create(filename);
+                item = MediaFileItem.Factory.create(location);
             }
 
             return (item);

@@ -44,18 +44,17 @@ VideoPreview::~VideoPreview() {
 	gch.Free();
 }
 
-void VideoPreview::open(String ^videoLocation) {
+void VideoPreview::open(String ^videoLocation, System::Threading::CancellationToken ^token) {
 
 	try {
 		
-		frameGrabber->open(videoLocation);
+		frameGrabber->open(videoLocation, token);
 
 		metaData = gcnew List<String ^>();
 
 		for(int i = 0; i < (int)frameGrabber->metaData.size(); i++) {
 
 			metaData->Add(marshal_as<String ^>(frameGrabber->metaData[i]));
-
 		}
 
 		durationSeconds = frameGrabber->durationSeconds;

@@ -49,8 +49,8 @@ d:DesignHeight="300" d:DesignWidth="300">
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBlock Grid.Column="0" FontSize="10" VerticalAlignment="Center" TextAlignment="Left" HorizontalAlignment="Stretch" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5" TextTrimming="CharacterEllipsis"
-                               Text="{Binding Parent.SelectableMediaItem.Item.Location, Converter={StaticResource pathToFilenameConverter}, ElementName=root}" 
-                               ToolTip="{Binding Parent.SelectableMediaItem.Item.Location, Converter={StaticResource pathToFilenameConverter}, ElementName=root}"/>
+                               Text="{Binding Parent.SelectableMediaItem.Item.Name, ElementName=root}" 
+                               ToolTip="{Binding Parent.SelectableMediaItem.Item.Name, ElementName=root}"/>
                     <TextBlock x:Name="extension" Grid.Column="1" Text="{Binding Parent.SelectableMediaItem.Item.Location, ConverterParameter=ext, Converter={StaticResource pathToFilenameConverter}, ElementName=root}" FontSize="10" VerticalAlignment="Center" TextAlignment="Right" HorizontalAlignment="Right" Foreground="{StaticResource imageGridItemTextColor}" Margin="0,0,0,5"/>
                 </Grid>
                 <Grid Grid.Row="1">

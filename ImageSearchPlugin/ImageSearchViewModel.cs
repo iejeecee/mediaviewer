@@ -48,6 +48,9 @@ namespace ImageSearchPlugin
 
         ImageSearchSettingsViewModel SettingsViewModel { get; set; }
 
+        public MediaState MediaState { get; set; }
+        public MediaStateCollectionView MediaStateCollectionView { get; set; }
+
         public ImageSearchViewModel()           
         {        
             NrColumns = 4;
@@ -70,11 +73,11 @@ namespace ImageSearchPlugin
                     
                     if(item.ImageInfo.ContentType.Equals("image/animatedgif")) {
 
-                        Shell.ShellViewModel.navigateToVideoView(item.ImageInfo.MediaUrl);  
+                        Shell.ShellViewModel.navigateToVideoView(item);  
 
                     } else {
 
-                        Shell.ShellViewModel.navigateToImageView(item.ImageInfo.MediaUrl);     
+                        Shell.ShellViewModel.navigateToImageView(item);     
                     }
                 });
 
@@ -168,7 +171,9 @@ namespace ImageSearchPlugin
 
             GeoTag = new GeoTagCoordinatePair();
 
-            MediaStateCollectionView = new ImageResultCollectionView(new MediaState());        
+            MediaState = new MediaState();
+
+            MediaStateCollectionView = new ImageResultCollectionView(MediaState);        
             MediaStateCollectionView.MediaState.MediaStateType = MediaStateType.SearchResult;
 
             WeakEventManager<MediaLockedCollection, EventArgs>.AddHandler(MediaStateCollectionView.MediaState.UIMediaCollection, "IsLoadingChanged", mediaCollection_IsLoadingChanged);
@@ -186,15 +191,7 @@ namespace ImageSearchPlugin
                 SelectAllCommand.IsExecutable = true;
             }
         }
-
-        MediaStateCollectionView mediaStateCollectionView;
-
-        public MediaStateCollectionView MediaStateCollectionView
-        {
-            get { return mediaStateCollectionView; }
-            set { SetProperty(ref mediaStateCollectionView, value); }
-        }
-
+              
         int nrColumns;
 
         public int NrColumns
@@ -202,7 +199,6 @@ namespace ImageSearchPlugin
             get { return nrColumns; }
             set { SetProperty(ref nrColumns, value); }
         }
-
       
         String query;
 
@@ -232,7 +228,7 @@ namespace ImageSearchPlugin
            
             // Configure bingContainer to use your credentials.
 
-            bingContainer.Credentials = new NetworkCredential(AccountKey.accountKey, AccountKey.accountKey);
+            bingContainer.Credentials = new NetworkCredential(BingAccountKey.accountKey, BingAccountKey.accountKey);
 
             // Build the query.
             String imageFilters = null;
@@ -279,16 +275,20 @@ namespace ImageSearchPlugin
                 SearchCommand.IsExecutable = true;
                 var imageResults = imageQuery.EndExecute(asyncResults);
 
-                MediaStateCollectionView.MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+                MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
 
                 List<MediaItem> results = new List<MediaItem>();
 
+                int relevance = 0;
+
                 foreach (var image in imageResults)
                 {
-                    results.Add(new ImageResultItem(image));
+                    results.Add(new ImageResultItem(image, relevance));
+
+                    relevance++;
                 }
 
-                MediaStateCollectionView.MediaState.addUIState(results);
+                MediaState.addUIState(results);
 
             });
                                                     

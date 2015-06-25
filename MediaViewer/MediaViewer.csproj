@@ -126,9 +126,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\SharpTreeView\Release\ICSharpCode.TreeView.dll</HintPath>
     </Reference>
-    <Reference Include="log4net, Version=1.2.11.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+    <Reference Include="log4net, Version=1.2.13.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\mediaviewer external libs\log4net-1.2.11\bin\net\4.0\release\log4net.dll</HintPath>
+      <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Maps.MapControl.WPF">
       <HintPath>..\packages\Microsoft.Maps.MapControl.WPF.1.0.0.3\lib\net40-Client\Microsoft.Maps.MapControl.WPF.dll</HintPath>
@@ -293,9 +293,12 @@
     <Compile Include="MediaFileStackPanel\MediaFileStackPanelView.xaml.cs">
       <DependentUpon>MediaFileStackPanelView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Model\Media\File\MediaFileInfoIconsCache.cs" />
     <Compile Include="Model\Media\State\CollectionView\MediaStateCollectionViewChangedEventArgs.cs" />
     <Compile Include="Model\Media\State\MediaStateChangedAction.cs" />
     <Compile Include="Model\Media\State\MediaStateChangedEventArgsBase.cs" />
+    <Compile Include="Model\Media\Streamed\MediaStreamedItem.cs" />
+    <Compile Include="Model\Mvvm\AsyncCommand.cs" />
     <Compile Include="Model\Utils\Strings\NaturalSortOrder.cs" />
     <Compile Include="Model\Utils\WPF\VisualTreeUtils.cs" />
     <Compile Include="TestWindow.xaml.cs">
@@ -652,6 +655,7 @@
     <Compile Include="ValidationRules\FloatValidationRule.cs" />
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
+    <Compile Include="VideoPanel\VideoAudioPair.cs" />
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>

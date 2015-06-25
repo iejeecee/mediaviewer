@@ -1,12 +1,18 @@
 ﻿using Google.Apis.Services;
 using Google.Apis.YouTube.v3;
 using MediaViewer;
+using MediaViewer.Filter;
+using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Mvvm;
+using MediaViewer.Progress;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -21,8 +27,18 @@ namespace YoutubePlugin
     
     class YoutubeViewModel : CloseableBindableBase
     {
-        public YoutubeViewModel() {
+        IRegionManager RegionManager { get; set; }
+        YouTubeService Youtube { get; set; }
 
+        public YoutubeViewModel(IRegionManager regionManager) {
+
+            Youtube = new YouTubeService(new BaseClientService.Initializer()
+            {
+                ApiKey = YoutubeApiKey.ApiKey,
+                ApplicationName = "MediaViewer"
+            });
+
+            RegionManager = regionManager;
             NrColumns = 4;
 
             MediaState = new MediaState();
@@ -36,7 +52,10 @@ namespace YoutubePlugin
                 {
                     MediaState.clearUIState("Search Results",DateTime.Now, MediaStateType.SearchResult);
 
-                    List<YoutubeItem> result = await search(Query);
+                    var searchListRequest = Youtube.Search.List("snippet");
+                    searchListRequest.Q = Query;  
+
+                    List<YoutubeItem> result = await search(searchListRequest);
 
                     MediaState.addUIState(result);
 
@@ -56,17 +75,70 @@ namespace YoutubePlugin
 
             });            
 
-            ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
-            {
-                YoutubeVideoItem item = selectableItem.Item as YoutubeVideoItem;
+            ViewCommand = new Command<SelectableMediaItem>(async (selectableItem) =>
+            {               
+                if(selectableItem.Item.Metadata == null) return;
 
-                if (item == null || item.Metadata == null) return;
-                                  
-                Shell.ShellViewModel.navigateToVideoView(item.Metadata.Location);
+                if (selectableItem.Item is YoutubeVideoItem)
+                {
+                    YoutubeVideoItem item = selectableItem.Item as YoutubeVideoItem;
+
+                    if (item.IsEmbeddedOnly)
+                    {
+                        Process.Start("https://www.youtube.com/watch?v=" + item.SearchResult.Id.VideoId);
+                    }
+                    else
+                    {
+                        YoutubeVideoStreamedItem video, audio;
+                        item.getBestQualityStreams(out video, out audio);
+
+                        Shell.ShellViewModel.navigateToVideoView(video, null, audio);
+                    }
+                }
+                else if (selectableItem.Item is YoutubeChannelItem)
+                {
+                    YoutubeChannelItem item = selectableItem.Item as YoutubeChannelItem;
+
+                    MediaState.clearUIState(item.Name, DateTime.Now, MediaStateType.SearchResult);
+
+                    var searchListRequest = Youtube.Search.List("snippet");
+                    searchListRequest.ChannelId = item.SearchResult.Id.ChannelId;
+                    searchListRequest.Order = Google.Apis.YouTube.v3.SearchResource.ListRequest.OrderEnum.Date;
+
+                    List<YoutubeItem> result = await search(searchListRequest);
+
+                    MediaState.addUIState(result);
+                }
                
             });
 
-            DownloadCommand = new Command<SelectableMediaItem>((selectableItem) => { });
+            DownloadCommand = new Command<SelectableMediaItem>(async (selectableItem) => {
+
+                List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
+                if (items.Count == 0)
+                {
+                    items.Add(selectableItem.Item);
+                }
+
+                String outputPath = MediaFileWatcher.Instance.Path;
+
+                CancellableOperationProgressView progressView = new CancellableOperationProgressView();
+                DownloadProgressViewModel vm = new DownloadProgressViewModel();
+                progressView.DataContext = vm;
+
+                progressView.Show();
+                vm.OkCommand.IsExecutable = false;
+                vm.CancelCommand.IsExecutable = true;
+
+                await Task.Factory.StartNew(() =>
+                {
+                    vm.startDownload(outputPath, items);
+                });
+
+                vm.OkCommand.IsExecutable = true;
+                vm.CancelCommand.IsExecutable = false;
+                        
+            });
 
             SelectAllCommand = new Command(() =>
             {
@@ -79,6 +151,13 @@ namespace YoutubePlugin
             });
 
             CloseCommand = new Command(() => OnClosingRequest());
+
+            Uri tagFilterViewUri = new Uri(typeof(TagFilterView).FullName, UriKind.Relative);
+
+            NavigationParameters navigationParams = new NavigationParameters();
+            navigationParams.Add("MediaStateCollectionView", MediaStateCollectionView);
+
+            RegionManager.RequestNavigate("youtubeExpanderPanelRegion", tagFilterViewUri, navigationParams);
         }
 
         int nrColumns;
@@ -105,18 +184,9 @@ namespace YoutubePlugin
         public Command DeselectAllCommand { get; set; }
         public MediaState MediaState { get; set; }
         public YoutubeCollectionView MediaStateCollectionView { get; set; }
-        
-        private async Task<List<YoutubeItem>> search(String searchQuery)
-        {
-            var youtubeService = new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = YoutubeApiKey.ApiKey,
-                ApplicationName = "MediaViewer"
-            });
 
-            var searchListRequest = youtubeService.Search.List("snippet");
-            searchListRequest.Q = searchQuery; // Replace with your search term.
-            
+        private async Task<List<YoutubeItem>> search(Google.Apis.YouTube.v3.SearchResource.ListRequest searchListRequest)
+        {                                              
             searchListRequest.MaxResults = 50;
      
             // Call the search.list method to retrieve results matching the specified query term.

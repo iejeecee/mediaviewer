@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -82,7 +83,8 @@ namespace MediaViewer.UserControls.HyperlinkTextBox
                         }
                     }
 
-                    Shell.ShellViewModel.navigateToVideoView(location, (int)time.TotalSeconds);
+                    MediaItem item = MediaItemFactory.create(location);
+                    Shell.ShellViewModel.navigateToVideoView(item, (int)time.TotalSeconds);
                 }
 
                 e.Handled = true;

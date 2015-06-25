@@ -30,18 +30,15 @@ namespace MediaViewer.UserControls.MediaGridItem
     public partial class MediaGridItemView : UserControl
     {
         public event EventHandler<SelectableMediaItem> Click;
-
-        static InfoIconsCache InfoIconsCache { get; set; }     
+          
         static IEventAggregator EventAggregator { get; set; }
-
+   
         public MediaGridItemView()
         {
             InitializeComponent();
 
-            if(InfoIconsCache == null) {                
-
-                InfoIconsCache = new InfoIconsCache();              
-
+            if (EventAggregator == null)
+            {                                         
                 EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
             }
         
@@ -70,20 +67,17 @@ namespace MediaViewer.UserControls.MediaGridItem
                 WeakEventManager<MediaItem, PropertyChangedEventArgs>.RemoveHandler(item, "PropertyChanged", view.mediaItem_PropertyChanged);
                 WeakEventManager<MediaItem, PropertyChangedEventArgs>.AddHandler(item, "PropertyChanged", view.mediaItem_PropertyChanged);
          
-                view.infoIconsImage.Source = InfoIconsCache.getInfoIconsBitmap(item);
-
-                if (view.MediaStateCollectionView != null)
-                {
-                    view.setExtraInfo();
-                }
+                view.setInfoIcons(item);              
+                view.setExtraInfo();
+                
             }
         }
        
         private void mediaItem_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(() => {
-                
-                infoIconsImage.Source = InfoIconsCache.getInfoIconsBitmap(SelectableMediaItem.Item);
+
+                setInfoIcons(SelectableMediaItem.Item);                
             }));
         }
 
@@ -100,18 +94,28 @@ namespace MediaViewer.UserControls.MediaGridItem
         private static void mediaStateCollectionViewChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
             if (e.NewValue != null)
-            {
+            {                
                 MediaGridItemView view = (MediaGridItemView)d;
-
+              
                 if (view.SelectableMediaItem != null)
                 {
                     view.setExtraInfo();
+                    view.setInfoIcons(view.SelectableMediaItem.Item); 
                 }
             }
         }
 
+        void setInfoIcons(MediaItem item)
+        {
+            if (MediaStateCollectionView == null || MediaStateCollectionView.InfoIconsCache == null) return;
+
+            infoIconsImage.Source = MediaStateCollectionView.InfoIconsCache.getInfoIconsBitmap(item);
+        }
+
         void setExtraInfo()
         {
+            if (MediaStateCollectionView == null) return;
+
             Object info = MediaStateCollectionView.getExtraInfo(SelectableMediaItem);
                        
             if (info is String)

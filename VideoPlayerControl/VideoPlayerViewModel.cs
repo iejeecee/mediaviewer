@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using VideoLib;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Windows.Threading;
 
 namespace VideoPlayerControl
 {
@@ -110,7 +111,7 @@ namespace VideoPlayerControl
         double audioDiffThreshold;
         int audioDiffAvgCount;
    
-        Task demuxPacketsTask;
+        Task[] demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
     
         int positionSeconds;
@@ -231,8 +232,8 @@ namespace VideoPlayerControl
 
             audioDiffAvgCoef = Math.Exp(Math.Log(0.01) / AUDIO_DIFF_AVG_NB);
 
-            syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
-            //syncMode = SyncMode.VIDEO_SYNCS_TO_AUDIO;
+            //syncMode = SyncMode.AUDIO_SYNCS_TO_VIDEO;
+            syncMode = SyncMode.VIDEO_SYNCS_TO_AUDIO;
             
             videoRefreshTimer = HRTimerFactory.create(HRTimerFactory.TimerType.TIMER_QUEUE);
             videoRefreshTimer.Tick += new EventHandler(videoRefreshTimer_Tick);
@@ -283,11 +284,11 @@ namespace VideoPlayerControl
                     videoDecoder.Dispose();
                     videoDecoder = null;
                 }
-                if (demuxPacketsTask != null)
+                /*if (demuxPacketsTask != null)
                 {
                     demuxPacketsTask.Dispose();
                     demuxPacketsTask = null;
-                }
+                }*/
                 if (demuxPacketsCancellationTokenSource != null)
                 {
                     demuxPacketsCancellationTokenSource.Dispose();
@@ -718,37 +719,27 @@ restartvideo:
             }
         }
 
-        void fillFrameQueue()
-        {
-            VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
-
-            while (videoDecoder.FrameQueue.AudioPacketsInQueue !=
-                videoDecoder.FrameQueue.MaxAudioPackets &&
-                videoDecoder.FrameQueue.VideoPacketsInQueue !=
-                videoDecoder.FrameQueue.MaxVideoPackets &&
-                result == VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS)
-            {
-
-                result = videoDecoder.demuxPacket();
-            }
-
-        }
-
-
-        void demuxPackets(CancellationToken token)
+       
+        void demuxPackets(int i, CancellationToken token)
         {
             audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
 
             VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
            
             do
-            {                
-                 result = videoDecoder.demuxPacket();
+            {
+                if (i == -1)
+                {
+                    result = videoDecoder.demuxPacketInterleaved();
+                }
+                else
+                {
+                    result = videoDecoder.demuxPacketFromStream(i);
+                }
                
             } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
-
         }
-
+        
         double getVideoClock()
         {
             if (videoState == VideoState.PAUSED)
@@ -777,7 +768,7 @@ restartvideo:
 
             demuxPacketsCancellationTokenSource.Cancel();
 
-            demuxPacketsTask.Wait();
+            Task.WaitAll(demuxPacketsTask);
           
             audioPlayer.stop();
             
@@ -798,11 +789,8 @@ restartvideo:
 
             videoDecoder.FrameQueue.start();
 
-            demuxPacketsCancellationTokenSource = new CancellationTokenSource();
-            demuxPacketsTask = new Task(() => { demuxPackets(demuxPacketsCancellationTokenSource.Token); },
-                demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
-            demuxPacketsTask.Start();
-
+            startDemuxing();
+                     
             previousVideoPts = 0;
             previousVideoDelay = 0.04;
 
@@ -810,6 +798,36 @@ restartvideo:
 
             videoRefreshTimer.start();
             audioRefreshTimer.start();
+
+        }
+
+        void startDemuxing()
+        {
+            demuxPacketsCancellationTokenSource = new CancellationTokenSource();
+
+            if (videoDecoder.HasSeperateAudioStream)
+            {
+                // video and audio is in seperate input streams
+                demuxPacketsTask = new Task[2];
+
+                demuxPacketsTask[0] = new Task(() => { demuxPackets(0, demuxPacketsCancellationTokenSource.Token); },
+                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
+                demuxPacketsTask[1] = new Task(() => { demuxPackets(1, demuxPacketsCancellationTokenSource.Token); },
+                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
+            }
+            else
+            {
+                demuxPacketsTask = new Task[1];
+
+                // video and audio is in the same input stream
+                demuxPacketsTask[0] = new Task(() => { demuxPackets(-1, demuxPacketsCancellationTokenSource.Token); },
+                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
+            }
+
+            foreach (Task t in demuxPacketsTask)
+            {
+                t.Start();
+            }
 
         }
 
@@ -871,10 +889,8 @@ restartvideo:
 
                 VideoState = VideoPlayerControl.VideoState.PLAYING;
 
-                demuxPacketsCancellationTokenSource = new CancellationTokenSource();
-                demuxPacketsTask = new Task(() => { demuxPackets(demuxPacketsCancellationTokenSource.Token); },
-                    demuxPacketsCancellationTokenSource.Token);
-                demuxPacketsTask.Start();
+                startDemuxing();
+
                 audioRefreshTimer.start();
 
                 bool isLastFrame = videoDecoder.FrameQueue.startSingleFrame();
@@ -893,21 +909,25 @@ restartvideo:
             }
         }
 
-        public void open(string location)
+        //public async Task open(string location, CancellationToken token, 
+        public void open(string location, CancellationToken token, 
+            string inputFormatName = null, string audioLocation = null,
+            string audioFormatName = null)
         {         
             try
             {
-
-                //log.Info("Opening: " + location);
-
+                
                 close();
-                //videoDebug.clear();
 
                 VideoLocation = location;
 
-                videoDecoder.open(location, decodedVideoFormat);                
+                //await Task.Factory.StartNew(new Action(() =>
+                //{
+                    videoDecoder.open(location, decodedVideoFormat, inputFormatName, audioLocation, audioFormatName, token);
+                //}));
+                              
                 videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
-
+               
                 DurationSeconds = videoDecoder.DurationSeconds;
                 HasAudio = videoDecoder.HasAudio;
 
@@ -919,7 +939,7 @@ restartvideo:
 
                     audioDiffThreshold = 2.0 * 1024 / videoDecoder.SamplesPerSecond;
                 }
-                                                 
+                                                              
                 //videoDebug.VideoQueueMaxSize = videoDecoder.FrameQueue.MaxVideoPackets;
                 //videoDebug.VideoQueueSizeBytes = videoDecoder.FrameQueue.VideoQueueSizeBytes;	
                 //videoDebug.AudioQueueMaxSize = videoDecoder.FrameQueue.MaxAudioPackets;
@@ -945,6 +965,7 @@ restartvideo:
                     VideoOpened(this, EventArgs.Empty);
                 }
 
+               
             }
             catch (VideoLib.VideoLibException)
             {
@@ -972,7 +993,7 @@ restartvideo:
 
             demuxPacketsCancellationTokenSource.Cancel();
 
-            demuxPacketsTask.Wait();
+            Task.WaitAll(demuxPacketsTask);
            
             videoDecoder.close();
           

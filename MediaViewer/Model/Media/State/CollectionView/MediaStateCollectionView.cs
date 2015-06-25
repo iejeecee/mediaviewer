@@ -1,9 +1,11 @@
-﻿using MediaViewer.Model.Collections;
+﻿using MediaViewer.Filter;
+using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
+using MediaViewer.UserControls.MediaGridItem;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
@@ -31,7 +33,10 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         public ListCollectionView FilterModes { get; set; }
         public ListCollectionView SortModes { get; set; }
-      
+        public InfoIconsCache InfoIconsCache { get; set; }
+        public List<TagItem> TagFilter { get; set; }
+
+           
         public bool IsAttached
         {        
             get
@@ -60,6 +65,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
             });
 
             SortDirection = ListSortDirection.Ascending;
+
+            TagFilter = new List<TagItem>();
         }
 
     
@@ -761,6 +768,31 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
             OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Clear));
 
+        }
+
+        protected bool tagFilter(SelectableMediaItem item)
+        {
+            MediaItem media = item.Item;
+                    
+            if (TagFilter.Count == 0) return (true);
+            if (media.ItemState == Base.MediaItemState.LOADING) return (true);
+            if (media.Metadata == null) return (false);
+
+            foreach (TagItem tagItem in TagFilter)
+            {
+                bool containsTag = media.Metadata.Tags.Contains(tagItem.Tag);
+
+                if (tagItem.IsIncluded && !containsTag)
+                {
+                    return (false);
+                }
+                else if (tagItem.IsExcluded && containsTag)
+                {
+                    return (false);
+                }
+            }
+
+            return (true);
         }
 
         private void selectableItem_SelectionChanged(object sender, EventArgs e)

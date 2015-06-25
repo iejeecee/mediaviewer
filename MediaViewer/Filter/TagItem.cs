@@ -1,6 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Media.State.CollectionView;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -22,7 +23,7 @@ namespace MediaViewer.Filter
             set { tag = value; }
         }
      
-        public TagItem(Tag tag, MediaFileStateCollectionView mediaCollectionView)
+        public TagItem(Tag tag, MediaStateCollectionView mediaCollectionView)
         {
             this.tag = tag;
             Name = tag.Name;       
@@ -37,13 +38,12 @@ namespace MediaViewer.Filter
                 Category = "None";
             }
 
-            if (mediaCollectionView.TagFilter.Contains(this))
+            TagItem item = mediaCollectionView.TagFilter.Find((i) => i.Name.Equals(Name));
+
+            if (item != null)
             {
-                isFilter = true;
-            }
-            else
-            {
-                isFilter = false;
+                if(item.IsIncluded) IsIncluded = true;
+                if(item.IsExcluded) IsExcluded = true;
             }
         }
 
@@ -78,16 +78,52 @@ namespace MediaViewer.Filter
             }
         }
 
-        bool isFilter;
+        bool isIncluded;
 
-        public bool IsFilter
+        public bool IsIncluded
         {
-            get { return isFilter; }
-            set { SetProperty(ref isFilter, value);
+            get { return isIncluded; }
+            set
+            {
+                if (value == isIncluded) return;
+
+                if (value == true)
+                {
+                    isExcluded = false;
+                    OnPropertyChanged("IsExcluded");
+                }
+
+                isIncluded = value;
+                OnPropertyChanged("IsIncluded");
 
                 if (IsFilterChanged != null)
                 {
-                    IsFilterChanged(this,EventArgs.Empty);
+                    IsFilterChanged(this, EventArgs.Empty);
+                }
+            }
+        }
+
+        bool isExcluded;
+
+        public bool IsExcluded
+        {
+            get { return isExcluded; }
+            set
+            {
+                if (value == isExcluded) return;
+
+                if (value == true)
+                {
+                    isIncluded = false;
+                    OnPropertyChanged("IsIncluded");
+                }
+
+                isExcluded = value;
+                OnPropertyChanged("IsExcluded");
+
+                if (IsFilterChanged != null)
+                {
+                    IsFilterChanged(this, EventArgs.Empty);
                 }
             }
         }        

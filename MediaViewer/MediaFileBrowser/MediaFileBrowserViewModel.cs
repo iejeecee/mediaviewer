@@ -484,13 +484,13 @@ namespace MediaViewer.MediaFileBrowser
 
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, mediaFileGridViewUri, (result) =>
             {
-                CurrentViewModel = MediaFileGridViewModel;
-                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(MediaFileGridViewModel.MediaStateCollectionView);
+                CurrentViewModel = MediaFileGridViewModel;               
            
             }, navigationParams);
 
             Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
-          
+
+            Title = BrowsePath;
         }
 
         public void navigateToVideoView(MediaFileItem item)
@@ -498,13 +498,12 @@ namespace MediaViewer.MediaFileBrowser
             Uri VideoViewUri = new Uri(typeof(VideoView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
-            navigationParams.Add("location", item != null ? item.Location : null);           
+            navigationParams.Add("item", item);           
             navigationParams.Add("viewModel", VideoViewModel);
 
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, VideoViewUri, (result) =>
             {
-                CurrentViewModel = VideoViewModel;
-                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(VideoMediaStackPanelViewModel.MediaStateCollectionView);
+                CurrentViewModel = VideoViewModel;                
           
             }, navigationParams);
 
@@ -518,13 +517,12 @@ namespace MediaViewer.MediaFileBrowser
             Uri imageViewUri = new Uri(typeof(MediaFileBrowserImagePanelView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
-            navigationParams.Add("location", item != null ? item.Location : null);
+            navigationParams.Add("item", item);
             navigationParams.Add("viewModel", ImageViewModel);
            
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, imageViewUri, (result) =>
             {
-                CurrentViewModel = ImageViewModel;
-                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(ImageMediaStackPanelViewModel.MediaStateCollectionView);
+                CurrentViewModel = ImageViewModel;               
        
             }, navigationParams);
 
@@ -541,8 +539,7 @@ namespace MediaViewer.MediaFileBrowser
 
             RegionManager.RequestNavigate(RegionNames.MediaFileBrowserContentRegion, geotagFileBrowserUri, (result) =>
             {
-                CurrentViewModel = GeotagFileBrowserViewModel;
-                EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Publish(GeotagFileBrowserStackPanelViewModel.MediaStateCollectionView);
+                CurrentViewModel = GeotagFileBrowserViewModel;               
 
             }, navigationParams);
 
@@ -594,14 +591,12 @@ namespace MediaViewer.MediaFileBrowser
                 else if (CurrentViewModel is MediaFileBrowserImagePanelViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(imageMediaStackPanelViewModel);
-                    newTitle = ImageViewModel.Location;
-                    if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
+                    newTitle = ImageViewModel.CurrentItem.Name;                    
                 }
                 else if (CurrentViewModel is VideoViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(videoMediaStackPanelViewModel);
-                    newTitle = VideoViewModel.CurrentLocation;
-                    if (newTitle != null) newTitle = System.IO.Path.GetFileName(newTitle);
+                    newTitle = VideoViewModel.CurrentItem.Video.Name;                    
                 }
                 else if (CurrentViewModel is GeotagFileBrowserViewModel)
                 {

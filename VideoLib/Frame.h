@@ -21,6 +21,11 @@ namespace VideoLib {
 
 	public:
 
+		void setFrameDefaults() {
+
+			av_frame_unref(AVLibFrameData);			
+		}
+
 		property AVFrame *AVLibFrameData
 		{
 			AVFrame *get() {

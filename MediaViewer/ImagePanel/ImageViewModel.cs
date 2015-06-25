@@ -168,6 +168,22 @@ namespace MediaViewer.ImagePanel
             }
         }
 
+        MediaItem currentItem;
+
+        public MediaItem CurrentItem
+        {
+            get { return currentItem; }
+            set {
+
+                if (value != null)
+                {
+                    Location = value.Location;
+                }
+
+                SetProperty(ref currentItem, value); 
+            }
+        }
+
         String location;
 
         public String Location
@@ -191,14 +207,11 @@ namespace MediaViewer.ImagePanel
 
         public void OnNavigatedTo(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
         {
-            String location = (String)navigationContext.Parameters["location"];
-
-            if (!String.IsNullOrEmpty(location))
-            {
-                Location = location;
-            }
-
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
+            MediaItem item = (MediaItem)navigationContext.Parameters["item"];
+                          
+            CurrentItem = item;
+            
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem != null ? CurrentItem.Name : null);       
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
         }
@@ -212,9 +225,9 @@ namespace MediaViewer.ImagePanel
         {
             if (String.Equals(Location, item.Location)) return;
 
-            Location =  item.Location;
+            CurrentItem = item;
 
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(item.Name);
         }
     }
 

@@ -36,7 +36,7 @@ namespace ImageSearchPlugin
 
         void googleImageSearchView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            vm.MediaStateCollectionView.MediaState.clearUIState("Empty",DateTime.Now,MediaStateType.SearchResult);
+            vm.MediaState.clearUIState("Empty",DateTime.Now,MediaStateType.SearchResult);
         }
 
         void vm_ClosingRequest(object sender, MediaViewer.Model.Mvvm.CloseableBindableBase.DialogEventArgs e)

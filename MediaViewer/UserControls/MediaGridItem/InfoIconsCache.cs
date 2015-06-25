@@ -12,22 +12,12 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.UserControls.MediaGridItem
 {
-    class InfoIconsCache
-    {
-                
-        Dictionary<String, BitmapSource> ImageHash { get; set; }
+    public abstract class InfoIconsCache
+    {                
+        protected Dictionary<String, BitmapSource> ImageHash { get; private set; }
 
-        public InfoIconsCache() {
-
-            List<BitmapImage> icons = new List<BitmapImage>();
-
-            String iconPath = "pack://application:,,,/Resources/Icons/";
-
-            icons.Add(new BitmapImage(new Uri(iconPath + "checked.ico", UriKind.Absolute)));
-            icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
-            icons.Add(new BitmapImage(new Uri(iconPath + "tag.ico", UriKind.Absolute)));
-            icons.Add(new BitmapImage(new Uri(iconPath + "geotag.ico", UriKind.Absolute)));
-
+        public InfoIconsCache(List<BitmapImage> icons)
+        {            
             ImageHash = new Dictionary<string, BitmapSource>();
 
             String iconChars = "";
@@ -123,50 +113,7 @@ namespace MediaViewer.UserControls.MediaGridItem
             return (newCombinations);
         }
 
-        public BitmapSource getInfoIconsBitmap(MediaItem item)
-        {
-            BitmapSource bitmap = null;
-
-            String key = "";
-
-            if (item.ItemState != MediaItemState.LOADED)
-            {
-                return (bitmap);
-            }
-
-            if (item.Metadata != null)
-            {
-                if (item.Metadata.IsImported)
-                {
-                    key += '0';
-                }
-
-                if (!item.Metadata.SupportsXMPMetadata)
-                {
-                    key += '1';
-                }
-            }
-
-            if (item.HasTags)
-            {
-                key += '2';
-            }
-
-            if (item.HasGeoTag)
-            {
-                key += '3';
-            }
-
-            if (String.IsNullOrEmpty(key))
-            {
-                return (null);
-            }
-            else
-            {
-                return(ImageHash[key]);
-            }
-
-        }
-
+        public abstract BitmapSource getInfoIconsBitmap(MediaItem item);
+        
     }
 }

@@ -22,6 +22,8 @@ namespace VideoLib {
 		
 	public:
 
+		
+
 		property int SizeBytes {
 
 			int get() {
@@ -63,6 +65,7 @@ namespace VideoLib {
 		{
 			
 			hasAllocatedOwnBuffers = false;
+			
 		}
 
 		VideoFrame(int width, int height, AVPixelFormat format) :

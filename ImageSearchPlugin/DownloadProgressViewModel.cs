@@ -29,6 +29,7 @@ namespace ImageSearchPlugin
 
             foreach (ImageResultItem item in items)
             {
+              
                 String fullpath = null;
                 String ext = "." + MediaFormatConvert.mimeTypeToExtension(item.ImageInfo.ContentType);
 
@@ -59,7 +60,7 @@ namespace ImageSearchPlugin
                     ItemProgress = 0;
 
                     ItemInfo = "Downloading: " + fullpath;
-                    StreamUtils.download(new Uri(item.ImageInfo.MediaUrl), outFile, out mimeType, CancellationToken, progressCallback);
+                    StreamUtils.readHttpRequest(new Uri(item.ImageInfo.MediaUrl), outFile, out mimeType, CancellationToken, progressCallback);
                     TotalProgress++;
                     ItemProgressMax = 1;
                     ItemProgress = 1;

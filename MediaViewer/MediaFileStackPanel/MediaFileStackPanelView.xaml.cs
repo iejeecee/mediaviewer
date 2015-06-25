@@ -58,11 +58,11 @@ namespace MediaViewer.MediaFileStackPanel
 
             if (MediaFormatConvert.isImageFile(item.Location))
             {
-                Shell.ShellViewModel.navigateToImageView(item.Location);
+                Shell.ShellViewModel.navigateToImageView(item);
             }
             else if (MediaFormatConvert.isVideoFile(item.Location))
             {
-                Shell.ShellViewModel.navigateToVideoView(item.Location);
+                Shell.ShellViewModel.navigateToVideoView(item);
             }
         }
 

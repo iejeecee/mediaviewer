@@ -34,6 +34,8 @@ using MediaViewer.Model.Utils.Windows;
 using MediaViewer.MediaDatabase;
 using System.Data.Entity;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
 
 
 
@@ -132,13 +134,15 @@ namespace MediaViewer
                 if (MediaViewer.Model.Utils.MediaFormatConvert.isImageFile(location))
                 {
                     MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
-                    ShellViewModel.navigateToImageView(location);
+                    MediaItem item = MediaItemFactory.create(location);
+                    ShellViewModel.navigateToImageView(item);
 
                 }
                 else if (MediaFormatConvert.isVideoFile(location))
                 {
                     MediaFileWatcher.Instance.Path = FileUtils.getPathWithoutFileName(location);
-                    ShellViewModel.navigateToVideoView(location);
+                    MediaItem item = MediaItemFactory.create(location);
+                    ShellViewModel.navigateToVideoView(item);
                 }
                 else
                 {

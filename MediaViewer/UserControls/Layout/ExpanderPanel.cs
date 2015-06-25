@@ -9,7 +9,7 @@ using System.Windows.Controls;
 
 namespace MediaViewer.UserControls.Layout
 {
-    class ExpanderPanel : Panel
+    public class ExpanderPanel : Panel
     {
         static ExpanderPanel()
          {

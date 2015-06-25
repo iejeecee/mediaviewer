@@ -185,7 +185,7 @@ namespace VideoLib {
 		}
 
 
-		void open(String ^videoLocation);
+		void open(String ^videoLocation, System::Threading::CancellationToken ^cancellationToken);
 		void close();
 
 		List<VideoThumb ^> ^grabThumbnails(int thumbWidth, 

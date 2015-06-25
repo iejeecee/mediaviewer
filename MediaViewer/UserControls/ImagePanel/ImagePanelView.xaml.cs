@@ -123,7 +123,7 @@ namespace MediaViewer.UserControls.ImagePanel
                     imageData = new MemoryStream();
                     String mimeType;
 
-                    StreamUtils.download(new Uri(location), imageData, out mimeType, Token);
+                    StreamUtils.readHttpRequest(new Uri(location), imageData, out mimeType, Token);
                 }
                 else
                 {

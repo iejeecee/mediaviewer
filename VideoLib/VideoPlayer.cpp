@@ -4,6 +4,10 @@
 
 #include "VideoPlayer.h"
 
+#define DECODER(x) decoder->operator[](x)
+#define VIDEODECODER DECODER(0)
+#define AUDIODECODER DECODER(decoder->size() - 1)
+
 namespace VideoLib {
 
 using namespace msclr::interop;
@@ -11,18 +15,26 @@ using namespace System::Runtime::InteropServices;
 
 VideoPlayer::VideoPlayer() {
 
+	decoder = new std::vector<VideoDecoder *>();
+	
 	videoDecoder = new VideoDecoder();
+	audioDecoder = new VideoDecoder();
 
-	frameQueue = gcnew VideoLib::FrameQueue(videoDecoder);
-	videoLocation = "";
+	decoder->push_back(videoDecoder);
+	
+	frameQueue = gcnew VideoLib::FrameQueue();
+	
+	isFinalPacketAdded = gcnew array<bool>(2) {false,false};
 
-	isFinalPacketAdded = false;
 
 }
 
 VideoPlayer::~VideoPlayer() {
-
+		
 	delete videoDecoder;
+	delete audioDecoder;
+	delete decoder;
+
 	delete frameQueue;
 
 	if(gch.IsAllocated) {
@@ -33,69 +45,84 @@ VideoPlayer::~VideoPlayer() {
 }
 
 
-void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat) {
 
-	try {
+void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, String ^inputFormatName, 
+					   System::Threading::CancellationToken ^token) {
 
-		this->videoLocation = videoLocation;
+	open(videoLocation,videoFormat, inputFormatName, nullptr, nullptr, token);
 
-		//
+}
 
-		videoDecoder->open(videoLocation);
+void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, String ^videoFormatName,
+			String ^audioLocation, String ^audioFormatName,  System::Threading::CancellationToken ^token)
+{
+	try {		
+	
+		decoder->clear();
+		decoder->push_back(videoDecoder);
+
+		VIDEODECODER->open(videoLocation, token, videoFormatName);
 
 		AVPixelFormat outputPixelFormat = PIX_FMT_YUV420P;
 
-		switch(videoFormat) {
-
-		case OutputPixelFormat::YUV420P:
-			{
-				outputPixelFormat = PIX_FMT_YUV420P;
-				break;
-			}
-		case OutputPixelFormat::ARGB:
-			{
-				outputPixelFormat = PIX_FMT_ARGB;
-				break;
-			}
-		case OutputPixelFormat::RGBA:
-			{
-				outputPixelFormat = PIX_FMT_RGBA;
-				break;
-			}
-		case OutputPixelFormat::ABGR:
-			{
-				outputPixelFormat = PIX_FMT_ABGR;
-				break;
-			}
-		case OutputPixelFormat::BGRA:
-			{
-				outputPixelFormat = PIX_FMT_BGRA;
-				break;
-			}
+		switch(videoFormat) 
+		{
+			case OutputPixelFormat::YUV420P:
+				{
+					outputPixelFormat = PIX_FMT_YUV420P;
+					break;
+				}
+			case OutputPixelFormat::ARGB:
+				{
+					outputPixelFormat = PIX_FMT_ARGB;
+					break;
+				}
+			case OutputPixelFormat::RGBA:
+				{
+					outputPixelFormat = PIX_FMT_RGBA;
+					break;
+				}
+			case OutputPixelFormat::ABGR:
+				{
+					outputPixelFormat = PIX_FMT_ABGR;
+					break;
+				}
+			case OutputPixelFormat::BGRA:
+				{
+					outputPixelFormat = PIX_FMT_BGRA;
+					break;
+				}
 		}
 
-		videoDecoder->setVideoOutputFormat(outputPixelFormat,
-			videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
+		VIDEODECODER->setVideoOutputFormat(outputPixelFormat,
+			VIDEODECODER->getWidth(), VIDEODECODER->getHeight(), VideoDecoder::X);
+
+		if(audioLocation != nullptr) {
+
+			decoder->push_back(audioDecoder);
+			AUDIODECODER->open(audioLocation, token, audioFormatName);			
+		}
 
 		int channelLayout;
-
-		switch(videoDecoder->getAudioNrChannels()) {
-		case 1:
-			{
-				channelLayout = AV_CH_LAYOUT_MONO;
-				break;
-			}
-		default: 
-			{
-				channelLayout = AV_CH_LAYOUT_STEREO;
-				break;
-			}
+		
+		switch(AUDIODECODER->getAudioNrChannels()) 
+		{
+			case 1:
+				{
+					channelLayout = AV_CH_LAYOUT_MONO;
+					break;
+				}
+			default: 
+				{
+					channelLayout = AV_CH_LAYOUT_STEREO;
+					break;
+				}
 		}
 		
 		AVSampleFormat format;
 
-		switch(videoDecoder->getAudioBytesPerSample()) {
-
+		switch(AUDIODECODER->getAudioBytesPerSample()) 
+		{
 			case 1:
 				{
 					format = AV_SAMPLE_FMT_U8;
@@ -118,23 +145,22 @@ void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat) {
 				}
 		}
 
-		videoDecoder->setAudioOutputFormat(videoDecoder->getAudioSamplesPerSecond(),
+		AUDIODECODER->setAudioOutputFormat(AUDIODECODER->getAudioSamplesPerSecond(),
 			channelLayout, format);
 
-		frameQueue->initialize();
+		frameQueue->initialize(VIDEODECODER, AUDIODECODER);
 
 	} catch (Exception ^) {
 
 		close();
 		throw;
 	}
-
 }
 
-VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
+VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 
 	if(videoDecoder->isClosed()) return(DemuxPacketsResult::STOPPED);
-
+	
 	Packet ^packet;
 	bool success = frameQueue->getFreePacket(packet);
 	if(success == false) {
@@ -142,24 +168,25 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 		return(DemuxPacketsResult::STOPPED);
 	}
 
-	int read = av_read_frame(videoDecoder->getFormatContext(), packet->AVLibPacketData);
-	if(read < 0) {
+	success = videoDecoder->readFrame(packet->AVLibPacketData);
+	if(success == false) {
 
 		// end of the video
 		//Video::writeToLog(AV_LOG_INFO, "end of stream reached");
 		frameQueue->addFreePacket(packet);
 
-		if(isFinalPacketAdded == false) {
+		if(isFinalPacketAdded[0] == false) {
 
 			frameQueue->addAudioPacket(Packet::finalPacket);
 			frameQueue->addVideoPacket(Packet::finalPacket);
-			isFinalPacketAdded = true;
+			isFinalPacketAdded[0] = true;
 		}
+
 		return(DemuxPacketsResult::LAST_PACKET);
 
 	} else {
 
-		isFinalPacketAdded = false;
+		isFinalPacketAdded[0] = false;
 	}
 
 	if(packet->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
@@ -182,19 +209,82 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 		// unknown packet
 		frameQueue->addFreePacket(packet);
 	}
-
+	
 	return(DemuxPacketsResult::SUCCESS);
+}
 
+
+VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketFromStream(int i) {
+
+	if(DECODER(i)->isClosed()) return(DemuxPacketsResult::STOPPED);
+		
+	Packet ^packet;
+	bool success = frameQueue->getFreePacket(packet);
+	if(success == false) {
+
+		return(DemuxPacketsResult::STOPPED);
+	}
+
+	success = DECODER(i)->readFrame(packet->AVLibPacketData);
+	if(success == false) {
+
+		// end of the video		
+		frameQueue->addFreePacket(packet);
+
+		if(isFinalPacketAdded[i] == false) {
+
+			if(i == 0) frameQueue->addVideoPacket(Packet::finalPacket);
+			else frameQueue->addAudioPacket(Packet::finalPacket);
+								
+			isFinalPacketAdded[i] = true;
+		} 
+						
+		return(DemuxPacketsResult::LAST_PACKET);
+		
+	} else {
+
+		isFinalPacketAdded[i] = false;	
+	}
+
+	if(packet->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
+
+		Video::writeToLog(AV_LOG_WARNING, "corrupt packet");
+	}
+
+	if(packet->AVLibPacketData->stream_index == 0) {
+
+		// video packet
+		if(i == 0) frameQueue->addVideoPacket(packet);
+		else frameQueue->addAudioPacket(packet);
+
+	} else {
+
+		// unknown packet
+		frameQueue->addFreePacket(packet);
+	}
+	
+	return(DemuxPacketsResult::SUCCESS);
 }
 
 bool VideoPlayer::seek(double posSeconds) {
 
-	return(videoDecoder->seek(posSeconds));
+	bool result = true;
+
+	for(int i = 0; i < decoder->size(); i++) {
+
+		result = DECODER(i)->seek(posSeconds) && result;
+	}	
+
+	return(result);
 }
 
 void VideoPlayer::close() {
 
-	videoDecoder->close();
+	for(int i = 0; i < decoder->size(); i++) {
+
+		DECODER(i)->close();
+	}
+
 	frameQueue->release();
 }
 

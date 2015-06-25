@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,29 +15,15 @@ using System.Windows.Media.Imaging;
 
 namespace ImageSearchPlugin
 {
-    class ImageResultItem : MediaItem
+    class ImageResultItem : MediaStreamedItem
     {
         public Bing.ImageResult ImageInfo { protected set; get; }
-
-        static String titleToFilename(String title, Bing.ImageResult imageResult)
-        {
-            String filename = FileUtils.removeIllegalCharsFromFileName(title, " ");
-
-            String ext = "." + MediaFormatConvert.mimeTypeToExtension(imageResult.ContentType);
-
-            if (!filename.EndsWith(ext, true, CultureInfo.InvariantCulture))
-            {
-                filename += ext;
-            }
-
-            return (filename);
-        }
-
-
-        public ImageResultItem(Bing.ImageResult imageResult) :
-            base(imageResult.Title,MediaItemState.EMPTY)//base(titleToFilename(imageResult.Title, imageResult), MediaItemState.EMPTY)
+       
+        public ImageResultItem(Bing.ImageResult imageResult, int relevance) :
+            base(imageResult.MediaUrl, imageResult.Title)
         {            
             ImageInfo = imageResult;
+            Relevance = relevance;
         }
 
         public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
@@ -49,7 +36,7 @@ namespace ImageSearchPlugin
             {
                 ItemState = MediaItemState.LOADING;
 
-                StreamUtils.download(new Uri(ImageInfo.Thumbnail.MediaUrl), data, out mimeType, token);
+                StreamUtils.readHttpRequest(new Uri(ImageInfo.Thumbnail.MediaUrl), data, out mimeType, token);
 
                 BitmapDecoder decoder = BitmapDecoder.Create(data,
                                     BitmapCreateOptions.PreservePixelFormat,
@@ -61,12 +48,13 @@ namespace ImageSearchPlugin
                 ImageMetadata metaData = new ImageMetadata();
                 metaData.Thumbnail = new Thumbnail(bitmapSource);
 
+                metaData.Title = ImageInfo.Title;
                 metaData.Location = ImageInfo.MediaUrl;
                 metaData.Width = ImageInfo.Width.HasValue ? ImageInfo.Width.Value : 0;
                 metaData.Height = ImageInfo.Height.HasValue ? ImageInfo.Height.Value : 0;
                 metaData.SizeBytes = ImageInfo.FileSize.HasValue ? ImageInfo.FileSize.Value : 0;
                 metaData.MimeType = ImageInfo.ContentType;
-
+               
                 Metadata = metaData;
 
                 ItemState = MediaItemState.LOADED;
@@ -90,32 +78,12 @@ namespace ImageSearchPlugin
            
         }
 
-        /*class RawMetadataItem
-        {
-            public String location;
-            public Object value;
-        }
-        List<RawMetadataItem> RawMetadataItems { get; set; }
+        int relevance;
 
-        private void CaptureMetadata(BitmapMetadata bitmapMetadata, string query)
-        {            
-            if (bitmapMetadata != null)
-            {
-                foreach (string relativeQuery in bitmapMetadata)
-                {
-                    string fullQuery = query + relativeQuery;
-                    object metadataQueryReader = bitmapMetadata.GetQuery(relativeQuery);
-                    RawMetadataItem metadataItem = new RawMetadataItem();
-                    metadataItem.location = fullQuery;
-                    metadataItem.value = metadataQueryReader;
-                    RawMetadataItems.Add(metadataItem);
-                    BitmapMetadata innerBitmapMetadata = metadataQueryReader as BitmapMetadata;
-                    if (innerBitmapMetadata != null)
-                    {
-                        CaptureMetadata(innerBitmapMetadata, fullQuery);
-                    }
-                }
-            }
-        }*/
+        public int Relevance
+        {
+            get { return relevance; }
+            set { SetProperty(ref relevance, value); }
+        }
     }
 }

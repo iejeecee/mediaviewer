@@ -16,10 +16,10 @@ namespace MediaViewer.Model.Mvvm
         public event EventHandler Executing;
         public event EventHandler<Task> Executed;
 
-        public Command(Action executeMethod, bool isExecuteable = true)
+        public Command(Action executeMethod, bool isExecutable = true)
             : base(executeMethod)
         {
-            this.isExecuteable = isExecuteable;
+            this.isExecutable = isExecutable;
 
             //Hack to get IsExecutable working correctly
             Func<Object, bool> canExecute = new Func<Object, bool>((o) => {return(IsExecutable);});
@@ -34,15 +34,15 @@ namespace MediaViewer.Model.Mvvm
             return base.Execute().ContinueWith((result) => OnExecuted(result));
         }
 
-        bool isExecuteable;
+        bool isExecutable;
 
         public bool IsExecutable
         {
-            get { return isExecuteable; }
+            get { return isExecutable; }
             set {
 
-                if (isExecuteable == value) return;
-                isExecuteable = value;
+                if (isExecutable == value) return;
+                isExecutable = value;
                
                 RaiseCanExecuteChanged();
                 OnPropertyChanged("IsExecutable");
@@ -82,10 +82,10 @@ namespace MediaViewer.Model.Mvvm
         public event EventHandler Executing;
         public event EventHandler<Task> Executed;
 
-        public Command(Action<T> executeMethod, bool isExecuteable = true)
+        public Command(Action<T> executeMethod, bool isExecutable = true)
             : base(executeMethod)
         {
-            this.isExecuteable = isExecuteable;
+            this.isExecutable = isExecutable;
 
             Func<Object, bool> canExecute = new Func<Object, bool>((o) => { return (IsExecutable); });
 
@@ -101,18 +101,18 @@ namespace MediaViewer.Model.Mvvm
 
         public override bool CanExecute(T value)
         {
-            return (isExecuteable);
+            return (isExecutable);
         }
 
-        bool isExecuteable;
+        bool isExecutable;
 
         public bool IsExecutable
         {
-            get { return isExecuteable; }
+            get { return isExecutable; }
             set
             {
-                if (isExecuteable == value) return;
-                isExecuteable = value;
+                if (isExecutable == value) return;
+                isExecutable = value;
 
                 RaiseCanExecuteChanged();
                 OnPropertyChanged("IsExecutable");

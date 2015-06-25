@@ -13,7 +13,7 @@ namespace ImageSearchPlugin
     {
         enum SortMode
         {
-            Title,
+            Relevance,
             Width,
             Height,
             Size,
@@ -31,13 +31,13 @@ namespace ImageSearchPlugin
 
                 switch ((SortMode)SortModes.CurrentItem)
                 {
-                    case SortMode.Title:
+                    case SortMode.Relevance:
                         SortFunc = new Func<SelectableMediaItem,SelectableMediaItem, int>((a,b) =>
                         {
                             ImageResultItem itemA = (ImageResultItem)a.Item;
                             ImageResultItem itemB = (ImageResultItem)b.Item;
                             
-                            return (itemA.ImageInfo.Title.CompareTo(itemB.ImageInfo.Title));                            
+                            return (itemA.Relevance.CompareTo(itemB.Relevance));                            
                         });
                         break;
                     case SortMode.Location:

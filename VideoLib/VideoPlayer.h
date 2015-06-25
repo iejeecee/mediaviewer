@@ -14,19 +14,17 @@ namespace VideoLib {
 	{
 
 	private:
-
-		VideoDecoder *videoDecoder;
 		
-		FrameQueue ^frameQueue;
+		VideoDecoder *videoDecoder,*audioDecoder;
 
-		String ^videoLocation;
+		std::vector<VideoDecoder *> *decoder;
+		
+		FrameQueue ^frameQueue;		
 
 		System::Runtime::InteropServices::GCHandle gch;
 
-		bool isFinalPacketAdded;
-
-		
-
+		array<bool> ^isFinalPacketAdded;
+					
 	public:
 
 		enum class DemuxPacketsResult {
@@ -70,15 +68,7 @@ namespace VideoLib {
 				return(frameQueue);
 			}
 		}
-
-		property String ^VideoLocation {
-
-			String ^get() {
-
-				return(videoLocation);
-			}
-		}
-
+	
 		property int DurationSeconds {
 
 			int get() {
@@ -107,7 +97,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getOutputSampleRate());
+				return(decoder->operator[](decoder->size() - 1)->getOutputSampleRate());
 			}
 		}
 
@@ -115,7 +105,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getOutputBytesPerSample());
+				return(decoder->operator[](decoder->size() - 1)->getOutputBytesPerSample());
 			}
 		}
 
@@ -123,7 +113,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(videoDecoder->getOutputNrChannels());
+				return(decoder->operator[](decoder->size() - 1)->getOutputNrChannels());
 			}
 		}
 
@@ -131,7 +121,7 @@ namespace VideoLib {
 
 			bool get() {
 
-				return(videoDecoder->hasAudio());
+				return(decoder->operator[](decoder->size() - 1)->hasAudio());
 			}
 		}
 
@@ -142,6 +132,15 @@ namespace VideoLib {
 				return(AVCODEC_MAX_AUDIO_FRAME_SIZE);
 			}
 		}
+
+		property bool HasSeperateAudioStream {
+
+			bool get() {
+
+				return decoder->size() == 1 ? false : true;
+			}
+		}
+
 
 		property double TimeNow {
 
@@ -165,10 +164,19 @@ namespace VideoLib {
 
 		VideoPlayer();
 		~VideoPlayer();
-
-		void open(String ^videoLocation, OutputPixelFormat format);
+			
+		void open(String ^videoLocation, OutputPixelFormat format, String ^inputFormatName, 
+			System::Threading::CancellationToken ^token);
+		// video with seperate audio stream (e.g. youtube)
+		void open(String ^videoLocation, OutputPixelFormat format, String ^videoFormatName,
+			String ^audioLocation, String ^audioFormatName, System::Threading::CancellationToken ^token);
 		bool seek(double posSeconds);
-		DemuxPacketsResult demuxPacket();
+
+		// i == 0, video packet
+		// i == 1, audio packet
+		DemuxPacketsResult demuxPacketFromStream(int i);
+	
+		DemuxPacketsResult demuxPacketInterleaved();
 		void close();
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,
@@ -176,6 +184,10 @@ namespace VideoLib {
 		
 		static int getAvFormatVersion();
 		static String ^getAvFormatBuildInfo();
+
+	
+
+		
 	};
 
 }

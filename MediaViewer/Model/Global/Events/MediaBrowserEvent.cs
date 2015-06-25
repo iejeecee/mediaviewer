@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 namespace MediaViewer.Model.Global.Events
 {
     public class MediaBrowserPathChangedEvent : PubSubEvent<String> { }
-    public class MediaBrowserDisplayEvent : PubSubEvent<MediaBrowserDisplayOptions> { }
-    public class MediaBrowserActiveMediaStateCollectionViewChangedEvent : PubSubEvent<MediaFileStateCollectionView> { }
+    public class MediaBrowserDisplayEvent : PubSubEvent<MediaBrowserDisplayOptions> { }    
 
     public class MediaBrowserDisplayOptions
     {

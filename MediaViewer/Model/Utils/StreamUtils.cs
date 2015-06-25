@@ -15,7 +15,7 @@ namespace MediaViewer.Model.Utils
         const int HTTP_TIMEOUT_MS = 60 * 1000;
         const int HTTP_READ_BUFFER_SIZE_BYTES = 8096;
 
-        public static void download(Uri location, Stream data, out String mimeType, CancellationToken token, Action<long,long> progressCallback = null) {
+        public static void readHttpRequest(Uri location, Stream data, out String mimeType, CancellationToken token, Action<long,long> progressCallback = null) {
 
             HttpWebResponse response = null;
             Stream responseStream = null;

@@ -15,6 +15,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using System.Windows.Media.Imaging;
 
 namespace MediaViewer.Model.Media.File
 {
@@ -28,19 +29,31 @@ namespace MediaViewer.Model.Media.File
     public sealed class MediaFileStateCollectionView : MediaStateCollectionView
     {
         static RatingCache RatingCache { get; set; }
+        static InfoIconsCache InfoIconsCacheStatic { get; set; }
 
         static MediaFileStateCollectionView()
         {
             RatingCache = new RatingCache();
+
+            List<BitmapImage> icons = new List<BitmapImage>();
+
+            String iconPath = "pack://application:,,,/Resources/Icons/";
+
+            icons.Add(new BitmapImage(new Uri(iconPath + "checked.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "tag.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "geotag.ico", UriKind.Absolute)));
+
+            InfoIconsCacheStatic = new MediaFileInfoIconsCache(icons);
         }
 
         public MediaFileStateCollectionView(MediaFileState mediaState = null) :
             base(mediaState)
         {           
             Filter = filterFunc;
+            InfoIconsCache = InfoIconsCacheStatic;
 
-            MediaFilter = MediaFilterMode.None;
-            TagFilter = new List<TagItem>();
+            MediaFilter = MediaFilterMode.None;           
 
             SortFunc = MediaFileSortFunctions.getSortFunction(MediaSortMode.Name);
             
@@ -131,21 +144,9 @@ namespace MediaViewer.Model.Media.File
                 }
 
 
-                // tag filter
-                MediaItem media = item.Item;
+                bool result = tagFilter(item);
 
-                if (TagFilter.Count == 0) return (true);
-                if (media.ItemState == Base.MediaItemState.LOADING) return (true);
-
-                foreach (TagItem tagItem in TagFilter)
-                {
-                    if (!media.Metadata.Tags.Contains(tagItem.Tag))
-                    {
-                        return (false);
-                    }
-                }
-
-                return (true);
+                return (result);
             }
             finally
             {
@@ -159,14 +160,6 @@ namespace MediaViewer.Model.Media.File
         {
             get { return mediaFilter; }
             set { SetProperty(ref mediaFilter, value); }
-        }
-
-        List<TagItem> tagFilter;
-
-        public List<TagItem> TagFilter
-        {
-            get { return tagFilter; }
-            set { tagFilter = value; }
         }
 
         override protected void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)

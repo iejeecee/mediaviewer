@@ -39,24 +39,19 @@ using System.Windows.Shapes;
 namespace MediaViewer.Filter
 {
     [Export]
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     public partial class TagFilterView : UserControl, IRegionMemberLifetime, INavigationAware, IExpanderPanelAware
     {
-        TagItemList tagsList;
-
-        IEventAggregator EventAggregator { get; set; }        
+        TagItemList tagsList;        
         bool extendTimer;
         
         Timer timer;
         int timerInterval = 100;
-
-        [ImportingConstructor]
-        public TagFilterView(IEventAggregator eventAggregator)
+        
+        public TagFilterView()
         {
             InitializeComponent();
-            EventAggregator = eventAggregator;
-            
-            EventAggregator.GetEvent<MediaBrowserActiveMediaStateCollectionViewChangedEvent>().Subscribe(activeMediaStateCollectionViewChanged);
-
+                                   
             timer = new Timer();
             timer.AutoReset = false;
             timer.Interval = timerInterval;
@@ -77,15 +72,10 @@ namespace MediaViewer.Filter
             view.SortDescriptions.Add(new SortDescription("Count", ListSortDirection.Descending));
             dataGrid.ColumnFromDisplayIndex(1).SortDirection = ListSortDirection.Descending;
         }
+     
+        MediaStateCollectionView mediaCollectionView;
 
-        private void activeMediaStateCollectionViewChanged(MediaFileStateCollectionView newState)
-        {
-            MediaCollectionView = newState;
-        }
-
-        MediaFileStateCollectionView mediaCollectionView;
-
-        public MediaFileStateCollectionView MediaCollectionView
+        public MediaStateCollectionView MediaCollectionView
         {
             get { return (mediaCollectionView); }
             set {
@@ -167,32 +157,7 @@ namespace MediaViewer.Filter
             
         }
 
-        void tagsList_IsFilterChanged(object sender, EventArgs e)
-        {
-            ToggleButton clearToggleButton = 
-                VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "clearToggleButton");
-            
-            TagItem item = (TagItem)sender;
-
-            if (item.IsFilter)
-            {
-                mediaCollectionView.TagFilter.Add(item);
-                clearToggleButton.IsEnabled = true;
-                clearToggleButton.IsChecked = true;
-            }
-            else
-            {
-                mediaCollectionView.TagFilter.Remove(item);
-
-                if (mediaCollectionView.TagFilter.Count == 0)
-                {
-                    clearToggleButton.IsEnabled = false;
-                    clearToggleButton.IsChecked = false;
-                }
-            }
-
-            MediaCollectionView.refresh();
-        }
+        
 
         void addTags(SelectableMediaItem item, List<TagItem> tags)
         {
@@ -316,7 +281,7 @@ namespace MediaViewer.Filter
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            MediaCollectionView = (MediaFileStateCollectionView)navigationContext.Parameters["MediaStateCollectionView"];
+            MediaCollectionView = (MediaStateCollectionView)navigationContext.Parameters["MediaStateCollectionView"];
         }
 
         public string Header { get; set; }
@@ -324,13 +289,93 @@ namespace MediaViewer.Filter
         public bool IsAddBorder { get; set; }
         public bool IsIntiallyExpanded { get; set; }
 
-      
-        private void clearToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        void tagsList_IsFilterChanged(object sender, EventArgs e)
         {
+            ToggleButton includedClearToggleButton =
+                VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "includeClearToggleButton");
+
+            ToggleButton excludedClearToggleButton =
+                VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "excludeClearToggleButton");
+
+            TagItem item = (TagItem)sender;
+
+            if (item.IsIncluded || item.IsExcluded)
+            {
+                mediaCollectionView.TagFilter.Add(item);
+
+                if (item.IsIncluded)
+                {
+                    includedClearToggleButton.IsEnabled = true;
+                    includedClearToggleButton.IsChecked = true;
+                }
+                else
+                {
+                    excludedClearToggleButton.IsEnabled = true;
+                    excludedClearToggleButton.IsChecked = true;
+                }
+            }
+            else
+            {
+                mediaCollectionView.TagFilter.Remove(item);
+
+                int nrIncluded = 0, nrExcluded = 0;
+
+                foreach (TagItem tagItem in mediaCollectionView.TagFilter)
+                {
+                    if (tagItem.IsIncluded) nrIncluded++;
+                    if (tagItem.IsExcluded) nrExcluded++;
+                }
+
+                if (nrExcluded == 0)
+                {
+
+                    excludedClearToggleButton.IsEnabled = false;
+                    excludedClearToggleButton.IsChecked = false;
+                }
+
+                if (nrIncluded == 0)
+                {
+                    includedClearToggleButton.IsEnabled = false;
+                    includedClearToggleButton.IsChecked = false;
+                }
+            }
+
+            MediaCollectionView.refresh();
+        }
+      
+        private void includeClearToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            MediaCollectionView.TagFilter.RemoveAll((i) => i.IsIncluded == true);
             foreach (TagItem item in tagsList)
             {
-                item.IsFilter = false;
+                item.IsIncluded = false;
             }
+
+            MediaCollectionView.refresh();
+
+            ToggleButton includedClearToggleButton =
+                VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "includeClearToggleButton");
+
+            includedClearToggleButton.IsEnabled = false;
+            includedClearToggleButton.IsChecked = false;
+        }
+
+        private void excludeClearToggleButton_Unchecked(object sender, RoutedEventArgs e)
+        {
+            
+            MediaCollectionView.TagFilter.RemoveAll((i) => i.IsExcluded == true);
+            foreach (TagItem item in tagsList)
+            {
+                item.IsExcluded = false;
+            }
+
+            MediaCollectionView.refresh();
+
+            ToggleButton excludedClearToggleButton =
+                VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "excludeClearToggleButton");
+
+            excludedClearToggleButton.IsEnabled = false;
+            excludedClearToggleButton.IsChecked = false;
         }
     }
 }

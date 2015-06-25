@@ -643,18 +643,11 @@ namespace MediaViewer.Model.Utils
 
         public static bool isUrl(string path)
         {
+            Uri uriResult;
 
-            if (path.StartsWith("http://") || path.StartsWith("https://"))
-            {
-
-                return (true);
-
-            }
-            else
-            {
-
-                return (false);
-            }
+            bool isUrl = Uri.TryCreate(path, UriKind.Absolute, out uriResult) && uriResult.Scheme == Uri.UriSchemeHttp;
+            
+            return(isUrl);
         }
 
         public static string getProperDirectoryCapitalization(DirectoryInfo dirInfo)

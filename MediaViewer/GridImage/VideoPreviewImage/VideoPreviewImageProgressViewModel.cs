@@ -139,7 +139,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             FileStream outputFile = null;
             RenderTargetBitmap bitmap = null;
 
-            videoPreview.open(item.Location);
+            videoPreview.open(item.Location, CancellationToken);
             try
             {
 

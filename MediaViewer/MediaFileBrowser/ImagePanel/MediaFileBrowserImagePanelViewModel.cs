@@ -133,6 +133,22 @@ namespace MediaViewer.MediaFileBrowser.ImagePanel
             }
         }
 
+        MediaItem currentItem;
+
+        public MediaItem CurrentItem
+        {
+            get { return currentItem; }
+            set
+            {
+                if (value != null)
+                {
+                    Location = value.Location;
+                }
+
+                SetProperty(ref currentItem, value);
+            }
+        }
+
         MediaViewer.UserControls.ImagePanel.ScaleMode ScaleMode;
 
         public MediaViewer.UserControls.ImagePanel.ScaleMode SelectedScaleMode
@@ -167,14 +183,11 @@ namespace MediaViewer.MediaFileBrowser.ImagePanel
 
         public void OnNavigatedTo(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
         {
-            String location = (String)navigationContext.Parameters["location"];
+            MediaItem item = (MediaItem)navigationContext.Parameters["item"];
 
-            if (!String.IsNullOrEmpty(location))
-            {
-                Location = location;
-            }
-            
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
+            CurrentItem = item;
+         
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem != null ? CurrentItem.Name : null);
             
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
         }
@@ -188,9 +201,9 @@ namespace MediaViewer.MediaFileBrowser.ImagePanel
         {
             if (String.Equals(Location, item.Location)) return;
 
-            Location =  item.Location;
+            CurrentItem = item;
 
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(Location == null ? "" : Path.GetFileName(Location));
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(item.Name);
         }
 
         

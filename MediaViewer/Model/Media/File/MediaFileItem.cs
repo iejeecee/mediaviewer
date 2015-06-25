@@ -27,7 +27,7 @@ namespace MediaViewer.Model.Media.File
         ConcurrentQueue<String> eventBuffer;
 
         protected MediaFileItem(String location, MediaItemState state = MediaItemState.EMPTY)
-            : base(location, state)
+            : base(location, Path.GetFileNameWithoutExtension(location), state)
         {
             eventBuffer = new ConcurrentQueue<string>();
             isBufferEvents = false;
@@ -52,6 +52,7 @@ namespace MediaViewer.Model.Media.File
                 if (isLocationChanged)
                 {
                     OnPropertyChangedBuffered("Location");
+                    OnPropertyChangedBuffered("Name");
                 }
 
                 if (isMetadataChanged)
@@ -117,6 +118,7 @@ namespace MediaViewer.Model.Media.File
                 }
 
                 location = newLocation;
+                name = Path.GetFileNameWithoutExtension(newLocation);
             }
             finally
             {

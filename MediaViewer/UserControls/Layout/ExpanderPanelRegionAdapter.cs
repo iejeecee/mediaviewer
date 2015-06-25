@@ -14,7 +14,7 @@ using System.Windows.Controls;
 namespace MediaViewer.UserControls.Layout
 {
     [Export]
-    class ExpanderPanelRegionAdapter : RegionAdapterBase<ExpanderPanel>
+    public class ExpanderPanelRegionAdapter : RegionAdapterBase<ExpanderPanel>
     {
 
         [ImportingConstructor]

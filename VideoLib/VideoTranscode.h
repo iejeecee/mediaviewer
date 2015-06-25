@@ -142,7 +142,7 @@ public:
 		
 		try {
 
-			initialize(inputFilename, outputFilename, options);
+			initialize(inputFilename, outputFilename, options, token);
 			
 			av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
 
@@ -175,7 +175,7 @@ public:
 					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
 				}
 
-				if (av_read_frame(input->getFormatContext(), &packet) < 0) {
+				if (input->readFrame(&packet) == false) {
 					// finished
 					break;
 				}
@@ -457,9 +457,10 @@ protected:
 	}
 
 	
-	void initialize(String ^inputFilename, String ^outputFilename, Dictionary<String ^,Object ^> ^options) {
+	void initialize(String ^inputFilename, String ^outputFilename, Dictionary<String ^,Object ^> ^options, 
+		System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
 		
-		input->open(inputFilename);					
+		input->open(inputFilename, token, inputFormatName);					
 		output->open(outputFilename);
 
 		streamInfo.clear();			

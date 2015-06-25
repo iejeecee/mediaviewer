@@ -19,99 +19,163 @@ namespace YoutubePlugin.Item
 {
     class YoutubeVideoItem : YoutubeItem
     {
-       
-        public List<VideoStreamInfo> VideoStreamInfo { get; set; }
-        public List<VideoStreamInfo> AdaptiveVideoStreamInfo { get; set; }
-               
+        public bool IsEmbeddedOnly { get; set; }
+
+        public List<YoutubeVideoStreamedItem> StreamedItem { get; set; }
+                                
         public YoutubeVideoItem(SearchResult result, int relevance) :
             base(result, relevance)
         {
-            Result = result;
-            VideoStreamInfo = new List<VideoStreamInfo>();
-            AdaptiveVideoStreamInfo = new List<VideoStreamInfo>();
+            IsEmbeddedOnly = false;
+
+            SearchResult = result;
+
+            StreamedItem = new List<YoutubeVideoStreamedItem>();                
         }
 
+        public void getBestQualityStreams(out YoutubeVideoStreamedItem video, out YoutubeVideoStreamedItem audio) {
+
+            video = null;
+            audio = null;
+
+            int bestHeight = 0;
+            int bestSamplesPerSecond = 0;
+
+            RWLock.EnterReadLock();
+
+            try
+            {
+                // get best video stream
+                foreach (YoutubeVideoStreamedItem item in StreamedItem)
+                {
+                    VideoMetadata metaData = item.Metadata as VideoMetadata;
+
+                    if (metaData.Height >= bestHeight)
+                    {                        
+                        if (metaData.Height == bestHeight) 
+                        {
+                            // prefer mp4 over webm
+                            if(item.Metadata.MimeType.Equals("video/webm")) continue; 
+
+                            // prefer adaptive over normal streams
+                            if(item.StreamType == StreamType.VIDEO_AUDIO) continue;
+                        }
+
+                        video = item;
+
+                        bestHeight = metaData.Height;
+                    }
+                }
+
+                if (video.StreamType == StreamType.VIDEO_AUDIO) return;
+
+                // get best matching audio stream
+                foreach (YoutubeVideoStreamedItem item in StreamedItem)
+                {
+                    VideoMetadata metaData = item.Metadata as VideoMetadata;
+
+                    if (metaData.SamplesPerSecond >= bestSamplesPerSecond)
+                    {
+                        int idx = video.Metadata.MimeType.IndexOf('/');
+
+                        if (!metaData.MimeType.EndsWith(video.Metadata.MimeType.Substring(idx)))
+                        {
+                            // only use audio stream that matches with the video stream
+                            continue;
+                        }
+
+                        if (metaData.SamplesPerSecond == bestSamplesPerSecond)
+                        {
+                            // prefer aac over ogg
+                            if (item.Metadata.MimeType.Equals("audio/webm")) continue;                           
+                        }
+
+                        audio = item;
+
+                        bestSamplesPerSecond = metaData.SamplesPerSecond.Value;
+                    }
+                }
+
+            }
+            finally
+            {
+                RWLock.ExitReadLock();
+            }
+        }
+       
         public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {            
-            String mimeType;
+            String thumbnailMimeType;
 
-            RWLock.EnterUpgradeableReadLock();
+            RWLock.EnterWriteLock();
             try
             {
                 ItemState = MediaItemState.LOADING;
                 
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
 
-                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
-                metaData.CreationDate = Result.Snippet.PublishedAt;
-                metaData.Title = Result.Snippet.Title;
-                metaData.Description = String.IsNullOrEmpty(Result.Snippet.Description) ? Result.Snippet.Title : Result.Snippet.Description;
+                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out thumbnailMimeType, token));
+                metaData.CreationDate = SearchResult.Snippet.PublishedAt;
+                metaData.Title = SearchResult.Snippet.Title;
+                metaData.Description = String.IsNullOrEmpty(SearchResult.Snippet.Description) ? SearchResult.Snippet.Title : SearchResult.Snippet.Description;
              
                 NameValueCollection videoInfo;
 
-                bool success = getVideoInfo(Result.Id.VideoId, out videoInfo, token);
-              
-                if (success)
+                IsEmbeddedOnly = !getVideoInfo(SearchResult.Id.VideoId, out videoInfo, token);
+
+                if (!IsEmbeddedOnly)
                 {
-                    long durationSeconds;
+                    YoutubeVideoStreamedItem video, audio;
 
-                    if (long.TryParse(videoInfo["length_seconds"], out durationSeconds))
-                    {
-                        metaData.DurationSeconds = durationSeconds;
-                    }
+                    getBestQualityStreams(out video, out audio);
 
-                    long viewCount;
+                    VideoMetadata videoMetadata = video.Metadata as VideoMetadata;
+                    VideoMetadata audioMetadata = audio == null ? null : audio.Metadata as VideoMetadata;
 
-                    if (long.TryParse(videoInfo["view_count"], out viewCount))
-                    {
-                        metaData.ViewCount = viewCount;
-                    }
-
-                    double rating;
-
-                    if (double.TryParse(videoInfo["avg_rating"], NumberStyles.Float, new CultureInfo("en-US"), out rating))
-                    {
-                        metaData.Rating = rating;
-                    }
-
-                    metaData.Author = videoInfo["author"];
-
-                    if (AdaptiveVideoStreamInfo.Count > 0 && 
-                        Nullable.Compare<int>(AdaptiveVideoStreamInfo[0].Width, VideoStreamInfo[0].Width) == 1)
-                    {
-                        metaData.Location = AdaptiveVideoStreamInfo[0].Url;
-                        metaData.Width = AdaptiveVideoStreamInfo[0].Width;
-                        metaData.Height = AdaptiveVideoStreamInfo[0].Height;
-                    }
-                    else
-                    {
-                        metaData.Location = VideoStreamInfo[0].Url;
-                        metaData.Width = VideoStreamInfo[0].Width;
-                        metaData.Height = VideoStreamInfo[0].Height;
-                    }
-
-                    metaData.MimeType = VideoStreamInfo[0].Type.Substring(0, VideoStreamInfo[0].Type.IndexOf(';'));
-
-                    String tags = videoInfo["keywords"];
-                    if (tags != null)
-                    {
-                        string[] tagNames = tags.Split(new char[] { ',' });
-
-                        foreach (string tagName in tagNames)
-                        {
-                            Tag newTag = new Tag();
-                            newTag.Name = tagName;
-
-                            metaData.Tags.Add(newTag);
-                        }
-                    }
-
+                    metaData.Width = videoMetadata.Width;
+                    metaData.Height = videoMetadata.Height;
+                    metaData.MimeType = videoMetadata.MimeType;                    
                 }
-                else
+                              
+                long durationSeconds;
+
+                if (long.TryParse(videoInfo["length_seconds"], out durationSeconds))
                 {
-                    metaData.MetadataReadError = new Exception(HttpUtility.UrlDecode(videoInfo["reason"]));
+                    metaData.DurationSeconds = durationSeconds;
                 }
-               
+
+                long viewCount;
+
+                if (long.TryParse(videoInfo["view_count"], out viewCount))
+                {
+                    metaData.ViewCount = viewCount;
+                }
+
+                double rating;
+
+                if (double.TryParse(videoInfo["avg_rating"], NumberStyles.Float, new CultureInfo("en-US"), out rating))
+                {
+                    metaData.Rating = rating;
+                }
+
+                metaData.Author = videoInfo["author"];
+                                   
+                String tags = videoInfo["keywords"];
+                if (tags != null)
+                {
+                    string[] tagNames = tags.Split(new char[] { ',' });
+
+                    foreach (string tagName in tagNames)
+                    {
+                        if (String.IsNullOrEmpty(tagName) || String.IsNullOrWhiteSpace(tagName)) continue;
+
+                        Tag newTag = new Tag();
+                        newTag.Name = tagName;
+
+                        metaData.Tags.Add(newTag);
+                    }
+                }
+                                               
                 Metadata = metaData;
 
                 ItemState = MediaItemState.LOADED;
@@ -130,7 +194,7 @@ namespace YoutubePlugin.Item
             }
             finally
             {
-                RWLock.ExitUpgradeableReadLock();
+                RWLock.ExitWriteLock();
             }
         }
 
@@ -138,7 +202,7 @@ namespace YoutubePlugin.Item
         {                   
             Uri location = new Uri("http://www.youtube.com/get_video_info?video_id=" + videoId + "&ps=default&eurl=&gl=US&hl=en");
 
-            videoInfo = getInfo(location,token);
+            videoInfo = getInfo(location, token);
             
             if (videoInfo["status"].Equals("fail"))
             {
@@ -156,11 +220,10 @@ namespace YoutubePlugin.Item
 
                 foreach (String key in mapArgsEnc)
                 {
-
                     mapArgsDec.Add(key, HttpUtility.UrlDecode(mapArgsEnc[key]));
                 }
 
-                VideoStreamInfo.Add(new VideoStreamInfo(mapArgsDec));
+                StreamedItem.Add(new YoutubeVideoStreamedItem(mapArgsDec, Name));
             }
 
             streamMapsEncoded = videoInfo["adaptive_fmts"];
@@ -179,7 +242,7 @@ namespace YoutubePlugin.Item
                     mapArgsDec.Add(key, HttpUtility.UrlDecode(mapArgsEnc[key]));
                 }
 
-                AdaptiveVideoStreamInfo.Add(new VideoStreamInfo(mapArgsDec));
+                StreamedItem.Add(new YoutubeVideoStreamedItem(mapArgsDec, Name));                
             }
 
             return (true);

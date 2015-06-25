@@ -10,12 +10,16 @@ using System.Threading.Tasks;
 namespace YoutubePlugin.Item
 {
     class YoutubeItemMetadata : BaseMetadata
-    {        
+    {       
         public int Url { get; set; }
         public int? Width { get; set; }
         public int? Height { get; set; }
         public long? DurationSeconds { get; set; }
-        public long? ViewCount { get; set; }       
+        public long? ViewCount { get; set; }
+
+        public YoutubeItemMetadata()
+        {            
+        }
 
         public override string DefaultFormatCaption
         {
@@ -29,10 +33,15 @@ namespace YoutubePlugin.Item
                 StringBuilder sb = new StringBuilder();
 
                 sb.AppendLine(Description);
-                sb.AppendLine();
+
+                if (CreationDate != null)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("Published: " + CreationDate.Value.ToString("MMM d, yyyy"));
+                }
 
                 if (ViewCount != null)
-                {
+                {                    
                     sb.AppendLine("ViewCount: " + ViewCount.Value.ToString("#,##0", new CultureInfo("en-US")));                    
                 }
 
@@ -45,7 +54,7 @@ namespace YoutubePlugin.Item
                 {
                     sb.AppendLine("Author: " + Author);                   
                 }
-
+                
                 if (MimeType != null)
                 {
                     sb.AppendLine("Mime type: " + MimeType);                                                        

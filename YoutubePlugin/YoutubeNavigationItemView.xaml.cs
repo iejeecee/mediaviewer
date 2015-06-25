@@ -24,16 +24,20 @@ namespace YoutubePlugin
     [ViewSortHint("05")]
     public partial class YoutubeNavigationItemView : UserControl
     {
-        public YoutubeNavigationItemView()
+        IRegionManager RegionManager { get; set; }
+
+        [ImportingConstructor]
+        public YoutubeNavigationItemView(IRegionManager regionManager)
         {
             InitializeComponent();
+            RegionManager = regionManager;
         }
 
         private void navigationButton_Click(object sender, RoutedEventArgs e)
         {
             this.IsEnabled = false;
 
-            YoutubeView youtube = new YoutubeView();
+            YoutubeView youtube = new YoutubeView(RegionManager);
             youtube.Closed += youtube_Closed;
 
             youtube.Show();

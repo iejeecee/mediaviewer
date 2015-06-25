@@ -5,6 +5,8 @@
 #include "FilterGraph.h"
 #include <algorithm>
 
+using namespace System::Threading;
+
 namespace VideoLib {
 
 typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
@@ -62,6 +64,38 @@ protected:
 		Console::WriteLine(gcnew System::String(message)); 
 	}
 
+	int calcDurationSeconds() {
+
+		int duration = formatContext->duration / AV_TIME_BASE;
+		
+		if(duration < 0) {
+
+			if(hasVideo()) {
+
+				if(strcmp(stream[videoIdx]->getCodec()->name, "gif")) {
+
+					// should calculate animated gif duration in some other fashion?
+					return(0);
+				}
+
+				duration = getVideoStream()->duration * av_q2d(getVideoStream()->time_base);
+			} 
+			else if(hasAudio()) {
+
+				duration = getAudioStream()->duration * av_q2d(getAudioStream()->time_base);
+			}
+		}
+		
+		if(duration < 0) {
+					
+			throw gcnew VideoLib::VideoLibException("can't determine video duration");
+		}
+
+		return(duration);
+	}
+
+	gcroot<CancellationToken ^> *cancellationToken;
+
 public:
 
 	enum SamplingMode {
@@ -82,6 +116,22 @@ private:
 
 	SamplingMode samplingMode;
 
+	AVIOInterruptCB ioInterruptSettings;
+		
+	static int ioInterruptCallback(void *token) 
+	{ 
+		gcroot<CancellationToken^> &cancellationToken = *((gcroot<CancellationToken^>*)token);
+		
+		if(cancellationToken->IsCancellationRequested) {
+
+			return(1);
+
+		} else {	
+
+			return 0;
+		}
+	} 
+
 public:
 
 	enum VideoDecodeMode {		
@@ -97,6 +147,7 @@ public:
 
 	VideoDecoder()
 	{
+		
 		decodedFrame = NULL;
 		data = NULL;
 
@@ -133,11 +184,14 @@ public:
 		videoFilterGraph = NULL;
 		audioFilterGraph = NULL;	
 		
+		cancellationToken = new gcroot<CancellationToken ^>();
 	}
 
 	virtual ~VideoDecoder() {
 
 		close();
+
+		delete cancellationToken;
 	}
 
 	bool isClosed() {
@@ -225,8 +279,8 @@ public:
 
 		return(formatContext->filename);
 	}
-
-	virtual void open(String ^location, AVDiscard discardMode = AVDISCARD_DEFAULT) {
+	
+	virtual void open(String ^location, System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
 
 		// Convert location to UTF8 string pointer
 		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
@@ -239,20 +293,41 @@ public:
 
 		int errorCode = 0;
 
-		if((errorCode = avformat_open_input(&formatContext, locationUTF8, NULL, NULL)) != 0)
+		AVInputFormat *inputFormat = NULL;
+		 				
+		if(inputFormat != nullptr) {
+
+			IntPtr p = Marshal::StringToHGlobalAnsi(inputFormatName);
+			char *shortName = static_cast<char*>(p.ToPointer());
+
+			inputFormat = av_find_input_format(shortName);
+
+			Marshal::FreeHGlobal(p);			
+		}
+
+		*cancellationToken = token;
+		
+		ioInterruptSettings.callback = ioInterruptCallback;
+		ioInterruptSettings.opaque = cancellationToken;
+ 
+		 // Initialize Input format context
+		formatContext = avformat_alloc_context();
+		formatContext->interrupt_callback = ioInterruptSettings;
+		
+		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, NULL)) != 0)
 		{			
 			throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
 		}
-
+				
 		// generate pts?? -- from ffplay, not documented
 		// it should make av_read_frame() generate pts for unknown value
 		formatContext->flags |= AVFMT_FLAG_GENPTS;
-
+		
 		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
 		{		
 			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + VideoInit::errorToString(errorCode));
 		}
-
+		
 		for(unsigned int i = 0; i < formatContext->nb_streams; i++) {
 
 			AVCodec *decoder = NULL;
@@ -273,14 +348,12 @@ public:
 		}
 
 		videoIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-		if(videoIdx < 0) {
+		if(videoIdx >= 0) {
 					
-			throw gcnew VideoLib::VideoLibException("Unable to find a video stream");
+			stream[videoIdx]->open();
+			stream[videoIdx]->getCodecContext()->skip_frame = AVDISCARD_DEFAULT; 	
 		}
-
-		stream[videoIdx]->open();
-		stream[videoIdx]->getCodecContext()->skip_frame = discardMode; 	
-	
+			
 		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 		if(audioIdx >= 0) {
 				
@@ -302,18 +375,8 @@ public:
 			startTime = formatContext->start_time / AV_TIME_BASE;
 		}
 
-		durationSeconds  = formatContext->duration / AV_TIME_BASE;
-		
-		if(durationSeconds < 0) {
-
-			durationSeconds  = getVideoStream()->duration * av_q2d(getVideoStream()->time_base);
-		}
-		
-		if(durationSeconds < 0 && strcmp(stream[videoIdx]->getCodec()->name,"gif") != 0) {
-		
-			throw gcnew VideoLib::VideoLibException("can't determine video duration");
-		}
-		
+		durationSeconds = calcDurationSeconds();
+						
 		av_init_packet(&packet);
 		packet.data = NULL;
 		packet.size = 0;
@@ -407,6 +470,39 @@ public:
 
 		return(audioFilterGraph);
 	}
+	
+	// reads a frame from the input stream and places it into a packet
+	bool readFrame(AVPacket *packet) {
+
+		int read = av_read_frame(getFormatContext(), packet);
+		if(read < 0) return(false);
+		else return(true);
+	}
+
+	bool decodeVideoFrame(AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt) {
+
+		int ret = avcodec_decode_video2(getVideoCodecContext(), 
+					picture, got_picture_ptr, avpkt);
+		if(ret < 0) {
+
+			Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
+			return(false);
+		}
+
+		return(true);
+	}
+
+	int decodeAudioFrame(AVFrame *audio, int *got_audio_ptr, const AVPacket *avpkt) {
+
+		int ret = avcodec_decode_audio4(getAudioCodecContext(), 
+						audio, got_audio_ptr, avpkt);	
+		if(ret < 0) {
+
+			Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");			
+		}
+
+		return(ret);
+	}
 
 	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
 		AudioDecodeMode audioMode = DECODE_AUDIO, System::Threading::CancellationToken ^token = nullptr, int timeOutSeconds = 0) 
@@ -430,7 +526,7 @@ public:
 				throw gcnew VideoLibException("Decoding cancelled");
 			}
 
-			if(av_read_frame(formatContext, &packet) != 0) {
+			if(readFrame(&packet) == false) {
 
 				// cannot read frame or end of file				
 				return(false);
@@ -497,7 +593,10 @@ public:
 		int ret = avformat_seek_file(formatContext, -1, 0, seekTarget, seekTarget, flags);
 		if(ret >= 0) { 
 			
-			avcodec_flush_buffers(getVideoCodecContext());
+			if(hasVideo()) {
+
+				avcodec_flush_buffers(getVideoCodecContext());
+			}
 
 			if(hasAudio()) {
 

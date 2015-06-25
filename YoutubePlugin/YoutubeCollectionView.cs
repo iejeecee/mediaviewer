@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 using YoutubePlugin.Item;
 
 namespace YoutubePlugin
@@ -28,15 +29,30 @@ namespace YoutubePlugin
     class YoutubeCollectionView : MediaStateCollectionView        
     {
         static RatingCache RatingCache { get; set; }
+        static InfoIconsCache InfoIconsCacheStatic { get; set; }
 
         static YoutubeCollectionView()
         {
-            RatingCache = new RatingCache();
+            RatingCache = new RatingCache();           
+
+            List<BitmapImage> icons = new List<BitmapImage>();
+
+            String iconPath = "pack://application:,,,/YoutubePlugin;component/Resources/Icons/";
+
+            icons.Add(new BitmapImage(new Uri(iconPath + "hd.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "channel.ico", UriKind.Absolute)));
+
+            InfoIconsCacheStatic = new YoutubeItemInfoIconsCache(icons);
         }
 
         public YoutubeCollectionView(MediaState mediaState) :
             base(mediaState)
         {
+            Filter = tagFilter;
+
+            InfoIconsCache = InfoIconsCacheStatic;
+
             SortModes = new System.Windows.Data.ListCollectionView(Enum.GetValues(typeof(SortMode)));
 
             SortModes.CurrentChanged += (s, e) =>
