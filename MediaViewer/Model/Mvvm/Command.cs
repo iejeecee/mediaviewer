@@ -10,100 +10,35 @@ using System.Windows.Input;
 
 namespace MediaViewer.Model.Mvvm
 {
-    public class Command : DelegateCommand, INotifyPropertyChanged
+    public class Command : Command<object>
     {
-             
-        public event EventHandler Executing;
-        public event EventHandler<Task> Executed;
-
-        public Command(Action executeMethod, bool isExecutable = true)
-            : base(executeMethod)
+        public Command(Action method, bool isExecutable = true)
+            : base(new Action<Object>(o => method()), isExecutable)
         {
-            this.isExecutable = isExecutable;
 
-            //Hack to get IsExecutable working correctly
-            Func<Object, bool> canExecute = new Func<Object, bool>((o) => {return(IsExecutable);});
-
-            typeof(Command).GetField("_canExecuteMethod", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, canExecute);
         }
 
-        public override Task Execute()
+        public void Execute()
         {
-            OnExecuting();
-
-            return base.Execute().ContinueWith((result) => OnExecuted(result));
+            Execute(null);
         }
-
-        bool isExecutable;
-
-        public bool IsExecutable
-        {
-            get { return isExecutable; }
-            set {
-
-                if (isExecutable == value) return;
-                isExecutable = value;
-               
-                RaiseCanExecuteChanged();
-                OnPropertyChanged("IsExecutable");
-            }
-        }
- 
-        protected void OnExecuting() {
-
-            if (Executing != null)
-            {
-                Executing(this, EventArgs.Empty);
-            }
-        }
-
-        protected void OnExecuted(Task result)
-        {
-            if (Executed != null)
-            {
-                Executed(this, result);
-            }
-        }
-
-        protected void OnPropertyChanged(String propertyName)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-
-        public event PropertyChangedEventHandler PropertyChanged;
     }
 
-    public class Command<T> : DelegateCommand<T>, INotifyPropertyChanged
+    public class Command<T> : ICommand, INotifyPropertyChanged
     {
-        public event EventHandler Executing;
-        public event EventHandler<Task> Executed;
-
-        public Command(Action<T> executeMethod, bool isExecutable = true)
-            : base(executeMethod)
+        Action<T> Method { get; set; }
+        
+        public Command(Action<T> method, bool isExecutable = true)            
         {
-            this.isExecutable = isExecutable;
+            if (method == null)
+            {
+                throw new ArgumentNullException("method", "Delegate method cannot be null");
+            }
 
-            Func<Object, bool> canExecute = new Func<Object, bool>((o) => { return (IsExecutable); });
-
-            typeof(Command<T>).GetField("_canExecuteMethod", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(this, canExecute);
+            Method = method;
+            IsExecutable = isExecutable;           
         }
-
-        public override Task Execute(T arg)
-        {
-            OnExecuting();
-
-            return base.Execute(arg).ContinueWith((result) => OnExecuted(result));
-        }
-
-        public override bool CanExecute(T value)
-        {
-            return (isExecutable);
-        }
-
+             
         bool isExecutable;
 
         public bool IsExecutable
@@ -111,42 +46,63 @@ namespace MediaViewer.Model.Mvvm
             get { return isExecutable; }
             set
             {
-                if (isExecutable == value) return;
-                isExecutable = value;
+                if (value == isExecutable) return;
 
-                RaiseCanExecuteChanged();
+                isExecutable = value;
                 OnPropertyChanged("IsExecutable");
+                OnCanExecuteChanged();
+            }
+        }
+
+        protected void OnCanExecuteChanged()
+        {
+            if (CanExecuteChanged != null)
+            {
+                CanExecuteChanged(this, EventArgs.Empty);
+            }
+
+        }
+
+        protected void OnPropertyChanged(String name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
             }
         }
 
         protected void OnExecuting()
         {
-
             if (Executing != null)
             {
                 Executing(this, EventArgs.Empty);
             }
         }
 
-        protected void OnExecuted(Task result)
+        protected void OnExecuted()
         {
             if (Executed != null)
             {
-                Executed(this, result);
+                Executed(this, EventArgs.Empty);
             }
         }
 
-        protected void OnPropertyChanged(String propertyName)
+        public bool CanExecute(object parameter)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            return (IsExecutable);
         }
-
+       
+        public void Execute(object parameter)
+        {
+            OnExecuting();
+            Method((T)parameter);
+            OnExecuted();
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public event EventHandler CanExecuteChanged;
+        public event EventHandler Executing;
+        public event EventHandler Executed;
     }
 
 

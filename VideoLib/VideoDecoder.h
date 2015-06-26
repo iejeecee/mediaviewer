@@ -315,8 +315,15 @@ public:
 		formatContext->interrupt_callback = ioInterruptSettings;
 		
 		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, NULL)) != 0)
-		{			
-			throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
+		{		
+			if(errorCode == AVERROR_EXIT) {
+
+				throw gcnew System::OperationCanceledException(token);
+
+			} else {
+
+				throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
+			}
 		}
 				
 		// generate pts?? -- from ffplay, not documented
@@ -325,7 +332,14 @@ public:
 		
 		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
 		{		
-			throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + VideoInit::errorToString(errorCode));
+			if(errorCode == AVERROR_EXIT) {
+
+				throw gcnew System::OperationCanceledException(token);
+
+			} else {
+
+				throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + VideoInit::errorToString(errorCode));
+			}
 		}
 		
 		for(unsigned int i = 0; i < formatContext->nb_streams; i++) {

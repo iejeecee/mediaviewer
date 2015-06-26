@@ -43,8 +43,7 @@ namespace MediaViewer.VideoPanel
     {
 
         VideoSettingsViewModel VideoSettings { get; set; }
-        CancellationTokenSource TokenSource { get; set; }
-      
+             
         ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
         IEventAggregator EventAggregator { get; set; }
       
@@ -57,12 +56,13 @@ namespace MediaViewer.VideoPanel
             CurrentItem = new VideoAudioPair(null, null);
         
             commandQueue = new ConcurrentQueue<Tuple<ICommand, Object>>();
-
-            TokenSource = new CancellationTokenSource();
-
-            OpenCommand = new Command<VideoAudioPair>(item =>
+           
+            OpenCommand = new AsyncCommand<VideoAudioPair>(async item =>
             {
-                if (addCommandToQueue(OpenCommand, item) == true) return;
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
 
                 try
                 {
@@ -92,41 +92,44 @@ namespace MediaViewer.VideoPanel
 
                     }
                     
-                    videoPlayer.open(item.Video.Location, TokenSource.Token, videoFormatName, audioLocation, audioFormatName);
-                   
+                    CloseCommand.IsExecutable = true;
+
+                    await videoPlayer.close();
+
+                    IsLoading = true;
+
+                    await videoPlayer.open(item.Video.Location, videoFormatName, audioLocation, audioFormatName);                   
+                }
+                catch (OperationCanceledException)
+                {
+                    CloseCommand.IsExecutable = false;
+                    throw;
                 }
                 catch (Exception e)
                 {
-                    CurrentItem.IsEmpty = true;
+                    CloseCommand.IsExecutable = false;                   
                     MessageBox.Show("Error opening " + item.Video.Location + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    throw;
                 }
-
+                finally
+                {
+                    IsLoading = false;
+                }
+               
                 EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem.IsEmpty ? null : CurrentItem.Video.Name);              
                 
             });
 
-            PlayCommand = new Command(async () =>
+            PlayCommand = new AsyncCommand(async () =>
             {
-                if (addCommandToQueue(PlayCommand, null) == true) return;
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
                
                 if (VideoState == VideoPlayerControl.VideoState.CLOSED && !CurrentItem.IsEmpty)
                 {
-                    
-                    try
-                    {
-                        Logger.Log.Info("Opening: " + CurrentItem.Video.Location);
-
-                        await OpenCommand.Execute(CurrentItem);                       
-                        videoPlayer.startPlay();                        
-                    }
-                    catch (Exception e)
-                    {
-                        String error = "Error opening " + CurrentItem.Video.Location;
-
-                        Logger.Log.Error(error, e);
-                        MessageBox.Show(error + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-
+                    await openAndPlay(CurrentItem); 
                 }
                 else if (VideoState == VideoPlayerControl.VideoState.OPEN || VideoState == VideoPlayerControl.VideoState.PAUSED)
                 {
@@ -137,34 +140,45 @@ namespace MediaViewer.VideoPanel
 
             PauseCommand = new Command(() => {
 
-                if (addCommandToQueue(PauseCommand, null) == true) return;
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
+
                 videoPlayer.pausePlay(); 
 
             }, false);
 
-            CloseCommand = new Command(() => {
+            CloseCommand = new AsyncCommand(async () => {
 
-                if (addCommandToQueue(CloseCommand, null) == true) return;
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }            
 
-                TokenSource.Cancel();
-               
-                TokenSource = new CancellationTokenSource();
-
-                videoPlayer.close(); 
-
-            }, false);
-
-            SeekCommand = new Command<double?>((pos) => {
-
-                if (addCommandToQueue(SeekCommand, pos) == true) return;
-                videoPlayer.seek(pos.Value); 
+                await videoPlayer.close(); 
 
             }, false);
 
-            FrameByFrameCommand = new Command(() => {
+            SeekCommand = new AsyncCommand<double>(async (pos) =>
+            {
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
 
-                if (addCommandToQueue(FrameByFrameCommand, null) == true) return;
-                videoPlayer.displayNextFrame(); 
+                await videoPlayer.seek(pos); 
+
+            }, false);
+
+            FrameByFrameCommand = new AsyncCommand(async () => {
+
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
+
+                await videoPlayer.displayNextFrame(); 
 
             }, false);
 
@@ -207,7 +221,10 @@ namespace MediaViewer.VideoPanel
 
             ScreenShotCommand = new Command(() =>
             {
-                if (addCommandToQueue(ScreenShotCommand, null) == true) return;
+                if (playerIsInitialized() == false)
+                {
+                    return;
+                }
 
                 try
                 {
@@ -264,7 +281,10 @@ namespace MediaViewer.VideoPanel
 
         public bool IsInitialized
         {
-            get { return isInitialized; }
+            get { 
+                
+                return isInitialized;             
+            }
             private set {  
             SetProperty(ref isInitialized, value);
             }
@@ -287,33 +307,10 @@ namespace MediaViewer.VideoPanel
             MaxVolume = videoPlayer.MaxVolume;
             videoPlayer.IsMuted = IsMuted;
             videoPlayer.Volume = Volume;
-                        
-            // execute queued commands
-            Tuple<ICommand, Object> tuple;
-
-            while (commandQueue.TryDequeue(out tuple))
-            {
-                ICommand command = tuple.Item1;
-                Object arg = tuple.Item2;
-
-                command.Execute(arg);
-            }
-
+                                          
             IsInitialized = true;
         }
-
-        bool addCommandToQueue(ICommand command, Object argument)
-        {
-            
-            if (IsInitialized == false)
-            {
-                commandQueue.Enqueue(new Tuple<ICommand, object>(command, argument));
-                return (true);
-            }
-
-            return (false);
-        }
-
+       
         public void Dispose()
         {
             Dispose(true);
@@ -420,9 +417,16 @@ namespace MediaViewer.VideoPanel
             }
         }
 
+        bool isLoading;
+
+        public bool IsLoading
+        {
+            get { return isLoading; }
+            set { SetProperty(ref isLoading, value); }
+        }
+
         void videoPlayer_StateChanged(object sender, VideoState newVideoState)
-        {           
-           
+        {                      
             VideoState = newVideoState;
 
             switch (videoState)
@@ -484,13 +488,13 @@ namespace MediaViewer.VideoPanel
         /// <summary>
         /// VIEWMODEL INTERFACE
         /// </summary>
-        public Command<VideoAudioPair> OpenCommand { get; set; }
-        public Command PlayCommand { get; set; }
+        public AsyncCommand<VideoAudioPair> OpenCommand { get; set; }
+        public AsyncCommand PlayCommand { get; set; }
         public Command PauseCommand { get; set; }
-        public Command CloseCommand { get; set; }
+        public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
-        public Command<double?> SeekCommand { get; set; }
-        public Command FrameByFrameCommand { get; set; }      
+        public AsyncCommand<double> SeekCommand { get; set; }
+        public AsyncCommand FrameByFrameCommand { get; set; }      
         public Command SetLeftMarkerCommand { get; set; }
         public Command SetRightMarkerCommand { get; set; }
         public Command CutVideoCommand { get; set; }
@@ -581,7 +585,7 @@ namespace MediaViewer.VideoPanel
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(videoView_MediaSelectionEvent);
         }
 
-        public void OnNavigatedTo(NavigationContext navigationContext)
+        public async void OnNavigatedTo(NavigationContext navigationContext)
         {
             MediaItem video = (MediaItem)navigationContext.Parameters["item"];
             int? offsetSeconds = (int?)navigationContext.Parameters["offsetSeconds"];
@@ -589,32 +593,59 @@ namespace MediaViewer.VideoPanel
 
             if (video != null)
             {
-                OpenCommand.Execute(new VideoAudioPair(video, audio));
+                await openAndPlay(new VideoAudioPair(video, audio), offsetSeconds);                                
+            }
+            else
+            {
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem.IsEmpty ? null : CurrentItem.Video.Name);
+            }
+           
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
+
+        }
+
+        private async void videoView_MediaSelectionEvent(MediaItem item)
+        {
+            if (!CurrentItem.IsEmpty && String.Equals(CurrentItem.Video.Location, item.Location)) return;
+
+            await openAndPlay(new VideoAudioPair(item, null));
+        
+        }
+
+        async Task openAndPlay(VideoAudioPair item, int? offsetSeconds = null)
+        {
+            try
+            {
+                EventAggregator.GetEvent<TitleChangedEvent>().Publish(item.Video.Name);
+
+                await OpenCommand.ExecuteAsync(item);
                 PlayCommand.Execute();
 
                 if (offsetSeconds != null)
                 {
                     SeekCommand.Execute(offsetSeconds);
                 }
-
-                EventAggregator.GetEvent<TitleChangedEvent>().Publish(video.Name);
+                
             }
-            else
+            catch (Exception)
             {
-                EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem.IsEmpty ? null : CurrentItem.Video.Name);
+
             }
 
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
-
         }
 
-        private void videoView_MediaSelectionEvent(MediaItem item)
-        {
-            if (!CurrentItem.IsEmpty && String.Equals(CurrentItem.Video.Location, item.Location)) return;
 
-            OpenCommand.Execute(new VideoAudioPair(item, null));
-            PlayCommand.Execute();
+        bool playerIsInitialized() {
+
+#if DEBUG
+            if(IsInitialized == false) {
+
+                throw new Exception("Trying to execute command before videoplayer is initialized");
+            }
+#endif
+            return(IsInitialized);
+
         }
-              
+        
     }
 }

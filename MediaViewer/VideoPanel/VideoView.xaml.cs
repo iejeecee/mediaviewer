@@ -170,7 +170,7 @@ namespace MediaViewer.VideoPanel
 
         }
 
-        private void timeLineSlider_MouseLeftButtonUpEvent(object sender, MouseButtonEventArgs e)
+        private async void timeLineSlider_MouseLeftButtonUpEvent(object sender, MouseButtonEventArgs e)
         {
             VideoSliderView slider = sender as VideoSliderView;
             Point position = e.GetPosition(slider);
@@ -181,7 +181,7 @@ namespace MediaViewer.VideoPanel
 
             updateTimeLineSlider = true;
 
-            ViewModel.SeekCommand.Execute(sliderValue);
+            await ViewModel.SeekCommand.ExecuteAsync(sliderValue);
            
         }
 

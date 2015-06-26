@@ -113,6 +113,9 @@ namespace VideoPlayerControl
    
         Task[] demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
+
+        Task openTask;
+        CancellationTokenSource openCancellationTokenSource;
     
         int positionSeconds;
 
@@ -224,7 +227,8 @@ namespace VideoPlayerControl
 
             videoDecoder.FrameQueue.Finished += new EventHandler((s,e) =>
             {
-                owner.BeginInvoke(new Action(close));                
+                owner.BeginInvoke(new Func<Task>(async () => await close()));
+                
             });
 
             audioPlayer = new AudioPlayer(owner);
@@ -246,13 +250,14 @@ namespace VideoPlayerControl
             DurationSeconds = 0;
             PositionSeconds = 0;
 
-            owner.HandleDestroyed += new EventHandler((s, e) => close());
+            owner.HandleDestroyed += new EventHandler(async (s, e) => await close());
 
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
             
             oldVolume = 0;
-                 
+
+            openCancellationTokenSource = new CancellationTokenSource();
         }
 
         public void createScreenShot(String screenShotName, int positionOffset)
@@ -831,7 +836,7 @@ restartvideo:
 
         }
 
-        public void seek(double positionSeconds)
+        public async Task seek(double positionSeconds)
         {
             if (VideoState == VideoPlayerControl.VideoState.CLOSED)
             {
@@ -870,11 +875,11 @@ restartvideo:
             }
             else if (VideoState == VideoPlayerControl.VideoState.PAUSED)
             {
-                displayNextFrame();
+                await displayNextFrame();
             }
         }
 
-        public void displayNextFrame()
+        public async Task displayNextFrame()
         {         
             if (VideoState == VideoPlayerControl.VideoState.PLAYING) 
             {            
@@ -901,7 +906,7 @@ restartvideo:
                 }
                 else
                 {
-                    close();
+                    await close();
                 }
 
                 Volume = oldVolume;
@@ -909,23 +914,24 @@ restartvideo:
             }
         }
 
-        //public async Task open(string location, CancellationToken token, 
-        public void open(string location, CancellationToken token, 
+        public async Task open(string location,        
             string inputFormatName = null, string audioLocation = null,
             string audioFormatName = null)
         {         
             try
             {
                 
-                close();
+                await close();
 
                 VideoLocation = location;
 
-                //await Task.Factory.StartNew(new Action(() =>
-                //{
-                    videoDecoder.open(location, decodedVideoFormat, inputFormatName, audioLocation, audioFormatName, token);
-                //}));
-                              
+                openTask = Task.Factory.StartNew(new Action(() =>
+                {
+                    videoDecoder.open(location, decodedVideoFormat, inputFormatName, audioLocation, audioFormatName, openCancellationTokenSource.Token);
+                }), openCancellationTokenSource.Token);
+
+                await openTask;
+
                 videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
                
                 DurationSeconds = videoDecoder.DurationSeconds;
@@ -964,7 +970,6 @@ restartvideo:
 
                     VideoOpened(this, EventArgs.Empty);
                 }
-
                
             }
             catch (VideoLib.VideoLibException)
@@ -979,22 +984,40 @@ restartvideo:
             }
         }
 
-        public void close()
+        public async Task close()
         {
-
+            // cancel any running asyinc open operations
+            
+            if (openTask != null && !openTask.IsCanceled)
+            {
+                try
+                {
+                    openCancellationTokenSource.Cancel();
+                    await openTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    
+                }
+                finally
+                {
+                    openCancellationTokenSource = new CancellationTokenSource();
+                }
+            }
+           
             if (VideoState == VideoState.CLOSED)
             {
                 return;
-            }          
-
+            }
+            
             VideoState = VideoState.CLOSED;  
 
             videoDecoder.FrameQueue.stop();
 
             demuxPacketsCancellationTokenSource.Cancel();
 
-            Task.WaitAll(demuxPacketsTask);
-           
+            await Task.WhenAll(demuxPacketsTask);
+                     
             videoDecoder.close();
           
             audioPlayer.flush();

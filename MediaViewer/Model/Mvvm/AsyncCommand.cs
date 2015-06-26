@@ -9,7 +9,7 @@ using System.Windows.Input;
 namespace MediaViewer.Model.Mvvm
 {
 
-    class AsyncCommand : AsyncCommand<object>
+    public class AsyncCommand : AsyncCommand<object>
     {
         public AsyncCommand(Func<Task> method, bool isExecutable = true)
             : base(o => method(), isExecutable)
@@ -17,11 +17,23 @@ namespace MediaViewer.Model.Mvvm
 
         }
 
+        public async Task ExecuteAsync()
+        {
+            await ExecuteAsync(null);
+        }
+
+        public async void Execute()
+        {
+            OnExecuting();
+            await Method(null);
+            OnExecuted();
+        }
+
     }
 
-    class AsyncCommand<T> : ICommand, INotifyPropertyChanged
+    public class AsyncCommand<T> : ICommand, INotifyPropertyChanged
     {
-        Func<T,Task> Method { get; set; }
+        protected Func<T,Task> Method { get; set; }
 
         public AsyncCommand(Func<T,Task> method, bool isExecutable = true)
         {
@@ -54,10 +66,10 @@ namespace MediaViewer.Model.Mvvm
             return (IsExecutable);
         }
         
-        public async Task ExecuteAsync(object parameter)
+        public async Task ExecuteAsync(T parameter)
         {
             OnExecuting();
-            await Method((T)parameter);          
+            await Method(parameter);          
             OnExecuted();
         }
 

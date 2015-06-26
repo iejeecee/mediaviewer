@@ -270,7 +270,7 @@ bool VideoPlayer::seek(double posSeconds) {
 
 	bool result = true;
 
-	for(int i = 0; i < decoder->size(); i++) {
+	for(unsigned int i = 0; i < decoder->size(); i++) {
 
 		result = DECODER(i)->seek(posSeconds) && result;
 	}	
@@ -280,7 +280,7 @@ bool VideoPlayer::seek(double posSeconds) {
 
 void VideoPlayer::close() {
 
-	for(int i = 0; i < decoder->size(); i++) {
+	for(unsigned int i = 0; i < decoder->size(); i++) {
 
 		DECODER(i)->close();
 	}
