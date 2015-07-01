@@ -46,7 +46,7 @@ void VideoTranscoder::setLogCallback(LogCallbackDelegate ^logCallback, bool enab
 
 }
 
-void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken ^token, 
+void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken token, 
 								Dictionary<String ^, Object ^> ^options, TranscodeProgressDelegate ^progressCallback)
 {
 	GCHandle gch = GCHandle::Alloc(progressCallback);

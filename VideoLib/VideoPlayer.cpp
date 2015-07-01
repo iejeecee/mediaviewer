@@ -47,14 +47,14 @@ VideoPlayer::~VideoPlayer() {
 
 
 void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, String ^inputFormatName, 
-					   System::Threading::CancellationToken ^token) {
+					   System::Threading::CancellationToken^ token) {
 
 	open(videoLocation,videoFormat, inputFormatName, nullptr, nullptr, token);
 
 }
 
 void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, String ^videoFormatName,
-			String ^audioLocation, String ^audioFormatName,  System::Threading::CancellationToken ^token)
+			String ^audioLocation, String ^audioFormatName,  System::Threading::CancellationToken^ token)
 {
 	try {		
 	

@@ -102,7 +102,7 @@ namespace MediaViewer.MetaData
             BatchMode = false;
             IsEnabled = false;
             
-            WriteMetaDataCommand = new Command(new Action(async () =>
+            WriteMetaDataCommand = new AsyncCommand(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
                 MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher, EventAggregator);
@@ -110,9 +110,9 @@ namespace MediaViewer.MetaData
                 metaDataUpdateView.Show();             
                 await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
 
-            }));
+            });
 
-            FilenamePresetsCommand = new Command(new Action(() =>
+            FilenamePresetsCommand = new Command(() =>
             {
                 FilenamePresetsView filenamePreset = new FilenamePresetsView();
                 FilenamePresetsViewModel vm = (FilenamePresetsViewModel)filenamePreset.DataContext;
@@ -122,9 +122,9 @@ namespace MediaViewer.MetaData
                     Filename = vm.SelectedPreset;                    
                 }
 
-            })); 
+            }); 
 
-            DirectoryPickerCommand = new Command(new Action(() => 
+            DirectoryPickerCommand = new Command(() => 
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
@@ -140,22 +140,22 @@ namespace MediaViewer.MetaData
                     Location = vm.SelectedPath;                    
                 }
 
-            }));
+            });
 
-            MetaDataPresetsCommand = new Command(new Action(() =>
+            MetaDataPresetsCommand = new Command(() =>
                 {
                     MetaDataPresetsView metaDataPresets = new MetaDataPresetsView();
                     metaDataPresets.ShowDialog();
                     loadMetaDataPresets();                    
 
-                }));
+                });
 
-            ClearRatingCommand = new Command(new Action(() =>
+            ClearRatingCommand = new Command(() =>
                 {
                     Rating = null;
-                }));
+                });
 
-            InsertCounterCommand = new Command<int?>(new Action<int?>((startIndex) =>
+            InsertCounterCommand = new Command<int?>((startIndex) =>
             {
                 try
                 {                    
@@ -167,9 +167,9 @@ namespace MediaViewer.MetaData
                     Logger.Log.Error(e);
                 }
 
-            }));
+            });
 
-            InsertReplaceStringCommand = new Command<int?>(new Action<int?>((startIndex) =>
+            InsertReplaceStringCommand = new Command<int?>((startIndex) =>
             {
                 try
                 {
@@ -181,9 +181,9 @@ namespace MediaViewer.MetaData
                     Logger.Log.Error(e);
                 }
 
-            }));
+            });
 
-            InsertExistingFilenameCommand = new Command<int?>(new Action<int?>((startIndex) =>
+            InsertExistingFilenameCommand = new Command<int?>((startIndex) =>
                 {
                     try
                     {
@@ -194,9 +194,9 @@ namespace MediaViewer.MetaData
                         Logger.Log.Error(e);
                     }
 
-                }));
+                });
 
-            InsertResolutionCommand = new Command<int?>(new Action<int?>((startIndex) =>
+            InsertResolutionCommand = new Command<int?>((startIndex) =>
             {
                 try
                 {
@@ -207,9 +207,9 @@ namespace MediaViewer.MetaData
                     Logger.Log.Error(e);
                 }
 
-            }));
+            });
 
-            InsertDateCommand = new Command<int?>(new Action<int?>((startIndex) =>
+            InsertDateCommand = new Command<int?>((startIndex) =>
             {
                 try
                 {
@@ -221,7 +221,7 @@ namespace MediaViewer.MetaData
                     Logger.Log.Error(e);
                 }
 
-            }));
+            });
 
             EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Subscribe((item) =>
             {
@@ -312,7 +312,7 @@ namespace MediaViewer.MetaData
             }
         }
 
-        public Command WriteMetaDataCommand { get; set; }
+        public AsyncCommand WriteMetaDataCommand { get; set; }
         public Command ClearRatingCommand { get; set; }
 
         public Command<int?> InsertCounterCommand {get;set;}

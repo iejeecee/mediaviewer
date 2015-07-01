@@ -185,15 +185,15 @@ namespace VideoLib {
 		}
 
 
-		void open(String ^videoLocation, System::Threading::CancellationToken ^cancellationToken);
+		void open(String ^videoLocation, System::Threading::CancellationToken cancellationToken);
 		void close();
 
 		List<VideoThumb ^> ^grabThumbnails(int thumbWidth, 
 			int captureInterval, int nrThumbs, double startOffset, 
-			System::Threading::CancellationToken ^cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
+			System::Threading::CancellationToken cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
 
 		List<VideoThumb ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken, int timeoutSeconds);
+			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken cancellationToken, int timeoutSeconds);
 
 		
 	};

@@ -21,7 +21,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <WindowsFormsHost x:Name="wfHost"  Grid.Row="0" >
+        <WindowsFormsHost x:Name="wfHost" Grid.Row="0">            
             <wfvpc:VideoPlayer x:Name="videoPlayer"/>
         </WindowsFormsHost>
         <Grid x:Name="uiGrid" Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
@@ -37,7 +37,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                </Grid.ColumnDefinitions>            
                 <VideoSlider:VideoSliderView Grid.Column="0" x:Name="timeLineSlider" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,10,0,0" 
 					Minimum="0" Maximum="{Binding DurationSeconds}"/>
                 <VideoSlider:RangeSlider Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" VerticalAlignment="Top" Margin="5,0,0,0" Minimum="0" Maximum="{Binding DurationSeconds}"
@@ -114,7 +114,7 @@
                 <Button Grid.Column="1" x:Name="closeButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Stop" Command="{Binding CloseCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/ButtonClose.ico" />
                 </Button>
-                <Button Grid.Column="2" x:Name="screenShotButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}" CommandParameter="screenshot">
+                <Button Grid.Column="2" x:Name="screenShotButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/screenshot.ico" />
                 </Button>
                 <Button Grid.Column="3" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">

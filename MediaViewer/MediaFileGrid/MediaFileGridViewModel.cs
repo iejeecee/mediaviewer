@@ -82,11 +82,17 @@ namespace MediaViewer.MediaFileGrid
         {
             if (MediaStateCollectionView.MediaState.UIMediaCollection.IsLoading)
             {
-                SelectAllCommand.IsExecutable = false;
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SelectAllCommand.IsExecutable = false;
+                }));
             }
             else
             {
-                SelectAllCommand.IsExecutable = true;
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    SelectAllCommand.IsExecutable = true;
+                }));
             }
         }
 

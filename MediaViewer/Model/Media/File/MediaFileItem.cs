@@ -23,7 +23,8 @@ namespace MediaViewer.Model.Media.File
 {
     public class MediaFileItem : MediaItem
     {
-
+        // If IsBufferEvents is true events are collected in a buffer so they can be fired outside locks
+        // The events will be executed when IsBufferEvents is set to false
         ConcurrentQueue<String> eventBuffer;
 
         protected MediaFileItem(String location, MediaItemState state = MediaItemState.EMPTY)
@@ -77,6 +78,8 @@ namespace MediaViewer.Model.Media.File
                     // check if newLocation has changed
                     if (oldLocation.Equals(newLocation)) return;
 
+                    isLocationChanged = true;
+
                     // update newLocation in dictionary
                     Factory.renameInDictionary(oldLocation, newLocation);
 
@@ -122,11 +125,8 @@ namespace MediaViewer.Model.Media.File
             }
             finally
             {
-                RWLock.ExitWriteLock();
-
-                isLocationChanged = true;
+                RWLock.ExitWriteLock();                
             }
-
         }
 
                          
@@ -348,6 +348,7 @@ namespace MediaViewer.Model.Media.File
                 if (isLocationChanged)
                 {
                     OnPropertyChangedBuffered("Location");
+                    OnPropertyChangedBuffered("Name");
                 }
 
                 if (isMetadataChanged)
@@ -451,7 +452,7 @@ namespace MediaViewer.Model.Media.File
                 
                 isBufferEvents = value;
                 
-                // A event could be fired here before any queued events are flushed.
+                // Note: A event could be fired here before any queued events are flushed.
                 // resulting in events occuring out of order.             
                 if (value == false)
                 {
@@ -609,7 +610,34 @@ namespace MediaViewer.Model.Media.File
                     rwLock.ExitWriteLock();
                 }
             }
-         
+
+            public static MediaFileItem findInDictionary(string location)
+            {
+                rwLock.EnterWriteLock();
+                try
+                {
+                    WeakReference<MediaFileItem> reference = null;
+                    MediaFileItem item = null;
+
+                    bool success = dictionary.TryGetValue(location, out reference);
+
+                    if (success == true)
+                    {
+                        bool exists = reference.TryGetTarget(out item);
+
+                        if (exists == false)
+                        {
+                            return (null);
+                        }
+                    }
+                   
+                    return (item);
+                }
+                finally
+                {
+                    rwLock.ExitWriteLock();
+                }
+            }
         }
               
     }

@@ -45,7 +45,7 @@ namespace YoutubePlugin
             MediaStateCollectionView = new YoutubeCollectionView(MediaState);
             MediaState.clearUIState("Empty", DateTime.Now, MediaStateType.SearchResult);
 
-            SearchCommand = new Command(async () =>
+            SearchCommand = new AsyncCommand(async () =>
             {
                 SearchCommand.IsExecutable = false;
                 try
@@ -75,7 +75,7 @@ namespace YoutubePlugin
 
             });            
 
-            ViewCommand = new Command<SelectableMediaItem>(async (selectableItem) =>
+            ViewCommand = new AsyncCommand<SelectableMediaItem>(async (selectableItem) =>
             {               
                 if(selectableItem.Item.Metadata == null) return;
 
@@ -112,7 +112,7 @@ namespace YoutubePlugin
                
             });
 
-            DownloadCommand = new Command<SelectableMediaItem>(async (selectableItem) => {
+            DownloadCommand = new AsyncCommand<SelectableMediaItem>(async (selectableItem) => {
 
                 List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
                 if (items.Count == 0)
@@ -176,9 +176,9 @@ namespace YoutubePlugin
             set { SetProperty(ref query, value); }
         }
 
-        public Command SearchCommand { get; set; }
-        public Command<SelectableMediaItem> ViewCommand { get; set; }
-        public Command<SelectableMediaItem> DownloadCommand { get; set; }
+        public AsyncCommand SearchCommand { get; set; }
+        public AsyncCommand<SelectableMediaItem> ViewCommand { get; set; }
+        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; set; }
         public Command CloseCommand { get; set; }
         public Command SelectAllCommand { get; set; }
         public Command DeselectAllCommand { get; set; }

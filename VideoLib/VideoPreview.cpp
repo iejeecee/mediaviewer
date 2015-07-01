@@ -44,7 +44,7 @@ VideoPreview::~VideoPreview() {
 	gch.Free();
 }
 
-void VideoPreview::open(String ^videoLocation, System::Threading::CancellationToken ^token) {
+void VideoPreview::open(String ^videoLocation, System::Threading::CancellationToken token) {
 
 	try {
 		
@@ -115,7 +115,7 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 }
 
 List<VideoThumb ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, 
-												 CancellationToken ^cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback) 
+												 CancellationToken cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback) 
 {
 
 	this->decodedFrameProgressCallback = decodedFrameProgressCallback;
@@ -129,7 +129,7 @@ List<VideoThumb ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInte
 
 
 List<VideoThumb ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, CancellationToken ^cancellationToken, int timeoutSeconds) 
+			int captureInterval, int nrThumbs, double startOffset, CancellationToken cancellationToken, int timeoutSeconds) 
 {
 
 	thumbs->Clear();

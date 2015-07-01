@@ -134,7 +134,15 @@ namespace YoutubePlugin.Item
 
                     metaData.Width = videoMetadata.Width;
                     metaData.Height = videoMetadata.Height;
-                    metaData.MimeType = videoMetadata.MimeType;                    
+                    metaData.MimeType = videoMetadata.MimeType;
+                    metaData.FramesPerSecond = videoMetadata.FramesPerSecond == 0 ? null : new Nullable<double>(videoMetadata.FramesPerSecond);
+                                        
+                    metaData.SizeBytes = videoMetadata.SizeBytes;
+
+                    if (audioMetadata != null)
+                    {
+                        metaData.SizeBytes += audioMetadata.SizeBytes;
+                    }                    
                 }
                               
                 long durationSeconds;

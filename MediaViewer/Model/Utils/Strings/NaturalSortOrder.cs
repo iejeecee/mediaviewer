@@ -80,9 +80,28 @@ namespace MediaViewer.Model.Utils.Strings
 
                 if (char.IsDigit(space1[0]) && char.IsDigit(space2[0]))
                 {
-                    int thisNumericChunk = int.Parse(str1);
-                    int thatNumericChunk = int.Parse(str2);
-                    result = thisNumericChunk.CompareTo(thatNumericChunk);
+                    long thisNumericChunk, thatNumericChunk;
+                    
+                    // test if strings can be parsed into numbers
+                    bool success1 = long.TryParse(str1, out thisNumericChunk);
+                    bool success2 = long.TryParse(str2, out thatNumericChunk);
+
+                    if (success1 == false && success2 == false)
+                    {
+                        result = 0;
+                    }
+                    if (success1 == false && success2 == true)
+                    {
+                        result = -1;
+                    }
+                    else if (success1 == false && success2 == true)
+                    {
+                        result = 1;
+                    }
+                    else
+                    {
+                        result = thisNumericChunk.CompareTo(thatNumericChunk);
+                    }
                 }
                 else
                 {

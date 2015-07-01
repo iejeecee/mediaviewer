@@ -72,7 +72,7 @@ protected:
 
 			if(hasVideo()) {
 
-				if(strcmp(stream[videoIdx]->getCodec()->name, "gif")) {
+				if(strcmp(stream[videoIdx]->getCodec()->name, "gif") == 0) {
 
 					// should calculate animated gif duration in some other fashion?
 					return(0);
@@ -318,7 +318,7 @@ public:
 		{		
 			if(errorCode == AVERROR_EXIT) {
 
-				throw gcnew System::OperationCanceledException(token);
+				throw gcnew System::OperationCanceledException(*token);
 
 			} else {
 
@@ -334,7 +334,7 @@ public:
 		{		
 			if(errorCode == AVERROR_EXIT) {
 
-				throw gcnew System::OperationCanceledException(token);
+				throw gcnew System::OperationCanceledException(*token);
 
 			} else {
 
@@ -518,8 +518,8 @@ public:
 		return(ret);
 	}
 
-	bool decodeFrame(VideoDecodeMode videoMode = DECODE_VIDEO, 
-		AudioDecodeMode audioMode = DECODE_AUDIO, System::Threading::CancellationToken ^token = nullptr, int timeOutSeconds = 0) 
+	bool decodeFrame(System::Threading::CancellationToken ^token, VideoDecodeMode videoMode = DECODE_VIDEO, 
+		AudioDecodeMode audioMode = DECODE_AUDIO, int timeOutSeconds = 0) 
 	{
 
 		if(isClosed()) return(false);
@@ -535,9 +535,9 @@ public:
 				throw gcnew VideoLibException("Timed out during decoding");
 			}
 
-			if(token != nullptr && token->IsCancellationRequested) {
+			if(token->IsCancellationRequested) {
 
-				throw gcnew VideoLibException("Decoding cancelled");
+				throw gcnew OperationCanceledException(*token);
 			}
 
 			if(readFrame(&packet) == false) {

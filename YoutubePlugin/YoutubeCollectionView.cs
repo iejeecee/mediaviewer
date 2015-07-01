@@ -23,7 +23,8 @@ namespace YoutubePlugin
         Author,
         Width,
         Height,               
-        MimeType        
+        MimeType,
+        FramesPerSecond
     }
 
     class YoutubeCollectionView : MediaStateCollectionView        
@@ -164,6 +165,18 @@ namespace YoutubePlugin
                             return (Nullable.Compare<double>(metaA.Rating, metaB.Rating));
                         });
                         break;
+                    case SortMode.FramesPerSecond:
+                        SortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            YoutubeItemMetadata metaA = (YoutubeItemMetadata)a.Item.Metadata;
+                            YoutubeItemMetadata metaB = (YoutubeItemMetadata)b.Item.Metadata;
+
+                            return (Nullable.Compare<double>(metaA.Rating, metaB.Rating));
+                        });
+                        break;
                     default:
                         break;
                 }
@@ -224,6 +237,12 @@ namespace YoutubePlugin
                     if (metadata.Rating != null)
                     {
                         return RatingCache.RatingBitmap[(int)metadata.Rating.Value];
+                    }
+                    break;
+                case SortMode.FramesPerSecond:
+                    if (metadata.FramesPerSecond != null)
+                    {
+                        return (metadata.FramesPerSecond.Value.ToString() + "fps");
                     }
                     break;
                 default:

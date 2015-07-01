@@ -37,13 +37,13 @@ namespace ImageSearchPlugin
 
         const String rootUri = "https://api.datamarket.azure.com/Bing/Search";
       
-        public Command SearchCommand { get; set; }
+        public AsyncCommand SearchCommand { get; set; }
         public Command CloseCommand { get; set; }
         public Command SelectAllCommand { get; set; }
         public Command DeselectAllCommand { get; set; }
         public Command<SelectableMediaItem> ViewCommand { get; set; }
         public Command<SelectableMediaItem> ViewSourceCommand { get; set; }
-        public Command<SelectableMediaItem> DownloadCommand { get; set; }
+        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; set; }
         public GeoTagCoordinatePair GeoTag { get; set; }
 
         ImageSearchSettingsViewModel SettingsViewModel { get; set; }
@@ -55,11 +55,11 @@ namespace ImageSearchPlugin
         {        
             NrColumns = 4;
 
-            SearchCommand = new Command(() =>
+            SearchCommand = new AsyncCommand(async () =>
             {
                 try
                 {
-                    doSearch();
+                    await doSearch();
                 }
                 catch (Exception e)
                 {
@@ -103,7 +103,7 @@ namespace ImageSearchPlugin
                 OnClosingRequest();
             });
 
-            DownloadCommand = new Command<SelectableMediaItem>(async (selectableItem) =>
+            DownloadCommand = new AsyncCommand<SelectableMediaItem>(async (selectableItem) =>
                 {
                     List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
                     if (items.Count == 0)
@@ -145,10 +145,19 @@ namespace ImageSearchPlugin
                     vm.OkCommand.IsExecutable = false;
                     vm.CancelCommand.IsExecutable = true;
 
-                    await Task.Factory.StartNew(() =>
+                    try
                     {
-                        vm.startDownload(outputPath, items);
-                    });
+                        await Task.Factory.StartNew(() =>
+                        {
+                            vm.startDownload(outputPath, items);
+
+                        }, vm.CancellationToken);
+
+                    }
+                    catch (Exception)
+                    {
+
+                    }
 
                     vm.OkCommand.IsExecutable = true;
                     vm.CancelCommand.IsExecutable = false;
@@ -216,9 +225,8 @@ namespace ImageSearchPlugin
         public ListCollectionView People { get; set; }
         public ListCollectionView Color { get; set; }
        
-        void doSearch()
+        async Task doSearch()
         {
-
             if (String.IsNullOrEmpty(Query) || String.IsNullOrWhiteSpace(Query))             
             {
                 return;
@@ -270,28 +278,26 @@ namespace ImageSearchPlugin
 
             SearchCommand.IsExecutable = false;
 
-            Task.Factory.FromAsync(imageQuery.BeginExecute(null, null), (asyncResults) =>
+            IEnumerable<Bing.ImageResult> imageResults = 
+                await Task.Factory.FromAsync<IEnumerable<Bing.ImageResult>>(imageQuery.BeginExecute(null, null), imageQuery.EndExecute);
+                       
+            SearchCommand.IsExecutable = true;
+                
+            MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+
+            List<MediaItem> results = new List<MediaItem>();
+
+            int relevance = 0;
+
+            foreach (var image in imageResults)
             {
-                SearchCommand.IsExecutable = true;
-                var imageResults = imageQuery.EndExecute(asyncResults);
+                results.Add(new ImageResultItem(image, relevance));
 
-                MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+                relevance++;
+            }
 
-                List<MediaItem> results = new List<MediaItem>();
-
-                int relevance = 0;
-
-                foreach (var image in imageResults)
-                {
-                    results.Add(new ImageResultItem(image, relevance));
-
-                    relevance++;
-                }
-
-                MediaState.addUIState(results);
-
-            });
-                                                    
+            MediaState.addUIState(results);
+                                                                
         }
     }
 }

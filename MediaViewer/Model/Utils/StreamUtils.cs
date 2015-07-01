@@ -33,7 +33,7 @@ namespace MediaViewer.Model.Utils
                     if (token.IsCancellationRequested)
                     {
                         request.Abort();
-                        throw new TaskCanceledException();
+                        throw new OperationCanceledException(token);
                     }
 
                     Thread.Sleep(100);
@@ -55,7 +55,7 @@ namespace MediaViewer.Model.Utils
                 {
                     if (token.IsCancellationRequested)
                     {
-                        throw new TaskCanceledException();
+                        throw new OperationCanceledException(token);
                     }
 
                     data.Write(buffer, 0, count);

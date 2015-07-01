@@ -58,6 +58,17 @@ namespace MediaViewer.UserControls.DirectoryPicker
                 }
             }
 
+            if (e.OldLocations != null)
+            {
+                foreach (String location in e.OldLocations)
+                {
+                    if (location.StartsWith(FullName))
+                    {
+                        NrImported--;
+                    }
+                }
+            }
+
         }
 
         Task loadingChildrenTask;

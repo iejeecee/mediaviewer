@@ -22,18 +22,16 @@ namespace VideoPlayerControl
         public event EventHandler<int> PositionSecondsChanged;
         public event EventHandler<int> DurationSecondsChanged;
         public event EventHandler<bool> HasAudioChanged;
+        public event EventHandler<DebugVariables> DebugVariablesChanged;
       
         Control owner;
 
-        VideoLib.VideoPlayer.OutputPixelFormat decodedVideoFormat;
+        public VideoLib.VideoPlayer.OutputPixelFormat DecodedVideoFormat {get; protected set;}
+        public String VideoLocation { get; set; }
+        public DebugVariables DebugVariables { get; protected set; }
 
-        public VideoLib.VideoPlayer.OutputPixelFormat DecodedVideoFormat
-        {
-            get
-            {
-                return (decodedVideoFormat);
-            }
-        }
+        int NrFramesRendered { get; set; }
+        int NrFramesDropped { get; set; }
 
         VideoState videoState;
 
@@ -50,15 +48,7 @@ namespace VideoPlayerControl
                 }
             }
         }
-
-        String videoLocation;
-
-        public String VideoLocation
-        {
-            get { return videoLocation; }
-            set { videoLocation = value; }
-        }
-
+              
         // no AV sync correction is done if below the AV sync threshold 
         const double AV_SYNC_THRESHOLD = 0.01;
         // no AV sync correction is done if too big error 
@@ -180,9 +170,7 @@ namespace VideoPlayerControl
         public double Volume
         {
             get { return audioPlayer.Volume; }
-            set { audioPlayer.Volume = value;
-          
-            }
+            set { audioPlayer.Volume = value; }
         }
 
         public int MaxVolume
@@ -195,24 +183,9 @@ namespace VideoPlayerControl
             get { return audioPlayer.MinVolume; }        
         }
 
-        double videoClock;
-
-        public double VideoClock
-        {
-            get { return videoClock; }
-            set { videoClock = value;        
-            }
-        }
-
-        double audioClock;
-
-        public double AudioClock
-        {
-            get { return audioClock; }
-            set { audioClock = value;       
-            }
-        }
-       
+        public double VideoClock { get; protected set; }
+        public double AudioClock { get; protected set; }
+              
         public log4net.ILog Log { get; set; }
              
         public VideoPlayerViewModel(Control owner,
@@ -220,7 +193,7 @@ namespace VideoPlayerControl
         {
        
             this.owner = owner;
-            this.decodedVideoFormat = decodedVideoFormat;            
+            DecodedVideoFormat = decodedVideoFormat;            
        
             videoDecoder = new VideoLib.VideoPlayer();
             videoDecoder.setLogCallback(videoDecoderLogCallback, true, VideoLib.VideoPlayer.LogLevel.LOG_LEVEL_ERROR);
@@ -258,6 +231,7 @@ namespace VideoPlayerControl
             oldVolume = 0;
 
             openCancellationTokenSource = new CancellationTokenSource();
+            DebugVariables = new DebugVariables();
         }
 
         public void createScreenShot(String screenShotName, int positionOffset)
@@ -313,7 +287,7 @@ namespace VideoPlayerControl
             }
         }
 
-        int nrFramesRendered = 0;
+       
 
         void videoRefreshTimer_Tick(Object sender, EventArgs e)
         {
@@ -348,7 +322,7 @@ restartvideo:
                               
                 updateObservableVariables();
                                                                            
-                nrFramesRendered++;               
+                NrFramesRendered++;               
 
 			} else if(VideoState == VideoState.PAUSED || videoFrame == null) {
                 
@@ -357,10 +331,10 @@ restartvideo:
                   
             if (actualDelay < 0.010)
             {
-
                 // delay is too small skip next frame
                 skipVideoFrame = true;
-                //videoDebug.NrVideoFramesDropped = videoDebug.NrVideoFramesDropped + 1;
+                NrFramesDropped++;
+               
                 goto restartvideo;
 
             }
@@ -384,6 +358,19 @@ restartvideo:
             PositionSeconds = (int)Math.Floor(getVideoClock());
             VideoClock = getVideoClock();
             AudioClock = audioPlayer.getAudioClock();
+                    
+            if (DebugVariablesChanged != null && NrFramesRendered % 30 == 0)
+            {
+                DebugVariables.MaxAudioPacketsInQueue = videoDecoder.FrameQueue.MaxAudioPackets;
+                DebugVariables.MaxVideoPacketsInQueue = videoDecoder.FrameQueue.MaxVideoPackets;
+                DebugVariables.AudioClock = AudioClock;
+                DebugVariables.VideoClock = VideoClock;
+                DebugVariables.AudioPacketsInQueue = videoDecoder.FrameQueue.AudioPacketsInQueue;
+                DebugVariables.VideoPacketsInQueue = videoDecoder.FrameQueue.VideoPacketsInQueue;
+                DebugVariables.NrFramesDropped = NrFramesDropped;
+
+                DebugVariablesChanged(this, DebugVariables);
+            }
         }
 
         double synchronizeVideo(double videoPts)
@@ -419,7 +406,8 @@ restartvideo:
                     }
                     else if (diff >= sync_threshold)
                     {
-                        delay = 2 * delay;
+                        //delay = 2 * delay;
+                        delay = diff;
                     }
                 }
 
@@ -927,7 +915,7 @@ restartvideo:
 
                 openTask = Task.Factory.StartNew(new Action(() =>
                 {
-                    videoDecoder.open(location, decodedVideoFormat, inputFormatName, audioLocation, audioFormatName, openCancellationTokenSource.Token);
+                    videoDecoder.open(location, DecodedVideoFormat, inputFormatName, audioLocation, audioFormatName, openCancellationTokenSource.Token);
                 }), openCancellationTokenSource.Token);
 
                 await openTask;
@@ -988,7 +976,7 @@ restartvideo:
         {
             // cancel any running asyinc open operations
             
-            if (openTask != null && !openTask.IsCanceled)
+            if (openTask != null && !openTask.IsCompleted)
             {
                 try
                 {
@@ -1027,6 +1015,9 @@ restartvideo:
   
             DurationSeconds = 0;
             PositionSeconds = 0;
+
+            NrFramesDropped = 0;
+            NrFramesRendered = 0;
 
             videoRender.display(null, Color.Black, VideoRender.RenderMode.CLEAR_SCREEN);
 

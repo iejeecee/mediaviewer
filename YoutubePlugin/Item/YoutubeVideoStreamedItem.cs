@@ -26,6 +26,11 @@ namespace YoutubePlugin.Item
         public YoutubeVideoStreamedItem(NameValueCollection info, String name) 
             : base(info["url"], name, MediaItemState.LOADED)
         {
+            /*foreach (string v in info)
+            {
+                System.Diagnostics.Debug.Print(v + ": " + info[v]);
+            }*/
+
             VideoMetadata videoMetadata = new VideoMetadata();
                                 
             videoMetadata.MimeType = info["type"];
@@ -43,7 +48,7 @@ namespace YoutubePlugin.Item
             {
                 videoMetadata.FramesPerSecond = int.Parse(fpsString);
             }
-
+           
             int iTag = int.Parse(info["itag"]);
 
             if (itagFormatInfo.ContainsKey(iTag))

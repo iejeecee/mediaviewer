@@ -104,7 +104,7 @@ public:
 
 	}
 
-	virtual void open(String ^location, System::Threading::CancellationToken ^token) {
+	virtual void open(String ^location, System::Threading::CancellationToken ^ token) {
 
 		VideoDecoder::open(location, token, nullptr);
 
@@ -174,7 +174,7 @@ public:
 
 	}
 
-	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken) {
+	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^ cancellationToken) {
 
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -186,11 +186,11 @@ public:
 		this->thumbWidth = thumbWidth;
 		thumbHeight = round(getHeight() * scale);
 
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, true, cancellationToken);
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, cancellationToken, true);
 	}
 
 	void grab(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken, int timeOutSeconds)
+			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^ cancellationToken, int timeOutSeconds)
 	{
 		if(getWidth() == 0 || getHeight() == 0) {
 
@@ -213,13 +213,12 @@ public:
 		thumbWidth = round(getWidth() * std::min<float>(widthScale, heightScale));
 		thumbHeight = round(getHeight() * std::min<float>(widthScale, heightScale));
 
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, false, cancellationToken, timeOutSeconds);
+		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, cancellationToken, false, timeOutSeconds);
 	}
 
 	void startGrab(int thumbWidth, int thumbHeight, 
-		int captureInterval, int nrThumbs, double startOffset, bool suppressError = false, 
-		System::Threading::CancellationToken ^cancellationToken = nullptr,
-		int decodingTimeOut = 0)
+		int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken,
+		bool suppressError = false, int decodingTimeOut = 0)
 	{
 
 		setVideoOutputFormat(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
@@ -247,7 +246,7 @@ public:
 
 		for(frameNr = 0; frameNr < nrFrames; frameNr++) {
 
-			if(cancellationToken != nullptr && cancellationToken->IsCancellationRequested) {
+			if(cancellationToken->IsCancellationRequested) {
 				return;
 			}
 
@@ -260,7 +259,7 @@ public:
 				seekSuccess = seek(0);
 			}
 			
-			bool frameOk = decodeFrame(DECODE_VIDEO, SKIP_AUDIO, cancellationToken, decodingTimeOut);
+			bool frameOk = decodeFrame(cancellationToken, DECODE_VIDEO, SKIP_AUDIO, decodingTimeOut);
 
 			if(!frameOk) {
 			

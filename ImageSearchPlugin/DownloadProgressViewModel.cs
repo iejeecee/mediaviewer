@@ -29,7 +29,11 @@ namespace ImageSearchPlugin
 
             foreach (ImageResultItem item in items)
             {
-              
+                if (CancellationToken.IsCancellationRequested)
+                {
+                    throw new OperationCanceledException(CancellationToken);
+                }
+
                 String fullpath = null;
                 String ext = "." + MediaFormatConvert.mimeTypeToExtension(item.ImageInfo.ContentType);
 
@@ -50,12 +54,14 @@ namespace ImageSearchPlugin
                 {
                     fullpath = FileUtils.getUniqueFileName(outputPath + "\\" + "image" + ext);
                 }
-          
-                FileStream outFile = new FileStream(fullpath, FileMode.Create);
-                string mimeType;
+
+                FileStream outFile = null;
 
                 try
                 {
+                    outFile = new FileStream(fullpath, FileMode.Create);
+                    string mimeType;
+
                     ItemProgressMax = 1;
                     ItemProgress = 0;
 
@@ -72,11 +78,15 @@ namespace ImageSearchPlugin
                 {
                     InfoMessages.Add("Error downloading: " + fullpath + " " + e.Message);
 
-                    outFile.Close();
-                    File.Delete(fullpath);
+                    if (outFile != null)
+                    {
+                        outFile.Close();
+                        File.Delete(fullpath);
+                    }
+
                     return;
                 }
-                
+                                
             }
 
         }

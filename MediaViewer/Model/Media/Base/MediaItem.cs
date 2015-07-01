@@ -36,9 +36,9 @@ namespace MediaViewer.Model.Media.Base
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             this.id = Id;
-            Location = location;           
-            ItemState = state;
-            Name = name;
+            this.location = location;           
+            this.itemState = state;
+            this.name = name;
        
             id = Guid.NewGuid();
           

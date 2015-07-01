@@ -656,6 +656,10 @@
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
     <Compile Include="VideoPanel\VideoAudioPair.cs" />
+    <Compile Include="VideoPanel\VideoDebugView.xaml.cs">
+      <DependentUpon>VideoDebugView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPanel\VideoDebugViewModel.cs" />
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
@@ -931,6 +935,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="VideoPanel\VideoDebugView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="VideoPanel\VideoNavigationItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1162,6 +1170,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\question.ico" />
     <Resource Include="Resources\Icons\imageconvert.ico" />
     <Resource Include="Resources\Icons\pin.ico" />
     <Resource Include="Resources\Icons\computer.ico" />

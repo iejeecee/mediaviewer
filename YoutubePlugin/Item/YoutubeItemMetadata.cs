@@ -16,7 +16,8 @@ namespace YoutubePlugin.Item
         public int? Height { get; set; }
         public long? DurationSeconds { get; set; }
         public long? ViewCount { get; set; }
-
+        public double? FramesPerSecond { get; set; }
+      
         public YoutubeItemMetadata()
         {            
         }
@@ -62,7 +63,21 @@ namespace YoutubePlugin.Item
 
                 if (Width != null && Height != null)
                 {
-                    sb.AppendLine("Video: " + Width + " x " + Height);                                      
+                    String fps = "";
+
+                    if (FramesPerSecond != null)
+                    {
+                        fps = ", " + FramesPerSecond + "fps";
+                    }
+
+                    String sizeBytes = "";
+
+                    if (SizeBytes != 0)
+                    {
+                        sizeBytes = ", " + MiscUtils.formatSizeBytes(SizeBytes);
+                    }
+
+                    sb.AppendLine("Video: " + Width + " x " + Height + fps + sizeBytes);                                      
                 }
             
                 if (DurationSeconds != null)

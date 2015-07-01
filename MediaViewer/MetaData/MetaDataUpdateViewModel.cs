@@ -313,13 +313,20 @@ namespace MediaViewer.MetaData
                 }
 
             }
-        
-            if (!oldFilename.Equals(newFilename))
+
+            
+            if (state.BatchMode == true)
             {
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-
                     MiscUtils.insertIntoHistoryCollection(Settings.FilenameHistory, state.Filename);
+                }));
+
+            } else if (!oldFilename.Equals(newFilename))
+            {
+                App.Current.Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    MiscUtils.insertIntoHistoryCollection(Settings.FilenameHistory, newFilename);
                 }));
             }
 

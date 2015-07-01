@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioPlayer.cs" />
+    <Compile Include="DebugVariables.cs" />
     <Compile Include="Timers\DefaultTimer.cs" />
     <Compile Include="Timers\HRTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />

@@ -113,14 +113,19 @@ namespace MediaViewer.Model.Media.File.Watcher
         void insertEvent(FileSystemEventArgs e)
         {
             if (e == null) return;
-
+            
             switch (e.ChangeType)
             {
                 case WatcherChangeTypes.Changed:
                     {
                         if (Utils.MediaFormatConvert.isMediaFile(e.Name))
                         {
-                            changed.Add(MediaFileItem.Factory.create(e.FullPath));
+                            MediaFileItem item = MediaFileItem.Factory.findInDictionary(e.FullPath);
+
+                            if (item != null)
+                            {
+                                changed.Add(item);
+                            }
                         }
                         break;
                     }
@@ -136,7 +141,12 @@ namespace MediaViewer.Model.Media.File.Watcher
                     {
                         if (Utils.MediaFormatConvert.isMediaFile(e.Name))
                         {
-                            removed.Add(MediaFileItem.Factory.create(e.FullPath));
+                            MediaFileItem item = MediaFileItem.Factory.findInDictionary(e.FullPath);
+
+                            if (item != null)
+                            {
+                                removed.Add(item);
+                            }
                         }
                         break;
                     }
@@ -146,8 +156,8 @@ namespace MediaViewer.Model.Media.File.Watcher
 
                         if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && !Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            MediaFileItem oldFile = MediaFileItem.Factory.create(r.OldFullPath);
-
+                            MediaFileItem oldItem = MediaFileItem.Factory.findInDictionary(r.OldFullPath);
+                        
                             if (Path.GetExtension(r.Name).Equals("._01_"))
                             {
                                 // Updating metadata on a mediafile will create a temporary copy of the mediafile
@@ -157,7 +167,10 @@ namespace MediaViewer.Model.Media.File.Watcher
                             }
                             else
                             {
-                                removed.Add(oldFile);
+                                if (oldItem != null)
+                                {
+                                    removed.Add(oldItem);
+                                }
                             }
 
                         }
@@ -179,8 +192,13 @@ namespace MediaViewer.Model.Media.File.Watcher
                         }
                         else if (Utils.MediaFormatConvert.isMediaFile(r.OldName) && Utils.MediaFormatConvert.isMediaFile(r.Name))
                         {
-                            renamedOldFiles.Add(MediaFileItem.Factory.create(r.OldFullPath));
-                            renamedNewLocations.Add(r.FullPath);
+                            MediaFileItem renamedItem = MediaFileItem.Factory.findInDictionary(r.OldFullPath);
+
+                            if(renamedItem != null) {
+
+                                renamedOldFiles.Add(renamedItem);
+                                renamedNewLocations.Add(r.FullPath);
+                            }
                         }
 
                         break;

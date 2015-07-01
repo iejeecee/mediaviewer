@@ -125,7 +125,7 @@ public:
 					
 	}
 
-	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken ^token, 
+	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken token, 
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
 	{
 		
@@ -170,7 +170,7 @@ public:
 			// read all packets 
 			while (1) {
 
-				if(token->IsCancellationRequested) {
+				if(token.IsCancellationRequested) {
 
 					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
 				}
@@ -458,7 +458,7 @@ protected:
 
 	
 	void initialize(String ^inputFilename, String ^outputFilename, Dictionary<String ^,Object ^> ^options, 
-		System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
+		System::Threading::CancellationToken token, String ^inputFormatName = nullptr) {
 		
 		input->open(inputFilename, token, inputFormatName);					
 		output->open(outputFilename);

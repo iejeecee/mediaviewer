@@ -193,7 +193,7 @@ namespace MediaViewer
 
             Uri VideoToolbarViewUri = new Uri(typeof(VideoToolbarView).FullName, UriKind.Relative);
 
-            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, VideoToolbarViewUri);
+            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, VideoToolbarViewUri, navigationParams);
         }
     }
 }

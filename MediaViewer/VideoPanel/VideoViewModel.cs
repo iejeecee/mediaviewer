@@ -43,9 +43,10 @@ namespace MediaViewer.VideoPanel
     {
 
         VideoSettingsViewModel VideoSettings { get; set; }
-             
-        ConcurrentQueue<Tuple<ICommand, Object>> commandQueue;
+                  
         IEventAggregator EventAggregator { get; set; }
+
+        SemaphoreSlim isInitializedSignal;
       
         public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
         {
@@ -53,16 +54,14 @@ namespace MediaViewer.VideoPanel
             VideoSettings = ServiceLocator.Current.GetInstance(typeof(VideoSettingsViewModel)) as VideoSettingsViewModel;
 
             IsInitialized = false;
+            isInitializedSignal = new SemaphoreSlim(0, 1);
+
             CurrentItem = new VideoAudioPair(null, null);
         
-            commandQueue = new ConcurrentQueue<Tuple<ICommand, Object>>();
-           
+                      
             OpenCommand = new AsyncCommand<VideoAudioPair>(async item =>
             {
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
+                await isInitializedSignal.WaitAsync();
 
                 try
                 {
@@ -94,11 +93,11 @@ namespace MediaViewer.VideoPanel
                     
                     CloseCommand.IsExecutable = true;
 
-                    await videoPlayer.close();
+                    await VideoPlayer.close();
 
                     IsLoading = true;
 
-                    await videoPlayer.open(item.Video.Location, videoFormatName, audioLocation, audioFormatName);                   
+                    await VideoPlayer.open(item.Video.Location, videoFormatName, audioLocation, audioFormatName);                   
                 }
                 catch (OperationCanceledException)
                 {
@@ -114,6 +113,7 @@ namespace MediaViewer.VideoPanel
                 finally
                 {
                     IsLoading = false;
+                    isInitializedSignal.Release();
                 }
                
                 EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem.IsEmpty ? null : CurrentItem.Video.Name);              
@@ -122,82 +122,59 @@ namespace MediaViewer.VideoPanel
 
             PlayCommand = new AsyncCommand(async () =>
             {
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
-               
+                             
                 if (VideoState == VideoPlayerControl.VideoState.CLOSED && !CurrentItem.IsEmpty)
                 {
                     await openAndPlay(CurrentItem); 
                 }
                 else if (VideoState == VideoPlayerControl.VideoState.OPEN || VideoState == VideoPlayerControl.VideoState.PAUSED)
                 {
-                    videoPlayer.startPlay();
+                    VideoPlayer.startPlay();
                 }                
 
             }, false);
 
             PauseCommand = new Command(() => {
-
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
-
-                videoPlayer.pausePlay(); 
+              
+                VideoPlayer.pausePlay(); 
 
             }, false);
 
             CloseCommand = new AsyncCommand(async () => {
-
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }            
-
-                await videoPlayer.close(); 
+                     
+                await VideoPlayer.close(); 
 
             }, false);
 
             SeekCommand = new AsyncCommand<double>(async (pos) =>
             {
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
-
-                await videoPlayer.seek(pos); 
+              
+                await VideoPlayer.seek(pos); 
 
             }, false);
 
             FrameByFrameCommand = new AsyncCommand(async () => {
-
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
-
-                await videoPlayer.displayNextFrame(); 
+             
+                await VideoPlayer.displayNextFrame(); 
 
             }, false);
 
             CutVideoCommand = new Command(() =>
             {
                 VideoTranscodeView videoTranscode = new VideoTranscodeView();            
-                videoTranscode.ViewModel.Items.Add(MediaFileItem.Factory.create(videoPlayer.VideoLocation));
+                videoTranscode.ViewModel.Items.Add(MediaFileItem.Factory.create(VideoPlayer.VideoLocation));
                 videoTranscode.ViewModel.Title = "Cut Video";
                 videoTranscode.ViewModel.IconUri = "/MediaViewer;component/Resources/Icons/videocut.ico";
 
                 String outputPath;
 
-                if(FileUtils.isUrl(videoPlayer.VideoLocation)) {
+                if(FileUtils.isUrl(VideoPlayer.VideoLocation)) {
 
                     outputPath = MediaFileWatcher.Instance.Path;
 
                 } else {
 
-                    outputPath = FileUtils.getPathWithoutFileName(videoPlayer.VideoLocation);
+                    outputPath = FileUtils.getPathWithoutFileName(VideoPlayer.VideoLocation);
                 }
 
                 videoTranscode.ViewModel.OutputPath = outputPath;
@@ -205,7 +182,7 @@ namespace MediaViewer.VideoPanel
                 videoTranscode.ViewModel.StartTimeRange = StartTimeRange;
                 videoTranscode.ViewModel.EndTimeRange = EndTimeRange;
 
-                String extension = Path.GetExtension(videoPlayer.VideoLocation).ToLower().TrimStart('.');
+                String extension = Path.GetExtension(VideoPlayer.VideoLocation).ToLower().TrimStart('.');
 
                 foreach(ContainerFormats format in Enum.GetValues(typeof(ContainerFormats))) {
 
@@ -220,12 +197,7 @@ namespace MediaViewer.VideoPanel
             }, false);
 
             ScreenShotCommand = new Command(() =>
-            {
-                if (playerIsInitialized() == false)
-                {
-                    return;
-                }
-
+            {             
                 try
                 {
                     String screenShotName = FileUtils.removeIllegalCharsFromFileName(CurrentItem.Video.Name, " ");
@@ -235,7 +207,7 @@ namespace MediaViewer.VideoPanel
                     String fullPath = VideoSettings.Settings.VideoScreenShotLocation + "\\" + screenShotName;
                     fullPath = FileUtils.getUniqueFileName(fullPath);
 
-                    videoPlayer.createScreenShot(fullPath, VideoSettings.Settings.VideoScreenShotTimeOffset);
+                    VideoPlayer.createScreenShot(fullPath, VideoSettings.Settings.VideoScreenShotTimeOffset);
                 }
                 catch (Exception e)
                 {
@@ -251,7 +223,7 @@ namespace MediaViewer.VideoPanel
                         IsTimeRangeEnabled = true;
                     }
 
-                    StartTimeRange = videoPlayer.PositionSeconds;
+                    StartTimeRange = VideoPlayer.PositionSeconds;
 
                 }, false);
 
@@ -260,15 +232,15 @@ namespace MediaViewer.VideoPanel
                 if (IsTimeRangeEnabled == false)
                 {
                     IsTimeRangeEnabled = true;
-                    StartTimeRange = videoPlayer.PositionSeconds;
+                    StartTimeRange = VideoPlayer.PositionSeconds;
                 }
                 else
                 {
-                    EndTimeRange = videoPlayer.PositionSeconds;
+                    EndTimeRange = VideoPlayer.PositionSeconds;
                 }
 
             }, false);
-
+         
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
            
@@ -290,13 +262,13 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        VideoPlayerViewModel videoPlayer;
+        public VideoPlayerViewModel VideoPlayer { get; protected set; }
         
         public void initializeVideoPlayer(VideoPlayerViewModel videoPlayer)
         {
             if (IsInitialized == true) return;
 
-            this.videoPlayer = videoPlayer;
+            this.VideoPlayer = videoPlayer;
                                                      
             videoPlayer.StateChanged += videoPlayer_StateChanged;
             videoPlayer.PositionSecondsChanged += videoPlayer_PositionSecondsChanged;
@@ -309,6 +281,7 @@ namespace MediaViewer.VideoPanel
             videoPlayer.Volume = Volume;
                                           
             IsInitialized = true;
+            isInitializedSignal.Release();
         }
        
         public void Dispose()
@@ -324,17 +297,17 @@ namespace MediaViewer.VideoPanel
             if (cleanupManaged)
             {
                 // cleanup unmanaged
-                if (videoPlayer != null)
+                if (VideoPlayer != null)
                 {
                     CloseCommand.Execute();
 
-                    videoPlayer.StateChanged -= videoPlayer_StateChanged;
-                    videoPlayer.PositionSecondsChanged -= videoPlayer_PositionSecondsChanged;
-                    videoPlayer.DurationSecondsChanged -= videoPlayer_DurationSecondsChanged;
-                    videoPlayer.HasAudioChanged -= videoPlayer_HasAudioChanged;
+                    VideoPlayer.StateChanged -= videoPlayer_StateChanged;
+                    VideoPlayer.PositionSecondsChanged -= videoPlayer_PositionSecondsChanged;
+                    VideoPlayer.DurationSecondsChanged -= videoPlayer_DurationSecondsChanged;
+                    VideoPlayer.HasAudioChanged -= videoPlayer_HasAudioChanged;
 
-                    videoPlayer.Dispose();
-                    videoPlayer = null;
+                    VideoPlayer.Dispose();
+                    VideoPlayer = null;
 
                 }
 
@@ -498,7 +471,7 @@ namespace MediaViewer.VideoPanel
         public Command SetLeftMarkerCommand { get; set; }
         public Command SetRightMarkerCommand { get; set; }
         public Command CutVideoCommand { get; set; }
-       
+   
         int maxVolume;
 
         public int MaxVolume        
@@ -525,7 +498,7 @@ namespace MediaViewer.VideoPanel
         {
             set
             {   
-                videoPlayer.Volume = value;
+                VideoPlayer.Volume = value;
 
                 SetProperty(ref volume, value);
             }
@@ -541,7 +514,7 @@ namespace MediaViewer.VideoPanel
         {
             set
             {
-                videoPlayer.IsMuted = value;
+                VideoPlayer.IsMuted = value;
                 SetProperty(ref isMuted, value);
             }
             get
