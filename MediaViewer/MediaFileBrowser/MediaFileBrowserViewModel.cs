@@ -478,7 +478,7 @@ namespace MediaViewer.MediaFileBrowser
 
             RegionManager.RequestNavigate("mediaSearchExpander", directoryBrowserUri);
 
-            // add search view
+            // add search view.
             Uri searchViewUri = new Uri(typeof(SearchView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate("mediaSearchExpander", searchViewUri);

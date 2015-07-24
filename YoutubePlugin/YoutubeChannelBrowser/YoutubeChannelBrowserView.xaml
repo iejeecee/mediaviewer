@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="YoutubePlugin.YoutubeChannelBrowser.YoutubeChannelBrowserView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:sd="http://icsharpcode.net/sharpdevelop/treeview"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <sd:SharpTreeView x:Name="treeView"                            
+                              ShowAlternation="False"   
+                              ShowRoot="False"
+                              ShowLines="False"
+                              SelectionChanged="treeView_SelectionChanged"                         
+                              >
+            <ListView.View>
+                <sd:SharpGridView>
+                    <GridView.Columns>
+                        <GridViewColumn Width="240">
+                            <GridViewColumn.Header>
+                                <GridViewColumnHeader Tag="Channel">Channel</GridViewColumnHeader>
+                            </GridViewColumn.Header>
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <sd:SharpTreeNodeView>
+                                        <sd:SharpTreeNodeView.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Refresh"/>
+                                                <Separator/>
+                                                <MenuItem Header="Create Directory" />
+                                                <MenuItem Header="Rename Directory" />
+                                                <MenuItem Header="Delete Directory" />
+                                            </ContextMenu>
+                                        </sd:SharpTreeNodeView.ContextMenu>
+                                    </sd:SharpTreeNodeView>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>                                           
+                        <GridViewColumn Header="Creation Date" Width="100">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding CreationDate}"/>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView.Columns>
+                </sd:SharpGridView>
+            </ListView.View>
+        </sd:SharpTreeView>
+    </Grid>  
+</UserControl>

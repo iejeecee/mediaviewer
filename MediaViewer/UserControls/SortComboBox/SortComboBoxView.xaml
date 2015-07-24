@@ -1,0 +1,76 @@
+﻿<UserControl x:Class="MediaViewer.UserControls.SortComboBox.SortComboBoxView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:ComponentModel="clr-namespace:System.ComponentModel;assembly=System"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <ComboBox x:Name="sortComboBox" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}" IsReadOnly="False">
+            <ComboBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Command="{Binding ToggleDirectionCommand}">
+                            <Button.Style>
+                                <Style>
+                                    <Setter Property="Button.Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+                                    <!--<Setter Property="Button.Padding" Value="2"/>-->
+                                    <Setter Property="Button.BorderThickness" Value="4"/>
+                                    <Setter Property="Button.Background" Value="Transparent"/>
+                                    <Setter Property="Button.BorderBrush" Value="Transparent"/>
+                                    <Setter Property="Button.HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="Button.VerticalAlignment" Value="Center"/>
+                                    <Setter Property="Button.HorizontalContentAlignment" Value="Center"/>
+                                    <Setter Property="Button.VerticalContentAlignment" Value="Center"/>
+                                    <Setter Property="Button.Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="{x:Type Button}">
+                                                <Border x:Name="Bd"
+                                                    SnapsToDevicePixels="true"
+                                                    Background="{TemplateBinding Background}"
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter
+                                                         HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                         VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                                         SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="true">
+                                                        <Setter Property="BorderBrush" TargetName="Bd" Value="Orange"/>
+                                                        <Setter Property="Background" TargetName="Bd" Value="Orange"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SortDirection}" Value="{x:Static ComponentModel:ListSortDirection.Ascending}">
+                                            <Setter Property="Button.Content">
+                                                <Setter.Value>
+                                                    <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
+                                                </Setter.Value>                                                
+                                            </Setter>
+                                            <Setter Property="Button.ToolTip" Value="Ascending"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding SortDirection}" Value="{x:Static ComponentModel:ListSortDirection.Descending}">
+                                            <Setter Property="Button.Content">
+                                                <Setter.Value>
+                                                    <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Setter Property="Button.ToolTip" Value="Descending"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <TextBlock Text="{Binding SortMode}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ComboBox.ItemTemplate>
+        </ComboBox>
+    </Grid>
+</UserControl>
