@@ -177,8 +177,16 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 
 		if(isFinalPacketAdded[0] == false) {
 
-			frameQueue->addAudioPacket(Packet::finalPacket);
-			frameQueue->addVideoPacket(Packet::finalPacket);
+			if(videoDecoder->hasVideo())
+			{
+				frameQueue->addVideoPacket(Packet::finalPacket);				
+			}
+
+			if(videoDecoder->hasAudio())
+			{
+				frameQueue->addAudioPacket(Packet::finalPacket);
+			}
+
 			isFinalPacketAdded[0] = true;
 		}
 

@@ -61,7 +61,7 @@ namespace MediaViewer.Model.Media.Base
             }
         }
 
-        public bool Equals(MediaItem other)
+        virtual public bool Equals(MediaItem other)
         {
             if (other == null) return (false);
 

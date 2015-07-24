@@ -2,6 +2,7 @@
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.MediaGridItem;
+using MediaViewer.UserControls.SortComboBox;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +14,14 @@ using YoutubePlugin.Item;
 
 namespace YoutubePlugin
 {
+    enum FilterMode
+    {
+        None,
+        Videos,
+        Channels,
+        Playlists
+    }
+
     enum SortMode
     {
         Relevance,
@@ -25,6 +34,14 @@ namespace YoutubePlugin
         Height,               
         MimeType,
         FramesPerSecond
+    }
+
+    class SortItem : SortItemBase<SortMode>
+    {
+        public SortItem(SortMode mode) :
+            base(mode)
+        {
+        }
     }
 
     class YoutubeCollectionView : MediaStateCollectionView        
@@ -43,6 +60,7 @@ namespace YoutubePlugin
             icons.Add(new BitmapImage(new Uri(iconPath + "hd.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "channel.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "playlist.ico", UriKind.Absolute)));
 
             InfoIconsCacheStatic = new YoutubeItemInfoIconsCache(icons);
         }
@@ -50,15 +68,33 @@ namespace YoutubePlugin
         public YoutubeCollectionView(MediaState mediaState) :
             base(mediaState)
         {
-            Filter = tagFilter;
+            Filter = filterFunc;
 
             InfoIconsCache = InfoIconsCacheStatic;
 
-            SortModes = new System.Windows.Data.ListCollectionView(Enum.GetValues(typeof(SortMode)));
+            FilterModes = new System.Windows.Data.ListCollectionView(Enum.GetValues(typeof(FilterMode)));
+
+            FilterModes.CurrentChanged += (s, e) =>
+                {
+                    refresh();
+                };
+           
+            SortItemCollection<SortItem, SortMode> sortItems = new SortItemCollection<SortItem,SortMode>();
+
+            foreach (SortMode mode in Enum.GetValues(typeof(SortMode)))
+            {
+                sortItems.Add(new SortItem(mode));
+            }
+
+            sortItems.ItemSortDirectionChanged += sortItems_ItemSortDirectionChanged;
+
+            SortModes = new System.Windows.Data.ListCollectionView(sortItems);
 
             SortModes.CurrentChanged += (s, e) =>
             {
-                switch ((SortMode)SortModes.CurrentItem)
+                SortItem item = (SortItem)SortModes.CurrentItem;
+
+                switch (item.SortMode)
                 {
                     case SortMode.Relevance:
                         SortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
@@ -181,8 +217,57 @@ namespace YoutubePlugin
                         break;
                 }
 
+                SortDirection = item.SortDirection;
+
                 refresh();
             };
+        }
+
+        bool filterFunc(SelectableMediaItem selectableItem)
+        {
+            YoutubeItem item = (YoutubeItem)selectableItem.Item;
+
+            switch ((FilterMode)FilterModes.CurrentItem)
+            {
+                case FilterMode.None:
+                    break;
+                case FilterMode.Videos:
+                    if (!(item is YoutubeVideoItem))
+                    {
+                        return (false);
+                    }
+                    break;
+                case FilterMode.Channels:
+                    if (!(item is YoutubeChannelItem))
+                    {
+                        return (false);
+                    }
+                    break;
+                case FilterMode.Playlists:
+                    if (!(item is YoutubePlaylistItem))
+                    {
+                        return (false);
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            bool result = tagFilter(selectableItem);
+
+            return (result);            
+        }
+
+        void sortItems_ItemSortDirectionChanged(object sender, EventArgs e)
+        {
+            SortItem sortItem = (SortItem)sender;
+
+            if (((SortItem)SortModes.CurrentItem).SortMode == sortItem.SortMode)
+            {
+                SortDirection = sortItem.SortDirection;
+
+                refresh();
+            }
         }
 
         static int hasMediaTest(SelectableMediaItem a, SelectableMediaItem b)
@@ -200,8 +285,10 @@ namespace YoutubePlugin
             YoutubeItemMetadata metadata = (YoutubeItemMetadata)selectableItem.Item.Metadata;
 
             if(metadata == null) return(info);
-                        
-            switch ((SortMode)SortModes.CurrentItem)
+
+            SortItem item = (SortItem)SortModes.CurrentItem;
+
+            switch (item.SortMode)
             {               
                 case SortMode.Width:
                                        
@@ -236,7 +323,7 @@ namespace YoutubePlugin
                 case SortMode.Rating:
                     if (metadata.Rating != null)
                     {
-                        return RatingCache.RatingBitmap[(int)metadata.Rating.Value];
+                        return RatingCache.RatingBitmap[(int)(metadata.Rating.Value + 0.5)];
                     }
                     break;
                 case SortMode.FramesPerSecond:

@@ -295,7 +295,7 @@ public:
 
 		AVInputFormat *inputFormat = NULL;
 		 				
-		if(inputFormat != nullptr) {
+		if(inputFormatName != nullptr) {
 
 			IntPtr p = Marshal::StringToHGlobalAnsi(inputFormatName);
 			char *shortName = static_cast<char*>(p.ToPointer());

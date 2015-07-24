@@ -1,7 +1,11 @@
 ﻿using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.UserControls.TabbedExpander;
 using Microsoft.Practices.Prism.Mvvm;
+using Microsoft.Practices.Prism.Regions;
+using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +24,8 @@ namespace MediaViewer.Search
     /// <summary>
     /// Interaction logic for SearchView.xaml
     /// </summary>
-    public partial class SearchView : UserControl
+    [Export]
+    public partial class SearchView : UserControl, INavigationAware, ITabbedExpanderAware
     {
         bool firstFocus;
 
@@ -30,6 +35,12 @@ namespace MediaViewer.Search
             SearchViewModel viewModel = new SearchViewModel(MediaFileWatcher.Instance);
             DataContext = viewModel;
             firstFocus = true;
+
+            TabName = "Search";
+            TabIsSelected = false;
+            TabMargin = new Thickness(2);
+            TabBorderThickness = new Thickness(2);
+            TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;
         }
                            
         private void queryTextBox_KeyDown(object sender, KeyEventArgs e)
@@ -50,9 +61,27 @@ namespace MediaViewer.Search
                 be.UpdateSource();
                 firstFocus = false;
             }
+        }  
+                  
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+ 	        return(true);
         }
 
-        
-        
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+ 	        
+        }
+
+        public void OnNavigatedTo(NavigationContext navigationContext)
+        {
+ 	        
+        }
+
+        public string TabName { get; set; }
+        public bool TabIsSelected { get; set; }
+        public Thickness TabMargin { get; set; }
+        public Thickness TabBorderThickness { get; set; }
+        public Brush TabBorderBrush { get; set; }
     }
 }

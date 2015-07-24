@@ -9,7 +9,14 @@ namespace MediaViewer.Model.Utils.Windows
 {
     class FileDialog
     {
-        public static OpenFileDialog createOpenMediaFileDialog(bool imageOnly)
+        public enum MediaDialogType
+        {
+            VIDEO,
+            IMAGE,
+            ALL
+        }
+
+        public static OpenFileDialog createOpenMediaFileDialog(MediaDialogType type)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
 
@@ -38,9 +45,13 @@ namespace MediaViewer.Model.Utils.Windows
             imageFiles = imageFiles.Remove(imageFiles.Length - 1) + "|";
             videoFiles = videoFiles.Remove(videoFiles.Length - 1) + "|";
 
-            if (imageOnly == true)
+            if (type == MediaDialogType.IMAGE)
             {
                 videoFiles = "";
+            }
+            else if (type == MediaDialogType.VIDEO)
+            {
+                imageFiles = "";
             }
 
             openFileDialog.Filter = imageFiles + videoFiles + allFiles;

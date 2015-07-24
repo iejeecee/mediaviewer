@@ -30,7 +30,7 @@ namespace MediaViewer.GridImage.ImageCollage
         public ImageCollageProgressViewModel()
         {
             WindowTitle = "Image Collage";
-            WindowIcon = "pack://application:,,,/Resources/Icons/collage.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/collage2.ico";
             
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;

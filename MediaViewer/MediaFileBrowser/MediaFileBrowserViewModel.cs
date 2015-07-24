@@ -46,6 +46,7 @@ using MediaViewer.GeotagFileBrowser;
 using MediaViewer.MediaFileBrowser.ImagePanel;
 using MediaViewer.Transcode.Image;
 using MediaViewer.Filter;
+using MediaViewer.MediaFileBrowser.DirectoryBrowser;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -462,7 +463,7 @@ namespace MediaViewer.MediaFileBrowser
 
             Uri metaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
 
-            RegionManager.RequestNavigate("rightExpanderPanelRegion", metaDataViewUri);
+            RegionManager.RequestNavigate("mediaMetadataExpander", metaDataViewUri);
 
             // add tag filter
             Uri tagFilterViewUri = new Uri(typeof(TagFilterView).FullName, UriKind.Relative);
@@ -470,7 +471,17 @@ namespace MediaViewer.MediaFileBrowser
             NavigationParameters navigationParams = new NavigationParameters();
             navigationParams.Add("MediaStateCollectionView", MediaFileGridViewModel.MediaStateCollectionView);
 
-            RegionManager.RequestNavigate("leftExpanderPanelRegion", tagFilterViewUri, navigationParams);
+            RegionManager.RequestNavigate("mediaFilterExpander", tagFilterViewUri, navigationParams);
+
+            // add a directory browser
+            Uri directoryBrowserUri = new Uri(typeof(MediaFileBrowserDirectoryBrowserView).FullName, UriKind.Relative);
+
+            RegionManager.RequestNavigate("mediaSearchExpander", directoryBrowserUri);
+
+            // add search view
+            Uri searchViewUri = new Uri(typeof(SearchView).FullName, UriKind.Relative);
+
+            RegionManager.RequestNavigate("mediaSearchExpander", searchViewUri);
 
             navigateToMediaFileGrid();
         }

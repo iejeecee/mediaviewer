@@ -9,6 +9,7 @@ using System.Windows;
 using System.ComponentModel.Composition.Hosting;
 using Microsoft.Practices.Prism.Regions;
 using MediaViewer.UserControls.Layout;
+using MediaViewer.UserControls.TabbedExpander;
 
 namespace MediaViewer
 {
@@ -33,7 +34,8 @@ namespace MediaViewer
         protected override RegionAdapterMappings ConfigureRegionAdapterMappings()
         {
             RegionAdapterMappings mappings = base.ConfigureRegionAdapterMappings();       
-            mappings.RegisterMapping(typeof(ExpanderPanel), Container.GetExport<ExpanderPanelRegionAdapter>().Value);
+            mappings.RegisterMapping(typeof(TabbedExpanderPanel), Container.GetExport<TabbedExpanderPanelRegionAdapter>().Value);
+            mappings.RegisterMapping(typeof(TabbedExpanderView), Container.GetExport<TabbedExpanderRegionAdapter>().Value);
             return mappings;
         }
 

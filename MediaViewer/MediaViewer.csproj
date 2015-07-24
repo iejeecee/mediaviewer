@@ -163,29 +163,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\SettingsProviderNet.2.1.1\lib\net40\SettingsProviderNet.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.dll</HintPath>
+      <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
     </Reference>
-    <Reference Include="SharpDX.D3DCompiler, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="SharpDX.D3DCompiler, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.D3DCompiler.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D10">
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.Direct3D10.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.Direct3D11.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D9, Version=2.4.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.Direct3D9.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DirectSound">
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.DirectSound.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>..\..\mediaviewer external libs\Sharp-DX-2.4.2\Bin\Standard-net40\SharpDX.DXGI.dll</HintPath>
+      <HintPath>$(SharpDXPackageBinDir)\SharpDX.D3DCompiler.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
@@ -281,6 +265,10 @@
     <Compile Include="MediaDatabase\VideoMetadata.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="MediaFileBrowser\DirectoryBrowser\MediaFileBrowserDirectoryBrowserView.xaml.cs">
+      <DependentUpon>MediaFileBrowserDirectoryBrowserView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MediaFileBrowser\DirectoryBrowser\MediaFileBrowserDirectoryBrowserViewModel.cs" />
     <Compile Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelViewModel.cs" />
     <Compile Include="MediaFileBrowser\IMediaFileBrowserContentViewModel.cs" />
     <Compile Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelView.xaml.cs">
@@ -327,9 +315,8 @@
       <DependentUpon>ImagePanelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\ImagePanel\ScaleMode.cs" />
-    <Compile Include="UserControls\Layout\ExpanderPanel.cs" />
-    <Compile Include="UserControls\Layout\ExpanderPanelRegionAdapter.cs" />
-    <Compile Include="UserControls\Layout\IExpanderPanelAware.cs" />
+    <Compile Include="UserControls\Layout\TabbedExpanderPanel.cs" />
+    <Compile Include="UserControls\Layout\TabbedExpanderPanelRegionAdapter.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
@@ -585,6 +572,17 @@
     <Compile Include="UserControls\MediaDataGrid\MediaDataGridView.xaml.cs">
       <DependentUpon>MediaDataGridView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\SortComboBox\SortComboBoxView.xaml.cs">
+      <DependentUpon>SortComboBoxView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\SortComboBox\SortItemBase.cs" />
+    <Compile Include="UserControls\SortComboBox\SortItemCollection.cs" />
+    <Compile Include="UserControls\TabbedExpander\ITabbedExpanderAware.cs" />
+    <Compile Include="UserControls\TabbedExpander\TabbedExpanderHeaderDataTemplateSelector.cs" />
+    <Compile Include="UserControls\TabbedExpander\TabbedExpanderTab.cs" />
+    <Compile Include="UserControls\TabbedExpander\TabbedExpanderView.cs" />
+    <Compile Include="UserControls\TabbedExpander\TabbedExpanderRegionAdapter.cs" />
+    <Compile Include="UserControls\TabbedExpander\TemplatableItemsControl.cs" />
     <Compile Include="UserControls\TagPicker\TagPickerView.xaml.cs">
       <DependentUpon>TagPickerView.xaml</DependentUpon>
     </Compile>
@@ -703,6 +701,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="MediaFileBrowser\DirectoryBrowser\MediaFileBrowserDirectoryBrowserView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MediaFileBrowser\ImagePanel\MediaFileBrowserImagePanelView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -718,6 +720,10 @@
     <Page Include="TestWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="Transcode\Image\ImageTranscodeView.xaml">
       <SubType>Designer</SubType>
@@ -867,6 +873,14 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UserControls\SortComboBox\SortComboBoxView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\TabbedExpander\TabbedExpanderTemplate.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UserControls\TagPicker\TagPickerView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -914,10 +928,6 @@
     <Page Include="Search\SearchView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Themes\Generic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
     </Page>
     <Page Include="Filter\TagFilterView.xaml">
       <SubType>Designer</SubType>
@@ -1033,9 +1043,6 @@
     <Resource Include="Resources\Icons\log.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\Icons\Pictures.ico" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
@@ -1060,12 +1067,6 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\rotate.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icons\video.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Icons\browser.ico" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\FlipHorizontal.ico" />
@@ -1170,8 +1171,16 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\browser.ico" />
+    <Resource Include="Resources\Icons\pictures.ico" />
+    <Resource Include="Resources\Icons\video.ico" />
+    <Resource Include="Resources\Icons\videopreview.ico" />
+    <Resource Include="Resources\Icons\torrent2.ico" />
+    <Resource Include="Resources\Icons\Collage2.ico" />
+    <Resource Include="Resources\Icons\imagefile.ico" />
+    <Resource Include="Resources\Icons\videofile.ico" />
+    <Resource Include="Resources\Icons\file.ico" />
     <Resource Include="Resources\Icons\question.ico" />
-    <Resource Include="Resources\Icons\imageconvert.ico" />
     <Resource Include="Resources\Icons\pin.ico" />
     <Resource Include="Resources\Icons\computer.ico" />
     <Resource Include="Resources\Icons\star.ico" />
@@ -1187,14 +1196,11 @@
     <Resource Include="Resources\Images\3stars.png" />
     <Resource Include="Resources\Images\4stars.png" />
     <Resource Include="Resources\Images\5stars.png" />
-    <Resource Include="Resources\Icons\Collage.ico" />
     <Resource Include="Resources\Icons\geotag.ico" />
     <Resource Include="Resources\Icons\folder_open2.ico" />
     <Resource Include="Resources\Icons\folder_open.ico" />
     <Resource Include="Resources\Icons\frame.ico" />
     <Resource Include="Resources\Icons\folder_opening.ico" />
-    <Resource Include="Resources\Icons\torrent.ico" />
-    <Resource Include="Resources\Icons\preview.ico" />
     <Resource Include="Resources\Icons\object-rotate-left.ico" />
     <Resource Include="Resources\Icons\object-rotate-right.ico" />
     <Resource Include="Resources\Icons\object-flip-horizontal.ico" />
@@ -1235,6 +1241,13 @@
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
     <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
+  <Import Project="..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\SharpDX.2.6.3\build\SharpDX.targets'))" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

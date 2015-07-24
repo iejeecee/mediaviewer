@@ -20,7 +20,7 @@ namespace YoutubePlugin
 
         public void Initialize()
         {
-            this.RegionManager.RegisterViewWithRegion(RegionNames.MediaFileBrowserToolBarRegion, typeof(YoutubeNavigationItemView));
+            this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(YoutubeNavigationItemView));
 
             //ServiceLocator.Current.GetInstance(typeof(ImageSearchSettingsViewModel));
         }

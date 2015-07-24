@@ -77,8 +77,7 @@ namespace MediaViewer
 
             //RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
 
-            //InitializeDb.initialize();
-          
+            //InitializeDb.initialize();         
         }
 
         public void OnImportsSatisfied()

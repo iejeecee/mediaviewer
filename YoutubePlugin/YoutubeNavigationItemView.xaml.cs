@@ -1,4 +1,5 @@
-﻿using Microsoft.Practices.Prism.Regions;
+﻿using MediaViewer.Infrastructure;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -35,18 +36,9 @@ namespace YoutubePlugin
 
         private void navigationButton_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
-
-            YoutubeView youtube = new YoutubeView(RegionManager);
-            youtube.Closed += youtube_Closed;
-
-            youtube.Show();
+            RegionManager.RequestNavigate(RegionNames.MainContentRegion, typeof(YoutubeView).FullName);                    
         }
 
-        void youtube_Closed(object sender, EventArgs e)
-        {
-            this.IsEnabled = true;
-            navigationButton.IsChecked = false;
-        }
+        
     }
 }

@@ -8,7 +8,7 @@
     <Grid>
         <ToggleButton x:Name="navigationButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" Click="navigationButton_Click" Style="{DynamicResource {x:Static ToolBar.ToggleButtonStyleKey}}"
                 ToolTip="Online Image Search">
-            <Image Source="pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search.ico" />
+            <Image Source="pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search2.ico" />
         </ToggleButton>
     </Grid>
 </UserControl>

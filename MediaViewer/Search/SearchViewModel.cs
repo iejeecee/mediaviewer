@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 namespace MediaViewer.Search
 {
   
-
     class SearchViewModel : BindableBase
     {
                
@@ -38,23 +37,24 @@ namespace MediaViewer.Search
             }
         }
 
-        MediaFileWatcher mediaFileWatcher;
-
+        MediaFileWatcher MediaFileWatcher { get; set; }
       
         public SearchViewModel(MediaFileWatcher mediaFileWatcher)
         {
-            this.mediaFileWatcher = mediaFileWatcher;
+            MediaFileWatcher = mediaFileWatcher;
 
             RecurseSubDirectories = false;
             Query = new SearchQuery();      
 
-            SearchCommand = new Command<SearchQuery>(new Action<SearchQuery>(async (query) =>
+            SearchCommand = new AsyncCommand<SearchQuery>(async (query) =>
             {
                 SearchCommand.IsExecutable = false;
+
                 await Task.Run(() => doSearch(query));
+
                 SearchCommand.IsExecutable = true;
 
-            }));
+            });
 
             ClearRatingStartCommand = new Command(new Action(() =>
             {
@@ -87,7 +87,7 @@ namespace MediaViewer.Search
             }
         }
 
-        public Command<SearchQuery> SearchCommand { get; set; }
+        public AsyncCommand<SearchQuery> SearchCommand { get; set; }
         public Command ClearRatingStartCommand { get; set; }
         public Command ClearRatingEndCommand { get; set; }
             
@@ -110,9 +110,9 @@ namespace MediaViewer.Search
                    
             List<MediaFileItem> results = dbSearch(searchQuery);
 
-            mediaFileWatcher.IsWatcherEnabled = false;
-            mediaFileWatcher.MediaFileState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
-            mediaFileWatcher.MediaFileState.addUIState(results);
+            MediaFileWatcher.IsWatcherEnabled = false;
+            MediaFileWatcher.MediaFileState.clearUIState("Search Result", DateTime.Now, MediaStateType.SearchResult);
+            MediaFileWatcher.MediaFileState.addUIState(results);
         }
 
         public List<MediaFileItem> dbSearch(SearchQuery searchQuery)
@@ -131,63 +131,6 @@ namespace MediaViewer.Search
             }
            
         }
-
-
-        public List<MediaFileItem> diskTagSearch(List<Tag> tags, bool recurseSubDirectories, CancellationToken token)
-        {
-            List<MediaFileItem> matches = new List<MediaFileItem>();
-
-            /*String searchPath = mediaFileWatcher.Path;
-
-            List<MediaFileItem> mediaItems = new List<MediaFileItem>();
-            List<MediaFileItem> matches = new List<MediaFileItem>();
-
-            FileUtils.WalkDirectoryTreeDelegate callback = new FileUtils.WalkDirectoryTreeDelegate(fileWalkerCallback);
-
-            FileUtils.walkDirectoryTree(new System.IO.DirectoryInfo(searchPath), callback, mediaItems, recurseSubDirectories);
-
-            foreach (MediaFileItem item in mediaItems)
-            {
-                Task task = item.readMetaDataAsync(MetadataFactory.ReadOptions.READ_FROM_DISK, token);
-                task.Wait();
-                if (item.ItemState == MediaItemState.LOADED)
-                {
-                    foreach (Tag tag in tags)
-                    {                      
-                        if (item.Metadata.Tags.Contains(tag, new IgnoreCaseComparer()))
-                        {
-                            matches.Add(item);
-                            continue;
-                        }
-                    }
-                }
-            }*/
-
-
-            return (matches);
-        }
-
-        bool fileWalkerCallback(FileInfo info, Object state)
-        {
-            List<MediaFileItem> mediaItems = (List<MediaFileItem>)state;
-
-            if (SearchType == MediaType.All && MediaFormatConvert.isMediaFile(info.Name))
-            {
-                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
-            }
-            else if (SearchType == MediaType.Video && MediaFormatConvert.isVideoFile(info.Name))
-            {
-                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
-            }
-            else if (SearchType == MediaType.Images && MediaFormatConvert.isImageFile(info.Name))
-            {
-                mediaItems.Add(MediaFileItem.Factory.create(info.FullName));
-            }
-
-            return (true);
-        }
-
-        
 
     }
 }

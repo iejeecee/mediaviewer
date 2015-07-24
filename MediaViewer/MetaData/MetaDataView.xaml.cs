@@ -24,6 +24,8 @@ using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.UserControls.Layout;
+using MediaViewer.UserControls.TabbedExpander;
+using Microsoft.Windows.Themes;
 
 namespace MediaViewer.MetaData
 {
@@ -31,7 +33,7 @@ namespace MediaViewer.MetaData
     /// Interaction logic for MetaDataView.xaml
     /// </summary>
     [Export]
-    public partial class MetaDataView : UserControl, IRegionMemberLifetime, INavigationAware, IExpanderPanelAware
+    public partial class MetaDataView : UserControl, IRegionMemberLifetime, INavigationAware, ITabbedExpanderAware
     {
 
         MetaDataViewModel MetaDataViewModel { get; set; }     
@@ -45,10 +47,11 @@ namespace MediaViewer.MetaData
                                                 
             DataContext = MetaDataViewModel;
 
-            Header = "Metadata";
-            ElementHeight = 1;
-            IsAddBorder = true;
-            IsIntiallyExpanded = true;
+            TabName = "Metadata";
+            TabIsSelected = true;
+            TabMargin = new Thickness(2);
+            TabBorderThickness = new Thickness(2);
+            TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;
         }                       
         
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
@@ -149,10 +152,10 @@ namespace MediaViewer.MetaData
             MetaDataViewModel.OnNavigatedTo(navigationContext);            
         }
 
-        public string Header { get; set; }
-        public int ElementHeight { get; set; }
-        public bool IsAddBorder { get; set; }
-        public bool IsIntiallyExpanded { get; set; }
-        
+        public string TabName { get; set; }
+        public bool TabIsSelected { get; set; }
+        public Thickness TabMargin { get; set; }
+        public Thickness TabBorderThickness { get; set; }
+        public Brush TabBorderBrush { get; set; }
     }
 }

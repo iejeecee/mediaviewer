@@ -31,12 +31,14 @@ using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.Base;
 
 namespace MediaViewer.UserControls.MediaGrid
-{
+{   
     /// <summary>
     /// Interaction logic for ImageGridControl.xaml
     /// </summary>   
     public partial class MediaGridView : UserControl
     {
+        public event EventHandler ScrolledToEnd;
+
         VirtualizingTilePanel panel;
                        
         public MediaGridView()
@@ -157,6 +159,19 @@ namespace MediaViewer.UserControls.MediaGrid
         {
             panel = sender as VirtualizingTilePanel;
                         
+        }
+
+        private void scrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            ScrollViewer sv = (ScrollViewer)sender;
+            if (e.VerticalOffset + e.ViewportHeight == e.ExtentHeight)
+            {
+                if (ScrolledToEnd != null)
+                {
+                    ScrolledToEnd(this, EventArgs.Empty);
+                }
+            }
+            
         }
         
     }

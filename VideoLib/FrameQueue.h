@@ -381,15 +381,18 @@ namespace VideoLib {
 			videoClock = 0;
 			audioClock = 0;
 
-			videoFrame = gcnew VideoFrame();
+			if(videoDecoder->hasVideo()) 
+			{
+				videoFrame = gcnew VideoFrame();
 
-			convertedVideoFrame = gcnew VideoFrame(
-				videoDecoder->getWidth(), 
-				videoDecoder->getHeight(), 
-				videoDecoder->getOutputPixelFormat());
+				convertedVideoFrame = gcnew VideoFrame(
+					videoDecoder->getWidth(), 
+					videoDecoder->getHeight(), 
+					videoDecoder->getOutputPixelFormat());
+			}
 			
-			if(audioDecoder->hasAudio()) {
-
+			if(audioDecoder->hasAudio()) 
+			{
 				audioFrame = gcnew AudioFrame();
 
 				convertedAudioFrame = gcnew AudioFrame(
@@ -444,8 +447,9 @@ namespace VideoLib {
 			
 				packetQueueStopped[(int)QueueID::FREE_PACKETS] = false;
 				packetQueuePaused[(int)QueueID::FREE_PACKETS] = false;	
-				packetQueueStopped[(int)QueueID::VIDEO_PACKETS] = false;
-				packetQueuePaused[(int)QueueID::VIDEO_PACKETS] = false;	
+
+				packetQueueStopped[(int)QueueID::VIDEO_PACKETS] = !videoDecoder->hasVideo();
+				packetQueuePaused[(int)QueueID::VIDEO_PACKETS] = !videoDecoder->hasVideo();	
 
 				packetQueuePaused[(int)QueueID::AUDIO_PACKETS] = !audioDecoder->hasAudio();
 				packetQueueStopped[(int)QueueID::AUDIO_PACKETS] = !audioDecoder->hasAudio();

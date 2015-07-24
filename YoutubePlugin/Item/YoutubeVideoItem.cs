@@ -1,4 +1,5 @@
-﻿using Google.Apis.YouTube.v3.Data;
+﻿using Google.Apis.Requests;
+using Google.Apis.YouTube.v3.Data;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Utils;
@@ -23,12 +24,12 @@ namespace YoutubePlugin.Item
 
         public List<YoutubeVideoStreamedItem> StreamedItem { get; set; }
                                 
-        public YoutubeVideoItem(SearchResult result, int relevance) :
+        public YoutubeVideoItem(IDirectResponseSchema result, int relevance) :
             base(result, relevance)
         {
             IsEmbeddedOnly = false;
 
-            SearchResult = result;
+            Info = result;
 
             StreamedItem = new List<YoutubeVideoStreamedItem>();                
         }
@@ -115,13 +116,13 @@ namespace YoutubePlugin.Item
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
 
                 metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out thumbnailMimeType, token));
-                metaData.CreationDate = SearchResult.Snippet.PublishedAt;
-                metaData.Title = SearchResult.Snippet.Title;
-                metaData.Description = String.IsNullOrEmpty(SearchResult.Snippet.Description) ? SearchResult.Snippet.Title : SearchResult.Snippet.Description;
+                metaData.CreationDate = PublishedAt;
+                metaData.Title = Title;
+                metaData.Description = String.IsNullOrEmpty(Description) ? Title : Description;
              
                 NameValueCollection videoInfo;
 
-                IsEmbeddedOnly = !getVideoInfo(SearchResult.Id.VideoId, out videoInfo, token);
+                IsEmbeddedOnly = !getVideoInfo(VideoId, out videoInfo, token);
 
                 if (!IsEmbeddedOnly)
                 {
@@ -254,7 +255,77 @@ namespace YoutubePlugin.Item
             }
 
             return (true);
-
         }
+
+        public String VideoId
+        {
+            get
+            {
+                if (Info is SearchResult)
+                {
+                    return (Info as SearchResult).Id.VideoId;
+                }
+                else if (Info is PlaylistItem)
+                {
+                    return (Info as PlaylistItem).Snippet.ResourceId.VideoId;
+                }
+
+                return (null);
+            }
+        }
+
+        public String Title
+        {
+            get
+            {
+                if (Info is SearchResult)
+                {
+                    return (Info as SearchResult).Snippet.Title;
+                }
+                else if (Info is PlaylistItem)
+                {
+                    return (Info as PlaylistItem).Snippet.Title;
+                }
+
+                return (null);
+            }
+        }
+
+        public String Description
+        {
+            get
+            {
+                if (Info is SearchResult)
+                {
+                    return (Info as SearchResult).Snippet.Description;
+                }
+                else if (Info is PlaylistItem)
+                {
+                    return (Info as PlaylistItem).Snippet.Description;
+                }
+
+                return (null);
+            }
+        }
+
+        public DateTime? PublishedAt
+        {
+            get
+            {
+                if (Info is SearchResult)
+                {
+                    return (Info as SearchResult).Snippet.PublishedAt;
+                }
+                else if (Info is PlaylistItem)
+                {
+                    return (Info as PlaylistItem).Snippet.PublishedAt;
+                }
+
+                return (null);
+            }
+        }
+
+        
+
     }
 }

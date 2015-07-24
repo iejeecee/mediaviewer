@@ -29,6 +29,8 @@ using MediaViewer.Infrastructure.Global.Events;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Infrastructure.Utils;
 using System.Windows.Data;
+using MediaViewer.Model.Utils.Windows;
+
 
 namespace MediaViewer.ImagePanel
 {
@@ -38,6 +40,8 @@ namespace MediaViewer.ImagePanel
         IEventAggregator EventAggregator { get; set; }
         List<String> scaleModes = new List<string>(){"Unscaled","Auto","Fit Width","Fith Height"};
         List<String> rotationModes = new List<string>() { "None", "90°", "180°", "270°" };
+
+        public Command OpenLocationCommand { get; set; }
 
         public ImageViewModel(IEventAggregator eventAggregator)
         {
@@ -53,6 +57,16 @@ namespace MediaViewer.ImagePanel
             RotationModes = new ListCollectionView(rotationModes);
             RotationModes.CurrentChanged += RotationModes_CurrentChanged;
 
+
+            OpenLocationCommand = new Command(() =>
+            {
+                Microsoft.Win32.OpenFileDialog dialog = FileDialog.createOpenMediaFileDialog(FileDialog.MediaDialogType.IMAGE);
+                bool? success = dialog.ShowDialog();
+                if (success == true)
+                {
+                    Location = dialog.FileName;
+                }
+            });
         }
 
         void RotationModes_CurrentChanged(object sender, EventArgs e)

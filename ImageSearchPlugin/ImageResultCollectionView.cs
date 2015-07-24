@@ -1,6 +1,7 @@
 ﻿using MediaViewer.Model.Media.State;
 using MediaViewer.Model.Media.State.CollectionView;
 using MediaViewer.Model.Utils;
+using MediaViewer.UserControls.SortComboBox;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,15 +22,34 @@ namespace ImageSearchPlugin
             MimeType
         }
 
+        class SortItem : SortItemBase<SortMode>
+        {
+            public SortItem(SortMode mode)
+                : base(mode)
+            {
+
+            }
+        }
 
         public ImageResultCollectionView(MediaState mediaState)     
             : base(mediaState)
         {
-            SortModes = new System.Windows.Data.ListCollectionView(Enum.GetValues(typeof(SortMode)));
+            SortItemCollection<SortItem, SortMode> sortItems = new SortItemCollection<SortItem, SortMode>();
 
+            foreach (SortMode mode in Enum.GetValues(typeof(SortMode)))
+            {
+                sortItems.Add(new SortItem(mode));
+            }
+
+            sortItems.ItemSortDirectionChanged += sortItems_ItemSortDirectionChanged;
+
+            SortModes = new System.Windows.Data.ListCollectionView(sortItems);
+           
             SortModes.CurrentChanged += (s,e) => {
 
-                switch ((SortMode)SortModes.CurrentItem)
+                SortItem sortItem = (SortItem)SortModes.CurrentItem;
+
+                switch (sortItem.SortMode)
                 {
                     case SortMode.Relevance:
                         SortFunc = new Func<SelectableMediaItem,SelectableMediaItem, int>((a,b) =>
@@ -89,8 +109,22 @@ namespace ImageSearchPlugin
                         break;
                 }
 
+                SortDirection = sortItem.SortDirection;
+
                 refresh();
             };
+        }
+
+        void sortItems_ItemSortDirectionChanged(object sender, EventArgs e)
+        {
+            SortItem sortItem = (SortItem)sender;
+
+            if (((SortItem)SortModes.CurrentItem).SortMode == sortItem.SortMode)
+            {
+                SortDirection = sortItem.SortDirection;
+
+                refresh();
+            }
         }
 
         public override object getExtraInfo(SelectableMediaItem selectableItem)
@@ -98,9 +132,10 @@ namespace ImageSearchPlugin
             String info = null;
 
             ImageResultItem item = (ImageResultItem)selectableItem.Item;
-            
 
-            switch ((SortMode)SortModes.CurrentItem)
+            SortItem sortItem = (SortItem)SortModes.CurrentItem;
+
+            switch (sortItem.SortMode)
             {               
                 case SortMode.Width:
                                        

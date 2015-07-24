@@ -100,7 +100,7 @@ namespace VideoPlayerControl
             presentParams[0].DeviceWindowHandle = owner.Handle;
 
             //wait for VSync
-            presentParams[0].PresentationInterval = D3D.PresentInterval.One;
+            presentParams[0].PresentationInterval = D3D.PresentInterval.Immediate;
 
             //flip frames on vsync
             presentParams[0].SwapEffect = D3D.SwapEffect.Discard;
@@ -388,8 +388,8 @@ namespace VideoPlayerControl
 
             Rectangle scaledCenteredVideo = Utils.centerRectangle(screenRect, scaledVideo);
 
-            SharpDX.Rectangle scaledCenteredVideoDx = new SharpDX.Rectangle(scaledCenteredVideo.Left,
-                           scaledCenteredVideo.Top, scaledCenteredVideo.Right, scaledCenteredVideo.Bottom);
+            SharpDX.Rectangle scaledCenteredVideoDx = new SharpDX.Rectangle(scaledCenteredVideo.X,
+                           scaledCenteredVideo.Y, scaledCenteredVideo.Width, scaledCenteredVideo.Height);
 
             return (scaledCenteredVideoDx);
         }
@@ -435,9 +435,7 @@ namespace VideoPlayerControl
                         }
                         else if (mode == RenderMode.PAUSED)
                         {
-
                             videoSourceRect = new SharpDX.Rectangle(0, 0, offscreen.Description.Width, offscreen.Description.Height);
-
                         }
                                           
                         SharpDX.Rectangle videoDestRect = getVideoDestRect(backBuffer);

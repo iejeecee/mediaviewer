@@ -1,6 +1,9 @@
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-
-    <!--http://stackoverflow.com/questions/17582680/wpf-custom-toolbar-->
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    >
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/MediaViewer;component/UserControls/TabbedExpander/TabbedExpanderTemplate.xaml"/>               
+    </ResourceDictionary.MergedDictionaries>
+   
 </ResourceDictionary>

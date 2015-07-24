@@ -1,7 +1,9 @@
-﻿//http://stackoverflow.com/questions/19221634/opening-a-prism-module-on-new-window-on-a-registered-region
+﻿using Microsoft.Practices.Prism.PubSubEvents;
+//http://stackoverflow.com/questions/19221634/opening-a-prism-module-on-new-window-on-a-registered-region
 using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,47 +21,48 @@ namespace YoutubePlugin
     /// <summary>
     /// Interaction logic for YoutubeView.xaml
     /// </summary>
-    public partial class YoutubeView : Window
+    [Export]
+    public partial class YoutubeView : UserControl, INavigationAware
     {
-        YoutubeViewModel vm {get;set;}
-        IRegionManager Rm;
+        YoutubeViewModel ViewModel {get;set;}
+        IRegionManager RegionManager { get; set; }
+        IEventAggregator EventAggregator { get; set; }
 
-        public YoutubeView(IRegionManager regionManager)
+        [ImportingConstructor]
+        public YoutubeView(IRegionManager regionManager, IEventAggregator eventAggregator)
         {
             InitializeComponent();
-            Rm = regionManager;
+            RegionManager = regionManager;
+            EventAggregator = eventAggregator;
 
-            this.SetValue(RegionManager.RegionManagerProperty, regionManager);
+            this.SetValue(Microsoft.Practices.Prism.Regions.RegionManager.RegionManagerProperty, RegionManager);
 
-            DataContext = vm = new YoutubeViewModel(regionManager);
-
-            vm.ClosingRequest += vm_ClosingRequest;
-
-            this.Closing += youtubeView_Closing;
+            DataContext = ViewModel = new YoutubeViewModel(regionManager,eventAggregator);                      
         }
 
-        private void youtubeView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private async void mediaGridView_ScrolledToEnd(object sender, EventArgs e)
         {
-            while (Rm.Regions["youtubeExpanderPanelRegion"].Views.Count() > 0)
+            await ViewModel.LoadNextPageCommand.ExecuteAsync();
+        }
+
+        public bool IsNavigationTarget(NavigationContext navigationContext)
+        {
+            return (true);
+        }
+
+        public void OnNavigatedFrom(NavigationContext navigationContext)
+        {
+            /*while (Rm.Regions["youtubeExpanderPanelRegion"].Views.Count() > 0)
             {
                 Rm.Regions["youtubeExpanderPanelRegion"].Remove(Rm.Regions["youtubeExpanderPanelRegion"].Views.FirstOrDefault());
             }
 
-            Rm.Regions.Remove("youtubeExpanderPanelRegion");
+            Rm.Regions.Remove("youtubeExpanderPanelRegion");*/
         }
 
-        private void vm_ClosingRequest(object sender, MediaViewer.Model.Mvvm.CloseableBindableBase.DialogEventArgs e)
+        public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            this.Close();
-        }
-
-        private void queryTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                vm.SearchCommand.Execute();
-            }
-
+            
         }
     }
 }

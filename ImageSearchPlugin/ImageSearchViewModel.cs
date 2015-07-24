@@ -37,7 +37,7 @@ namespace ImageSearchPlugin
 
         const String rootUri = "https://api.datamarket.azure.com/Bing/Search";
       
-        public AsyncCommand SearchCommand { get; set; }
+        public AsyncCommand<int> SearchCommand { get; set; }
         public Command CloseCommand { get; set; }
         public Command SelectAllCommand { get; set; }
         public Command DeselectAllCommand { get; set; }
@@ -51,15 +51,22 @@ namespace ImageSearchPlugin
         public MediaState MediaState { get; set; }
         public MediaStateCollectionView MediaStateCollectionView { get; set; }
 
+        ImageSearchQuery CurrentQuery { get; set; }
+
         public ImageSearchViewModel()           
         {        
             NrColumns = 4;
 
-            SearchCommand = new AsyncCommand(async () =>
+            SearchCommand = new AsyncCommand<int>(async (imageOffset) =>
             {
                 try
                 {
-                    await doSearch();
+                    if (imageOffset == 0)
+                    {
+                        CurrentQuery = new ImageSearchQuery(this);
+                    }
+
+                    await doSearch(CurrentQuery, imageOffset);
                 }
                 catch (Exception e)
                 {
@@ -225,9 +232,9 @@ namespace ImageSearchPlugin
         public ListCollectionView People { get; set; }
         public ListCollectionView Color { get; set; }
        
-        async Task doSearch()
+        async Task doSearch(ImageSearchQuery state, int imageOffset)
         {
-            if (String.IsNullOrEmpty(Query) || String.IsNullOrWhiteSpace(Query))             
+            if (String.IsNullOrEmpty(state.Query) || String.IsNullOrWhiteSpace(state.Query))             
             {
                 return;
             }
@@ -241,60 +248,73 @@ namespace ImageSearchPlugin
             // Build the query.
             String imageFilters = null;
 
-            if (!(Size.CurrentItem as String).Equals(size[0]))
+            if (!state.Size.Equals(size[0]))
             {
-                imageFilters = "Size:" + Size.CurrentItem;
+                imageFilters = "Size:" + state.Size;
             }
 
-            if (!(Layout.CurrentItem as String).Equals(layout[0]))
-            {
-                if (imageFilters != null) imageFilters += "+";
-
-                imageFilters += "Aspect:" + Layout.CurrentItem;
-            }
-
-            if (!(Type.CurrentItem as String).Equals(type[0]))
+            if (!state.Layout.Equals(layout[0]))
             {
                 if (imageFilters != null) imageFilters += "+";
 
-                imageFilters += "Style:" + Type.CurrentItem;
+                imageFilters += "Aspect:" + state.Layout;
             }
 
-            if (!(People.CurrentItem as String).Equals(type[0]))
+            if (!state.Type.Equals(type[0]))
             {
                 if (imageFilters != null) imageFilters += "+";
 
-                imageFilters += "Face:" + People.CurrentItem;
+                imageFilters += "Style:" + state.Type;
             }
 
-            if (!(Color.CurrentItem as String).Equals(type[0]))
+            if (!state.People.Equals(type[0]))
             {
                 if (imageFilters != null) imageFilters += "+";
 
-                imageFilters += "Color:" + Color.CurrentItem;
+                imageFilters += "Face:" + state.People;
             }
-   
-            var imageQuery = bingContainer.Image(Query, null, null, SafeSearch.CurrentItem.ToString(), GeoTag.LatDecimal, GeoTag.LonDecimal, imageFilters);
 
+            if (!state.Color.Equals(type[0]))
+            {
+                if (imageFilters != null) imageFilters += "+";
+
+                imageFilters += "Color:" + state.Color;
+            }
+               
+            var imageQuery = bingContainer.Image(Query, null, null, state.SafeSearch, state.GeoTag.LatDecimal, state.GeoTag.LonDecimal, imageFilters);
+            imageQuery = imageQuery.AddQueryOption("$top", 50);
+            imageQuery = imageQuery.AddQueryOption("$skip", imageOffset);
+            
             SearchCommand.IsExecutable = false;
 
             IEnumerable<Bing.ImageResult> imageResults = 
                 await Task.Factory.FromAsync<IEnumerable<Bing.ImageResult>>(imageQuery.BeginExecute(null, null), imageQuery.EndExecute);
                        
             SearchCommand.IsExecutable = true;
-                
-            MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+
+            if (imageOffset == 0)
+            {
+                MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);
+            }
 
             List<MediaItem> results = new List<MediaItem>();
 
-            int relevance = 0;
+            int relevance = imageOffset;
+
+            MediaState.UIMediaCollection.EnterReadLock();
 
             foreach (var image in imageResults)
             {
-                results.Add(new ImageResultItem(image, relevance));
+                MediaItem item = new ImageResultItem(image, relevance);
+
+                if (MediaState.UIMediaCollection.Contains(item)) continue;
+
+                results.Add(item);
 
                 relevance++;
             }
+
+            MediaState.UIMediaCollection.ExitReadLock();
 
             MediaState.addUIState(results);
                                                                 

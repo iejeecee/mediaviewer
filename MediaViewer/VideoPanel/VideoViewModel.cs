@@ -35,6 +35,7 @@ using MediaViewer.Model.Media.Base;
 using MediaViewer.UserControls.MediaGrid;
 using MediaViewer.MediaFileGrid;
 using MediaViewer.Model.Media.Streamed;
+using MediaViewer.Model.Utils.Windows;
 
 namespace MediaViewer.VideoPanel
 {
@@ -134,9 +135,9 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            PauseCommand = new Command(() => {
+            PauseCommand = new AsyncCommand(async () => {
               
-                VideoPlayer.pausePlay(); 
+                await VideoPlayer.pausePlay(); 
 
             }, false);
 
@@ -240,6 +241,19 @@ namespace MediaViewer.VideoPanel
                 }
 
             }, false);
+
+            OpenLocationCommand = new Command(async () =>
+            {
+                Microsoft.Win32.OpenFileDialog dialog = FileDialog.createOpenMediaFileDialog(FileDialog.MediaDialogType.VIDEO);
+                bool? success = dialog.ShowDialog();
+                if (success == true)
+                {
+                    MediaItem video = MediaItemFactory.create(dialog.FileName);
+
+                    await openAndPlay(new VideoAudioPair(video, null));
+                }
+
+            });
          
             HasAudio = true;
             VideoState = VideoPlayerControl.VideoState.CLOSED;
@@ -461,9 +475,10 @@ namespace MediaViewer.VideoPanel
         /// <summary>
         /// VIEWMODEL INTERFACE
         /// </summary>
+        public Command OpenLocationCommand { get; set; }
         public AsyncCommand<VideoAudioPair> OpenCommand { get; set; }
         public AsyncCommand PlayCommand { get; set; }
-        public Command PauseCommand { get; set; }
+        public AsyncCommand PauseCommand { get; set; }
         public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
         public AsyncCommand<double> SeekCommand { get; set; }
@@ -596,7 +611,7 @@ namespace MediaViewer.VideoPanel
 
                 if (offsetSeconds != null)
                 {
-                    SeekCommand.Execute(offsetSeconds);
+                    await SeekCommand.ExecuteAsync(offsetSeconds.Value);
                 }
                 
             }

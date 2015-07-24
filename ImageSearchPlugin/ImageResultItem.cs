@@ -85,5 +85,12 @@ namespace ImageSearchPlugin
             get { return relevance; }
             set { SetProperty(ref relevance, value); }
         }
+
+        public override bool Equals(MediaItem other)
+        {
+            ImageResultItem item = (ImageResultItem)other;
+
+            return (ImageInfo.Thumbnail.MediaUrl.Equals(item.ImageInfo.Thumbnail.MediaUrl));
+        }
     }
 }

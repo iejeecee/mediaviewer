@@ -12,9 +12,11 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Utils.WPF;
 using MediaViewer.TagEditor;
 using MediaViewer.UserControls.Layout;
+using MediaViewer.UserControls.TabbedExpander;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.ServiceLocation;
+using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,7 +42,7 @@ namespace MediaViewer.Filter
 {
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    public partial class TagFilterView : UserControl, IRegionMemberLifetime, INavigationAware, IExpanderPanelAware
+    public partial class TagFilterView : UserControl, IRegionMemberLifetime, INavigationAware, ITabbedExpanderAware
     {
         TagItemList tagsList;        
         bool extendTimer;
@@ -58,12 +60,7 @@ namespace MediaViewer.Filter
             timer.Elapsed += timer_Elapsed;
 
             extendTimer = false;
-
-            Header = "Tag Filter";
-            ElementHeight = 1;
-            IsAddBorder = true;
-            IsIntiallyExpanded = false;
-
+            
             tagsList = new TagItemList();
             tagsList.IsFilterChanged += tagsList_IsFilterChanged;
             dataGrid.ItemsSource = tagsList;
@@ -71,6 +68,12 @@ namespace MediaViewer.Filter
             ICollectionView view = CollectionViewSource.GetDefaultView(dataGrid.ItemsSource);
             view.SortDescriptions.Add(new SortDescription("Count", ListSortDirection.Descending));
             dataGrid.ColumnFromDisplayIndex(1).SortDirection = ListSortDirection.Descending;
+
+            TabName = "Tag Filter";
+            TabMargin = new Thickness(2);
+            TabBorderThickness = new Thickness(2);
+            TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;            
+            TabIsSelected = true;
         }
      
         MediaStateCollectionView mediaCollectionView;
@@ -283,12 +286,7 @@ namespace MediaViewer.Filter
         {
             MediaCollectionView = (MediaStateCollectionView)navigationContext.Parameters["MediaStateCollectionView"];
         }
-
-        public string Header { get; set; }
-        public int ElementHeight { get; set; }
-        public bool IsAddBorder { get; set; }
-        public bool IsIntiallyExpanded { get; set; }
-
+  
         void tagsList_IsFilterChanged(object sender, EventArgs e)
         {
             ToggleButton includedClearToggleButton =
@@ -377,5 +375,12 @@ namespace MediaViewer.Filter
             excludedClearToggleButton.IsEnabled = false;
             excludedClearToggleButton.IsChecked = false;
         }
+
+        public string TabName { get; set; }
+        public bool TabIsSelected { get; set; }
+        public Thickness TabMargin { get; set; }       
+        public Thickness TabBorderThickness { get; set; }       
+        public Brush TabBorderBrush { get; set; }
+        
     }
 }

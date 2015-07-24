@@ -24,7 +24,7 @@
                 <Setter Property="Template">
                     <Setter.Value>
                         <ControlTemplate TargetType="{x:Type ItemsControl}">
-                            <ScrollViewer CanContentScroll="True">
+                            <ScrollViewer CanContentScroll="True" ScrollChanged="scrollViewer_ScrollChanged">
                                 <!--IsDeferredScrollingEnabled="True"-->
                                 <ItemsPresenter/>
                             </ScrollViewer>

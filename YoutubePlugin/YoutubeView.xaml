@@ -1,4 +1,4 @@
-﻿<Window x:Class="YoutubePlugin.YoutubeView"
+﻿<UserControl x:Class="YoutubePlugin.YoutubeView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:regions="http://www.codeplex.com/CompositeWPF"
@@ -6,9 +6,15 @@
         xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo;assembly=MediaViewer"
         xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
         xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid;assembly=MediaViewer"
-        xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor;assembly=MediaViewer"
-        Title="Youtube" Icon="pack://application:,,,/YoutubePlugin;component/Resources/Icons/youtube.ico" Height="550" Width="900">
-    <Window.Resources>
+        xmlns:SortComboBox="clr-namespace:MediaViewer.UserControls.SortComboBox;assembly=MediaViewer"
+        xmlns:TabbedExpander="clr-namespace:MediaViewer.UserControls.TabbedExpander;assembly=MediaViewer"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
+        xmlns:YoutubePlugin="clr-namespace:YoutubePlugin" 
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d" 
+        d:DesignHeight="550" d:DesignWidth="900">
+    <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="pack://application:,,,/MediaViewer;component/Resources/Base.xaml"/>
@@ -16,87 +22,69 @@
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
+            <Style TargetType="{x:Type TabbedExpander:TabbedExpanderView}">
+                <Setter Property="Background" Value="{StaticResource imageGridBackgroundColorBrush}"/>
+            </Style>
+            <YoutubePlugin:IsYoutubeItemConverter x:Key="isYoutubeItemConverter"/>
         </ResourceDictionary>
-    </Window.Resources>
-    <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="250"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <Layout:ExpanderPanel x:Name="leftExpanderPanel" Grid.Column="0" HorizontalAlignment="Stretch" 
-                              VerticalAlignment="Stretch" regions:RegionManager.RegionName="youtubeExpanderPanelRegion">
-                <Expander IsExpanded="True" Layout:ExpanderPanel.ElemHeight="2" Header="Search"> 
-                    <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2">
-                        <Grid Background="{StaticResource uiElementBackgroundColor}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <Label Grid.Row="0" Grid.Column="0" Content="Query" VerticalAlignment="Center" Margin="5,5,0,5"/>
-                            <Grid Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,5,5,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="queryTextBox" Grid.Row="0" Grid.Column="0" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Height="20" AcceptsReturn="False" TextWrapping="NoWrap" VerticalAlignment="Center" HorizontalAlignment="Stretch" PreviewKeyDown="queryTextBox_PreviewKeyDown"/>
-                                <Button Grid.Row="0" Grid.Column="1" Content="Search" Height="20" Width="40"  Command="{Binding SearchCommand}" VerticalAlignment="Center"/>
-                            </Grid>                    
-                        </Grid>
-                    </mwt:ClassicBorderDecorator>
-                </Expander>               
-            </Layout:ExpanderPanel>
-            <GridSplitter  Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
-            <Grid Grid.Column="2">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" Background="{StaticResource imageGridBorderColor2}">
-                    <Grid Height="40">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}"/>
-                        <Label Content="Sort" Grid.Column="1" VerticalAlignment="Center"/>
-                        <ComboBox x:Name="sortComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
-                    </Grid>
-                </mwt:ClassicBorderDecorator>
-                <MediaGrid:MediaGridView Grid.Row="2" Background="{StaticResource imageGridBackgroundColor}" 
-                                 NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">
-                    <MediaGrid:MediaGridView.MediaItemContextMenu>
-                        <ContextMenu>
-                            <MenuItem Header="View" Command="{Binding Path=PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                CommandParameter="{Binding}"/>
-                            <Separator/>
-                            <MenuItem Header="Select All" Command="{Binding Path=PlacementTarget.Tag.SelectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
-                            <MenuItem Header="Deselect All" Command="{Binding Path=PlacementTarget.Tag.DeselectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
-                            <Separator/>                           
-                            <MenuItem Header="Download" Command="{Binding Path=PlacementTarget.Tag.DownloadCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                      CommandParameter="{Binding}"/>
-                        </ContextMenu>
-                    </MediaGrid:MediaGridView.MediaItemContextMenu>
-                </MediaGrid:MediaGridView>
-            </Grid>
+    </UserControl.Resources>
+    <Grid Background="{StaticResource appBackgroundColor}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="2*"/>
+        </Grid.ColumnDefinitions>
+        <Layout:TabbedExpanderPanel Grid.Column="0" HorizontalAlignment="Stretch" 
+                            VerticalAlignment="Stretch" regions:RegionManager.RegionName="youtubeLeftExpanderPanelRegion">
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="2" IsExpanded="True" regions:RegionManager.RegionName="youtubeSearchExpander" />
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="False" regions:RegionManager.RegionName="youtubeFilterExpander" />
+        </Layout:TabbedExpanderPanel>
+        <GridSplitter Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
+        <Grid Grid.Column="1" Margin="2,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" Background="{StaticResource imageGridBorderColor2}">
+                <Grid Height="40">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}"/>
+                    <Label Content="Filter" Grid.Column="1" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="filterComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
+                    <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>
+                    <SortComboBox:SortComboBoxView Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
+                </Grid>
+            </mwt:ClassicBorderDecorator>
+            <MediaGrid:MediaGridView Grid.Row="2" Background="{StaticResource imageGridBackgroundColor}" 
+                                NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}" ScrolledToEnd="mediaGridView_ScrolledToEnd">
+                <MediaGrid:MediaGridView.MediaItemContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="View" Command="{Binding Path=PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem}"/>
+                        <MenuItem Header="View Channel" Command="{Binding Path=PlacementTarget.Tag.ViewChannelCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem|YoutubeChannelItem}"/>
+                        <MenuItem Header="View Playlist" Command="{Binding Path=PlacementTarget.Tag.ViewPlaylistCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubePlaylistItem}"/>
+                        <Separator/>
+                        <MenuItem Header="Select All" Command="{Binding Path=PlacementTarget.Tag.SelectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
+                        <MenuItem Header="Deselect All" Command="{Binding Path=PlacementTarget.Tag.DeselectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
+                        <Separator Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem}"/>                           
+                        <MenuItem Header="Download" Command="{Binding Path=PlacementTarget.Tag.DownloadCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                                    CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem}"/>
+                    </ContextMenu>
+                </MediaGrid:MediaGridView.MediaItemContextMenu>
+            </MediaGrid:MediaGridView>                
         </Grid>
-        <Button Grid.Row="1" Content="Close" HorizontalAlignment="Right" Width="50" Height="20" Command="{Binding CloseCommand}" Margin="5,5,5,5"/>
-    </Grid>
-</Window>
+        <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
+        <Layout:TabbedExpanderPanel Grid.Column="2" HorizontalAlignment="Stretch" 
+                            VerticalAlignment="Stretch" regions:RegionManager.RegionName="youtubeRightExpanderPanelRegion" Margin="2,0,0,0">
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="True" regions:RegionManager.RegionName="youtubeMetadataExpander"/>
+        </Layout:TabbedExpanderPanel>
+    </Grid>        
+</UserControl>

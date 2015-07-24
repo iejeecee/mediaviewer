@@ -13,7 +13,10 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>
-        <ToolBar Background="{StaticResource toolBarBackgroundColor}">            
+        <ToolBar Background="{StaticResource toolBarBackgroundColor}">
+            <Button Command="{Binding OpenLocationCommand}" ToolTip="Open Location">
+                <Image Source="pack://application:,,,/Resources/Icons/ImageFile.ico" Height="12"/>
+            </Button>
             <ComboBox x:Name="scaleComboBox" ToolTip="Scale Mode" Height="16" ItemsSource="{Binding ScaleModes}" IsEditable="False" IsReadOnly="True" Background="LightGray">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>

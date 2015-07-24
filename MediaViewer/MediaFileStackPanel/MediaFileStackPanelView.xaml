@@ -3,22 +3,23 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:Pager="clr-namespace:MediaViewer.UserControls.Pager" 
-             x:Class="MediaViewer.MediaFileStackPanel.MediaFileStackPanelView"             
-             x:Name="mediaFileStackPanel"
+             xmlns:Pager="clr-namespace:MediaViewer.UserControls.Pager"
              xmlns:local="clr-namespace:MediaViewer.Model.Media.File.Watcher"   
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              xmlns:MediaStackPanel="clr-namespace:MediaViewer.UserControls.MediaStackPanel"
              xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
              xmlns:System="clr-namespace:System;assembly=mscorlib"
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
+             xmlns:SortComboBox="clr-namespace:MediaViewer.UserControls.SortComboBox" 
+             x:Class="MediaViewer.MediaFileStackPanel.MediaFileStackPanelView"             
+             x:Name="mediaFileStackPanel"
              mc:Ignorable="d"         
              d:DesignWidth="400">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="/MediaViewer;component/Resources/Dictionary.xaml"/>
-            </ResourceDictionary.MergedDictionaries>                                
+            </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid x:Name="mainGrid" Background="{StaticResource imageGridBackgroundColor}">
@@ -39,38 +40,38 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}" IsFlatMode="True"/> 
+                    <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}" IsFlatMode="True"/>
                     <Pager:PagerView x:Name="pager" Grid.ColumnSpan="3" HorizontalAlignment="Center" NrPages="{Binding NrPages}"
-                                     CurrentPage="{Binding CurrentPage}" NextPageCommand="{Binding NextPageCommand}"
-                                     FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"
-                                     PrevPageCommand="{Binding PrevPageCommand}" IsPagingEnabled="{Binding IsPagingEnabled}"/>
-                    <Label Content="Sort" Grid.Column="2" VerticalAlignment="Center"/>
-                    <ComboBox x:Name="sortComboBox" Grid.Column="3" Margin="2,2,2,2"  HorizontalAlignment="Stretch" VerticalAlignment="Center"
-                              ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
+						CurrentPage="{Binding CurrentPage}" NextPageCommand="{Binding NextPageCommand}"
+						FirstPageCommand="{Binding FirstPageCommand}" LastPageCommand="{Binding LastPageCommand}"
+						PrevPageCommand="{Binding PrevPageCommand}" IsPagingEnabled="{Binding IsPagingEnabled}"/>
+                    <Label Content="Sort" Grid.Column="2" VerticalAlignment="Center"/>                    
+                    <SortComboBox:SortComboBoxView Grid.Column="3" Margin="2,2,2,2"  HorizontalAlignment="Stretch" VerticalAlignment="Center"
+						ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
             </mwt:ClassicBorderDecorator>
             <MediaStackPanel:MediaStackPanelView Grid.Row="1" x:Name="mediaStackPanel" MediaStateCollectionView="{Binding MediaStateCollectionView}" MediaItemClick="mediaStackPanel_MediaItemClick">
                 <MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Browse Location" 
-                                  Command="{Binding Path=PlacementTarget.Tag.BrowseLocationCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding}"/>
+							Command="{Binding PlacementTarget.Tag.BrowseLocationCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+							CommandParameter="{Binding}"/>
                         <MenuItem Header="Open Location" 
-                                  Command="{Binding Path=PlacementTarget.Tag.OpenLocationCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding}"/>
+							Command="{Binding PlacementTarget.Tag.OpenLocationCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+							CommandParameter="{Binding}"/>
                         <Separator/>
                         <MenuItem Header="Delete" 
-                                  Command="{Binding Path=PlacementTarget.Tag.DeleteCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                  CommandParameter="{Binding}"/>
+							Command="{Binding PlacementTarget.Tag.DeleteCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+							CommandParameter="{Binding}"/>
                     </ContextMenu>
                 </MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
             </MediaStackPanel:MediaStackPanelView>
         </Grid>
         <Grid Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource booleanToVisibilityConverter}}">
             <ToggleButton  x:Name="collapseToggleButton" Grid.Column="0" Height="10" 
-                      IsChecked="{Binding IsVisible}">
+				IsChecked="{Binding IsVisible}">
                 <ToggleButton.Style>
-                    <Style TargetType="ToggleButton">
+                    <Style TargetType="{x:Type ToggleButton}">
                         <Style.Triggers>
                             <Trigger Property="IsChecked" Value="false">
                                 <Setter Property="ToolTip" Value="Show Browser"/>

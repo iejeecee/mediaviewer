@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ImageTranscode="clr-namespace:MediaViewer.Transcode.Image"
         xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner"
-        Title="Transcode Image(s)" Width="300" SizeToContent="Height" Icon="/MediaViewer;component/Resources/Icons/imageconvert.ico">
+        Title="Transcode Image(s)" Width="300" SizeToContent="Height" Icon="/MediaViewer;component/Resources/Icons/imagefile.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

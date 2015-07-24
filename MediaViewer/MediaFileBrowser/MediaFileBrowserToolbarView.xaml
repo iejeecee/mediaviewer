@@ -15,19 +15,19 @@
                 <Image Source="pack://application:,,,/Resources/Icons/export.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Image Collage" Command="{Binding CreateImageCollageCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/collage.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/collage2.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Video Preview Image(s)" Command="{Binding CreateVideoPreviewImagesCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/preview.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/videopreview.ico"/>
             </Button>
             <Button Height="16" ToolTip="Create Torrent" Command="{Binding CreateTorrentFileCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/torrent.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/torrent2.ico"/>
             </Button>
             <Button Height="16" ToolTip="Transcode Video" Command="{Binding TranscodeVideoCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/videotranscode.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/videofile.ico"/>
             </Button>
             <Button Height="16" ToolTip="Transcode Image" Command="{Binding TranscodeImageCommand}">
-                <Image Source="pack://application:,,,/Resources/Icons/imageconvert.ico"/>
+                <Image Source="pack://application:,,,/Resources/Icons/imagefile.ico"/>
             </Button>
             <ItemsControl regions:RegionManager.RegionName="MediaFileBrowserToolBarRegion">
                 <ItemsControl.ItemsPanel>

@@ -38,7 +38,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
         public VideoPreviewImageProgressViewModel()
         {
             WindowTitle = "Video Preview Image";
-            WindowIcon = "pack://application:,,,/Resources/Icons/preview.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/videopreview.ico";
 
             videoPreview = new VideoLib.VideoPreview();
 

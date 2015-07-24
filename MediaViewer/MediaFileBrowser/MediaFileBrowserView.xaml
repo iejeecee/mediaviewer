@@ -10,6 +10,7 @@
              xmlns:DirectoryPicker="clr-namespace:MediaViewer.UserControls.DirectoryPicker"
              xmlns:MediaDataGrid="clr-namespace:MediaViewer.UserControls.MediaDataGrid"
              xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"
+             xmlns:TabbedExpander="clr-namespace:MediaViewer.UserControls.TabbedExpander"
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"          
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.Layout"
              x:Class="MediaViewer.MediaFileBrowser.MediaFileBrowserView"          
@@ -22,7 +23,7 @@
             </ResourceDictionary.MergedDictionaries>
             <MediaFileBrowser:ImageOptionsVisibilityConverter x:Key="imageOptionsVisibilityConverter"/>
             <!--http://stackoverflow.com/questions/14357503/how-to-add-tab-items-programmatically-to-tab-control-in-prism-->           
-            <Style TargetType="{x:Type Expander}">
+            <Style TargetType="{x:Type TabbedExpander:TabbedExpanderView}">
                 <Setter Property="Background" Value="{StaticResource imageGridBackgroundColorBrush}"/>
             </Style>
         </ResourceDictionary>
@@ -33,34 +34,11 @@
             <ColumnDefinition Width="4*"/>
             <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
-        <Layout:ExpanderPanel x:Name="leftExpanderPanel" Grid.Column="0" HorizontalAlignment="Stretch" 
+        <Layout:TabbedExpanderPanel x:Name="leftExpanderPanel" Grid.Column="0" HorizontalAlignment="Stretch" 
                               VerticalAlignment="Stretch" regions:RegionManager.RegionName="leftExpanderPanelRegion">
-            <Expander IsExpanded="True" Layout:ExpanderPanel.ElemHeight="2">
-                <Expander.Header>
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <RadioButton x:Name="browseRadioButton" Grid.Column="0" GroupName="a" Content="Browse" Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}" IsChecked="True"/>
-                        <RadioButton x:Name="searchRadioButton" Grid.Column="1" GroupName="a" Content="Search" Style="{StaticResource {x:Static ToolBar.RadioButtonStyleKey}}"/>
-                    </Grid>
-                </Expander.Header>                
-                <Grid Margin="5">
-                    <Grid Visibility="{Binding IsChecked,ElementName=browseRadioButton,Converter={StaticResource booleanToVisibilityConverter}}">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <LocationBox:LocationBoxView Grid.Row="0" HorizontalAlignment="Stretch" VerticalAlignment="Center" Location="{Binding BrowsePath, Mode=TwoWay}" LocationHistory="{Binding BrowsePathHistory}" FavoriteLocations="{Binding FavoriteLocations}"/>                                                   
-                        <DirectoryPicker:DirectoryPicker Grid.Row="1" x:Name="directoryPicker" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
-                    </Grid>
-                    <mwt:ClassicBorderDecorator BorderStyle="Etched" BorderThickness="2" Visibility="{Binding IsChecked,ElementName=searchRadioButton,Converter={StaticResource booleanToVisibilityConverter}}">
-                        <Search:SearchView/>
-                    </mwt:ClassicBorderDecorator>
-                </Grid>                                
-            </Expander>                          
-        </Layout:ExpanderPanel>
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="2" IsExpanded="True" regions:RegionManager.RegionName="mediaSearchExpander" />
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="False" regions:RegionManager.RegionName="mediaFilterExpander" />
+        </Layout:TabbedExpanderPanel>
         <GridSplitter x:Name="leftGridSplitter" Width="2" Grid.Column="1" HorizontalAlignment="Left"/>
         <Grid x:Name="browserButtons" Grid.Column="1" Background="{StaticResource imageGridBackgroundColor}" Margin="2,0,0,0">
             <Grid.RowDefinitions>
@@ -124,6 +102,8 @@
             <Grid/>
         </Grid>
         <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
-        <Layout:ExpanderPanel x:Name="rightExpanderPanel" Grid.Column="2" regions:RegionManager.RegionName="rightExpanderPanelRegion" Margin="2,0,0,0"/>                   
+        <Layout:TabbedExpanderPanel x:Name="rightExpanderPanel" Grid.Column="2" regions:RegionManager.RegionName="rightExpanderPanelRegion" Margin="2,0,0,0">           
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="True" regions:RegionManager.RegionName="mediaMetadataExpander" />
+        </Layout:TabbedExpanderPanel>
     </Grid>
 </UserControl>

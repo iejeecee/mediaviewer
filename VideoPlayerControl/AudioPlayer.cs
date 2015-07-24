@@ -134,24 +134,20 @@ namespace VideoPlayerControl
 
         public bool IsMuted
         {
-
             set
             {
-
                 muted = value;
                 Volume = volume;
             }
 
             get
             {
-
                 return (muted);
             }
         }
 
         public int SamplesPerSecond
         {
-
             set
             {
                 audioBuffer.Frequency = value;
@@ -165,28 +161,22 @@ namespace VideoPlayerControl
 
         public double Volume
         {
-
             set
             {
-
                 this.volume = value;
 
                 if (audioBuffer != null && muted == false)
-                {
-                 
+                {                 
                     audioBuffer.Volume = (int)value;
-
                 }
                 else if (audioBuffer != null && muted == true)
                 {
-
                     audioBuffer.Volume = DSBVOLUME_MIN;
                 }
             }
 
             get
             {
-
                 return (volume);
             }
 
@@ -214,16 +204,12 @@ namespace VideoPlayerControl
 
             try
             {
-
                 if (directSound == null)
                 {
-
                     directSound = new DirectSound();
-                    directSound.SetCooperativeLevel(owner.Handle, CooperativeLevel.Priority);
-                
+                    directSound.SetCooperativeLevel(owner.Handle, CooperativeLevel.Priority);                
                 }
              
-
                 releaseResources();
 
                 this.bufferSizeBytes = bufferSizeBytes;
@@ -237,7 +223,6 @@ namespace VideoPlayerControl
                     BufferFlags.ControlVolume | BufferFlags.ControlFrequency |
                     BufferFlags.GetCurrentPosition2;
                
-
                 //desc.AlgorithmFor3D = Guid.Empty;
 
                 int blockAlign = nrChannels * bytesPerSample;
@@ -266,8 +251,7 @@ namespace VideoPlayerControl
             }       
             catch (Exception e)
             {
-                throw new VideoPlayerException("Error initializing Direct Sound: " + e.Message, e);
-             
+                throw new VideoPlayerException("Error initializing Direct Sound: " + e.Message, e);             
             }
         }
 
@@ -285,14 +269,12 @@ namespace VideoPlayerControl
 
             if (ptsPos < prevPtsPos)
             {
-
                 ptsLoops++;
                 //Util.DebugOut("ptsLoops" + ptsLoops.ToString());
             }
 
             if (playPos < prevPlayPos)
             {
-
                 playLoops++;
                 //Util.DebugOut("playLoops" + playLoops.ToString());
             }

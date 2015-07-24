@@ -2,26 +2,9 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"   
                     xmlns:ImagePanel="clr-namespace:MediaViewer.ImagePanel" 
                     xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"                    
-                    xmlns:Converters="clr-namespace:MediaViewer.Converters"   
-                    xmlns:HyperlinkTextBox="clr-namespace:MediaViewer.UserControls.HyperlinkTextBox"
+                    xmlns:Converters="clr-namespace:MediaViewer.Converters"                       
                     >
-    <Converters:BooleanNegatorConverter x:Key="booleanNegatorConverter"/>
-    <Converters:EnumToBooleanConverter x:Key="enumToBooleanConverter"/>
-    <Converters:NegatedEnumToBooleanConverter x:Key="negatedEnumToBooleanConverter"/>
-    <Converters:FormatSizeBytesConverter x:Key="formatSizeBytesConverter"/>
-    <Converters:PathNameConverter x:Key="pathNameConverter"/> 
-    <Converters:MathConverter x:Key="mathConverter"/>
-    <Converters:BooleanToScrollBarVisibilityConverter x:Key="booleanToScrollBarVisibilityConverter"/>
-    <Converters:BooleanToVisibilityConverter x:Key="visibilityConverter"/>
-    <Converters:IsNullConverter x:Key="isNullConverter"/>
-    <Converters:NullConverter x:Key="nullConverter"/>
-    <Converters:EnumConverter x:Key="enumConverter"/>
-    <Converters:EnumToVisibilityConverter x:Key="enumToVisibilityConverter"/>
-    <Converters:EmptyStringConverter x:Key="emptyStringConverter"/>
-    <Converters:CollectionIsEmptyConverter x:Key="collectionIsEmptyConverter"/>
-    <Converters:ToStringConverter x:Key="toStringConverter"/>
-    <Converters:RemoveNewlinesConverter x:Key="removeNewlinesConverter"/>
-    <Converters:IsEqualConverter x:Key="isEqualConverter"/>
+    
 
     <BooleanToVisibilityConverter x:Key="booleanToVisibilityConverter" />
 
@@ -37,15 +20,7 @@
     <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
          
-    <!-- HyperlinkTextBox -->
-    <Style TargetType="{x:Type HyperlinkTextBox:HyperlinkTextBoxView}" x:Key="baseHyperlinkTextBoxStyle">
-        <Style.Triggers>
-            <Trigger Property="IsEnabled" Value="False">
-                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
-            </Trigger>
-        </Style.Triggers>
-    </Style>
-
+    
     <!-- WrapPanel -->
     <Style TargetType="{x:Type WrapPanel}" x:Key="baseWrapPanelStyle">
         <Style.Triggers>

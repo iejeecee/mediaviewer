@@ -39,7 +39,7 @@ namespace MediaViewer.Torrent
             Settings = settings;
 
             WindowTitle = "Torrent File";
-            WindowIcon = "pack://application:,,,/Resources/Icons/torrent.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/torrent2.ico";
 
             pieceLength = (int)Math.Pow(2, 19); // 512kb
             createdBy = App.getAppInfoString();

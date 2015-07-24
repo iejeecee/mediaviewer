@@ -76,7 +76,7 @@ namespace MediaViewer.Transcode.Video
 
             Items = new List<MediaFileItem>();
             Title = "Transcode Video(s)";
-            IconUri = "/MediaViewer;component/Resources/Icons/videotranscode.ico";
+            IconUri = "/MediaViewer;component/Resources/Icons/videofile.ico";
 
             setDefaults();
 

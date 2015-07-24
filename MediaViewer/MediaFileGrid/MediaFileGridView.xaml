@@ -5,9 +5,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid" 
              xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo"
-             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
-             x:Class="MediaViewer.MediaFileGrid.MediaFileGridView" 
+             xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic" 
              xmlns:MediaFileGrid="clr-namespace:MediaViewer.MediaFileGrid"
+             xmlns:SortComboBox="clr-namespace:MediaViewer.UserControls.SortComboBox"
+             x:Class="MediaViewer.MediaFileGrid.MediaFileGridView"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
             x:Name="mediaFileGridView">
@@ -29,37 +30,24 @@
                 <Label Content="Filter" Grid.Column="1" VerticalAlignment="Center"/>
                 <ComboBox x:Name="filterComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.FilterModes}"/>
                 <Label Content="Sort" Grid.Column="3" VerticalAlignment="Center"/>
-                <ComboBox x:Name="sortComboBox" Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}" IsReadOnly="False">
-                    <ComboBox.ItemTemplate>
-                        <DataTemplate>                                                            
-                            <StackPanel Orientation="Horizontal">
-                                <Button Style="{StaticResource {x:Static ToolBar.ButtonStyleKey}}">
-                                    <Button.Content>
-                                        <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
-                                    </Button.Content>
-                                </Button>
-                                <TextBlock Text="{Binding}" />                                
-                            </StackPanel>                                                          
-                        </DataTemplate>
-                    </ComboBox.ItemTemplate>
-                </ComboBox>
+                <SortComboBox:SortComboBoxView Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
             </Grid>
         </mwt:ClassicBorderDecorator>
         <MediaGrid:MediaGridView Grid.Row="1" HorizontalAlignment="Stretch"  VerticalAlignment="Stretch" NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">
             <MediaGrid:MediaGridView.MediaItemContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="View" Command="{Binding Path=PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                                CommandParameter="{Binding}"/>
+                    <MenuItem Header="View" Command="{Binding PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+						CommandParameter="{Binding}"/>
                     <Separator/>
-                    <MenuItem Header="Select All" Command="{Binding Path=PlacementTarget.Tag.SelectAllCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
-                    <MenuItem Header="Deselect All" Command="{Binding Path=PlacementTarget.Tag.DeselectAllCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
+                    <MenuItem Header="Select All" Command="{Binding PlacementTarget.Tag.SelectAllCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                    <MenuItem Header="Deselect All" Command="{Binding PlacementTarget.Tag.DeselectAllCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
                     <Separator/>
-                    <MenuItem Header="Browse Location" Command="{Binding Path=PlacementTarget.Tag.BrowseLocationCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                               CommandParameter="{Binding}"/>
-                    <MenuItem Header="Open Location" Command="{Binding Path=PlacementTarget.Tag.OpenLocationCommand,RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
-                               CommandParameter="{Binding}"/>
+                    <MenuItem Header="Browse Location" Command="{Binding PlacementTarget.Tag.BrowseLocationCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+						CommandParameter="{Binding}"/>
+                    <MenuItem Header="Open Location" Command="{Binding PlacementTarget.Tag.OpenLocationCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"
+						CommandParameter="{Binding}"/>
                 </ContextMenu>
             </MediaGrid:MediaGridView.MediaItemContextMenu>
-        </MediaGrid:MediaGridView>
+        </MediaGrid:MediaGridView>        
     </Grid>
 </UserControl>

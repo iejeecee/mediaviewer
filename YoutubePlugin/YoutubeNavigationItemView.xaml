@@ -6,9 +6,9 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <ToggleButton x:Name="navigationButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" Click="navigationButton_Click" Style="{DynamicResource {x:Static ToolBar.ToggleButtonStyleKey}}"
+        <Button x:Name="navigationButton" HorizontalAlignment="Center" VerticalAlignment="Center" Width="16" Height="16" Click="navigationButton_Click" Style="{DynamicResource {x:Static ToolBar.ButtonStyleKey}}"
                 ToolTip="Youtube">
             <Image Source="pack://application:,,,/YoutubePlugin;component/Resources/Icons/youtube.ico" />
-        </ToggleButton>    
+        </Button>    
     </Grid>
 </UserControl>

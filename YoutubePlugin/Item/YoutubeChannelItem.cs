@@ -16,7 +16,7 @@ namespace YoutubePlugin.Item
         public YoutubeChannelItem(SearchResult result, int relevance) :
             base(result, relevance)
         {
-            SearchResult = result;
+            Info = result;
           
         }
 
@@ -31,11 +31,13 @@ namespace YoutubePlugin.Item
 
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
 
-                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
-                metaData.CreationDate = SearchResult.Snippet.PublishedAt;
-                metaData.Title = SearchResult.Snippet.Title;
-                metaData.Description = String.IsNullOrEmpty(SearchResult.Snippet.Description) ? SearchResult.Snippet.Title : SearchResult.Snippet.Description;
+                SearchResult searchInfo = Info as SearchResult;
 
+                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
+                metaData.CreationDate = searchInfo.Snippet.PublishedAt;
+                metaData.Title = searchInfo.Snippet.Title;
+                metaData.Description = String.IsNullOrEmpty(searchInfo.Snippet.Description) ? searchInfo.Snippet.Title : searchInfo.Snippet.Description;
+               
                 Metadata = metaData;
 
                 ItemState = MediaItemState.LOADED;

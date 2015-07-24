@@ -48,9 +48,16 @@ namespace ImageSearchPlugin
         {
             if (e.Key == Key.Enter)
             {
-                vm.SearchCommand.Execute();
+                vm.SearchCommand.Execute(0);
             }
 
+            
+        }
+
+        async void mediaGridView_ScrolledToEnd(object sender, EventArgs e)
+        {
+            int nrItems = vm.MediaState.UIMediaCollection.Count;
+            await vm.SearchCommand.ExecuteAsync(nrItems);
         }
 
       

@@ -745,7 +745,7 @@ restartvideo:
             }
         }
 
-        public void pausePlay()
+        public async Task pausePlay()
         {
 
             if (VideoState == VideoState.PAUSED ||
@@ -761,8 +761,8 @@ restartvideo:
 
             demuxPacketsCancellationTokenSource.Cancel();
 
-            Task.WaitAll(demuxPacketsTask);
-          
+            await Task.WhenAll(demuxPacketsTask);
+                  
             audioPlayer.stop();
             
         }
@@ -871,7 +871,7 @@ restartvideo:
         {         
             if (VideoState == VideoPlayerControl.VideoState.PLAYING) 
             {            
-                pausePlay();
+                await pausePlay();
             }
             else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
             {                             

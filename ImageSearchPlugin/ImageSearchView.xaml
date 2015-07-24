@@ -3,9 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:MediaStateInfo="clr-namespace:MediaViewer.UserControls.MediaStateInfo;assembly=MediaViewer"
         xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
+        xmlns:System="clr-namespace:System;assembly=mscorlib"
         xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid;assembly=MediaViewer"
         xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor;assembly=MediaViewer"
-        Title="Online Image Search" Icon="pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search.ico" Height="550" Width="900">
+        xmlns:SortComboBox="clr-namespace:MediaViewer.UserControls.SortComboBox;assembly=MediaViewer"
+        Title="Online Image Search" Icon="pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search2.ico" Height="550" Width="900">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -28,7 +30,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <mwt:ClassicBorderDecorator Grid.Column="0" BorderStyle="Etched" BorderThickness="2">
-                <Grid  Background="{StaticResource uiElementBackgroundColor}">
+                <Grid Background="{StaticResource uiElementBackgroundColor}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -51,7 +53,13 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="queryTextBox" Grid.Row="0" Grid.Column="0" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Height="20" AcceptsReturn="False" TextWrapping="NoWrap" VerticalAlignment="Center" HorizontalAlignment="Stretch" PreviewKeyDown="queryTextBox_PreviewKeyDown"/>
-                        <Button Grid.Row="0" Grid.Column="1" Content="Search" Height="20" Width="40"  Command="{Binding SearchCommand}" VerticalAlignment="Center"/>
+                        <Button Grid.Row="0" Grid.Column="1" Content="Search" Height="20" Width="40"  Command="{Binding SearchCommand}" VerticalAlignment="Center">
+                            <Button.CommandParameter>
+                                <System:Int32>
+                                    0
+                                </System:Int32>
+                            </Button.CommandParameter>
+                        </Button>
                     </Grid>
                     <Label Grid.Row="1" Content="Size" VerticalAlignment="Center" Margin="0,0,0,5"/>
                     <ComboBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding Size}" Margin="0,0,5,5"/>
@@ -84,11 +92,11 @@
                         </Grid.ColumnDefinitions>
                         <MediaStateInfo:MediaStateInfoView Grid.Column="0" MediaCollectionView="{Binding MediaStateCollectionView}"/>
                         <Label Content="Sort" Grid.Column="1" VerticalAlignment="Center"/>
-                        <ComboBox x:Name="sortComboBox" Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
+                        <SortComboBox:SortComboBoxView Grid.Column="2" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                     </Grid>
                 </mwt:ClassicBorderDecorator>
                 <MediaGrid:MediaGridView Grid.Row="2" Background="{StaticResource imageGridBackgroundColor}" 
-                                 NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}">
+                                 NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}" ScrolledToEnd="mediaGridView_ScrolledToEnd">
                     <MediaGrid:MediaGridView.MediaItemContextMenu>
                         <ContextMenu>
                             <MenuItem Header="View" Command="{Binding Path=PlacementTarget.Tag.ViewCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"

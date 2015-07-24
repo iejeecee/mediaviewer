@@ -380,9 +380,18 @@ namespace MediaViewer.UserControls.Layout
             {
                 //Store in class scope.
                 _extent = extent;
-
-                //Peform layout refreshment.
-                if (_owner != null) _owner.InvalidateScrollInfo();
+                
+                if (_offset.Y + _viewport.Height >= _extent.Height)
+                {
+                    //Adjust vertical offset if the viewport exceeds the vertical extent
+                    //and refresh layout
+                    SetVerticalOffset(_extent.Height - _viewport.Height);
+                }
+                else
+                {
+                    //Peform layout refreshment.
+                    if (_owner != null) _owner.InvalidateScrollInfo();
+                }
             }
 
             // Update viewport
@@ -390,10 +399,20 @@ namespace MediaViewer.UserControls.Layout
             {
                 //Store in class scope.
                 _viewport = availableSize;
-
-                //Perform layout refreshment.
-                if (_owner != null) _owner.InvalidateScrollInfo();
+               
+                if (_offset.Y + _viewport.Height >= _extent.Height)
+                {
+                    //Adjust vertical offset if the viewport exceeds the vertical extent
+                    //and refresh layout
+                    SetVerticalOffset(_extent.Height - _viewport.Height);
+                }
+                else
+                {
+                    //Peform layout refreshment.
+                    if (_owner != null) _owner.InvalidateScrollInfo();
+                }
             }
+           
         }
 
         #region Properties

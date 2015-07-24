@@ -33,7 +33,14 @@ namespace YoutubePlugin.Item
 
                 StringBuilder sb = new StringBuilder();
 
-                sb.AppendLine(Description);
+                String description = Description;
+
+                if (Description.Length > 170)
+                {
+                    description = Description.Substring(0, 170) + "...";
+                }
+
+                sb.AppendLine(description);
 
                 if (CreationDate != null)
                 {

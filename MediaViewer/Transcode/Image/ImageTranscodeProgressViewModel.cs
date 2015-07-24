@@ -22,7 +22,7 @@ namespace MediaViewer.Transcode.Image
         public ImageTranscodeProgressViewModel(ImageTranscodeViewModel vm)
         {
             WindowTitle = "Image Transcode Progress";
-            WindowIcon = "pack://application:,,,/Resources/Icons/imageconvert.ico";
+            WindowIcon = "pack://application:,,,/Resources/Icons/imagefile.ico";
 
             State = vm;
 
