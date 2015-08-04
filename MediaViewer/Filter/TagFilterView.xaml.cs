@@ -112,6 +112,24 @@ namespace MediaViewer.Filter
         void mediaCollectionView_Cleared(object sender, EventArgs e)
         {
             mediaCollectionView.TagFilter.Clear();
+
+            App.Current.Dispatcher.BeginInvoke(new Action(() => {
+
+                ToggleButton includedClearToggleButton =
+                    VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "includeClearToggleButton");
+
+                ToggleButton excludedClearToggleButton =
+                    VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "excludeClearToggleButton");
+
+                if (includedClearToggleButton != null && excludedClearToggleButton != null)
+                {
+                
+                        includedClearToggleButton.IsEnabled = false;
+                        includedClearToggleButton.IsChecked = false;
+                
+                }
+            }));
+            
         }
 
         private void mediaCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

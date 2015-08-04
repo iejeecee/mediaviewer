@@ -43,9 +43,7 @@
                 <DataTemplate>
                     <!-- bug in itemscontrol with disconnecteditem? fix by DataContex="{Binding}" see: http://www.programering.com/a/MDO5ADMwATQ.html-->
                     <MediaGridItem:MediaGridItemBasicView DataContext="{Binding}" SelectableMediaItem="{Binding}" 
-                                                          Click="mediaGridItem_Click" 
-                                                          Checked="mediaGridItem_Checked"
-                                                          Unchecked="mediaGridItem_Unchecked"
+                                                          Click="mediaGridItem_Click"                                                        
                                                           Tag="{Binding Path=DataContext, ElementName=mediaStackPanel}" 
                                                           ContextMenu="{Binding ElementName=mediaStackPanel,Path=MediaItemContextMenu}" Width="100" Height="100"/>
                 </DataTemplate>

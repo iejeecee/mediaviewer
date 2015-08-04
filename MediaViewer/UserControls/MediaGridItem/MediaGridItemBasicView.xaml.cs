@@ -30,9 +30,7 @@ namespace MediaViewer.UserControls.MediaGridItem
     public partial class MediaGridItemBasicView : UserControl
     {
         public event EventHandler<SelectableMediaItem> Click;
-        public event EventHandler<SelectableMediaItem> Checked;
-        public event EventHandler<SelectableMediaItem> Unchecked;
-
+  
         IEventAggregator EventAggregator { get; set; }
 
         public MediaGridItemBasicView()
@@ -52,32 +50,14 @@ namespace MediaViewer.UserControls.MediaGridItem
         public static readonly DependencyProperty SelectableMediaItemProperty =
             DependencyProperty.Register("SelectableMediaItem", typeof(SelectableMediaItem), typeof(MediaGridItemBasicView), new PropertyMetadata(null));
 
-        private void viewMenuItem_Click(object sender, RoutedEventArgs e)
+        private void imageGridItem_Click(object sender, RoutedEventArgs e)
         {
             if (Click != null)
             {
                 Click(this, SelectableMediaItem);
             }
 
-        }
-                
-        private void imageGridItem_Checked(object sender, RoutedEventArgs e)
-        {
-            if (Checked != null)
-            {
-                Checked(this, SelectableMediaItem);
-            }
-                     
-        }
-
-        private void imageGridItem_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (Unchecked != null)
-            {
-                Unchecked(this, SelectableMediaItem);
-            }
-                     
-        }
+        }                        
           
     }
 }

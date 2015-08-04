@@ -54,8 +54,8 @@ namespace MediaViewer.MediaFileBrowser
     public class MediaFileBrowserViewModel : BindableBase
     {
 
-        private MediaFileWatcher mediaFileWatcher;
-        private delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
+        MediaFileWatcher MediaFileWatcher { get; set; }
+        delegate void imageFileWatcherRenamedEventDelegate(System.IO.RenamedEventArgs e);
 
         IMediaFileBrowserContentViewModel currentViewModel;
 
@@ -179,19 +179,14 @@ namespace MediaViewer.MediaFileBrowser
 
         IRegionManager RegionManager {get;set;}
         IEventAggregator EventAggregator { get; set; }
-        AppSettings Settings { get; set; }
-
-        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator, AppSettings settings)
+      
+        public MediaFileBrowserViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
         {
     
-            this.mediaFileWatcher = mediaFileWatcher;
+            MediaFileWatcher = mediaFileWatcher;
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
-            Settings = settings;
-
-            BrowsePathHistory = Settings.BrowsePathHistory;            
-            FavoriteLocations = Settings.FavoriteLocations;
-
+          
             MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
 
             DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);
@@ -280,7 +275,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 VideoTranscodeView transcode = new VideoTranscodeView();
                 transcode.ViewModel.Items = SelectedItems;
-                transcode.ViewModel.OutputPath = BrowsePath;
+                transcode.ViewModel.OutputPath = MediaFileWatcher.Path;
 
                 transcode.ShowDialog();
             });
@@ -291,7 +286,7 @@ namespace MediaViewer.MediaFileBrowser
 
                 ImageTranscodeView transcode = new ImageTranscodeView();
                 transcode.ViewModel.Items = SelectedItems;
-                transcode.ViewModel.OutputPath = BrowsePath;
+                transcode.ViewModel.OutputPath = MediaFileWatcher.Path;
 
                 transcode.ShowDialog();
             });
@@ -326,10 +321,7 @@ namespace MediaViewer.MediaFileBrowser
                     }
                 });
   
-            EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Subscribe((location) =>
-            {
-                BrowsePath = location;
-            });
+            
            
             NavigateToMediaFileGridCommand = new Command(navigateToMediaFileGrid);
             NavigateToImageViewCommand = new Command<MediaFileItem>(navigateToImageView);
@@ -339,82 +331,19 @@ namespace MediaViewer.MediaFileBrowser
 
             SelectedItems = new List<MediaFileItem>();
 
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(mediaFileBrowser_MediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(mediaFileBrowser_MediaSelectionEvent);
-
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaFileBrowser_MediaSelectionEvent);
             
         }
-
-        private void mediaFileBrowser_MediaSelectionEvent(MediaItem selectedItem)
-        {
-            List<MediaFileItem> selectedItems = new List<MediaFileItem>();           
-            selectedItems.Add(selectedItem as MediaFileItem);
-
-            SelectedItems = selectedItems;
-        }
-
-        private void mediaFileBrowser_MediaBatchSelectionEvent(ICollection<MediaItem> selectedItems)
+      
+        private void mediaFileBrowser_MediaSelectionEvent(MediaSelectionPayload selection)
         {
             List<MediaFileItem> items = new List<MediaFileItem>();
-            foreach (MediaItem item in selectedItems)
+            foreach (MediaItem item in selection.Items)
             {
                 items.Add(item as MediaFileItem);
             }
 
             SelectedItems = items;
-        }
-
-         
-        public string BrowsePath
-        {
-            set
-            {              
-                FileInfo fileInfo = new FileInfo(value);
-
-                string pathWithoutFileName;
-
-                if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
-                {
-                    pathWithoutFileName = value;
-                }
-                else
-                {
-                    pathWithoutFileName = FileUtils.getPathWithoutFileName(value);
-                }
-                                               
-                if (mediaFileWatcher.Path.Equals(pathWithoutFileName))
-                {
-                    return;
-                }
-
-                mediaFileWatcher.Path = pathWithoutFileName;
-               
-                Title = value;
-                EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
-
-                OnPropertyChanged("BrowsePath");
-            }
-
-            get
-            {                
-                return (mediaFileWatcher.Path);
-            }
-        }
-
-        ObservableCollection<String> browsePathHistory;
-
-        public ObservableCollection<String> BrowsePathHistory
-        {
-            get { return browsePathHistory; }
-            set { SetProperty(ref browsePathHistory, value); }
-        }
-
-        ObservableCollection<String> favoriteLocations;
-
-        public ObservableCollection<String> FavoriteLocations
-        {
-            get { return favoriteLocations; }
-            set { SetProperty(ref favoriteLocations, value); }
         }
 
         public Command CreateImageCollageCommand { get; set; }
@@ -501,7 +430,7 @@ namespace MediaViewer.MediaFileBrowser
 
             Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
 
-            Title = BrowsePath;
+            Title = MediaFileWatcher.Path;
         }
 
         public void navigateToVideoView(MediaFileItem item)
@@ -558,10 +487,7 @@ namespace MediaViewer.MediaFileBrowser
             Shell.ShellViewModel.navigateToMediaStackPanelView(GeotagFileBrowserStackPanelViewModel);
         }
 
-        private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)
-        {
-            BrowsePath = e.FullPath;       
-        }
+        
 
         string title;
         public String Title {
@@ -590,14 +516,14 @@ namespace MediaViewer.MediaFileBrowser
             {
                 initialize();
 
-                newTitle = BrowsePath;
+                newTitle = MediaFileWatcher.Path;
             }
             else
             {
                 if (CurrentViewModel is MediaFileGridViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
-                    newTitle = BrowsePath;
+                    newTitle = MediaFileWatcher.Path;
                 }
                 else if (CurrentViewModel is MediaFileBrowserImagePanelViewModel)
                 {
@@ -612,7 +538,7 @@ namespace MediaViewer.MediaFileBrowser
                 else if (CurrentViewModel is GeotagFileBrowserViewModel)
                 {
                     Shell.ShellViewModel.navigateToMediaStackPanelView(geotagFileBrowserStackPanelViewModel);
-                    newTitle = BrowsePath;
+                    newTitle = MediaFileWatcher.Path;
                 }
                 
                 CurrentViewModel.OnNavigatedTo(navigationContext);                

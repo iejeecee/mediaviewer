@@ -93,6 +93,10 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Maps.MapControl.WPF, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Maps.MapControl.WPF.1.0.0.3\lib\net40-Client\Microsoft.Maps.MapControl.WPF.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Practices.Prism.Composition">
       <HintPath>..\packages\Prism.Composition.5.0.0\lib\NET45\Microsoft.Practices.Prism.Composition.dll</HintPath>
     </Reference>
@@ -188,6 +192,9 @@
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelNode.cs" />
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelPlaylistsNode.cs" />
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelVideosNode.cs" />
+    <Compile Include="YoutubeChannelBrowser\YoutubeLocationBoxView.xaml.cs">
+      <DependentUpon>YoutubeLocationBoxView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="YoutubeChannelBrowser\YoutubeNodeBase.cs" />
     <Compile Include="YoutubeCollectionView.cs" />
     <Compile Include="Item\YoutubeItem.cs" />
@@ -208,6 +215,10 @@
     </Compile>
     <Compile Include="YoutubeViewModel.cs" />
     <Page Include="YoutubeChannelBrowser\YoutubeChannelBrowserView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="YoutubeChannelBrowser\YoutubeLocationBoxView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

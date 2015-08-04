@@ -50,7 +50,7 @@
 						ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
             </mwt:ClassicBorderDecorator>
-            <MediaStackPanel:MediaStackPanelView Grid.Row="1" x:Name="mediaStackPanel" MediaStateCollectionView="{Binding MediaStateCollectionView}" MediaItemClick="mediaStackPanel_MediaItemClick">
+            <MediaStackPanel:MediaStackPanelView Grid.Row="1" x:Name="mediaStackPanel" MediaStateCollectionView="{Binding MediaStateCollectionView}">
                 <MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Browse Location" 

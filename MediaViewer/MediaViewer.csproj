@@ -315,8 +315,10 @@
       <DependentUpon>ImagePanelView.xaml</DependentUpon>
     </Compile>
     <Compile Include="UserControls\ImagePanel\ScaleMode.cs" />
+    <Compile Include="UserControls\LocationBox\Layout\LocationBoxItemsPanel.cs" />
     <Compile Include="UserControls\Layout\TabbedExpanderPanel.cs" />
     <Compile Include="UserControls\Layout\TabbedExpanderPanelRegionAdapter.cs" />
+    <Compile Include="UserControls\LocationBox\HasSubdirectoriesConverter.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>

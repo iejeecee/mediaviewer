@@ -21,6 +21,7 @@ namespace YoutubePlugin.Item
     class YoutubeVideoItem : YoutubeItem
     {
         public bool IsEmbeddedOnly { get; set; }
+        public bool HasPlayableStreams { get; set; }
 
         public List<YoutubeVideoStreamedItem> StreamedItem { get; set; }
                                 
@@ -49,6 +50,8 @@ namespace YoutubePlugin.Item
                 // get best video stream
                 foreach (YoutubeVideoStreamedItem item in StreamedItem)
                 {
+                    if (item.StreamType == StreamType.UNKNOWN) continue;
+
                     VideoMetadata metaData = item.Metadata as VideoMetadata;
 
                     if (metaData.Height >= bestHeight)
@@ -68,11 +71,13 @@ namespace YoutubePlugin.Item
                     }
                 }
 
-                if (video.StreamType == StreamType.VIDEO_AUDIO) return;
+                if (video != null && video.StreamType == StreamType.VIDEO_AUDIO) return;
 
                 // get best matching audio stream
                 foreach (YoutubeVideoStreamedItem item in StreamedItem)
                 {
+                    if (item.StreamType == StreamType.UNKNOWN) continue;
+
                     VideoMetadata metaData = item.Metadata as VideoMetadata;
 
                     if (metaData.SamplesPerSecond >= bestSamplesPerSecond)
@@ -130,20 +135,32 @@ namespace YoutubePlugin.Item
 
                     getBestQualityStreams(out video, out audio);
 
-                    VideoMetadata videoMetadata = video.Metadata as VideoMetadata;
+                    VideoMetadata videoMetadata = video == null ? null : video.Metadata as VideoMetadata;
                     VideoMetadata audioMetadata = audio == null ? null : audio.Metadata as VideoMetadata;
 
-                    metaData.Width = videoMetadata.Width;
-                    metaData.Height = videoMetadata.Height;
-                    metaData.MimeType = videoMetadata.MimeType;
-                    metaData.FramesPerSecond = videoMetadata.FramesPerSecond == 0 ? null : new Nullable<double>(videoMetadata.FramesPerSecond);
-                                        
-                    metaData.SizeBytes = videoMetadata.SizeBytes;
+                    if (videoMetadata != null)
+                    {
+                        metaData.Width = videoMetadata.Width;
+                        metaData.Height = videoMetadata.Height;
+                        metaData.MimeType = videoMetadata.MimeType;
+                        metaData.FramesPerSecond = videoMetadata.FramesPerSecond == 0 ? null : new Nullable<double>(videoMetadata.FramesPerSecond);
+
+                        metaData.SizeBytes = videoMetadata.SizeBytes;
+                    }
 
                     if (audioMetadata != null)
                     {
                         metaData.SizeBytes += audioMetadata.SizeBytes;
-                    }                    
+                    }
+
+                    if (videoMetadata == null && audioMetadata == null)
+                    {
+                        HasPlayableStreams = false;
+                    }
+                    else
+                    {
+                        HasPlayableStreams = true;
+                    }
                 }
                               
                 long durationSeconds;

@@ -58,7 +58,7 @@ namespace MediaViewer.UserControls.Layout
                     nom += GetElemHeight(child);
                     nrExpanded++;
                 }
-
+                
             }
 
             foreach (TabbedExpanderView child in this.Children)

@@ -1,5 +1,7 @@
 ﻿using MediaViewer.Model.Media.File.Watcher;
+using MediaViewer.Model.Settings;
 using MediaViewer.UserControls.TabbedExpander;
+using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
@@ -25,10 +27,11 @@ namespace MediaViewer.MediaFileBrowser.DirectoryBrowser
     [Export]
     public partial class MediaFileBrowserDirectoryBrowserView : UserControl, INavigationAware, ITabbedExpanderAware
     {
-        public MediaFileBrowserDirectoryBrowserView()
+        [ImportingConstructor]
+        public MediaFileBrowserDirectoryBrowserView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
-            DataContext = new MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher.Instance);
+            DataContext = new MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher.Instance, eventAggregator,AppSettings.Instance);
 
             TabName = "Browse";
             TabIsSelected = true;

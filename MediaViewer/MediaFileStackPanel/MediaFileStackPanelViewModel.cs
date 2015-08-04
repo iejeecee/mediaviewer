@@ -31,8 +31,7 @@ namespace MediaViewer.MediaFileStackPanel
             protected set { SetProperty(ref mediaStateCollectionView, value); }
         }
      
-        protected IEventAggregator EventAggregator { get; set; }
-        MediaItem selectedItem;
+        protected IEventAggregator EventAggregator { get; set; }     
 
         public MediaFileStackPanelViewModel(MediaFileState mediaState, IEventAggregator eventAggregator)
         {
@@ -58,32 +57,107 @@ namespace MediaViewer.MediaFileStackPanel
             IsVisible = false;
             IsEnabled = true;
 
-            NrPages = 0;
+            NrPages = 0; 
             CurrentPage = null;
             IsPagingEnabled = false;
 
             EventAggregator = eventAggregator;
-
            
             NextPageCommand = new Command(() =>
             {
-                CurrentPage = CurrentPage + 1;
+                MediaStateCollectionView.Media.EnterWriteLock();
+                try
+                {
+                    int nrItems = MediaStateCollectionView.Media.Count();
+
+                    if (nrItems > 0)
+                    {
+                        MediaItem selectedItem;
+
+                        MediaStateCollectionView.getSelectedItem(out selectedItem);
+
+                        if(selectedItem != null) 
+                        {
+                            int index = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem));
+
+                            if (index + 1 < nrItems)
+                            {
+                                MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[index + 1].Item);
+                            }
+                        }
+                    }
+
+                }
+                finally
+                {
+                    MediaStateCollectionView.Media.ExitWriteLock();
+                }
             });
 
             PrevPageCommand = new Command(() =>
             {
-                CurrentPage = CurrentPage - 1;
+                MediaStateCollectionView.Media.EnterWriteLock();
+                try
+                {
+                    int nrItems = MediaStateCollectionView.Media.Count();
+
+                    if (nrItems > 0)
+                    {
+                        MediaItem selectedItem;
+
+                        MediaStateCollectionView.getSelectedItem(out selectedItem);
+
+                        if (selectedItem != null)
+                        {
+                            int index = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem));
+
+                            if (index - 1 >= 0)
+                            {
+                                MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[index - 1].Item);
+                            }
+                        }
+                    }
+
+                }
+                finally
+                {
+                    MediaStateCollectionView.Media.ExitWriteLock();
+                }
             });
 
             FirstPageCommand = new Command(() =>
             {
-                CurrentPage = 1;
+                MediaStateCollectionView.Media.EnterWriteLock();
+                try
+                {
+                    if (MediaStateCollectionView.Media.Count() > 0)
+                    {
+                        MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[0].Item);
+                    }
+
+                }
+                finally
+                {
+                    MediaStateCollectionView.Media.ExitWriteLock();
+                }
 
             });
 
             LastPageCommand = new Command(() =>
             {
-                CurrentPage = MediaStateCollectionView.Media.Count;
+                MediaStateCollectionView.Media.EnterWriteLock();
+                try
+                {
+                    if (MediaStateCollectionView.Media.Count() > 0)
+                    {
+                        MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[MediaStateCollectionView.Media.Count() - 1].Item);
+                    }
+
+                }
+                finally
+                {
+                    MediaStateCollectionView.Media.ExitWriteLock();
+                }
             });
 
             BrowseLocationCommand = new Command<SelectableMediaItem>((selectableItem) =>
@@ -117,19 +191,39 @@ namespace MediaViewer.MediaFileStackPanel
 
                 }
             });
+           
 
-            selectedItem = null;
+            MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
+            MediaStateCollectionView.ItemResorted += mediaState_ItemResorted;
+                                                         
         }
 
-        private void mediaState_ItemResorted(object sender, int newIndex)
-        {
-            MediaFileItem resortedItem = (MediaFileItem)sender;
+        
 
-            if (selectedItem != null && selectedItem.Equals(resortedItem))
+        void selectItems(MediaSelectionPayload selection)
+        {
+            ICollection<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
+            if (Enumerable.SequenceEqual(selection.Items, selectedItems)) return;
+
+            if (selection.Items.Count() == 0)
             {
-                currentPage = newIndex + 1;
-                OnPropertyChanged("CurrentPage");
+                MediaStateCollectionView.deselectAll();
             }
+            else
+            {
+                MediaStateCollectionView.selectExclusive(selection.Items.ElementAt(0));
+            }
+            
+        }
+
+        private void mediaState_ItemResorted(object sender, int[] index)
+        {                
+            if(Nullable<int>.Equals(CurrentPage,index[0] + 1)) {
+
+                // current page has been resorted 
+                // set to new index
+                CurrentPage = index[1] + 1;
+            }           
         }
 
         private void mediaState_SelectionChanged(object sender, EventArgs e)
@@ -138,17 +232,19 @@ namespace MediaViewer.MediaFileStackPanel
             MediaStateCollectionView.Media.EnterReadLock();
             try
             {                
-                MediaStateCollectionView.getSelectedItem(out selectedItem);
+                //MediaStateCollectionView.getSelectedItem(out selectedItem);
+                List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
 
-                if (selectedItem != null)
-                {
-                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem)) + 1;
-                }
-                else
-                {
+                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, items));
+  
+                if(items.Count == 0) {
+
                     CurrentPage = null;
+
+                } else {
+
+                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(items[0])) + 1;
                 }
-     
             }
             finally
             {
@@ -164,14 +260,13 @@ namespace MediaViewer.MediaFileStackPanel
              {
                  NrPages = MediaStateCollectionView.Media.Count();
 
-                 // if the number of items in the state has changed
-                 // the index of the currently selected item, update the index            
+                 MediaItem selectedItem;
+
                  int index = MediaStateCollectionView.getSelectedItem(out selectedItem);
 
                  if (index != -1 && (index + 1) != CurrentPage)
                  {
-                     currentPage = index + 1;
-                     OnPropertyChanged("CurrentPage");
+                     CurrentPage = index + 1;                
                  }
              }
              finally
@@ -231,9 +326,9 @@ namespace MediaViewer.MediaFileStackPanel
             }
         }
 
-        Nullable<int> currentPage;
+        int? currentPage;
 
-        public Nullable<int> CurrentPage
+        public int? CurrentPage
         {
             get
             {
@@ -241,30 +336,7 @@ namespace MediaViewer.MediaFileStackPanel
             }
             set
             {
-                int? newPage = value;              
-
-                if (newPage.HasValue) {
-                                   
-                    MediaStateCollectionView.Media.EnterReadLock();
-                    try
-                    {
-                        newPage = MiscUtils.clamp<int>(newPage.Value, 1, MediaStateCollectionView.Media.Count);
-
-                        int index = newPage.Value - 1;
-
-                        MediaItem item = MediaStateCollectionView.Media[index].Item;
-                        
-                        EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Publish(item);                                       
-                    }
-                    finally
-                    {
-                        MediaStateCollectionView.Media.ExitReadLock();
-                    }
-
-                }
-
-                SetProperty(ref currentPage, newPage);
-              
+                SetProperty(ref currentPage, value);              
             }
         }
 
@@ -293,18 +365,39 @@ namespace MediaViewer.MediaFileStackPanel
         
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            MediaStateCollectionView.NrItemsInStateChanged -= mediaState_NrItemsInStateChanged;
             MediaStateCollectionView.SelectionChanged -= mediaState_SelectionChanged;
-            MediaStateCollectionView.ItemResorted -= mediaState_ItemResorted;         
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(selectItems);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            MediaStateCollectionView.NrItemsInStateChanged += mediaState_NrItemsInStateChanged;
-            MediaStateCollectionView.SelectionChanged += mediaState_SelectionChanged;
-            MediaStateCollectionView.ItemResorted += mediaState_ItemResorted;
+        {                   
+            ICollection<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
 
-            MediaStateCollectionView.refresh();
+            MediaStateCollectionView.SelectionChanged += mediaState_SelectionChanged;
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(selectItems, ThreadOption.UIThread, false, selection => selection.SenderId.Equals(MediaStateCollectionView.Guid));
+
+            String location = (String)navigationContext.Parameters["location"];
+            if (!String.IsNullOrEmpty(location))
+            {
+                MediaFileItem item = MediaFileItem.Factory.create(location);
+
+                if (selectedItems.Count > 0 && selectedItems.ElementAt(0).Equals(item))
+                {
+                    // Send a selection event in the case the media is already selected
+                    // to inform other views
+                    EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, item));
+                }
+                else
+                {
+                    selectItems(new MediaSelectionPayload(MediaStateCollectionView.Guid, item));
+                }
+            }
+            else
+            {
+                //MediaStateCollectionView.refresh();
+            }
         }
+
+        
     }
 }

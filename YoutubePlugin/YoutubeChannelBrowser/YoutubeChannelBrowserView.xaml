@@ -7,7 +7,12 @@
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid>
-        <sd:SharpTreeView x:Name="treeView"                            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <sd:SharpTreeView Grid.Row="1" x:Name="treeView"                            
                               ShowAlternation="False"   
                               ShowRoot="False"
                               ShowLines="False"

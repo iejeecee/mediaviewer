@@ -17,10 +17,10 @@ namespace MediaViewer.UserControls.LocationBox
         {
             DirectoryName = directoryName;
             FullPath = fullPath;
-            SubDirectories = new ObservableCollection<DirectoryItem>();
-            IsSelectedCommand = isSelectedCommand;   
+            SubDirectories = new ObservableCollection<DirectoryItem>();            
+            IsSelectedCommand = isSelectedCommand;            
         }
-
+        
         String directoryName;
 
         public String DirectoryName
@@ -53,6 +53,6 @@ namespace MediaViewer.UserControls.LocationBox
         }
 
         public Command<DirectoryItem> IsSelectedCommand { get; set; }
-     
+        
     }
 }

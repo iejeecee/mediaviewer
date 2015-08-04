@@ -295,6 +295,16 @@ namespace MediaViewer.GeotagFileBrowser
             
         }
 
+        void mapDeselectAll()
+        {
+            for (int i = 0; i < pinLayer.Children.Count; i++)
+            {                               
+                (pinLayer.Children[i] as Pushpin).Background = defaultPushpinBackground;
+                (imageLayer.Children[i] as Border).Background = defaultImageBackground;               
+            }
+
+        }
+
         FrameworkElement mapSelectItem(MediaItem item)
         {
             FrameworkElement selected = null;
@@ -307,13 +317,7 @@ namespace MediaViewer.GeotagFileBrowser
                     (imageLayer.Children[i] as Border).Background = selectedImageBackground;
 
                     selected = pinLayer.Children[i] as FrameworkElement;
-                }
-                else
-                {
-                    (pinLayer.Children[i] as Pushpin).Background = defaultPushpinBackground;
-                    (imageLayer.Children[i] as Border).Background = defaultImageBackground;                                  
-                }
-
+                }                
             }
 
             EventAggregator.GetEvent<TitleChangedEvent>().Publish(Path.GetFileName(item.Location));
@@ -354,8 +358,9 @@ namespace MediaViewer.GeotagFileBrowser
                 FrameworkElement elem = (FrameworkElement)sender;
                 MediaItem item = elem.Tag as MediaItem;
 
+                mapDeselectAll();
                 mapSelectItem(item);
-                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(item);
+                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaCollectionView.Guid, item));
 
                 e.Handled = true;
             }
@@ -364,7 +369,7 @@ namespace MediaViewer.GeotagFileBrowser
         public void OnNavigatedTo(Microsoft.Practices.Prism.Regions.NavigationContext navigationContext)
         {
             mapLoadItems();
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaSelectionEvent);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaSelectionEvent, ThreadOption.PublisherThread, false, selection => selection.SenderId.Equals(MediaCollectionView.Guid));
             MediaCollectionView.ItemPropertyChanged += MediaCollectionView_ItemPropertyChanged;
             MediaCollectionView.NrItemsInStateChanged += MediaCollectionView_NrItemsInStateChanged;
         }
@@ -422,21 +427,29 @@ namespace MediaViewer.GeotagFileBrowser
 
         
 
-        void mediaSelectionEvent(MediaItem item)
+        void mediaSelectionEvent(MediaSelectionPayload selection)
         {
-            FrameworkElement elem = mapSelectItem(item);
+            mapDeselectAll();
 
-            if (elem != null)
+            if (selection.Items.Count() == 0) return;           
+
+            for(int i = 0; i < selection.Items.Count(); i++)
             {
-                item.RWLock.EnterReadLock();
-                if (item.Metadata.Latitude != null)
+                MediaItem item = selection.Items.ElementAt(i);
+
+                FrameworkElement elem = mapSelectItem(item);
+
+                if (elem != null && i == selection.Items.Count() - 1)
                 {
-                    Map.Center = new Location(item.Metadata.Latitude.Value, item.Metadata.Longitude.Value);
+                    item.RWLock.EnterReadLock();
+                    if (item.Metadata.Latitude != null)
+                    {
+                        Map.Center = new Location(item.Metadata.Latitude.Value, item.Metadata.Longitude.Value);
+                    }
+                    item.RWLock.ExitReadLock();
+
                 }
-                item.RWLock.ExitReadLock();
-                
             }
-           
         }
     }
 }

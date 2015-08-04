@@ -20,17 +20,19 @@ namespace YoutubePlugin
 
         public override System.Windows.Media.Imaging.BitmapSource getInfoIconsBitmap(MediaViewer.Model.Media.Base.MediaItem item)
         {
-            BitmapSource bitmap = null;
-
+            
             String key = "";
 
             if (item.Metadata == null)
             {
-                return (bitmap);
+                // error
+                return (null);
             }
 
             if (item is YoutubeVideoItem)
             {
+                YoutubeVideoItem videoItem = item as YoutubeVideoItem;
+
                 YoutubeItemMetadata metadata = item.Metadata as YoutubeItemMetadata;
                 
                 if (metadata.Height >= 1080)
@@ -38,7 +40,7 @@ namespace YoutubePlugin
                     key += "0";
                 }
 
-                if ((item as YoutubeVideoItem).IsEmbeddedOnly)
+                if (videoItem.IsEmbeddedOnly || !videoItem.HasPlayableStreams)
                 {
                     key += "1";
                 }

@@ -95,6 +95,11 @@ namespace YoutubePlugin.YoutubeMetadata
         {
             YoutubeItemMetadata metaData = item.Metadata as YoutubeItemMetadata;
 
+            if (metaData == null)
+            {               
+                return;
+            }
+
             Title = metaData.Title;           
             Rating = metaData.Rating == null ? null : metaData.Rating / 5;
             Author = metaData.Author;

@@ -155,8 +155,10 @@ namespace MediaViewer.VideoPanel
             }, false);
 
             FrameByFrameCommand = new AsyncCommand(async () => {
-             
-                await VideoPlayer.displayNextFrame(); 
+
+                FrameByFrameCommand.IsExecutable = false;
+                await VideoPlayer.displayNextFrame();
+                FrameByFrameCommand.IsExecutable = true;
 
             }, false);
 
@@ -571,10 +573,13 @@ namespace MediaViewer.VideoPanel
             }
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(videoView_MediaSelectionEvent);
+           
         }
 
         public async void OnNavigatedTo(NavigationContext navigationContext)
         {
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
+
             MediaItem video = (MediaItem)navigationContext.Parameters["item"];
             int? offsetSeconds = (int?)navigationContext.Parameters["offsetSeconds"];
             MediaItem audio = (MediaItem)navigationContext.Parameters["audio"];
@@ -587,16 +592,18 @@ namespace MediaViewer.VideoPanel
             {
                 EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem.IsEmpty ? null : CurrentItem.Video.Name);
             }
-           
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(videoView_MediaSelectionEvent, ThreadOption.UIThread);
-
+                                  
         }
 
-        private async void videoView_MediaSelectionEvent(MediaItem item)
+        private async void videoView_MediaSelectionEvent(MediaSelectionPayload selection)
         {
-            if (!CurrentItem.IsEmpty && String.Equals(CurrentItem.Video.Location, item.Location)) return;
+            if (selection.Items.Count() == 0) return;
 
-            await openAndPlay(new VideoAudioPair(item, null));
+            MediaItem first = selection.Items.ElementAt(0);
+
+            if (!CurrentItem.IsEmpty && String.Equals(CurrentItem.Video.Location, first.Location)) return;
+
+            await openAndPlay(new VideoAudioPair(first, null));
         
         }
 

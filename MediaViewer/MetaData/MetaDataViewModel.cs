@@ -26,6 +26,7 @@ using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.Base;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.UserControls.Layout;
+using MediaViewer.Model.Global.Events;
 
 namespace MediaViewer.MetaData
 {
@@ -829,41 +830,26 @@ namespace MediaViewer.MetaData
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
-        {
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Unsubscribe(globalMediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Unsubscribe(globalMediaSelectionEvent);
+        {          
+            EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(globalMediaSelectionEvent);
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Subscribe(globalMediaBatchSelectionEvent);
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(globalMediaSelectionEvent);
         }
 
-        private void globalMediaBatchSelectionEvent(ICollection<MediaItem> selectedItems)
+        private void globalMediaSelectionEvent(MediaSelectionPayload selection)
         {
             List<MediaFileItem> items = new List<MediaFileItem>();
-            foreach (MediaItem item in selectedItems)
+            foreach (MediaItem item in selection.Items)
             {
                 items.Add(item as MediaFileItem);
             }
 
             Items = items;
         }
-
-        private void globalMediaSelectionEvent(MediaItem selectedItem)
-        {
-            List<MediaFileItem> selectedItems = new List<MediaFileItem>();
-            if (selectedItem != null)
-            {
-                selectedItems.Add(selectedItem as MediaFileItem);
-            }
-
-            Items = selectedItems;
-        }
-
-        
-        
+                        
     }
    
 }

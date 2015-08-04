@@ -11,7 +11,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <LocationBox:LocationBoxView HorizontalAlignment="Stretch" Grid.Row="0" Location="{Binding MediaFileWatcher.Path, Mode=TwoWay}"/>
-        <DirectoryPicker:DirectoryPicker HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" SelectedLocation="{Binding MediaFileWatcher.Path, Mode=TwoWay}"/>        
+        <LocationBox:LocationBoxView HorizontalAlignment="Stretch" Grid.Row="0" Location="{Binding BrowsePath, Mode=TwoWay}" LocationHistory="{Binding BrowsePathHistory}" FavoriteLocations="{Binding FavoriteLocations}"/>
+        <DirectoryPicker:DirectoryPicker HorizontalAlignment="Stretch" Grid.Row="1" VerticalAlignment="Stretch" SelectedLocation="{Binding BrowsePath, Mode=TwoWay}"/>        
     </Grid>
 </UserControl>

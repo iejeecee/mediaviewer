@@ -4,7 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
-             xmlns:Control="clr-namespace:MediaViewer.UserControls.LocationBox"               
+             xmlns:Control="clr-namespace:MediaViewer.UserControls.LocationBox"      
+             xmlns:Layout="clr-namespace:MediaViewer.UserControls.LocationBox.Layout"
              mc:Ignorable="d" 
              d:DesignHeight="60"  d:DesignWidth="300">
     <UserControl.Resources>
@@ -20,6 +21,7 @@
             <ContextMenu x:Key="nodeContextMenu">
                 <MenuItem Header="Remove" Command="{Binding RemoveCommand}" CommandParameter="{Binding}"/>
             </ContextMenu>
+            <Control:HasSubdirectoriesConverter x:Key="hasSubdirectoriesConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Height="27">                
@@ -47,18 +49,28 @@
                     ItemsSource="{Binding SplitPath}" VerticalContentAlignment="Center">
                     <Menu.Resources>
                         <Style TargetType="MenuItem">
-                            <Setter Property="Header" Value="{Binding Path=DirectoryName}" />
+                            <!--<Setter Property="Header" Value="{Binding Path=DirectoryName}" />-->
                             <Setter Property="ItemsSource" Value="{Binding Path=SubDirectories}" />
                             <Setter Property="Icon" Value="{Binding Icon}"/>
                             <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>
                             <Setter Property="CommandParameter" Value="{Binding}"/>
+                            <Setter Property="HeaderTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding DirectoryName}" PreviewMouseLeftButtonDown="location_PreviewMouseLeftButtonDown" Tag="{Binding}"/>
+                                            <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black" Margin="3,0,0,0" Visibility="{Binding SubDirectories, Converter={StaticResource hasSubdirectoriesConverter}}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
                         </Style>
                     </Menu.Resources>
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Horizontal"/>
+                            <Layout:LocationBoxItemsPanel VerticalContentAlignment="Center"/>                            
                         </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
+                    </Menu.ItemsPanel>                    
                 </Menu>
                 <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
                     ToolTip="History">                   

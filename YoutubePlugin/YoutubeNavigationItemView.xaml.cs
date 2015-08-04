@@ -31,9 +31,9 @@ namespace YoutubePlugin
         public YoutubeNavigationItemView(IRegionManager regionManager)
         {
             InitializeComponent();
-            RegionManager = regionManager;
+            RegionManager = regionManager;                       
         }
-
+               
         private void navigationButton_Click(object sender, RoutedEventArgs e)
         {
             RegionManager.RequestNavigate(RegionNames.MainContentRegion, typeof(YoutubeView).FullName);                    

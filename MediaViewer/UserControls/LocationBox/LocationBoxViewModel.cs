@@ -56,6 +56,7 @@ namespace MediaViewer.UserControls.LocationBox
                 DirectoryItem item;
 
                 if(i == 0) {
+
                     String volumeLabel;
                     String imageUri;
 

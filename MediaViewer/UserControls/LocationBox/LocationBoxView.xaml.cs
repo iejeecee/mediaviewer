@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -243,6 +244,19 @@ namespace MediaViewer.UserControls.LocationBox
         private void popupViewModel_LocationRemoved(object sender, PopupLocationItem e)
         {
             FavoriteLocations.Remove(e.Name);
+        }
+
+        private void location_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TextBlock textBlock = sender as TextBlock;
+
+            DirectoryItem item = textBlock.Tag as DirectoryItem;
+
+            if (item.SubDirectories.Count > 0)
+            {
+                Location = item.FullPath;
+                SystemSounds.Question.Play();
+            }
         }
              
     }

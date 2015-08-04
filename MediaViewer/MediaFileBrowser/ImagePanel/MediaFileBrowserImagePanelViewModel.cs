@@ -185,8 +185,11 @@ namespace MediaViewer.MediaFileBrowser.ImagePanel
         {
             MediaItem item = (MediaItem)navigationContext.Parameters["item"];
 
-            CurrentItem = item;
-         
+            if (item != null)
+            {
+                CurrentItem = item;                
+            }
+
             EventAggregator.GetEvent<TitleChangedEvent>().Publish(CurrentItem != null ? CurrentItem.Name : null);
             
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(imageView_MediaSelectionEvent, ThreadOption.UIThread);
@@ -197,13 +200,17 @@ namespace MediaViewer.MediaFileBrowser.ImagePanel
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
         }
 
-        private void imageView_MediaSelectionEvent(MediaItem item)
+        private void imageView_MediaSelectionEvent(MediaSelectionPayload selection)
         {
-            if (String.Equals(Location, item.Location)) return;
+            if (selection.Items.Count() == 0) return;
 
-            CurrentItem = item;
+            MediaItem first = selection.Items.ElementAt(0);
 
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(item.Name);
+            if (String.Equals(Location, first.Location)) return;
+
+            CurrentItem = first;
+
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(first.Name);
         }
 
         

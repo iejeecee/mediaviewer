@@ -22,7 +22,7 @@
                               ShowRoot="False"
                               ShowLines="False"
                               SelectionChanged="treeView_SelectionChanged"                         
-                              >
+                              >          
             <ListView.View>
                 <sd:SharpGridView>
                     <GridView.Columns>

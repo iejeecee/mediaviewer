@@ -100,7 +100,7 @@ namespace MediaViewer.MediaFileGrid
         {
             List<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
 
-            EventAggregator.GetEvent<MediaViewer.Model.Global.Events.MediaBatchSelectionEvent>().Publish(selectedItems);
+            EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, selectedItems));
         }
 
         MediaFileStateCollectionView mediaStateCollectionView;
@@ -135,7 +135,9 @@ namespace MediaViewer.MediaFileGrid
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaBatchSelectionEvent>().Publish(MediaStateCollectionView.getSelectedItems());
+            List<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
+
+            EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, selectedItems));
 
             // restore state
             if (MediaStateCollectionView.MediaFilter != PrevFilterMode)

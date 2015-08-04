@@ -57,7 +57,6 @@ namespace MediaViewer.ImagePanel
             RotationModes = new ListCollectionView(rotationModes);
             RotationModes.CurrentChanged += RotationModes_CurrentChanged;
 
-
             OpenLocationCommand = new Command(() =>
             {
                 Microsoft.Win32.OpenFileDialog dialog = FileDialog.createOpenMediaFileDialog(FileDialog.MediaDialogType.IMAGE);
@@ -235,13 +234,17 @@ namespace MediaViewer.ImagePanel
             EventAggregator.GetEvent<MediaSelectionEvent>().Unsubscribe(imageView_MediaSelectionEvent);
         }
 
-        private void imageView_MediaSelectionEvent(MediaItem item)
+        private void imageView_MediaSelectionEvent(MediaSelectionPayload selection)
         {
-            if (String.Equals(Location, item.Location)) return;
+            if (selection.Items.Count() == 0) return;
 
-            CurrentItem = item;
+            MediaItem first = selection.Items.ElementAt(0);
 
-            EventAggregator.GetEvent<TitleChangedEvent>().Publish(item.Name);
+            if (String.Equals(Location, first.Location)) return;
+
+            CurrentItem = first;
+
+            EventAggregator.GetEvent<TitleChangedEvent>().Publish(first.Name);
         }
     }
 

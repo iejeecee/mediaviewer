@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:System="clr-namespace:System;assembly=mscorlib"
+             xmlns:GeoLocationPicker="clr-namespace:MediaViewer.UserControls.GeoLocationPicker;assembly=MediaViewer"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -13,39 +14,49 @@
             </ResourceDictionary.MergedDictionaries>
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
-            </Style>           
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="5,5,0,5"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Background="{StaticResource uiElementBackgroundColor}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" Grid.Column="0" Content="Query"/>
+        <Grid Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,5,5,5">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Label Grid.Row="0" Grid.Column="0" Content="Query" VerticalAlignment="Center" Margin="5,5,0,5"/>
-            <Grid Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" Margin="0,5,5,5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBox x:Name="queryTextBox" Grid.Row="0" Grid.Column="0" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Height="20" AcceptsReturn="False" TextWrapping="NoWrap" VerticalAlignment="Center" HorizontalAlignment="Stretch" PreviewKeyDown="queryTextBox_PreviewKeyDown"/>
-                <Button Grid.Row="0" Grid.Column="1" Content="Search" Height="20" Width="40"  Command="{Binding SearchCommand}" VerticalAlignment="Center">
-                    <Button.CommandParameter>
-                        <System:Boolean>
-                            False
-                        </System:Boolean>
-                    </Button.CommandParameter>
-                </Button>
-            </Grid>     
+            <TextBox x:Name="queryTextBox" Grid.Row="0" Grid.Column="0" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" Height="20" AcceptsReturn="False" TextWrapping="NoWrap" VerticalAlignment="Center" HorizontalAlignment="Stretch" PreviewKeyDown="queryTextBox_PreviewKeyDown"/>
+            <Button Grid.Row="0" Grid.Column="1" Content="Search" Height="20" Width="40"  Command="{Binding SearchCommand}" VerticalAlignment="Center">
+                <Button.CommandParameter>
+                    <System:Boolean>
+                        False
+                    </System:Boolean>
+                </Button.CommandParameter>
+            </Button>
+        </Grid>
+        <Label Grid.Row="1" Grid.Column="0" Content="Published"/>
+        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding PublishedDate}" Margin="0,5,5,5" VerticalAlignment="Center"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="Duration"/>
+        <ComboBox Grid.Row="2" Grid.Column="2" ItemsSource="{Binding VideoDuration}" Margin="0,5,5,5" VerticalAlignment="Center"/>
+        <Label Grid.Row="3" Grid.Column="0" Content="Type"/>
+        <ComboBox Grid.Row="3" Grid.Column="2" ItemsSource="{Binding Type}" Margin="0,5,5,5" VerticalAlignment="Center"/>
+        <Label Grid.Row="4" Grid.Column="0" Content="Location"/>
+        <GeoLocationPicker:GeoLocationPickerView Grid.Row="4" Grid.Column="1" Margin="0,5,5,5" HorizontalAlignment="Stretch" Grid.ColumnSpan="3" GeoLocationRect="{Binding GeoLocationRect}"/>
     </Grid>
 </UserControl>

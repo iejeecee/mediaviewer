@@ -27,10 +27,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         public event EventHandler<MediaStateCollectionViewChangedEventArgs> NrItemsInStateChanged;
         public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
-        public event EventHandler<int> ItemResorted;
+        public event EventHandler<int[]> ItemResorted;
         public event EventHandler SelectionChanged;
         public event EventHandler Cleared;
 
+        public Guid Guid { get; private set; }
         public ListCollectionView FilterModes { get; set; }
         public ListCollectionView SortModes { get; set; }
         public InfoIconsCache InfoIconsCache { get; set; }
@@ -67,6 +68,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
             SortDirection = ListSortDirection.Ascending;
 
             TagFilter = new List<TagItem>();
+
+            Guid = Guid.NewGuid();
         }
 
     
@@ -471,6 +474,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     if (selectableItem.Equals(temp))
                     {
                         selectableItem.IsSelected = isSelected;
+                        return;
                     }
                 }
 
@@ -564,7 +568,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
         protected void reSort(MediaItem item)
         {
 
-            int index = 0;
+            int oldIndex = 0;
             int newIndex = 0;
 
             Media.EnterWriteLock();
@@ -572,12 +576,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
             {                
                 SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
-                index = Media.IndexOf(selectableItem);
-                newIndex = index;
+                oldIndex = Media.IndexOf(selectableItem);
+                newIndex = oldIndex;
 
-                if (index != -1)
+                if (oldIndex != -1)
                 {
-                    selectableItem = Media[index];
+                    selectableItem = Media[oldIndex];
 
                     // item is already in the list
                     if (Filter(selectableItem))
@@ -599,8 +603,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                         }*/
 
                         // remove and reinsert item
-                        Media.RemoveAt(index);
-                        if (index < sortedItemEnd)
+                        Media.RemoveAt(oldIndex);
+                        if (oldIndex < sortedItemEnd)
                         {
                             sortedItemEnd -= 1;
                         }
@@ -611,7 +615,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     else
                     {
                         // remove item from list
-                        removeAt(index);                   
+                        removeAt(oldIndex);                   
                     }
                 }
                 else
@@ -626,9 +630,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 Media.ExitWriteLock();
             }
 
-            if (newIndex != index)
+            if (newIndex != oldIndex)
             {
-                OnItemResorted(item, newIndex);
+                OnItemResorted(item, oldIndex, newIndex);
             }
 
         }
@@ -823,11 +827,11 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        private void OnItemResorted(Object item, int newIndex)
+        private void OnItemResorted(Object item, int oldIndex, int newIndex)
         {
             if (ItemResorted != null)
             {
-                ItemResorted(item, newIndex);
+                ItemResorted(item, new int[]{oldIndex,newIndex});
             }
         }
                

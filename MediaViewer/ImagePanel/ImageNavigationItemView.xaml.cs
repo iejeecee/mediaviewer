@@ -1,4 +1,5 @@
-﻿using Microsoft.Practices.Prism.Regions;
+﻿using MediaViewer.Infrastructure;
+using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
@@ -24,13 +25,21 @@ namespace MediaViewer.ImagePanel
     [ViewSortHint("01")]
     public partial class ImageNavigationItemView : UserControl
     {
-        [Import]
-        public IRegionManager RegionManager {get;set;}
-
-        public ImageNavigationItemView()
+      
+        [ImportingConstructor]
+        public ImageNavigationItemView(IRegionManager regionManager)
         {
             InitializeComponent();
-    
+
+            regionManager.Regions[RegionNames.MainContentRegion].ActiveViews.CollectionChanged += Views_CollectionChanged;
+        }
+
+        private void Views_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (e.NewItems != null && e.NewItems[0] is ImageView)
+            {
+                navigationButton.IsChecked = true;
+            }
         }
 
         private void navigationButton_Click(object sender, RoutedEventArgs e)

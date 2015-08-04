@@ -32,7 +32,7 @@ namespace MediaViewer.UserControls.MediaStackPanel
     /// </summary>
     public partial class MediaStackPanelView : UserControl
     {
-        public event EventHandler<SelectableMediaItem> MediaItemClick;
+        //public event EventHandler<SelectableMediaItem> MediaItemClick;
 
         public ScrollViewer scrollViewer;
         int scrollToIndex;
@@ -114,25 +114,19 @@ namespace MediaViewer.UserControls.MediaStackPanel
 
         private void mediaGridItem_Click(object sender, SelectableMediaItem selectableItem)
         {
-            if (MediaItemClick != null)
+            if (Keyboard.Modifiers == ModifierKeys.Control)
             {
-                MediaItemClick(this, selectableItem);
-            }            
-        }
-
-        private void mediaGridItem_Checked(object sender, SelectableMediaItem selectableItem)
-        {       
-            if (selectableItem.IsSelected == true) return;
-
-            MediaStateCollectionView.deselectAll();
-
-            selectableItem.IsSelected = true;
-        }
-
-        private void mediaGridItem_Unchecked(object sender, SelectableMediaItem selectableItem)
-        {           
-            selectableItem.IsSelected = false;         
-        }
+                selectableItem.IsSelected = !selectableItem.IsSelected;
+            }
+            else if (Keyboard.Modifiers == ModifierKeys.Shift)
+            {
+                MediaStateCollectionView.selectRange(selectableItem.Item);
+            }
+            else
+            {
+                MediaStateCollectionView.selectExclusive(selectableItem.Item);
+            }          
+        }       
 
         private void itemsControl_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {

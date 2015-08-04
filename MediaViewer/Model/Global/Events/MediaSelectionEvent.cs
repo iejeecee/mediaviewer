@@ -9,7 +9,26 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Global.Events
 {
-    public class MediaBatchSelectionEvent : PubSubEvent<ICollection<MediaItem>> { }
-    public class MediaSelectionEvent : PubSubEvent<MediaItem> { }
-   
+    public class MediaSelectionPayload
+    {
+        public MediaSelectionPayload(Guid senderId, MediaItem item)
+        {
+            SenderId = senderId;
+            Items = new MediaItem[]{item};
+        }
+
+        public MediaSelectionPayload(Guid senderId, ICollection<MediaItem> items)
+        {
+            SenderId = senderId;
+            Items = items;
+        }
+
+        public Guid SenderId { get; private set; }
+        public ICollection<MediaItem> Items { get; private set; }
+
+    }
+
+
+    public class MediaSelectionEvent : PubSubEvent<MediaSelectionPayload> { }
+      
 }

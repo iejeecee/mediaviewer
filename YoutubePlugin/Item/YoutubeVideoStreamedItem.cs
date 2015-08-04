@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Streamed;
 using System;
@@ -34,13 +35,16 @@ namespace YoutubePlugin.Item
             VideoMetadata videoMetadata = new VideoMetadata();
                                 
             videoMetadata.MimeType = info["type"];
-            int pos = videoMetadata.MimeType.IndexOf(';');
-
-            if (pos != -1)
+            if (videoMetadata.MimeType != null)
             {
-                videoMetadata.MimeType = videoMetadata.MimeType.Substring(0, pos);
-            }           
-            
+                int pos = videoMetadata.MimeType.IndexOf(';');
+
+                if (pos != -1)
+                {
+                    videoMetadata.MimeType = videoMetadata.MimeType.Substring(0, pos);
+                }
+
+            }
             //FallbackHost = info["fallback_host"];
 
             string fpsString = info["fps"];
@@ -48,10 +52,12 @@ namespace YoutubePlugin.Item
             {
                 videoMetadata.FramesPerSecond = int.Parse(fpsString);
             }
-           
-            int iTag = int.Parse(info["itag"]);
 
-            if (itagFormatInfo.ContainsKey(iTag))
+            int iTag;
+
+            bool success = int.TryParse(info["itag"], out iTag);
+
+            if (success && itagFormatInfo.ContainsKey(iTag))
             {
                 StreamFormatInfo formatInfo = itagFormatInfo[iTag];
 
@@ -68,9 +74,15 @@ namespace YoutubePlugin.Item
             else
             {
                 StreamType = StreamType.UNKNOWN;
+                
+                if (success)
+                {
+                    Logger.Log.Error("Unknown itag in videostreaminfo: " + iTag);
 #if DEBUG
-                throw new Exception("Unknown itag in videostreaminfo: " + iTag);
+                    throw new Exception("Unknown itag in videostreaminfo: " + iTag);
 #endif
+                }
+
             }
 
             Metadata = videoMetadata;
