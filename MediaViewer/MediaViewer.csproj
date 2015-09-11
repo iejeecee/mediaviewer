@@ -318,7 +318,7 @@
     <Compile Include="UserControls\LocationBox\Layout\LocationBoxItemsPanel.cs" />
     <Compile Include="UserControls\Layout\TabbedExpanderPanel.cs" />
     <Compile Include="UserControls\Layout\TabbedExpanderPanelRegionAdapter.cs" />
-    <Compile Include="UserControls\LocationBox\HasSubdirectoriesConverter.cs" />
+    <Compile Include="UserControls\LocationBox\Converters\HasSubdirectoriesConverter.cs" />
     <Compile Include="UserControls\MediaGridItem\InfoIconsCache.cs" />
     <Compile Include="UserControls\MediaGridItem\MediaGridItemView.xaml.cs">
       <DependentUpon>MediaGridItemView.xaml</DependentUpon>
@@ -412,7 +412,7 @@
     <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\State\CollectionView\SelectableMediaLockedCollection.cs" />
     <Compile Include="Torrent\ScanFilesViewModel.cs" />
-    <Compile Include="UserControls\LocationBox\BooleanToSolidColorBrushConverter.cs" />
+    <Compile Include="UserControls\LocationBox\Converters\BooleanToSolidColorBrushConverter.cs" />
     <Compile Include="UserControls\LocationBox\DirectoryItem.cs" />
     <Compile Include="UserControls\LocationBox\LocationBoxView.xaml.cs">
       <DependentUpon>LocationBoxView.xaml</DependentUpon>
@@ -656,10 +656,6 @@
     <Compile Include="ValidationRules\IntegerValidationRule.cs" />
     <Compile Include="VideoPanel\TimeConverter.cs" />
     <Compile Include="VideoPanel\VideoAudioPair.cs" />
-    <Compile Include="VideoPanel\VideoDebugView.xaml.cs">
-      <DependentUpon>VideoDebugView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="VideoPanel\VideoDebugViewModel.cs" />
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
@@ -947,10 +943,6 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VideoPanel\VideoDebugView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="VideoPanel\VideoNavigationItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1187,7 +1179,7 @@
     <Resource Include="Resources\Icons\computer.ico" />
     <Resource Include="Resources\Icons\star.ico" />
     <Resource Include="Resources\Icons\settings.ico" />
-    <Resource Include="Resources\Icons\NavigateBackwards .ico" />
+    <Resource Include="Resources\Icons\NavigateBackwards.ico" />
     <Resource Include="Resources\Icons\NavigateForwards.ico" />
     <Resource Include="Resources\Icons\videocut.ico" />
     <Resource Include="Resources\Icons\videotranscode.ico" />

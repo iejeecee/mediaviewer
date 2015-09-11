@@ -39,6 +39,9 @@ namespace VideoPlayerControl
             backBuffer = null;
             offscreen = null;
             screenShot = null;
+
+            InfoText = null;
+            DisplayInfoText = false;
         }
 
         public void Dispose()
@@ -76,6 +79,11 @@ namespace VideoPlayerControl
             get { return windowed; }
             protected set { windowed = value; }
         }
+
+        public String InfoText { get; set; }
+        public bool DisplayInfoText { get; set; }
+
+        D3D.Font infoFont;
 
         System.Windows.Forms.Control owner;
 
@@ -198,6 +206,12 @@ namespace VideoPlayerControl
                 D3D.Pool.Default);
 
             backBuffer = device.GetBackBuffer(0, 0);
+
+            FontDescription fontDescription = new FontDescription();
+            fontDescription.FaceName = "TimesNewRoman";
+            fontDescription.Height = 15;         
+
+            infoFont = new D3D.Font(device, fontDescription);
             
         }
 
@@ -207,6 +221,7 @@ namespace VideoPlayerControl
             Utils.removeAndDispose(ref backBuffer); 
             Utils.removeAndDispose(ref offscreen);                                 
             Utils.removeAndDispose(ref screenShot);
+            Utils.removeAndDispose(ref infoFont);
             
         }
 
@@ -396,6 +411,8 @@ namespace VideoPlayerControl
 
         public void display(VideoFrame videoFrame, Color backColor, RenderMode mode)
         {
+            
+
             lock (renderLock)
             {
                 if (device == null) return;          
@@ -443,6 +460,9 @@ namespace VideoPlayerControl
                         device.StretchRectangle(offscreen, videoSourceRect,
                             backBuffer, videoDestRect, D3D.TextureFilter.Linear);
 
+
+                        drawText();
+
                         device.EndScene();
                         device.Present();                
 
@@ -467,6 +487,17 @@ namespace VideoPlayerControl
                     resetDevice();
                 }
             }
+        }
+
+        private void drawText()
+        {
+            
+            if (DisplayInfoText && !String.IsNullOrEmpty(InfoText))
+            {
+                                                                                   //AABBGGRR
+                infoFont.DrawText(null, InfoText, 5, 0, SharpDX.ColorBGRA.FromRgba(0xFFFFFFFF));
+            }
+            
         }        
 
         

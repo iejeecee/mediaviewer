@@ -21,8 +21,8 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <WindowsFormsHost x:Name="wfHost" Grid.Row="0">            
-            <wfvpc:VideoPlayer x:Name="videoPlayer"/>
+        <WindowsFormsHost x:Name="wfHost" Grid.Row="0">
+            <wfvpc:VideoPlayer x:Name="videoPlayer"/>                           
         </WindowsFormsHost>
         <Grid x:Name="uiGrid" Grid.Row="1" Background="{StaticResource uiElementBackgroundColor}">
             <Grid.RowDefinitions>

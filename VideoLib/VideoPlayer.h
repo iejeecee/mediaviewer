@@ -25,6 +25,9 @@ namespace VideoLib {
 
 		array<bool> ^isFinalPacketAdded;
 					
+		
+		array<bool> ^isSimulateLag;
+
 	public:
 
 		enum class DemuxPacketsResult {
@@ -160,6 +163,15 @@ namespace VideoLib {
 			}
 		}
 
+		// simulate lag in input stream
+		property array<bool> ^IsSimulateLag {
+
+			array<bool> ^get() {
+
+				return(isSimulateLag);
+			}
+		}
+
 		event EventHandler<EventArgs ^> ^DecodeException;
 
 		VideoPlayer();
@@ -173,10 +185,11 @@ namespace VideoLib {
 		bool seek(double posSeconds);
 
 		// i == 0, video packet
-		// i == 1, audio packet
+		// i == 1, audio packet		
 		DemuxPacketsResult demuxPacketFromStream(int i);
 	
-		DemuxPacketsResult demuxPacketInterleaved();
+		DemuxPacketsResult demuxPacketInterleaved();			
+
 		void close();
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,

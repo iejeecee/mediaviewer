@@ -236,10 +236,7 @@ namespace VideoLib {
 			return(result);
 		}
 
-		/*bool isTrueAudioVideo(cli::array<bool> ^vars) {
-
-			return(vars[(int)QueueID::VIDEO_PACKETS] && vars[(int)QueueID::AUDIO_PACKETS]);
-		}*/
+		
 
 		void debugOut(int i, String ^text) {
 
@@ -338,11 +335,21 @@ namespace VideoLib {
 			
 		}
 
-		property int MaxVideoPackets {
+		bool IsPacketQueueStopped(QueueID id) {
+
+			return(packetQueueStopped[(int)id]);
+		}
+		
+		bool IsPacketQueuePaused(QueueID id) 
+		{
+			return(packetQueuePaused[(int)id]);
+		}
+
+		property int MaxFreePackets {
 
 			int get() {
 
-				return(maxPackets[(int)QueueID::VIDEO_PACKETS]);
+				return(maxPackets[(int)QueueID::FREE_PACKETS]);
 			}
 		}
 
@@ -351,6 +358,22 @@ namespace VideoLib {
 			int get() {
 
 				return(maxPackets[(int)QueueID::AUDIO_PACKETS]);
+			}
+		}
+
+		property int MaxVideoPackets {
+
+			int get() {
+
+				return(maxPackets[(int)QueueID::VIDEO_PACKETS]);
+			}
+		}
+		
+		property int FreePacketsInQueue {
+
+			int get() {
+
+				return(packetQueue[(int)QueueID::FREE_PACKETS]->Count);
 			}
 		}
 

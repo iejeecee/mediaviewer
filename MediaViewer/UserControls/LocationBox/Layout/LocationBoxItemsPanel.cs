@@ -23,58 +23,59 @@ namespace MediaViewer.UserControls.LocationBox.Layout
 
         
         protected override System.Windows.Size MeasureOverride(System.Windows.Size availableSize)
-        {
-            Size idealSize = new Size(0, 0);
+        {            
+            if (this.Children == null || this.Children.Count == 0)
+                return availableSize;
+                        
+            Children[Children.Count - 1].Measure(new Size(double.PositiveInfinity, availableSize.Height));
 
-            foreach (UIElement child in Children)
+            if (Children.Count > 1)
             {
-                child.Measure(new Size(availableSize.Width, availableSize.Height));
 
-                idealSize.Height = Math.Max(idealSize.Height, child.DesiredSize.Height);
-                idealSize.Width += child.DesiredSize.Width;
+                Children[Children.Count - 2].Measure(new Size(double.PositiveInfinity, availableSize.Height));
+
+                if (Children[Children.Count - 1].DesiredSize.Width + Children[Children.Count - 2].DesiredSize.Width > availableSize.Width)
+                {
+                    Children[Children.Count - 1].Measure(new Size(availableSize.Width / 2, availableSize.Height));
+                    Children[Children.Count - 2].Measure(new Size(availableSize.Width / 2, availableSize.Height));
+                }
+
+                double availableWidth = availableSize.Width - Children[Children.Count - 1].DesiredSize.Width - Children[Children.Count - 2].DesiredSize.Width;
+
+                for (int i = Children.Count - 3; i >= 0; i--)
+                {
+                    UIElement child = Children[i];
+
+                    child.Measure(new Size(double.PositiveInfinity, availableSize.Height));
+
+                    if (child.DesiredSize.Width > availableWidth)
+                    {
+                        child.Measure(new Size(0, 0));
+                        break;
+                    }
+
+                    availableWidth -= child.DesiredSize.Width;
+
+                }
             }
 
-            if (double.IsInfinity(availableSize.Height) ||
-               double.IsInfinity(availableSize.Width))
-                return idealSize;
-            else
-                return availableSize;
+            return availableSize;
+           
         }
 
         protected override System.Windows.Size ArrangeOverride(System.Windows.Size finalSize)
         {
             if (this.Children == null || this.Children.Count == 0)
                 return finalSize;
-
-            double availableWidth = finalSize.Width;
            
-            int visibleChild = Children.Count - 1;
-
-            do
-            {
-                availableWidth -= Children[visibleChild].DesiredSize.Width;
-
-                visibleChild--;
-               
-            } while (visibleChild >= 0 && Children[visibleChild].DesiredSize.Width <= availableWidth);
-
-
             double xPos = 0;
 
             for (int i = 0; i < Children.Count; i++)
             {
                 UIElement child = Children[i];
-
-                if (i >= visibleChild + 1)
-                {
-                    child.Arrange(new Rect(xPos, getHeightOffset(child,finalSize.Height), child.DesiredSize.Width, child.DesiredSize.Height));
-                    xPos += child.DesiredSize.Width;
-                }
-                else
-                {
-                    child.Arrange(new Rect(0, 0, 0, 0));
-                }
                 
+                child.Arrange(new Rect(xPos, getHeightOffset(child, finalSize.Height), child.DesiredSize.Width, child.DesiredSize.Height));
+                xPos += child.DesiredSize.Width;               
             }
 
             return finalSize;

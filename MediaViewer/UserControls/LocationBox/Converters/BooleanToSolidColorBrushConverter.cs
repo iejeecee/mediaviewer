@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
 
-namespace MediaViewer.UserControls.LocationBox
+namespace MediaViewer.UserControls.LocationBox.Converters
 {
     public class BooleanToSolidColorBrushConverter : IValueConverter
     {

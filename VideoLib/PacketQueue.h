@@ -13,95 +13,66 @@ namespace VideoLib {
 	{
 	public:
 
-		enum class State {
+		enum class PacketQueueState {
 			OPEN,       // items can be added and removed from the queue
-			PAUSED,		// queue will block on removing items
-			STOPPED	// queue will return false on removing items			
+			PAUSE,		// queue will block on removing items
+			PAUSED,
+			STOP,		// queue will return false on removing items			
+			STOPPED
 		};
 
 	private:
 
+		String ^id;
 		Queue<Packet ^> ^queue;
-		int maxQueueSize;
+		int maxPackets;
 
-		State queueState;
+		Object ^lockObject;
 
-		AutoResetEvent ^paused;
-		AutoResetEvent ^stopped;
-		bool isStopSignalled; 
-
-		char *name;
-
-		void writeDebug(char *info) {
-			
-		    char buffer[100];
-
-			strcpy(buffer,name);
-			strcat(buffer," ");
-			strcat(buffer,info);
-			
-			Video::writeToLog(AV_LOG_DEBUG, buffer);			 
-		}
+		PacketQueueState state;
 
 	public:
 
-		event EventHandler ^Finished;
+		property PacketQueueState State {
 
-		PacketQueue(char *name, int maxQueueSize) {
+			PacketQueueState get() {
 
-			this->name = name;
+				return(state);
+			}
 
-			this->maxQueueSize = maxQueueSize;
+		private:
+			void set(PacketQueueState value) {
+
+				state = value;
+			}
+		}
+	
+		PacketQueue(String ^id, int maxPackets, Object ^lockObject) {
+
+			this->id = id;
+			this->lockObject = lockObject;
+
+			this->maxPackets = maxPackets;
 			queue = gcnew Queue<Packet ^>();
-			queueState = State::OPEN;
-
-			paused = gcnew AutoResetEvent(false);
-			stopped = gcnew AutoResetEvent(false);
-			isStopSignalled = false;
+			State = PacketQueueState::OPEN;
+			
 		}
 
 	
-
 		~PacketQueue() {
 
-			if(paused != nullptr) {
-			
-				delete paused;
-				paused = nullptr;
-			}
-
-			if(stopped != nullptr) {
-
-				delete stopped;
-				stopped = nullptr;
-			}
-		}
 		
-		property AutoResetEvent ^Paused {
-
-			AutoResetEvent ^get() {
-
-				return(paused);
-			}
 		}
-
-		property AutoResetEvent ^Stopped {
-
-			AutoResetEvent ^get() {
-
-				return(stopped);
-			}
-		}
-
-		property int MaxQueueSize {
+				
+		property int MaxPackets {
 
 			int get() {
 
-				return(maxQueueSize);
+				return(maxPackets);
 			}
 		}
 
-		property int QueueSize {
+		property int NrPacketsInQueue {
 
 			int get() {
 
@@ -109,21 +80,14 @@ namespace VideoLib {
 			}
 		}
 
-		property State QueueState {
-
-			State get() {
-
-				return(queueState);
-			}
-		}
-
+	
 		// allow threads to remove elements from the queue
 		void open() {
 
 			Monitor::Enter(queue);
 			
 			// wakeup paused threads
-			queueState = State::OPEN;
+			State = PacketQueueState::OPEN;
 	
 			Monitor::PulseAll(queue);
 			Monitor::Exit(queue);
@@ -135,9 +99,8 @@ namespace VideoLib {
 
 			Monitor::Enter(queue);
 			
-			queueState = State::STOPPED;
-			writeDebug("Packet queue stopped called");
-			isStopSignalled = false;
+			State = PacketQueueState::STOP;
+			
 
 			// wakeup threads waiting on empty queues
 			Monitor::PulseAll(queue);
@@ -159,7 +122,7 @@ namespace VideoLib {
 
 			Monitor::Enter(queue);
 
-			queueState = State::PAUSED;
+			State = PacketQueueState::PAUSE;
 			// wakeup threads waiting on empty queues
 			// and put them in paused state
 			Monitor::PulseAll(queue);
@@ -167,100 +130,99 @@ namespace VideoLib {
 			Monitor::Exit(queue);
 		}
 	
-		bool tryGet(Packet ^%item) {
+		bool getPacket(Packet ^%packet) {
 
-			Monitor::Enter(queue);
-
+			Monitor::Enter(lockObject);
 			try {
-
-				while(queue->Count == 0 || QueueState == State::PAUSED || QueueState == State::STOPPED) {
-
-					if(QueueState == State::STOPPED) {
-						
-						if(!isStopSignalled) {
-							// only set the stopped signal once whenever the stop function has been called
-							// otherwise repeated calls to tryget in stopped state will invalidate the autoresetevent						
-							stopped->Set();
-							writeDebug("Packet queue stopped, stopped set");
-							isStopSignalled = true;
-						} 
-
-						return(false);
-
-					} else if(QueueState == State::PAUSED) {
-
-						paused->Set();
-					} 
-
-					// queue is empty put thread into wait state
-					// threads in a wait state need a explicit pulse 
-					// to wake them up 
-					Monitor::Wait(queue);
-				}
-				
-				item = queue->Dequeue();
 			
-				if(queue->Count == maxQueueSize - 1) {
+				while(queue->Count == 0 || 
+					State == PacketQueueState::STOP ||
+					State == PacketQueueState::STOPPED ||
+					State == PacketQueueState::PAUSE ||
+					State == PacketQueueState::PAUSED) 
+				{
+					
+					if(State == PacketQueueState::STOP || State == PacketQueueState::STOPPED) 
+					{
+						packet = nullptr;
 
-					// wake up any thread which was waiting 
-					// on a full queue
-					Monitor::PulseAll(queue);
+						State = PacketQueueState::STOPPED;																		
+						return(false);
+					} 
+					else if(State == PacketQueueState::PAUSE)
+					{
+						State = PacketQueueState::PAUSED;						
+						Monitor::PulseAll(lockObject);						
+					}
+
+					Monitor::Wait(lockObject);
 				}
 
-			    // stop the queue if this is the last packet
-				if(item->Type == PacketType::LAST_PACKET) {
+				packet = queue->Dequeue();
 
-					queueState = State::STOPPED;
-					writeDebug("Packet queue last packet, stopped set");
-					stopped->Set();
-					// wakeup waiting threads
-					Monitor::PulseAll(queue);				
+				if(queue->Count == maxPackets - 1) {
+					// wake threads waiting on full queue
+					Monitor::PulseAll(lockObject);
+				}
+
+				if(packet->Type == PacketType::LAST_PACKET) {
+
+					State = PacketQueueState::STOPPED;				
 					return(false);
 				}
 
 				return(true);
 
 			} finally {
+				
+				Monitor::Exit(lockObject);
 
-				Monitor::Exit(queue);
+				/*if(packet != nullptr && packet->Type == PacketType::LAST_PACKET) {
+				
+					if(packetQueueStopped[(int)QueueID::AUDIO_PACKETS] && 
+						packetQueueStopped[(int)QueueID::VIDEO_PACKETS])
+					{
+						Finished(this, EventArgs::Empty);
+					}
 
-				if(item != nullptr && item->Type == PacketType::LAST_PACKET) {
-					Finished(this, EventArgs::Empty);
-				}
+				}*/
+
 			}
 		}
 
-		void add(Packet ^item) {
-
-			Monitor::Enter(queue);
-
+		void addPacket(Packet ^packet) {
+						
+			Monitor::Enter(lockObject);
 			try {
+				
+				while(queue->Count >= maxPackets) {
 
-				while(queue->Count >= maxQueueSize) {
-
-					// queue is full
-					if(QueueState == State::STOPPED) {	
-					
+					if(State == PacketQueueState::STOPPED) {	
+										
+						// make sure the packet isn't lost when the queue is stopped
+						queue->Enqueue(packet);
 						return;
-					}
+					} 
+					else if(State == PacketQueueState::PAUSED)
+					{
+						// make sure the packet IS discarded because a pause should always be followed by a flush
+						// e.g. when seeking in the stream
+						return;
+					}				
 
-					Monitor::Wait(queue);
+					Monitor::Wait(lockObject);
 				}
+		
+				queue->Enqueue(packet);
 
-				queue->Enqueue(item);
-
-				if(queue->Count == 1 && QueueState != State::PAUSED) {
-
-					// wake up any thread which was send sleeping
-					// trying to take something from a empty queue.
-					// Do not wake up a paused queue because the paused 
-					// autoresetevent should only be set in the tryGet function
-					Monitor::PulseAll(queue);
-	
-				} 
-
+				if(queue->Count == 1) {
+					// wake threads waiting on empty queue
+					Monitor::PulseAll(lockObject);
+				}
+								
 			} finally {
-				Monitor::Exit(queue);
+		
+				Monitor::Exit(lockObject);
 			}
 		}
 

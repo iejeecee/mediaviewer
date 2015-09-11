@@ -11,7 +11,7 @@
              xmlns:DateTimePicker="clr-namespace:MediaViewer.UserControls.DateTimePicker"
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
              xmlns:sys="clr-namespace:System;assembly=mscorlib" 
-             xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor"  x:Class="MediaViewer.MetaData.MetaDataView" 
+             xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor"  xmlns:LocationBox="clr-namespace:MediaViewer.UserControls.LocationBox"  x:Class="MediaViewer.MetaData.MetaDataView" 
              mc:Ignorable="d" d:DesignWidth="300">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -102,7 +102,7 @@
 					ToolTip="Preset Filename">
                     <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
                 </Button>
-                <Label Grid.Row="1" Grid.Column="0" Content="Path"/>
+                <Label Grid.Row="1" Grid.Column="0" Content="Path"/>                
                 <ComboBox Grid.Row="1" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5"  VerticalAlignment="Top"                         
 					Text="{Binding Location, Mode=TwoWay}"
 					ItemsSource="{Binding MovePathHistory}"
@@ -170,7 +170,7 @@
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="12" Grid.Column="0" Content="Geotag"/>
                 <GeoTagEditor:GeoTagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,5,5,5" Coordinate="{Binding Geotag}"
-                                               IsEnabled="{Binding IsGeotagEnabled}"/>
+					IsEnabled="{Binding IsGeotagEnabled}"/>
                 <CheckBox Grid.Row="12" Grid.Column="2" 
 					IsChecked="{Binding IsGeotagEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -206,7 +206,7 @@
                 <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
 					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding WriteMetaDataCommand}"
-					ToolTip="Save Metadata To Disk"/>
+					ToolTip="Save Metadata To Disk"/>                
             </Grid>
             <Separator Grid.Row="1">
                 <Separator.Style>

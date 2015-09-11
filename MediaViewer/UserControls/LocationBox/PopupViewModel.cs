@@ -49,9 +49,10 @@ namespace MediaViewer.UserControls.LocationBox
         }
 
         public void setLocations(ObservableCollection<String> locations, bool isRemovable)
-        {
-           
+        {           
             Locations.Clear();
+
+            if (locations == null) return;
 
             for(int i = locations.Count() - 1; i >= 0; i--)
             {

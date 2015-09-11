@@ -489,7 +489,11 @@ public:
 	bool readFrame(AVPacket *packet) {
 
 		int read = av_read_frame(getFormatContext(), packet);
-		if(read < 0) return(false);
+		if(read < 0) {
+		
+			System::Diagnostics::Debug::Print("VideoDecoder.h readFrame error (" + read + ") " + VideoInit::errorToString(read));
+			return(false);
+		}
 		else return(true);
 	}
 

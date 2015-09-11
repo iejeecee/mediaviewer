@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Global.Events;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
@@ -11,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace MediaViewer.MediaFileBrowser.DirectoryBrowser
 {
@@ -64,30 +66,38 @@ namespace MediaViewer.MediaFileBrowser.DirectoryBrowser
         {
             set
             {
-                FileInfo fileInfo = new FileInfo(value);
-
-                string pathWithoutFileName;
-
-                if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                try
                 {
-                    pathWithoutFileName = value;
+                    FileInfo fileInfo = new FileInfo(value);
+
+                    string pathWithoutFileName;
+
+                    if ((fileInfo.Attributes & FileAttributes.Directory) == FileAttributes.Directory)
+                    {
+                        pathWithoutFileName = value;
+                    }
+                    else
+                    {
+                        pathWithoutFileName = FileUtils.getPathWithoutFileName(value);
+                    }
+
+                    if (MediaFileWatcher.Path.Equals(pathWithoutFileName))
+                    {
+                        return;
+                    }
+
+                    MediaFileWatcher.Path = pathWithoutFileName;
+
+                    //Title = value;
+                    EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
+
+                    OnPropertyChanged("BrowsePath");
                 }
-                else
+                catch (Exception e)
                 {
-                    pathWithoutFileName = FileUtils.getPathWithoutFileName(value);
+                    MessageBox.Show("Error setting path\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Logger.Log.Error("error setting path", e);
                 }
-
-                if (MediaFileWatcher.Path.Equals(pathWithoutFileName))
-                {
-                    return;
-                }
-
-                MediaFileWatcher.Path = pathWithoutFileName;
-
-                //Title = value;
-                EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Publish(value);
-
-                OnPropertyChanged("BrowsePath");
             }
 
             get

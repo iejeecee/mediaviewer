@@ -4,10 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
-             xmlns:Control="clr-namespace:MediaViewer.UserControls.LocationBox"      
+             xmlns:Converters="clr-namespace:MediaViewer.UserControls.LocationBox.Converters"      
              xmlns:Layout="clr-namespace:MediaViewer.UserControls.LocationBox.Layout"
              mc:Ignorable="d" 
-             d:DesignHeight="60"  d:DesignWidth="300">
+             d:DesignWidth="300" d:DesignHeight="50">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -17,14 +17,14 @@
                 <Setter Property="HorizontalAlignment" Value="Stretch"/>
                 <Setter Property="HorizontalContentAlignment" Value="Left"/>
             </Style>            
-            <Control:BooleanToSolidColorBrushConverter x:Key="booleanToSolidColorBrushConverter"/>
+            <Converters:BooleanToSolidColorBrushConverter x:Key="booleanToSolidColorBrushConverter"/>
             <ContextMenu x:Key="nodeContextMenu">
                 <MenuItem Header="Remove" Command="{Binding RemoveCommand}" CommandParameter="{Binding}"/>
             </ContextMenu>
-            <Control:HasSubdirectoriesConverter x:Key="hasSubdirectoriesConverter"/>
+            <Converters:HasSubdirectoriesConverter x:Key="hasSubdirectoriesConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
-    <Grid Height="27">                
+    <Grid Height="24">                
         <mwt:ClassicBorderDecorator Grid.Column="2" BorderThickness="2" BorderStyle="Sunken">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -37,7 +37,7 @@
                 </Grid.ColumnDefinitions>
                 <Button x:Name="backButton" Grid.Column="0" Width="20" Height="20" Click="backButton_Click" ToolTip="Back">
                     <Button.Content>
-                        <Image Source="/MediaViewer;component/Resources/Icons/NavigateBackwards .ico" />
+                        <Image Source="/MediaViewer;component/Resources/Icons/NavigateBackwards.ico" />
                     </Button.Content>
                 </Button>
                 <Button x:Name="forwardButton" Grid.Column="1" Width="20" Height="20" Click="forwardButton_Click" ToolTip="Forward">                    
@@ -48,8 +48,7 @@
                 <Menu Grid.Column="2" x:Name="locationListBox" ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                     ItemsSource="{Binding SplitPath}" VerticalContentAlignment="Center">
                     <Menu.Resources>
-                        <Style TargetType="MenuItem">
-                            <!--<Setter Property="Header" Value="{Binding Path=DirectoryName}" />-->
+                        <Style TargetType="MenuItem">                           
                             <Setter Property="ItemsSource" Value="{Binding Path=SubDirectories}" />
                             <Setter Property="Icon" Value="{Binding Icon}"/>
                             <Setter Property="Command" Value="{Binding Path=IsSelectedCommand}"/>
@@ -57,10 +56,14 @@
                             <Setter Property="HeaderTemplate">
                                 <Setter.Value>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <TextBlock Text="{Binding DirectoryName}" PreviewMouseLeftButtonDown="location_PreviewMouseLeftButtonDown" Tag="{Binding}"/>
-                                            <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black" Margin="3,0,0,0" Visibility="{Binding SubDirectories, Converter={StaticResource hasSubdirectoriesConverter}}"/>
-                                        </StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding DirectoryName}" ToolTip="{Binding FullPath}" PreviewMouseLeftButtonDown="location_PreviewMouseLeftButtonDown" Tag="{Binding}" TextTrimming="CharacterEllipsis"/>
+                                            <Path Grid.Column="1" Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black" Margin="3,0,0,0" Visibility="{Binding SubDirectories, Converter={StaticResource hasSubdirectoriesConverter}}"/>
+                                        </Grid>
                                     </DataTemplate>
                                 </Setter.Value>
                             </Setter>
@@ -72,21 +75,74 @@
                         </ItemsPanelTemplate>
                     </Menu.ItemsPanel>                    
                 </Menu>
-                <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
-                    ToolTip="History">                   
-                        <Image Source="/MediaViewer;component/Resources/Icons/down arrow.ico"/>                    
+                <Button Grid.Column="3" x:Name="historyButton" Grid.Row="1" Width="15" Height="15" Click="historyButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                    ToolTip="History">
+                    <Button.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <Trigger Property="Button.IsEnabled" Value="True">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="Button.IsEnabled" Value="False">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource downArrow}" Width="5" Height="3" Stretch="Fill" Fill="Gray"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
                 </Button>
-                <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15"  Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <Button Grid.Column="4" x:Name="favoritesButton" Grid.Row="1" Width="15" Height="15" Click="favoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
                     ToolTip="Favorites">
-                    <Button.Content>
-                        <Image Source="/MediaViewer;component/Resources/Icons/up arrow.ico"/>
-                    </Button.Content>
+                    <Button.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <Trigger Property="Button.IsEnabled" Value="True">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Black"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="Button.IsEnabled" Value="False">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource upArrow}" Width="5" Height="3" Stretch="Fill" Fill="Gray"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
                 </Button>
-                <Button Grid.Column="5" x:Name="addFavoritesButton" Grid.Row="1" Width="15"  Click="addFavoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <Button Grid.Column="5" x:Name="addFavoritesButton" Grid.Row="1" Width="15" Height="15" Click="addFavoritesButton_Click" HorizontalAlignment="Center" VerticalAlignment="Center"
                     ToolTip="Add To Favorites">
-                    <Button.Content>
-                        <Image Source="/MediaViewer;component/Resources/Icons/star.ico"/>
-                    </Button.Content>
+                    <Button.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <Trigger Property="Button.IsEnabled" Value="True">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource star}" Width="7" Height="7" Stretch="UniformToFill" Fill="Black"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="Button.IsEnabled" Value="False">
+                                    <Setter Property="Button.Content">
+                                        <Setter.Value>
+                                            <Path Data="{StaticResource star}" Width="7" Height="7" Stretch="UniformToFill" Fill="Gray"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>                   
                 </Button>
             </Grid>
         </mwt:ClassicBorderDecorator>        

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
 
-namespace MediaViewer.UserControls.LocationBox
+namespace MediaViewer.UserControls.LocationBox.Converters
 {
     class HasSubdirectoriesConverter : IValueConverter
     {

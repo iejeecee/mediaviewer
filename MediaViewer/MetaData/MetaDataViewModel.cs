@@ -245,7 +245,7 @@ namespace MediaViewer.MetaData
 
             MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
 
-            
+            FavoriteLocations = settings.FavoriteLocations;
         
         }
 
@@ -622,6 +622,7 @@ namespace MediaViewer.MetaData
 
         public ObservableCollection<String> FilenameHistory { get; set; }
         public ObservableCollection<String> MovePathHistory { get; set; }
+        public ObservableCollection<String> FavoriteLocations { get; set; }
 
         bool isEnabled;
 

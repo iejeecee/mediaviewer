@@ -26,6 +26,65 @@ namespace VideoPlayerControl
          
             viewModel = new VideoPlayerViewModel(this, VideoLib.VideoPlayer.OutputPixelFormat.YUV420P);
                    
+            ContextMenu mnuContextMenu = new ContextMenu();
+
+            this.ContextMenu = mnuContextMenu;
+
+            MenuItem toggleDebugInfoMenuItem = new MenuItem();
+            toggleDebugInfoMenuItem.Text = "&Display Info";
+            
+            mnuContextMenu.MenuItems.Add(toggleDebugInfoMenuItem);
+           
+            toggleDebugInfoMenuItem.Click += toggleDebugInfoMenuItem_Click;
+
+            // lag options           
+            mnuContextMenu.MenuItems.Add("-");
+
+            MenuItem toggleVideoLagMenuItem = new MenuItem();
+            toggleVideoLagMenuItem.Text = "&Video Lag";
+            toggleVideoLagMenuItem.Click += toggleVideoLagMenuItem_Click;
+            mnuContextMenu.MenuItems.Add(toggleVideoLagMenuItem);
+
+            MenuItem toggleAudioLagMenuItem = new MenuItem();
+            toggleAudioLagMenuItem.Text = "&Audio Lag";
+            toggleAudioLagMenuItem.Click += toggleAudioLagMenuItem_Click;
+            mnuContextMenu.MenuItems.Add(toggleAudioLagMenuItem);
+
+            MenuItem toggleVideoAudioLagMenuItem = new MenuItem();
+            toggleVideoAudioLagMenuItem.Text = "&Audio and Video Lag";
+            toggleVideoAudioLagMenuItem.Click += toggleVideoAudioLagMenuItem_Click;
+            mnuContextMenu.MenuItems.Add(toggleVideoAudioLagMenuItem);
+           
+        }
+
+        void toggleVideoLagMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            menuItem.Checked = !menuItem.Checked;
+            viewModel.simulateLag(0, menuItem.Checked);
+        }
+
+        void toggleAudioLagMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            menuItem.Checked = !menuItem.Checked;
+            viewModel.simulateLag(1, menuItem.Checked);
+        }
+
+        void toggleVideoAudioLagMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem menuItem = sender as MenuItem;
+            menuItem.Checked = !menuItem.Checked;
+            viewModel.simulateLag(0, menuItem.Checked);
+            viewModel.simulateLag(1, menuItem.Checked);
+        }
+
+        void toggleDebugInfoMenuItem_Click(object sender, EventArgs e)
+        {
+            MenuItem toggleDebugInfoMenuItem = sender as MenuItem;
+
+            viewModel.DisplayOverlayText = !viewModel.DisplayOverlayText;
+            toggleDebugInfoMenuItem.Checked = viewModel.DisplayOverlayText;
         }
 
         VideoPlayerViewModel viewModel;

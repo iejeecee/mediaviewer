@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Collections.Sort;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -92,6 +93,7 @@ namespace MediaViewer.UserControls.LocationBox
 
         private static void locationChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
+            
             LocationBoxView view = (LocationBoxView)d;
             
             if (view.LocationHistory == null)
@@ -114,7 +116,15 @@ namespace MediaViewer.UserControls.LocationBox
                 view.Index = 0;
             }
 
-            view.locationBoxViewModel.setPath((String)e.NewValue);            
+            try
+            {
+                view.locationBoxViewModel.setPath((String)e.NewValue);
+            }
+            catch (Exception ex)
+            {                
+                Logger.Log.Error("Error opening location: " + (String)e.NewValue, ex);
+                view.Location = "";
+            }
         }
 
         public bool IsUpdateHistory
@@ -156,6 +166,34 @@ namespace MediaViewer.UserControls.LocationBox
         // Using a DependencyProperty as the backing store for FavoriteLocations.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty FavoriteLocationsProperty =
             DependencyProperty.Register("FavoriteLocations", typeof(ObservableCollection<String>), typeof(LocationBoxView), new PropertyMetadata(null));
+
+
+        public bool IsHistoryButtonsVisible
+        {
+            get { return (bool)GetValue(IsHistoryButtonsVisibleProperty); }
+            set { SetValue(IsHistoryButtonsVisibleProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsHistoryButtonsVisible.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsHistoryButtonsVisibleProperty =
+            DependencyProperty.Register("IsHistoryButtonsVisible", typeof(bool), typeof(LocationBoxView), new PropertyMetadata(true,isHistoryButtonsVisibileChanged));
+
+        private static void isHistoryButtonsVisibileChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            LocationBoxView view = (LocationBoxView)d;
+            if ((bool)e.NewValue == true)
+            {
+                view.forwardButton.Visibility = Visibility.Visible;
+                view.backButton.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                view.forwardButton.Visibility = Visibility.Collapsed;
+                view.backButton.Visibility = Visibility.Collapsed;
+            }
+        }
+
+
         
       
         private void backButton_Click(object sender, RoutedEventArgs e)

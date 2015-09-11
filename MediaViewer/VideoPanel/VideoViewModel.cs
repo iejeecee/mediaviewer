@@ -413,7 +413,7 @@ namespace MediaViewer.VideoPanel
             get { return isLoading; }
             set { SetProperty(ref isLoading, value); }
         }
-
+        
         void videoPlayer_StateChanged(object sender, VideoState newVideoState)
         {                      
             VideoState = newVideoState;

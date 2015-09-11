@@ -16,10 +16,7 @@
         <ToolBar Background="{StaticResource toolBarBackgroundColor}">
             <Button Command="{Binding OpenLocationCommand}" Height="16" ToolTip="Open Location">
                 <Image Source="pack://application:,,,/Resources/Icons/videofile.ico"/>
-            </Button>
-            <ToggleButton x:Name="debugInfoToggleButton" Height="16" ToolTip="Show Debug Info" Click="debugInfoToggleButton_Click">
-                <Image Source="pack://application:,,,/Resources/Icons/question.ico"/>
-            </ToggleButton>            
+            </Button>                    
         </ToolBar>
     </Grid>
 </UserControl>

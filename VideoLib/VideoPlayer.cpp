@@ -25,6 +25,7 @@ VideoPlayer::VideoPlayer() {
 	frameQueue = gcnew VideoLib::FrameQueue();
 	
 	isFinalPacketAdded = gcnew array<bool>(2) {false,false};
+	isSimulateLag = gcnew array<bool>(2) {false,false};
 
 
 }
@@ -222,11 +223,19 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 }
 
 
+
+
 VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketFromStream(int i) {
 
 	if(DECODER(i)->isClosed()) return(DemuxPacketsResult::STOPPED);
 		
 	Packet ^packet;
+
+	while(isSimulateLag[i] == true) {
+
+		Thread::Sleep(100);
+	}
+
 	bool success = frameQueue->getFreePacket(packet);
 	if(success == false) {
 

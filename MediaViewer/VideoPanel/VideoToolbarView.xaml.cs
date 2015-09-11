@@ -23,37 +23,13 @@ namespace MediaViewer.VideoPanel
     [Export]
     public partial class VideoToolbarView : UserControl, INavigationAware
     {
-        VideoDebugViewModel VideoDebugViewModel { get; set; }
+       
 
         public VideoToolbarView()
         {
             InitializeComponent();
         }
-
-        private void debugInfoToggleButton_Click(object sender, RoutedEventArgs e)
-        {
-            debugInfoToggleButton.IsEnabled = false;
-         
-            VideoDebugView debugWindow = new VideoDebugView();
-
-            if (VideoDebugViewModel == null)
-            {
-                VideoDebugViewModel = new VideoDebugViewModel((DataContext as VideoViewModel).VideoPlayer);
-            }
-
-            debugWindow.DataContext = VideoDebugViewModel;
-
-            debugWindow.Closed += debugWindow_Closed;
-
-            debugWindow.Show();
-            
-        }
-
-        void debugWindow_Closed(object sender, EventArgs e)
-        {
-            debugInfoToggleButton.IsChecked = false;
-            debugInfoToggleButton.IsEnabled = true;
-        }
+              
 
         public bool IsNavigationTarget(NavigationContext navigationContext)
         {
