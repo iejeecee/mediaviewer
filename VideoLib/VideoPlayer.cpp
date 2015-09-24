@@ -169,11 +169,10 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 		return(DemuxPacketsResult::STOPPED);
 	}
 
-	success = videoDecoder->readFrame(packet->AVLibPacketData);
-	if(success == false) {
+	VideoDecoder::ReadFrameResult result = videoDecoder->readFrame(packet->AVLibPacketData);
+	if(result == VideoDecoder::ReadFrameResult::END_OF_STREAM) {
 
-		// end of the video
-		//Video::writeToLog(AV_LOG_INFO, "end of stream reached");
+		// end of the video	
 		frameQueue->addFreePacket(packet);
 
 		if(isFinalPacketAdded[0] == false) {
@@ -205,10 +204,20 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 
 	if(packet->AVLibPacketData->stream_index == videoDecoder->getVideoStreamIndex()) {
 
+		if(result == VideoDecoder::ReadFrameResult::READ_ERROR) {
+
+			frameQueue->NrVideoPacketReadErrors++;
+		}
+
 		// video packet
 		frameQueue->addVideoPacket(packet);
 
 	} else if(packet->AVLibPacketData->stream_index == videoDecoder->getAudioStreamIndex()) {
+
+		if(result == VideoDecoder::ReadFrameResult::READ_ERROR) {
+
+			frameQueue->NrAudioPacketReadErrors++;
+		}
 
 		// audio packet
 		frameQueue->addAudioPacket(packet);
@@ -242,8 +251,8 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketFromStream(int i) {
 		return(DemuxPacketsResult::STOPPED);
 	}
 
-	success = DECODER(i)->readFrame(packet->AVLibPacketData);
-	if(success == false) {
+	VideoDecoder::ReadFrameResult result = DECODER(i)->readFrame(packet->AVLibPacketData);
+	if(result == VideoDecoder::ReadFrameResult::END_OF_STREAM) {
 
 		// end of the video		
 		frameQueue->addFreePacket(packet);
@@ -271,8 +280,24 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketFromStream(int i) {
 	if(packet->AVLibPacketData->stream_index == 0) {
 
 		// video packet
-		if(i == 0) frameQueue->addVideoPacket(packet);
-		else frameQueue->addAudioPacket(packet);
+		if(i == 0) 
+		{
+			if(result == VideoDecoder::ReadFrameResult::READ_ERROR) 
+			{
+				frameQueue->NrVideoPacketReadErrors++;
+			}
+			
+			frameQueue->addVideoPacket(packet);
+
+		} else {
+			
+			if(result == VideoDecoder::ReadFrameResult::READ_ERROR) 
+			{
+				frameQueue->NrAudioPacketReadErrors++;
+			}
+
+			frameQueue->addAudioPacket(packet);
+		}
 
 	} else {
 

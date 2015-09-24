@@ -98,6 +98,7 @@ namespace YoutubePlugin.Item
             // video + audio
 
             itagFormatInfo[5] = new StreamFormatInfo(StreamType.VIDEO_AUDIO, 320, 240);
+            itagFormatInfo[13] = new StreamFormatInfo(StreamType.VIDEO_AUDIO, 0, 0);
             itagFormatInfo[17] = new StreamFormatInfo(StreamType.VIDEO_AUDIO, 176, 144);
             itagFormatInfo[18] = new StreamFormatInfo(StreamType.VIDEO_AUDIO, 480, 360);
             itagFormatInfo[22] = new StreamFormatInfo(StreamType.VIDEO_AUDIO, 1280, 720);

@@ -298,7 +298,7 @@ namespace VideoPlayerControl
         {
 
             if (audioBuffer == null || frame.Length == 0) return;
-
+       
             // store pts for this frame and the byte offset at which this frame is
             // written
             pts = frame.Pts;
@@ -324,6 +324,7 @@ namespace VideoPlayerControl
                 audioState = AudioState.PLAYING;
             }
 
+            //System.Diagnostics.Debug.Print("AudioClock:" + getAudioClock().ToString());
         }
 
 

@@ -175,7 +175,7 @@ public:
 					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
 				}
 
-				if (input->readFrame(&packet) == false) {
+				if (input->readFrame(&packet) == VideoDecoder::ReadFrameResult::END_OF_STREAM) {
 					// finished
 					break;
 				}

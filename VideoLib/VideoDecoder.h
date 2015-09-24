@@ -134,6 +134,13 @@ private:
 
 public:
 
+	enum ReadFrameResult
+	{
+		OK,
+		END_OF_STREAM,
+		READ_ERROR
+	};
+
 	enum VideoDecodeMode {		
 		DECODE_KEY_FRAMES_ONLY,
 		DECODE_VIDEO,
@@ -486,15 +493,25 @@ public:
 	}
 	
 	// reads a frame from the input stream and places it into a packet
-	bool readFrame(AVPacket *packet) {
-
-		int read = av_read_frame(getFormatContext(), packet);
-		if(read < 0) {
+	ReadFrameResult readFrame(AVPacket *packet) {
 		
-			System::Diagnostics::Debug::Print("VideoDecoder.h readFrame error (" + read + ") " + VideoInit::errorToString(read));
-			return(false);
+		int error = av_read_frame(getFormatContext(), packet);
+		if(error < 0) 
+		{					
+			if(error == AVERROR_INVALIDDATA)
+			{
+				writeToLog(AV_LOG_ERROR, "Error reading frame from input stream");	
+				return(ReadFrameResult::READ_ERROR);
+
+			} else {	
+
+				return(ReadFrameResult::END_OF_STREAM);
+			}
+		
+		} else {
+			
+			return(ReadFrameResult::OK);
 		}
-		else return(true);
 	}
 
 	bool decodeVideoFrame(AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt) {
@@ -544,7 +561,7 @@ public:
 				throw gcnew OperationCanceledException(*token);
 			}
 
-			if(readFrame(&packet) == false) {
+			if(readFrame(&packet) == ReadFrameResult::END_OF_STREAM) {
 
 				// cannot read frame or end of file				
 				return(false);

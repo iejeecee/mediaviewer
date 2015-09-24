@@ -13,12 +13,22 @@ namespace VideoLib {
 	{
 	public:
 
-		enum class PacketQueueState {
-			OPEN,       // items can be added and removed from the queue
-			PAUSE,		// queue will block on removing items
+		enum class PacketQueueState {			
+			OPEN,					// items can be added and removed from the queue
+			BLOCK_START,			// block getpacket
+			BLOCK_END,				// should not be set by user
+			CLOSE_START,			// return from getpacket or addpacket in any state	
+			CLOSE_END,				// should not be set by user
+			PAUSE_START,			// return from getpacket 
+			PAUSE_END,				// should not be set by user				
+		};
+
+		enum class GetResult {
+			SUCCESS,
+			CLOSED,
 			PAUSED,
-			STOP,		// queue will return false on removing items			
-			STOPPED
+			FINAL,
+			BUFFER
 		};
 
 	private:
@@ -28,10 +38,48 @@ namespace VideoLib {
 		int maxPackets;
 
 		Object ^lockObject;
-
+		
 		PacketQueueState state;
+	
+		bool bufferWhenEmpty;
+		bool isBufferFull;
+		static int nrPacketsBufferFilled = 10;
+
+		bool isFinished;
 
 	public:
+
+		property bool IsBufferFull
+		{
+			bool get() {
+
+				return(isBufferFull);
+			}
+
+		private:
+			void set(bool value) {
+
+				if(isBufferFull != value) {
+
+					isBufferFull = value;
+					Monitor::PulseAll(lockObject);
+				}
+			}
+		}
+
+		property bool IsFinished
+		{
+			bool get() {
+
+				return(isFinished);
+			}
+		private:
+			void set(bool value) {
+
+				isFinished = value;
+			}
+		}
+
 
 		property PacketQueueState State {
 
@@ -39,22 +87,48 @@ namespace VideoLib {
 
 				return(state);
 			}
-
-		private:
+		
 			void set(PacketQueueState value) {
 
-				state = value;
+				Monitor::Enter(lockObject);
+				try {
+
+					if(state != value) {
+						
+						if(value == PacketQueueState::CLOSE_START &&
+							state == PacketQueueState::CLOSE_END) return;
+
+						if(value == PacketQueueState::PAUSE_START &&
+							state == PacketQueueState::PAUSE_END) return;
+
+						if(value == PacketQueueState::BLOCK_START &&
+							state == PacketQueueState::BLOCK_END) return;
+
+						//System::Diagnostics::Debug::Print(id + ": " + value.ToString());
+
+						state = value;
+						Monitor::PulseAll(lockObject);
+					}
+
+				} finally {
+
+					Monitor::Exit(lockObject);
+				}
 			}
 		}
 	
-		PacketQueue(String ^id, int maxPackets, Object ^lockObject) {
+		PacketQueue(String ^id, int maxPackets, Object ^lockObject, bool bufferWhenEmpty) {
 
 			this->id = id;
 			this->lockObject = lockObject;
 
 			this->maxPackets = maxPackets;
 			queue = gcnew Queue<Packet ^>();
-			State = PacketQueueState::OPEN;
+			state = PacketQueueState::OPEN;
+			
+			isBufferFull = false;
+			isFinished = false;
+			this->bufferWhenEmpty = bufferWhenEmpty;
 			
 		}
 
@@ -79,87 +153,78 @@ namespace VideoLib {
 				return(queue->Count);
 			}
 		}
-
-	
-		// allow threads to remove elements from the queue
-		void open() {
-
-			Monitor::Enter(queue);
-			
-			// wakeup paused threads
-			State = PacketQueueState::OPEN;
-	
-			Monitor::PulseAll(queue);
-			Monitor::Exit(queue);
-		}
-
-		// threads are not able to remove elements from the queue
-		// the get functions will not block, but instead return false
-		void stop() {
-
-			Monitor::Enter(queue);
-			
-			State = PacketQueueState::STOP;
-			
-
-			// wakeup threads waiting on empty queues
-			Monitor::PulseAll(queue);
-			Monitor::Exit(queue);
-
-		}
-
+				
 		// clear the queue
 		void flush() {
 
-			Monitor::Enter(queue);
+			Monitor::Enter(lockObject);
+			try {
 
-			queue->Clear();
+				queue->Clear();
+
+				IsBufferFull = false;
+				
+			} finally {
+
+				Monitor::Exit(lockObject);
+			}
+		}
 		
-			Monitor::Exit(queue);
-		}
-		// block threads attempting to remove elements from the queue
-		void pause() {
-
-			Monitor::Enter(queue);
-
-			State = PacketQueueState::PAUSE;
-			// wakeup threads waiting on empty queues
-			// and put them in paused state
-			Monitor::PulseAll(queue);
-
-			Monitor::Exit(queue);
-		}
 	
-		bool getPacket(Packet ^%packet) {
+		GetResult getPacket(Packet ^%packet) {
 
 			Monitor::Enter(lockObject);
 			try {
 			
-				while(queue->Count == 0 || 
-					State == PacketQueueState::STOP ||
-					State == PacketQueueState::STOPPED ||
-					State == PacketQueueState::PAUSE ||
-					State == PacketQueueState::PAUSED) 
+				while(queue->Count == 0 || State != PacketQueueState::OPEN) 
 				{
-					
-					if(State == PacketQueueState::STOP || State == PacketQueueState::STOPPED) 
+					switch(State) 
 					{
-						packet = nullptr;
-
-						State = PacketQueueState::STOPPED;																		
-						return(false);
-					} 
-					else if(State == PacketQueueState::PAUSE)
-					{
-						State = PacketQueueState::PAUSED;						
-						Monitor::PulseAll(lockObject);						
+						case PacketQueueState::PAUSE_START:
+							{
+								State = PacketQueueState::PAUSE_END;							
+							}
+						case PacketQueueState::PAUSE_END:
+							{
+								packet = nullptr;																							
+								return(GetResult::PAUSED);		
+							}
+						case PacketQueueState::CLOSE_START:
+							{
+								State = PacketQueueState::CLOSE_END;						
+							}											
+						case PacketQueueState::CLOSE_END:
+							{				
+								//IsBufferFull = true;
+								packet = nullptr;																							
+								return(GetResult::CLOSED);								
+							}										
+						case PacketQueueState::BLOCK_START:
+							{
+								State = PacketQueueState::BLOCK_END;									
+							}	
+						case PacketQueueState::BLOCK_END:
+							{
+								break;
+							}
+						case PacketQueueState::OPEN:
+							{
+								if(queue->Count == 0 && bufferWhenEmpty) 
+								{			
+									IsBufferFull = false;
+									State = PacketQueueState::PAUSE_END;
+									packet = nullptr;																							
+									return(GetResult::BUFFER);	
+								}
+								break;
+							}
 					}
-
-					Monitor::Wait(lockObject);
+					
+					Monitor::Wait(lockObject);					
 				}
 
 				packet = queue->Dequeue();
-
+			
 				if(queue->Count == maxPackets - 1) {
 					// wake threads waiting on full queue
 					Monitor::PulseAll(lockObject);
@@ -167,26 +232,17 @@ namespace VideoLib {
 
 				if(packet->Type == PacketType::LAST_PACKET) {
 
-					State = PacketQueueState::STOPPED;				
-					return(false);
+					IsFinished = true;				
+					State = PacketQueueState::CLOSE_END;				
+					return(GetResult::FINAL);
 				}
 
-				return(true);
+				return(GetResult::SUCCESS);
 
 			} finally {
 				
 				Monitor::Exit(lockObject);
-
-				/*if(packet != nullptr && packet->Type == PacketType::LAST_PACKET) {
 				
-					if(packetQueueStopped[(int)QueueID::AUDIO_PACKETS] && 
-						packetQueueStopped[(int)QueueID::VIDEO_PACKETS])
-					{
-						Finished(this, EventArgs::Empty);
-					}
-
-				}*/
-
 			}
 		}
 
@@ -197,25 +253,40 @@ namespace VideoLib {
 				
 				while(queue->Count >= maxPackets) {
 
-					if(State == PacketQueueState::STOPPED) {	
-										
-						// make sure the packet isn't lost when the queue is stopped
-						queue->Enqueue(packet);
-						return;
-					} 
-					else if(State == PacketQueueState::PAUSED)
-					{
-						// make sure the packet IS discarded because a pause should always be followed by a flush
-						// e.g. when seeking in the stream
-						return;
-					}				
+					switch(State) {
+						
+						case PacketQueueState::BLOCK_START:
+							{
 
+							}
+						case PacketQueueState::CLOSE_END:
+							{								
+								return;					
+							}
+						default:
+							{
+								
+							}
+					}
+						
 					Monitor::Wait(lockObject);
 				}
 		
 				queue->Enqueue(packet);
 
+				if(queue->Count >= nrPacketsBufferFilled) {
+				
+					IsBufferFull = true;
+
+				} else {
+
+					IsBufferFull = false;
+				}
+
 				if(queue->Count == 1) {
+
+					IsFinished = false;
+
 					// wake threads waiting on empty queue
 					Monitor::PulseAll(lockObject);
 				}

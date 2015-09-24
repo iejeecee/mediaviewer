@@ -8,9 +8,9 @@ namespace VideoPlayerControl
 {
     public enum VideoState
     {
-        PLAYING,
-        PAUSED,
         OPEN,
+        PLAYING,
+        PAUSED,         
         CLOSED
     }
 }

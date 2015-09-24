@@ -135,9 +135,9 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            PauseCommand = new AsyncCommand(async () => {
+            PauseCommand = new Command(() => {
               
-                await VideoPlayer.pausePlay(); 
+                VideoPlayer.pausePlay(); 
 
             }, false);
 
@@ -287,6 +287,7 @@ namespace MediaViewer.VideoPanel
             this.VideoPlayer = videoPlayer;
                                                      
             videoPlayer.StateChanged += videoPlayer_StateChanged;
+            videoPlayer.IsBufferingChanged += videoPlayer_IsBufferingChanged;       
             videoPlayer.PositionSecondsChanged += videoPlayer_PositionSecondsChanged;
             videoPlayer.DurationSecondsChanged += videoPlayer_DurationSecondsChanged;
             videoPlayer.HasAudioChanged += videoPlayer_HasAudioChanged;
@@ -298,6 +299,11 @@ namespace MediaViewer.VideoPanel
                                           
             IsInitialized = true;
             isInitializedSignal.Release();
+        }
+      
+        private void videoPlayer_IsBufferingChanged(object sender, EventArgs e)
+        {
+            IsLoading = VideoPlayer.IsBuffering;
         }
        
         public void Dispose()
@@ -405,7 +411,7 @@ namespace MediaViewer.VideoPanel
                 SetProperty(ref videoState, value);
             }
         }
-
+       
         bool isLoading;
 
         public bool IsLoading
@@ -433,7 +439,7 @@ namespace MediaViewer.VideoPanel
                         break;
                     }
                 case VideoState.PLAYING:
-                    {
+                    {                    
                         PlayCommand.IsExecutable = false;
                         PauseCommand.IsExecutable = true;
                         ScreenShotCommand.IsExecutable = true;
@@ -443,7 +449,7 @@ namespace MediaViewer.VideoPanel
                         SetLeftMarkerCommand.IsExecutable = true;
                         SetRightMarkerCommand.IsExecutable = true;
                         break;
-                    }
+                    }               
                 case VideoState.PAUSED:
                     {
                         PlayCommand.IsExecutable = true;
@@ -480,7 +486,7 @@ namespace MediaViewer.VideoPanel
         public Command OpenLocationCommand { get; set; }
         public AsyncCommand<VideoAudioPair> OpenCommand { get; set; }
         public AsyncCommand PlayCommand { get; set; }
-        public AsyncCommand PauseCommand { get; set; }
+        public Command PauseCommand { get; set; }
         public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
         public AsyncCommand<double> SeekCommand { get; set; }
