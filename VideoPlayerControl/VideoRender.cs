@@ -18,16 +18,18 @@ using MediaViewer.Infrastructure.Utils;
 namespace VideoPlayerControl
 {
 
+    public enum RenderMode
+    {
+        NORMAL,
+        CLEAR_SCREEN,
+        PAUSED
+    };
+
+
     class VideoRender : IDisposable
     {
-
-        public enum RenderMode
-        {
-            NORMAL,
-            CLEAR_SCREEN,
-            PAUSED
-        };
-
+        public RenderMode RenderMode { get; protected set; }
+       
         public VideoRender(System.Windows.Forms.Control owner)
         {
             direct3D = null;
@@ -42,6 +44,7 @@ namespace VideoPlayerControl
 
             InfoText = null;
             DisplayInfoText = false;
+            RenderMode = VideoPlayerControl.RenderMode.PAUSED; 
         }
 
         public void Dispose()
@@ -464,7 +467,9 @@ namespace VideoPlayerControl
                         drawText();
 
                         device.EndScene();
-                        device.Present();                
+                        device.Present();
+
+                        RenderMode = mode;
 
                     }
                     catch (SharpDX.SharpDXException)

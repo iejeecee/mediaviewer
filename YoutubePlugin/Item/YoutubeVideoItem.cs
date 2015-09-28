@@ -22,17 +22,50 @@ namespace YoutubePlugin.Item
     {
         public bool IsEmbeddedOnly { get; set; }
         public bool HasPlayableStreams { get; set; }
+        public String VideoId { get; protected set; }
 
         public List<YoutubeVideoStreamedItem> StreamedItem { get; set; }
                                 
-        public YoutubeVideoItem(IDirectResponseSchema result, int relevance) :
-            base(result, relevance)
+        public YoutubeVideoItem(SearchResult result, int relevance) :
+            base(result.Snippet.Title, result, relevance)
         {
+            ChannelTitle = result.Snippet.ChannelTitle;
+            ChannelId = result.Snippet.ChannelId;
+
+            ResourceId = result.Id;
+            Thumbnail = result.Snippet.Thumbnails;
+          
+            PublishedAt = result.Snippet.PublishedAt;
+            Description = result.Snippet.Description;
+
+            VideoId = result.Id.VideoId;
+
             IsEmbeddedOnly = false;
 
             Info = result;
 
             StreamedItem = new List<YoutubeVideoStreamedItem>();                
+        }
+
+        public YoutubeVideoItem(PlaylistItem result, int relevance) :
+            base(result.Snippet.Title, result, relevance)
+        {
+            ChannelTitle = result.Snippet.ChannelTitle;
+            ChannelId = result.Snippet.ChannelId;
+
+            ResourceId = result.Snippet.ResourceId;
+            Thumbnail = result.Snippet.Thumbnails;
+
+            PublishedAt = result.Snippet.PublishedAt;
+            Description = result.Snippet.Description;
+
+            VideoId = result.Snippet.ResourceId.VideoId;
+
+            IsEmbeddedOnly = false;
+
+            Info = result;
+
+            StreamedItem = new List<YoutubeVideoStreamedItem>();
         }
 
         public void getBestQualityStreams(out YoutubeVideoStreamedItem video, out YoutubeVideoStreamedItem audio) {
@@ -272,74 +305,6 @@ namespace YoutubePlugin.Item
             }
 
             return (true);
-        }
-
-        public String VideoId
-        {
-            get
-            {
-                if (Info is SearchResult)
-                {
-                    return (Info as SearchResult).Id.VideoId;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    return (Info as PlaylistItem).Snippet.ResourceId.VideoId;
-                }
-
-                return (null);
-            }
-        }
-
-        public String Title
-        {
-            get
-            {
-                if (Info is SearchResult)
-                {
-                    return (Info as SearchResult).Snippet.Title;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    return (Info as PlaylistItem).Snippet.Title;
-                }
-
-                return (null);
-            }
-        }
-
-        public String Description
-        {
-            get
-            {
-                if (Info is SearchResult)
-                {
-                    return (Info as SearchResult).Snippet.Description;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    return (Info as PlaylistItem).Snippet.Description;
-                }
-
-                return (null);
-            }
-        }
-
-        public DateTime? PublishedAt
-        {
-            get
-            {
-                if (Info is SearchResult)
-                {
-                    return (Info as SearchResult).Snippet.PublishedAt;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    return (Info as PlaylistItem).Snippet.PublishedAt;
-                }
-
-                return (null);
-            }
         }
 
         

@@ -71,6 +71,8 @@
                             CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem|YoutubeChannelItem}"/>
                         <MenuItem Header="View Playlist" Command="{Binding Path=PlacementTarget.Tag.ViewPlaylistCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
                             CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubePlaylistItem}"/>
+                        <MenuItem Header="Subscribe" Command="{Binding Path=PlacementTarget.Tag.SubscribeCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"
+                            CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeChannelItem}"/>
                         <Separator/>
                         <MenuItem Header="Select All" Command="{Binding Path=PlacementTarget.Tag.SelectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>
                         <MenuItem Header="Deselect All" Command="{Binding Path=PlacementTarget.Tag.DeselectAllCommand, RelativeSource={RelativeSource FindAncestor,AncestorType=ContextMenu}}"/>

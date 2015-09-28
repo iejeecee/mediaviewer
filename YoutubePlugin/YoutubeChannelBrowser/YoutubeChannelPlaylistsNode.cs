@@ -11,7 +11,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
         public YoutubeChannelPlaylistsNode(String channelId) :
             base("pack://application:,,,/YoutubePlugin;component/Resources/Icons/playlist.ico")
         {
-            
+            Name = "Playlists";
             ChannelId = channelId;
         }
     }

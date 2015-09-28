@@ -9,9 +9,14 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
+	public delegate void BufferingEvent();
+
 	public ref class PacketQueue 
 	{
 	public:
+
+		event BufferingEvent ^StartBuffering;
+		event BufferingEvent ^EndBuffering;
 
 		enum class PacketQueueState {			
 			OPEN,					// items can be added and removed from the queue
@@ -43,29 +48,13 @@ namespace VideoLib {
 	
 		bool bufferWhenEmpty;
 		bool isBufferFull;
-		static int nrPacketsBufferFilled = 10;
+		
 
 		bool isFinished;
 
 	public:
-
-		property bool IsBufferFull
-		{
-			bool get() {
-
-				return(isBufferFull);
-			}
-
-		private:
-			void set(bool value) {
-
-				if(isBufferFull != value) {
-
-					isBufferFull = value;
-					Monitor::PulseAll(lockObject);
-				}
-			}
-		}
+	
+		static int NrPacketsBufferFilled = 10;
 
 		property bool IsFinished
 		{
@@ -117,7 +106,7 @@ namespace VideoLib {
 			}
 		}
 	
-		PacketQueue(String ^id, int maxPackets, Object ^lockObject, bool bufferWhenEmpty) {
+		PacketQueue(String ^id, int maxPackets, Object ^lockObject) {
 
 			this->id = id;
 			this->lockObject = lockObject;
@@ -125,11 +114,9 @@ namespace VideoLib {
 			this->maxPackets = maxPackets;
 			queue = gcnew Queue<Packet ^>();
 			state = PacketQueueState::OPEN;
-			
-			isBufferFull = false;
+					
 			isFinished = false;
-			this->bufferWhenEmpty = bufferWhenEmpty;
-			
+					
 		}
 
 	
@@ -160,9 +147,7 @@ namespace VideoLib {
 			Monitor::Enter(lockObject);
 			try {
 
-				queue->Clear();
-
-				IsBufferFull = false;
+				queue->Clear();				
 				
 			} finally {
 
@@ -209,12 +194,15 @@ namespace VideoLib {
 							}
 						case PacketQueueState::OPEN:
 							{
-								if(queue->Count == 0 && bufferWhenEmpty) 
+								if(queue->Count == 0) 
 								{			
-									IsBufferFull = false;
-									State = PacketQueueState::PAUSE_END;
-									packet = nullptr;																							
-									return(GetResult::BUFFER);	
+									StartBuffering();
+									
+									if(State == PacketQueueState::PAUSE_START) {
+
+										packet = nullptr;																							
+										return(GetResult::BUFFER);	
+									}
 								}
 								break;
 							}
@@ -226,6 +214,7 @@ namespace VideoLib {
 				packet = queue->Dequeue();
 			
 				if(queue->Count == maxPackets - 1) {
+
 					// wake threads waiting on full queue
 					Monitor::PulseAll(lockObject);
 				}
@@ -274,14 +263,10 @@ namespace VideoLib {
 		
 				queue->Enqueue(packet);
 
-				if(queue->Count >= nrPacketsBufferFilled) {
+				if(queue->Count == NrPacketsBufferFilled) {
 				
-					IsBufferFull = true;
-
-				} else {
-
-					IsBufferFull = false;
-				}
+					EndBuffering();
+				} 
 
 				if(queue->Count == 1) {
 

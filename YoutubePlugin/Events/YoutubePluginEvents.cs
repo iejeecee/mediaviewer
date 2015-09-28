@@ -12,4 +12,5 @@ namespace YoutubePlugin.Events
 {
     class SelectionEvent : PubSubEvent<ICollection<YoutubeItem>> { }
     class SearchEvent : PubSubEvent<YoutubeSearchQuery> { }
+    class AddFavoriteChannelEvent : PubSubEvent<YoutubeChannelItem> { }
 }

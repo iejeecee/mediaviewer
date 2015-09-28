@@ -186,6 +186,7 @@
     <Compile Include="Item\YoutubeVideoItem.cs" />
     <Compile Include="Item\YoutubeVideoStreamedItem.cs" />
     <Compile Include="YoutubeApiKey.cs" />
+    <Compile Include="YoutubeChannelBrowser\RootNode.cs" />
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelBrowserView.xaml.cs">
       <DependentUpon>YoutubeChannelBrowserView.xaml</DependentUpon>
     </Compile>

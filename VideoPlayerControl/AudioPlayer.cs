@@ -10,17 +10,9 @@ using SharpDX.Multimedia;
 using System.Windows.Forms;
 
 namespace VideoPlayerControl
-{
-
+{    
     public class AudioPlayer : IDisposable
-    {
-        public enum AudioState
-        {
-            START_PLAY_AFTER_NEXT_WRITE,
-            PLAYING,
-            STOPPED
-        };
-
+    {       
         const int DSBVOLUME_MIN = -10000;
         const int DSBVOLUME_MAX = 0;
 
@@ -39,7 +31,19 @@ namespace VideoPlayerControl
 
         double volume;
         bool muted;
-        AudioState audioState;
+       
+        public SharpDX.DirectSound.BufferStatus Status {
+
+            get
+            {
+                if (audioBuffer != null)
+                {
+                    return (SharpDX.DirectSound.BufferStatus)audioBuffer.Status;
+                }
+
+                return SharpDX.DirectSound.BufferStatus.BufferLost;
+            }
+        }
 
         char[] silence;
 
@@ -70,6 +74,8 @@ namespace VideoPlayerControl
             prevPtsPos = 0;
             playLoops = 0;
             ptsLoops = 0;
+
+            
         }
 
         public void Dispose()
@@ -94,13 +100,7 @@ namespace VideoPlayerControl
                 }
             }
         }
-
-        public void startPlayAfterNextWrite()
-        {
-
-            audioState = AudioState.START_PLAY_AFTER_NEXT_WRITE;
-        }
-
+     
         public void flush()
         {
 
@@ -123,13 +123,11 @@ namespace VideoPlayerControl
         }
 
         public void stop()
-        {
+        {          
             if (audioBuffer != null)
             {
                 audioBuffer.Stop();
-            }
-
-            audioState = AudioState.STOPPED;
+            }            
         }
 
         public bool IsMuted
@@ -294,7 +292,7 @@ namespace VideoPlayerControl
             return (time);
         }
 
-        public void write(VideoLib.AudioFrame frame)
+        public void play(VideoLib.AudioFrame frame)
         {
 
             if (audioBuffer == null || frame.Length == 0) return;
@@ -318,10 +316,10 @@ namespace VideoPlayerControl
 
             offsetBytes = (offsetBytes + frame.Length) % bufferSizeBytes;
 
-            if (audioState == AudioState.START_PLAY_AFTER_NEXT_WRITE)
+            if (Status == BufferStatus.None)
             {
-                audioBuffer.Play(0, PlayFlags.Looping);
-                audioState = AudioState.PLAYING;
+                // start playing
+                audioBuffer.Play(0, PlayFlags.Looping);               
             }
 
             //System.Diagnostics.Debug.Print("AudioClock:" + getAudioClock().ToString());

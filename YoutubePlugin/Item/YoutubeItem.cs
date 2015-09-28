@@ -23,13 +23,53 @@ namespace YoutubePlugin.Item
     {
         public int Relevance { get; protected set; }
         public IDirectResponseSchema Info { get; set; }
-
         
-        public YoutubeItem(IDirectResponseSchema result, int relevance) :
-            base(null,getTitle(result))
+        public YoutubeItem(String title, IDirectResponseSchema result, int relevance) :
+            base(null, title)
         {
+            Title = title;
             Info = result;
             Relevance = relevance;
+        }
+
+        public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        {
+            String mimeType;
+
+            RWLock.EnterUpgradeableReadLock();
+            try
+            {
+                ItemState = MediaItemState.LOADING;
+
+                YoutubeItemMetadata metaData = new YoutubeItemMetadata();
+
+                SearchResult searchInfo = Info as SearchResult;
+
+                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
+                metaData.CreationDate = PublishedAt;
+                metaData.Title = Name;
+                metaData.Description = String.IsNullOrEmpty(Description) ? Name : Description;
+
+                Metadata = metaData;
+
+                ItemState = MediaItemState.LOADED;
+            }
+            catch (Exception e)
+            {
+                if (e is System.Net.WebException &&
+                    ((System.Net.WebException)e).Status == WebExceptionStatus.Timeout)
+                {
+                    ItemState = MediaItemState.TIMED_OUT;
+                }
+                else
+                {
+                    ItemState = MediaItemState.ERROR;
+                }
+            }
+            finally
+            {
+                RWLock.ExitUpgradeableReadLock();
+            }
         }
 
        
@@ -41,7 +81,7 @@ namespace YoutubePlugin.Item
             try
             {
               
-                StreamUtils.readHttpRequest(new Uri(ThumbnailUrl), data, out mimeType, token);
+                StreamUtils.readHttpRequest(new Uri(Thumbnail.High.Url), data, out mimeType, token);
 
                 BitmapDecoder decoder = BitmapDecoder.Create(data,
                                     BitmapCreateOptions.PreservePixelFormat,
@@ -82,7 +122,6 @@ namespace YoutubePlugin.Item
 
         }
 
-
         public override bool Equals(MediaItem other)
         {
             YoutubeItem otherItem = (YoutubeItem)other;
@@ -90,98 +129,13 @@ namespace YoutubePlugin.Item
             return (ResourceId.Equals(otherItem.ResourceId));
         }
 
-
-        static string getTitle(IDirectResponseSchema result)
-        {
-            if (result is SearchResult)
-            {
-                return (result as SearchResult).Snippet.Title;
-            }
-            else if (result is PlaylistItem)
-            {
-                return (result as PlaylistItem).Snippet.Title;
-            }
-
-            return ("");
-        }
-
-        public String ThumbnailUrl
-        {
-            get
-            {
-                String thumbnailUrl = null;
-
-                if (Info is SearchResult)
-                {
-                    thumbnailUrl = (Info as SearchResult).Snippet.Thumbnails.High.Url;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    thumbnailUrl = (Info as PlaylistItem).Snippet.Thumbnails.High.Url;
-                }
-
-                return thumbnailUrl;
-            }
-        }
-
-        public String ChannelTitle
-        {
-            get
-            {
-                String channelId = null;
-
-                if (Info is SearchResult)
-                {
-                    channelId = (Info as SearchResult).Snippet.ChannelTitle;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    channelId = (Info as PlaylistItem).Snippet.ChannelTitle;
-                }
-
-                return (channelId);
-            }
-        }
-
-
-        public String ChannelId
-        {
-            get
-            {
-                String channelId = null;
-
-                if (Info is SearchResult)
-                {
-                    channelId = (Info as SearchResult).Snippet.ChannelId;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    channelId = (Info as PlaylistItem).Snippet.ChannelId;
-                }
-
-                return (channelId);
-            }
-        }
-
-        ResourceId ResourceId
-        {
-            get
-            {
-                ResourceId id = null;
-
-                if (Info is SearchResult)
-                {
-                    id = (Info as SearchResult).Id;
-                }
-                else if (Info is PlaylistItem)
-                {
-                    id = (Info as PlaylistItem).Snippet.ResourceId;
-                }
-
-                return (id);
-            }
-
-        }
+        public String Title { get; protected set; }
+        public String ChannelTitle { get; protected set; }
+        public String ChannelId { get; protected set; }
+        public ResourceId ResourceId { get; protected set; }
+        public ThumbnailDetails Thumbnail { get; protected set; }    
+        public DateTime? PublishedAt { get; protected set; }
+        public String Description { get; protected set; }
         
     }
 }

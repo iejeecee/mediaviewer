@@ -28,9 +28,11 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             }
         }
 
-        protected ImageSource loadIcon()
+        protected virtual ImageSource loadIcon()
         {
-            var frame = BitmapFrame.Create(new Uri(ImageUrl, UriKind.Absolute));
+                                
+            BitmapFrame frame = BitmapFrame.Create(new Uri(ImageUrl, UriKind.Absolute));
+            
             return frame;
         }
 
@@ -45,6 +47,52 @@ namespace YoutubePlugin.YoutubeChannelBrowser
 
                 RaisePropertyChanged("ChannelId");
 
+            }
+        }
+
+        DateTime creationDate;
+
+        public DateTime CreationDate
+        {
+            get { return creationDate; }
+            set
+            {
+                creationDate = value;
+                RaisePropertyChanged("CreationDate");
+            }
+
+        }
+
+        String name;
+
+        public String Name
+        {
+            get { return name; }
+            set
+            {
+                name = value;
+
+                RaisePropertyChanged("Name");
+                RaisePropertyChanged("Text");
+
+            }
+        }
+
+        public override object Text
+        {
+            get
+            {
+                return (Name);
+            }
+        }
+
+        protected String toolTip;
+        public override object ToolTip
+        {
+          
+            get
+            {
+                return toolTip;
             }
         }
     }

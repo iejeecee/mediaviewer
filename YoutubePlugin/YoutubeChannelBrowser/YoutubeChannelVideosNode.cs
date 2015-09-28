@@ -9,9 +9,9 @@ namespace YoutubePlugin.YoutubeChannelBrowser
     class YoutubeChannelVideosNode : YoutubeNodeBase
     {
         public YoutubeChannelVideosNode(String channelId) :
-            base("pack://application:,,,/YoutubePlugin;component/Resources/Icons/playlist.ico")
+            base("pack://application:,,,/YoutubePlugin;component/Resources/Icons/youtube.ico")
         {
-            
+            Name = "Videos";
             ChannelId = channelId;
         }
     }

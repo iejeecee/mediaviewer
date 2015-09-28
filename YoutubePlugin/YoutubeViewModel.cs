@@ -120,6 +120,13 @@ namespace YoutubePlugin
                                         
                 });
 
+            SubscribeCommand = new Command<SelectableMediaItem>((selectableItem) =>
+                {
+                    YoutubeChannelItem item = selectableItem.Item as YoutubeChannelItem;
+
+                    EventAggregator.GetEvent<AddFavoriteChannelEvent>().Publish(item);
+                });
+
             DownloadCommand = new AsyncCommand<SelectableMediaItem>(async (selectableItem) => {
 
                 List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
@@ -166,6 +173,8 @@ namespace YoutubePlugin
             setupViews();
 
             EventAggregator.GetEvent<SearchEvent>().Subscribe(searchEvent);
+
+            SearchTask = null;
         }
 
         void setupViews()
@@ -224,7 +233,8 @@ namespace YoutubePlugin
         public AsyncCommand LoadNextPageCommand { get; set; }
         public AsyncCommand<SelectableMediaItem> ViewChannelCommand { get; set; }
         public AsyncCommand<SelectableMediaItem> ViewPlaylistCommand { get; set; }
-        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; set; }       
+        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; set; }
+        public Command<SelectableMediaItem> SubscribeCommand { get; set; }
         public Command SelectAllCommand { get; set; }
         public Command DeselectAllCommand { get; set; }
 
@@ -238,9 +248,19 @@ namespace YoutubePlugin
         {
             if (SearchTask != null && !SearchTask.IsCompleted)
             {
-                TokenSource.Cancel();
-                await SearchTask;
-                TokenSource = new CancellationTokenSource();
+                try
+                {
+                    TokenSource.Cancel();
+                    await SearchTask;
+                }
+                catch (OperationCanceledException)
+                {
+
+                }
+                finally
+                {
+                    TokenSource = new CancellationTokenSource();
+                }
             }
 
             try
@@ -261,10 +281,12 @@ namespace YoutubePlugin
         private async Task search(IClientServiceRequest request, String searchInfo, bool isNextPage, CancellationToken token)
         {
             SearchListResponse searchResponse = null;
-            PlaylistItemListResponse playlistResponse = null;
+            PlaylistItemListResponse playlistItemResponse = null;
+            PlaylistListResponse playlistResponse = null;
 
             SearchResource.ListRequest searchRequest = request as SearchResource.ListRequest;
-            PlaylistItemsResource.ListRequest playlistRequest = request as PlaylistItemsResource.ListRequest;
+            PlaylistItemsResource.ListRequest playlistItemsRequest = request as PlaylistItemsResource.ListRequest;
+            PlaylistsResource.ListRequest playlistRequest = request as PlaylistsResource.ListRequest;
 
             List<YoutubeItem> items = new List<YoutubeItem>();  
             int relevance;
@@ -281,11 +303,15 @@ namespace YoutubePlugin
                 {
                     searchRequest.PageToken = NextPageToken;
                 }
-                if (playlistRequest != null) 
+                else if (playlistItemsRequest != null) 
+                {
+                    playlistItemsRequest.PageToken = NextPageToken;
+                }
+                else if (playlistRequest != null)
                 {
                     playlistRequest.PageToken = NextPageToken;
                 }
-               
+
                 relevance = MediaState.UIMediaCollection.Count;
             }
             else
@@ -303,7 +329,7 @@ namespace YoutubePlugin
 
                 NextPageToken = searchResponse.NextPageToken;
                 
-                foreach (var searchResult in searchResponse.Items)
+                foreach (SearchResult searchResult in searchResponse.Items)
                 {
                     YoutubeItem newItem = null;
 
@@ -333,12 +359,12 @@ namespace YoutubePlugin
                
             }
 
-            if (playlistRequest != null)
+            if (playlistItemsRequest != null)
             {
-                playlistResponse = await playlistRequest.ExecuteAsync(token);
-                NextPageToken = playlistResponse.NextPageToken;
+                playlistItemResponse = await playlistItemsRequest.ExecuteAsync(token);
+                NextPageToken = playlistItemResponse.NextPageToken;
 
-                foreach (PlaylistItem playlistItem in playlistResponse.Items)
+                foreach (PlaylistItem playlistItem in playlistItemResponse.Items)
                 {
                     YoutubeVideoItem newItem = new YoutubeVideoItem(playlistItem, relevance);
 
@@ -346,6 +372,25 @@ namespace YoutubePlugin
 
                     relevance++;
                 }
+            }
+
+            if (playlistRequest != null)
+            {
+                playlistResponse = await playlistRequest.ExecuteAsync(token);
+                NextPageToken = playlistResponse.NextPageToken;
+
+                foreach (Playlist playlist in playlistResponse.Items)
+                {
+                    YoutubePlaylistItem newItem = new YoutubePlaylistItem(playlist, relevance);
+
+                    if (!items.Contains(newItem))
+                    {
+                        items.Add(newItem);
+                    }
+
+                    relevance++;
+                }
+
             }
                                               
             // Add each result to the appropriate list, and then display the lists of

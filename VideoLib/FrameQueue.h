@@ -73,7 +73,7 @@ namespace VideoLib {
 		AutoResetEvent ^continueSingleFrameEvent;
 
 		bool isBuffering;
-		Tasks::Task ^isBufferingFinishedTask;
+		SemaphoreSlim ^isBufferingSemaphore;
 
 		int nrVideoPacketReadErrors;
 		int nrAudioPacketReadErrors;
@@ -126,54 +126,45 @@ namespace VideoLib {
 			return(pts);
 		}
 
-		void setPacketQueueState(Nullable<PacketQueue::PacketQueueState> videoState, Nullable<PacketQueue::PacketQueueState> audioState, 
-			Nullable<PacketQueue::PacketQueueState> freeState) 
+		void setPacketQueueState(PacketQueue::PacketQueueState videoState, PacketQueue::PacketQueueState audioState, 
+			PacketQueue::PacketQueueState freeState) 
 		{					
-			if(videoDecoder->hasVideo() && videoState.HasValue) {
+			if(videoDecoder->hasVideo()) {
 
-				videoPackets->State = videoState.Value;
+				videoPackets->State = videoState;
 			} 
 							
-			if(audioDecoder->hasAudio() && audioState.HasValue) {
+			if(audioDecoder->hasAudio()) {
 
-				audioPackets->State = audioState.Value;
+				audioPackets->State = audioState;
 			} 
-
-			if(freeState.HasValue) { 
-
-				freePackets->State = freeState.Value;
-			}
-							
+			
+			freePackets->State = freeState;										
 		}
 
-		bool isPacketQueueInState(Nullable<PacketQueue::PacketQueueState> videoState, Nullable<PacketQueue::PacketQueueState> audioState, 
-			Nullable<PacketQueue::PacketQueueState> freeState) 
+		bool isPacketQueueInState(PacketQueue::PacketQueueState videoState, PacketQueue::PacketQueueState audioState, 
+			PacketQueue::PacketQueueState freeState) 
 		{
 			bool isState = true;
 
-			if(videoDecoder->hasVideo() && videoState.HasValue) {
+			if(videoDecoder->hasVideo()) {
 
-				isState = videoPackets->State == videoState.Value && isState;
+				isState = videoPackets->State == videoState && isState;
 			} 
 							
-			if(audioDecoder->hasAudio() && audioState.HasValue) {
+			if(audioDecoder->hasAudio()) {
 
-				isState = audioPackets->State == audioState.Value && isState;
+				isState = audioPackets->State == audioState && isState;
 			} 
-
-			if(freeState.HasValue) { 
-
-				isState = freePackets->State == freeState.Value && isState;
-			}
-
+			
+			isState = freePackets->State == freeState && isState;
+			
 			return(isState);
 		}
 
-		Nullable<PacketQueue::PacketQueueState> frameToPacketState(Nullable<FrameQueueState> state, bool isStart) {
-
-			if(state.HasValue == false) return(Nullable<PacketQueue::PacketQueueState>());
-
-			switch(state.Value) 
+		PacketQueue::PacketQueueState frameToPacketState(FrameQueueState state, bool isStart) {
+		
+			switch(state) 
 			{
 			case FrameQueueState::PLAY:
 				{
@@ -214,39 +205,34 @@ namespace VideoLib {
 						
 		}	
 
-		void isPacketQueueBufferingFinished() {
+		void startPacketQueueBuffering()
+		{			
+			isBuffering = true;
+			//isBufferingSemaphore->Wait();
 
-			Monitor::Enter(lockObject); 
-			try {
+			videoPackets->State = PacketQueue::PacketQueueState::PAUSE_START;
+			audioPackets->State = PacketQueue::PacketQueueState::PAUSE_START;
+			freePackets->State= PacketQueue::PacketQueueState::OPEN;			
+		}
 
-				while(!videoPackets->IsBufferFull || !audioPackets->IsBufferFull) 
-				{
-					if(isPacketQueueInState(Nullable<PacketQueue::PacketQueueState>(PacketQueue::PacketQueueState::CLOSE_END),
-						Nullable<PacketQueue::PacketQueueState>(PacketQueue::PacketQueueState::CLOSE_END),Nullable<PacketQueue::PacketQueueState>()))
-					{
-						// packetqueue is closed
-						return;
-					}					
+		void endPacketQueueBuffering()
+		{			
+			if(videoPackets->NrPacketsInQueue >= videoPackets->NrPacketsBufferFilled && 
+				audioPackets->NrPacketsInQueue >= audioPackets->NrPacketsBufferFilled) 
+			{
 
-					Monitor::Wait(lockObject);
-				}
-							
-			} finally {
-							
-				Monitor::Exit(lockObject);				
+				isBuffering = false;
+				//isBufferingSemaphore->Release();
+
+				videoPackets->State = PacketQueue::PacketQueueState::OPEN;
+				audioPackets->State = PacketQueue::PacketQueueState::OPEN;
+				freePackets->State= PacketQueue::PacketQueueState::OPEN;	
 			}
 		}
-		
-		void endPacketQueueBuffering(Tasks::Task ^task) {
-		
-			FinishedBuffering(this,EventArgs::Empty);	
-			isBuffering = false;
-							
-		}
-				
+						
 	public:
 
-		void setState(Nullable<FrameQueueState> video,Nullable<FrameQueueState> audio, Nullable<FrameQueueState> demuxer) 
+		void setState(FrameQueueState video, FrameQueueState audio, FrameQueueState demuxer) 
 		{
 
 			Monitor::Enter(lockObject);
@@ -264,35 +250,7 @@ namespace VideoLib {
 				Monitor::Exit(lockObject);
 			}
 		}
-
-		Tasks::Task ^startPacketQueueBuffering() {
-						
-			// make sure only one buffering task can run at once
-			Monitor::Enter(lockObject);
-			try {
-
-				if(isBuffering == true) {
-
-					return(isBufferingFinishedTask);
-				}
-
-				isBuffering = true;
-
-				setState(Nullable<FrameQueueState>(FrameQueueState::PAUSE), Nullable<FrameQueueState>(FrameQueueState::PAUSE), 
-					Nullable<FrameQueueState>(FrameQueueState::PLAY));	
-
-				Buffering(this,EventArgs::Empty);
-
-				return isBufferingFinishedTask = Tasks::Task::Factory->StartNew(gcnew Action(this,&FrameQueue::isPacketQueueBufferingFinished))->ContinueWith(
-					gcnew Action<Tasks::Task ^>(this,&FrameQueue::endPacketQueueBuffering));
-
-			} finally {
-
-				Monitor::Exit(lockObject);
-			}
-						
-		}
-				
+								
 		FrameQueue() {
 
 			lockObject = gcnew Object();
@@ -303,10 +261,16 @@ namespace VideoLib {
 			convertedVideoFrame = nullptr;
 			convertedAudioFrame = nullptr;
 									
-			videoPackets = gcnew PacketQueue("videoPackets", nrPackets, lockObject, true);
-			audioPackets = gcnew PacketQueue("audioPackets", nrPackets, lockObject, true);
-			freePackets = gcnew PacketQueue("freePackets",videoPackets->MaxPackets + audioPackets->MaxPackets,lockObject, false);
+			videoPackets = gcnew PacketQueue("videoPackets", nrPackets, lockObject);
+			audioPackets = gcnew PacketQueue("audioPackets", nrPackets, lockObject);
+			freePackets = gcnew PacketQueue("freePackets",videoPackets->MaxPackets + audioPackets->MaxPackets,lockObject);
 					
+			videoPackets->StartBuffering += gcnew BufferingEvent(this,&FrameQueue::startPacketQueueBuffering);
+			audioPackets->StartBuffering += gcnew BufferingEvent(this,&FrameQueue::startPacketQueueBuffering);
+
+			videoPackets->EndBuffering += gcnew BufferingEvent(this,&FrameQueue::endPacketQueueBuffering);
+			audioPackets->EndBuffering += gcnew BufferingEvent(this,&FrameQueue::endPacketQueueBuffering);
+
 			packetData = gcnew array<Packet ^>(freePackets->MaxPackets);
 
 			for(int i = 0; i < packetData->Length; i++) {
@@ -321,10 +285,9 @@ namespace VideoLib {
 
 			nrVideoPacketReadErrors = 0;
 			nrAudioPacketReadErrors = 0;
-		
-			isBufferingFinishedTask = Tasks::Task::FromResult(0);
-
-			isBuffering = false;					
+					
+			isBuffering = false;	
+			isBufferingSemaphore = gcnew SemaphoreSlim(0,1);
 		}
 
 		~FrameQueue() {
@@ -336,6 +299,14 @@ namespace VideoLib {
 				delete packetData[i];
 			}
 			
+		}
+
+		property bool IsBuffering
+		{
+			bool get() {
+
+				return(isBuffering);
+			}			
 		}
 
 		property int NrVideoPacketReadErrors
@@ -496,6 +467,7 @@ namespace VideoLib {
 					freePackets->addPacket(packetData[i]);					
 				}
 
+				isBuffering = false;
 				audioPacket = nullptr;
 
 			} finally {
@@ -507,12 +479,12 @@ namespace VideoLib {
 		
 		bool startSingleFrame() {
 
-			singleFrame = true;
+			/*singleFrame = true;
 			isLastFrame = false;
 			singleFrameEvent->Reset();
 			continueSingleFrameEvent->Reset();
 
-			setState(Nullable<FrameQueueState>(FrameQueueState::PLAY), Nullable<FrameQueueState>(), Nullable<FrameQueueState>());	
+			setState(FrameQueueState(FrameQueueState::PLAY), FrameQueueState(), FrameQueueState());	
 		
 			singleFrameEvent->WaitOne();
 
@@ -526,14 +498,14 @@ namespace VideoLib {
 	
 				//State = FrameQueueState::PAUSED;
 
-				setPacketQueueState(Nullable<PacketQueue::PacketQueueState>(PacketQueue::PacketQueueState::PAUSE_START), 
-					Nullable<PacketQueue::PacketQueueState>(),Nullable<PacketQueue::PacketQueueState>());
+				setPacketQueueState(PacketQueue::PacketQueueState::PAUSE_START, 
+					PacketQueue::PacketQueueState(),PacketQueue::PacketQueueState());
 				
 				continueSingleFrameEvent->Set();
 
 				// wait until the packet queue is fully stopped
-				while(!isPacketQueueInState(Nullable<PacketQueue::PacketQueueState>(PacketQueue::PacketQueueState::PAUSE_END), 
-					Nullable<PacketQueue::PacketQueueState>(),Nullable<PacketQueue::PacketQueueState>()) &&
+				while(!isPacketQueueInState(PacketQueue::PacketQueueState(PacketQueue::PacketQueueState::PAUSE_END), 
+					PacketQueue::PacketQueueState(),PacketQueue::PacketQueueState()) &&
 					!videoPackets->IsFinished) 
 				{					
 					Monitor::Wait(lockObject);
@@ -542,7 +514,7 @@ namespace VideoLib {
 			} finally {
 
 				Monitor::Exit(lockObject);				
-			}
+			}*/
 
 			return(false);
 		}
@@ -623,11 +595,7 @@ namespace VideoLib {
 				PacketQueue::GetResult result = videoPackets->getPacket(videoPacket);
 				if(result != PacketQueue::GetResult::SUCCESS) 
 				{								
-					if(result == PacketQueue::GetResult::BUFFER) {
-
-						startPacketQueueBuffering();
-
-					} else if(result == PacketQueue::GetResult::FINAL) {
+					if(result == PacketQueue::GetResult::FINAL) {
 
 						if(singleFrame) {
 
@@ -699,11 +667,7 @@ namespace VideoLib {
 					PacketQueue::GetResult result = audioPackets->getPacket(audioPacket);
 					if(result != PacketQueue::GetResult::SUCCESS) 
 					{								
-						if(result == PacketQueue::GetResult::BUFFER) {
-
-							startPacketQueueBuffering();
-
-						} else if(result == PacketQueue::GetResult::FINAL) {
+						if(result == PacketQueue::GetResult::FINAL) {
 
 							packetQueueFinished();
 						}
