@@ -49,7 +49,7 @@ namespace MediaViewer.VideoPanel
 
         SemaphoreSlim isInitializedSignal;
       
-        public VideoViewModel(AppSettings settings, IEventAggregator eventAggregator)
+        public VideoViewModel(IEventAggregator eventAggregator)
         {
             EventAggregator = eventAggregator;
             VideoSettings = ServiceLocator.Current.GetInstance(typeof(VideoSettingsViewModel)) as VideoSettingsViewModel;
@@ -147,17 +147,17 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            SeekCommand = new AsyncCommand<double>(async (pos) =>
+            SeekCommand = new Command<double>((pos) =>
             {
               
-                await VideoPlayer.seek(pos); 
+                VideoPlayer.seek(pos); 
 
             }, false);
 
-            FrameByFrameCommand = new AsyncCommand(async () => {
+            FrameByFrameCommand = new Command(() => {
 
                 FrameByFrameCommand.IsExecutable = false;
-                await VideoPlayer.displayNextFrame();
+                VideoPlayer.displayNextFrame();
                 FrameByFrameCommand.IsExecutable = true;
 
             }, false);
@@ -207,10 +207,10 @@ namespace MediaViewer.VideoPanel
 
                     screenShotName += "." + "jpg";
 
-                    String fullPath = VideoSettings.Settings.VideoScreenShotLocation + "\\" + screenShotName;
+                    String fullPath = VideoSettings.VideoScreenShotLocation + "\\" + screenShotName;
                     fullPath = FileUtils.getUniqueFileName(fullPath);
 
-                    VideoPlayer.createScreenShot(fullPath, VideoSettings.Settings.VideoScreenShotTimeOffset);
+                    VideoPlayer.createScreenShot(fullPath, VideoSettings.VideoScreenShotTimeOffset);
                 }
                 catch (Exception e)
                 {
@@ -301,9 +301,9 @@ namespace MediaViewer.VideoPanel
             isInitializedSignal.Release();
         }
       
-        private void videoPlayer_IsBufferingChanged(object sender, EventArgs e)
+        private void videoPlayer_IsBufferingChanged(object sender, bool isBuffering)
         {
-            IsLoading = VideoPlayer.IsBuffering;
+            IsLoading = isBuffering;
         }
        
         public void Dispose()
@@ -489,8 +489,8 @@ namespace MediaViewer.VideoPanel
         public Command PauseCommand { get; set; }
         public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
-        public AsyncCommand<double> SeekCommand { get; set; }
-        public AsyncCommand FrameByFrameCommand { get; set; }      
+        public Command<double> SeekCommand { get; set; }
+        public Command FrameByFrameCommand { get; set; }      
         public Command SetLeftMarkerCommand { get; set; }
         public Command SetRightMarkerCommand { get; set; }
         public Command CutVideoCommand { get; set; }
@@ -624,7 +624,7 @@ namespace MediaViewer.VideoPanel
 
                 if (offsetSeconds != null)
                 {
-                    await SeekCommand.ExecuteAsync(offsetSeconds.Value);
+                    SeekCommand.Execute(offsetSeconds.Value);
                 }
                 
             }

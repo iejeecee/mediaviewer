@@ -1,4 +1,5 @@
-﻿using MediaViewer.Model.Media.State;
+﻿using ImageSearchPlugin.Properties;
+using MediaViewer.Model.Media.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,8 @@ namespace ImageSearchPlugin
         void googleImageSearchView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             vm.MediaState.clearUIState("Empty",DateTime.Now,MediaStateType.SearchResult);
+            vm.shutdown();
+            Settings.Default.Save();
         }
 
         void vm_ClosingRequest(object sender, MediaViewer.Model.Mvvm.CloseableBindableBase.DialogEventArgs e)

@@ -26,7 +26,7 @@ namespace MediaViewer.Transcode.Image
         {
             InitializeComponent();
 
-            DataContext = ViewModel = new ImageTranscodeViewModel(AppSettings.Instance);
+            DataContext = ViewModel = new ImageTranscodeViewModel();
 
             ViewModel.ClosingRequest += viewModel_ClosingRequest;
         }

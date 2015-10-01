@@ -62,7 +62,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
                 return;
             }
 
-            YoutubeNodeBase item = treeView.SelectedItems[0] as YoutubeNodeBase;
+            YoutubeChannelNodeBase item = treeView.SelectedItems[0] as YoutubeChannelNodeBase;
             YoutubeSearchQuery youtubeSearch = null;
 
             if (item is YoutubeChannelVideosNode || item is YoutubeChannelNode)

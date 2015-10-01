@@ -27,7 +27,7 @@ namespace MediaViewer.MetaData
         public FilenamePresetsView()
         {
             InitializeComponent();
-            DataContext = filenamePresetsViewModel = new FilenamePresetsViewModel(AppSettings.Instance);
+            DataContext = filenamePresetsViewModel = new FilenamePresetsViewModel();
 
             filenamePresetsViewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s, e) =>
             {

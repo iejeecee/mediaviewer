@@ -36,6 +36,7 @@ using System.Data.Entity;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Properties;
 
 
 
@@ -189,7 +190,10 @@ namespace MediaViewer
 
         private void Shell_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            AppSettings.Instance.save();
+            Model.Global.Commands.GlobalCommands.ShutdownCommand.Execute(e);
+
+            Settings.Default.Save();
+
             Dispatcher.InvokeShutdown();
         }
 

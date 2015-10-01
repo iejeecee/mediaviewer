@@ -28,6 +28,7 @@ using System.Web;
 using System.Windows;
 using YoutubePlugin.Events;
 using YoutubePlugin.Item;
+using YoutubePlugin.Properties;
 using YoutubePlugin.YoutubeChannelBrowser;
 using YoutubePlugin.YoutubeMetadata;
 using YoutubePlugin.YoutubeSearch;
@@ -170,6 +171,13 @@ namespace YoutubePlugin
                 MediaStateCollectionView.deselectAll();
             });
 
+            ShutdownCommand = new Command(() =>
+                {
+                    Settings.Default.Save();
+                });
+
+            MediaViewer.Model.Global.Commands.GlobalCommands.ShutdownCommand.RegisterCommand(ShutdownCommand);
+
             setupViews();
 
             EventAggregator.GetEvent<SearchEvent>().Subscribe(searchEvent);
@@ -237,6 +245,7 @@ namespace YoutubePlugin
         public Command<SelectableMediaItem> SubscribeCommand { get; set; }
         public Command SelectAllCommand { get; set; }
         public Command DeselectAllCommand { get; set; }
+        public Command ShutdownCommand { get; set; }
 
         public MediaState MediaState { get; set; }
         public YoutubeCollectionView MediaStateCollectionView { get; set; }

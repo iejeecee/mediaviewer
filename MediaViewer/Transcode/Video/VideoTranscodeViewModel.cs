@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using MediaViewer.Model.Utils;
+using MediaViewer.Properties;
 
 namespace MediaViewer.Transcode.Video
 {
@@ -24,9 +25,10 @@ namespace MediaViewer.Transcode.Video
 
         public ICollection<MediaFileItem> Items { get; set; }
 
-        public VideoTranscodeViewModel(AppSettings settings)
+        public VideoTranscodeViewModel()
         {
-            OutputPathHistory = settings.TranscodeOutputDirectoryHistory;
+
+            OutputPathHistory = Settings.Default.TranscodeOutputDirectoryHistory;
 
             OkCommand = new Command(async () =>
                 {                    
@@ -40,7 +42,7 @@ namespace MediaViewer.Transcode.Video
                     OnClosingRequest();
                     await task;
 
-                    MiscUtils.insertIntoHistoryCollection(settings.TranscodeOutputDirectoryHistory, OutputPath);
+                    MiscUtils.insertIntoHistoryCollection(Settings.Default.TranscodeOutputDirectoryHistory, OutputPath);
                 });
 
 

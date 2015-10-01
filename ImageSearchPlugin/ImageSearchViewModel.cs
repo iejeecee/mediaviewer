@@ -1,4 +1,5 @@
-﻿using MediaViewer;
+﻿using ImageSearchPlugin.Properties;
+using MediaViewer;
 using MediaViewer.DirectoryPicker;
 using MediaViewer.MediaFileGrid;
 using MediaViewer.Model.Media.Base;
@@ -54,7 +55,7 @@ namespace ImageSearchPlugin
         ImageSearchQuery CurrentQuery { get; set; }
 
         public ImageSearchViewModel()           
-        {        
+        {                   
             NrColumns = 4;
 
             SearchCommand = new AsyncCommand<int>(async (imageOffset) =>
@@ -120,7 +121,7 @@ namespace ImageSearchPlugin
 
                     String outputPath;
 
-                    if (SettingsViewModel.Settings.IsAskDownloadPath)
+                    if (SettingsViewModel.IsAskDownloadPath)
                     {
 
                         DirectoryPickerView directoryPicker = new DirectoryPickerView();
@@ -135,13 +136,13 @@ namespace ImageSearchPlugin
                         outputPath = directoryPicker.DirectoryPickerViewModel.SelectedPath;
 
                     }
-                    else if (SettingsViewModel.Settings.IsCurrentDownloadPath)
+                    else if (SettingsViewModel.IsCurrentDownloadPath)
                     {
                         outputPath = MediaFileWatcher.Instance.Path;
                     }
                     else
                     {
-                        outputPath = SettingsViewModel.Settings.FixedDownloadPath;
+                        outputPath = SettingsViewModel.FixedDownloadPath;
                     }
 
                     CancellableOperationProgressView progressView = new CancellableOperationProgressView();
@@ -171,19 +172,19 @@ namespace ImageSearchPlugin
                 });
 
             SettingsViewModel = (ImageSearchSettingsViewModel)ServiceLocator.Current.GetInstance(typeof(ImageSearchSettingsViewModel));
-
+           
             Size = new ListCollectionView(size);
-            Size.MoveCurrentTo(SettingsViewModel.Settings.Size);
+            Size.MoveCurrentTo(Settings.Default.Size);
             SafeSearch = new ListCollectionView(safeSearch);
-            SafeSearch.MoveCurrentTo(SettingsViewModel.Settings.SafeSearch);
+            SafeSearch.MoveCurrentTo(Settings.Default.SafeSearch);
             Layout = new ListCollectionView(layout);
-            Layout.MoveCurrentTo(SettingsViewModel.Settings.Layout);
+            Layout.MoveCurrentTo(Settings.Default.Layout);
             Type = new ListCollectionView(type);
-            Type.MoveCurrentTo(SettingsViewModel.Settings.Type);
+            Type.MoveCurrentTo(Settings.Default.Type);
             People = new ListCollectionView(people);
-            People.MoveCurrentTo(SettingsViewModel.Settings.People);
+            People.MoveCurrentTo(Settings.Default.People);
             Color = new ListCollectionView(color);
-            Color.MoveCurrentTo(SettingsViewModel.Settings.Color);
+            Color.MoveCurrentTo(Settings.Default.Color);
 
             GeoTag = new GeoTagCoordinatePair();
 
@@ -318,6 +319,16 @@ namespace ImageSearchPlugin
 
             MediaState.addUIState(results);
                                                                 
+        }
+
+        public void shutdown()
+        {          
+            Settings.Default.Size = (String)Size.CurrentItem;
+            Settings.Default.SafeSearch = (String)SafeSearch.CurrentItem;
+            Settings.Default.Layout = (String)Layout.CurrentItem;
+            Settings.Default.Type = (String)Type.CurrentItem;
+            Settings.Default.People = (String)People.CurrentItem;
+            Settings.Default.Color = (String)Color.CurrentItem;
         }
     }
 }

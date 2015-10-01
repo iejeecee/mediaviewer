@@ -27,6 +27,7 @@ using MediaViewer.Model.Media.Base;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.UserControls.Layout;
 using MediaViewer.Model.Global.Events;
+using MediaViewer.Properties;
 
 namespace MediaViewer.MetaData
 {
@@ -73,7 +74,7 @@ namespace MediaViewer.MetaData
 
         IEventAggregator EventAggregator { get; set; }
 
-        public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings, IEventAggregator eventAggregator)
+        public MetaDataViewModel(MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {            
             //Items = new ObservableCollection<MediaFileItem>();
             itemsLock = new Object();
@@ -106,7 +107,7 @@ namespace MediaViewer.MetaData
             WriteMetaDataCommand = new AsyncCommand(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
-                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(settings, mediaFileWatcher, EventAggregator);
+                MetaDataUpdateViewModel vm = new MetaDataUpdateViewModel(mediaFileWatcher, EventAggregator);
                 metaDataUpdateView.DataContext = vm;
                 metaDataUpdateView.Show();             
                 await vm.writeMetaDataAsync(new MetaDataUpdateViewModelAsyncState(this));
@@ -134,7 +135,7 @@ namespace MediaViewer.MetaData
                 {
                     vm.SelectedItems = new List<MediaFileItem>(Items);
                 }
-                vm.PathHistory = settings.MetaDataUpdateDirectoryHistory;
+                vm.PathHistory = Settings.Default.MetaDataUpdateDirectoryHistory;
               
                 if (directoryPicker.ShowDialog() == true)
                 {                    
@@ -241,11 +242,11 @@ namespace MediaViewer.MetaData
 
             mediaFileWatcher.MediaFileState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
           
-            FilenameHistory = settings.FilenameHistory;           
+            FilenameHistory = Settings.Default.FilenameHistory;
 
-            MovePathHistory = settings.MetaDataUpdateDirectoryHistory;
+            MovePathHistory = Settings.Default.MetaDataUpdateDirectoryHistory;
 
-            FavoriteLocations = settings.FavoriteLocations;
+            FavoriteLocations = Settings.Default.FavoriteLocations;
         
         }
 

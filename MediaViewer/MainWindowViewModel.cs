@@ -18,20 +18,13 @@ using MediaViewer.TagEditor;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Properties;
 
 namespace MediaViewer
 {
     class MainWindowViewModel : BindableBase
     {
-           
-        protected 
-
-        AppSettings Settings
-        {
-            get;
-            set;
-        }
-
+                        
         string currentImageLocation;
 
         public string CurrentImageLocation
@@ -64,10 +57,9 @@ namespace MediaViewer
             }
         }
 
-        public MainWindowViewModel(AppSettings settings)
+        public MainWindowViewModel()
         {
-            Settings = settings;
-
+           
             WindowTitle = "MediaViewer";
 
             // recieve messages requesting the display of media items
@@ -119,10 +111,9 @@ namespace MediaViewer
 
             ClearHistoryCommand = new Command(() =>
                 {
-
                     if (MessageBox.Show("Clear all history?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
                     {
-                        Settings.clearHistory();
+                        Settings.Default.Reset();
                     }
 
                 });

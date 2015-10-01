@@ -1,6 +1,6 @@
 ﻿using MediaViewer.DirectoryPicker;
 using MediaViewer.Model.Settings;
-using MediaViewer.Infrastructure.Global.Commands;
+using MediaViewer.Model.Global.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Mvvm;
@@ -11,6 +11,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MediaViewer.Properties;
 
 namespace MediaViewer.VideoPanel
 {
@@ -18,9 +19,7 @@ namespace MediaViewer.VideoPanel
     public class VideoSettingsViewModel : SettingsBase
     {  
         public Command DirectoryPickerCommand { get; set; }
-        
-        public VideoSettings Settings { get; set; }
-        
+                       
         public VideoSettingsViewModel() :
             base("Video", new Uri(typeof(VideoSettingsView).FullName, UriKind.Relative))
         {                       
@@ -36,7 +35,16 @@ namespace MediaViewer.VideoPanel
                     VideoScreenShotLocation = vm.SelectedPath;
                 }
             });
-                                            
+
+            VideoScreenShotLocationHistory = Settings.Default.VideoScreenShotLocationHistory;
+
+            if (String.IsNullOrEmpty(Settings.Default.VideoScreenShotLocation))
+            {
+                Settings.Default.VideoScreenShotLocation = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+            }
+
+            VideoScreenShotLocation = Settings.Default.VideoScreenShotLocation;
+            VideoScreenShotTimeOffset = Settings.Default.VideoScreenShotTimeOffset;              
         }
 
         int videoScreenShotTimeOffset;
@@ -61,23 +69,14 @@ namespace MediaViewer.VideoPanel
 
         public ObservableCollection<String> VideoScreenShotLocationHistory { get; set; }
 
-        protected override void OnLoad()
-        {
-            Settings = getSettings<VideoSettings>();
-            Settings.setDefaults();
-
-            VideoScreenShotLocationHistory = Settings.VideoScreenShotLocationHistory;
-            VideoScreenShotLocation = Settings.VideoScreenShotLocation;
-            VideoScreenShotTimeOffset = Settings.VideoScreenShotTimeOffset;
-        }
-
+       
         protected override void OnSave() 
         {
-            Settings.VideoScreenShotLocation = VideoScreenShotLocation;
-            Settings.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
-            Settings.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;
+            Settings.Default.VideoScreenShotLocation = VideoScreenShotLocation;
+            Settings.Default.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
+            Settings.Default.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;
 
-            saveSettings(Settings);
+            
         }
     }
 }

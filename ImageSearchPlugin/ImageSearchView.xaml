@@ -7,6 +7,7 @@
         xmlns:MediaGrid="clr-namespace:MediaViewer.UserControls.MediaGrid;assembly=MediaViewer"
         xmlns:GeoTagEditor="clr-namespace:MediaViewer.UserControls.GeoTagEditor;assembly=MediaViewer"
         xmlns:SortComboBox="clr-namespace:MediaViewer.UserControls.SortComboBox;assembly=MediaViewer"
+        xmlns:properties="clr-namespace:ImageSearchPlugin.Properties"
         Title="Online Image Search" Icon="pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search2.ico" Height="550" Width="900">
     <Window.Resources>
         <ResourceDictionary>
@@ -16,6 +17,7 @@
             <Style TargetType="{x:Type Label}" BasedOn="{StaticResource {x:Type Label}}">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
             </Style>
+            <properties:Settings x:Key="Settings"/>
         </ResourceDictionary>
     </Window.Resources>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">

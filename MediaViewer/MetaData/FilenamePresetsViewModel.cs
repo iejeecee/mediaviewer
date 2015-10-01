@@ -11,28 +11,18 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Properties;
 
 namespace MediaViewer.MetaData
 {
     class FilenamePresetsViewModel : CloseableBindableBase
     {
-      
-        AppSettings Settings
+
+        public FilenamePresetsViewModel()
         {
-            get;
-            set;
-        }
-
-        
-
-        public FilenamePresetsViewModel(AppSettings settings)
-        {
-
-            Settings = settings;
-
             NewPreset = "";
-           
-            filenamePresets = Settings.FilenamePresets;
+        
+            filenamePresets = Settings.Default.FilenamePresets;
 
             AddNewPresetCommand = new Command(new Action(() =>
             {

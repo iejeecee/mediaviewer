@@ -11,21 +11,22 @@ using System.Threading.Tasks;
 
 namespace YoutubePlugin.Item
 {
-    class YoutubeChannelItem : YoutubeItem
+    public class YoutubeChannelItem : YoutubeItem
     {
-        public YoutubeChannelItem(SearchResult result, int relevance) :
-            base(result.Snippet.Title, result, relevance)
+        
+        public YoutubeChannelItem(SearchResult item, int relevance) :
+            base(item.Snippet.Title, item, relevance)
         {
-            Info = result;
+            Info = item;
 
-            ChannelTitle = result.Snippet.ChannelTitle;
-            ChannelId = result.Snippet.ChannelId;
+            ChannelTitle = item.Snippet.ChannelTitle;
+            ChannelId = item.Snippet.ChannelId;
 
-            ResourceId = result.Id;
-            Thumbnail = result.Snippet.Thumbnails;
+            ResourceId = item.Id;
+            Thumbnail = item.Snippet.Thumbnails;
             
-            PublishedAt = result.Snippet.PublishedAt;
-            Description = result.Snippet.Description;
+            PublishedAt = item.Snippet.PublishedAt;
+            Description = item.Snippet.Description;
           
         }
         

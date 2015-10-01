@@ -18,26 +18,19 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Properties;
 
 namespace MediaViewer.Torrent
 {
     public class TorrentCreationProgressViewModel : CancellableOperationProgressBase
-    {               
-
-        AppSettings Settings
-        {
-            get;
-            set;
-        }
- 
+    {                      
         String createdBy;
         String encoding;
         int pieceLength;
 
-        public TorrentCreationProgressViewModel(AppSettings settings)
+        public TorrentCreationProgressViewModel()
         {
-            Settings = settings;
-
+           
             WindowTitle = "Torrent File";
             WindowIcon = "pack://application:,,,/Resources/Icons/torrent2.ico";
 
@@ -60,7 +53,7 @@ namespace MediaViewer.Torrent
 
                     App.Current.Dispatcher.BeginInvoke(new Action(() =>
                     {
-                        MiscUtils.insertIntoHistoryCollection(Settings.TorrentAnnounceHistory, vm.AnnounceURL);
+                        MiscUtils.insertIntoHistoryCollection(Settings.Default.TorrentAnnounceHistory, vm.AnnounceURL);
                     }));
                     
                 }

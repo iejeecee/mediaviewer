@@ -32,7 +32,7 @@ namespace MediaViewer.Torrent
         public TorrentCreationView()
         {
             InitializeComponent();
-            DataContext = ViewModel = new TorrentCreationViewModel(AppSettings.Instance);
+            DataContext = ViewModel = new TorrentCreationViewModel();
 
             ViewModel.ClosingRequest += ViewModel_ClosingRequest;
         }

@@ -1,4 +1,4 @@
-﻿using MediaViewer.Infrastructure.Global.Commands;
+﻿using MediaViewer.Model.Global.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Mvvm;
@@ -39,16 +39,7 @@ namespace MediaViewer.Model.Settings
         {
             OnLoad();
         }
-
-        protected void saveSettings<T>(T settings) {
-
-            AppSettings.saveSettings(Title, settings);
-        }
-
-        protected T getSettings<T>() where T : new() {
-
-            return(AppSettings.getSettings<T>(Title));
-        }
+     
 
         String title;
 

@@ -28,44 +28,32 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <Label  Grid.Row="0" Content="Defaults" Grid.Column="1" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black"/>
-        <Label Grid.Row="1" Content="Size" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding Size}" Margin="0,0,5,5"/>
-        <Label Grid.Row="2" Content="Type" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="2" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding Type}" Margin="0,0,5,5"/>
-        <Label Grid.Row="3" Content="Layout" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="3" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding Layout}" Margin="0,0,5,5"/>
-        <Label Grid.Row="4" Content="Color" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="4" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding Color}" Margin="0,0,5,5"/>
-        <Label Grid.Row="5" Content="People" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="5" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding People}" Margin="0,0,5,5"/>
-        <Label Grid.Row="6" Content="SafeSearch" VerticalAlignment="Center" Margin="0,0,0,5"/>
-        <ComboBox Grid.Row="6" Grid.Column="2" HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding SafeSearch}" Margin="0,0,5,5"/>
-        <Label  Grid.Row="7" Grid.Column="1" Content="Download Path" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black"/>
-        <StackPanel Grid.Row="8" Grid.Column="1" HorizontalAlignment="Stretch">
-            <RadioButton GroupName="One" IsChecked="{Binding IsCurrentDownloadPath}" Margin="0,0,0,5">Current Browse Path</RadioButton>
-            <RadioButton GroupName="One" IsChecked="{Binding IsAskDownloadPath}" Margin="0,0,0,5">Ask</RadioButton>
-            <RadioButton GroupName="One" IsChecked="{Binding IsFixedDownloadPath}" Margin="0,0,5,5">
-                <Grid HorizontalAlignment="Stretch">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <ComboBox Grid.Column="0" x:Name="pathTextBox"  HorizontalAlignment="Stretch" VerticalAlignment="Center"                          
-			            Text="{Binding FixedDownloadPath, Mode=TwoWay}"
-			            ItemsSource="{Binding FixedDownloadPathHistory}"
-			            ToolTip="{Binding FixedDownloadPath}"
-			            IsReadOnly="True" IsEditable="True"
-			            />
-                    <Button Grid.Row="3" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
-			            HorizontalAlignment="Right"					
-			            Command="{Binding DownloadDirectoryCommand}"
-			            ToolTip="Change Directory">
-                        <Image Source="pack://application:,,,/MediaViewer;component/Resources/Icons/folder_open.ico"/>
-                    </Button>
-                </Grid>
-            </RadioButton>           
-        </StackPanel>
+        </Grid.RowDefinitions>        
+        <Label  Grid.Row="0" Grid.Column="1" Content="Download Path" HorizontalAlignment="Left" FontWeight="Bold" Foreground="Black"/>
+        <Label Grid.Row="1" Grid.Column="0" Content="Browse Path"/>
+        <RadioButton Grid.Row="1" Grid.Column="1" IsChecked="{Binding IsCurrentDownloadPath}" GroupName="One" VerticalAlignment="Center"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="Ask"/>
+        <RadioButton Grid.Row="2" Grid.Column="1" IsChecked="{Binding IsAskDownloadPath}" GroupName="One" VerticalAlignment="Center"/>       
+        <Label Grid.Row="3" Grid.Column="0" Content="Location"/>
+        <RadioButton  Grid.Row="3" Grid.Column="1" GroupName="One" IsChecked="{Binding IsFixedDownloadPath}" VerticalAlignment="Center">
+            <Grid HorizontalAlignment="Stretch">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox Grid.Column="0" x:Name="pathTextBox"  HorizontalAlignment="Stretch" VerticalAlignment="Center"                          
+			        Text="{Binding FixedDownloadPath, Mode=TwoWay}"
+			        ItemsSource="{Binding FixedDownloadPathHistory}"
+			        ToolTip="{Binding FixedDownloadPath}"
+			        IsReadOnly="True" IsEditable="True"
+			        />
+                <Button Grid.Row="3" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
+			        HorizontalAlignment="Right"					
+			        Command="{Binding DownloadDirectoryCommand}"
+			        ToolTip="Change Directory">
+                    <Image Source="pack://application:,,,/MediaViewer;component/Resources/Icons/folder_open.ico"/>
+                </Button>
+            </Grid>
+        </RadioButton>             
     </Grid>
 </UserControl>

@@ -159,10 +159,6 @@
       <HintPath>..\packages\CommonServiceLocator.1.2\lib\portable-windows8+net40+sl5+windowsphone8\Microsoft.Practices.ServiceLocation.dll</HintPath>
     </Reference>
     <Reference Include="PresentationFramework.Classic" />
-    <Reference Include="SettingsProviderNet, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SettingsProviderNet.2.1.1\lib\net40\SettingsProviderNet.dll</HintPath>
-    </Reference>
     <Reference Include="SharpDX, Version=2.6.3.0, Culture=neutral, PublicKeyToken=b4dcf0f35e5521f1, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.dll</HintPath>
@@ -233,6 +229,7 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="Converters\IsEqualConverter.cs" />
     <Compile Include="Converters\RemoveNewlinesConverter.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="Filter\TagItemList.cs" />
     <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">
       <DependentUpon>GeotagFileBrowserView.xaml</DependentUpon>
@@ -396,7 +393,6 @@
     <Compile Include="Model\Concurrency\PriorityScheduler.cs" />
     <Compile Include="Model\Mvvm\CloseableBindableBase.cs" />
     <Compile Include="Model\Mvvm\Command.cs" />
-    <Compile Include="Model\Settings\AppSettings.cs" />
     <Compile Include="Model\Settings\SettingsBase.cs" />
     <Compile Include="Model\Settings\SettingsNavigationItemView.xaml.cs">
       <DependentUpon>SettingsNavigationItemView.xaml</DependentUpon>
@@ -659,7 +655,6 @@
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VideoPanel\VideoSettings.cs" />
     <Compile Include="VideoPanel\VideoSettingsView.xaml.cs">
       <DependentUpon>VideoSettingsView.xaml</DependentUpon>
     </Compile>

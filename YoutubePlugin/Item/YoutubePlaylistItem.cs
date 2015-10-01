@@ -13,36 +13,37 @@ namespace YoutubePlugin.Item
     {
         public String PlaylistId { get; protected set; }
         
-        public YoutubePlaylistItem(Playlist result, int relevance)
-            : base(result.Snippet.Title, result, relevance)
+        public YoutubePlaylistItem(Playlist item, int relevance)
+            : base(item.Snippet.Title, item, relevance)
         {
-            ChannelTitle = result.Snippet.ChannelTitle;
-            ChannelId = result.Snippet.ChannelId;
+            
+            ChannelTitle = item.Snippet.ChannelTitle;
+            ChannelId = item.Snippet.ChannelId;
 
             ResourceId = new ResourceId();       
             ResourceId.Kind = "youtube#playlist";
-            ResourceId.PlaylistId = result.Id; 
+            ResourceId.PlaylistId = item.Id; 
             
-            Thumbnail = result.Snippet.Thumbnails; 
+            Thumbnail = item.Snippet.Thumbnails; 
         
-            PublishedAt = result.Snippet.PublishedAt;
-            Description = result.Snippet.Description;
-            PlaylistId = result.Id;
+            PublishedAt = item.Snippet.PublishedAt;
+            Description = item.Snippet.Description;
+            PlaylistId = item.Id;
         }
 
 
-        public YoutubePlaylistItem(SearchResult result, int relevance)
-            : base(result.Snippet.Title, result, relevance)
+        public YoutubePlaylistItem(SearchResult item, int relevance)
+            : base(item.Snippet.Title, item, relevance)
         {
-            ChannelTitle = result.Snippet.ChannelTitle;
-            ChannelId = result.Snippet.ChannelId;
+            ChannelTitle = item.Snippet.ChannelTitle;
+            ChannelId = item.Snippet.ChannelId;
 
-            ResourceId = result.Id;         
-            Thumbnail = result.Snippet.Thumbnails; 
+            ResourceId = item.Id;         
+            Thumbnail = item.Snippet.Thumbnails; 
 
-            PlaylistId = result.Id.PlaylistId;  
-            PublishedAt = result.Snippet.PublishedAt;
-            Description = result.Snippet.Description;
+            PlaylistId = item.Id.PlaylistId;  
+            PublishedAt = item.Snippet.PublishedAt;
+            Description = item.Snippet.Description;
         }
 
         

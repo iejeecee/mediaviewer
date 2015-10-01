@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace YoutubePlugin.YoutubeChannelBrowser
 {
-    class YoutubeChannelPlaylistsNode : YoutubeNodeBase
-    {
+
+    class YoutubeChannelPlaylistsNode : YoutubeChannelNodeBase
+    {       
         public YoutubeChannelPlaylistsNode(String channelId) :
             base("pack://application:,,,/YoutubePlugin;component/Resources/Icons/playlist.ico")
         {

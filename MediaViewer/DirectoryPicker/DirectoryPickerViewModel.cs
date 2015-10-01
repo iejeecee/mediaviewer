@@ -2,6 +2,7 @@
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -36,7 +37,7 @@ namespace MediaViewer.DirectoryPicker
 
             InfoString = "";
 
-            FavoriteLocations = AppSettings.Instance.FavoriteLocations;
+            FavoriteLocations = Settings.Default.FavoriteLocations;
         }
 
         Command okCommand;

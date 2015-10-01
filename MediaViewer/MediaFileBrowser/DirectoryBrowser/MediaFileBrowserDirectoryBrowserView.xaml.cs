@@ -31,7 +31,7 @@ namespace MediaViewer.MediaFileBrowser.DirectoryBrowser
         public MediaFileBrowserDirectoryBrowserView(IEventAggregator eventAggregator)
         {
             InitializeComponent();
-            DataContext = new MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher.Instance, eventAggregator,AppSettings.Instance);
+            DataContext = new MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher.Instance, eventAggregator);
 
             TabName = "Browse";
             TabIsSelected = true;

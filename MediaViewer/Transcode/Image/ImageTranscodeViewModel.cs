@@ -4,6 +4,7 @@ using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ namespace MediaViewer.Transcode.Image
         List<String> outFormats = new List<string>() { "JPG", "PNG", "BMP", "TIFF", "GIF" };
         
 
-        public ImageTranscodeViewModel(AppSettings settings)
+        public ImageTranscodeViewModel()
         {
             OkCommand = new Command(async () =>
             {
@@ -46,7 +47,7 @@ namespace MediaViewer.Transcode.Image
                 OnClosingRequest();
                 await task;
 
-                MiscUtils.insertIntoHistoryCollection(settings.ImageTranscodeOutputDirectoryHistory, OutputPath);
+                MiscUtils.insertIntoHistoryCollection(Settings.Default.ImageTranscodeOutputDirectoryHistory, OutputPath);
             });
 
 
@@ -75,7 +76,7 @@ namespace MediaViewer.Transcode.Image
 
             });
 
-            OutputPathHistory = settings.ImageTranscodeOutputDirectoryHistory;            
+            OutputPathHistory = Settings.Default.ImageTranscodeOutputDirectoryHistory;            
             OutputFormatCollectionView = new ListCollectionView(outFormats);
             JpegRotationCollectionView = new ListCollectionView(Enum.GetNames(typeof(Rotation)));
             PngInterlacingCollectionView = new ListCollectionView(Enum.GetNames(typeof(PngInterlaceOption)));

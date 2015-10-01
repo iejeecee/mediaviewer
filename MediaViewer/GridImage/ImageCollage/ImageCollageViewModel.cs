@@ -6,6 +6,7 @@ using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -26,9 +27,7 @@ namespace MediaViewer.GridImage.ImageCollage
 {
 
     public class ImageCollageViewModel : CloseableBindableBase
-    {
-        AppSettings Settings { get; set; }
-
+    {        
         ICollection<MediaFileItem> media;
 
         public ICollection<MediaFileItem> Media
@@ -37,13 +36,10 @@ namespace MediaViewer.GridImage.ImageCollage
             set { media = value; }
         }
 
-        public ImageCollageViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
-        {
-            Settings = settings;
-           
+        public ImageCollageViewModel(MediaFileWatcher mediaFileWatcher)
+        {                      
             setDefaults(mediaFileWatcher);
            
-
             directoryPickerCommand = new Command(new Action(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
@@ -91,8 +87,9 @@ namespace MediaViewer.GridImage.ImageCollage
             MaxWidth = 1280;
             IsMaxGridHeightEnabled = true;
             MaxGridHeight = 200;            
-            OutputPath = mediaFileWatcher.Path;
-            OutputPathHistory = Settings.ImageCollageOutputDirectoryHistory;                 
+            OutputPath = mediaFileWatcher.Path;           
+            OutputPathHistory = Settings.Default.ImageCollageOutputDirectoryHistory;   
+              
             IsCommentEnabled = false;
             FontSize = 20;
             JpegQuality = 80;

@@ -124,11 +124,13 @@
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Xml.Serialization" />
     <Reference Include="WindowsBase" />
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Settings.cs" />
     <Page Include="ImageSearchNavigationItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -149,7 +151,6 @@
       <DependentUpon>ImageSearchNavigationItemView.xaml</DependentUpon>
     </Compile>
     <Compile Include="ImageSearchQuery.cs" />
-    <Compile Include="ImageSearchSettings.cs" />
     <Compile Include="ImageSearchSettingsView.xaml.cs">
       <DependentUpon>ImageSearchSettingsView.xaml</DependentUpon>
     </Compile>

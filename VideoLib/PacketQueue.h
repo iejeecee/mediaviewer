@@ -9,14 +9,12 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
-	public delegate void BufferingEvent();
-
 	public ref class PacketQueue 
 	{
 	public:
 
-		event BufferingEvent ^StartBuffering;
-		event BufferingEvent ^EndBuffering;
+		event EventHandler ^StartBuffering;
+		event EventHandler ^AddedPacket;
 
 		enum class PacketQueueState {			
 			OPEN,					// items can be added and removed from the queue
@@ -49,13 +47,10 @@ namespace VideoLib {
 		bool bufferWhenEmpty;
 		bool isBufferFull;
 		
-
 		bool isFinished;
 
 	public:
 	
-		static int NrPacketsBufferFilled = 10;
-
 		property bool IsFinished
 		{
 			bool get() {
@@ -115,8 +110,7 @@ namespace VideoLib {
 			queue = gcnew Queue<Packet ^>();
 			state = PacketQueueState::OPEN;
 					
-			isFinished = false;
-					
+			isFinished = true;					
 		}
 
 	
@@ -181,6 +175,7 @@ namespace VideoLib {
 						case PacketQueueState::CLOSE_END:
 							{				
 								//IsBufferFull = true;
+								IsFinished = true;
 								packet = nullptr;																							
 								return(GetResult::CLOSED);								
 							}										
@@ -196,7 +191,7 @@ namespace VideoLib {
 							{
 								if(queue->Count == 0) 
 								{			
-									StartBuffering();
+									StartBuffering(this, EventArgs::Empty);
 									
 									if(State == PacketQueueState::PAUSE_START) {
 
@@ -248,6 +243,10 @@ namespace VideoLib {
 							{
 
 							}
+						case PacketQueueState::BLOCK_END:
+							{
+
+							}
 						case PacketQueueState::CLOSE_END:
 							{								
 								return;					
@@ -263,11 +262,8 @@ namespace VideoLib {
 		
 				queue->Enqueue(packet);
 
-				if(queue->Count == NrPacketsBufferFilled) {
-				
-					EndBuffering();
-				} 
-
+				AddedPacket(this,EventArgs::Empty);
+												 
 				if(queue->Count == 1) {
 
 					IsFinished = false;

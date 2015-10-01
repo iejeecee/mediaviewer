@@ -28,7 +28,7 @@ namespace MediaViewer.GridImage.ImageCollage
         {
             InitializeComponent();
 
-            ViewModel = new ImageCollageViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
+            ViewModel = new ImageCollageViewModel(MediaFileWatcher.Instance);
 
             ViewModel.ClosingRequest += vm_ClosingRequest;
 

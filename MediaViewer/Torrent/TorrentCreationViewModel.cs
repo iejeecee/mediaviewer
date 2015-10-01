@@ -17,29 +17,23 @@ using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Utils;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.Properties;
 
 namespace MediaViewer.Torrent
 {
     public class TorrentCreationViewModel : CloseableBindableBase
     {
    
-        AppSettings Settings
+        public TorrentCreationViewModel()
         {
-            get;
-            set;
-        }
-
-    
-        public TorrentCreationViewModel(AppSettings settings)
-        {
-            Settings = settings;
-
+            
             IsPrivate = false;                     
             IsCommentEnabled = false;
 
             OutputPathHistory = new ObservableCollection<string>();
             InputPathHistory = new ObservableCollection<string>();
-            AnnounceURLHistory = settings.TorrentAnnounceHistory;
+
+            AnnounceURLHistory = Settings.Default.TorrentAnnounceHistory;
             if (AnnounceURLHistory.Count > 0)
             {
                 AnnounceURL = AnnounceURLHistory[0];
@@ -116,7 +110,7 @@ namespace MediaViewer.Torrent
             OkCommand = new Command(async () =>
                 {
                     CancellableOperationProgressView progress = new CancellableOperationProgressView();
-                    TorrentCreationProgressViewModel vm = new TorrentCreationProgressViewModel(Settings);
+                    TorrentCreationProgressViewModel vm = new TorrentCreationProgressViewModel();
                     progress.DataContext = vm;
                     Task task = vm.createTorrentAsync(this);
                     progress.Show();                    

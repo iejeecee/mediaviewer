@@ -43,7 +43,7 @@ namespace MediaViewer.MetaData
         {
             InitializeComponent();
 
-            MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, AppSettings.Instance, eventAggregator);
+            MetaDataViewModel = new MetaDataViewModel(MediaFileWatcher.Instance, eventAggregator);
                                                 
             DataContext = MetaDataViewModel;
 

@@ -6,6 +6,7 @@ using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -36,12 +37,9 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             get { return media; }
             set { media = value; }
         }
-
-        AppSettings Settings { get; set; }
-
-        public VideoPreviewImageViewModel(MediaFileWatcher mediaFileWatcher, AppSettings settings)
-        {
-            Settings = settings;
+        
+        public VideoPreviewImageViewModel(MediaFileWatcher mediaFileWatcher)
+        {            
             setDefaults(mediaFileWatcher);
             
             directoryPickerCommand = new Command(new Action(() =>
@@ -93,7 +91,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             IsCaptureIntervalSecondsEnabled = true;
             CaptureIntervalSeconds = 25;
             OutputPath = mediaFileWatcher.Path;
-            OutputPathHistory = Settings.VideoPreviewOutputDirectoryHistory;  
+            OutputPathHistory = Settings.Default.VideoPreviewOutputDirectoryHistory;  
             IsAddTags = true;
             IsAddTimestamps = true;
             IsCommentEnabled = false;

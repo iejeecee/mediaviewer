@@ -20,16 +20,16 @@ using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Mvvm;
 using Microsoft.Practices.Prism.Commands;
-using MediaViewer.Infrastructure.Global.Commands;
+using MediaViewer.Model.Global.Commands;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Concurrency;
 using MediaViewer.Model.metadata.Metadata;
+using MediaViewer.Properties;
 
 namespace MediaViewer.MetaData
 {
     class MetaDataUpdateViewModel : CancellableOperationProgressBase
-    {
-        AppSettings Settings { get; set; }            
+    {                  
         MediaFileState MediaFileState {get;set;}       
         IEventAggregator EventAggregator { get; set; }
 
@@ -53,9 +53,8 @@ namespace MediaViewer.MetaData
         public const string dateMarker = "date:";
         public const string defaultDateFormat = "g";
      
-        public MetaDataUpdateViewModel(AppSettings settings, MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
-        {
-            Settings = settings;
+        public MetaDataUpdateViewModel(MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
+        {            
             MediaFileState = mediaFileWatcher.MediaFileState;
             EventAggregator = eventAggregator;
 
@@ -64,7 +63,8 @@ namespace MediaViewer.MetaData
 
             CancelCommand.IsExecutable = true;
             OkCommand.IsExecutable = false;
-                    
+
+            
         }
 
         public async Task writeMetaDataAsync(MetaDataUpdateViewModelAsyncState state)
@@ -319,14 +319,14 @@ namespace MediaViewer.MetaData
             {
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    MiscUtils.insertIntoHistoryCollection(Settings.FilenameHistory, state.Filename);
+                    MiscUtils.insertIntoHistoryCollection(Settings.Default.FilenameHistory, state.Filename);
                 }));
 
             } else if (!oldFilename.Equals(newFilename))
             {
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
-                    MiscUtils.insertIntoHistoryCollection(Settings.FilenameHistory, newFilename);
+                    MiscUtils.insertIntoHistoryCollection(Settings.Default.FilenameHistory, newFilename);
                 }));
             }
 
@@ -335,7 +335,7 @@ namespace MediaViewer.MetaData
                 App.Current.Dispatcher.BeginInvoke(new Action(() =>
                 {
 
-                    MiscUtils.insertIntoHistoryCollection(Settings.MetaDataUpdateDirectoryHistory, newPath);
+                    MiscUtils.insertIntoHistoryCollection(Settings.Default.MetaDataUpdateDirectoryHistory, newPath);
                 }));
             }
 

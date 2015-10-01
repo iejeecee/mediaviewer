@@ -198,7 +198,7 @@ namespace MediaViewer.MediaFileBrowser
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);            
             imageMediaStackPanelViewModel.IsVisible = true;
 
-            VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
+            VideoViewModel = new VideoPanel.VideoViewModel(EventAggregator);
 
             videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);            
             videoMediaStackPanelViewModel.IsVisible = true;

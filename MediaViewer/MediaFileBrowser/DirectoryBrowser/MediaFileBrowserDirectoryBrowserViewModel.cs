@@ -3,6 +3,7 @@ using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
@@ -17,28 +18,23 @@ using System.Windows;
 namespace MediaViewer.MediaFileBrowser.DirectoryBrowser
 {
     class MediaFileBrowserDirectoryBrowserViewModel : BindableBase
-    {
-
-        AppSettings Settings { get; set; }
+    {       
         MediaFileWatcher MediaFileWatcher { get; set; }
         IEventAggregator EventAggregator { get; set; }
 
-        public MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator,AppSettings settings)
+        public MediaFileBrowserDirectoryBrowserViewModel(MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {
 
-            MediaFileWatcher = mediaFileWatcher;
-            Settings = settings;
+            MediaFileWatcher = mediaFileWatcher;       
             EventAggregator = eventAggregator;
-
-            BrowsePathHistory = Settings.BrowsePathHistory;
-            FavoriteLocations = Settings.FavoriteLocations;
+            BrowsePathHistory = Settings.Default.BrowsePathHistory;
+            FavoriteLocations = Settings.Default.FavoriteLocations;
 
             EventAggregator.GetEvent<MediaBrowserPathChangedEvent>().Subscribe((location) =>
             {
                 BrowsePath = location;
             });
-            
-            
+                        
         }
 
         /*private void directoryBrowser_Renamed(System.Object sender, System.IO.RenamedEventArgs e)

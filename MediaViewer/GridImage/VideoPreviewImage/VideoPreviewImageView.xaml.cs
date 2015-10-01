@@ -34,7 +34,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
         {
             InitializeComponent();
 
-            DataContext = viewModel = new VideoPreviewImageViewModel(MediaFileWatcher.Instance, AppSettings.Instance);
+            DataContext = viewModel = new VideoPreviewImageViewModel(MediaFileWatcher.Instance);
 
             viewModel.ClosingRequest += new EventHandler<CloseableBindableBase.DialogEventArgs>((s, e) =>
                 {

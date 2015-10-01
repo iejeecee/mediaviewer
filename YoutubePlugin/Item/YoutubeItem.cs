@@ -19,7 +19,7 @@ using System.Windows.Media.Imaging;
 
 namespace YoutubePlugin.Item
 {
-    abstract class YoutubeItem : MediaStreamedItem
+    public abstract class YoutubeItem : MediaStreamedItem
     {
         public int Relevance { get; protected set; }
         public IDirectResponseSchema Info { get; set; }

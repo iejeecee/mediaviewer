@@ -17,7 +17,7 @@ namespace VideoPlayerControl
     {        
 
         public event EventHandler VideoOpened;  
-        public event EventHandler IsBufferingChanged;
+        public event EventHandler<bool> IsBufferingChanged;
         public event EventHandler VideoClosed;
         public event EventHandler<VideoState> StateChanged;
         public event EventHandler<int> PositionSecondsChanged;
@@ -44,26 +44,7 @@ namespace VideoPlayerControl
 
         int NrFramesRendered { get; set; }
         int NrFramesDropped { get; set; }
-
-        bool isBuffering;
-        public bool IsBuffering
-        {
-            get { return isBuffering; }
-            private set
-            {
-
-                if (isBuffering != value)
-                {
-                    isBuffering = value;
-                    if (IsBufferingChanged != null)
-                    {
-                        IsBufferingChanged(this, EventArgs.Empty);
-                    }
-                }
-
-            }
-        }
-        
+               
         VideoState videoState;
 
         public VideoState VideoState
@@ -89,9 +70,7 @@ namespace VideoPlayerControl
 
         // we use about AUDIO_DIFF_AVG_NB A-V differences to make the average 
         const int AUDIO_DIFF_AVG_NB = 5;//20;
-      
-        double oldVolume;
-
+              
         VideoLib.VideoPlayer videoDecoder;
         AudioPlayer audioPlayer;
         VideoRender videoRender;
@@ -238,6 +217,17 @@ namespace VideoPlayerControl
             {
                 owner.BeginInvoke(new Func<Task>(async () => await close()));                
             });
+
+            videoDecoder.FrameQueue.IsBufferingChanged += new EventHandler((s, e) =>
+                {
+                    owner.BeginInvoke(new Action(() =>
+                    {
+                        if (IsBufferingChanged != null)
+                        {
+                            IsBufferingChanged(this, videoDecoder.FrameQueue.IsBuffering);
+                        }
+                    }));
+                });
            
             audioPlayer = new AudioPlayer(owner);
             videoRender = new VideoRender(owner);
@@ -262,12 +252,8 @@ namespace VideoPlayerControl
 
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
-            
-            oldVolume = 0;
-
-            interruptIOTokenSource = new CancellationTokenSource();
-
-            isBuffering = false;
+                     
+            interruptIOTokenSource = new CancellationTokenSource();          
         }
 
         public void createScreenShot(String screenShotName, int positionOffset)
@@ -363,14 +349,12 @@ restartvideo:
                 }
 
                 actualDelay = synchronizeVideo(videoPts);
-
-                updateObservableVariables();
-
+       
                 NrFramesRendered++;   
-
             }
-			
-                  
+
+            updateObservableVariables(); 
+
             if (actualDelay < 0.010)
             {
                 // delay is too small skip next frame
@@ -380,9 +364,7 @@ restartvideo:
                 goto restartvideo;
 
             }
-
-            updateObservableVariables();         
-
+                    
             // start timer with delay for next frame
             videoRefreshTimer.Interval = (int)(actualDelay * 1000 + 0.5);
             videoRefreshTimer.start();
@@ -394,32 +376,29 @@ restartvideo:
             PositionSeconds = (int)Math.Floor(getVideoClock());
             VideoClock = getVideoClock();
             AudioClock = audioPlayer.getAudioClock();
-                    
-            //if (NrFramesRendered % 30 == 0)
-            //{
-               
-                StringBuilder builder = new StringBuilder();
+                                              
+            StringBuilder builder = new StringBuilder();
 
-                builder.AppendLine("State: " + VideoState.ToString());
-                builder.Append("Free Packets (" + videoDecoder.FrameQueue.FreePacketQueueState.ToString() + ") ");                                            
-                builder.AppendLine(": " + videoDecoder.FrameQueue.FreePacketsInQueue + "/" + videoDecoder.FrameQueue.MaxFreePackets);
+            builder.AppendLine("State: " + VideoState.ToString());
+            builder.Append("Free Packets (" + videoDecoder.FrameQueue.FreePacketQueueState.ToString() + ") ");                                            
+            builder.AppendLine(": " + videoDecoder.FrameQueue.FreePacketsInQueue + "/" + videoDecoder.FrameQueue.MaxFreePackets);
 
-                builder.Append("Video Packets (" + videoDecoder.FrameQueue.VideoPacketQueueState.ToString() + ") ");
-                builder.AppendLine(": " + videoDecoder.FrameQueue.VideoPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxVideoPackets);
+            builder.Append("Video Packets (" + videoDecoder.FrameQueue.VideoPacketQueueState.ToString() + ") ");
+            builder.AppendLine(": " + videoDecoder.FrameQueue.VideoPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxVideoPackets);
                 
-                builder.Append("Audio Packets (" + videoDecoder.FrameQueue.AudioPacketQueueState.ToString() + ") ");               
-                builder.AppendLine(": " + videoDecoder.FrameQueue.AudioPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxAudioPackets);
-                builder.AppendLine("Audio State: " + audioPlayer.Status.ToString());
-                builder.AppendLine("Buffering: " + videoDecoder.FrameQueue.IsBuffering.ToString());
-                builder.AppendLine("Video Packet Errors: " + videoDecoder.FrameQueue.NrVideoPacketReadErrors.ToString());               
-                builder.AppendLine("Audio Packet Errors: " + videoDecoder.FrameQueue.NrAudioPacketReadErrors.ToString());               
+            builder.Append("Audio Packets (" + videoDecoder.FrameQueue.AudioPacketQueueState.ToString() + ") ");               
+            builder.AppendLine(": " + videoDecoder.FrameQueue.AudioPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxAudioPackets);
+            builder.AppendLine("Audio State: " + audioPlayer.Status.ToString());
+            builder.AppendLine("Buffering: " + videoDecoder.FrameQueue.IsBuffering.ToString());
+            builder.AppendLine("Video Packet Errors: " + videoDecoder.FrameQueue.NrVideoPacketReadErrors.ToString());               
+            builder.AppendLine("Audio Packet Errors: " + videoDecoder.FrameQueue.NrAudioPacketReadErrors.ToString());               
 
-                builder.AppendLine("Nr Frames Dropped: " + NrFramesDropped + "/" + NrFramesRendered);
-                builder.AppendLine("Video Clock: " + VideoClock.ToString("#.####"));
-                builder.AppendLine("Audio Clock: " + AudioClock.ToString("#.####"));
+            builder.AppendLine("Nr Frames Dropped: " + NrFramesDropped + "/" + NrFramesRendered);
+            builder.AppendLine("Video Clock: " + VideoClock.ToString("#.####"));
+            builder.AppendLine("Audio Clock: " + AudioClock.ToString("#.####"));
 
-                videoRender.InfoText = builder.ToString();
-            //}
+            videoRender.InfoText = builder.ToString();
+            
         }
   
         double synchronizeVideo(double videoPts)
@@ -761,28 +740,7 @@ restartvideo:
                 Log.Info(message);
             }
         }
-
-       
-        void demuxPackets(int i, CancellationToken token)
-        {
-            //audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
-
-            VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
-           
-            do
-            {
-                if (i == -1)
-                {
-                    result = videoDecoder.demuxPacketInterleaved();
-                }
-                else
-                {
-                    result = videoDecoder.demuxPacketFromStream(i);
-                }
-                             
-            } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
-        }
-        
+                       
         double getVideoClock()
         {        
             if (videoState == VideoState.PAUSED || videoDecoder.FrameQueue.IsBuffering)
@@ -801,16 +759,13 @@ restartvideo:
             if (VideoState == VideoState.PAUSED ||
                 VideoState == VideoState.CLOSED)
             {
-
                 return;
             }
 
             VideoState = VideoState.PAUSED;
 
             videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PAUSE, FrameQueue.FrameQueueState.PAUSE, 
-                FrameQueue.FrameQueueState.PLAY);
-                            
-            
+                FrameQueue.FrameQueueState.PLAY);                                        
         }
 
         public void startPlay(bool singleFrame = false)
@@ -822,14 +777,12 @@ restartvideo:
             }
 
             audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
+
+          
              
             videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PLAY, FrameQueue.FrameQueueState.PLAY,
                 FrameQueue.FrameQueueState.PLAY);
-                                 
-            previousVideoPts = 0;
-            previousVideoDelay = 0.04;
-            audioDiffAvgCount = 0;
-
+                                             
             if (VideoState == VideoState.OPEN)
             {
                 startDemuxing();
@@ -872,7 +825,25 @@ restartvideo:
 
         }
 
-        public async Task seek(double positionSeconds)
+        void demuxPackets(int i, CancellationToken token)
+        {
+            VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
+
+            do
+            {
+                if (i == -1)
+                {
+                    result = videoDecoder.demuxPacketInterleaved();
+                }
+                else
+                {
+                    result = videoDecoder.demuxPacketFromStream(i);
+                }
+
+            } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
+        }
+
+        public void seek(double positionSeconds)
         {
             if (VideoState == VideoPlayerControl.VideoState.CLOSED)
             {
@@ -904,39 +875,19 @@ restartvideo:
             else if (VideoState == VideoPlayerControl.VideoState.PAUSED)
             {
                 // display the first new frame in paused mode
-                await displayNextFrame();
+                videoDecoder.FrameQueue.startSingleFrame();
             }
         }
 
-        public async Task displayNextFrame()
+        public void displayNextFrame()
         {         
             if (VideoState == VideoPlayerControl.VideoState.PLAYING) 
             {            
                 pausePlay();
             }
             else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
-            {                             
-                oldVolume = Volume;
-                Volume = MinVolume;
-
-                videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PAUSE,
-                    FrameQueue.FrameQueueState.PAUSE, FrameQueue.FrameQueueState.PLAY);
-
-                VideoState = VideoPlayerControl.VideoState.PLAYING;
-             
-                bool isLastFrame = videoDecoder.FrameQueue.startSingleFrame();
-
-                if (!isLastFrame)
-                {
-                    VideoState = VideoPlayerControl.VideoState.PAUSED;
-                }
-                else
-                {
-                    await close();
-                }
-
-                Volume = oldVolume;
-                
+            {                                             
+                videoDecoder.FrameQueue.startSingleFrame();                              
             }
         }
 
@@ -962,6 +913,10 @@ restartvideo:
                
                 DurationSeconds = videoDecoder.DurationSeconds;
                 HasAudio = videoDecoder.HasAudio;
+
+                previousVideoPts = 0;
+                previousVideoDelay = 0.04;
+                audioDiffAvgCount = 0;
 
                 if (videoDecoder.HasAudio)
                 {

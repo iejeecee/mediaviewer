@@ -1,14 +1,16 @@
-﻿using Microsoft.Practices.Prism.PubSubEvents;
+﻿using Google.Apis.YouTube.v3.Data;
+using Microsoft.Practices.Prism.PubSubEvents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using YoutubePlugin.Events;
+using YoutubePlugin.Properties;
 
 namespace YoutubePlugin.YoutubeChannelBrowser
 {
-    class RootNode : YoutubeNodeBase
+    class RootNode : YoutubeChannelNodeBase
     {
         IEventAggregator EventAggregator { get; set; }
 
@@ -22,18 +24,27 @@ namespace YoutubePlugin.YoutubeChannelBrowser
 
         private void addChannel(Item.YoutubeChannelItem channelItem)
         {
-            Children.Add(new YoutubeChannelNode(channelItem));
+            YoutubeChannelNode node = new YoutubeChannelNode(channelItem);
+          
+            Children.Add(node);
+
+            if (Settings.Default.YoutubeChannels == null)
+            {
+                Settings.Default.YoutubeChannels = new List<SearchResult>();
+            }
+
+            Settings.Default.YoutubeChannels.Add(channelItem.Info as SearchResult);
+
         }
 
         protected override void LoadChildren()
         {
-           
-            Children.Add(new YoutubeChannelNode("8 Bites", "UCYljqyDdMZzqqHLZOgs49JQ"));
-            Children.Add(new YoutubeChannelNode("Chess24", "UCTzRQxC3i7GOT4jtiTq4e0w"));
-            Children.Add(new YoutubeChannelNode("FullTimeDEVILS", "UC7w8GnTF2Sp3wldDMtCCtVw"));
-            Children.Add(new YoutubeChannelNode("Nayla Games", "UCQ71w-t-1FSlwa57iuBfKTw"));         
-            Children.Add(new YoutubeChannelNode("DSPGaming", "UCGAQFQoZNIFUnQQuA-Llu9A"));
-            Children.Add(new YoutubeChannelNode("TYT Sports", "UCPahzXZvF8f5bRJ5TNvZS8w"));           
+            if (Settings.Default.YoutubeChannels == null) return;
+
+            foreach (SearchResult item in Settings.Default.YoutubeChannels)
+            {
+                Children.Add(new YoutubeChannelNode(new Item.YoutubeChannelItem(item,0)));
+            }
         }
 
     }

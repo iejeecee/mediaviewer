@@ -27,7 +27,7 @@ namespace MediaViewer.Transcode.Video
         {
             InitializeComponent();
 
-            ViewModel = new VideoTranscodeViewModel(AppSettings.Instance);
+            ViewModel = new VideoTranscodeViewModel();
 
             ViewModel.ClosingRequest += viewModel_ClosingRequest;
 

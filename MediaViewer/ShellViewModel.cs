@@ -94,7 +94,7 @@ namespace MediaViewer
             imageMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             imageMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Images);
 
-            VideoViewModel = new VideoPanel.VideoViewModel(AppSettings.Instance, EventAggregator);
+            VideoViewModel = new VideoPanel.VideoViewModel(EventAggregator);
 
             videoMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileWatcher.Instance.MediaFileState, EventAggregator);
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);

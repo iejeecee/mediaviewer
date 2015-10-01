@@ -185,6 +185,7 @@
     <Compile Include="Item\YoutubePlaylistItem.cs" />
     <Compile Include="Item\YoutubeVideoItem.cs" />
     <Compile Include="Item\YoutubeVideoStreamedItem.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="YoutubeApiKey.cs" />
     <Compile Include="YoutubeChannelBrowser\RootNode.cs" />
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelBrowserView.xaml.cs">
@@ -196,7 +197,7 @@
     <Compile Include="YoutubeChannelBrowser\YoutubeLocationBoxView.xaml.cs">
       <DependentUpon>YoutubeLocationBoxView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="YoutubeChannelBrowser\YoutubeNodeBase.cs" />
+    <Compile Include="YoutubeChannelBrowser\YoutubeChannelNodeBase.cs" />
     <Compile Include="YoutubeCollectionView.cs" />
     <Compile Include="Item\YoutubeItem.cs" />
     <Compile Include="Item\YoutubeItemMetadata.cs" />
@@ -295,7 +296,9 @@
   <ItemGroup>
     <Resource Include="Resources\Icons\playlist.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Settings\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
