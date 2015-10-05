@@ -191,9 +191,14 @@ namespace VideoLib {
 			}
 		}
 
-		void packetQueueFinished() {
-							
-			if(videoPackets->IsFinished && audioPackets->IsFinished)
+		// always called while framequeue is locked
+		void isPacketQueueFinished(Object ^sender, EventArgs ^e) 
+		{
+						
+			bool isVideoFinished = videoPackets->State == PacketQueue::PacketQueueState::CLOSE_END || !videoDecoder->hasVideo();
+			bool isAudioFinished = audioPackets->State == PacketQueue::PacketQueueState::CLOSE_END || !audioDecoder->hasAudio();
+
+			if(isVideoFinished && isAudioFinished)
 			{
 				// stop free packets queue 
 				freePackets->State = PacketQueue::PacketQueueState::CLOSE_END;
@@ -203,6 +208,7 @@ namespace VideoLib {
 						
 		}	
 
+		// always called while framequeue is locked
 		void startPacketQueueBuffering(Object ^sender, EventArgs ^e)
 		{			
 			bool isVideoBuffering = videoPackets->NrPacketsInQueue == 0 && videoDecoder->hasVideo();
@@ -218,6 +224,7 @@ namespace VideoLib {
 			}
 		}
 
+		// always called while framequeue is locked
 		void isPacketQueueBufferFull(Object ^sender, EventArgs ^e)
 		{			
 			if(IsBuffering) 
@@ -295,6 +302,9 @@ namespace VideoLib {
 
 			videoPackets->AddedPacket += gcnew EventHandler(this,&FrameQueue::isPacketQueueBufferFull);
 			audioPackets->AddedPacket += gcnew EventHandler(this,&FrameQueue::isPacketQueueBufferFull);
+
+			videoPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
+			audioPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
 
 			packetData = gcnew array<Packet ^>(freePackets->MaxPackets);
 
@@ -611,12 +621,7 @@ namespace VideoLib {
 
 				PacketQueue::GetResult result = videoPackets->getPacket(videoPacket);
 				if(result != PacketQueue::GetResult::SUCCESS) 
-				{								
-					if(result == PacketQueue::GetResult::FINAL) {
-					
-						packetQueueFinished();
-					}
-					
+				{																	
 					return(nullptr);
 				}
 			
@@ -676,12 +681,7 @@ namespace VideoLib {
 
 					PacketQueue::GetResult result = audioPackets->getPacket(audioPacket);
 					if(result != PacketQueue::GetResult::SUCCESS) 
-					{								
-						if(result == PacketQueue::GetResult::FINAL) {
-
-							packetQueueFinished();
-						}
-					
+					{													
 						return(nullptr);
 					}
 				

@@ -39,22 +39,25 @@ namespace YoutubePlugin
     {
         IRegionManager RegionManager { get; set; }
         IEventAggregator EventAggregator { get; set; }
-        YouTubeService Youtube { get; set; }
+        public static YouTubeService Youtube { get; protected set; }
         const int maxResults = 50;
 
         Task SearchTask { get; set; }
         public CancellationTokenSource TokenSource { get; set; }
 
-        public YoutubeViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
+        static YoutubeViewModel()
         {
-            TokenSource = new CancellationTokenSource();
-
             Youtube = new YouTubeService(new BaseClientService.Initializer()
             {
                 ApiKey = YoutubeApiKey.ApiKey,
                 ApplicationName = "MediaViewer"
             });
+        }
 
+        public YoutubeViewModel(IRegionManager regionManager, IEventAggregator eventAggregator)
+        {
+            TokenSource = new CancellationTokenSource();
+            
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
             NrColumns = 4;

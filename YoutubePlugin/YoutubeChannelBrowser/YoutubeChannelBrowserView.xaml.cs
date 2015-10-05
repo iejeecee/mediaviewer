@@ -41,7 +41,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             EventAggregator = eventAggregator;
 
             treeView.SelectionChanged += treeView_SelectionChanged;                       
-            treeView.Root = new RootNode(eventAggregator);
+            treeView.Root = new YoutubeChannelRootNode(eventAggregator);
 
             TabName = "Browse";
             TabMargin = new Thickness(2);
@@ -93,5 +93,13 @@ namespace YoutubePlugin.YoutubeChannelBrowser
         public Thickness TabMargin { get; set; }
         public Thickness TabBorderThickness { get; set; }
         public Brush TabBorderBrush { get; set; }
+
+        private void removeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            YoutubeChannelNode selectedNode = treeView.SelectedItem as YoutubeChannelNode;
+            if (selectedNode == null) return;
+
+            (treeView.Root as YoutubeChannelRootNode).removeChannel(selectedNode);
+        }
     }
 }

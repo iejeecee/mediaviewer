@@ -1,4 +1,5 @@
-﻿using ICSharpCode.TreeView;
+﻿using Google.Apis.YouTube.v3.Data;
+using ICSharpCode.TreeView;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -15,64 +16,52 @@ namespace YoutubePlugin.YoutubeChannelBrowser
 {  
     class YoutubeChannelNode : YoutubeChannelNodeBase
     {
-        public YoutubeChannelItem ChannelItem { get; set; }
-
-        BitmapSource Thumb { get; set; }
-       
-        public YoutubeChannelNode(YoutubeChannelItem channelItem) :
-            base(channelItem.Thumbnail.Medium.Url)
+        public YoutubeChannelNodeState State { get; set; }
+          
+        public YoutubeChannelNode(YoutubeChannelNodeState state) :
+            base("pack://application:,,,/YoutubePlugin;component/Resources/Icons/channel.ico")
         {
-            ChannelItem = channelItem;
+            State = state;
 
-            Name = channelItem.Name;
-            ChannelId = channelItem.ChannelId;
-            if (channelItem.Metadata != null)
+            Name = State.Info.Snippet.Title;
+            ChannelId = State.Info.Snippet.ChannelId;          
+
+            toolTip = State.Info.Snippet.Description;
+            NrVideos = 0;
+
+            Children.Add(new YoutubeChannelVideosNode(ChannelId));
+            Children.Add(new YoutubeChannelPlaylistsNode(ChannelId));
+
+            if (State.Statistics != null)
             {
-                Thumb = channelItem.Metadata.Thumbnail.Image;
+                (Children[0] as YoutubeChannelVideosNode).NrVideos = State.Statistics.VideoCount;
             }
-            toolTip = channelItem.Description;
+        }
+
+        public void updateStatistics(ChannelStatistics statistics)
+        {
+            if (State.Statistics != null)
+            {
+                NrVideos = statistics.VideoCount - State.Statistics.VideoCount;
+            }
+
+            State.Statistics = statistics;
+            (Children[0] as YoutubeChannelVideosNode).NrVideos = statistics.VideoCount;
         }
 
         protected override ImageSource loadIcon()
         {
-            if (!ImageUrl.StartsWith("http"))
+            ImageSource channelThumb = State.getChannelThumb();
+
+            if (channelThumb == null)
             {
                 return base.loadIcon();
-            } 
-            else if (Thumb != null)
-            {
-                return Thumb;
             }
-
-            MemoryStream data = new MemoryStream();      
-            String mimeType;
-            CancellationTokenSource tokenSource = new CancellationTokenSource();
-
-            try
+            else
             {
-                StreamUtils.readHttpRequest(new Uri(ImageUrl), data, out mimeType, tokenSource.Token);
-
-                BitmapDecoder decoder = BitmapDecoder.Create(data,
-                                    BitmapCreateOptions.PreservePixelFormat,
-                                    BitmapCacheOption.OnLoad);
-                Thumb = decoder.Frames[0];
-
-                Thumb.Freeze();
-
+                return (channelThumb);
             }
-            finally
-            {
-                data.Close();
-            }
-
-            return (Thumb);
         }
-
-        protected override void LoadChildren()
-        {
-            Children.Add(new YoutubeChannelVideosNode(ChannelId));
-            Children.Add(new YoutubeChannelPlaylistsNode(ChannelId));           
-        }
-                       
+                          
     }
 }

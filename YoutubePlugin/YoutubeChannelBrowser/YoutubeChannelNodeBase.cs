@@ -15,10 +15,9 @@ namespace YoutubePlugin.YoutubeChannelBrowser
         protected String ImageUrl { get; set; }
        
         protected YoutubeChannelNodeBase(String imageUrl)
-        {
-            LazyLoading = true;
-
+        {           
             ImageUrl = imageUrl;
+            NrVideos = 0;
         }
 
         public override object Icon
@@ -50,19 +49,18 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             }
         }
 
-        DateTime creationDate;
+        ulong? nrVideos;
 
-        public DateTime CreationDate
+        public ulong? NrVideos
         {
-            get { return creationDate; }
+            get { return nrVideos; }
             set
             {
-                creationDate = value;
-                RaisePropertyChanged("CreationDate");
+                nrVideos = value;
+                RaisePropertyChanged("NrVideos");
             }
-
         }
-
+    
         String name;
 
         public String Name

@@ -1,5 +1,9 @@
 ﻿using Google.Apis.YouTube.v3.Data;
+using System;
 using System.Collections.Generic;
+using System.Windows.Media.Imaging;
+using YoutubePlugin.YoutubeChannelBrowser;
+
 namespace YoutubePlugin.Properties {
     
     
@@ -18,6 +22,23 @@ namespace YoutubePlugin.Properties {
             //
             // this.SettingsSaving += this.SettingsSavingEventHandler;
             //
+            if (IsUpgradeRequired)
+            {
+                Upgrade();
+                IsUpgradeRequired = false;
+            }
+
+            SettingsLoaded += Settings_SettingsLoaded;           
+        }
+
+        void Settings_SettingsLoaded(object sender, System.Configuration.SettingsLoadedEventArgs e)
+        {
+            
+            if (YoutubeChannels == null)
+            {
+                YoutubeChannels = new List<YoutubeChannelNodeState>();
+            }
+           
         }
         
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
@@ -31,17 +52,19 @@ namespace YoutubePlugin.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public List<SearchResult> YoutubeChannels
+        public List<YoutubeChannelNodeState> YoutubeChannels
         {
             get
             {
-                return ((List<SearchResult>)(this["YoutubeChannels"]));
+                return (List<YoutubeChannelNodeState>)(this["YoutubeChannels"]);
             }
             set
             {
                 this["YoutubeChannels"] = value;
             }
         }
+
+        
     }
 
 

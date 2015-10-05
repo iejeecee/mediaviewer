@@ -26,44 +26,44 @@ namespace YoutubePlugin.Item
 
         public List<YoutubeVideoStreamedItem> StreamedItem { get; set; }
                                 
-        public YoutubeVideoItem(SearchResult result, int relevance) :
-            base(result.Snippet.Title, result, relevance)
+        public YoutubeVideoItem(SearchResult item, int relevance) :
+            base(item.Snippet.Title, item, relevance)
         {
-            ChannelTitle = result.Snippet.ChannelTitle;
-            ChannelId = result.Snippet.ChannelId;
+            ChannelTitle = item.Snippet.ChannelTitle;
+            ChannelId = item.Snippet.ChannelId;
 
-            ResourceId = result.Id;
-            Thumbnail = result.Snippet.Thumbnails;
+            ResourceId = item.Id;
+            Thumbnail = item.Snippet.Thumbnails;
           
-            PublishedAt = result.Snippet.PublishedAt;
-            Description = result.Snippet.Description;
+            PublishedAt = item.Snippet.PublishedAt;
+            Description = item.Snippet.Description;
 
-            VideoId = result.Id.VideoId;
+            VideoId = item.Id.VideoId;
 
             IsEmbeddedOnly = false;
 
-            Info = result;
+            Info = item;
 
             StreamedItem = new List<YoutubeVideoStreamedItem>();                
         }
 
-        public YoutubeVideoItem(PlaylistItem result, int relevance) :
-            base(result.Snippet.Title, result, relevance)
+        public YoutubeVideoItem(PlaylistItem item, int relevance) :
+            base(item.Snippet.Title, item, relevance)
         {
-            ChannelTitle = result.Snippet.ChannelTitle;
-            ChannelId = result.Snippet.ChannelId;
+            ChannelTitle = item.Snippet.ChannelTitle;
+            ChannelId = item.Snippet.ChannelId;
 
-            ResourceId = result.Snippet.ResourceId;
-            Thumbnail = result.Snippet.Thumbnails;
+            ResourceId = item.Snippet.ResourceId;
+            Thumbnail = item.Snippet.Thumbnails;
 
-            PublishedAt = result.Snippet.PublishedAt;
-            Description = result.Snippet.Description;
+            PublishedAt = item.Snippet.PublishedAt;
+            Description = item.Snippet.Description;
 
-            VideoId = result.Snippet.ResourceId.VideoId;
+            VideoId = item.Snippet.ResourceId.VideoId;
 
             IsEmbeddedOnly = false;
 
-            Info = result;
+            Info = item;
 
             StreamedItem = new List<YoutubeVideoStreamedItem>();
         }

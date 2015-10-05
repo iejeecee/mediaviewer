@@ -21,8 +21,7 @@ namespace YoutubePlugin.YoutubeMetadata
 {
     class YoutubeMetadataViewModel : BindableBase
     {
-        IEventAggregator EventAggregator { get; set; }
-        YouTubeService Youtube { get; set; }
+        IEventAggregator EventAggregator { get; set; }    
 
         Task<VideoListResponse> RequestVideoInfoTask { get; set; }
         CancellationTokenSource RequestVideoInfoTaskTokenSource { get; set; }
@@ -36,12 +35,7 @@ namespace YoutubePlugin.YoutubeMetadata
             EventAggregator.GetEvent<SelectionEvent>().Subscribe(selectionEvent);
 
             IsBatchMode = false;
-
-            Youtube = new YouTubeService(new BaseClientService.Initializer()
-            {
-                ApiKey = YoutubeApiKey.ApiKey,
-                ApplicationName = "MediaViewer"
-            });
+        
 
             RequestVideoInfoTaskTokenSource = new CancellationTokenSource();
             DynamicProperties = new ObservableCollection<Tuple<string, string>>();
@@ -162,7 +156,7 @@ namespace YoutubePlugin.YoutubeMetadata
 
         async Task<Video> requestVideoInfo(String videoId)
         {
-            var request = Youtube.Videos.List("snippet");
+            var request = YoutubeViewModel.Youtube.Videos.List("snippet");
             request.Id = videoId;
 
             if (RequestVideoInfoTask != null && !RequestVideoInfoTask.IsCompleted)

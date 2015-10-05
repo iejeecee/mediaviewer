@@ -4,8 +4,14 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:sd="http://icsharpcode.net/sharpdevelop/treeview"
+             xmlns:ChannelBrowser="clr-namespace:YoutubePlugin.YoutubeChannelBrowser"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ChannelBrowser:NrVideosConverter x:Key="nrVideosConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -30,21 +36,18 @@
                                     <sd:SharpTreeNodeView>
                                         <sd:SharpTreeNodeView.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem Header="Refresh"/>
-                                                <Separator/>
-                                                <MenuItem Header="Create Directory" />
-                                                <MenuItem Header="Rename Directory" />
-                                                <MenuItem Header="Delete Directory" />
+                                                <MenuItem x:Name="removeMenuItem"  Header="Remove" Click="removeMenuItem_Click"/>                                               
+                                                <MenuItem Header="Refresh" />                                               
                                             </ContextMenu>
                                         </sd:SharpTreeNodeView.ContextMenu>
                                     </sd:SharpTreeNodeView>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>                                           
-                        <GridViewColumn Header="Creation Date" Width="100">
+                        <GridViewColumn Header="Videos" Width="100">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding CreationDate}"/>
+                                    <TextBlock Text="{Binding NrVideos, Converter={StaticResource nrVideosConverter}}"/>
                                 </DataTemplate>
                             </GridViewColumn.CellTemplate>
                         </GridViewColumn>

@@ -206,5 +206,41 @@ namespace MediaViewer.Infrastructure.Utils
                 return (null);
             }
         }
+
+        public static BitmapSource jpegBase64StringToImage(String encoded)
+        {
+            if (String.IsNullOrEmpty(encoded)) return (null);
+
+            byte[] bytes = System.Convert.FromBase64String(encoded);
+
+            MemoryStream stream = new MemoryStream(bytes);
+
+            JpegBitmapDecoder decoder = new JpegBitmapDecoder(stream, BitmapCreateOptions.None, BitmapCacheOption.None);
+            BitmapFrame image = decoder.Frames[0];
+            image.Freeze();
+
+            return (image);
+        }
+
+
+        public static string imageToJpegBase64String(BitmapSource image)
+        {
+            if (image == null) return (null);
+
+            JpegBitmapEncoder encoder = new JpegBitmapEncoder();
+
+            encoder.Frames.Add(BitmapFrame.Create(image));
+            encoder.QualityLevel = 100;
+            byte[] bytes = new byte[0];
+            using (MemoryStream stream = new MemoryStream())
+            {
+                encoder.Frames.Add(BitmapFrame.Create(image));
+                encoder.Save(stream);
+                bytes = stream.ToArray();
+                stream.Close();
+            }
+
+            return (System.Convert.ToBase64String(bytes));
+        }
     }
 }

@@ -32,5 +32,8 @@
     <Setting Name="Size" Type="System.String" Scope="User">
       <Value Profile="(Default)">All</Value>
     </Setting>
+    <Setting Name="IsUpgradeRequired" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

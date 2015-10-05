@@ -17,6 +17,12 @@ namespace ImageSearchPlugin.Properties {
             //
             // this.SettingsSaving += this.SettingsSavingEventHandler;
             //
+            if (IsUpgradeRequired)
+            {
+                Upgrade();
+                IsUpgradeRequired = false;
+            }
+
             this.SettingsLoaded += Settings_SettingsLoaded;
         }
 

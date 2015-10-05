@@ -624,7 +624,7 @@ namespace MediaViewer.VideoPanel
 
                 if (offsetSeconds != null)
                 {
-                    SeekCommand.Execute(offsetSeconds.Value);
+                    SeekCommand.Execute((double)offsetSeconds.Value);
                 }
                 
             }

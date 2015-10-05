@@ -13,8 +13,9 @@ namespace VideoLib {
 	{
 	public:
 
-		event EventHandler ^StartBuffering;
+		event EventHandler ^StartBuffering;		
 		event EventHandler ^AddedPacket;
+		event EventHandler ^IsFinished;
 
 		enum class PacketQueueState {			
 			OPEN,					// items can be added and removed from the queue
@@ -43,28 +44,9 @@ namespace VideoLib {
 		Object ^lockObject;
 		
 		PacketQueueState state;
-	
-		bool bufferWhenEmpty;
-		bool isBufferFull;
-		
-		bool isFinished;
 
 	public:
-	
-		property bool IsFinished
-		{
-			bool get() {
-
-				return(isFinished);
-			}
-		private:
-			void set(bool value) {
-
-				isFinished = value;
-			}
-		}
-
-
+			
 		property PacketQueueState State {
 
 			PacketQueueState get() {
@@ -109,8 +91,7 @@ namespace VideoLib {
 			this->maxPackets = maxPackets;
 			queue = gcnew Queue<Packet ^>();
 			state = PacketQueueState::OPEN;
-					
-			isFinished = true;					
+													
 		}
 
 	
@@ -173,9 +154,7 @@ namespace VideoLib {
 								State = PacketQueueState::CLOSE_END;						
 							}											
 						case PacketQueueState::CLOSE_END:
-							{				
-								//IsBufferFull = true;
-								IsFinished = true;
+							{																			
 								packet = nullptr;																							
 								return(GetResult::CLOSED);								
 							}										
@@ -215,9 +194,9 @@ namespace VideoLib {
 				}
 
 				if(packet->Type == PacketType::LAST_PACKET) {
-
-					IsFinished = true;				
-					State = PacketQueueState::CLOSE_END;				
+					
+					State = PacketQueueState::CLOSE_END;
+					IsFinished(this,EventArgs::Empty);
 					return(GetResult::FINAL);
 				}
 
@@ -265,9 +244,7 @@ namespace VideoLib {
 				AddedPacket(this,EventArgs::Empty);
 												 
 				if(queue->Count == 1) {
-
-					IsFinished = false;
-
+		
 					// wake threads waiting on empty queue
 					Monitor::PulseAll(lockObject);
 				}
