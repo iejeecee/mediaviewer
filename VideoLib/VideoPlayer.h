@@ -120,6 +120,14 @@ namespace VideoLib {
 			}
 		}
 
+		property bool HasVideo {
+
+			bool get() {
+
+				return(videoDecoder->hasVideo());
+			}
+		}
+
 		property bool HasAudio {
 
 			bool get() {

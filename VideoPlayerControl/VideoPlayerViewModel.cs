@@ -14,11 +14,8 @@ using System.Windows.Threading;
 namespace VideoPlayerControl
 {
    public class VideoPlayerViewModel : IDisposable
-    {        
-
-        public event EventHandler VideoOpened;  
-        public event EventHandler<bool> IsBufferingChanged;
-        public event EventHandler VideoClosed;
+    {                
+        public event EventHandler<bool> IsBufferingChanged;   
         public event EventHandler<VideoState> StateChanged;
         public event EventHandler<int> PositionSecondsChanged;
         public event EventHandler<int> DurationSecondsChanged;
@@ -114,8 +111,8 @@ namespace VideoPlayerControl
         Task[] demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
 
-        Task openTask;
-        CancellationTokenSource interruptIOTokenSource;
+        Task OpenTask { get; set; }
+        CancellationTokenSource CancelTokenSource { get; set; }
     
         int positionSeconds;
 
@@ -252,8 +249,8 @@ namespace VideoPlayerControl
 
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
-                     
-            interruptIOTokenSource = new CancellationTokenSource();          
+
+            //interruptIOTokenSource = new CancellationTokenSource();       
         }
 
         public void createScreenShot(String screenShotName, int positionOffset)
@@ -290,6 +287,11 @@ namespace VideoPlayerControl
                     demuxPacketsTask.Dispose();
                     demuxPacketsTask = null;
                 }*/
+                if (CancelTokenSource != null)
+                {
+                    CancelTokenSource.Dispose();
+                    CancelTokenSource = null;
+                }
                 if (demuxPacketsCancellationTokenSource != null)
                 {
                     demuxPacketsCancellationTokenSource.Dispose();
@@ -327,6 +329,7 @@ restartvideo:
                 if (VideoState == VideoState.CLOSED)
                 {
                     videoRender.display(null, Color.Black, RenderMode.CLEAR_SCREEN);
+                    videoRender.releaseResources();
                     return;
                 }
                 
@@ -372,10 +375,10 @@ restartvideo:
         }
 
         void updateObservableVariables()
-        {
-            PositionSeconds = (int)Math.Floor(getVideoClock());
+        {            
             VideoClock = getVideoClock();
             AudioClock = audioPlayer.getAudioClock();
+            PositionSeconds = (int)Math.Floor(videoDecoder.HasVideo == true ? VideoClock : AudioClock);
                                               
             StringBuilder builder = new StringBuilder();
 
@@ -454,6 +457,8 @@ restartvideo:
 
             double actualDelay = 0.04;
 
+            if (!videoDecoder.HasVideo) updateObservableVariables(); 
+
             // returns null when framequeue is paused or closed
             VideoLib.AudioFrame audioFrame = videoDecoder.FrameQueue.getDecodedAudioFrame();
             if (audioFrame == null)
@@ -463,6 +468,7 @@ restartvideo:
 
                 if (VideoState == VideoState.CLOSED)
                 {
+                    audioPlayer.flush();
                     return;
 
                 } 
@@ -753,47 +759,7 @@ restartvideo:
             }
         }
         
-        public void pausePlay()
-        {
-
-            if (VideoState == VideoState.PAUSED ||
-                VideoState == VideoState.CLOSED)
-            {
-                return;
-            }
-
-            VideoState = VideoState.PAUSED;
-
-            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PAUSE, FrameQueue.FrameQueueState.PAUSE, 
-                FrameQueue.FrameQueueState.PLAY);                                        
-        }
-
-        public void startPlay(bool singleFrame = false)
-        {       
-            if (VideoState == VideoState.PLAYING ||
-                VideoState == VideoState.CLOSED)
-            {                
-                return;
-            }
-
-            audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
-
-          
-             
-            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PLAY, FrameQueue.FrameQueueState.PLAY,
-                FrameQueue.FrameQueueState.PLAY);
-                                             
-            if (VideoState == VideoState.OPEN)
-            {
-                startDemuxing();
-
-                videoRefreshTimer.start();
-                audioRefreshTimer.start();
-            }
-                                   
-            VideoState = VideoState.PLAYING;
-            
-        }
+        
 
         void startDemuxing()
         {        
@@ -883,7 +849,7 @@ restartvideo:
         {         
             if (VideoState == VideoPlayerControl.VideoState.PLAYING) 
             {            
-                pausePlay();
+                pause();
             }
             else if(VideoState == VideoPlayerControl.VideoState.PAUSED)
             {                                             
@@ -891,26 +857,74 @@ restartvideo:
             }
         }
 
-        public async Task open(string location,        
+        public void pause()
+        {
+
+            if (VideoState == VideoState.PAUSED ||
+                VideoState == VideoState.CLOSED)
+            {
+                return;
+            }
+
+            VideoState = VideoState.PAUSED;
+
+            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PAUSE, FrameQueue.FrameQueueState.PAUSE,
+                FrameQueue.FrameQueueState.PLAY);
+        }
+
+        public void play()
+        {
+            if (VideoState == VideoState.PLAYING ||
+                VideoState == VideoState.CLOSED)
+            {
+                return;
+            }
+
+            audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
+
+            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PLAY, FrameQueue.FrameQueueState.PLAY,
+                FrameQueue.FrameQueueState.PLAY);
+
+            if (VideoState == VideoState.OPEN)
+            {
+                startDemuxing();
+
+                if(videoDecoder.HasVideo) videoRefreshTimer.start();
+                if(videoDecoder.HasAudio) audioRefreshTimer.start();
+            }
+
+            VideoState = VideoState.PLAYING;
+
+        }
+             
+        public async Task openAndPlay(string location,        
             string inputFormatName = null, string audioLocation = null,
             string audioFormatName = null)
-        {         
+        {
             try
-            {              
-                await close();
+            {
+                // cancel any previously running open operation
+                CancellationTokenSource prevCancelTokenSource = CancelTokenSource;
+                Task prevOpenTask = OpenTask;
+
+                CancellationTokenSource newCancelTokenSource = new CancellationTokenSource();                
+                CancelTokenSource = newCancelTokenSource;
+
+                await close(prevCancelTokenSource, prevOpenTask);
+
+                // open video
+                newCancelTokenSource.Token.ThrowIfCancellationRequested();
 
                 VideoLocation = location;
-                interruptIOTokenSource = new CancellationTokenSource();
 
-                openTask = Task.Factory.StartNew(new Action(() =>
+                OpenTask = Task.Factory.StartNew(() => videoDecoder.open(location, DecodedVideoFormat, inputFormatName, audioLocation, audioFormatName, newCancelTokenSource.Token), newCancelTokenSource.Token);
+                await OpenTask;
+
+                if (videoDecoder.HasVideo)
                 {
-                    videoDecoder.open(location, DecodedVideoFormat, inputFormatName, audioLocation, audioFormatName, interruptIOTokenSource.Token);
-                }), interruptIOTokenSource.Token);
+                    videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
+                }
 
-                await openTask;                
-
-                videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
-               
                 DurationSeconds = videoDecoder.DurationSeconds;
                 HasAudio = videoDecoder.HasAudio;
 
@@ -921,18 +935,15 @@ restartvideo:
                 if (videoDecoder.HasAudio)
                 {
                     audioPlayer.initialize(videoDecoder.SamplesPerSecond, videoDecoder.BytesPerSample,
-                        Math.Min(videoDecoder.NrChannels,2) , videoDecoder.MaxAudioFrameSize * 2);
+                        Math.Min(videoDecoder.NrChannels, 2), videoDecoder.MaxAudioFrameSize * 2);
 
                     audioDiffThreshold = 2.0 * 1024 / videoDecoder.SamplesPerSecond;
                 }
-                                                                      
-                VideoState = VideoState.OPEN;
-                
-                if(VideoOpened != null) {
 
-                    VideoOpened(this, EventArgs.Empty);
-                }
-               
+                VideoState = VideoState.OPEN;
+
+                play();
+
             }
             catch (VideoLib.VideoLibException)
             {
@@ -942,65 +953,64 @@ restartvideo:
                 //log.Error("Cannot open: " + location, e);
 
                 throw;
-             
+
             }
+                       
         }
 
-        public async Task close()
-        {            
-            // interrupt any blocking ffmpeg IO operations
-            interruptIOTokenSource.Cancel();
-
-            // cancel any running async open operations
-            if (openTask != null && !openTask.IsCompleted)
+        async Task close(CancellationTokenSource interruptIOTokenSource, Task openTask)
+        {          
+            // cancel any running open operation
+            if (interruptIOTokenSource != null)
             {
+                interruptIOTokenSource.Cancel();
                 try
-                {                    
-                    await openTask;
+                {
+                    if (!openTask.IsCompleted)
+                    {
+                        await openTask;
+                    }
                 }
                 catch (OperationCanceledException)
                 {
-                    
+
                 }
-                
             }
            
             if (VideoState == VideoState.CLOSED)
             {
                 return;
             }
-            
+
             VideoState = VideoState.CLOSED;
 
-            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.CLOSE, 
+            videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.CLOSE,
                 FrameQueue.FrameQueueState.CLOSE, FrameQueue.FrameQueueState.CLOSE);
-            
+
             demuxPacketsCancellationTokenSource.Cancel();
 
             await Task.WhenAll(demuxPacketsTask);
-                                
-            videoDecoder.close();
-          
-            audioPlayer.flush();
 
+            videoDecoder.close();
+
+            
+            
             videoPts = 0;
-            videoPtsDrift = 0;           
-  
+            videoPtsDrift = 0;
+
             DurationSeconds = 0;
             PositionSeconds = 0;
 
             NrFramesDropped = 0;
             NrFramesRendered = 0;
 
-            
-
             VideoLocation = "";
+        }
 
-            if (VideoClosed != null)
-            {
-                VideoClosed(this, EventArgs.Empty);
-            }
-           
+        public async Task close()
+        {
+            await close(CancelTokenSource, OpenTask);
+
         }
 
         public void resize()

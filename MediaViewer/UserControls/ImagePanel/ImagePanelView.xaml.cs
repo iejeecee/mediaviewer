@@ -30,7 +30,6 @@ namespace MediaViewer.UserControls.ImagePanel
     public partial class ImagePanelView : UserControl
     {
        
-
         const int MAX_IMAGE_SIZE_PIXELS_X = 8096;
         const int MAX_IMAGE_SIZE_PIXELS_Y = 16192;
 
@@ -69,8 +68,15 @@ namespace MediaViewer.UserControls.ImagePanel
             // cancel previously running load requests 
             if (view.ImageLoadingTask != null && !view.ImageLoadingTask.IsCompleted)
             {               
-                view.TokenSource.Cancel();                
-                await view.ImageLoadingTask;
+                view.TokenSource.Cancel();
+                try
+                {
+                    await view.ImageLoadingTask;
+                }
+                catch (Exception)
+                {
+
+                }
             } 
          
             view.TokenSource = new CancellationTokenSource();
@@ -81,7 +87,7 @@ namespace MediaViewer.UserControls.ImagePanel
             try
             {
                 view.IsLoading = true;
-                view.ImageLoadingTask = Task<BitmapImage>.Factory.StartNew(() => view.loadImage(location), view.Token);
+                view.ImageLoadingTask = Task<BitmapImage>.Factory.StartNew(() => ImageUtils.loadImage(location, view.Token), view.Token);
 
                 await view.ImageLoadingTask;
 
@@ -90,7 +96,7 @@ namespace MediaViewer.UserControls.ImagePanel
                 view.scrollViewer.ScrollToVerticalOffset(0);
                 view.setScaleMode();
             }
-            catch (TaskCanceledException)
+            catch (OperationCanceledException)
             {
                 Logger.Log.Info("Cancelled loading image:" + (String)location);
             }
@@ -105,54 +111,7 @@ namespace MediaViewer.UserControls.ImagePanel
             }
         }
 
-        private BitmapImage loadImage(string location)
-        {
-
-            if (Token.IsCancellationRequested)
-            {
-                throw new TaskCanceledException();
-            }
-
-            BitmapImage loadedImage = new BitmapImage();
-            Stream imageData = null;
-
-            try
-            {
-                if (FileUtils.isUrl(location))
-                {
-                    imageData = new MemoryStream();
-                    String mimeType;
-
-                    StreamUtils.readHttpRequest(new Uri(location), imageData, out mimeType, Token);
-                }
-                else
-                {
-                    imageData = File.Open(location, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                }
-
-                Rotation rotation = ImageUtils.getBitmapRotation(imageData);
-                imageData.Position = 0;
-
-                loadedImage.BeginInit();
-                loadedImage.CacheOption = BitmapCacheOption.OnLoad;
-                loadedImage.StreamSource = imageData;
-                loadedImage.Rotation = rotation;
-                loadedImage.EndInit();
-
-                loadedImage.Freeze();
-
-                Logger.Log.Info("Image loaded: " + location);
-
-                return (loadedImage);
-            }
-            finally
-            {
-                if (imageData != null)
-                {
-                    imageData.Close();
-                }
-            }
-        }
+        
 
         
 
@@ -453,8 +412,20 @@ namespace MediaViewer.UserControls.ImagePanel
             }
         }
 
+        public bool IsZoomable
+        {
+            get { return (bool)GetValue(IsZoomableProperty); }
+            set { SetValue(IsZoomableProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsZoomable.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsZoomableProperty =
+            DependencyProperty.Register("IsZoomable", typeof(bool), typeof(ImagePanelView), new PropertyMetadata(true));
+        
         private void gridContainer_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
+            if (IsZoomable == false) return;
+
             e.Handled = true;
 
             // zoom to mouse pointer

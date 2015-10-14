@@ -50,7 +50,8 @@ namespace MediaViewer.Model.Media.Metadata
                 image.Width = frame.PixelWidth;
                 image.Height = frame.PixelHeight;
 
-                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL))
+                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
+                    options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
                 {
                     generateThumbnail(data, frame, image);
                 }
@@ -135,7 +136,7 @@ namespace MediaViewer.Model.Media.Metadata
 
             }                                   
             
-            image.Thumbnail = new Thumbnail(thumb);
+            image.Thumbnails.Add(new Thumbnail(thumb));
 
         }
 

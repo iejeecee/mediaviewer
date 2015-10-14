@@ -148,16 +148,16 @@ namespace MediaViewer.Model.Media.File
                 {
                     if (token.IsCancellationRequested) return;
 
-                    if (item.Metadata == null)
-                    {
+                    //if (item.Metadata == null)
+                    //{
                         item.readMetadata(MetadataFactory.ReadOptions.AUTO |
-                                MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, token);
+                                MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS, token);
 
                         if (item.Metadata == null || item.Metadata is UnknownMetadata)
                         {
                             throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
                         }
-                    }
+                    //}
 
                     bool success = item.import(token);
                     if (success)

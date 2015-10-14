@@ -32,7 +32,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>        
-        <ItemsControl x:Name="itemsControl" HorizontalAlignment="Stretch" Height="100" 
+        <ItemsControl x:Name="itemsControl" HorizontalAlignment="Stretch" Height="80" 
                         ItemsSource="{Binding Path=MediaStateCollectionView.Media,ElementName=mediaStackPanel}" PreviewMouseWheel="itemsControl_PreviewMouseWheel">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -45,7 +45,7 @@
                     <MediaGridItem:MediaGridItemBasicView DataContext="{Binding}" SelectableMediaItem="{Binding}" 
                                                           Click="mediaGridItem_Click"                                                        
                                                           Tag="{Binding Path=DataContext, ElementName=mediaStackPanel}" 
-                                                          ContextMenu="{Binding ElementName=mediaStackPanel,Path=MediaItemContextMenu}" Width="100" Height="100"/>
+                                                          ContextMenu="{Binding ElementName=mediaStackPanel,Path=MediaItemContextMenu}" Width="100" Height="80"/>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>            

@@ -30,17 +30,9 @@ namespace MediaViewer.Model.Settings
             SettingsViewModel globalSettings = ServiceLocator.Current.GetInstance(typeof(SettingsViewModel)) as SettingsViewModel;
 
             globalSettings.AddCategory(this);
-
-            Load();
-            
+                 
         }
-
-        public void Load()
-        {
-            OnLoad();
-        }
-     
-
+           
         String title;
 
         public String Title
@@ -66,12 +58,7 @@ namespace MediaViewer.Model.Settings
         {
             return (Title.CompareTo(other.Title));
         }
-
-        protected virtual void OnLoad()
-        {
-
-        }
-
+     
         protected virtual void OnSave()
         {
 

@@ -218,9 +218,10 @@ namespace VideoLib {
 
 				IsBuffering = true;
 		
-				videoPackets->State = PacketQueue::PacketQueueState::PAUSE_START;
-				audioPackets->State = PacketQueue::PacketQueueState::PAUSE_START;
-				freePackets->State= PacketQueue::PacketQueueState::OPEN;			
+				setPacketQueueState(
+					PacketQueue::PacketQueueState::PAUSE_START, 
+					PacketQueue::PacketQueueState::PAUSE_START,
+					PacketQueue::PacketQueueState::OPEN);										
 			}
 		}
 
@@ -238,9 +239,10 @@ namespace VideoLib {
 
 					IsBuffering = false;
 									
-					videoPackets->State = PacketQueue::PacketQueueState::OPEN;
-					audioPackets->State = PacketQueue::PacketQueueState::OPEN;
-					freePackets->State= PacketQueue::PacketQueueState::OPEN;	
+					setPacketQueueState(
+						PacketQueue::PacketQueueState::OPEN, 
+						PacketQueue::PacketQueueState::OPEN,
+						PacketQueue::PacketQueueState::OPEN);	
 				}
 			}
 		}
@@ -469,6 +471,9 @@ namespace VideoLib {
 					videoDecoder->getWidth(), 
 					videoDecoder->getHeight(), 
 					videoDecoder->getOutputPixelFormat());
+			} else {
+
+				videoPackets->State = PacketQueue::PacketQueueState::CLOSE_END;
 			}
 			
 			if(audioDecoder->hasAudio()) 
@@ -479,7 +484,11 @@ namespace VideoLib {
 					audioDecoder->getOutputSampleFormat(),
 					audioDecoder->getOutputChannelLayout(),
 					audioDecoder->getOutputSampleRate());
-			} 
+
+			} else {
+
+				audioPackets->State = PacketQueue::PacketQueueState::CLOSE_END;
+			}
 
 			for(int i = 0; i < packetData->Length; i++) {
 

@@ -11,7 +11,7 @@ using System.Windows.Media.Imaging;
 namespace MediaViewer.MediaDatabase
 {
     [Serializable]
-    partial class Thumbnail : BindableBase
+    partial class Thumbnail : BindableBase, IEquatable<Thumbnail>
     {
         [NonSerialized]
         BitmapSource image;
@@ -24,8 +24,13 @@ namespace MediaViewer.MediaDatabase
                 SetProperty(ref image, value);
             }
         }
+
+        public Thumbnail()
+        {
+            Image = null;
+        }
       
-        public Thumbnail(BitmapSource source)
+        public Thumbnail(BitmapSource source, double? timeSeconds = null)
         {
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();
             BitmapFrame outputFrame = BitmapFrame.Create(source, null, null, null);
@@ -42,6 +47,8 @@ namespace MediaViewer.MediaDatabase
 
             source.Freeze();           
             Image = source;
+
+            TimeSeconds = timeSeconds;
            
         }
 
@@ -65,6 +72,15 @@ namespace MediaViewer.MediaDatabase
            
         }
 
-     
+        public bool Equals(Thumbnail other)
+        {
+            if (other == null)
+            {
+                throw new InvalidOperationException();
+            }
+
+            if (other.Id == Id) return (true);
+            else return (false);
+        }
     }
 }

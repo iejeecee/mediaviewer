@@ -229,6 +229,36 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="Converters\IsEqualConverter.cs" />
     <Compile Include="Converters\RemoveNewlinesConverter.cs" />
+    <Compile Include="MediaDatabase\BaseMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\ImageMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\ImageProps.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\PresetMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\Tag.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\TagCategory.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\Thumbnail.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\UnknownMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoMetadata.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoProps.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="Filter\TagItemList.cs" />
     <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">
@@ -244,24 +274,12 @@
     <Compile Include="GridImage\VideoPreviewImage\VideoGridImage.cs" />
     <Compile Include="Import\ExportViewModel.cs" />
     <Compile Include="Import\ImportExportLocation.cs" />
-    <Compile Include="MediaDatabase\BaseMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsView.xaml.cs">
       <DependentUpon>DbSettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsViewModel.cs" />
     <Compile Include="MediaDatabase\DbSettings\TagOperationsViewModel.cs" />
-    <Compile Include="MediaDatabase\ImageMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\InitializeDb.cs" />
-    <Compile Include="MediaDatabase\UnknownMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaFileBrowser\DirectoryBrowser\MediaFileBrowserDirectoryBrowserView.xaml.cs">
       <DependentUpon>MediaFileBrowserDirectoryBrowserView.xaml</DependentUpon>
     </Compile>
@@ -356,6 +374,10 @@
     <Compile Include="UserControls\MediaGridItem\MediaGridItemBasicView.xaml.cs">
       <DependentUpon>MediaGridItemBasicView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\MediaPreview\MediaPreviewView.xaml.cs">
+      <DependentUpon>MediaPreviewView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UserControls\MediaPreview\TimeAdorner.cs" />
     <Compile Include="UserControls\MediaStackPanel\MediaStackPanelView.xaml.cs">
       <DependentUpon>MediaStackPanelView.xaml</DependentUpon>
     </Compile>
@@ -401,7 +423,6 @@
       <DependentUpon>SettingsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\Settings\SettingsViewModel.cs" />
-    <Compile Include="Model\Utils\StreamUtils.cs" />
     <Compile Include="Model\Utils\Windows\ColorUtils.cs" />
     <Compile Include="Model\Utils\WPF\ThemeHelper.cs" />
     <Compile Include="TagEditor\TagEditorEvent.cs" />
@@ -452,9 +473,6 @@
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
     <Compile Include="MediaDatabase\DbCommands\MetadataDbCommands.cs" />
     <Compile Include="MediaDatabase\ImageMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\ImageProps.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\MediaDatabase.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -471,29 +489,14 @@
       <DependentUpon>MediaDatabase.edmx</DependentUpon>
     </Compile>
     <Compile Include="MediaDatabase\BaseMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\PresetMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\DbCommands\PresetMetadataDbCommands.cs" />
     <Compile Include="MediaDatabase\PresetMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\Tag.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\TagCategory.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\TagCategoryPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagDbCommands.cs" />
     <Compile Include="MediaDatabase\TagPartial.cs" />
-    <Compile Include="MediaDatabase\Thumbnail.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
     <Compile Include="MediaDatabase\UnknownMetadataPartial.cs" />
     <Compile Include="MediaDatabase\VideoMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\VideoProps.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="Model\Media\Metadata\ImageMetadataReader.cs" />
     <Compile Include="Model\Media\Metadata\ImageMetadataWriter.cs" />
     <Compile Include="Model\Media\State\MediaState.cs" />
@@ -655,6 +658,10 @@
     <Compile Include="VideoPanel\VideoNavigationItemView.xaml.cs">
       <DependentUpon>VideoNavigationItemView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VideoPanel\VideoOpenLocationView.xaml.cs">
+      <DependentUpon>VideoOpenLocationView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="VideoPanel\VideoOpenLocationViewModel.cs" />
     <Compile Include="VideoPanel\VideoSettingsView.xaml.cs">
       <DependentUpon>VideoSettingsView.xaml</DependentUpon>
     </Compile>
@@ -743,6 +750,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UserControls\MediaGridItem\MediaGridItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UserControls\MediaPreview\MediaPreviewView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -939,6 +950,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="VideoPanel\VideoNavigationItemView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VideoPanel\VideoOpenLocationView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -1160,6 +1175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Images\loading.png" />
     <Resource Include="Resources\Icons\browser.ico" />
     <Resource Include="Resources\Icons\pictures.ico" />
     <Resource Include="Resources\Icons\video.ico" />

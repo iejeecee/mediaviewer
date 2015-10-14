@@ -44,12 +44,7 @@ namespace MediaViewer.Model.Settings
             {
                 ViewModel.SelectedCategory = ViewModel.Categories[0];
             }
-
-            foreach (SettingsBase settings in ViewModel.Categories)
-            {
-                settings.Load();
-            }
-
+         
             DataContext = ViewModel;
 
             this.Closed += globalSettingsView_Closed;

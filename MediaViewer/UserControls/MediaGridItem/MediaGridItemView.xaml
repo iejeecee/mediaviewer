@@ -78,7 +78,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                                             <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="LOADED">
                                                 <Setter Property="Image.Visibility" Value="Visible"/>
                                                 <Setter Property="Image.Stretch" Value="Uniform"/>
-                                                <Setter Property="Image.Source" Value="{Binding Item.Metadata.Thumbnail.Image}"/>
+                                                <Setter Property="Image.Source" Value="{Binding Item.Metadata, Converter={StaticResource thumbnailSelector}}"/>
                                                 <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
                                                 <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                             </DataTrigger>
@@ -86,6 +86,20 @@ d:DesignHeight="300" d:DesignWidth="300">
                                                 <Setter Property="Image.Visibility" Value="Visible"/>
                                                 <Setter Property="Image.Stretch" Value="None"/>
                                                 <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource errorImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                                <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
+                                                <Setter Property="UIElement.Effect" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="LOADING">
+                                                <Setter Property="Image.Visibility" Value="Visible"/>
+                                                <Setter Property="Image.Stretch" Value="None"/>
+                                                <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource loadingImage}, Converter={StaticResource thumbnailSelector}}"/>
+                                                <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
+                                                <Setter Property="UIElement.Effect" Value="{x:Null}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="EMPTY">
+                                                <Setter Property="Image.Visibility" Value="Visible"/>
+                                                <Setter Property="Image.Stretch" Value="None"/>
+                                                <Setter Property="Image.Source" Value="{Binding Item.Metadata, ConverterParameter={StaticResource loadingImage}, Converter={StaticResource thumbnailSelector}}"/>
                                                 <Setter Property="Image.ToolTip" Value="{Binding Item.Metadata.DefaultFormatCaption}"/>
                                                 <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                             </DataTrigger>

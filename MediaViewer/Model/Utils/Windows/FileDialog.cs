@@ -13,6 +13,7 @@ namespace MediaViewer.Model.Utils.Windows
         {
             VIDEO,
             IMAGE,
+            AUDIO,
             ALL
         }
 
@@ -22,39 +23,48 @@ namespace MediaViewer.Model.Utils.Windows
 
             String imageFiles = "Image Files|";
             String videoFiles = "Video Files|";
+            String audioFiles = "Audio Files|";
             String allFiles = "All Files|*.*";
 
             foreach (KeyValuePair<String, String> pair in MediaFormatConvert.extToMimeType)
             {
-
                 String filter = "*." + pair.Key + ";";
 
                 if (pair.Value.StartsWith("image"))
                 {
-
                     imageFiles += filter;
-
                 }
-                else
+                else if(pair.Value.StartsWith("video"))
                 {
-
                     videoFiles += filter;
+                }
+                else if (pair.Value.StartsWith("audio"))
+                {
+                    audioFiles += filter;
                 }
             }
 
             imageFiles = imageFiles.Remove(imageFiles.Length - 1) + "|";
             videoFiles = videoFiles.Remove(videoFiles.Length - 1) + "|";
+            audioFiles = audioFiles.Remove(audioFiles.Length - 1) + "|";
 
             if (type == MediaDialogType.IMAGE)
             {
                 videoFiles = "";
+                audioFiles = "";
             }
             else if (type == MediaDialogType.VIDEO)
             {
                 imageFiles = "";
+                audioFiles = "";
+            }
+            else if (type == MediaDialogType.AUDIO)
+            {
+                videoFiles = "";
+                imageFiles = "";
             }
 
-            openFileDialog.Filter = imageFiles + videoFiles + allFiles;
+            openFileDialog.Filter = imageFiles + videoFiles + audioFiles + allFiles;
             openFileDialog.FilterIndex = 1;
 
             return (openFileDialog);

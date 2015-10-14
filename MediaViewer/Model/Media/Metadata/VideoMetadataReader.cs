@@ -73,9 +73,16 @@ namespace MediaViewer.Model.Media.Metadata
 
                 try
                 {
-                    if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) && videoPreview != null)
+                    if (videoPreview != null)
                     {
-                        generateThumbnail(videoPreview, video, token, timeoutSeconds);
+                        if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL))
+                        {
+                            generateThumbnail(videoPreview, video, token, timeoutSeconds, 1);
+                        }
+                        else if(options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
+                        {
+                            generateThumbnail(videoPreview, video, token, timeoutSeconds, 16);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -109,12 +116,12 @@ namespace MediaViewer.Model.Media.Metadata
         }
 
         public void generateThumbnail(VideoPreview videoPreview, VideoMetadata video, 
-            CancellationToken token, int timeoutSeconds)
+            CancellationToken token, int timeoutSeconds, int nrThumbnails)
          {
 
              List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
-                 MAX_THUMBNAIL_HEIGHT, -1, 1, 0.025, token, timeoutSeconds);
-
+                  MAX_THUMBNAIL_HEIGHT, -1, nrThumbnails, 0.025, token, timeoutSeconds);
+            
              if (thumbBitmaps.Count == 0)
              {
 
@@ -123,15 +130,13 @@ namespace MediaViewer.Model.Media.Metadata
                      MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
              }
 
-             if (thumbBitmaps.Count > 0)
+             video.Thumbnails.Clear();
+
+             foreach (VideoThumb videoThumb in thumbBitmaps)
              {
-                 video.Thumbnail = new Thumbnail(thumbBitmaps[0].Thumb);
+                 video.Thumbnails.Add(new Thumbnail(videoThumb.Thumb, videoThumb.PositionSeconds));
              }
-             else
-             {
-                 video.Thumbnail = null;
-             }
-           
+                        
          }
 
          static List<String> encoderMatch = new List<String>() { "encoder", "wm/toolname","encoded_with"};

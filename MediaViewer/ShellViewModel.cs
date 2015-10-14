@@ -168,7 +168,7 @@ namespace MediaViewer
 
         public void navigateToVideoView(MediaItem item = null, int? offsetSeconds = null, MediaItem audio = null)
         {
-            String currentLocation = VideoViewModel.CurrentItem.IsEmpty ? null : VideoViewModel.CurrentItem.Video.Location;
+            String currentLocation = VideoViewModel.CurrentItem.IsEmpty ? null : VideoViewModel.CurrentItem.Location;
             String newLocation = item == null ? null : item.Location;
 
             if (RegionManager.Regions[RegionNames.MainContentRegion].ActiveViews.FirstOrDefault() is VideoView &&

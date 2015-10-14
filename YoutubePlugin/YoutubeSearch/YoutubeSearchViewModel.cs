@@ -85,8 +85,13 @@ namespace YoutubePlugin.YoutubeSearch
                 }
                 
                
-                searchListRequest.PublishedAfter = publishedAfter;
+                searchListRequest.PublishedAfter = publishedAfter;              
                 searchListRequest.VideoDuration = (Google.Apis.YouTube.v3.SearchResource.ListRequest.VideoDurationEnum)VideoDuration.CurrentItem;
+
+                if (searchListRequest.VideoDuration != SearchResource.ListRequest.VideoDurationEnum.Any)
+                {
+                    searchListRequest.Type = "video";
+                }
 
                 if((ResourceType)Type.CurrentItem != ResourceType.Any) {
 

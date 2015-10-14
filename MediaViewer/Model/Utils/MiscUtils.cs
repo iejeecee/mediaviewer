@@ -31,6 +31,61 @@ namespace MediaViewer.Model.Utils
             hours = (int)(totalSeconds / 3600);
         }
 
+        static string formatTimeUnits(int units, string type)
+        {       
+            if (units == 1)
+            {
+                return ("1 " + type);
+            }
+            else
+            {
+                return (units.ToString() + " " + type + "s");
+            }
+        }
+
+        public static string formatTimeAgo(DateTime time)
+        {
+            TimeSpan ago = new TimeSpan(DateTime.Now.Ticks - time.Ticks);
+
+            if(ago.TotalDays > 365)
+            {
+                return formatTimeUnits((int)(ago.TotalDays / 365), "year");                
+            }
+
+            if (ago.TotalDays > 28)
+            {
+                return formatTimeUnits((int)(ago.TotalDays / 28), "month"); 
+            }
+
+            if (ago.TotalDays >= 7)
+            {
+                return formatTimeUnits((int)(ago.TotalDays / 7), "week"); 
+            }
+          
+            if (ago.TotalHours > 24)
+            {
+                return formatTimeUnits((int)ago.TotalDays, "day");              
+            }
+
+            if (ago.TotalHours >= 1)
+            {
+                return formatTimeUnits((int)ago.TotalHours, "hour");
+            }
+
+            if (ago.TotalMinutes >= 1)
+            {
+                return formatTimeUnits((int)ago.TotalMinutes, "minute");
+            }
+
+            if (ago.TotalSeconds >= 1)
+            {
+                return formatTimeUnits((int)ago.TotalSeconds, "second");
+            }
+
+            return formatTimeUnits((int)ago.TotalMilliseconds, "millisecond");
+           
+        }
+
         public static string formatTimeSeconds(long totalSeconds)
         {
             int seconds, minutes, hours;       

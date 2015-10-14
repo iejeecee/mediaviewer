@@ -29,7 +29,7 @@ namespace MediaViewer.MediaFileGrid
             NrColumns = 4;
 
             MediaStateCollectionView = new MediaFileStateCollectionView(mediaState);       
-            MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
+            
             
             ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
             {
@@ -135,6 +135,8 @@ namespace MediaViewer.MediaFileGrid
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
+
             List<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
 
             EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, selectedItems));
@@ -155,6 +157,8 @@ namespace MediaViewer.MediaFileGrid
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
+            MediaStateCollectionView.SelectionChanged -= MediaStateCollectionView_SelectionChanged;
+
             PrevFilterMode = MediaStateCollectionView.MediaFilter;
         }
     }                                     

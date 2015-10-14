@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media.Imaging;
@@ -168,6 +169,64 @@ namespace MediaViewer.Infrastructure.Utils
                 return (Rotation.Rotate0);
             }
 
+        }
+
+        private static bool isUrl(string path)
+        {
+            Uri uriResult;
+
+            bool isUrl = Uri.TryCreate(path, UriKind.Absolute, out uriResult) && uriResult.Scheme == Uri.UriSchemeHttp;
+
+            return (isUrl);
+        }
+
+        public static BitmapImage loadImage(string location, CancellationToken token)
+        {
+
+            if (token.IsCancellationRequested)
+            {
+                throw new OperationCanceledException(token);
+            }
+
+            BitmapImage loadedImage = new BitmapImage();
+            Stream imageData = null;
+
+            try
+            {
+                if (isUrl(location))
+                {
+                    imageData = new MemoryStream();
+                    String mimeType;
+
+                    StreamUtils.readHttpRequest(new Uri(location), imageData, out mimeType, token);
+                }
+                else
+                {
+                    imageData = File.Open(location, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                }
+
+                Rotation rotation = ImageUtils.getBitmapRotation(imageData);
+                imageData.Position = 0;
+
+                loadedImage.BeginInit();
+                loadedImage.CacheOption = BitmapCacheOption.OnLoad;
+                loadedImage.StreamSource = imageData;
+                loadedImage.Rotation = rotation;
+                loadedImage.EndInit();
+
+                loadedImage.Freeze();
+
+                Logger.Log.Info("Image loaded: " + location);
+
+                return (loadedImage);
+            }
+            finally
+            {
+                if (imageData != null)
+                {
+                    imageData.Close();
+                }
+            }
         }
       
 

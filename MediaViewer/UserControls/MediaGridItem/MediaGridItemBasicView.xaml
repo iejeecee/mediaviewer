@@ -90,7 +90,7 @@ d:DesignHeight="300" d:DesignWidth="300">
                                         <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="LOADED">
                                             <Setter Property="Image.Visibility" Value="Visible"/>
                                             <Setter Property="Image.Stretch" Value="Uniform"/>
-                                            <Setter Property="Image.Source" Value="{Binding Item.Metadata.Thumbnail.Image}"/>
+                                            <Setter Property="Image.Source" Value="{Binding Item.Metadata, Converter={StaticResource thumbnailSelector}}"/>
                                             <Setter Property="UIElement.Effect" Value="{x:Null}"/>
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Parent.SelectableMediaItem.Item.ItemState, ElementName=root}" Value="FILE_NOT_FOUND">

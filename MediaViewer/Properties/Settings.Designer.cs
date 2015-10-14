@@ -67,5 +67,41 @@ namespace MediaViewer.Properties {
                 this["IsUpgradeRequired"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IsVideoScreenShotLocationAsk {
+            get {
+                return ((bool)(this["IsVideoScreenShotLocationAsk"]));
+            }
+            set {
+                this["IsVideoScreenShotLocationAsk"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsVideoScreenShotLocationCurrent {
+            get {
+                return ((bool)(this["IsVideoScreenShotLocationCurrent"]));
+            }
+            set {
+                this["IsVideoScreenShotLocationCurrent"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool IsVideoScreenShotLocationFixed {
+            get {
+                return ((bool)(this["IsVideoScreenShotLocationFixed"]));
+            }
+            set {
+                this["IsVideoScreenShotLocationFixed"] = value;
+            }
+        }
     }
 }

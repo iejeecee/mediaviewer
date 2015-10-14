@@ -280,7 +280,7 @@ namespace YoutubePlugin
         public override object getExtraInfo(SelectableMediaItem selectableItem)
         {
             String info = null;
-            string dateFormat = "MMM d, yyyy";
+            //string dateFormat = "MMM d, yyyy";
 
             YoutubeItemMetadata metadata = (YoutubeItemMetadata)selectableItem.Item.Metadata;
 
@@ -311,8 +311,8 @@ namespace YoutubePlugin
                 case SortMode.Author:
                     info = metadata.Author;
                     break;
-                case SortMode.PublishedAt:
-                    info = metadata.CreationDate.Value.ToString(dateFormat);
+                case SortMode.PublishedAt:                                     
+                    info = MiscUtils.formatTimeAgo(metadata.CreationDate.Value) + " ago";
                     break;
                 case SortMode.ViewCount:
                     if (metadata.ViewCount != null)

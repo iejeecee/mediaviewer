@@ -26,11 +26,12 @@ namespace MediaViewer.Model.metadata.Metadata
 
         public enum ReadOptions
         {
-            AUTO = 0x1,
-            READ_FROM_DISK = 0x2,
-            READ_FROM_DATABASE = 0x4,      
-            GENERATE_THUMBNAIL = 0x8,
-            LEAVE_STREAM_OPENED_AFTER_READ = 0x10
+            AUTO = 1,
+            READ_FROM_DISK = 1 << 1,
+            READ_FROM_DATABASE = 1 << 2,
+            GENERATE_THUMBNAIL = 1 << 3,
+            GENERATE_MULTIPLE_THUMBNAILS = 1 << 4,
+            LEAVE_STREAM_OPENED_AFTER_READ = 1 << 5
         }
 
         public enum WriteOptions
@@ -178,9 +179,9 @@ namespace MediaViewer.Model.metadata.Metadata
                 {
                     metadata.IsImported = true;
 
-                    if (metadata.Thumbnail != null)
+                    foreach(Thumbnail thumb in metadata.Thumbnails)
                     {
-                        metadata.Thumbnail.decodeImage();
+                        thumb.decodeImage();
                     }
 
                     if (options.HasFlag(ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ))
@@ -285,7 +286,6 @@ namespace MediaViewer.Model.metadata.Metadata
                 {
                     if (options.HasFlag(ReadOptions.AUTO) || options.HasFlag(ReadOptions.READ_FROM_DATABASE))
                     {
-
                         metadata = readMetadataFromDatabase(location, options, token, timeoutSeconds);
                     }
 

@@ -18,6 +18,36 @@ namespace MediaViewer.VideoPanel
         public MediaItem Video { get; set; }
         public MediaItem Audio { get; set; }
 
+        public string Location
+        {
+            get
+            {
+                if (IsEmpty == false)
+                {
+                    return Video != null ? Video.Location : Audio.Location;
+                }
+                else
+                {
+                    return (null);
+                }
+            }
+        }
+
+        public string Name
+        {
+            get
+            {
+                if (IsEmpty == false)
+                {
+                    return Video != null ? Video.Name : Audio.Name;
+                }
+                else
+                {
+                    return (null);
+                }
+            }
+        }
+
         public bool IsEmpty
         {
             get

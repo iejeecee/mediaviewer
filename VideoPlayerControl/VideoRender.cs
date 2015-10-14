@@ -219,7 +219,7 @@ namespace VideoPlayerControl
         }
 
         
-        void releaseResources()
+        public void releaseResources()
         {
             Utils.removeAndDispose(ref backBuffer); 
             Utils.removeAndDispose(ref offscreen);                                 
@@ -499,7 +499,10 @@ namespace VideoPlayerControl
             
             if (DisplayInfoText && !String.IsNullOrEmpty(InfoText))
             {
-                                                                                   //AABBGGRR
+                //SharpDX.Rectangle size = infoFont.MeasureText(null, InfoText, FontDrawFlags.Left);
+                //Rectangle.
+                
+                    //AABBGGRR
                 infoFont.DrawText(null, InfoText, 5, 0, SharpDX.ColorBGRA.FromRgba(0xFFFFFFFF));
             }
             

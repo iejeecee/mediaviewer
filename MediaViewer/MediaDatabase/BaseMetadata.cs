@@ -18,6 +18,7 @@ namespace MediaViewer.MediaDatabase
         {
             this.SupportsXMPMetadata = true;
             this.Tags = new HashSet<Tag>();
+            this.Thumbnails = new HashSet<Thumbnail>();
         }
     
         public int Id { get; set; }
@@ -39,9 +40,8 @@ namespace MediaViewer.MediaDatabase
         public Nullable<double> Latitude { get; set; }
         public Nullable<double> Longitude { get; set; }
         public System.DateTime FileDate { get; set; }
-        public Nullable<int> ThumbnailId { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
-        public virtual Thumbnail Thumbnail { get; set; }
+        public virtual ICollection<Thumbnail> Thumbnails { get; set; }
     }
 }

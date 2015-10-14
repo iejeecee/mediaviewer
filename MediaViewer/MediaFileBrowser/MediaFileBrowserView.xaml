@@ -36,6 +36,7 @@
         </Grid.ColumnDefinitions>
         <Layout:TabbedExpanderPanel x:Name="leftExpanderPanel" Grid.Column="0" HorizontalAlignment="Stretch" 
                               VerticalAlignment="Stretch" regions:RegionManager.RegionName="leftExpanderPanelRegion">
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="True" regions:RegionManager.RegionName="mediaPreviewExpander" />
             <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="2" IsExpanded="True" regions:RegionManager.RegionName="mediaSearchExpander" />
             <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="False" regions:RegionManager.RegionName="mediaFilterExpander" />
         </Layout:TabbedExpanderPanel>

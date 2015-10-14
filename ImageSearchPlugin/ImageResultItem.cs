@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Utils;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils;
@@ -46,7 +47,7 @@ namespace ImageSearchPlugin
                 bitmapSource.Freeze();
 
                 ImageMetadata metaData = new ImageMetadata();
-                metaData.Thumbnail = new Thumbnail(bitmapSource);
+                metaData.Thumbnails.Add(new Thumbnail(bitmapSource));
 
                 metaData.Title = ImageInfo.Title;
                 metaData.Location = ImageInfo.MediaUrl;

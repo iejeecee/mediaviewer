@@ -28,9 +28,9 @@ namespace MediaViewer.GridImage.ImageCollage
                 }
                 else 
                 {
-                    if (item.Metadata != null && item.Metadata.Thumbnail != null)
+                    if (item.Metadata != null && item.Metadata.Thumbnails.Count == 0)
                     {
-                        images.Add(item.Metadata.Thumbnail.Image);
+                        images.Add(item.Metadata.Thumbnails.ElementAt(0).Image);
                     }
                 }
             }

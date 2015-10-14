@@ -27,6 +27,7 @@ namespace MediaViewer.MediaDatabase
             Data = data;
             MimeType = MediaFormatConvert.fileNameToMimeType(location);            
             Tags = new HashSet<Tag>();
+            Thumbnails = new HashSet<Thumbnail>();
            
             isImported = false;
             isModified = false;
@@ -96,7 +97,7 @@ namespace MediaViewer.MediaDatabase
 
             Software = null;
             Tags = new HashSet<Tag>();
-            Thumbnail = null;           
+            Thumbnails = new HashSet<Thumbnail>();           
             Title = null;
    
         }

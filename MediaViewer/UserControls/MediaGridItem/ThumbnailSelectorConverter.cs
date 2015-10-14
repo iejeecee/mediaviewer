@@ -15,13 +15,13 @@ namespace MediaViewer.UserControls.MediaGridItem
         {
             BaseMetadata media = (BaseMetadata)value;
 
-            if (media == null || media.Thumbnail == null) 
+            if (media == null || media.Thumbnails.Count == 0) 
             {
                 return (parameter);
             }
             else
             {               
-                return (media.Thumbnail.Image);
+                return (media.Thumbnails.ElementAt(0).Image);
             }
             
         }

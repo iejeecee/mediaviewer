@@ -21,9 +21,7 @@ namespace MediaViewer.Model.Utils
 {
     public class FileUtils
     {
-
         
-
         private enum CopyFileCallbackAction
         {
             CONTINUE = 0,

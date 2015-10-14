@@ -45,9 +45,9 @@
       <End Role="Tag" EntitySet="TagSet" />
       <End Role="BaseMetadataTag" EntitySet="BaseMetadataTag" />
     </AssociationSet>
-    <AssociationSet Name="ThumbnailBaseMetadata" Association="MediaDatabase.Store.ThumbnailBaseMetadata">
-      <End Role="Thumbnail" EntitySet="ThumbnailSet" />
+    <AssociationSet Name="BaseMetadataThumbnail" Association="MediaDatabase.Store.BaseMetadataThumbnail">
       <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
+      <End Role="Thumbnail" EntitySet="ThumbnailSet" />
     </AssociationSet>
     <AssociationSet Name="FK_ImageMetadata_inherits_BaseMetadata" Association="MediaDatabase.Store.FK_ImageMetadata_inherits_BaseMetadata">
       <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
@@ -103,7 +103,6 @@
     <Property Name="Latitude" Type="float" Nullable="true" />
     <Property Name="Longitude" Type="float" Nullable="true" />
     <Property Name="FileDate" Type="datetime" Nullable="false" />
-    <Property Name="ThumbnailId" Type="int" Nullable="true" />
   </EntityType>
   <EntityType Name="PresetMetadataSet">
     <Key>
@@ -134,6 +133,8 @@
     <Property Name="ImageData" Type="varbinary(max)" Nullable="false" />
     <Property Name="Width" Type="smallint" Nullable="false" />
     <Property Name="Height" Type="smallint" Nullable="false" />
+    <Property Name="TimeSeconds" Type="float" Nullable="true" />
+    <Property Name="BaseMetadataId" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="BaseMetadataSet_ImageMetadata">
     <Key>
@@ -231,15 +232,15 @@
       </Dependent>
     </ReferentialConstraint>
   </Association>
-  <Association Name="ThumbnailBaseMetadata">
-    <End Role="Thumbnail" Type="MediaDatabase.Store.ThumbnailSet" Multiplicity="0..1" />
-    <End Role="BaseMetadata" Type="MediaDatabase.Store.BaseMetadataSet" Multiplicity="*" />
+  <Association Name="BaseMetadataThumbnail">
+    <End Role="BaseMetadata" Type="MediaDatabase.Store.BaseMetadataSet" Multiplicity="1" />
+    <End Role="Thumbnail" Type="MediaDatabase.Store.ThumbnailSet" Multiplicity="*" />
     <ReferentialConstraint>
-      <Principal Role="Thumbnail">
+      <Principal Role="BaseMetadata">
         <PropertyRef Name="Id" />
       </Principal>
-      <Dependent Role="BaseMetadata">
-        <PropertyRef Name="ThumbnailId" />
+      <Dependent Role="Thumbnail">
+        <PropertyRef Name="BaseMetadataId" />
       </Dependent>
     </ReferentialConstraint>
   </Association>
@@ -383,9 +384,9 @@
             <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
             <End Role="Tag" EntitySet="TagSet" />
           </AssociationSet>
-          <AssociationSet Name="ThumbnailBaseMetadata" Association="MediaDatabase.ThumbnailBaseMetadata">
-            <End Role="Thumbnail" EntitySet="ThumbnailSet" />
+          <AssociationSet Name="BaseMetadataThumbnail" Association="MediaDatabase.BaseMetadataThumbnail">
             <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
+            <End Role="Thumbnail" EntitySet="ThumbnailSet" />
           </AssociationSet>
         </EntityContainer>
         <EntityType Name="Tag">
@@ -447,8 +448,7 @@
           <Property Type="Double" Name="Longitude" Nullable="true" />
           <Property Type="DateTime" Name="FileDate" Nullable="false" />
           <NavigationProperty Name="Tags" Relationship="MediaDatabase.BaseMetadataTag" FromRole="BaseMetadata" ToRole="Tag" />
-          <NavigationProperty Name="Thumbnail" Relationship="MediaDatabase.ThumbnailBaseMetadata" FromRole="BaseMetadata" ToRole="Thumbnail" />
-          <Property Type="Int32" Name="ThumbnailId" Nullable="true" />
+          <NavigationProperty Name="Thumbnails" Relationship="MediaDatabase.BaseMetadataThumbnail" FromRole="BaseMetadata" ToRole="Thumbnail" />
         </EntityType>
         <EntityType Name="PresetMetadata">
           <Key>
@@ -488,7 +488,9 @@
           <Property Type="Binary" Name="ImageData" Nullable="false" />
           <Property Type="Int16" Name="Width" Nullable="false" />
           <Property Type="Int16" Name="Height" Nullable="false" />
-          <NavigationProperty Name="BaseMetadata" Relationship="MediaDatabase.ThumbnailBaseMetadata" FromRole="Thumbnail" ToRole="BaseMetadata" />
+          <Property Type="Double" Name="TimeSeconds" Nullable="true" />
+          <NavigationProperty Name="BaseMetadata" Relationship="MediaDatabase.BaseMetadataThumbnail" FromRole="Thumbnail" ToRole="BaseMetadata" />
+          <Property Type="Int32" Name="BaseMetadataId" Nullable="false" />
         </EntityType>
         <ComplexType Name="ImageProps" >
           <Property Type="Int32" Name="Width" Nullable="true" />
@@ -557,15 +559,15 @@
           <End Type="MediaDatabase.BaseMetadata" Role="BaseMetadata" Multiplicity="*" />
           <End Type="MediaDatabase.Tag" Role="Tag" Multiplicity="*" />
         </Association>
-        <Association Name="ThumbnailBaseMetadata">
-          <End Type="MediaDatabase.Thumbnail" Role="Thumbnail" Multiplicity="0..1" />
-          <End Type="MediaDatabase.BaseMetadata" Role="BaseMetadata" Multiplicity="*" />
+        <Association Name="BaseMetadataThumbnail">
+          <End Type="MediaDatabase.BaseMetadata" Role="BaseMetadata" Multiplicity="1" />
+          <End Type="MediaDatabase.Thumbnail" Role="Thumbnail" Multiplicity="*" />
           <ReferentialConstraint>
-            <Principal Role="Thumbnail">
+            <Principal Role="BaseMetadata">
               <PropertyRef Name="Id" />
             </Principal>
-            <Dependent Role="BaseMetadata">
-              <PropertyRef Name="ThumbnailId" />
+            <Dependent Role="Thumbnail">
+              <PropertyRef Name="BaseMetadataId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -617,7 +619,6 @@
           <ScalarProperty Name="Latitude" ColumnName="Latitude" />
           <ScalarProperty Name="Longitude" ColumnName="Longitude" />
           <ScalarProperty Name="FileDate" ColumnName="FileDate" />
-          <ScalarProperty Name="ThumbnailId" ColumnName="ThumbnailId" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.ImageMetadata)">
@@ -707,6 +708,8 @@
           <ScalarProperty Name="ImageData" ColumnName="ImageData" />
           <ScalarProperty Name="Width" ColumnName="Width" />
           <ScalarProperty Name="Height" ColumnName="Height" />
+          <ScalarProperty Name="TimeSeconds" ColumnName="TimeSeconds" />
+          <ScalarProperty Name="BaseMetadataId" ColumnName="BaseMetadataId" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

@@ -18,8 +18,8 @@ namespace MediaViewer.Model.Media.Metadata
     {
         
 
-        protected const int MAX_THUMBNAIL_WIDTH = 160;
-        protected const int MAX_THUMBNAIL_HEIGHT = 160;
+        protected const int MAX_THUMBNAIL_WIDTH = 480;
+        protected const int MAX_THUMBNAIL_HEIGHT = 360;
         protected static DateTime sqlMinDate = new DateTime(1753, 1, 1);     
 
         public virtual void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, CancellationToken token, int timeoutSeconds)

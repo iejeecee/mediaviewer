@@ -59,15 +59,34 @@ void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, Str
 {
 	try {		
 	
+		if(videoLocation == nullptr) {
+
+			if(audioLocation == nullptr) {
+
+				throw gcnew ArgumentException("video and audio location cannot both be null");
+
+			} else {
+
+				videoLocation = audioLocation;
+				videoFormatName = audioFormatName;
+				audioLocation = nullptr;
+				audioFormatName = nullptr;
+			}
+
+		}
+
+
 		decoder->clear();
 		decoder->push_back(videoDecoder);
 
 		VIDEODECODER->open(videoLocation, token, videoFormatName);
 
-		AVPixelFormat outputPixelFormat = PIX_FMT_YUV420P;
+		if(VIDEODECODER->hasVideo()) {
 
-		switch(videoFormat) 
-		{
+			AVPixelFormat outputPixelFormat = PIX_FMT_YUV420P;
+
+			switch(videoFormat) 
+			{
 			case OutputPixelFormat::YUV420P:
 				{
 					outputPixelFormat = PIX_FMT_YUV420P;
@@ -93,10 +112,12 @@ void VideoPlayer::open(String ^videoLocation, OutputPixelFormat videoFormat, Str
 					outputPixelFormat = PIX_FMT_BGRA;
 					break;
 				}
-		}
+			}
 
-		VIDEODECODER->setVideoOutputFormat(outputPixelFormat,
-			VIDEODECODER->getWidth(), VIDEODECODER->getHeight(), VideoDecoder::X);
+			VIDEODECODER->setVideoOutputFormat(outputPixelFormat,
+				VIDEODECODER->getWidth(), VIDEODECODER->getHeight(), VideoDecoder::X);
+
+		}
 
 		if(audioLocation != nullptr) {
 

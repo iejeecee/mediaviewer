@@ -1,5 +1,6 @@
 ﻿using Google.Apis.Requests;
 using Google.Apis.YouTube.v3.Data;
+using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Streamed;
@@ -45,7 +46,7 @@ namespace YoutubePlugin.Item
 
                 SearchResult searchInfo = Info as SearchResult;
 
-                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
+                metaData.Thumbnails.Add(new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token)));
                 metaData.CreationDate = PublishedAt;
                 metaData.Title = Name;
                 metaData.Description = String.IsNullOrEmpty(Description) ? Name : Description;

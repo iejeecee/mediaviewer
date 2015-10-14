@@ -62,8 +62,6 @@ namespace MediaViewer
         public Shell()
         {
 
-            //ColorUtils.printSystemColors();
-
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
 
             InitializeComponent();
@@ -76,9 +74,7 @@ namespace MediaViewer
 
             this.Closing += Shell_Closing;
 
-            //RenderOptions.SetEdgeMode(this, EdgeMode.Aliased);
-
-            //InitializeDb.initialize();         
+               
         }
 
         public void OnImportsSatisfied()

@@ -101,12 +101,7 @@ namespace ImageSearchPlugin
            
             FixedDownloadPathHistory = ImageSearchPlugin.Properties.Settings.Default.FixedDownloadPathHistory;
             
-        }
-
-        protected override void OnLoad()
-        {
-            
-        }
+        }      
 
         protected override void OnSave()
         {            

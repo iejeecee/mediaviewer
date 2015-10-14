@@ -17,7 +17,7 @@
         <GradientStop Color="#888" Offset="1" />
     </LinearGradientBrush>
               
-    <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading1.gif"/>
+    <BitmapImage x:Key="loadingImage" UriSource="/Resources/Images/loading.png"/>
     <BitmapImage x:Key="errorImage" UriSource="/Resources/Images/error.png"/>   
          
     

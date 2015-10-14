@@ -312,19 +312,20 @@ public:
 			Marshal::FreeHGlobal(p);			
 		}
 
+		// allow cancellation of IO operations
 		*cancellationToken = token;
 		
 		ioInterruptSettings.callback = ioInterruptCallback;
 		ioInterruptSettings.opaque = cancellationToken;
- 
-		 // Initialize Input format context
+ 		
 		formatContext = avformat_alloc_context();
 		formatContext->interrupt_callback = ioInterruptSettings;
 		
+	    // Initialize Input format context
 		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, NULL)) != 0)
 		{		
-			if(errorCode == AVERROR_EXIT) {
-
+			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
+				
 				throw gcnew System::OperationCanceledException(*token);
 
 			} else {
@@ -339,7 +340,7 @@ public:
 		
 		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
 		{		
-			if(errorCode == AVERROR_EXIT) {
+			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
 
 				throw gcnew System::OperationCanceledException(*token);
 
@@ -420,6 +421,8 @@ public:
 			nrChannels = getAudioCodecContext()->channels;
 		}		
 
+		// make sure a cancel exception is thrown if open was cancelled at any point during it's execution
+		token->ThrowIfCancellationRequested();
 	}
 
 	int getSizeBytes() const {
@@ -495,6 +498,11 @@ public:
 	// reads a frame from the input stream and places it into a packet
 	ReadFrameResult readFrame(AVPacket *packet) {
 		
+		if((*cancellationToken)->IsCancellationRequested) {
+
+			return(ReadFrameResult::END_OF_STREAM);
+		}
+
 		int error = av_read_frame(getFormatContext(), packet);
 		if(error < 0) 
 		{					

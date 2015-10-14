@@ -19,11 +19,11 @@ namespace MediaViewer.Properties
             //
             this.SettingsLoaded += Settings_SettingsLoaded;
 
-            if (IsUpgradeRequired)
+            /*if (IsUpgradeRequired)
             {
                 Upgrade();
                 IsUpgradeRequired = false;
-            }
+            }*/
         }
 
         void Settings_SettingsLoaded(object sender, System.Configuration.SettingsLoadedEventArgs e)

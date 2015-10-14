@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 04/29/2015 23:32:54
+-- Date Created: 10/07/2015 19:50:34
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -38,8 +38,8 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_BaseMetadataTag_Tag]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[BaseMetadataTag] DROP CONSTRAINT [FK_BaseMetadataTag_Tag];
 GO
-IF OBJECT_ID(N'[dbo].[FK_ThumbnailBaseMetadata]', 'F') IS NOT NULL
-    ALTER TABLE [dbo].[BaseMetadataSet] DROP CONSTRAINT [FK_ThumbnailBaseMetadata];
+IF OBJECT_ID(N'[dbo].[FK_BaseMetadataThumbnail]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[ThumbnailSet] DROP CONSTRAINT [FK_BaseMetadataThumbnail];
 GO
 IF OBJECT_ID(N'[dbo].[FK_ImageMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[BaseMetadataSet_ImageMetadata] DROP CONSTRAINT [FK_ImageMetadata_inherits_BaseMetadata];
@@ -131,8 +131,7 @@ CREATE TABLE [dbo].[BaseMetadataSet] (
     [TimeStamp] TIMESTAMP  NOT NULL,
     [Latitude] float  NULL,
     [Longitude] float  NULL,
-    [FileDate] datetime  NOT NULL,
-    [ThumbnailId] int  NULL
+    [FileDate] datetime  NOT NULL
 );
 GO
 
@@ -162,7 +161,9 @@ CREATE TABLE [dbo].[ThumbnailSet] (
     [Id] int IDENTITY(1,1) NOT NULL,
     [ImageData] varbinary(max)  NOT NULL,
     [Width] smallint  NOT NULL,
-    [Height] smallint  NOT NULL
+    [Height] smallint  NOT NULL,
+    [TimeSeconds] float  NULL,
+    [BaseMetadataId] int  NOT NULL
 );
 GO
 
@@ -404,18 +405,18 @@ ON [dbo].[BaseMetadataTag]
     ([Tags_Id]);
 GO
 
--- Creating foreign key on [ThumbnailId] in table 'BaseMetadataSet'
-ALTER TABLE [dbo].[BaseMetadataSet]
-ADD CONSTRAINT [FK_ThumbnailBaseMetadata]
-    FOREIGN KEY ([ThumbnailId])
-    REFERENCES [dbo].[ThumbnailSet]
+-- Creating foreign key on [BaseMetadataId] in table 'ThumbnailSet'
+ALTER TABLE [dbo].[ThumbnailSet]
+ADD CONSTRAINT [FK_BaseMetadataThumbnail]
+    FOREIGN KEY ([BaseMetadataId])
+    REFERENCES [dbo].[BaseMetadataSet]
         ([Id])
     ON DELETE NO ACTION ON UPDATE NO ACTION;
 
--- Creating non-clustered index for FOREIGN KEY 'FK_ThumbnailBaseMetadata'
-CREATE INDEX [IX_FK_ThumbnailBaseMetadata]
-ON [dbo].[BaseMetadataSet]
-    ([ThumbnailId]);
+-- Creating non-clustered index for FOREIGN KEY 'FK_BaseMetadataThumbnail'
+CREATE INDEX [IX_FK_BaseMetadataThumbnail]
+ON [dbo].[ThumbnailSet]
+    ([BaseMetadataId]);
 GO
 
 -- Creating foreign key on [Id] in table 'BaseMetadataSet_ImageMetadata'

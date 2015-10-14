@@ -12,7 +12,7 @@
         <EntityTypeShape EntityType="MediaDatabase.PresetMetadata" Width="1.5" PointX="7.875" PointY="0.75" />
         <AssociationConnector Association="MediaDatabase.PresetMetadataTag" />
         <AssociationConnector Association="MediaDatabase.TagTag" />
-        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="0.875" PointY="3.75" />
+        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="0.875" PointY="3.75" IsExpanded="true" />
         <EntityTypeShape EntityType="MediaDatabase.ImageMetadata" Width="1.5" PointX="5.875" PointY="2" />
         <InheritanceConnector EntityType="MediaDatabase.ImageMetadata" />
         <EntityTypeShape EntityType="MediaDatabase.VideoMetadata" Width="1.5" PointX="2.5" PointY="5.75" />
@@ -22,7 +22,7 @@
         <InheritanceConnector EntityType="MediaDatabase.ImageMetadata" />
         <InheritanceConnector EntityType="MediaDatabase.VideoMetadata" />
         <AssociationConnector Association="MediaDatabase.BaseMetadataTag" />
-        <AssociationConnector Association="MediaDatabase.ThumbnailBaseMetadata" />
+        <AssociationConnector Association="MediaDatabase.BaseMetadataThumbnail" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

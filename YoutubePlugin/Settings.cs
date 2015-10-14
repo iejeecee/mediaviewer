@@ -22,11 +22,11 @@ namespace YoutubePlugin.Properties {
             //
             // this.SettingsSaving += this.SettingsSavingEventHandler;
             //
-            if (IsUpgradeRequired)
+            /*if (IsUpgradeRequired)
             {
                 Upgrade();
                 IsUpgradeRequired = false;
-            }
+            }*/
 
             SettingsLoaded += Settings_SettingsLoaded;           
         }

@@ -236,7 +236,7 @@ namespace MediaViewer.MediaFileStackPanel
                 List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
 
                 EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, items));
-  
+        
                 if(items.Count == 0) {
 
                     CurrentPage = null;

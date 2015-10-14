@@ -26,7 +26,7 @@ namespace MediaViewer.VideoPanel
             DirectoryPickerCommand = new Command(() =>
             {
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();
-                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
+                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;           
                 vm.SelectedPath = VideoScreenShotLocation;
                 vm.PathHistory = VideoScreenShotLocationHistory;
 
@@ -44,7 +44,10 @@ namespace MediaViewer.VideoPanel
             }
 
             VideoScreenShotLocation = Settings.Default.VideoScreenShotLocation;
-            VideoScreenShotTimeOffset = Settings.Default.VideoScreenShotTimeOffset;              
+            VideoScreenShotTimeOffset = Settings.Default.VideoScreenShotTimeOffset;
+            isVideoScreenShotLocationFixed = Settings.Default.IsVideoScreenShotLocationFixed;
+            IsVideoScreenShotLocationAsk = Settings.Default.IsVideoScreenShotLocationAsk;
+            IsVideoScreenShotLocationCurrent = Settings.Default.IsVideoScreenShotLocationCurrent;
         }
 
         int videoScreenShotTimeOffset;
@@ -55,15 +58,55 @@ namespace MediaViewer.VideoPanel
             set { SetProperty(ref videoScreenShotTimeOffset, value); }
         }
 
-        private String videoScreenShotLocation;
+        bool isVideoScreenShotLocationAsk;
+        public bool IsVideoScreenShotLocationAsk
+        {
+            get
+            {
+                return (isVideoScreenShotLocationAsk);
+            }
+            set
+            {
+                SetProperty(ref isVideoScreenShotLocationAsk, value);
+            }
+        }
 
+        bool isVideoScreenShotLocationCurrent;
+        public bool IsVideoScreenShotLocationCurrent
+        {
+            get
+            {
+                return (isVideoScreenShotLocationCurrent);
+            }
+            set
+            {
+                SetProperty(ref isVideoScreenShotLocationCurrent, value);
+            }
+        }
+
+        bool isVideoScreenShotLocationFixed;
+        public bool IsVideoScreenShotLocationFixed
+        {
+            get
+            {
+                return (isVideoScreenShotLocationFixed);
+            }
+            set
+            {
+                SetProperty(ref isVideoScreenShotLocationFixed, value);
+            }
+        }
+
+        string videoScreenShotLocation;
         public String VideoScreenShotLocation
         {
-            get { return videoScreenShotLocation; }
-            set {
-            
-                MiscUtils.insertIntoHistoryCollection(VideoScreenShotLocationHistory, value);
-                SetProperty(ref videoScreenShotLocation, value); 
+            get
+            {
+                return (videoScreenShotLocation);
+            }
+            set
+            {
+                SetProperty(ref videoScreenShotLocation, value);
             }
         }
 
@@ -72,6 +115,9 @@ namespace MediaViewer.VideoPanel
        
         protected override void OnSave() 
         {
+            Settings.Default.IsVideoScreenShotLocationAsk = IsVideoScreenShotLocationAsk;
+            Settings.Default.IsVideoScreenShotLocationCurrent = IsVideoScreenShotLocationCurrent;
+            Settings.Default.IsVideoScreenShotLocationFixed = isVideoScreenShotLocationFixed;
             Settings.Default.VideoScreenShotLocation = VideoScreenShotLocation;
             Settings.Default.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
             Settings.Default.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;

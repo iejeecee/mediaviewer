@@ -47,6 +47,7 @@ using MediaViewer.MediaFileBrowser.ImagePanel;
 using MediaViewer.Transcode.Image;
 using MediaViewer.Filter;
 using MediaViewer.MediaFileBrowser.DirectoryBrowser;
+using MediaViewer.UserControls.MediaPreview;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -389,9 +390,7 @@ namespace MediaViewer.MediaFileBrowser
         void initialize()
         {
             // add metadata view
-
             Uri metaDataViewUri = new Uri(typeof(MetaDataView).FullName, UriKind.Relative);
-
             RegionManager.RequestNavigate("mediaMetadataExpander", metaDataViewUri);
 
             // add tag filter
@@ -411,6 +410,10 @@ namespace MediaViewer.MediaFileBrowser
             Uri searchViewUri = new Uri(typeof(SearchView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate("mediaSearchExpander", searchViewUri);
+
+            // add media preview
+            Uri mediaPreviewUri = new Uri(typeof(MediaPreviewView).FullName, UriKind.Relative);
+            RegionManager.RequestNavigate("mediaPreviewExpander", mediaPreviewUri);
 
             navigateToMediaFileGrid();
         }
