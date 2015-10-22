@@ -222,7 +222,7 @@ namespace MediaViewer.Model.Media.File.Watcher
 
             if (changed.Count > 0)
             {
-                //MediaFileWatcher.MediaFiles.RemoveAll(removed);
+                MediaFileWatcher.MediaFileState.changedUIState(changed);
                 changed.Clear();
             }
 

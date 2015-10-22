@@ -229,7 +229,7 @@ namespace MediaViewer.Import
                     {
                         ItemInfo = "Reading Metadata: " + item.Location;
 
-                        item.readMetadata(MetadataFactory.ReadOptions.AUTO, CancellationToken);
+                        item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO, CancellationToken);
                         if (item.Metadata == null || item.Metadata is UnknownMetadata)
                         {
                             ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;

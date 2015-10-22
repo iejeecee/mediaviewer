@@ -35,7 +35,7 @@ namespace YoutubePlugin.YoutubeMetadata
             EventAggregator.GetEvent<SelectionEvent>().Subscribe(selectionEvent);
 
             IsBatchMode = false;
-        
+            IsReadOnly = true;
 
             RequestVideoInfoTaskTokenSource = new CancellationTokenSource();
             DynamicProperties = new ObservableCollection<Tuple<string, string>>();
@@ -67,7 +67,8 @@ namespace YoutubePlugin.YoutubeMetadata
             clear();
 
             if (items.Count == 0)
-            {                
+            {
+                IsReadOnly = true;
                 return;
             }
             else if (items.Count == 1)
@@ -86,7 +87,7 @@ namespace YoutubePlugin.YoutubeMetadata
         }
 
         async Task showItem(YoutubeItem item)
-        {
+        {         
             YoutubeItemMetadata metaData = item.Metadata as YoutubeItemMetadata;
 
             if (metaData == null)
@@ -98,6 +99,7 @@ namespace YoutubePlugin.YoutubeMetadata
             Rating = metaData.Rating == null ? null : metaData.Rating / 5;
             Author = metaData.Author;
             CreationDate = metaData.CreationDate;
+            IsReadOnly = item.IsReadOnly;
 
             Tags.Clear();
             foreach (Tag tag in metaData.Tags)
@@ -283,6 +285,14 @@ namespace YoutubePlugin.YoutubeMetadata
         {
             get { return isCreationDateEnabled; }
             set { SetProperty(ref isCreationDateEnabled, value); }
+        }
+
+        bool isReadOnly;
+
+        public bool IsReadOnly
+        {
+            get { return isReadOnly; }
+            set { SetProperty(ref isReadOnly, value); }
         }
 
         ObservableCollection<Tuple<String, String>> dynamicProperties;

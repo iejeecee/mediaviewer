@@ -33,13 +33,12 @@ namespace YoutubePlugin.Item
             Relevance = relevance;
         }
 
-        public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_WLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {
             String mimeType;
 
-            RWLock.EnterUpgradeableReadLock();
-            try
-            {
+            try 
+            {           
                 ItemState = MediaItemState.LOADING;
 
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
@@ -67,10 +66,7 @@ namespace YoutubePlugin.Item
                     ItemState = MediaItemState.ERROR;
                 }
             }
-            finally
-            {
-                RWLock.ExitUpgradeableReadLock();
-            }
+            
         }
 
        
@@ -137,6 +133,10 @@ namespace YoutubePlugin.Item
         public ThumbnailDetails Thumbnail { get; protected set; }    
         public DateTime? PublishedAt { get; protected set; }
         public String Description { get; protected set; }
-        
+
+        protected override void QueueOnPropertyChangedEvent(string propertyName)
+        {
+            OnPropertyChanged(propertyName);
+        }
     }
 }

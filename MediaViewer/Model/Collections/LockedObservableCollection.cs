@@ -21,7 +21,8 @@ namespace MediaViewer.Model.Collections
 
         public LockedObservableCollection()
         {           
-            rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);          
+            rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            //rwLock = new ReaderWriterLockSlim();  
 
             //http://stackoverflow.com/questions/2091988/how-do-i-update-an-observablecollection-via-a-worker-thread
             BindingOperations.EnableCollectionSynchronization(this, rwLock, new CollectionSynchronizationCallback(lockCollection));
@@ -74,7 +75,7 @@ namespace MediaViewer.Model.Collections
             }
         }
 
-        public void EnterReadLock()
+       public void EnterReadLock()
         {
             rwLock.EnterReadLock();
         }

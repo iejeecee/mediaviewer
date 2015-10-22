@@ -104,6 +104,8 @@ namespace MediaViewer.Model.metadata.Metadata
 
                 BaseMetadata metadata = createMetadataFromMimeType(location, options, response.ContentType, data, token, timeoutSeconds);
 
+                metadata.IsReadOnly = true;
+
                 return (metadata);
 
             }
@@ -130,6 +132,14 @@ namespace MediaViewer.Model.metadata.Metadata
             string mimeType = MediaFormatConvert.fileNameToMimeType(location);
 
             BaseMetadata metadata = createMetadataFromMimeType(location, options, mimeType, data, token, timeoutSeconds);
+
+            FileInfo info = new FileInfo(location);
+            info.Refresh();
+
+            if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
+            {
+                metadata.IsReadOnly = true;
+            }
 
             return (metadata);
         }
@@ -216,6 +226,11 @@ namespace MediaViewer.Model.metadata.Metadata
                             write(metadata, WriteOptions.WRITE_TO_DATABASE, null);
                         }
 
+                    }
+
+                    if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
+                    {
+                        metadata.IsReadOnly = true;
                     }
 
                 }

@@ -46,6 +46,7 @@ namespace MediaViewer.Model.Media.File
             icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "tag.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "geotag.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "readonly.ico", UriKind.Absolute)));
 
             InfoIconsCacheStatic = new MediaFileInfoIconsCache(icons);
         }
@@ -146,7 +147,7 @@ namespace MediaViewer.Model.Media.File
 
         bool filterFunc(SelectableMediaItem item) 
         {                  
-            item.Item.RWLock.EnterReadLock();
+            item.Item.EnterReadLock();
             try
             {
                 switch (MediaFilter)
@@ -176,7 +177,7 @@ namespace MediaViewer.Model.Media.File
             }
             finally
             {
-                item.Item.RWLock.ExitReadLock();
+                item.Item.ExitReadLock();
             }            
         }
         

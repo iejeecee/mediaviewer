@@ -27,12 +27,11 @@ namespace ImageSearchPlugin
             Relevance = relevance;
         }
 
-        public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_WLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {
             MemoryStream data = new MemoryStream();
             String mimeType;
-
-            RWLock.EnterUpgradeableReadLock();
+            
             try
             {
                 ItemState = MediaItemState.LOADING;
@@ -72,11 +71,7 @@ namespace ImageSearchPlugin
                     ItemState = MediaItemState.ERROR;
                 }
             }
-            finally
-            {
-                RWLock.ExitUpgradeableReadLock();
-            }
-           
+                      
         }
 
         int relevance;
@@ -92,6 +87,11 @@ namespace ImageSearchPlugin
             ImageResultItem item = (ImageResultItem)other;
 
             return (ImageInfo.Thumbnail.MediaUrl.Equals(item.ImageInfo.Thumbnail.MediaUrl));
+        }
+
+        protected override void QueueOnPropertyChangedEvent(string propertyName)
+        {
+            OnPropertyChanged(propertyName);
         }
     }
 }

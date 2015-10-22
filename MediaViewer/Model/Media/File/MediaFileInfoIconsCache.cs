@@ -51,6 +51,11 @@ namespace MediaViewer.Model.Media.File
                 key += '3';
             }
 
+            if (item.IsReadOnly)
+            {
+                key += '4';
+            }
+
             if (String.IsNullOrEmpty(key))
             {
                 return (null);

@@ -3,6 +3,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.Model.metadata.Metadata;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,15 +12,16 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Model.Media.Base
 {
+    // Class state should only be modified under write lock and read under read lock
+    // Lock recursion is not supported, see this for a good explanation why 
+    // http://blog.stephencleary.com/2013/04/recursive-re-entrant-locks.html
+    // All propertychanged events are queued and fired after releasing the write lock
+    // to make sure no events are fired while a lock is held
     public abstract class MediaItem : BindableBase, IEquatable<MediaItem>, IComparable<MediaItem>
     {
-        ReaderWriterLockSlim rwLock;
+        ConcurrentQueue<String> eventQueue;
 
-        public ReaderWriterLockSlim RWLock
-        {
-            get { return rwLock; }
-            set { rwLock = value; }
-        }
+        ReaderWriterLockSlim rwLock;
 
         Guid id;
 
@@ -31,17 +33,18 @@ namespace MediaViewer.Model.Media.Base
             get { return id; }
         }
 
-        protected MediaItem(String location, String name = null, MediaItemState state = MediaItemState.EMPTY)
+        protected MediaItem(String location, String name = null, MediaItemState state = MediaItemState.EMPTY, bool isReadOnly = false)
         {
-            rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
-
+            rwLock = new ReaderWriterLockSlim();
+            eventQueue = new ConcurrentQueue<string>();
+          
             this.id = Id;
             this.location = location;           
             this.itemState = state;
             this.name = name;
+            this.isReadOnly = isReadOnly;
        
-            id = Guid.NewGuid();
-          
+            id = Guid.NewGuid();            
         }
 
         public void Dispose()
@@ -68,7 +71,29 @@ namespace MediaViewer.Model.Media.Base
             return (Id.Equals(other.Id));
         }
 
-        protected string location;
+        public void EnterReadLock()
+        {
+            rwLock.EnterReadLock();
+        }
+
+        public void ExitReadLock()
+        {
+            rwLock.ExitReadLock();
+        }
+
+        public void EnterWriteLock()
+        {
+            rwLock.EnterWriteLock();
+        }
+
+        public void ExitWriteLock()
+        {
+            rwLock.ExitWriteLock();
+
+            fireQueuedEvents();              
+        }
+        
+        string location;
 
         /// <summary>
         /// Location of the mediaitem (e.g. url or disk path)
@@ -77,24 +102,16 @@ namespace MediaViewer.Model.Media.Base
         {
             get { return location; }
             set
-            {
-                rwLock.EnterWriteLock();
-                try
-                {                                   
-                    if (object.Equals(location, value)) return; 
+            {                                                
+                if (object.Equals(location, value)) return; 
 
-                    location = value;                   
-                }
-                finally
-                {
-                    rwLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("Location");
+                location = value;                   
+               
+                QueueOnPropertyChangedEvent("Location");
             }
         }
 
-        protected string name;
+        string name;
         /// <summary>
         /// Name of the media item
         /// </summary>
@@ -102,20 +119,12 @@ namespace MediaViewer.Model.Media.Base
         {
             get { return name; }
             set
-            {
-                rwLock.EnterWriteLock();
-                try
-                {
-                    if (object.Equals(Name, value)) return;
+            {              
+                if (object.Equals(Name, value)) return;
 
-                    name = value;
-                }
-                finally
-                {
-                    rwLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("Name");
+                name = value;
+              
+                QueueOnPropertyChangedEvent("Name");
             }
         }
 
@@ -125,28 +134,26 @@ namespace MediaViewer.Model.Media.Base
             {
                 throw new ArgumentException();
             }
-
-            rwLock.EnterReadLock();
-            try
-            {
-                other.rwLock.EnterReadLock();
-                try
-                {
-                    return (Location.CompareTo(other.Location));
-                }
-                finally
-                {
-                    other.rwLock.ExitReadLock();
-                }
-            }
-            finally
-            {
-                rwLock.ExitReadLock();
-            }
-
+            
+            return (Location.CompareTo(other.Location));               
         }
 
-        protected MediaItemState itemState;
+        bool isReadOnly;
+
+        public bool IsReadOnly
+        {
+            get { return isReadOnly; }
+            set
+            {               
+                if (object.Equals(isReadOnly, value)) return;
+
+                isReadOnly = value;
+               
+                QueueOnPropertyChangedEvent("IsReadOnly");
+            }
+        }
+
+        MediaItemState itemState;
 
         /// <summary>
         /// Current state of the mediafileitem
@@ -155,95 +162,78 @@ namespace MediaViewer.Model.Media.Base
         {
             get { return itemState; }
             set
-            {
-                rwLock.EnterWriteLock();
-                try
-                {
-                    if (object.Equals(itemState, value)) return;
+            {               
+                if (object.Equals(itemState, value)) return;
 
-                    itemState = value;     
-                }
-                finally
-                {
-                    rwLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("ItemState");
+                itemState = value;     
+                
+                QueueOnPropertyChangedEvent("ItemState");
             }
         }
 
-        protected BaseMetadata metadata;
+        BaseMetadata metadata;
 
         public BaseMetadata Metadata
         {
             get { return metadata; }
             protected set
-            {
-                RWLock.EnterWriteLock();
-                try
-                {
-                    if (object.Equals(metadata, value)) return;
+            {               
+                if (object.Equals(metadata, value)) return;
 
-                    metadata = value;
-                }
-                finally
-                {
-                    RWLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("Metadata");
+                metadata = value;
+               
+                QueueOnPropertyChangedEvent("Metadata");
             }
         }
 
-        protected bool hasGeoTag;
+        bool hasGeoTag;
 
         public bool HasGeoTag
         {
             get { return hasGeoTag; }
             protected set
-            {
+            {               
+                if (object.Equals(hasGeoTag, value)) return;
 
-                RWLock.EnterWriteLock();
-                try
-                {
-                    if (object.Equals(hasGeoTag, value)) return;
-
-                    hasGeoTag = value;
-                }
-                finally
-                {
-                    RWLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("HasGeoTag");
+                hasGeoTag = value;
+                
+                QueueOnPropertyChangedEvent("HasGeoTag");
             }
         }
 
 
-        protected bool hasTags;
+        bool hasTags;
 
         public bool HasTags
         {
             get { return hasTags; }
             protected set
-            {
-                RWLock.EnterWriteLock();
-                try
-                {
-                    if (object.Equals(hasTags, value)) return;
+            {               
+                if (object.Equals(hasTags, value)) return;
 
-                    hasTags = value;
-                }
-                finally
-                {
-                    RWLock.ExitWriteLock();
-                }
-
-                OnPropertyChanged("HasTags");
+                hasTags = value;
+               
+                QueueOnPropertyChangedEvent("HasTags");
             }
         }
 
-        public abstract void readMetadata(MetadataFactory.ReadOptions options, CancellationToken token);
+        protected virtual void QueueOnPropertyChangedEvent(String propertyName)
+        {           
+            eventQueue.Enqueue(propertyName);                        
+        }
+
+        void fireQueuedEvents()
+        {           
+            String propertyName;
+
+            while (eventQueue.TryDequeue(out propertyName))
+            {
+                OnPropertyChanged(propertyName);
+            }       
+
+        }
+
+        public abstract void readMetadata_WLock(MetadataFactory.ReadOptions options, CancellationToken token);
 
     }
 }

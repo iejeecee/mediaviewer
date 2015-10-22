@@ -71,7 +71,7 @@ namespace MediaViewer.Transcode.Image
 
                 FileStream imageStream = null;
 
-                item.RWLock.EnterReadLock();
+                item.EnterReadLock();
                 try
                 {
                     ItemProgress = 0;
@@ -123,7 +123,7 @@ namespace MediaViewer.Transcode.Image
                 }
                 finally
                 {                   
-                    item.RWLock.ExitReadLock();
+                    item.ExitReadLock();
                     if (imageStream != null)
                     {
                         imageStream.Close();

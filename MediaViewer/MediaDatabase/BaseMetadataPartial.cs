@@ -28,7 +28,8 @@ namespace MediaViewer.MediaDatabase
             MimeType = MediaFormatConvert.fileNameToMimeType(location);            
             Tags = new HashSet<Tag>();
             Thumbnails = new HashSet<Thumbnail>();
-           
+
+            isReadOnly = false;
             isImported = false;
             isModified = false;
             metadataReadError = null;            
@@ -72,6 +73,19 @@ namespace MediaViewer.MediaDatabase
             {
                 SetProperty(ref isModified, value);
             }
+        }
+
+        bool isReadOnly;
+
+        [NotMapped]
+        public bool IsReadOnly
+        {
+            get { return isReadOnly; }
+            set
+            {
+                SetProperty(ref isReadOnly, value);
+            }
+
         }
 
         public abstract String DefaultFormatCaption

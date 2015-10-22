@@ -151,11 +151,41 @@ namespace MediaViewer.UserControls.TagPicker
                 }
                 else
                 {
-                    clearButton.IsEnabled = true;
+                    if (IsReadOnly)
+                    {
+                        clearButton.IsEnabled = false;
+                    }
+                    else
+                    {
+                        clearButton.IsEnabled = true;
+                    }
                 }
             }));
         }
 
+
+
+        public bool IsReadOnly
+        {
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsReadOnly.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(TagPickerView), new PropertyMetadata(false,isReadOnlyChangedCallback));
+
+        private static void isReadOnlyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            TagPickerView view = (TagPickerView)d;
+
+            bool isReadOnly = (bool)e.NewValue;
+
+            view.addButton.IsEnabled = !isReadOnly;
+            view.clearButton.IsEnabled = !isReadOnly;
+            view.addTagAutoCompleteBox.IsEnabled = !isReadOnly;
+        }
+        
         public bool AddLinkedTags
         {
             get { return (bool)GetValue(AddLinkedTagsProperty); }
@@ -378,7 +408,7 @@ namespace MediaViewer.UserControls.TagPicker
                 }
             }
 
-            if (Tags.Count > 0)
+            if (Tags.Count > 0 && IsReadOnly == false)
             {
                 contextMenuCopy.IsEnabled = true;
                 contextMenuCut.IsEnabled = true;                

@@ -1175,6 +1175,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
+    <Resource Include="Resources\Icons\readonly.ico" />
     <Resource Include="Resources\Images\loading.png" />
     <Resource Include="Resources\Icons\browser.ico" />
     <Resource Include="Resources\Icons\pictures.ico" />

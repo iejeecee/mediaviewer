@@ -220,7 +220,7 @@ namespace MediaViewer.GeotagFileBrowser
         {
             MediaItem item = media.Item;
 
-            item.RWLock.EnterReadLock();
+            item.EnterReadLock();
             try
             {
                 if (item.Metadata == null || item.HasGeoTag == false || mapContainsItem(item)) return;
@@ -275,7 +275,7 @@ namespace MediaViewer.GeotagFileBrowser
             }
             finally
             {
-                item.RWLock.ExitReadLock();
+                item.ExitReadLock();
             }
               
         }
@@ -441,12 +441,12 @@ namespace MediaViewer.GeotagFileBrowser
 
                 if (elem != null && i == selection.Items.Count() - 1)
                 {
-                    item.RWLock.EnterReadLock();
+                    item.EnterReadLock();
                     if (item.Metadata.Latitude != null)
                     {
                         Map.Center = new Location(item.Metadata.Latitude.Value, item.Metadata.Longitude.Value);
                     }
-                    item.RWLock.ExitReadLock();
+                    item.ExitReadLock();
 
                 }
             }

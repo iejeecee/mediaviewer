@@ -10,13 +10,13 @@ namespace MediaViewer.Model.Media.Streamed
 {
     public class MediaStreamedItem : MediaItem
     {
-        public MediaStreamedItem(String location, String name = null, MediaItemState state = MediaItemState.EMPTY) :
-            base(location, name, state)
+        public MediaStreamedItem(String location, String name = null, MediaItemState state = MediaItemState.EMPTY, bool isReadOnly = true) :
+            base(location, name, state, isReadOnly)
         {
            
         }
 
-        public override void readMetadata(metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_WLock(metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {           
             ItemState = MediaItemState.LOADED;
         }

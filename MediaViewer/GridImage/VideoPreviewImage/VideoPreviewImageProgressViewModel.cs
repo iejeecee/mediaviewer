@@ -81,7 +81,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                         }
                         if (item.Metadata == null)
                         {
-                            item.readMetadata(MetadataFactory.ReadOptions.AUTO, CancellationToken);
+                            item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO, CancellationToken);
                             if (item.ItemState != MediaItemState.LOADED)
                             {
                                 InfoMessages.Add("Skipping: " + item.Location + " could not read metadata.");

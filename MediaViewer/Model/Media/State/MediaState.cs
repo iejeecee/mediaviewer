@@ -134,6 +134,12 @@ namespace MediaViewer.Model.Media.State
             }
         }
 
+        public virtual void changedUIState(IEnumerable<MediaItem> changedItems)
+        {
+            
+
+        }
+
         public void removeUIState(IEnumerable<MediaItem> removeItems)
         {
             if (removeItems.Count() == 0) return;

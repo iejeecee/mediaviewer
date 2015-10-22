@@ -76,79 +76,70 @@ namespace YoutubePlugin.Item
             int bestHeight = 0;
             int bestSamplesPerSecond = 0;
 
-            RWLock.EnterReadLock();
-
-            try
+            
+            // get best video stream
+            foreach (YoutubeVideoStreamedItem item in StreamedItem)
             {
-                // get best video stream
-                foreach (YoutubeVideoStreamedItem item in StreamedItem)
-                {
-                    if (item.StreamType == StreamType.UNKNOWN) continue;
+                if (item.StreamType == StreamType.UNKNOWN) continue;
 
-                    VideoMetadata metaData = item.Metadata as VideoMetadata;
+                VideoMetadata metaData = item.Metadata as VideoMetadata;
 
-                    if (metaData.Height >= bestHeight)
-                    {                        
-                        if (metaData.Height == bestHeight) 
-                        {
-                            // prefer mp4 over webm
-                            if(item.Metadata.MimeType.Equals("video/webm")) continue; 
-
-                            // prefer adaptive over normal streams
-                            if(item.StreamType == StreamType.VIDEO_AUDIO) continue;
-                        }
-
-                        video = item;
-
-                        bestHeight = metaData.Height;
-                    }
-                }
-
-                if (video != null && video.StreamType == StreamType.VIDEO_AUDIO) return;
-
-                // get best matching audio stream
-                foreach (YoutubeVideoStreamedItem item in StreamedItem)
-                {
-                    if (item.StreamType == StreamType.UNKNOWN) continue;
-
-                    VideoMetadata metaData = item.Metadata as VideoMetadata;
-
-                    if (metaData.SamplesPerSecond >= bestSamplesPerSecond)
+                if (metaData.Height >= bestHeight)
+                {                        
+                    if (metaData.Height == bestHeight) 
                     {
-                        int idx = video.Metadata.MimeType.IndexOf('/');
+                        // prefer mp4 over webm
+                        if(item.Metadata.MimeType.Equals("video/webm")) continue; 
 
-                        if (!metaData.MimeType.EndsWith(video.Metadata.MimeType.Substring(idx)))
-                        {
-                            // only use audio stream that matches with the video stream
-                            continue;
-                        }
-
-                        if (metaData.SamplesPerSecond == bestSamplesPerSecond)
-                        {
-                            // prefer aac over ogg
-                            if (item.Metadata.MimeType.Equals("audio/webm")) continue;                           
-                        }
-
-                        audio = item;
-
-                        bestSamplesPerSecond = metaData.SamplesPerSecond.Value;
+                        // prefer adaptive over normal streams
+                        if(item.StreamType == StreamType.VIDEO_AUDIO) continue;
                     }
-                }
 
+                    video = item;
+
+                    bestHeight = metaData.Height;
+                }
             }
-            finally
+
+            if (video != null && video.StreamType == StreamType.VIDEO_AUDIO) return;
+
+            // get best matching audio stream
+            foreach (YoutubeVideoStreamedItem item in StreamedItem)
             {
-                RWLock.ExitReadLock();
+                if (item.StreamType == StreamType.UNKNOWN) continue;
+
+                VideoMetadata metaData = item.Metadata as VideoMetadata;
+
+                if (metaData.SamplesPerSecond >= bestSamplesPerSecond)
+                {
+                    int idx = video.Metadata.MimeType.IndexOf('/');
+
+                    if (!metaData.MimeType.EndsWith(video.Metadata.MimeType.Substring(idx)))
+                    {
+                        // only use audio stream that matches with the video stream
+                        continue;
+                    }
+
+                    if (metaData.SamplesPerSecond == bestSamplesPerSecond)
+                    {
+                        // prefer aac over ogg
+                        if (item.Metadata.MimeType.Equals("audio/webm")) continue;                           
+                    }
+
+                    audio = item;
+
+                    bestSamplesPerSecond = metaData.SamplesPerSecond.Value;
+                }
             }
+                       
         }
        
-        public override void readMetadata(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_WLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {            
             String thumbnailMimeType;
 
-            RWLock.EnterWriteLock();
-            try
-            {
+            try 
+            {           
                 ItemState = MediaItemState.LOADING;
                 
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
@@ -251,10 +242,7 @@ namespace YoutubePlugin.Item
                     ItemState = MediaItemState.ERROR;
                 }
             }
-            finally
-            {
-                RWLock.ExitWriteLock();
-            }
+            
         }
 
         bool getVideoInfo(String videoId, out NameValueCollection videoInfo, CancellationToken token)

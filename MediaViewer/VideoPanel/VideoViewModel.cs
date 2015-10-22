@@ -38,6 +38,7 @@ using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils.Windows;
 using MediaViewer.Properties;
 using MediaViewer.DirectoryPicker;
+using MediaViewer.Infrastructure.Utils;
 
 namespace MediaViewer.VideoPanel
 {
@@ -277,10 +278,81 @@ namespace MediaViewer.VideoPanel
             OpenLocationCommand = new Command(async () =>
             {
                 VideoOpenLocationView openLocation = new VideoOpenLocationView();
-                bool? success = openLocation.ShowDialog();
+               
+                /*bool? success = openLocation.ShowDialog();
                 if (success == true)
                 {
-                    MediaItem video = null;
+                    String outputTempPath = "G:/Slimste mens/";
+                    String outputConcatPath = "J:/wdtv shared/Slimste Mens/";               
+                    FileStream output = null;
+
+                    try
+                    {
+                        CancellationTokenSource source = new CancellationTokenSource();
+                        int fileNr = 0;
+
+                        while (true)
+                        {
+
+                            int idx2 = openLocation.ViewModel.VideoLocation.LastIndexOf('_');
+                            String url = openLocation.ViewModel.VideoLocation.Substring(0, idx2) + "_" + fileNr + ".ts";
+
+                            int idx = url.LastIndexOf('/');
+
+                            String filename = url.Substring(idx + 1);
+
+                            output = new FileStream(outputTempPath + filename, FileMode.CreateNew);
+                            String mimeType;
+                         
+                            StreamUtils.readHttpRequest(new Uri(url), output, out mimeType, source.Token);
+                            output.Close();
+
+                            fileNr++;
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        if (output != null)
+                        {
+                            output.Close();
+                            File.Delete(output.Name);
+                        }
+                        MessageBox.Show("done downloading you fat cunt!" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                    finally
+                    {
+                        StreamWriter filesOutput = File.CreateText(outputTempPath + "files.txt");
+                      
+                        FileUtils.walkDirectoryTree(new DirectoryInfo(outputTempPath), (fileInfo, state) =>
+                        {
+                            StreamWriter textFile = (StreamWriter)state;
+                            if (fileInfo.Extension.Equals(".ts"))
+                            {
+                                textFile.WriteLine("file '" + fileInfo.FullName + "'");
+                            }
+
+                            return (true);
+                        }, filesOutput, false);
+
+                        filesOutput.Close();
+
+                        StreamWriter batOutput = File.CreateText(outputTempPath + "concat.bat");
+
+                        int ix = openLocation.ViewModel.VideoLocation.LastIndexOf('/');
+                        String temp = openLocation.ViewModel.VideoLocation.Substring(0, ix);
+                        String concatFilename = temp.Substring(temp.LastIndexOf('/') + 1);
+
+                        batOutput.WriteLine("d:\\game\\ffmpeg-20130322-git-e0e8c20-win32-shared\\bin\\ffmpeg.exe -f concat -i files.txt -absf aac_adtstoasc -c copy \"" + outputConcatPath + concatFilename + "\"");
+                        batOutput.Close();
+
+                    }
+                }*/
+                 
+                bool? success = openLocation.ShowDialog();
+                if (success == true) 
+                {
+                   MediaItem video = null;
                     MediaItem audio = null;
 
                     if (!String.IsNullOrEmpty(openLocation.ViewModel.VideoLocation))

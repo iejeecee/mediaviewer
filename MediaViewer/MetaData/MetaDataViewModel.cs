@@ -103,7 +103,8 @@ namespace MediaViewer.MetaData
             clear();
             BatchMode = false;
             IsEnabled = false;
-            
+            IsReadOnly = true;
+
             WriteMetaDataCommand = new AsyncCommand(async () =>
             {
                 CancellableOperationProgressView metaDataUpdateView = new CancellableOperationProgressView();
@@ -252,9 +253,11 @@ namespace MediaViewer.MetaData
 
         private void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
+            if (Items == null || Items.Count == 0) return;
+
             if (e.PropertyName.Equals("Location"))
             {
-                lock(Items)
+                lock(itemsLock)
                 {
                     if (BatchMode == false && Items.Count > 0)
                     {
@@ -267,7 +270,17 @@ namespace MediaViewer.MetaData
                         }
                     }
                 }
-                
+
+            }
+            else if (e.PropertyName.Equals("IsReadOnly"))
+            {
+                lock (itemsLock)
+                {
+                    if (BatchMode == false && Items.Count > 0)
+                    {
+                        IsReadOnly = Items.ElementAt(0).IsReadOnly;
+                    }
+                }
             }
         }
 
@@ -588,6 +601,17 @@ namespace MediaViewer.MetaData
             }
         }
 
+        bool isReadOnly;
+
+        public bool IsReadOnly
+        {
+            get { return isReadOnly; }
+            set
+            {
+                SetProperty(ref isReadOnly, value);
+            }
+        }
+
         Object tagsLock;
         ObservableCollection<Tag> tags;
 
@@ -691,45 +715,46 @@ namespace MediaViewer.MetaData
         {                       
             if (items.Count == 1 && Items.ElementAt(0).Metadata != null)
             {
+                MediaFileItem media = Items.ElementAt(0);
+                BaseMetadata metadata = media.Metadata;
 
-                BaseMetadata media = Items.ElementAt(0).Metadata;
-
-                if (media.SupportsXMPMetadata == false)
+                if (metadata.SupportsXMPMetadata == false)
                 {
                     clear();
                 }
 
-                Filename = Path.GetFileNameWithoutExtension(media.Location);
-                Location = FileUtils.getPathWithoutFileName(media.Location);
+                Filename = Path.GetFileNameWithoutExtension(metadata.Location);
+                Location = FileUtils.getPathWithoutFileName(metadata.Location);
 
                 DynamicProperties.Clear();
 
-                if (media is VideoMetadata)
+                if (metadata is VideoMetadata)
                 {
-                    getVideoProperties(DynamicProperties, media as VideoMetadata);
+                    getVideoProperties(DynamicProperties, metadata as VideoMetadata);
                 }
                 
-                Rating = media.Rating == null ? null : new Nullable<double>(media.Rating.Value / 5);
-                Title = media.Title;
-                Description = media.Description;
-                Author = media.Author;
-                Copyright = media.Copyright;
-                Creation = media.CreationDate;
-                IsImported = media.IsImported;
+                Rating = metadata.Rating == null ? null : new Nullable<double>(metadata.Rating.Value / 5);
+                Title = metadata.Title;
+                Description = metadata.Description;
+                Author = metadata.Author;
+                Copyright = metadata.Copyright;
+                Creation = metadata.CreationDate;
+                IsImported = metadata.IsImported;
+                IsReadOnly = media.IsReadOnly || !metadata.SupportsXMPMetadata;
              
-                Geotag = new GeoTagCoordinatePair(media.Latitude, media.Longitude);                  
+                Geotag = new GeoTagCoordinatePair(metadata.Latitude, metadata.Longitude);                  
                 
                 lock (tagsLock)
                 {
                     Tags.Clear();
 
-                    foreach (Tag tag in media.Tags)
+                    foreach (Tag tag in metadata.Tags)
                     {
                         Tags.Add(tag);
                     }
                 }
 
-                getExifProperties(DynamicProperties, media);
+                getExifProperties(DynamicProperties, metadata);
 
                 SelectedMetaDataPreset = noPresetMetaData;
                 IsEnabled = true;
@@ -743,10 +768,12 @@ namespace MediaViewer.MetaData
             }
             else
             {
+              
                 if (items.Count > 1)
                 {
                     IsEnabled = true;
                     BatchMode = true;
+                    IsReadOnly = false;
                     clear();
 
                 }
@@ -755,6 +782,7 @@ namespace MediaViewer.MetaData
 
                     BatchMode = false;
                     IsEnabled = false;
+                    IsReadOnly = true;
                     clear();
                 }
 

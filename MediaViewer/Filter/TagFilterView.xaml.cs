@@ -184,7 +184,7 @@ namespace MediaViewer.Filter
         {
             if (item.Item.Metadata == null) return;
 
-            item.Item.RWLock.EnterReadLock();
+            item.Item.EnterReadLock();
             try
             {                
                 foreach (Tag tag in item.Item.Metadata.Tags)
@@ -205,7 +205,7 @@ namespace MediaViewer.Filter
             }
             finally
             {
-                item.Item.RWLock.ExitReadLock();
+                item.Item.ExitReadLock();
             }
         }
 

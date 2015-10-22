@@ -39,7 +39,7 @@ namespace MediaViewer.Model.Media.File.Watcher
             /* Watch for changes in LastAccess and LastWrite times, and 
             the renaming of files or directories. */
             watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
-                NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName);
+                NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Attributes);
 
             // Only watch text files.
             watcher.Filter = "*.*";

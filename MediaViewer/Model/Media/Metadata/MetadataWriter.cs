@@ -137,7 +137,6 @@ namespace MediaViewer.Model.Media.Metadata
 
             for (int i = nrTags; i > 0; i--)
             {
-
                 xmpMetaDataWriter.deleteArrayItem(Consts.XMP_NS_DC, "subject", i);
             }
 
@@ -162,9 +161,7 @@ namespace MediaViewer.Model.Media.Metadata
            
             if (xmpMetaDataWriter.canPutXMP())
             {
-
                 xmpMetaDataWriter.putXMP();
-
             }
             else
             {              

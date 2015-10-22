@@ -65,7 +65,7 @@
                 <Label Grid.Row="7" Grid.Column="0" Content="Title"/>
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" VerticalAlignment="Top"
 					Text="{Binding Title, Converter={StaticResource removeNewlinesConverter}}"
-					IsEnabled="{Binding IsTitleEnabled}" WordWrap="False"/>
+					IsEnabled="{Binding IsTitleEnabled}" WordWrap="False" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="7" Grid.Column="2" 
 					IsChecked="{Binding IsTitleEnabled}"
 					Visibility="{Binding IsBatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -74,26 +74,29 @@
 					Margin="5, 5, 5, 5" Height="70" WordWrap="True"
 					VerticalScrollBarVisibility="Auto"
 					Text="{Binding Description}"                     
-					IsEnabled="{Binding IsDescriptionEnabled}"/>
+					IsEnabled="{Binding IsDescriptionEnabled}"
+                    IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="8" Grid.Column="2" 
 					IsChecked="{Binding IsDescriptionEnabled}"
 					Visibility="{Binding IsBatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="9" Grid.Column="0" Content="Author"/>
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
 					Text="{Binding Author, Converter={StaticResource removeNewlinesConverter}}"
-					IsEnabled="{Binding IsAuthorEnabled}"/>
+					IsEnabled="{Binding IsAuthorEnabled}"
+                    IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="9" Grid.Column="2" 
 					IsChecked="{Binding IsAuthorEnabled}"
 					Visibility="{Binding IsBatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="10" Grid.Column="0" Content="Rating"/>
                 <inputtoolkit:Rating x:Name="rating" Grid.Row="10" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5"
 					Value="{Binding Rating, Mode=TwoWay}" 
-					IsReadOnly="True" IsEnabled="{Binding IsEnabled}">
+					IsReadOnly="{Binding IsReadOnly}" IsEnabled="{Binding IsEnabled}">
                 </inputtoolkit:Rating>
                 <Label Grid.Row="11" Grid.Column="0" Content="Published"/>
                 <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
 					Value="{Binding CreationDate, Mode=TwoWay}"
-					IsEnabled="{Binding IsCreationDateEnabled}"/>
+					IsEnabled="{Binding IsCreationDateEnabled}"
+                    IsReadOnly="True"/>
                 <CheckBox Grid.Row="11" Grid.Column="2" 
 					IsChecked="{Binding IsCreationDateEnabled}"
 					Visibility="{Binding IsBatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -103,6 +106,7 @@
                 <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags}"
 					IsEnabled="{Binding IsEnabled}"
+                    IsReadOnly="{Binding IsReadOnly}"
 					Visibility="{Binding IsBatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
                 <Label Grid.Row="15" Grid.Column="0" Content="Add Tags" 
@@ -120,7 +124,7 @@
 					Visibility="{Binding IsBatchMode, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>
                 <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
-					IsEnabled="{Binding IsEnabled}"
+					IsEnabled="{Binding IsReadOnly, Converter={StaticResource booleanNegatorConverter}}"
 					Command="{Binding WriteMetaDataCommand}"
 					ToolTip="Save Metadata To Disk"/>
             </Grid>

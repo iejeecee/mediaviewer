@@ -16,6 +16,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using MediaViewer.Progress;
 using MediaViewer.Infrastructure.Logging;
+using System.Collections;
+using MediaViewer.Model.Utils.Strings;
 
 namespace MediaViewer.Model.Utils
 {
@@ -418,7 +420,7 @@ namespace MediaViewer.Model.Utils
 
 
 
-        public delegate bool WalkDirectoryTreeDelegate(FileInfo info, Object state);
+        
 
         public delegate void FileUtilsDelegate(System.Object sender, FileUtilsEventArgs e);
 
@@ -582,8 +584,14 @@ namespace MediaViewer.Model.Utils
             return (uniqueName);
         }
 
+        private static int fileInfoComparer(FileInfo x, FileInfo y)
+        {         
+            return NaturalSortOrder.CompareNatural(x.Name, y.Name);            
+        }
+
+
         public static void walkDirectoryTree(DirectoryInfo root,
-            WalkDirectoryTreeDelegate callback, Object state, bool recurseSubDirs)
+            Func<FileInfo,Object,bool> callback, Object state, bool recurseSubDirs, bool naturalSortOrder = true)
         {
             if (callback == null) return;
 
@@ -611,13 +619,18 @@ namespace MediaViewer.Model.Utils
 
             if (files != null)
             {
+                if (naturalSortOrder == true)
+                {
+                    Array.Sort<FileInfo>(files, fileInfoComparer);
+                }
+
                 foreach (FileInfo info in files)
                 {
                     // In this example, we only access the existing FileInfo object. If we 
                     // want to open, delete or modify the file, then 
                     // a try-catch block is required here to handle the case 
                     // where the file has been deleted since the call to TraverseTree().
-                    bool cont = callback.Invoke(info, state);
+                    bool cont = callback(info, state);
                     if (cont == false)
                     {
                         return;

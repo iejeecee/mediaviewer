@@ -201,6 +201,7 @@ namespace MediaViewer.UserControls.NumberSpinner
 
             control.Value = coerceValue(control.Value, control.Max, min);
         }
+        
 
         protected abstract void addValue();
 
@@ -224,5 +225,27 @@ namespace MediaViewer.UserControls.NumberSpinner
             control.valueTextBoxBase.TextAlignment = (TextAlignment)e.NewValue;           
         }
 
+
+        public bool IsReadOnly
+        {
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsReadOnly.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(SpinnerBase<T>), new PropertyMetadata(false,isReadOnlyChangedCallback));
+
+        private static void isReadOnlyChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            SpinnerBase<T> control = (SpinnerBase<T>)d;
+            bool isReadOnly = (bool)e.NewValue;
+            control.valueTextBoxBase.IsReadOnly = isReadOnly;
+            control.upButtonBase.IsEnabled = !isReadOnly;
+            control.downButtonBase.IsEnabled = !isReadOnly;
+        }
+
+
+        
     }
 }

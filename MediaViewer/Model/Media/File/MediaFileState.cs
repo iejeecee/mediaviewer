@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
 using MediaViewer.Model.metadata.Metadata;
@@ -6,6 +7,7 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -32,7 +34,18 @@ namespace MediaViewer.Model.Media.File
                         return;
                     }
 
-                    bool isImported = item.delete();
+                    bool isImported = false;
+
+                    item.EnterWriteLock();
+
+                    try
+                    {
+                        isImported = item.delete_WLock();
+                    }
+                    finally
+                    {
+                        item.ExitWriteLock();
+                    }
 
                     if (isImported)
                     {
@@ -97,7 +110,18 @@ namespace MediaViewer.Model.Media.File
                     {
                         String oldLocation = item.Location;
 
-                        bool isImported = item.move(location, progress);
+                        bool isImported = false;
+
+                        item.EnterWriteLock();
+                        try
+                        {
+                            isImported = item.move_WLock(location, progress);
+                        }
+                        finally
+                        {
+                            item.ExitWriteLock();
+                        }
+
                         if (MediaFileWatcher.Instance.IsWatcherEnabled &&
                             !FileUtils.getPathWithoutFileName(location).Equals(MediaFileWatcher.Instance.Path))
                         {
@@ -129,16 +153,18 @@ namespace MediaViewer.Model.Media.File
 
         }
 
-        
-        public void import(MediaFileItem item, CancellationToken token)
+        // returns true on success
+        public bool import(MediaFileItem item, CancellationToken token)
         {
             List<MediaFileItem> dummy = new List<MediaFileItem>();
             dummy.Add(item);
-            import(dummy, token);
+            int nrImported = import(dummy, token);
 
+            return nrImported == 0 ? false : true;
         }
 
-        public void import(IEnumerable<MediaFileItem> items, CancellationToken token)
+        // returns nr items successfully imported
+        public int import(IEnumerable<MediaFileItem> items, CancellationToken token)
         {
             List<MediaFileItem> importedItems = new List<MediaFileItem>();
 
@@ -146,20 +172,39 @@ namespace MediaViewer.Model.Media.File
             {
                 foreach (MediaFileItem item in items)
                 {
-                    if (token.IsCancellationRequested) return;
+                    if (token.IsCancellationRequested) return(importedItems.Count);
 
                     //if (item.Metadata == null)
                     //{
-                        item.readMetadata(MetadataFactory.ReadOptions.AUTO |
+                    item.EnterWriteLock();
+                    try
+                    {
+                        item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO |
                                 MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS, token);
+                    }
+                    finally
+                    {
+                        item.ExitWriteLock();
+                    }
 
-                        if (item.Metadata == null || item.Metadata is UnknownMetadata)
-                        {
-                            throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
-                        }
+                    if (item.Metadata == null || item.Metadata is UnknownMetadata)
+                    {
+                        throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
+                    }
                     //}
 
-                    bool success = item.import(token);
+                    bool success = false;
+
+                    item.EnterWriteLock();
+                    try
+                    {
+                        success = item.import_WLock(token);
+                    }
+                    finally
+                    {
+                        item.ExitWriteLock();
+                    }
+
                     if (success)
                     {
                         importedItems.Add(item);
@@ -176,17 +221,22 @@ namespace MediaViewer.Model.Media.File
                         MediaStateChangedAction.Add, importedItems));
                 }
             }
+
+            return (importedItems.Count);
         }
 
-
-        public void export(MediaFileItem item, CancellationToken token)
+        // returns true on success
+        public bool export(MediaFileItem item, CancellationToken token)
         {
             List<MediaFileItem> dummy = new List<MediaFileItem>();
             dummy.Add(item);
-            export(dummy, token);
+            int nrExported = export(dummy, token);
+
+            return nrExported == 0 ? false : true;
         }
 
-        public void export(IEnumerable<MediaFileItem> items, CancellationToken token)
+        // returns number of items exported
+        public int export(IEnumerable<MediaFileItem> items, CancellationToken token)
         {
             List<MediaFileItem> exportedItems = new List<MediaFileItem>();
 
@@ -194,9 +244,20 @@ namespace MediaViewer.Model.Media.File
             {
                 foreach (MediaFileItem item in items)
                 {
-                    if (token.IsCancellationRequested) return;
+                    if (token.IsCancellationRequested) return(exportedItems.Count);
 
-                    bool success = item.export(token);
+                    bool success = false;
+
+                    item.EnterWriteLock();
+                    try
+                    {
+                        success = item.export_WLock(token);
+                    }
+                    finally
+                    {
+                        item.ExitWriteLock();
+                    }
+
                     if (success)
                     {
                         exportedItems.Add(item);
@@ -213,6 +274,8 @@ namespace MediaViewer.Model.Media.File
                         MediaStateChangedAction.Remove, exportedItems));
                 }
             }
+
+            return (exportedItems.Count);
         }
               
         void OnNrImportedItemsChanged(MediaStateChangedEventArgs args)
@@ -221,6 +284,36 @@ namespace MediaViewer.Model.Media.File
             {
                 NrImportedItemsChanged(this, args);
             }
+        }
+
+        public override void changedUIState(IEnumerable<MediaItem> changedItems)
+        {
+            foreach (MediaFileItem item in changedItems)
+            {
+                FileInfo info = new FileInfo(item.Location);
+                info.Refresh();
+
+                if (info.Exists)
+                {
+                    item.EnterWriteLock();
+                    try
+                    {
+                        if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
+                        {
+                            item.IsReadOnly = true;
+                        }
+                        else
+                        {
+                            item.IsReadOnly = false;
+                        }
+                    }
+                    finally
+                    {
+                        item.ExitWriteLock();
+                    }
+                }
+            }
+
         }
              
     }
