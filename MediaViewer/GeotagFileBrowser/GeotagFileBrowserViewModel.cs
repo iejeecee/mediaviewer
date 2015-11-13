@@ -328,10 +328,10 @@ namespace MediaViewer.GeotagFileBrowser
 
         void mapLoadItems()
         {
-            MediaCollectionView.MediaState.UIMediaCollection.EnterReadLock();
+            MediaCollectionView.EnterReadLock();
             try
             {
-                foreach (SelectableMediaItem media in MediaCollectionView.Media)
+                foreach (SelectableMediaItem media in MediaCollectionView)
                 {
                     if (media.Item.ItemState == MediaItemState.LOADED)
                     {                       
@@ -341,7 +341,7 @@ namespace MediaViewer.GeotagFileBrowser
             }
             finally
             {
-                MediaCollectionView.MediaState.UIMediaCollection.ExitReadLock();
+                MediaCollectionView.ExitReadLock();
             }
         }
 

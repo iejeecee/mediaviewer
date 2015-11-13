@@ -1,4 +1,6 @@
-﻿using MediaViewer.Model.Media.File.Watcher;
+﻿using MediaViewer.Infrastructure;
+using MediaViewer.Model.Collections.Cache.LRUCache;
+using MediaViewer.Model.Media.File.Watcher;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -13,21 +15,41 @@ namespace MediaViewer.MediaDatabase
     [Serializable]
     partial class Thumbnail : BindableBase, IEquatable<Thumbnail>
     {
-        [NonSerialized]
-        BitmapSource image;
-        
+        static LRUCache<Guid, BitmapSource> thumbCache;
+
+        static Thumbnail()
+        {
+            thumbCache = new LRUCache<Guid, BitmapSource>(100);
+        }
+              
         public BitmapSource Image
         {
-            get { return image; } 
-            private set {
-               
-                SetProperty(ref image, value);
-            }
+            get {
+                
+                BitmapSource image;
+
+                // get decoded image from the cache if possible
+                if ((image = thumbCache.get(Guid)) != null)
+                {
+                    return (image);
+                } 
+                else if (ImageData != null)
+                {                   
+                    image = decodeImage();
+                    thumbCache.add(Guid, image);
+                    return (image);
+                }
+                else
+                {
+                    return (null);
+                }
+            } 
+            
         }
 
         public Thumbnail()
         {
-            Image = null;
+            Guid = Guid.NewGuid();
         }
       
         public Thumbnail(BitmapSource source, double? timeSeconds = null)
@@ -35,7 +57,7 @@ namespace MediaViewer.MediaDatabase
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();
             BitmapFrame outputFrame = BitmapFrame.Create(source, null, null, null);
             encoder.Frames.Add(outputFrame);
-            encoder.QualityLevel = 80;
+            encoder.QualityLevel = Constants.THUMBNAIL_QUALITY;
 
             MemoryStream stream = new MemoryStream();
 
@@ -44,15 +66,13 @@ namespace MediaViewer.MediaDatabase
             this.ImageData = stream.ToArray();
             this.Width = (short)source.PixelWidth;
             this.Height = (short)source.PixelHeight;
-
-            source.Freeze();           
-            Image = source;
-
-            TimeSeconds = timeSeconds;
            
+            TimeSeconds = timeSeconds;
+
+            Guid = Guid.NewGuid();
         }
 
-        public void decodeImage()
+        BitmapImage decodeImage()
         {
             MemoryStream stream = new MemoryStream();
             stream.Write(ImageData, 0, ImageData.Length);
@@ -68,7 +88,7 @@ namespace MediaViewer.MediaDatabase
 
             thumb.Freeze();
 
-            Image = thumb;
+            return (thumb);
            
         }
 
@@ -82,5 +102,7 @@ namespace MediaViewer.MediaDatabase
             if (other.Id == Id) return (true);
             else return (false);
         }
+
+        public Guid Guid { get; protected set; }
     }
 }

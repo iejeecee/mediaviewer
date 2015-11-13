@@ -5,13 +5,8 @@
         xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
         Title="TestWindow" Height="300" Width="300">
     <Grid>
-        <TabbedExpander:TabbedExpanderView HorizontalAlignment="Left" Margin="97,78,0,0" VerticalAlignment="Top" IsExpanded="True">
-            <TabbedExpander:TabbedExpanderTab IsSelected="True" TabName="Wombat" BorderThickness="2" Margin="5" BorderBrush="{x:Static mwt:ClassicBorderDecorator.ClassicBorderBrush}" BorderStyle="Etched">
-                <Label Content="Wombat"/>
-            </TabbedExpander:TabbedExpanderTab>
-            <TabbedExpander:TabbedExpanderTab TabName="Tiger">
-                <Label Content="Tiger"/>
-            </TabbedExpander:TabbedExpanderTab>
-        </TabbedExpander:TabbedExpanderView>
+        <ListBox HorizontalAlignment="Left" Height="100" Margin="26,25,0,0" VerticalAlignment="Top" Width="100" ItemsSource="{Binding Observable}"/>
+        <Button Content="Add" HorizontalAlignment="Left" Margin="26,143,0,0" VerticalAlignment="Top" Width="75" Command="{Binding AddCommand}"/>
+        <Button Content="Clear" HorizontalAlignment="Left" Margin="106,144,0,0" VerticalAlignment="Top" Width="75" Command="{Binding ClearCommand}"/>
     </Grid>
 </Window>

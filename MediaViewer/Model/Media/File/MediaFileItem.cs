@@ -102,57 +102,86 @@ namespace MediaViewer.Model.Media.File
             }
         }
                                 
-        public void writeMetadata_WLock(MetadataFactory.WriteOptions options, CancellableOperationProgressBase progress)
+        public void writeMetadata_URLock(MetadataFactory.WriteOptions options, CancellableOperationProgressBase progress)
         {                  
             if (Metadata != null)
             {
-                MetadataFactory.write(Metadata, options, progress);                   
-                checkVariables(Metadata);                   
+                MetadataFactory.write(Metadata, options, progress);
+                QueueOnPropertyChangedEvent("Metadata");
+
+                EnterWriteLock();
+                try
+                {
+                    checkVariables(Metadata);
+                }
+                finally
+                {
+                    ExitWriteLock(false);
+                }
             }           
         }
 
-        public override void readMetadata_WLock(MetadataFactory.ReadOptions options, CancellationToken token)
+        public override void readMetadata_URLock(MetadataFactory.ReadOptions options, CancellationToken token)
         {
-          
+            EnterWriteLock();
             ItemState = MediaItemState.LOADING;
+            ExitWriteLock(false);
 
-            try {
-                
-                Metadata = MetadataFactory.read(Location, options, token);
+            MediaItemState itemState = MediaItemState.ERROR;
+            BaseMetadata metadata = null;
 
-                if (Metadata == null || Metadata is UnknownMetadata)
+            try
+            {
+                metadata = MetadataFactory.read(Location, options, token);
+
+                if (metadata == null || metadata is UnknownMetadata)
                 {
-                    ItemState = MediaItemState.ERROR;
+                    itemState = MediaItemState.ERROR;
                 }
-                else {
+                else
+                {
 
-                    if (Metadata.MetadataReadError != null)
+                    if (metadata.MetadataReadError != null)
                     {
-                        if (Metadata.MetadataReadError is FileNotFoundException)
+                        if (metadata.MetadataReadError is FileNotFoundException)
                         {
-                            ItemState = MediaItemState.FILE_NOT_FOUND;
+                            itemState = MediaItemState.FILE_NOT_FOUND;
                         }
                         else
                         {
-                            ItemState = MediaItemState.ERROR;
+                            itemState = MediaItemState.ERROR;
                         }
                     }
                     else
                     {
-                        ItemState = MediaItemState.LOADED;
-                        IsReadOnly = Metadata.IsReadOnly;
+                        itemState = MediaItemState.LOADED;
+
                     }
                 }
 
-            }
-            catch(TimeoutException) {
 
-                ItemState = MediaItemState.TIMED_OUT;              
+            }
+            catch (TimeoutException)
+            {
+                itemState = MediaItemState.TIMED_OUT;
             }
             catch (Exception e)
             {
-                ItemState = MediaItemState.ERROR;
+                itemState = MediaItemState.ERROR;
                 Logger.Log.Info("Error loading Metadata:" + Location, e);
+            }
+            finally
+            {
+                EnterWriteLock();
+                Metadata = metadata;
+                ItemState = itemState;
+                if (Metadata != null)
+                {
+                    IsReadOnly = Metadata.IsReadOnly;
+                    checkVariables(Metadata);
+                }
+                ExitWriteLock(false);
+
             }
             
         }

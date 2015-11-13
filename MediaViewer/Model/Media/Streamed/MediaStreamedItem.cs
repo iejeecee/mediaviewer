@@ -16,7 +16,7 @@ namespace MediaViewer.Model.Media.Streamed
            
         }
 
-        public override void readMetadata_WLock(metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_URLock(metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {           
             ItemState = MediaItemState.LOADED;
         }

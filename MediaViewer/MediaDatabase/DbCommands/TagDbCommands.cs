@@ -11,9 +11,6 @@ namespace MediaViewer.MediaDatabase.DbCommands
 {
     class TagDbCommands : DbCommands<Tag>
     {
-
-        
-
         public TagDbCommands(MediaDatabaseContext existingContext = null) :
             base(existingContext)
         {
@@ -154,7 +151,6 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         protected override void deleteFunc(Tag tag)
         {
-
             Tag deleteTag = getTagById(tag.Id);
 
             if (deleteTag == null)
@@ -162,19 +158,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Cannot delete non-existing tag with id: " + tag.Id.ToString());
             }
 
-
             for (int i = deleteTag.ParentTags.Count - 1; i >= 0; i--)
             {
                 Db.Entry<Tag>(deleteTag.ParentTags.ElementAt(i)).State = EntityState.Modified;
                 deleteTag.ParentTags.ElementAt(i).ChildTags.Remove(tag);
-
             }
 
             Db.TagSet.Remove(deleteTag);
             Db.SaveChanges();
         }
-
-
 
         protected override Tag updateFunc(Tag updateTag)
         {

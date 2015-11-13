@@ -22,6 +22,7 @@ namespace MediaViewer
         public TestWindow()
         {
             InitializeComponent();
+            DataContext = new TestWindowViewModel();
         }
     }
 }

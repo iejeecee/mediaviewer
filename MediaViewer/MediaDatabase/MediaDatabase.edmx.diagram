@@ -23,6 +23,8 @@
         <InheritanceConnector EntityType="MediaDatabase.VideoMetadata" />
         <AssociationConnector Association="MediaDatabase.BaseMetadataTag" />
         <AssociationConnector Association="MediaDatabase.BaseMetadataThumbnail" />
+        <EntityTypeShape EntityType="MediaDatabase.AudioMetadata" Width="1.5" PointX="4.125" PointY="5.75" />
+        <InheritanceConnector EntityType="MediaDatabase.AudioMetadata" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

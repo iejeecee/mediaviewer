@@ -134,7 +134,7 @@ namespace YoutubePlugin.Item
                        
         }
        
-        public override void readMetadata_WLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_URLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {            
             String thumbnailMimeType;
 

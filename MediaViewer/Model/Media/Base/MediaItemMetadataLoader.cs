@@ -140,15 +140,15 @@ namespace MediaViewer.Model.Media.Base
 
                     Task.Factory.StartNew(() =>
                     {
-                        item.EnterWriteLock();
+                        item.EnterUpgradeableReadLock();
                         try
                         {
-                            item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO |
+                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
                                     MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
                         }
                         finally
                         {
-                            item.ExitWriteLock();
+                            item.ExitUpgradeableReadLock();
                         }
 
                     },tokenSource.Token,TaskCreationOptions.None, PriorityScheduler.BelowNormal).ContinueWith((result) =>

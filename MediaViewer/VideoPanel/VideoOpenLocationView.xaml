@@ -26,12 +26,12 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="Video"/>
-            <TextBox Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding VideoLocation,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+            <ComboBox Grid.Row="0" Grid.Column="1" Margin="2" Text="{Binding VideoLocation,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding VideoLocationHistory}" IsEditable="True"/>
             <Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Margin="2" Command="{Binding VideoLocationCommand}" ToolTip="Select Video File">
                 <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
             </Button>
             <Label Grid.Row="1" Grid.Column="0" Content="Audio"/>
-            <TextBox Grid.Row="1" Grid.Column="1" Margin="2" Text="{Binding AudioLocation,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+            <ComboBox Grid.Row="1" Grid.Column="1" Margin="2" Text="{Binding AudioLocation,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" ItemsSource="{Binding AudioLocationHistory}" IsEditable="True"/>
             <Button Grid.Row="1" Grid.Column="2" Width="20" Height="20" Margin="2" Command="{Binding AudioLocationCommand}" ToolTip="Select Audio File">
                 <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
             </Button>

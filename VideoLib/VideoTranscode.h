@@ -3,6 +3,7 @@
 #include "VideoEncoder.h"
 #include "FilterGraph.h"
 #include "BitStreamFilter.h"
+#include "MuxedAVInputStream.h"
 
 #define DISCARD_STREAM -1
 
@@ -55,32 +56,16 @@ protected:
 		
 	};
 
-	VideoDecoder *input;
+	MuxedAVInputStream *input;
 	VideoEncoder *output;
 
 	std::vector<StreamInfo *> streamInfo;
+	int inputStreamOffset;
 
-
-public:
-
-	typedef void (__stdcall *ProgressCallback)(double);
-
-	VideoTranscode() {
-
-		input = new VideoDecoder();
-		output = new VideoEncoder();		
-	}
-
-	~VideoTranscode()
-	{
-		delete input;
-		delete output;
-	}
-		
 	double smallestOffset;
 
 	void setDtsOffsets(const AVPacket &packet) {
-		
+				
 		//get the dts value of the first input packet and subtract it from subsequent dts & pts
 		//values to make sure the output video starts at time zero.	
 		if(streamInfo[packet.stream_index]->offsetSet == true) return;
@@ -90,12 +75,12 @@ public:
 		if(packet.dts != AV_NOPTS_VALUE) {
 
 			// packet has a dts value, subtract from subsequent dts/pts values
-			dtsOffsetSeconds = -packet.dts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+			dtsOffsetSeconds = -input->getStream(packet.stream_index)->getTimeSeconds(packet.dts);
 			
 		} else if(packet.pts != AV_NOPTS_VALUE) {
 
 			// packet only has a pts value, subtract from subsequent dts/pts values
-			dtsOffsetSeconds = -packet.pts * av_q2d(input->stream[packet.stream_index]->getStream()->time_base);	
+			dtsOffsetSeconds = -input->getStream(packet.stream_index)->getTimeSeconds(packet.pts);
 
 		} else {
 
@@ -115,34 +100,48 @@ public:
 			dtsOffsetSeconds = smallestOffset;		
 		}
 			   
-		for(unsigned int i = 0; i < input->getFormatContext()->nb_streams; i++) {
+		for(unsigned int i = 0; i < input->getNrStreams(); i++) {
 
 			if(streamInfo[i]->outStreamIdx != DISCARD_STREAM) {
 
-				streamInfo[i]->dtsOffset = int64_t(dtsOffsetSeconds / av_q2d(input->stream[i]->getStream()->time_base));				
+				streamInfo[i]->dtsOffset = input->getStream(i)->getTimeBaseUnits(dtsOffsetSeconds);
 			}
 		}
 					
 	}
 
-	void transcode(String ^inputFilename, String ^outputFilename, System::Threading::CancellationToken token, 
-		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
+public:
+
+	typedef void (__stdcall *ProgressCallback)(double);
+
+	VideoTranscode() {
+		
+		input = new MuxedAVInputStream();
+		output = new VideoEncoder();		
+	}
+
+	~VideoTranscode()
+	{
+		delete input;
+		delete output;
+	}
+				
+	void transcode(String ^inputVideoLocation, String ^outputFilename, System::Threading::CancellationToken token, 
+		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL,
+		String ^inputAudioLocation = nullptr) 
 	{
 		
-		AVPacket packet;
-		packet.data = NULL;
-		packet.size = 0;
-
+		AVPacket *packet;
+		
 		AVFrame *frame = NULL;
 		AVMediaType type;
-		int ret = 0;
-		int (*dec_func)(AVCodecContext *, AVFrame *, int *, const AVPacket *);
+		int ret = 0;	
 				
 		int got_frame;
 		
 		try {
 
-			initialize(inputFilename, outputFilename, options, token);
+			initialize(inputVideoLocation, outputFilename, options, token, inputAudioLocation);
 			
 			av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
 
@@ -152,7 +151,11 @@ public:
 
 				startTimeRange = (double)options["startTimeRange"];
 
-				input->seek(startTimeRange);				
+				bool result = input->seek(startTimeRange);				
+				if(result == false) {
+					
+					throw gcnew VideoLib::VideoLibException("Could not search in input stream(s)");
+				}
 			}
 
 			double endTimeRange = DBL_MAX;
@@ -175,23 +178,23 @@ public:
 					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
 				}
 
-				if (input->readFrame(&packet) == VideoDecoder::ReadFrameResult::END_OF_STREAM) {
+				if (input->readFrame(&packet) != VideoDecoder::ReadFrameResult::OK) {
 					// finished
 					break;
 				}
-			
-				unsigned int inStreamIdx = packet.stream_index;	
+						
+				unsigned int inStreamIdx = packet->stream_index;	
 				unsigned int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
 				
 				if(outStreamIdx != DISCARD_STREAM) {
 					
 					//get the dts value of the first input packet and subtract it from subsequent dts & pts
 					//values to make sure the output video starts at time zero.										
-					setDtsOffsets(packet);
+					setDtsOffsets(*packet);
 					
 					// check if every stream has passed the end of timerange 
 					// stop encoding if true
-					streamInfo[inStreamIdx]->posSeconds = packet.pts * av_q2d(input->stream[inStreamIdx]->getStream()->time_base);
+					streamInfo[inStreamIdx]->posSeconds = input->getStream(inStreamIdx)->getTimeSeconds(packet->pts);
 
 					bool isPassedEndTimeRange = true;
 
@@ -217,7 +220,7 @@ public:
 
 				}
 			
-				type = input->stream[inStreamIdx]->getCodecType();
+				type = input->getStream(inStreamIdx)->getCodecType();
 
 				if(outStreamIdx == DISCARD_STREAM) {
 
@@ -231,33 +234,40 @@ public:
 						throw gcnew VideoLib::VideoLibException("Out of memory");	
 					}
 					
-					if(packet.dts != AV_NOPTS_VALUE) {
+					if(packet->dts != AV_NOPTS_VALUE) {
 
-						packet.dts += streamInfo[inStreamIdx]->dtsOffset;
+						packet->dts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 
-					if(packet.pts != AV_NOPTS_VALUE) {
+					if(packet->pts != AV_NOPTS_VALUE) {
 
-						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
+						packet->pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 								
-					packet.dts = av_rescale_q_rnd(packet.dts,
-						input->getFormatContext()->streams[inStreamIdx]->time_base,
-						input->getFormatContext()->streams[inStreamIdx]->codec->time_base,
+					packet->dts = av_rescale_q_rnd(packet->dts,
+						input->getStream(inStreamIdx)->getAVStream()->time_base,
+						input->getStream(inStreamIdx)->getAVStream()->codec->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
-					packet.pts = av_rescale_q_rnd(packet.pts,
-						input->getFormatContext()->streams[inStreamIdx]->time_base,
-						input->getFormatContext()->streams[inStreamIdx]->codec->time_base,
+					packet->pts = av_rescale_q_rnd(packet->pts,
+						input->getStream(inStreamIdx)->getAVStream()->time_base,
+						input->getStream(inStreamIdx)->getAVStream()->codec->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+					
+					
+					if(type == AVMEDIA_TYPE_VIDEO) {
 
-					dec_func = (type == AVMEDIA_TYPE_VIDEO) ? avcodec_decode_video2 : avcodec_decode_audio4;
+						ret = input->getVideoDecoder()->decodeVideoFrame(frame, &got_frame, &(*packet));
 
-					ret = dec_func(input->stream[inStreamIdx]->getCodecContext(), frame, &got_frame, &packet);
+					} else {
+
+						ret = input->getAudioDecoder()->decodeAudioFrame(frame, &got_frame, &(*packet));
+					}
+				
 					if (ret < 0) {
 
 						av_frame_free(&frame);
-						Logger::Log->Error("Error while decoding: " + inputFilename);
+						Logger::Log->Error("Error decoding input: " + inputVideoLocation);
 						break;										
 					}
 
@@ -278,44 +288,44 @@ public:
 
 				} else {
 													
-					packet.stream_index = outStreamIdx;
+					packet->stream_index = outStreamIdx;
 
-					if(packet.dts != AV_NOPTS_VALUE) {
+					if(packet->dts != AV_NOPTS_VALUE) {
 
-						packet.dts += streamInfo[inStreamIdx]->dtsOffset;
+						packet->dts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 
-					if(packet.pts != AV_NOPTS_VALUE) {
+					if(packet->pts != AV_NOPTS_VALUE) {
 
-						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
+						packet->pts += streamInfo[inStreamIdx]->dtsOffset;
 					}
 					
 					// remux this frame without reencoding 
-					packet.dts = av_rescale_q_rnd(packet.dts,
-						input->getFormatContext()->streams[inStreamIdx]->time_base,
+					packet->dts = av_rescale_q_rnd(packet->dts,
+						input->getStream(inStreamIdx)->getAVStream()->time_base,
 						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
 
-					packet.pts = av_rescale_q_rnd(packet.pts,
-						input->getFormatContext()->streams[inStreamIdx]->time_base,
+					packet->pts = av_rescale_q_rnd(packet->pts,
+						input->getStream(inStreamIdx)->getAVStream()->time_base,
 						output->getFormatContext()->streams[outStreamIdx]->time_base,
 						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 
-					packet.duration = av_rescale_q(packet.duration, 
-						input->getFormatContext()->streams[inStreamIdx]->time_base, 
+					packet->duration = av_rescale_q(packet->duration, 
+						input->getStream(inStreamIdx)->getAVStream()->time_base, 
 						output->getFormatContext()->streams[outStreamIdx]->time_base);
 
-					packet.pos = -1;
+					packet->pos = -1;
 
-					output->writeEncodedPacket(&packet);				
+					output->writeEncodedPacket(&(*packet));				
 
 				}
 
-				av_free_packet(&packet);
+				
 			}
 
 			// flush filters and encoders 
-			for(int i = 0; i < input->getNrStreams(); i++) 
+			for(unsigned int i = 0; i < input->getNrStreams(); i++) 
 			{
 				if (streamInfo[i]->filterGraph == NULL) continue;
 
@@ -337,12 +347,7 @@ public:
 			output->writeTrailer();
 
 		} finally {
-
-			if(packet.data != NULL) {
-
-				av_free_packet(&packet);
-			}
-
+		
 			av_frame_free(&frame);
 
 			for (unsigned int i = 0; i < streamInfo.size(); i++) {
@@ -352,7 +357,7 @@ public:
 			}
 
 			streamInfo.clear();
-			
+						
 			input->close();
 			output->close();
 		}		
@@ -456,18 +461,21 @@ protected:
 				
 	}
 
-	
-	void initialize(String ^inputFilename, String ^outputFilename, Dictionary<String ^,Object ^> ^options, 
-		System::Threading::CancellationToken token, String ^inputFormatName = nullptr) {
 		
-		input->open(inputFilename, token, inputFormatName);					
+	void initialize(String ^inputVideoLocation, String ^outputFilename, Dictionary<String ^,Object ^> ^options, 
+		System::Threading::CancellationToken token, String ^inputAudioLocation = nullptr) 
+	{
+		inputStreamOffset = 0;
+		
 		output->open(outputFilename);
 
-		streamInfo.clear();			
+		streamInfo.clear();	
 
-		for(int i = 0; i < input->getNrStreams(); i++) {
+		input->open(inputVideoLocation, token, inputAudioLocation);
+										
+		for(unsigned int i = 0; i < input->getNrStreams(); i++) {
 				
-			Stream *inStream = input->stream[i];
+			Stream *inStream = input->getStream(i);
 											
 			if (inStream->getCodecType() == AVMEDIA_TYPE_VIDEO || inStream->getCodecType() == AVMEDIA_TYPE_AUDIO) {
 
@@ -486,7 +494,7 @@ protected:
 			}
 			
 		}
-
+		
 		output->writeHeader();
 
 		initFilters(options);
@@ -580,9 +588,9 @@ protected:
 	{		
 		unsigned int i;
 						
-		for (i = 0; i < input->getFormatContext()->nb_streams; i++) {
-														
-			if (input->getFormatContext()->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+		for (i = 0; i < input->getNrStreams(); i++) {
+											
+			if (input->getStream(i)->getCodecType() == AVMEDIA_TYPE_VIDEO) {
 
 				if((StreamOptions)options["videoStreamMode"] != StreamOptions::Encode) continue;
 
@@ -590,8 +598,8 @@ protected:
 					output->getVideoCodecContext()->pix_fmt, SWS_BICUBIC);
 
 				int outputFmt = (int)output->getVideoCodecContext()->pix_fmt;
-				int inWidth = input->getWidth();
-				int inHeight = input->getHeight();
+				int inWidth = input->getVideoDecoder()->getWidth();
+				int inHeight = input->getVideoDecoder()->getHeight();
 				int outWidth = output->getVideoCodecContext()->width;
 				int outHeight = output->getVideoCodecContext()->height;
 					
@@ -609,7 +617,7 @@ protected:
 
 				streamInfo[i]->filterGraph->createGraph(value.c_str());				
 
-			} else if(input->getFormatContext()->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+			} else if(input->getStream(i)->getCodecType() == AVMEDIA_TYPE_AUDIO) {
 
 				if((StreamOptions)options["audioStreamMode"] != StreamOptions::Encode) continue;
 
@@ -624,7 +632,7 @@ protected:
 					audioGraph = "asetnsamples=n=" + output->getAudioCodecContext()->frame_size;
 				}
 
-				if(output->getAudioCodecContext()->sample_rate != input->getAudioCodecContext()->sample_rate)
+				if(output->getAudioCodecContext()->sample_rate != input->getAudioDecoder()->getAudioCodecContext()->sample_rate)
 				{
 					if(audioGraph->Equals("anull")) {
 

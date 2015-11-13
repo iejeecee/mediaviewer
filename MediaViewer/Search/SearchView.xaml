@@ -155,7 +155,31 @@
                 <Label Grid.Row="6" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="6" Grid.Column="3" Value="{Binding Query.NrChannelsEnd}" Min="{Binding Query.NrChannelsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
             </Grid>
-            <Grid Grid.Row="2" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Images}, Converter={StaticResource enumToVisibilityConverter}}">
+            <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Audio}, Converter={StaticResource enumToVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="labelColumnGroup"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Separator Grid.Row="0" Grid.ColumnSpan="4"/>
+                <Label Grid.Row="1" Grid.Column="1"  Grid.ColumnSpan="3" Content="AUDIO OPTIONS" HorizontalAlignment="Left"/>                
+                <Label Grid.Row="2" Grid.Column="0"  Content="Duration" Style="{StaticResource labelStyle}"/>
+                <DateTimePicker:TimePicker Grid.Row="2" Grid.Column="1" Value="{Binding Query.DurationSecondsStart}" Min="0" Max="{Binding Query.DurationSecondsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="2" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
+                <DateTimePicker:TimePicker Grid.Row="2" Grid.Column="3" Value="{Binding Query.DurationSecondsEnd}" Min="{Binding Query.DurationSecondsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>                
+                <Label Grid.Row="3" Grid.Column="0"  Content="Channels" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Query.NrChannelsStart}" Min="0" Max="{Binding Query.NrChannelsEnd}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+                <Label Grid.Row="3" Grid.Column="2"  Content="To" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="3" Value="{Binding Query.NrChannelsEnd}" Min="{Binding Query.NrChannelsStart}" HorizontalAlignment="Stretch" Margin="5,5,5,5"/>
+            </Grid>
+            <Grid Grid.Row="1" Visibility="{Binding Query.SearchType, ConverterParameter={x:Static Search:MediaType.Images}, Converter={StaticResource enumToVisibilityConverter}}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" SharedSizeGroup="labelColumnGroup"/>
                     <ColumnDefinition Width="*"/>

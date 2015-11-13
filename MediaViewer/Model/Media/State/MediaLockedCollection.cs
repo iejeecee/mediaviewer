@@ -144,8 +144,15 @@ namespace MediaViewer.Model.Media.State
                     success = false;
                     continue;
                 }
-
-                oldItem.Location = newLocations.ElementAt(i);                       
+                oldItem.EnterWriteLock();
+                try
+                {
+                    oldItem.Location = newLocations.ElementAt(i);
+                }
+                finally
+                {
+                    oldItem.ExitWriteLock();
+                }
             }
             
             return (success);

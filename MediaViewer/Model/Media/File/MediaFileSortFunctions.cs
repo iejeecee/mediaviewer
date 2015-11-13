@@ -27,15 +27,6 @@ namespace MediaViewer.Model.Media.File
         SoftWare,
         Width,
         Height,
-        // video
-        Duration,
-        FramesPerSecond,
-        VideoCodec,
-        AudioCodec,
-        PixelFormat,
-        BitsPerSample,
-        SamplesPerSecond,
-        NrChannels,
         // image
         CameraMake,
         CameraModel,
@@ -43,7 +34,23 @@ namespace MediaViewer.Model.Media.File
         FocalLength,
         ExposureTime,
         FNumber,
-        ISOSpeedRating
+        ISOSpeedRating,
+        // video    
+        VideoCodec, 
+        FramesPerSecond,            
+        PixelFormat,
+        Duration,
+        BitsPerSample,
+        SamplesPerSecond,
+        NrChannels,
+        AudioCodec,        
+        // audio
+        Genre,
+        Album,
+        Track,
+        TotalTracks,
+        Disc,
+        TotalDiscs
     }
 
     public class MediaFileSortItem : SortItemBase<MediaFileSortMode> {
@@ -235,9 +242,27 @@ namespace MediaViewer.Model.Media.File
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aDuration = a.Item.Metadata is VideoMetadata ? new Nullable<int>((a.Item.Metadata as VideoMetadata).DurationSeconds) : null;
-                            Nullable<int> bDuration = b.Item.Metadata is VideoMetadata ? new Nullable<int>((b.Item.Metadata as VideoMetadata).DurationSeconds) : null;
+                            int? aDuration = null;
+                            int? bDuration = null;
 
+                            if (a.Item.Metadata is AudioMetadata)
+                            {
+                                aDuration = (a.Item.Metadata as AudioMetadata).DurationSeconds;
+                            }
+                            else
+                            {
+                                aDuration = (a.Item.Metadata as VideoMetadata).DurationSeconds;
+                            }
+
+                            if (b.Item.Metadata is AudioMetadata)
+                            {
+                                bDuration = (b.Item.Metadata as AudioMetadata).DurationSeconds;
+                            }
+                            else
+                            {
+                                bDuration = (b.Item.Metadata as VideoMetadata).DurationSeconds;
+                            }
+                           
                             return (onEquals(Nullable.Compare<int>(aDuration, bDuration),a,b));
                         });
                     break;
@@ -274,8 +299,26 @@ namespace MediaViewer.Model.Media.File
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            String aAudioCodec = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).AudioCodec : null;
-                            String bAudioCodec = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).AudioCodec : null;
+                            string aAudioCodec = null;
+                            string bAudioCodec = null;
+
+                            if (a.Item.Metadata is AudioMetadata)
+                            {
+                                aAudioCodec = (a.Item.Metadata as AudioMetadata).AudioCodec;
+                            }
+                            else
+                            {
+                                aAudioCodec = (a.Item.Metadata as VideoMetadata).AudioCodec;
+                            }
+
+                            if (b.Item.Metadata is AudioMetadata)
+                            {
+                                bAudioCodec = (b.Item.Metadata as AudioMetadata).AudioCodec;
+                            }
+                            else
+                            {
+                                bAudioCodec = (b.Item.Metadata as VideoMetadata).AudioCodec;
+                            }
 
                             return (onEquals(Compare(aAudioCodec, bAudioCodec),a,b));
                         });
@@ -300,10 +343,28 @@ namespace MediaViewer.Model.Media.File
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<short> aBPS = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).BitsPerSample : null;
-                            Nullable<short> bBPS = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).BitsPerSample : null;
+                            int? aBitsPerSample = null;
+                            int? bBitsPerSample = null;
 
-                            return (onEquals(Nullable.Compare(aBPS, bBPS),a,b));
+                            if (a.Item.Metadata is AudioMetadata)
+                            {
+                                aBitsPerSample = (a.Item.Metadata as AudioMetadata).BitsPerSample;
+                            }
+                            else
+                            {
+                                aBitsPerSample = (a.Item.Metadata as VideoMetadata).BitsPerSample;
+                            }
+
+                            if (b.Item.Metadata is AudioMetadata)
+                            {
+                                bBitsPerSample = (b.Item.Metadata as AudioMetadata).BitsPerSample;
+                            }
+                            else
+                            {
+                                bBitsPerSample = (b.Item.Metadata as VideoMetadata).BitsPerSample;
+                            }
+
+                            return (onEquals(Nullable.Compare(aBitsPerSample, bBitsPerSample),a,b));
                         });
                     break;
                 case MediaFileSortMode.SamplesPerSecond:
@@ -313,10 +374,28 @@ namespace MediaViewer.Model.Media.File
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aSPS = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).SamplesPerSecond : null;
-                            Nullable<int> bSPS = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).SamplesPerSecond : null;
+                            int? aSamplesPerSecond = null;
+                            int? bSamplesPerSecond = null;
 
-                            return (onEquals(Nullable.Compare(aSPS, bSPS),a,b));
+                            if (a.Item.Metadata is AudioMetadata)
+                            {
+                                aSamplesPerSecond = (a.Item.Metadata as AudioMetadata).SamplesPerSecond;
+                            }
+                            else
+                            {
+                                aSamplesPerSecond = (a.Item.Metadata as VideoMetadata).SamplesPerSecond;
+                            }
+
+                            if (b.Item.Metadata is AudioMetadata)
+                            {
+                                bSamplesPerSecond = (b.Item.Metadata as AudioMetadata).SamplesPerSecond;
+                            }
+                            else
+                            {
+                                bSamplesPerSecond = (b.Item.Metadata as VideoMetadata).SamplesPerSecond;
+                            }
+
+                            return (onEquals(Nullable.Compare(aSamplesPerSecond, bSamplesPerSecond), a, b));
                         });
                     break;
                 case MediaFileSortMode.NrChannels:
@@ -326,10 +405,28 @@ namespace MediaViewer.Model.Media.File
                             int result = hasMediaTest(a, b);
                             if (result != 0) return result;
 
-                            Nullable<int> aNrChannels = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).NrChannels : null;
-                            Nullable<int> bNrChannels = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).NrChannels : null;
+                            int? aNrChannels = null;
+                            int? bNrChannels = null;
 
-                            return (onEquals(Nullable.Compare(aNrChannels, bNrChannels),a,b));
+                            if (a.Item.Metadata is AudioMetadata)
+                            {
+                                aNrChannels = (a.Item.Metadata as AudioMetadata).NrChannels;
+                            }
+                            else
+                            {
+                                aNrChannels = (a.Item.Metadata as VideoMetadata).NrChannels;
+                            }
+
+                            if (b.Item.Metadata is AudioMetadata)
+                            {
+                                bNrChannels = (b.Item.Metadata as AudioMetadata).NrChannels;
+                            }
+                            else
+                            {
+                                bNrChannels = (b.Item.Metadata as VideoMetadata).NrChannels;
+                            }
+
+                            return (onEquals(Nullable.Compare(aNrChannels, bNrChannels), a, b));
                         });
                     break;
                 case MediaFileSortMode.CameraMake:
@@ -423,11 +520,106 @@ namespace MediaViewer.Model.Media.File
                             return (onEquals(Nullable.Compare(aVal, bVal),a,b));
                         });
                     break;
+                case MediaFileSortMode.Genre:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            String aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).Genre : null;
+                            String bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).Genre : null;
+
+                            return (onEquals(Compare(aVal, bVal), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.Album:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            String aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).Album : null;
+                            String bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).Album : null;
+
+                            return (onEquals(Compare(aVal, bVal), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.Track:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<int> aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).TrackNr : null;
+                            Nullable<int> bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).TrackNr : null;
+
+                            return (onEquals(Nullable.Compare(aVal, bVal), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.TotalTracks:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<int> aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).TotalTracks : null;
+                            Nullable<int> bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).TotalTracks : null;
+
+                            return (onEquals(Nullable.Compare(aVal, bVal), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.Disc:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<int> aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).DiscNr : null;
+                            Nullable<int> bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).DiscNr : null;
+
+                            return (onEquals(Nullable.Compare(aVal, bVal), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.TotalDiscs:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<int> aVal = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).TotalDiscs : null;
+                            Nullable<int> bVal = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).TotalDiscs : null;
+
+                            return (onEquals(Nullable.Compare(aVal, bVal), a, b));
+                        });
+                    break;
                 default:
                     break;
             }
 
-            return (sortFunc);
+            Func<SelectableMediaItem, SelectableMediaItem, int> lockedSortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
+            {
+                a.Item.EnterReadLock();
+                b.Item.EnterReadLock();
+                try
+                {
+                    return sortFunc(a, b);
+                }
+                finally
+                {
+                    b.Item.ExitReadLock();
+                    a.Item.ExitReadLock();
+                }
+
+            });
+
+
+            return (lockedSortFunc);
         }
 
         public static bool isAllSortMode(MediaFileSortMode mode)
@@ -438,13 +630,23 @@ namespace MediaViewer.Model.Media.File
 
         public static bool isVideoSortMode(MediaFileSortMode mode)
         {
-            if ((int)mode <= (int)MediaFileSortMode.NrChannels) return (true);
+            if ((int)mode <= (int)MediaFileSortMode.Height ||
+                ((int)mode >= (int)MediaFileSortMode.VideoCodec && (int) mode <= (int)MediaFileSortMode.AudioCodec)) 
+                return (true);
             else return (false);
         }
 
         public static bool isImageSortMode(MediaFileSortMode mode)
         {
-            if ((int)mode <= (int)MediaFileSortMode.Height || (int)mode >= (int)MediaFileSortMode.CameraMake) return (true);
+            if ((int)mode <= (int)MediaFileSortMode.ISOSpeedRating) return (true);
+            else return (false);
+        }
+
+        public static bool isAudioSortMode(MediaFileSortMode mode)
+        {
+            if ((int)mode <= (int)MediaFileSortMode.SoftWare ||
+               (int)mode >= (int)MediaFileSortMode.Duration)
+                return (true);
             else return (false);
         }
 

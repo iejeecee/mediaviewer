@@ -241,7 +241,7 @@ namespace MediaViewer.MetaData
                 
             });
 
-            mediaFileWatcher.MediaFileState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+            mediaFileWatcher.MediaFileState.ItemPropertyChanged += MediaState_ItemPropertiesChanged;
           
             FilenameHistory = Settings.Default.FilenameHistory;
 
@@ -732,6 +732,10 @@ namespace MediaViewer.MetaData
                 {
                     getVideoProperties(DynamicProperties, metadata as VideoMetadata);
                 }
+                else if (metadata is AudioMetadata)
+                {
+                    getAudioProperties(DynamicProperties, metadata as AudioMetadata);
+                }
                 
                 Rating = metadata.Rating == null ? null : new Nullable<double>(metadata.Rating.Value / 5);
                 Title = metadata.Title;
@@ -814,6 +818,45 @@ namespace MediaViewer.MetaData
                     p.Add(item);
                 }
             }
+            else if (media is AudioMetadata)
+            {
+                AudioMetadata audio = media as AudioMetadata;
+
+                if (audio.Genre != null)
+                {
+                    p.Add(new Tuple<string, string>("Genre", audio.Genre));
+                }
+
+                if (audio.Album != null)
+                {
+                    p.Add(new Tuple<string, string>("Album", audio.Album));
+                }
+
+                if (audio.TrackNr != null)
+                {
+                    String value = audio.TrackNr.ToString();
+
+                    if (audio.TotalTracks != null)
+                    {
+                        value += " / " + audio.TotalTracks;
+                    }
+
+                    p.Add(new Tuple<string, string>("Track", value));
+                }
+
+                if (audio.DiscNr != null)
+                {
+                    String value = audio.DiscNr.ToString();
+
+                    if (audio.TotalDiscs != null)
+                    {
+                        value += " / " + audio.TotalDiscs;
+                    }
+
+                    p.Add(new Tuple<string, string>("Disc", value));
+                }
+                                
+            }
 
             if (media.Latitude != null)
             {
@@ -857,6 +900,16 @@ namespace MediaViewer.MetaData
                 p.Add(new Tuple<string, string>("Nr Channels", video.NrChannels.ToString()));
             }                
 
+        }
+
+        void getAudioProperties(ObservableCollection<Tuple<String, String>> p, AudioMetadata audio)
+        {
+            p.Add(new Tuple<string, string>("", "AUDIO"));                                             
+            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(audio.DurationSeconds)));             
+            p.Add(new Tuple<string, string>("Audio Codec", audio.AudioCodec));
+            p.Add(new Tuple<string, string>("Bits Per Sample", audio.BitsPerSample.ToString()));
+            p.Add(new Tuple<string, string>("Samples Per Second", audio.SamplesPerSecond.ToString()));
+            p.Add(new Tuple<string, string>("Nr Channels", audio.NrChannels.ToString()));           
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)

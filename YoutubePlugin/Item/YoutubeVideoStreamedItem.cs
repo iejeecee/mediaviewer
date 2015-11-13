@@ -146,6 +146,7 @@ namespace YoutubePlugin.Item
             itagFormatInfo[299] = new StreamFormatInfo(StreamType.VIDEO, 1920, 1080);
             itagFormatInfo[302] = new StreamFormatInfo(StreamType.VIDEO, 1280, 720);
             itagFormatInfo[303] = new StreamFormatInfo(StreamType.VIDEO, 1920, 1080);
+            itagFormatInfo[308] = new StreamFormatInfo(StreamType.VIDEO, 2560, 1440);
             itagFormatInfo[313] = new StreamFormatInfo(StreamType.VIDEO, 3840, 2160);
             itagFormatInfo[315] = new StreamFormatInfo(StreamType.VIDEO, 3840, 2160); 
 

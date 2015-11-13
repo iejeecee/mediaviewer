@@ -282,6 +282,10 @@
       <Project>{4c27e034-3647-4087-9699-c1562d604c44}</Project>
       <Name>MediaViewer</Name>
     </ProjectReference>
+    <ProjectReference Include="..\VideoLib\VideoLib.vcxproj">
+      <Project>{5ea803df-12d3-4db5-95e0-08e4e4da0ab8}</Project>
+      <Name>VideoLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Icons\youtube.ico" />

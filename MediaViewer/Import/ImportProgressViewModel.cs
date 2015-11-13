@@ -99,6 +99,14 @@ namespace MediaViewer.Import
                         }
                         break;
                     }
+                case Search.MediaType.Audio:
+                    {
+                        if (MediaFormatConvert.isAudioFile(info.Name))
+                        {
+                            addItem = info.FullName;
+                        }
+                        break;
+                    }
             }
 
             if (addItem != null)

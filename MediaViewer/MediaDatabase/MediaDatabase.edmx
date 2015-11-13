@@ -14,6 +14,7 @@
     <EntitySet Name="BaseMetadataSet_ImageMetadata" EntityType="MediaDatabase.Store.BaseMetadataSet_ImageMetadata" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="BaseMetadataSet_VideoMetadata" EntityType="MediaDatabase.Store.BaseMetadataSet_VideoMetadata" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="BaseMetadataSet_UnknownMetadata" EntityType="MediaDatabase.Store.BaseMetadataSet_UnknownMetadata" store:Type="Tables" Schema="dbo" />
+    <EntitySet Name="BaseMetadataSet_AudioMetadata" EntityType="MediaDatabase.Store.BaseMetadataSet_AudioMetadata" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="PresetMetadataTag" EntityType="MediaDatabase.Store.PresetMetadataTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="TagTag" EntityType="MediaDatabase.Store.TagTag" store:Type="Tables" Schema="dbo" />
     <EntitySet Name="BaseMetadataTag" EntityType="MediaDatabase.Store.BaseMetadataTag" store:Type="Tables" Schema="dbo" />
@@ -60,6 +61,10 @@
     <AssociationSet Name="FK_UnknownMetadata_inherits_BaseMetadata" Association="MediaDatabase.Store.FK_UnknownMetadata_inherits_BaseMetadata">
       <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
       <End Role="UnknownMetadata" EntitySet="BaseMetadataSet_UnknownMetadata" />
+    </AssociationSet>
+    <AssociationSet Name="FK_AudioMetadata_inherits_BaseMetadata" Association="MediaDatabase.Store.FK_AudioMetadata_inherits_BaseMetadata">
+      <End Role="BaseMetadata" EntitySet="BaseMetadataSet" />
+      <End Role="AudioMetadata" EntitySet="BaseMetadataSet_AudioMetadata" />
     </AssociationSet>
   </EntityContainer>
   <EntityType Name="TagSet">
@@ -194,6 +199,23 @@
     <Key>
       <PropertyRef Name="Id" />
     </Key>
+    <Property Name="Id" Type="int" Nullable="false" />
+  </EntityType>
+  <EntityType Name="BaseMetadataSet_AudioMetadata">
+    <Key>
+      <PropertyRef Name="Id" />
+    </Key>
+    <Property Name="DurationSeconds" Type="int" Nullable="false" />
+    <Property Name="NrChannels" Type="smallint" Nullable="false" />
+    <Property Name="SamplesPerSecond" Type="int" Nullable="false" />
+    <Property Name="BitsPerSample" Type="smallint" Nullable="false" />
+    <Property Name="AudioCodec" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="Genre" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="Album" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="TrackNr" Type="int" Nullable="true" />
+    <Property Name="TotalTracks" Type="int" Nullable="true" />
+    <Property Name="DiscNr" Type="int" Nullable="true" />
+    <Property Name="TotalDiscs" Type="int" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="PresetMetadataTag">
@@ -354,6 +376,20 @@
         <PropertyRef Name="Id" />
       </Principal>
       <Dependent Role="UnknownMetadata">
+        <PropertyRef Name="Id" />
+      </Dependent>
+    </ReferentialConstraint>
+  </Association>
+  <Association Name="FK_AudioMetadata_inherits_BaseMetadata">
+    <End Role="BaseMetadata" Type="MediaDatabase.Store.BaseMetadataSet" Multiplicity="1">
+      <OnDelete Action="Cascade" />
+    </End>
+    <End Role="AudioMetadata" Type="MediaDatabase.Store.BaseMetadataSet_AudioMetadata" Multiplicity="0..1" />
+    <ReferentialConstraint>
+      <Principal Role="BaseMetadata">
+        <PropertyRef Name="Id" />
+      </Principal>
+      <Dependent Role="AudioMetadata">
         <PropertyRef Name="Id" />
       </Dependent>
     </ReferentialConstraint>
@@ -571,6 +607,19 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <EntityType Name="AudioMetadata" BaseType="MediaDatabase.BaseMetadata" >
+          <Property Type="Int32" Name="DurationSeconds" Nullable="false" />
+          <Property Type="Int16" Name="NrChannels" Nullable="false" />
+          <Property Type="Int32" Name="SamplesPerSecond" Nullable="false" />
+          <Property Type="Int16" Name="BitsPerSample" Nullable="false" />
+          <Property Type="String" Name="AudioCodec" Nullable="false" />
+          <Property Type="String" Name="Genre" Nullable="true" />
+          <Property Type="String" Name="Album" Nullable="true" />
+          <Property Type="Int32" Name="TrackNr" Nullable="true" />
+          <Property Type="Int32" Name="TotalTracks" Nullable="true" />
+          <Property Type="Int32" Name="DiscNr" Nullable="true" />
+          <Property Type="Int32" Name="TotalDiscs" Nullable="true" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -676,6 +725,22 @@
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.UnknownMetadata)">
         <MappingFragment StoreEntitySet="BaseMetadataSet_UnknownMetadata">
           <ScalarProperty Name="Id" ColumnName="Id" />
+        </MappingFragment>
+      </EntityTypeMapping>
+      <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.AudioMetadata)">
+        <MappingFragment StoreEntitySet="BaseMetadataSet_AudioMetadata">
+          <ScalarProperty Name="Id" ColumnName="Id" />
+          <ScalarProperty Name="DurationSeconds" ColumnName="DurationSeconds" />
+          <ScalarProperty Name="NrChannels" ColumnName="NrChannels" />
+          <ScalarProperty Name="SamplesPerSecond" ColumnName="SamplesPerSecond" />
+          <ScalarProperty Name="BitsPerSample" ColumnName="BitsPerSample" />
+          <ScalarProperty Name="AudioCodec" ColumnName="AudioCodec" />
+          <ScalarProperty Name="Genre" ColumnName="Genre" />
+          <ScalarProperty Name="Album" ColumnName="Album" />
+          <ScalarProperty Name="TrackNr" ColumnName="TrackNr" />
+          <ScalarProperty Name="TotalTracks" ColumnName="TotalTracks" />
+          <ScalarProperty Name="DiscNr" ColumnName="DiscNr" />
+          <ScalarProperty Name="TotalDiscs" ColumnName="TotalDiscs" />
         </MappingFragment>
       </EntityTypeMapping>
     </EntitySetMapping>

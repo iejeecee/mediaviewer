@@ -65,24 +65,22 @@ namespace MediaViewer.MediaFileStackPanel
            
             NextPageCommand = new Command(() =>
             {
-                MediaStateCollectionView.Media.EnterWriteLock();
+                MediaStateCollectionView.EnterWriteLock();
                 try
                 {
-                    int nrItems = MediaStateCollectionView.Media.Count();
+                    int nrItems = MediaStateCollectionView.Count();
 
                     if (nrItems > 0)
                     {
                         MediaItem selectedItem;
 
-                        MediaStateCollectionView.getSelectedItem(out selectedItem);
+                        int index = MediaStateCollectionView.getSelectedItem_RLock(out selectedItem);
 
                         if(selectedItem != null) 
-                        {
-                            int index = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem));
-
+                        {                            
                             if (index + 1 < nrItems)
                             {
-                                MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[index + 1].Item);
+                                MediaStateCollectionView.selectExclusive_WLock(MediaStateCollectionView.ElementAt(index + 1).Item);
                             }
                         }
                     }
@@ -90,30 +88,28 @@ namespace MediaViewer.MediaFileStackPanel
                 }
                 finally
                 {
-                    MediaStateCollectionView.Media.ExitWriteLock();
+                    MediaStateCollectionView.ExitWriteLock();
                 }
             });
 
             PrevPageCommand = new Command(() =>
             {
-                MediaStateCollectionView.Media.EnterWriteLock();
+                MediaStateCollectionView.EnterWriteLock();
                 try
                 {
-                    int nrItems = MediaStateCollectionView.Media.Count();
+                    int nrItems = MediaStateCollectionView.Count();
 
                     if (nrItems > 0)
                     {
                         MediaItem selectedItem;
 
-                        MediaStateCollectionView.getSelectedItem(out selectedItem);
+                        int index = MediaStateCollectionView.getSelectedItem_RLock(out selectedItem);
 
                         if (selectedItem != null)
-                        {
-                            int index = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItem));
-
+                        {                            
                             if (index - 1 >= 0)
                             {
-                                MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[index - 1].Item);
+                                MediaStateCollectionView.selectExclusive_WLock(MediaStateCollectionView.ElementAt(index - 1).Item);
                             }
                         }
                     }
@@ -121,42 +117,44 @@ namespace MediaViewer.MediaFileStackPanel
                 }
                 finally
                 {
-                    MediaStateCollectionView.Media.ExitWriteLock();
+                    MediaStateCollectionView.ExitWriteLock();
                 }
             });
 
             FirstPageCommand = new Command(() =>
             {
-                MediaStateCollectionView.Media.EnterWriteLock();
+                MediaStateCollectionView.EnterWriteLock();
                 try
                 {
-                    if (MediaStateCollectionView.Media.Count() > 0)
+                    if (MediaStateCollectionView.Count() > 0)
                     {
-                        MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[0].Item);
+                        MediaStateCollectionView.selectExclusive_WLock(MediaStateCollectionView.ElementAt(0).Item);
                     }
 
                 }
                 finally
                 {
-                    MediaStateCollectionView.Media.ExitWriteLock();
+                    MediaStateCollectionView.ExitWriteLock();
                 }
 
             });
 
             LastPageCommand = new Command(() =>
             {
-                MediaStateCollectionView.Media.EnterWriteLock();
+                MediaStateCollectionView.EnterWriteLock();
                 try
                 {
-                    if (MediaStateCollectionView.Media.Count() > 0)
+                    if (MediaStateCollectionView.Count() > 0)
                     {
-                        MediaStateCollectionView.selectExclusive(MediaStateCollectionView.Media[MediaStateCollectionView.Media.Count() - 1].Item);
+                        int lastIndex = MediaStateCollectionView.Count() - 1;
+
+                        MediaStateCollectionView.selectExclusive_WLock(MediaStateCollectionView.ElementAt(lastIndex).Item);
                     }
 
                 }
                 finally
                 {
-                    MediaStateCollectionView.Media.ExitWriteLock();
+                    MediaStateCollectionView.ExitWriteLock();
                 }
             });
 
@@ -227,42 +225,42 @@ namespace MediaViewer.MediaFileStackPanel
         }
 
         private void mediaState_SelectionChanged(object sender, EventArgs e)
-        {           
-          
-            MediaStateCollectionView.Media.EnterReadLock();
-            try
-            {                
-                //MediaStateCollectionView.getSelectedItem(out selectedItem);
-                List<MediaItem> items = MediaStateCollectionView.getSelectedItems();
+        {
+            List<MediaItem> items = new List<MediaItem>();
 
-                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, items));
-        
+            MediaStateCollectionView.EnterReadLock();
+            try
+            {                               
+                items = MediaStateCollectionView.getSelectedItems_RLock();
+                        
                 if(items.Count == 0) {
 
                     CurrentPage = null;
 
                 } else {
 
-                    CurrentPage = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(items[0])) + 1;
+                    CurrentPage = MediaStateCollectionView.IndexOf(new SelectableMediaItem(items[0])) + 1;
                 }
             }
             finally
             {
-                MediaStateCollectionView.Media.ExitReadLock();
+                MediaStateCollectionView.ExitReadLock();
+
+                EventAggregator.GetEvent<MediaSelectionEvent>().Publish(new MediaSelectionPayload(MediaStateCollectionView.Guid, items));
             }
                        
         }
      
         private void mediaState_NrItemsInStateChanged(object sender, EventArgs e)
         {       
-             MediaStateCollectionView.Media.EnterReadLock();
+             MediaStateCollectionView.EnterReadLock();
              try
              {
-                 NrPages = MediaStateCollectionView.Media.Count();
+                 NrPages = MediaStateCollectionView.Count();
 
                  MediaItem selectedItem;
 
-                 int index = MediaStateCollectionView.getSelectedItem(out selectedItem);
+                 int index = MediaStateCollectionView.getSelectedItem_RLock(out selectedItem);
 
                  if (index != -1 && (index + 1) != CurrentPage)
                  {
@@ -271,7 +269,7 @@ namespace MediaViewer.MediaFileStackPanel
              }
              finally
              {
-                 MediaStateCollectionView.Media.ExitReadLock();
+                 MediaStateCollectionView.ExitReadLock();
              }
         }
 

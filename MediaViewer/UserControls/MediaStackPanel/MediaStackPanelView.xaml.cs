@@ -102,7 +102,7 @@ namespace MediaViewer.UserControls.MediaStackPanel
                 ICollection<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
                 if (selectedItems.Count == 0) return;
 
-                scrollToIndex = MediaStateCollectionView.Media.IndexOf(new SelectableMediaItem(selectedItems.ElementAt(0)));
+                scrollToIndex = MediaStateCollectionView.IndexOf(new SelectableMediaItem(selectedItems.ElementAt(0)));
 
                 if (scrollViewer != null)
                 {

@@ -13,6 +13,8 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using MediaViewer.Model.Utils;
 using MediaViewer.Properties;
+using MediaViewer.Model.Media.Base;
+using MediaViewer.VideoPanel;
 
 namespace MediaViewer.Transcode.Video
 {
@@ -23,7 +25,7 @@ namespace MediaViewer.Transcode.Video
         public Command OkCommand { get; set; }
         public Command DirectoryPickerCommand { get; set; }
 
-        public ICollection<MediaFileItem> Items { get; set; }
+        public ICollection<VideoAudioPair> Items { get; set; }
 
         public VideoTranscodeViewModel()
         {
@@ -76,7 +78,7 @@ namespace MediaViewer.Transcode.Video
             SupportedVideoEncoders = new ListCollectionView(Enum.GetValues(typeof(VideoEncoders)));
             SupportedVideoEncoders.Filter = supportedVideoEncodersFilter;
 
-            Items = new List<MediaFileItem>();
+            Items = new List<VideoAudioPair>();
             Title = "Transcode Video(s)";
             IconUri = "/MediaViewer;component/Resources/Icons/videofile.ico";
 

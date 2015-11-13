@@ -33,7 +33,7 @@ namespace MediaViewer.Model.Media.State
     {
         
         public event EventHandler<MediaStateChangedEventArgs> NrItemsInStateChanged;        
-        public event EventHandler<PropertyChangedEventArgs> ItemPropertiesChanged;
+        public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
 
         MediaLockedCollection uiMediaCollection;
 
@@ -195,9 +195,9 @@ namespace MediaViewer.Model.Media.State
 
         void item_PropertyChanged(Object sender, PropertyChangedEventArgs e)
         {
-            if (ItemPropertiesChanged != null)
+            if (ItemPropertyChanged != null)
             {
-                ItemPropertiesChanged(sender, e);
+                ItemPropertyChanged(sender, e);
             }
         }
 

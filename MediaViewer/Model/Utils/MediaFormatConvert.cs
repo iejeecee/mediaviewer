@@ -40,6 +40,9 @@ namespace MediaViewer.Model.Utils
             extToMimeType["webm"] = "video/webm";
             extToMimeType["m4a"] = "audio/mp4";
             extToMimeType["mp3"] = "audio/mp3";
+            extToMimeType["wav"] = "audio/wav";
+            extToMimeType["ogg"] = "audio/ogg";
+            extToMimeType["flac"] = "audio/flac";
 
             foreach (KeyValuePair<string, string> pair in extToMimeType)
             {
@@ -184,6 +187,16 @@ namespace MediaViewer.Model.Utils
         public static bool isMediaFile(string fileName)
         {
             return (fileNameToMimeType(fileName) == null ? false : true);
+        }
+
+        public static bool isAudioFile(string fileName)
+        {
+            string mimeType = fileNameToMimeType(fileName);
+
+            if (mimeType == null) return (false);
+            else if (mimeType.StartsWith("audio")) return (true);
+
+            return (false);
         }
 
         public static bool isVideoFile(string fileName)

@@ -233,6 +233,12 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacketInterleaved() {
 		// video packet
 		frameQueue->addVideoPacket(packet);
 
+		if(videoDecoder->getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) {
+
+			// there is just a single video packet in this stream, a attached picture		
+			frameQueue->addVideoPacket(Packet::finalPacket);	
+		}
+
 	} else if(packet->AVLibPacketData->stream_index == videoDecoder->getAudioStreamIndex()) {
 
 		if(result == VideoDecoder::ReadFrameResult::READ_ERROR) {

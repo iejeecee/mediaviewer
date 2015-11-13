@@ -1,4 +1,5 @@
-﻿using MediaViewer.Infrastructure.Logging;
+﻿using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.metadata.Metadata;
@@ -119,15 +120,15 @@ namespace MediaViewer.Model.Media.Metadata
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
          {
 
-             List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
-                  MAX_THUMBNAIL_HEIGHT, -1, nrThumbnails, 0.025, token, timeoutSeconds);
+             List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                  Constants.MAX_THUMBNAIL_HEIGHT, -1, nrThumbnails, 0.025, token, timeoutSeconds);
             
              if (thumbBitmaps.Count == 0)
              {
 
                  // possibly could not seek in video, try to get the first frame in the video
-                 thumbBitmaps = videoPreview.grabThumbnails(MAX_THUMBNAIL_WIDTH,
-                     MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
+                 thumbBitmaps = videoPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                     Constants.MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
              }
 
              video.Thumbnails.Clear();
@@ -139,9 +140,9 @@ namespace MediaViewer.Model.Media.Metadata
                         
          }
 
-         static List<String> encoderMatch = new List<String>() { "encoder", "wm/toolname","encoded_with"};
+         static List<String> encoderMatch = new List<String>() { "encoder", "wm/toolname", "encoded_with", "encoded_by"};
          static List<String> descriptionMatch = new List<string>() {"description","comment"};
-         static List<String> authorMatch = new List<string>() {"artist","album_artist"};
+         static List<String> authorMatch = new List<string>() {"artist","author"};
 
          void parseFFMpegMetaData(List<string> fsMetaData, VideoMetadata video)
          {
@@ -155,6 +156,8 @@ namespace MediaViewer.Model.Media.Metadata
                  {
                      String param = temp[0].ToLower();
                      String value = temp[1].Trim();
+
+                     if (String.IsNullOrEmpty(value) || String.IsNullOrWhiteSpace(value)) continue;
 
                      // Note that when setting the title like this, if the user clears the (XMP) title it will 
                      // revert to the title stored in the ffmpeg metadata. This will be confusing for the user

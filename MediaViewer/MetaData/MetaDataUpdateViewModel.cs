@@ -126,10 +126,10 @@ namespace MediaViewer.MetaData
                         String info;
                         ItemInfo = "Saving MetaData: " + item.Location;
 
-                        item.EnterWriteLock();
+                        item.EnterUpgradeableReadLock();
                         try
                         {
-                            item.writeMetadata_WLock(MetadataFactory.WriteOptions.AUTO, this);
+                            item.writeMetadata_URLock(MetadataFactory.WriteOptions.AUTO, this);
                         }
                         catch (Exception e)
                         {
@@ -139,12 +139,20 @@ namespace MediaViewer.MetaData
                             Logger.Log.Error(info, e);
                             MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
-                            reloadMetadata(item);
+                            // reload metaData, exceptions are caught in readMetadata
+                            if (item.Metadata != null)
+                            {
+                                item.Metadata.clear();
+                            }
+                           
+                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
+                                MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+
                             return;
                         }
                         finally
                         {
-                            item.ExitWriteLock();
+                            item.ExitUpgradeableReadLock();
                         }
 
                         info = "Completed updating Metadata for: " + item.Location;
@@ -386,26 +394,7 @@ namespace MediaViewer.MetaData
             return (isModified);
         }
 
-        void reloadMetadata(MediaFileItem item)
-        {
-            if (item.Metadata != null)
-            {
-                item.Metadata.clear();
-            }
-
-            item.EnterWriteLock();
-            try
-            {
-                // reload metaData in metadataviewmodel
-                item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO |
-                    MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
-            }         
-            finally
-            {
-                item.ExitWriteLock();
-            }
-
-        }
+        
 
         string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, BaseMetadata media)
         {

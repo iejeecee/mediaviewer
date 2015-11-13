@@ -24,7 +24,8 @@ namespace MediaViewer.Model.Media.File
     {
         None,
         Video,
-        Images
+        Images,
+        Audio
     }
 
     public sealed class MediaFileStateCollectionView : MediaStateCollectionView
@@ -119,6 +120,13 @@ namespace MediaViewer.Model.Media.File
                             isRefreshed = true;
                         }
                         break;
+                    case MediaFilterMode.Audio:
+                        if (!MediaFileSortFunctions.isAudioSortMode(SortMode))
+                        {
+                            SortModes.MoveCurrentToFirst();
+                            isRefreshed = true;
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -166,6 +174,12 @@ namespace MediaViewer.Model.Media.File
                             return (false);
                         }
                         break;
+                    case MediaFilterMode.Audio:
+                        if (!Utils.MediaFormatConvert.isAudioFile(item.Item.Location))
+                        {
+                            return (false);
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -189,7 +203,7 @@ namespace MediaViewer.Model.Media.File
             set { SetProperty(ref mediaFilter, value); }
         }
 
-        override protected void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        override protected void MediaState_ItemPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             MediaItem item = sender as MediaItem;
                                     
@@ -222,6 +236,8 @@ namespace MediaViewer.Model.Media.File
                     return (MediaFileSortFunctions.isVideoSortMode(sortItem.SortMode));
                 case MediaFilterMode.Images:
                     return (MediaFileSortFunctions.isImageSortMode(sortItem.SortMode));
+                case MediaFilterMode.Audio:
+                    return (MediaFileSortFunctions.isAudioSortMode(sortItem.SortMode));
                 default:
                     break;
             }
@@ -239,8 +255,9 @@ namespace MediaViewer.Model.Media.File
 
             if (item.Metadata != null)
             {
-                VideoMetadata VideoMetadata = item.Metadata is VideoMetadata ? item.Metadata as VideoMetadata : null;
-                ImageMetadata ImageMetadata = item.Metadata is ImageMetadata ? item.Metadata as ImageMetadata : null;
+                VideoMetadata videoMetadata = item.Metadata is VideoMetadata ? item.Metadata as VideoMetadata : null;
+                ImageMetadata imageMetadata = item.Metadata is ImageMetadata ? item.Metadata as ImageMetadata : null;
+                AudioMetadata audioMetadata = item.Metadata is AudioMetadata ? item.Metadata as AudioMetadata : null;
 
                 switch (SortMode)
                 {
@@ -293,113 +310,170 @@ namespace MediaViewer.Model.Media.File
                         }
                         break;
                     case MediaFileSortMode.Width:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {                          
-                            info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
+                            info = imageMetadata.Width.ToString() + " x " + imageMetadata.Height.ToString();
                         }
                         else
                         {                         
-                            info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
+                            info = videoMetadata.Width.ToString() + " x " + videoMetadata.Height.ToString();
                         }
                         break;                        
                     case MediaFileSortMode.Height:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.Width.ToString() + " x " + ImageMetadata.Height.ToString();
+                            info = imageMetadata.Width.ToString() + " x " + imageMetadata.Height.ToString();
                         }
                         else
                         {
-                            info = VideoMetadata.Width.ToString() + " x " + VideoMetadata.Height.ToString();
+                            info = videoMetadata.Width.ToString() + " x " + videoMetadata.Height.ToString();
                         }                   
                         break;
                     case MediaFileSortMode.Duration:
-                        if (VideoMetadata != null)
+                        
+                        if (videoMetadata != null)
                         {
-                            info = MiscUtils.formatTimeSeconds(VideoMetadata.DurationSeconds);
-                        }                        
+                            info = MiscUtils.formatTimeSeconds(videoMetadata.DurationSeconds);
+                        }
+                        else if (audioMetadata != null)
+                        {
+                            info = MiscUtils.formatTimeSeconds(audioMetadata.DurationSeconds);
+                        }
                         break;
                     case MediaFileSortMode.FramesPerSecond:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.FramesPerSecond.ToString("0.00") + " FPS";
+                            info = videoMetadata.FramesPerSecond.ToString("0.00") + " FPS";
                         }
                         break;
                     case MediaFileSortMode.VideoCodec:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.VideoCodec;
+                            info = videoMetadata.VideoCodec;
                         }
                         break;
                     case MediaFileSortMode.AudioCodec:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.AudioCodec;
+                            info = videoMetadata.AudioCodec;
+                        }
+                        else if (audioMetadata != null)
+                        {
+                            info = audioMetadata.AudioCodec;
                         }
                         break;
                     case MediaFileSortMode.PixelFormat:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.PixelFormat;
+                            info = videoMetadata.PixelFormat;
                         }
                         break;
                     case MediaFileSortMode.BitsPerSample:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.BitsPerSample.HasValue ? VideoMetadata.BitsPerSample + "bit" : "";
+                            info = videoMetadata.BitsPerSample.HasValue ? videoMetadata.BitsPerSample + "bit" : "";
+                        }
+                        else if (audioMetadata != null)
+                        {
+                            info = audioMetadata.BitsPerSample + "bit";
                         }
                         break;
                     case MediaFileSortMode.SamplesPerSecond:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.SamplesPerSecond.HasValue ? VideoMetadata.SamplesPerSecond + "hz" : "";
+                            info = videoMetadata.SamplesPerSecond.HasValue ? videoMetadata.SamplesPerSecond + "hz" : "";
+                        }
+                        else if (audioMetadata != null)
+                        {
+                            info = audioMetadata.SamplesPerSecond + "hz";
                         }
                         break;
                     case MediaFileSortMode.NrChannels:
-                        if (VideoMetadata != null)
+                        if (videoMetadata != null)
                         {
-                            info = VideoMetadata.NrChannels.HasValue ? VideoMetadata.NrChannels.Value.ToString() + " chan" : "";
+                            info = videoMetadata.NrChannels.HasValue ? videoMetadata.NrChannels.Value.ToString() + " chan" : "";
+                        }
+                        else if (audioMetadata != null)
+                        {
+                            info = audioMetadata.NrChannels.ToString();
                         }
                         break;
                     case MediaFileSortMode.CameraMake:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.CameraMake != null ? ImageMetadata.CameraMake : "";
+                            info = imageMetadata.CameraMake != null ? imageMetadata.CameraMake : "";
                         }
                         break;
                     case MediaFileSortMode.CameraModel:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.CameraModel != null ? ImageMetadata.CameraModel : "";
+                            info = imageMetadata.CameraModel != null ? imageMetadata.CameraModel : "";
                         }
                         break;
                     case MediaFileSortMode.Lens:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.Lens != null ? ImageMetadata.Lens : "";
+                            info = imageMetadata.Lens != null ? imageMetadata.Lens : "";
                         }
                         break;
                     case MediaFileSortMode.ISOSpeedRating:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.ISOSpeedRating.HasValue ? "ISO: " + ImageMetadata.ISOSpeedRating.Value : "";
+                            info = imageMetadata.ISOSpeedRating.HasValue ? "ISO: " + imageMetadata.ISOSpeedRating.Value : "";
                         }
                         break;
                     case MediaFileSortMode.FNumber:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.FNumber.HasValue ? "f/" + ImageMetadata.FNumber.Value : "";
+                            info = imageMetadata.FNumber.HasValue ? "f/" + imageMetadata.FNumber.Value : "";
                         }
                         break;
                     case MediaFileSortMode.ExposureTime:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.ExposureTime.HasValue ? "1/" + 1/ImageMetadata.ExposureTime.Value + "s" : "";
+                            info = imageMetadata.ExposureTime.HasValue ? "1/" + 1/imageMetadata.ExposureTime.Value + "s" : "";
                         }
                         break;
                     case MediaFileSortMode.FocalLength:
-                        if (ImageMetadata != null)
+                        if (imageMetadata != null)
                         {
-                            info = ImageMetadata.FocalLength.HasValue ? ImageMetadata.FocalLength.Value + "mm" : "";
+                            info = imageMetadata.FocalLength.HasValue ? imageMetadata.FocalLength.Value + "mm" : "";
+                        }
+                        break;
+                    case MediaFileSortMode.Genre:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.Genre == null ? "" : audioMetadata.Genre;
+                        }
+                        break;
+                    case MediaFileSortMode.Album:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.Album == null ? "" : audioMetadata.Album;
+                        }
+                        break;
+                    case MediaFileSortMode.Track:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.TrackNr == null ? "" : audioMetadata.TrackNr.Value.ToString();
+                        }
+                        break;
+                    case MediaFileSortMode.TotalTracks:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.TotalTracks == null ? "" : audioMetadata.TotalTracks.Value.ToString();
+                        }
+                        break;
+                    case MediaFileSortMode.Disc:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.DiscNr == null ? "" : audioMetadata.TrackNr.Value.ToString();
+                        }
+                        break;
+                    case MediaFileSortMode.TotalDiscs:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.TotalDiscs == null ? "" : audioMetadata.TotalTracks.Value.ToString();
                         }
                         break;
                     default:

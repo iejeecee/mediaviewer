@@ -35,7 +35,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid>        
-        <ItemsControl x:Name="itemsControl" ItemsSource="{Binding ElementName=mediaGridView, Path=MediaStateCollectionView.Media}">
+        <ItemsControl x:Name="itemsControl" ItemsSource="{Binding ElementName=mediaGridView, Path=MediaStateCollectionView.MediaCollectionView}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Layout:VirtualizingTilePanel x:Name="virtualizingTilePanel" Columns="{Binding ElementName=mediaGridView, Path=NrColumns}" VerticalAlignment="Top" Tile="False" ChildHeight="150" Loaded="virtualizingTilePanel_Loaded" VirtualizationMode="Recycling"/>                  

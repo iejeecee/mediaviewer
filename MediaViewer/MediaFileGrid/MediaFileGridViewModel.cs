@@ -39,7 +39,8 @@ namespace MediaViewer.MediaFileGrid
                 {
                     Shell.ShellViewModel.navigateToImageView(item);
                 }
-                else if (MediaFormatConvert.isVideoFile(item.Location))
+                else if (MediaFormatConvert.isVideoFile(item.Location) || 
+                    MediaFormatConvert.isAudioFile(item.Location))
                 {
                     Shell.ShellViewModel.navigateToVideoView(item);
                 }
@@ -144,8 +145,8 @@ namespace MediaViewer.MediaFileGrid
             // restore state
             if (MediaStateCollectionView.MediaFilter != PrevFilterMode)
             {
-                MediaItem item = null;
-                MediaStateCollectionView.getSelectedItem(out item);
+                MediaItem item = null;               
+                MediaStateCollectionView.getSelectedItem(out item);                
                 MediaStateCollectionView.FilterModes.MoveCurrentTo(PrevFilterMode);
 
                 if (item != null)

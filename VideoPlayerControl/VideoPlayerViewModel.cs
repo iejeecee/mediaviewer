@@ -378,7 +378,7 @@ restartvideo:
         {            
             VideoClock = getVideoClock();
             AudioClock = audioPlayer.getAudioClock();
-            PositionSeconds = (int)Math.Floor(videoDecoder.HasVideo == true ? VideoClock : AudioClock);
+            PositionSeconds = (int)Math.Floor(videoDecoder.HasAudio == true ? AudioClock : VideoClock);
                                               
             StringBuilder builder = new StringBuilder();
 

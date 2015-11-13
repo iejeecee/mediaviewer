@@ -14,6 +14,7 @@ using System.Windows.Media.Imaging;
 using System.IO;
 using SharpDX.Direct3D9;
 using MediaViewer.Infrastructure.Utils;
+using MediaViewer.Infrastructure;
 
 namespace VideoPlayerControl
 {
@@ -372,7 +373,7 @@ namespace VideoPlayerControl
                         stream.Pitch
                     );
                    
-                    float scale = ImageUtils.resizeRectangle(width, height, 240, 180);
+                    float scale = ImageUtils.resizeRectangle(width, height, Constants.MAX_THUMBNAIL_WIDTH, Constants.MAX_THUMBNAIL_HEIGHT);
 
                     TransformedBitmap thumbnail = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale,scale));
                    

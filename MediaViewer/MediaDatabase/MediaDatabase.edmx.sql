@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 10/07/2015 19:50:34
+-- Date Created: 11/06/2015 14:49:43
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -50,6 +50,9 @@ GO
 IF OBJECT_ID(N'[dbo].[FK_UnknownMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
     ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata] DROP CONSTRAINT [FK_UnknownMetadata_inherits_BaseMetadata];
 GO
+IF OBJECT_ID(N'[dbo].[FK_AudioMetadata_inherits_BaseMetadata]', 'F') IS NOT NULL
+    ALTER TABLE [dbo].[BaseMetadataSet_AudioMetadata] DROP CONSTRAINT [FK_AudioMetadata_inherits_BaseMetadata];
+GO
 
 -- --------------------------------------------------
 -- Dropping existing tables
@@ -78,6 +81,9 @@ IF OBJECT_ID(N'[dbo].[BaseMetadataSet_VideoMetadata]', 'U') IS NOT NULL
 GO
 IF OBJECT_ID(N'[dbo].[BaseMetadataSet_UnknownMetadata]', 'U') IS NOT NULL
     DROP TABLE [dbo].[BaseMetadataSet_UnknownMetadata];
+GO
+IF OBJECT_ID(N'[dbo].[BaseMetadataSet_AudioMetadata]', 'U') IS NOT NULL
+    DROP TABLE [dbo].[BaseMetadataSet_AudioMetadata];
 GO
 IF OBJECT_ID(N'[dbo].[PresetMetadataTag]', 'U') IS NOT NULL
     DROP TABLE [dbo].[PresetMetadataTag];
@@ -227,6 +233,23 @@ CREATE TABLE [dbo].[BaseMetadataSet_UnknownMetadata] (
 );
 GO
 
+-- Creating table 'BaseMetadataSet_AudioMetadata'
+CREATE TABLE [dbo].[BaseMetadataSet_AudioMetadata] (
+    [DurationSeconds] int  NOT NULL,
+    [NrChannels] smallint  NOT NULL,
+    [SamplesPerSecond] int  NOT NULL,
+    [BitsPerSample] smallint  NOT NULL,
+    [AudioCodec] nvarchar(max)  NOT NULL,
+    [Genre] nvarchar(max)  NULL,
+    [Album] nvarchar(max)  NULL,
+    [TrackNr] int  NULL,
+    [TotalTracks] int  NULL,
+    [DiscNr] int  NULL,
+    [TotalDiscs] int  NULL,
+    [Id] int  NOT NULL
+);
+GO
+
 -- Creating table 'PresetMetadataTag'
 CREATE TABLE [dbo].[PresetMetadataTag] (
     [PresetMetadataTag_Tag_Id] int  NOT NULL,
@@ -297,6 +320,12 @@ GO
 -- Creating primary key on [Id] in table 'BaseMetadataSet_UnknownMetadata'
 ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata]
 ADD CONSTRAINT [PK_BaseMetadataSet_UnknownMetadata]
+    PRIMARY KEY CLUSTERED ([Id] ASC);
+GO
+
+-- Creating primary key on [Id] in table 'BaseMetadataSet_AudioMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_AudioMetadata]
+ADD CONSTRAINT [PK_BaseMetadataSet_AudioMetadata]
     PRIMARY KEY CLUSTERED ([Id] ASC);
 GO
 
@@ -440,6 +469,15 @@ GO
 -- Creating foreign key on [Id] in table 'BaseMetadataSet_UnknownMetadata'
 ALTER TABLE [dbo].[BaseMetadataSet_UnknownMetadata]
 ADD CONSTRAINT [FK_UnknownMetadata_inherits_BaseMetadata]
+    FOREIGN KEY ([Id])
+    REFERENCES [dbo].[BaseMetadataSet]
+        ([Id])
+    ON DELETE CASCADE ON UPDATE NO ACTION;
+GO
+
+-- Creating foreign key on [Id] in table 'BaseMetadataSet_AudioMetadata'
+ALTER TABLE [dbo].[BaseMetadataSet_AudioMetadata]
+ADD CONSTRAINT [FK_AudioMetadata_inherits_BaseMetadata]
     FOREIGN KEY ([Id])
     REFERENCES [dbo].[BaseMetadataSet]
         ([Id])

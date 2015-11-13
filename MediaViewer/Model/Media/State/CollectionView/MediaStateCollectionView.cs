@@ -1,6 +1,7 @@
 ﻿using MediaViewer.Filter;
 using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
+using MediaViewer.Model.Concurrency;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
@@ -9,6 +10,7 @@ using MediaViewer.UserControls.MediaGridItem;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -23,7 +25,14 @@ using System.Windows.Data;
 
 namespace MediaViewer.Model.Media.State.CollectionView
 {
-    public class MediaStateCollectionView : BindableBase {
+    /// <summary>
+    /// Provides a sortable/filterable view on a MediaState bindable to the User Interface
+    /// Functions marked with WLock or RLock need to be called while holding a write or read lock respectively
+    /// </summary>
+    public class MediaStateCollectionView : BindableBase, ILockable, IEnumerable<SelectableMediaItem>
+    {
+
+        ConcurrentQueue<Object> eventQueue;
 
         public event EventHandler<MediaStateCollectionViewChangedEventArgs> NrItemsInStateChanged;
         public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
@@ -31,28 +40,27 @@ namespace MediaViewer.Model.Media.State.CollectionView
         public event EventHandler SelectionChanged;
         public event EventHandler Cleared;
 
+        /// <summary>
+        /// Only reason this is public is to make it bindable, 
+        /// would be better to add INotifyCollectionChanged and make MediaStateCollectionView itself bindable
+        /// </summary>
+        public SelectableMediaLockedCollection MediaCollectionView { get; protected set; }
+
         public Guid Guid { get; private set; }
         public ListCollectionView FilterModes { get; set; }
         public ListCollectionView SortModes { get; set; }
         public InfoIconsCache InfoIconsCache { get; set; }
         public List<TagItem> TagFilter { get; set; }
 
-           
-        public bool IsAttached
-        {        
-            get
-            {
-                return (MediaState != null);
-            }
-        }
-
         int sortedItemEnd;
 
         protected MediaStateCollectionView(MediaState mediaState = null)
-        {           
-            Media = new SelectableMediaLockedCollection();
+        {
+            eventQueue = new ConcurrentQueue<object>();
+
+            MediaCollectionView = new SelectableMediaLockedCollection();
             this.MediaState = mediaState;
-                                                          
+
             sortedItemEnd = 0;
 
             SortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>((a, b) =>
@@ -60,7 +68,8 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 return (a.ToString().CompareTo(b.ToString()));
             });
 
-            Filter = new Func<SelectableMediaItem,bool>((a) => {
+            Filter = new Func<SelectableMediaItem, bool>((a) =>
+            {
 
                 return (true);
             });
@@ -70,21 +79,47 @@ namespace MediaViewer.Model.Media.State.CollectionView
             TagFilter = new List<TagItem>();
 
             Guid = Guid.NewGuid();
+            
         }
 
-    
-        private void Media_ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
-        {            
+        /// <summary>
+        /// Number of items in the Media collection view, query under read lock
+        /// </summary>
+        public int Count
+        {
+            get
+            {
+                return (MediaCollectionView.Count);
+            }
+        }
+
+        public bool IsAttached
+        {
+            get
+            {
+                return (MediaState != null);
+            }
+        }
+
+        /// <summary>
+        /// Returns index of Media item, query under read lock
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public int IndexOf(SelectableMediaItem item)
+        {
+            return (MediaCollectionView.IndexOf(item));
+        }
+
+        private void MediaCollectionView_ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
             OnItemPropertyChanged(sender, e);
         }
-        
-        public SelectableMediaLockedCollection Media { get; protected set; }
-
 
         MediaState mediaState;
 
         /// <summary>
-        /// Set to null to de-attach from the current MediaState
+        /// Source MediaState, set to null to de-attach 
         /// </summary>
         public MediaState MediaState
         {
@@ -98,9 +133,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 if (mediaState != null)
                 {
                     mediaState.NrItemsInStateChanged -= new EventHandler<MediaStateChangedEventArgs>(MediaState_NrItemsInStateChanged);
-                    mediaState.ItemPropertiesChanged -= MediaState_ItemPropertiesChanged;
+                    mediaState.ItemPropertyChanged -= MediaState_ItemPropertyChanged;
 
-                    Media.ItemPropertyChanged -= Media_ItemPropertyChanged;                   
+                    MediaCollectionView.ItemPropertyChanged -= MediaCollectionView_ItemPropertyChanged;
                 }
 
                 SetProperty(ref mediaState, value);
@@ -108,12 +143,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
                 if (mediaState != null)
                 {
                     mediaState.NrItemsInStateChanged += MediaState_NrItemsInStateChanged;
-                    mediaState.ItemPropertiesChanged += MediaState_ItemPropertiesChanged;
+                    mediaState.ItemPropertyChanged += MediaState_ItemPropertyChanged;
 
-                    Media.ItemPropertyChanged += Media_ItemPropertyChanged;
+                    MediaCollectionView.ItemPropertyChanged += MediaCollectionView_ItemPropertyChanged;
 
                     refresh();
-                }            
+                }
             }
         }
 
@@ -151,8 +186,9 @@ namespace MediaViewer.Model.Media.State.CollectionView
         public ListSortDirection SortDirection
         {
             get { return sortDirection; }
-            set {
-               
+            set
+            {
+
                 if (value == ListSortDirection.Ascending)
                 {
                     sortFunc = ascendingSortFunc;
@@ -162,7 +198,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     sortFunc = descendingSortFunc;
                 }
 
-                SetProperty(ref sortDirection, value); 
+                SetProperty(ref sortDirection, value);
             }
         }
 
@@ -182,29 +218,39 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        
 
         public int getSelectedItem(out MediaItem selectedItem)
-        {           
-            Media.EnterReadLock();
+        {
+            EnterReadLock();
             try
             {
-                for (int i = 0; i < Media.Count; i++)
-                {
-                    if (Media[i].IsSelected)
-                    {
-                        selectedItem = Media[i].Item;
-                        return (i);
-                    }
-                }
-
-                selectedItem = null;
-                return (-1);
+                return (getSelectedItem_RLock(out selectedItem));
             }
             finally
             {
-                Media.ExitReadLock();
+                ExitReadLock();
             }
+        }
+
+        /// <summary>
+        /// Obtain the first selected item, query under read lock 
+        /// </summary>
+        /// <param name="selectedItem"></param>
+        /// <returns>Index of selected item or -1</returns>
+        public int getSelectedItem_RLock(out MediaItem selectedItem)
+        {
+            for (int i = 0; i < MediaCollectionView.Count; i++)
+            {
+                if (MediaCollectionView[i].IsSelected)
+                {
+                    selectedItem = MediaCollectionView[i].Item;
+                    return (i);
+                }
+            }
+
+            selectedItem = null;
+            return (-1);
+
         }
 
         public virtual Object getExtraInfo(SelectableMediaItem item)
@@ -215,93 +261,120 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         public List<MediaItem> getSelectedItems()
         {
-            List<MediaItem> selectedItems = new List<MediaItem>();
-
-            Media.EnterReadLock();
+            EnterReadLock();
             try
             {
-                foreach (SelectableMediaItem item in Media)
-                {
-                    if (item.IsSelected)
-                    {
-                        selectedItems.Add(item.Item);
-                    }
-                }
-
-                return (selectedItems);
+                return getSelectedItems_RLock();
             }
             finally
             {
-                Media.ExitReadLock();
+                ExitReadLock();
             }
         }
-      
-        protected void OnCleared()
+
+        public List<MediaItem> getSelectedItems_RLock()
         {
-            if (Cleared != null)
+            List<MediaItem> selectedItems = new List<MediaItem>();
+
+            foreach (SelectableMediaItem item in MediaCollectionView)
             {
-                Cleared(this, EventArgs.Empty);
+                if (item.IsSelected)
+                {
+                    selectedItems.Add(item.Item);
+                }
             }
+
+            return (selectedItems);
+
         }
-    
-        protected virtual void MediaState_ItemPropertiesChanged(object sender, PropertyChangedEventArgs e)
+
+        protected virtual void MediaState_ItemPropertyChanged(object sender, PropertyChangedEventArgs e)
         {
             MediaItem item = sender as MediaItem;
 
             reSort(item);
-     
+
         }
 
         private void MediaState_NrItemsInStateChanged(object sender, MediaStateChangedEventArgs e)
         {
-                     
             switch (e.Action)
             {
-                case MediaStateChangedAction.Add:                      
-                    add(e.NewItems);                       
-                    break;
-                case MediaStateChangedAction.Remove:                        
-                    remove(e.OldItems);                        
-                    break;
+                case MediaStateChangedAction.Add:
+                    {
+                        EnterWriteLock();
+                        try
+                        {
+                            add_WLock(e.NewItems);
+                        }
+                        finally
+                        {
+                            ExitWriteLock();
+                        }
+                        break;
+                    }
+                case MediaStateChangedAction.Remove:
+                    {
+                        EnterWriteLock();
+                        try
+                        {
+                            remove_WLock(e.OldItems);
+                        }
+                        finally
+                        {
+                            ExitWriteLock();
+                        }
+                        break;
+                    }
                 case MediaStateChangedAction.Modified:
                     break;
                 case MediaStateChangedAction.Clear:
-                    clear();
-                    OnCleared();
-                    break;
+                    {
+                        EnterWriteLock();
+                        try
+                        {
+                            clear_WLock();
+                            QueueClearedEvent();
+                        }
+                        finally
+                        {
+                            ExitWriteLock();
+                        }
+                        break;
+                    }
                 default:
                     break;
             }
-                              
+
         }
 
         public void refresh()
         {
             if (IsAttached == false) return;
 
+            EnterWriteLock();
             MediaState.UIMediaCollection.EnterReadLock();
             try
             {
-                clear();             
-                add(MediaState.UIMediaCollection);               
+                clear_WLock();
+                add_WLock(MediaState.UIMediaCollection);
             }
             finally
             {
-                MediaState.UIMediaCollection.ExitReadLock();              
+                MediaState.UIMediaCollection.ExitReadLock();
+                ExitWriteLock();
             }
 
         }
 
-        
-
         public void selectAll()
         {
-            bool selectionChanged = false;
-
-            Media.EnterWriteLock();
+            EnterWriteLock();
             try
             {
-                foreach (SelectableMediaItem selectableItem in Media)
+                bool selectionChanged = false;
+
+                foreach (SelectableMediaItem selectableItem in MediaCollectionView)
                 {
                     selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
 
@@ -315,126 +388,138 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     selectableItem.SelectionChanged += selectableItem_SelectionChanged;
                 }
 
+                if (selectionChanged)
+                {
+                    QueueSelectionChangedEvent();
+                }
+
             }
             finally
             {
-                Media.ExitWriteLock();
+                ExitWriteLock();
             }
 
-            if (selectionChanged)
-            {
-                OnSelectionChanged();
-            }
         }
 
         public void selectExclusive(MediaItem item)
         {
-            bool selectionChanged = false;
-
-            Media.EnterWriteLock();
-
-            SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+            EnterWriteLock();
             try
             {
-                foreach (SelectableMediaItem media in Media)
+                selectExclusive_WLock(item);
+            }
+            finally
+            {
+                ExitWriteLock();
+            }
+        }
+
+        public void selectExclusive_WLock(MediaItem item)
+        {           
+            bool selectionChanged = false;
+
+            SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+
+            foreach (SelectableMediaItem media in MediaCollectionView)
+            {
+                if (media.IsSelected)
                 {
-                    if (media.IsSelected)
+                    if (!media.Equals(selectableItem))
                     {
-                        if(!media.Equals(selectableItem)) {
 
-                            media.SelectionChanged -= selectableItem_SelectionChanged;
-                            media.IsSelected = false;
-                            media.SelectionChanged += selectableItem_SelectionChanged;
-
-                            selectionChanged = true;
-                        }
-
-                    }
-                    else if (media.Equals(selectableItem))
-                    {
                         media.SelectionChanged -= selectableItem_SelectionChanged;
-                        media.IsSelected = true;
+                        media.IsSelected = false;
                         media.SelectionChanged += selectableItem_SelectionChanged;
 
                         selectionChanged = true;
                     }
 
                 }
-               
-            }
-            finally
-            {
-                Media.ExitWriteLock();
+                else if (media.Equals(selectableItem))
+                {
+                    media.SelectionChanged -= selectableItem_SelectionChanged;
+                    media.IsSelected = true;
+                    media.SelectionChanged += selectableItem_SelectionChanged;
+
+                    selectionChanged = true;
+                }
+
             }
 
             if (selectionChanged)
             {
-                OnSelectionChanged();
+                QueueSelectionChangedEvent();
             }
+            
         }
 
         public void selectRange(MediaItem end)
         {
-            bool selectionChanged = false;
-
-            Media.EnterWriteLock();
+            EnterWriteLock();
             try
             {
+                bool selectionChanged = false;
+
                 MediaItem start = null;
 
-                int startIndex = getSelectedItem(out start);
-                int endIndex = Media.IndexOf(new SelectableMediaItem(end));
-                
-                if(endIndex == -1) {
+                int startIndex = getSelectedItem_RLock(out start);
+                int endIndex = MediaCollectionView.IndexOf(new SelectableMediaItem(end));
+
+                if (endIndex == -1)
+                {
 
                     return;
 
-                } else if(startIndex == -1) {
+                }
+                else if (startIndex == -1)
+                {
 
-                    startIndex = 0;                    
+                    startIndex = 0;
                 }
 
-                if(endIndex < startIndex) {
+                if (endIndex < startIndex)
+                {
 
                     int temp = startIndex;
                     startIndex = endIndex;
                     endIndex = temp;
                 }
-             
-                for(int i = startIndex; i <= endIndex; i++)
-                {  
-                    Media[i].SelectionChanged -= selectableItem_SelectionChanged;
 
-                    if (Media[i].IsSelected == false)
+                for (int i = startIndex; i <= endIndex; i++)
+                {
+                    MediaCollectionView[i].SelectionChanged -= selectableItem_SelectionChanged;
+
+                    if (MediaCollectionView[i].IsSelected == false)
                     {
                         selectionChanged = true;
                     }
 
-                    Media[i].IsSelected = true;
+                    MediaCollectionView[i].IsSelected = true;
 
-                    Media[i].SelectionChanged += selectableItem_SelectionChanged;
+                    MediaCollectionView[i].SelectionChanged += selectableItem_SelectionChanged;
+                }
+
+                if (selectionChanged)
+                {
+                    QueueSelectionChangedEvent();
                 }
 
             }
             finally
             {
-                Media.ExitWriteLock();
+                ExitWriteLock();
             }
 
-            if (selectionChanged)
-            {
-                OnSelectionChanged();
-            }
         }
 
         public void deselectAll()
         {
-            bool selectionChanged = false;
-
-            Media.EnterWriteLock();
+            EnterWriteLock();
             try
             {
-                foreach (SelectableMediaItem selectableItem in Media)
+                bool selectionChanged = false;
+
+                foreach (SelectableMediaItem selectableItem in MediaCollectionView)
                 {
                     selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
 
@@ -448,336 +533,256 @@ namespace MediaViewer.Model.Media.State.CollectionView
                     selectableItem.SelectionChanged += selectableItem_SelectionChanged;
                 }
 
+                if (selectionChanged)
+                {
+                    QueueSelectionChangedEvent();
+                }
+
             }
             finally
             {
-                Media.ExitWriteLock();
-            }
-
-            if (selectionChanged)
-            {
-                OnSelectionChanged();
+                ExitWriteLock();
             }
         }
-        
+
         public void setIsSelected(MediaItem item, bool isSelected = true)
         {
-           
-            SelectableMediaItem temp = new SelectableMediaItem(item);
-
-            Media.EnterWriteLock();
+            EnterWriteLock();
             try
             {
+                SelectableMediaItem temp = new SelectableMediaItem(item);
 
-                foreach (SelectableMediaItem selectableItem in Media)
+                foreach (SelectableMediaItem selectableItem in MediaCollectionView)
                 {
                     if (selectableItem.Equals(temp))
                     {
-                        selectableItem.IsSelected = isSelected;
-                        return;
+                        if (selectableItem.IsSelected != isSelected)
+                        {
+                            selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+                            selectableItem.IsSelected = isSelected;
+                            selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+
+                            QueueSelectionChangedEvent();
+
+                            return;
+                        }
                     }
                 }
 
             }
             finally
             {
-                Media.ExitWriteLock();
+                ExitWriteLock();
             }
-            
+
         }
 
-        protected void remove(IEnumerable<MediaItem> items)
+        protected void remove_WLock(IEnumerable<MediaItem> items)
+        {           
+            foreach (MediaItem item in items)
+            {
+                remove_WLock(item);
+            }            
+        }
+
+        protected void remove_WLock(MediaItem item)
         {
-            Media.EnterWriteLock();
-            try
-            {
-                foreach (MediaItem item in items)
-                {
-                    remove(item);
-                }
-            }
-            finally
-            {
-                Media.ExitWriteLock();
-            }
-        }
-
-        protected void remove(MediaItem item)
-        {        
             SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+                  
+            int index = MediaCollectionView.IndexOf(selectableItem);
 
-            Media.EnterWriteLock();
-            try
-            {                
-                int index = Media.IndexOf(selectableItem);
-
-                removeAt(index);               
-            }
-            finally
-            {
-                Media.ExitWriteLock();
-            }
-                        
+            removeAt_WLock(index);                                   
         }
 
-        protected void removeAt(int index)
-        {
-            bool selectionChanged = false;
-            bool isItemRemoved = false;
-
+        protected void removeAt_WLock(int index)
+        {        
             SelectableMediaItem selectableItem = null;
 
-            Media.EnterWriteLock();
-            try
-            {               
-                if (index >= 0)
+            if (index >= 0)
+            {
+                selectableItem = MediaCollectionView[index];
+
+                if (selectableItem.IsSelected)
                 {
-                    selectableItem = Media[index];
-
-                    if (selectableItem.IsSelected)
-                    {
-                        selectionChanged = true;
-                    }
-
-                    Media.RemoveAt(index);
-                    if (index < sortedItemEnd)
-                    {
-                        sortedItemEnd -= 1;
-                    }
-
-                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
-                    isItemRemoved = true;
+                    QueueSelectionChangedEvent();
                 }
-            }
-            finally
-            {
-                Media.ExitWriteLock();
-            }
 
-            if (isItemRemoved)
-            {
-                OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Remove, selectableItem));
-            }
+                MediaCollectionView.RemoveAt(index);
+                if (index < sortedItemEnd)
+                {
+                    sortedItemEnd -= 1;
+                }
 
-            if (selectionChanged)
-            {
-                OnSelectionChanged();
+                selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+
+                QueueNrItemsInStateChangedEvent(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Remove, selectableItem));
             }
+                                 
         }
 
         protected void reSort(MediaItem item)
         {
-
             int oldIndex = 0;
             int newIndex = 0;
-
-            Media.EnterWriteLock();
+        
+            EnterWriteLock();
             try
-            {                
+            {
                 SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
-                oldIndex = Media.IndexOf(selectableItem);
+                oldIndex = MediaCollectionView.IndexOf(selectableItem);
                 newIndex = oldIndex;
 
                 if (oldIndex != -1)
                 {
-                    selectableItem = Media[oldIndex];
+                    selectableItem = MediaCollectionView[oldIndex];
 
                     // item is already in the list
                     if (Filter(selectableItem))
                     {
-                        // test if item needs to move to a different position
-                        // if not we can just leave it in place (speedup)
-                        /*if (index < sortedItemEnd)
-                        {
-                            int prevIndex = MiscUtils.clamp<int>(index - 1, 0, sortedItemEnd - 1);
-                            int nextIndex = MiscUtils.clamp<int>(index + 1, 0, sortedItemEnd - 1);
-                            int a = SortFunc(Media[prevIndex], selectableItem);
-                            int b = SortFunc(selectableItem, Media[nextIndex]);
-
-                            if (a <= 0 && b <= 0)
-                            {
-                                //item doesn't need to move
-                                return;
-                            }
-                        }*/
-
                         // remove and reinsert item
-                        Media.RemoveAt(oldIndex);
+                        MediaCollectionView.RemoveAt(oldIndex);
                         if (oldIndex < sortedItemEnd)
                         {
                             sortedItemEnd -= 1;
                         }
 
-                        newIndex = insertSorted(selectableItem);
-                                             
+                        newIndex = insertSorted_WLock(selectableItem);
+
+                        if (newIndex != oldIndex)
+                        {
+                            QueueItemResortedEvent(item, oldIndex, newIndex);
+                        }
+
                     }
                     else
                     {
                         // remove item from list
-                        removeAt(oldIndex);                   
+                        removeAt_WLock(oldIndex);
                     }
                 }
                 else
                 {
-                    // add item to list
-                    add(item);
+                    // add item to list                    
+                    add_WLock(item);
                 }
 
             }
             finally
             {
-                Media.ExitWriteLock();
-            }
-
-            if (newIndex != oldIndex)
-            {
-                OnItemResorted(item, oldIndex, newIndex);
+                ExitWriteLock();
             }
 
         }
 
-        protected void add(IEnumerable<MediaItem> items)
+        protected void add_WLock(IEnumerable<MediaItem> items)
         {
-            Media.EnterWriteLock();
-            try
+            
+            // Use a fast(er) path if we are just adding a batch of items to a empty list
+            // instead of firing off a whole bunch of itemchanged events
+            if (this.MediaCollectionView.Count == 0 && items.Count() > 1)
             {
-                // Use a fast(er) path if we are just adding a batch of items to a empty list
-                // instead of firing off a whole bunch of itemchanged events
-                if (this.Media.Count == 0 && items.Count() > 1)
-                {                   
-                    List<SelectableMediaItem> filteredItems = new List<SelectableMediaItem>();
-                    
-                    foreach (MediaItem item in items)
-                    {
-                        //item.RWLock.EnterReadLock();
+                List<SelectableMediaItem> addedItems = new List<SelectableMediaItem>();
 
-                        SelectableMediaItem selectableItem = new SelectableMediaItem(item);                        
-                       
-                        if (Filter(selectableItem))
+                foreach (MediaItem item in items)
+                {
+                    SelectableMediaItem selectableItem = new SelectableMediaItem(item);
+
+                    if (Filter(selectableItem))
+                    {
+                        selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+
+                        if (selectableItem.Item.Metadata != null)
                         {
-                            selectableItem.SelectionChanged += selectableItem_SelectionChanged;
-
-                            if (selectableItem.Item.Metadata != null)
-                            {
-                                CollectionsSort.insertIntoSortedCollection(filteredItems, selectableItem, sortFunc, 0, sortedItemEnd);
-                                sortedItemEnd++;
-                            }
-                            else
-                            {
-                                filteredItems.Add(selectableItem);
-                            }
+                            CollectionsSort.insertIntoSortedCollection(addedItems, selectableItem, sortFunc, 0, sortedItemEnd);
+                            sortedItemEnd++;
                         }
-
-                        //item.RWLock.ExitReadLock();
+                        else
+                        {
+                            addedItems.Add(selectableItem);
+                        }
                     }
 
-                    Media.AddRange(filteredItems);
-
-                    // this is incorrect
-                    //sortedItemEnd = Media.Count;
-
-                    OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, filteredItems));
                 }
-                else
-                {
-                    foreach (MediaItem item in items)
-                    {
-                        add(item);
-                    }
-                }
+
+                MediaCollectionView.AddRange(addedItems);
+
+                QueueNrItemsInStateChangedEvent(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, addedItems));
+                // this is incorrect
+                //sortedItemEnd = Media.Count;
+
             }
-            finally
+            else
             {
-                Media.ExitWriteLock();
+                foreach (MediaItem item in items)
+                {                  
+                    add_WLock(item);                    
+                }
             }
+           
         }
 
-        protected void add(MediaItem item)
-        {
-            bool isItemAdded = false;
-
+        protected void add_WLock(MediaItem item)
+        {      
             SelectableMediaItem selectableItem = new SelectableMediaItem(item);
 
-            Media.EnterWriteLock();
-            try
-            {                
-                if (Filter(selectableItem) && !Media.Contains(selectableItem))
+            if (Filter(selectableItem) && !MediaCollectionView.Contains(selectableItem))
+            {
+                if (item.Metadata != null)
                 {
-                    insertSorted(selectableItem);
-                    isItemAdded = true;
+                    insertSorted_WLock(selectableItem);
+                }
+                else
+                {
+                    MediaCollectionView.Add(selectableItem);
                 }
 
-                selectableItem.SelectionChanged += selectableItem_SelectionChanged;
-            }
-            finally
-            {
-                Media.ExitWriteLock();
+                QueueNrItemsInStateChangedEvent(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, selectableItem));
             }
 
-            if (isItemAdded)
-            {
-                OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Add, selectableItem));
-            }
-
-        }
-        
-        int insertSorted(SelectableMediaItem selectableItem)
-        {
-            Media.EnterWriteLock();
-            try
-            {
-                int newIndex = CollectionsSort.insertIntoSortedCollection<SelectableMediaItem>(Media, selectableItem, SortFunc, 0, sortedItemEnd);
-
-                sortedItemEnd++;
-
-                return (newIndex);
-            }
-            finally
-            {
-                Media.ExitWriteLock();
-            }
-
+            selectableItem.SelectionChanged += selectableItem_SelectionChanged;
+           
         }
 
-        protected void clear()
+        int insertSorted_WLock(SelectableMediaItem selectableItem)
         {
-            bool selectionChanged = false;           
+            int newIndex = CollectionsSort.insertIntoSortedCollection<SelectableMediaItem>(MediaCollectionView, selectableItem, SortFunc, 0, sortedItemEnd);
 
-            Media.EnterWriteLock();
-            try
+            sortedItemEnd++;
+
+            return (newIndex);
+        }
+
+        protected void clear_WLock()
+        {
+            bool selectionChanged = false;
+
+            foreach (SelectableMediaItem selectableItem in MediaCollectionView)
             {
-                foreach (SelectableMediaItem selectableItem in Media)
+                selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
+
+                if (selectableItem.IsSelected)
                 {
-                    selectableItem.SelectionChanged -= selectableItem_SelectionChanged;
-
-                    if (selectableItem.IsSelected)
-                    {
-                        selectionChanged = true;
-                    }
+                    selectionChanged = true;
                 }
+            }
 
-                Media.Clear();
-                sortedItemEnd = 0;
-            }
-            finally
-            {
-                Media.ExitWriteLock();
-            }
+            MediaCollectionView.Clear();
+            sortedItemEnd = 0;
 
             if (selectionChanged)
             {
-                OnSelectionChanged();
+                QueueSelectionChangedEvent();
             }
 
-            OnNrItemsInStateChanged(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Clear));
-
+            QueueNrItemsInStateChangedEvent(new MediaStateCollectionViewChangedEventArgs(MediaStateChangedAction.Clear));
+            
         }
 
         protected bool tagFilter(SelectableMediaItem item)
         {
             MediaItem media = item.Item;
-                    
+
             if (TagFilter.Count == 0) return (true);
             if (media.ItemState == Base.MediaItemState.LOADING) return (true);
             if (media.Metadata == null) return (false);
@@ -801,16 +806,12 @@ namespace MediaViewer.Model.Media.State.CollectionView
 
         private void selectableItem_SelectionChanged(object sender, EventArgs e)
         {
-            OnSelectionChanged();
-        }
-
-        void OnSelectionChanged()
-        {
             if (SelectionChanged != null)
             {
                 SelectionChanged(this, EventArgs.Empty);
             }
         }
+
         private void OnItemPropertyChanged(Object sender, PropertyChangedEventArgs args)
         {
             if (ItemPropertyChanged != null)
@@ -819,22 +820,117 @@ namespace MediaViewer.Model.Media.State.CollectionView
             }
         }
 
-        private void OnNrItemsInStateChanged(MediaStateCollectionViewChangedEventArgs args)
+        protected void QueueClearedEvent()
         {
-            if (NrItemsInStateChanged != null)
+            eventQueue.Enqueue("Cleared");
+        }
+
+        protected virtual void QueueSelectionChangedEvent()
+        {
+            eventQueue.Enqueue("SelectionChanged");
+        }
+        
+        protected virtual void QueueNrItemsInStateChangedEvent(MediaStateCollectionViewChangedEventArgs args)
+        {
+            eventQueue.Enqueue(args);
+        }
+
+        protected virtual void QueueItemResortedEvent(Object item, int oldIndex, int newIndex)
+        {
+            eventQueue.Enqueue(new int[] { oldIndex, newIndex });
+        }
+
+        public void EnterWriteLock()
+        {
+            MediaCollectionView.EnterWriteLock();
+        }
+
+        public void ExitWriteLock(bool fireQueuedEvents = true)
+        {
+            MediaCollectionView.ExitWriteLock(fireQueuedEvents);
+            if (fireQueuedEvents)
             {
-                NrItemsInStateChanged(this, args);
+                FireQueuedEvents();
             }
         }
 
-        private void OnItemResorted(Object item, int oldIndex, int newIndex)
+        public void EnterReadLock()
         {
-            if (ItemResorted != null)
+            MediaCollectionView.EnterReadLock();
+        }
+
+        public void ExitReadLock()
+        {
+            MediaCollectionView.ExitReadLock();
+        }
+
+        public void EnterUpgradeableReadLock()
+        {
+            MediaCollectionView.EnterUpgradeableReadLock();
+        }
+
+        public void ExitUpgradeableReadLock(bool fireQueuedEvents = true)
+        {
+            MediaCollectionView.ExitUpgradeableReadLock(fireQueuedEvents);
+            if (fireQueuedEvents)
             {
-                ItemResorted(item, new int[]{oldIndex,newIndex});
+                FireQueuedEvents();
             }
         }
-               
+
+        public void FireQueuedEvents()
+        {
+            Object args;
+
+            while (eventQueue.TryDequeue(out args))
+            {
+                if (args is String)
+                {
+                    String eventName = args as String;
+
+                    if (eventName.Equals("Cleared"))
+                    {
+                        if (Cleared != null)
+                        {
+                            Cleared(this, EventArgs.Empty);
+                        }
+                    }
+                    else if (eventName.Equals("SelectionChanged"))
+                    {
+                        if (SelectionChanged != null)
+                        {
+                            SelectionChanged(this, EventArgs.Empty);
+                        }
+                    }
+
+                }
+                else if (args is MediaStateCollectionViewChangedEventArgs)
+                {
+                    if (NrItemsInStateChanged != null)
+                    {
+                        NrItemsInStateChanged(this, args as MediaStateCollectionViewChangedEventArgs);
+                    }
+                }
+                else if (args is int[])
+                {
+                    if (ItemResorted != null)
+                    {
+                        ItemResorted(this, args as int[]);
+                    }
+
+                }
+            }
+        }
+
+        public IEnumerator<SelectableMediaItem> GetEnumerator()
+        {
+            return (MediaCollectionView.GetEnumerator());
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return (MediaCollectionView.GetEnumerator());
+        }
     }
 
 }

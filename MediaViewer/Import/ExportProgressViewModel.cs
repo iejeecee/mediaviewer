@@ -229,12 +229,20 @@ namespace MediaViewer.Import
                     {
                         ItemInfo = "Reading Metadata: " + item.Location;
 
-                        item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO, CancellationToken);
-                        if (item.Metadata == null || item.Metadata is UnknownMetadata)
+                        item.ExitUpgradeableReadLock();
+                        try
                         {
-                            ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
-                            InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
-                            Logger.Log.Error("Could not open file and/or read it's metadata: " + item.Location);
+                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO, CancellationToken);
+                            if (item.Metadata == null || item.Metadata is UnknownMetadata)
+                            {
+                                ItemInfo = "Could not open file and/or read it's metadata: " + item.Location;
+                                InfoMessages.Add("Could not open file and/or read it's metadata: " + item.Location);
+                                Logger.Log.Error("Could not open file and/or read it's metadata: " + item.Location);
+                            }
+                        }
+                        finally
+                        {
+                            item.ExitUpgradeableReadLock();
                         }
                     }
 

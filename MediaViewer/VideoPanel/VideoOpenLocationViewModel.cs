@@ -1,8 +1,11 @@
 ﻿using MediaViewer.Model.Mvvm;
+using MediaViewer.Model.Utils;
 using MediaViewer.Model.Utils.Windows;
+using MediaViewer.Properties;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -60,8 +63,14 @@ namespace MediaViewer.VideoPanel
             }
         }
 
+        public ObservableCollection<String> VideoLocationHistory { get; set; }
+        public ObservableCollection<String> AudioLocationHistory { get; set; }
+
         public VideoOpenLocationViewModel()
         {
+            VideoLocationHistory = Settings.Default.VideoLocationHistory;
+            AudioLocationHistory = Settings.Default.AudioLocationHistory;
+
             VideoLocationCommand = new Command(() =>
             {
                 Microsoft.Win32.OpenFileDialog dialog = FileDialog.createOpenMediaFileDialog(FileDialog.MediaDialogType.VIDEO);
@@ -91,6 +100,8 @@ namespace MediaViewer.VideoPanel
 
             OpenCommand = new Command(() =>
                 {
+                   
+
                     OnClosingRequest(new DialogEventArgs(DialogMode.SUBMIT));
                 },false);
         }

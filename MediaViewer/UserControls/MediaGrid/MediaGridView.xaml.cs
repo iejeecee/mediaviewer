@@ -115,9 +115,8 @@ namespace MediaViewer.UserControls.MediaGrid
                 MediaStateCollectionView.selectRange(selectableItem.Item);
             }
             else
-            {
-                MediaStateCollectionView.selectExclusive(selectableItem.Item);
-           
+            {              
+                MediaStateCollectionView.selectExclusive(selectableItem.Item);                           
             }
         }
                

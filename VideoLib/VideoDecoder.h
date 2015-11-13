@@ -54,7 +54,7 @@ protected:
 	int bytesPerSample;
 	int nrChannels;
 
-	int durationSeconds;
+	double durationSeconds;
 
 	FilterGraph *videoFilterGraph;
 	FilterGraph *audioFilterGraph;
@@ -64,9 +64,9 @@ protected:
 		Console::WriteLine(gcnew System::String(message)); 
 	}
 
-	int calcDurationSeconds() {
+	double calcDurationSeconds() {
 
-		int duration = formatContext->duration / AV_TIME_BASE;
+		double duration = formatContext->duration / AV_TIME_BASE;
 		
 		if(duration < 0) {
 
@@ -289,6 +289,8 @@ public:
 	
 	virtual void open(String ^location, System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
 
+		 
+
 		// Convert location to UTF8 string pointer
 		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
 
@@ -360,7 +362,7 @@ public:
 				decoder = avcodec_find_decoder(formatContext->streams[i]->codec->codec_id);
 				if(decoder == NULL)
 				{		
-					throw gcnew VideoLib::VideoLibException("Unsupported decoder for input stream");
+					throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
 				}
 			}
 
@@ -522,29 +524,31 @@ public:
 		}
 	}
 
-	bool decodeVideoFrame(AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt) {
+	int decodeVideoFrame(AVFrame *picture, int *got_picture_ptr, const AVPacket *avpkt) {
 
 		int ret = avcodec_decode_video2(getVideoCodecContext(), 
 					picture, got_picture_ptr, avpkt);
 		if(ret < 0) {
 
 			Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
-			return(false);
+			return ret;
 		}
 
-		return(true);
+		return ret;
 	}
 
+	// returns number of bytes decoded
 	int decodeAudioFrame(AVFrame *audio, int *got_audio_ptr, const AVPacket *avpkt) {
 
 		int ret = avcodec_decode_audio4(getAudioCodecContext(), 
 						audio, got_audio_ptr, avpkt);	
 		if(ret < 0) {
 
-			Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");			
+			Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");		
+			return ret;
 		}
 
-		return(ret);
+		return ret;
 	}
 
 	bool decodeFrame(System::Threading::CancellationToken ^token, VideoDecodeMode videoMode = DECODE_VIDEO, 
@@ -631,7 +635,7 @@ public:
 		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
 	
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
-					
+							
 		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
 		int ret = avformat_seek_file(formatContext, -1, 0, seekTarget, seekTarget, flags);
 		if(ret >= 0) { 

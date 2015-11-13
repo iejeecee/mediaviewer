@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Infrastructure.Utils;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Utils;
@@ -38,9 +39,17 @@ namespace MediaViewer.UserControls.MediaPreview
 
         CancellationTokenSource TokenSource { get; set; }
         Task<BitmapImage> LoadImageTask { get; set; }
-
-        Uri ErrorImageUri { get; set; }
+      
         TimeAdorner TimeAdorner { get; set; }
+
+        static BitmapImage audioImage;
+        static BitmapImage errorImage;
+
+        static MediaPreviewView()
+        {
+            audioImage = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons/audio.ico", UriKind.Absolute));
+            errorImage = new BitmapImage(new Uri("pack://application:,,,/MediaViewer;component/Resources/Images/error.png", UriKind.Absolute));
+        }
 
         [ImportingConstructor]
         public MediaPreviewView(IEventAggregator eventAggregator)
@@ -56,8 +65,7 @@ namespace MediaViewer.UserControls.MediaPreview
             TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;
 
             TokenSource = new CancellationTokenSource();
-            ErrorImageUri = new Uri("pack://application:,,,/MediaViewer;component/Resources/Images/error.png", UriKind.RelativeOrAbsolute);
-
+           
             TimeAdorner = new TimeAdorner(previewImage);
         }
 
@@ -82,7 +90,7 @@ namespace MediaViewer.UserControls.MediaPreview
             EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaSelectionEvent,ThreadOption.UIThread);
         }
 
-        private async void mediaSelectionEvent(MediaSelectionPayload selection)
+        private void mediaSelectionEvent(MediaSelectionPayload selection)
         {
             if (selection.Items.Count == 0 || selection.Items.ElementAt(0).Metadata == null)
             {
@@ -97,50 +105,23 @@ namespace MediaViewer.UserControls.MediaPreview
 
             PreviewItem = selection.Items.ElementAt(0);
 
-            if (LoadImageTask != null && !LoadImageTask.IsCompleted)
-            {
-                TokenSource.Cancel();
-                try
-                {
-                    await LoadImageTask;
-                }
-                catch (Exception)
-                {
-
-                }
-
-                TokenSource = new CancellationTokenSource();
-            }
-            
-            if (PreviewItem.Metadata is MediaDatabase.ImageMetadata)
-            {
-                try
-                {
-                    LoadImageTask = Task<BitmapImage>.Factory.StartNew(() => ImageUtils.loadImage(PreviewItem.Location, TokenSource.Token), TokenSource.Token);
-                    await LoadImageTask;
-                    previewImage.Stretch = Stretch.Uniform;
-                    previewImage.Source = LoadImageTask.Result;
-                }
-                catch (OperationCanceledException)
-                {
-
-                }
-                catch (Exception)
-                {
-                    previewImage.Stretch = Stretch.None;                 
-                    previewImage.Source = BitmapFrame.Create(ErrorImageUri);
-                }
-
-            }
-            else if (PreviewItem.Metadata.Thumbnails.Count > 0)
+            if (PreviewItem.Metadata.Thumbnails.Count > 0)
             {
                 previewImage.Stretch = Stretch.Uniform;
                 previewImage.Source = PreviewItem.Metadata.Thumbnails.ElementAt(0).Image;
             }
             else
-            {
-                previewImage.Stretch = Stretch.None;
-                previewImage.Source = BitmapFrame.Create(ErrorImageUri);
+            {                
+                if (PreviewItem.Metadata is AudioMetadata)
+                {
+                    previewImage.Stretch = Stretch.Uniform;
+                    previewImage.Source = audioImage;
+                }
+                else
+                {
+                    previewImage.Stretch = Stretch.None;
+                    previewImage.Source = errorImage;
+                }
             }
 
             CurrentPreviewImage = 0;
@@ -172,7 +153,7 @@ namespace MediaViewer.UserControls.MediaPreview
             int previewImageNr = MiscUtils.clamp<int>((int)Math.Floor(mousePos.X / grid), 0, PreviewItem.Metadata.Thumbnails.Count - 1);
 
             if (previewImageNr != CurrentPreviewImage)
-            {
+            {              
                 previewImage.Source = PreviewItem.Metadata.Thumbnails.ElementAt(previewImageNr).Image;
                 CurrentPreviewImage = previewImageNr;
             }
@@ -195,9 +176,5 @@ namespace MediaViewer.UserControls.MediaPreview
 
         }
 
-        
-
-        
-       
     }
 }

@@ -1,11 +1,14 @@
-﻿using MediaViewer.Model.Media.State;
+﻿using MediaViewer.Model.Concurrency;
+using MediaViewer.Model.Media.State;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,14 +16,16 @@ using System.Windows.Data;
 
 namespace MediaViewer.Model.Collections
 {
-    public class LockedObservableCollection<T> : ObservableCollection<T>, IDisposable where T : INotifyPropertyChanged 
-    {
+    public class LockedObservableCollection<T> : ObservableCollection<T>, ILockable, IDisposable where T : INotifyPropertyChanged
+    {        
         public event EventHandler<PropertyChangedEventArgs> ItemPropertyChanged;
 
+        protected ConcurrentQueue<EventArgs> eventQueue;
         protected ReaderWriterLockSlim rwLock;
 
         public LockedObservableCollection()
-        {           
+        {
+            eventQueue = new ConcurrentQueue<EventArgs>();
             rwLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
             //rwLock = new ReaderWriterLockSlim();  
 
@@ -87,14 +92,32 @@ namespace MediaViewer.Model.Collections
 
         public void EnterWriteLock()
         {
-            rwLock.EnterWriteLock();
+            rwLock.EnterWriteLock();            
         }
 
-        public void ExitWriteLock()
-        {
+        public void ExitWriteLock(bool fireQueuedEvents = true)
+        {            
             rwLock.ExitWriteLock();
+            if (fireQueuedEvents)
+            {
+                FireQueuedEvents();
+            }
+            
         }
 
+        public void EnterUpgradeableReadLock()
+        {
+            rwLock.EnterUpgradeableReadLock();
+        }
+
+        public void ExitUpgradeableReadLock(bool fireQueuedEvents = true)
+        {
+            rwLock.ExitUpgradeableReadLock();
+            if (fireQueuedEvents)
+            {
+                FireQueuedEvents();
+            }
+        }
      
         public virtual void AddRange(IEnumerable<T> collection)
         {
@@ -153,14 +176,14 @@ namespace MediaViewer.Model.Collections
             {
                 beforeItemRemoved(item);    
             }
-            
+                       
             base.ClearItems();
           
         }
 
         protected override void RemoveItem(int index)
         {
-            beforeItemRemoved(this[index]);  
+            beforeItemRemoved(this[index]);
            
             base.RemoveItem(index);            
         }
@@ -171,14 +194,14 @@ namespace MediaViewer.Model.Collections
             {
                 throw new MediaStateException("Cannot add duplicate items to LockedCollection");
             }
-           
+            
             base.InsertItem(index,newItem);
                
             afterItemAdded(newItem);                                          
         }
 
         protected override void SetItem(int index, T item)
-        {
+        {            
             base.SetItem(index, item);
         }
 
@@ -200,5 +223,32 @@ namespace MediaViewer.Model.Collections
             item.PropertyChanged -= item_PropertyChanged;
         }
 
+        virtual public void FireQueuedEvents()
+        {
+            EventArgs eventArgs;
+
+            while (eventQueue.TryDequeue(out eventArgs))
+            {
+                if (eventArgs is NotifyCollectionChangedEventArgs)
+                {
+                    base.OnCollectionChanged(eventArgs as NotifyCollectionChangedEventArgs);
+                }
+                else if (eventArgs is PropertyChangedEventArgs)
+                {
+                    base.OnPropertyChanged(eventArgs as PropertyChangedEventArgs);
+                }
+            }      
+
+        }
+
+        /*protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            eventQueue.Enqueue(e);
+        }
+
+        protected override void OnCollectionChanged(NotifyCollectionChangedEventArgs e)
+        {
+            eventQueue.Enqueue(e);            
+        }*/
     }
 }

@@ -15,7 +15,8 @@ namespace MediaViewer.Search
     {
         All,
         Video,
-        Images
+        Images,
+        Audio
     }
 
     class SearchQuery : BindableBase

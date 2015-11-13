@@ -1,4 +1,5 @@
-﻿using MediaViewer.Infrastructure.Logging;
+﻿using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
@@ -19,22 +20,21 @@ namespace MediaViewer.Model.Media.Metadata
     class ImageMetadataReader : MetadataReader
     {
         
-
         public override void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, 
             CancellationToken token, int timeoutSeconds)
         {
             ImageMetadata image = media as ImageMetadata;
             media.SizeBytes = data.Length;
 
-            if (!FileUtils.isUrl(image.Location))
+            if (FileUtils.isUrl(image.Location))
             {
+                image.SupportsXMPMetadata = false;
+            }
+            else
+            {               
                 image.SupportsXMPMetadata = true;
 
                 base.readMetadata(data, options, media, token, timeoutSeconds);
-            }
-            else
-            {
-                image.SupportsXMPMetadata = false;
             }
 
             BitmapDecoder bitmapDecoder = null;
@@ -111,7 +111,7 @@ namespace MediaViewer.Model.Media.Metadata
                 tempImage.CacheOption = BitmapCacheOption.OnLoad;
                 tempImage.StreamSource = data;
                 tempImage.Rotation = rotation;
-                tempImage.DecodePixelWidth = MAX_THUMBNAIL_WIDTH;
+                tempImage.DecodePixelWidth = Constants.MAX_THUMBNAIL_WIDTH;
                 tempImage.EndInit();
 
                 thumb = tempImage;

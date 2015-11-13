@@ -88,6 +88,15 @@ namespace MediaViewer.Properties
                 FavoriteLocations = new ObservableCollection<string>();
             }
 
+            if (VideoLocationHistory == null)
+            {
+                VideoLocationHistory = new ObservableCollection<string>();
+            }
+
+            if (AudioLocationHistory == null)
+            {
+                AudioLocationHistory = new ObservableCollection<string>();
+            }
         }
 
         [global::System.Configuration.UserScopedSettingAttribute()]
@@ -258,7 +267,33 @@ namespace MediaViewer.Properties
             }
         }
 
-        
-    
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public ObservableCollection<String> VideoLocationHistory
+        {
+            get
+            {
+                return ((ObservableCollection<String>)(this["VideoLocationHistory"]));
+            }
+            set
+            {
+                this["VideoLocationHistory"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public ObservableCollection<String> AudioLocationHistory
+        {
+            get
+            {
+                return ((ObservableCollection<String>)(this["AudioLocationHistory"]));
+            }
+            set
+            {
+                this["AudioLocationHistory"] = value;
+            }
+        }
+
     }
 }

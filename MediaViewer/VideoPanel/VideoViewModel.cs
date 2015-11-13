@@ -94,9 +94,9 @@ namespace MediaViewer.VideoPanel
                     {
                         audioLocation = item.Audio.Location;
 
-                        if (item.Audio is MediaStreamedItem)
-                        {
-                            audioFormatName = MediaFormatConvert.mimeTypeToExtension(item.Audio.Metadata.MimeType);
+                        if (item.Audio is MediaStreamedItem && item.Audio.Metadata != null)
+                        {                          
+                            audioFormatName = MediaFormatConvert.mimeTypeToExtension(item.Audio.Metadata.MimeType);                                                       
                         }
 
                     }
@@ -168,11 +168,7 @@ namespace MediaViewer.VideoPanel
 
             CutVideoCommand = new Command(() =>
             {
-                VideoTranscodeView videoTranscode = new VideoTranscodeView();            
-                videoTranscode.ViewModel.Items.Add(MediaFileItem.Factory.create(VideoPlayer.VideoLocation));
-                videoTranscode.ViewModel.Title = "Cut Video";
-                videoTranscode.ViewModel.IconUri = "/MediaViewer;component/Resources/Icons/videocut.ico";
-
+                
                 String outputPath;
 
                 if(FileUtils.isUrl(VideoPlayer.VideoLocation)) {
@@ -183,6 +179,11 @@ namespace MediaViewer.VideoPanel
 
                     outputPath = FileUtils.getPathWithoutFileName(VideoPlayer.VideoLocation);
                 }
+
+                VideoTranscodeView videoTranscode = new VideoTranscodeView();
+                videoTranscode.ViewModel.Items.Add(CurrentItem);
+                videoTranscode.ViewModel.Title = "Cut Video";
+                videoTranscode.ViewModel.IconUri = "/MediaViewer;component/Resources/Icons/videocut.ico";
 
                 videoTranscode.ViewModel.OutputPath = outputPath;
                 videoTranscode.ViewModel.IsTimeRangeEnabled = IsTimeRangeEnabled;
@@ -278,91 +279,23 @@ namespace MediaViewer.VideoPanel
             OpenLocationCommand = new Command(async () =>
             {
                 VideoOpenLocationView openLocation = new VideoOpenLocationView();
-               
-                /*bool? success = openLocation.ShowDialog();
-                if (success == true)
-                {
-                    String outputTempPath = "G:/Slimste mens/";
-                    String outputConcatPath = "J:/wdtv shared/Slimste Mens/";               
-                    FileStream output = null;
-
-                    try
-                    {
-                        CancellationTokenSource source = new CancellationTokenSource();
-                        int fileNr = 0;
-
-                        while (true)
-                        {
-
-                            int idx2 = openLocation.ViewModel.VideoLocation.LastIndexOf('_');
-                            String url = openLocation.ViewModel.VideoLocation.Substring(0, idx2) + "_" + fileNr + ".ts";
-
-                            int idx = url.LastIndexOf('/');
-
-                            String filename = url.Substring(idx + 1);
-
-                            output = new FileStream(outputTempPath + filename, FileMode.CreateNew);
-                            String mimeType;
-                         
-                            StreamUtils.readHttpRequest(new Uri(url), output, out mimeType, source.Token);
-                            output.Close();
-
-                            fileNr++;
-                        }
-
-                    }
-                    catch (Exception e)
-                    {
-                        if (output != null)
-                        {
-                            output.Close();
-                            File.Delete(output.Name);
-                        }
-                        MessageBox.Show("done downloading you fat cunt!" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                    finally
-                    {
-                        StreamWriter filesOutput = File.CreateText(outputTempPath + "files.txt");
-                      
-                        FileUtils.walkDirectoryTree(new DirectoryInfo(outputTempPath), (fileInfo, state) =>
-                        {
-                            StreamWriter textFile = (StreamWriter)state;
-                            if (fileInfo.Extension.Equals(".ts"))
-                            {
-                                textFile.WriteLine("file '" + fileInfo.FullName + "'");
-                            }
-
-                            return (true);
-                        }, filesOutput, false);
-
-                        filesOutput.Close();
-
-                        StreamWriter batOutput = File.CreateText(outputTempPath + "concat.bat");
-
-                        int ix = openLocation.ViewModel.VideoLocation.LastIndexOf('/');
-                        String temp = openLocation.ViewModel.VideoLocation.Substring(0, ix);
-                        String concatFilename = temp.Substring(temp.LastIndexOf('/') + 1);
-
-                        batOutput.WriteLine("d:\\game\\ffmpeg-20130322-git-e0e8c20-win32-shared\\bin\\ffmpeg.exe -f concat -i files.txt -absf aac_adtstoasc -c copy \"" + outputConcatPath + concatFilename + "\"");
-                        batOutput.Close();
-
-                    }
-                }*/
-                 
+                                                
                 bool? success = openLocation.ShowDialog();
                 if (success == true) 
                 {
-                   MediaItem video = null;
+                    MediaItem video = null;
                     MediaItem audio = null;
-
-                    if (!String.IsNullOrEmpty(openLocation.ViewModel.VideoLocation))
+                    
+                    if (!String.IsNullOrWhiteSpace(openLocation.ViewModel.VideoLocation))
                     {
                         video = MediaItemFactory.create(openLocation.ViewModel.VideoLocation);
+                        MiscUtils.insertIntoHistoryCollection(Settings.Default.VideoLocationHistory, openLocation.ViewModel.VideoLocation);
                     }
 
-                    if (!String.IsNullOrEmpty(openLocation.ViewModel.AudioLocation))
+                    if (!String.IsNullOrWhiteSpace(openLocation.ViewModel.AudioLocation))
                     {
                         audio = MediaItemFactory.create(openLocation.ViewModel.AudioLocation);
+                        MiscUtils.insertIntoHistoryCollection(Settings.Default.AudioLocationHistory, openLocation.ViewModel.AudioLocation);
                     }
 
                     await openAndPlay(new VideoAudioPair(video, audio));

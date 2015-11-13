@@ -3,6 +3,7 @@ using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
+using MediaViewer.VideoPanel;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +20,7 @@ namespace MediaViewer.Transcode.Video
     class VideoTranscodeProgressViewModel : CancellableOperationProgressBase
     {
         VideoTranscodeViewModel AsyncState { get; set; }
-        ICollection<MediaFileItem> Items { get; set; }
+        ICollection<VideoAudioPair> Items { get; set; }
 
         public VideoTranscodeProgressViewModel(VideoTranscodeViewModel vm)
         {
@@ -101,15 +102,15 @@ namespace MediaViewer.Transcode.Video
            
             Dictionary<String, Object> options = getOptions();
                 
-            foreach (MediaFileItem input in Items)
+            foreach (VideoAudioPair input in Items)
             {
                 ItemProgress = 0;
-                ItemInfo = "Transcoding: " + input.Location;
+                ItemInfo = "Transcoding: " + input.Name;
 
-                if (CancellationToken.IsCancellationRequested) break;
-                if (!MediaFormatConvert.isVideoFile(input.Location) && !FileUtils.isUrl(input.Location))
+                if (CancellationToken.IsCancellationRequested) return;
+                if (MediaFormatConvert.isImageFile(input.Location))
                 {
-                    InfoMessages.Add("Skipping: " + input.Location + " is not a video file.");
+                    InfoMessages.Add("Skipping: " + input.Name + " is not a video file.");
                     TotalProgress++;
                     continue;
                 }
@@ -118,7 +119,12 @@ namespace MediaViewer.Transcode.Video
 
                 if (FileUtils.isUrl(input.Location))
                 {
-                    outFilename = "videostream";
+                    outFilename = FileUtils.removeIllegalCharsFromFileName(input.Name," ");
+
+                    if (String.IsNullOrEmpty(outFilename) || String.IsNullOrWhiteSpace(outFilename))
+                    {
+                        outFilename = "stream";
+                    }
                 }
                 else
                 {
@@ -134,7 +140,7 @@ namespace MediaViewer.Transcode.Video
                 try
                 {
                     videoTranscoder.transcode(input.Location, outLocation, CancellationToken, options,
-                        transcodeProgressCallback);
+                        transcodeProgressCallback, input.Audio != null ? input.Audio.Location : null);
                 }
                 catch (Exception e)
                 {
@@ -155,7 +161,7 @@ namespace MediaViewer.Transcode.Video
                 ItemProgress = 100;
                 TotalProgress++;
 
-                InfoMessages.Add("Finished Transcoding: " + input.Location + " -> " + outLocation);
+                InfoMessages.Add("Finished Transcoding: " + input.Name + " -> " + outLocation);
             }
 
         }

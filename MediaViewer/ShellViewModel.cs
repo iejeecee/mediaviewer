@@ -18,6 +18,7 @@ using MediaViewer.Infrastructure;
 using MediaViewer.MediaFileStackPanel;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Collections;
 
 namespace MediaViewer
 {
@@ -80,11 +81,10 @@ namespace MediaViewer
                 SetProperty(ref mediaFileBrowserViewModel, value);            
             }
         }
-
     
-
         public ShellViewModel(MediaFileWatcher mediaFileWatcher, IRegionManager regionManager, IEventAggregator eventAggregator)
         {
+                  
             RegionManager = regionManager;
             EventAggregator = eventAggregator;
 
@@ -100,19 +100,21 @@ namespace MediaViewer
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
 
             MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator);
-        
-        }
+
+            //TestWindow window = new TestWindow();
+            //window.Show();
+        } 
 
         public void navigateToMediaStackPanelView(MediaFileStackPanelViewModel viewModel, String location = null)
         {
-            Uri ImageViewUri = new Uri(typeof(MediaFileStackPanelView).FullName, UriKind.Relative);
+            Uri MediaFileStackPanelViewUri = new Uri(typeof(MediaFileStackPanelView).FullName, UriKind.Relative);
 
             NavigationParameters navigationParams = new NavigationParameters();
 
             navigationParams.Add("viewModel", viewModel);          
             navigationParams.Add("location", location);
            
-            RegionManager.RequestNavigate(RegionNames.MainMediaSelectionRegion, ImageViewUri, navigationParams);
+            RegionManager.RequestNavigate(RegionNames.MainMediaSelectionRegion, MediaFileStackPanelViewUri, navigationParams);
         }
 
 

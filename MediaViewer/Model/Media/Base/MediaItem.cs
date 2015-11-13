@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Concurrency;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.metadata.Metadata;
 using Microsoft.Practices.Prism.Mvvm;
@@ -17,7 +18,7 @@ namespace MediaViewer.Model.Media.Base
     // http://blog.stephencleary.com/2013/04/recursive-re-entrant-locks.html
     // All propertychanged events are queued and fired after releasing the write lock
     // to make sure no events are fired while a lock is held
-    public abstract class MediaItem : BindableBase, IEquatable<MediaItem>, IComparable<MediaItem>
+    public abstract class MediaItem : BindableBase, IEquatable<MediaItem>, IComparable<MediaItem>, ILockable
     {
         ConcurrentQueue<String> eventQueue;
 
@@ -86,11 +87,28 @@ namespace MediaViewer.Model.Media.Base
             rwLock.EnterWriteLock();
         }
 
-        public void ExitWriteLock()
+        public void ExitWriteLock(bool fireQueuedEvents = true)
         {
             rwLock.ExitWriteLock();
 
-            fireQueuedEvents();              
+            if (fireQueuedEvents)
+            {
+                FireQueuedEvents();
+            }
+        }
+
+        public void EnterUpgradeableReadLock()
+        {
+            rwLock.EnterUpgradeableReadLock();
+        }
+
+        public void ExitUpgradeableReadLock(bool fireQueuedEvents = true)
+        {
+            rwLock.ExitUpgradeableReadLock();
+            if (fireQueuedEvents)
+            {
+                FireQueuedEvents();
+            }
         }
         
         string location;
@@ -218,11 +236,14 @@ namespace MediaViewer.Model.Media.Base
         }
 
         protected virtual void QueueOnPropertyChangedEvent(String propertyName)
-        {           
-            eventQueue.Enqueue(propertyName);                        
+        {
+            if (!eventQueue.Contains(propertyName))
+            {
+                eventQueue.Enqueue(propertyName);
+            }
         }
 
-        void fireQueuedEvents()
+        public void FireQueuedEvents()
         {           
             String propertyName;
 
@@ -233,7 +254,7 @@ namespace MediaViewer.Model.Media.Base
 
         }
 
-        public abstract void readMetadata_WLock(MetadataFactory.ReadOptions options, CancellationToken token);
+        public abstract void readMetadata_URLock(MetadataFactory.ReadOptions options, CancellationToken token);
 
     }
 }

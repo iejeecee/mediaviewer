@@ -79,9 +79,19 @@ public:
 		return(codecContext->codec_id);
 	}
 		
-	AVStream *getStream() const {
+	AVStream *getAVStream() const {
 
 		return(stream);
+	}
+
+	double getTimeSeconds(int64_t timeBaseUnits) 
+	{
+		return av_q2d(stream->time_base) * timeBaseUnits;	
+	}
+
+	int64_t getTimeBaseUnits(double timeSeconds) 
+	{
+		return int64_t(timeSeconds / av_q2d(stream->time_base));	
 	}
 			
 	void setOption(const std::string &name, const std::string &value) 

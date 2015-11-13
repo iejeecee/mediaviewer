@@ -37,6 +37,7 @@ using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Properties;
+using MediaViewer.Model.Collections;
 
 
 
@@ -79,6 +80,7 @@ namespace MediaViewer
 
         public void OnImportsSatisfied()
         {
+            
             ShellViewModel = new ShellViewModel(MediaFileWatcher.Instance, RegionManager, EventAggregator);
 
             DataContext = ShellViewModel;

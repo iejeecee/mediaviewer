@@ -44,6 +44,23 @@ VideoPreview::~VideoPreview() {
 	gch.Free();
 }
 
+void VideoPreview::UTF8ToWString(const std::string &input, String ^%output) {
+		
+	// How long will the UTF-16 string be
+	int wstrlen = MultiByteToWideChar(CP_UTF8, 0, input.c_str(), (int)input.length(), NULL, NULL );
+	
+	// allocate a buffer
+	wchar_t *buf = (wchar_t * ) malloc( wstrlen * 2 + 2 );
+	// convert to UTF-16
+	MultiByteToWideChar(CP_UTF8, 0, input.c_str(), (int)input.length(), buf, wstrlen);
+	// null terminate
+	buf[wstrlen] = '\0';
+	
+	output = marshal_as<String ^>(buf);
+
+	delete buf;
+}
+
 void VideoPreview::open(String ^videoLocation, System::Threading::CancellationToken token) {
 
 	try {
@@ -54,7 +71,10 @@ void VideoPreview::open(String ^videoLocation, System::Threading::CancellationTo
 
 		for(int i = 0; i < (int)frameGrabber->metaData.size(); i++) {
 
-			metaData->Add(marshal_as<String ^>(frameGrabber->metaData[i]));
+			String^ info;
+			UTF8ToWString(frameGrabber->metaData[i], info);
+
+			metaData->Add(info);
 		}
 
 		durationSeconds = frameGrabber->durationSeconds;
@@ -85,9 +105,7 @@ void VideoPreview::close() {
 
 void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
-{
-	
-
+{	
 	int sizeBytes = frameGrabber->getThumbHeight() * frame->linesize[0];
 
 	BitmapSource ^bitmap = BitmapSource::Create(

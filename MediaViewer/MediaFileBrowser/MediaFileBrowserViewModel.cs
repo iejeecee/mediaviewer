@@ -234,15 +234,17 @@ namespace MediaViewer.MediaFileBrowser
 
                     item = SelectedItems.ElementAt(0) as MediaFileItem;
                 }
-               
+
                 if (MediaFormatConvert.isImageFile(item.Location))
                 {
-                    navigateToImageView(item);              
+                    navigateToImageView(item);
                 }
-                else if (MediaFormatConvert.isVideoFile(item.Location))
+                else if (MediaFormatConvert.isVideoFile(item.Location) || 
+                    MediaFormatConvert.isAudioFile(item.Location))
                 {
                     navigateToVideoView(item);
                 }
+             
                 
             });
 
@@ -275,7 +277,13 @@ namespace MediaViewer.MediaFileBrowser
                 if (SelectedItems.Count == 0) return;
 
                 VideoTranscodeView transcode = new VideoTranscodeView();
-                transcode.ViewModel.Items = SelectedItems;
+                List<VideoAudioPair> items = new List<VideoAudioPair>();
+                foreach (MediaItem item in SelectedItems)
+                {
+                    items.Add(new VideoAudioPair(item));
+                }
+
+                transcode.ViewModel.Items = items;
                 transcode.ViewModel.OutputPath = MediaFileWatcher.Path;
 
                 transcode.ShowDialog();

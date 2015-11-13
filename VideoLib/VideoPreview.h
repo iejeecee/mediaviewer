@@ -52,6 +52,8 @@ namespace VideoLib {
 		void decodedFrameCallback(void *data, AVPacket *packet, 
 			AVFrame *frame, Video::FrameType type);
 
+		void UTF8ToWString(const std::string &input, String ^%output);
+
 		List<VideoThumb ^> ^thumbs;
 
 		int durationSeconds;

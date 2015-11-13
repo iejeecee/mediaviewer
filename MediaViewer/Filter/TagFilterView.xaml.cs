@@ -91,14 +91,14 @@ namespace MediaViewer.Filter
                 if (mediaCollectionView != null)
                 {
                     mediaCollectionView.ItemPropertyChanged -= mediaCollection_ItemPropertyChanged;
-                    mediaCollectionView.Media.CollectionChanged -= mediaCollection_CollectionChanged;
+                    mediaCollectionView.NrItemsInStateChanged -= mediaCollection_NrItemsInStateChanged;
                     mediaCollectionView.Cleared -= mediaCollectionView_Cleared;
                 }
                 
                 if (value != null)
                 {
                     value.ItemPropertyChanged += mediaCollection_ItemPropertyChanged;
-                    value.Media.CollectionChanged += mediaCollection_CollectionChanged;
+                    value.NrItemsInStateChanged += mediaCollection_NrItemsInStateChanged;
                     value.Cleared += mediaCollectionView_Cleared;
                 }
 
@@ -132,13 +132,13 @@ namespace MediaViewer.Filter
             
         }
 
-        private void mediaCollection_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        private void mediaCollection_NrItemsInStateChanged(object sender, MediaStateCollectionViewChangedEventArgs e)
         {
-            if (e.Action == NotifyCollectionChangedAction.Reset)
+            if (e.Action == MediaStateChangedAction.Clear)
             {
                 App.Current.Dispatcher.BeginInvoke(new Action(tagsList.Clear));                                                       
             }
-
+      
             if (timer.Enabled) 
             {
                 extendTimer = true;
@@ -213,10 +213,10 @@ namespace MediaViewer.Filter
         {
             List<TagItem> tagItems = new List<TagItem>();            
 
-            MediaCollectionView.Media.EnterReadLock();
+            MediaCollectionView.EnterReadLock();
             try
             {
-                foreach (SelectableMediaItem media in MediaCollectionView.Media)
+                foreach (SelectableMediaItem media in MediaCollectionView)
                 {
                     if (media.Item.ItemState == MediaItemState.LOADED)
                     {
@@ -226,7 +226,7 @@ namespace MediaViewer.Filter
             }
             finally
             {
-                MediaCollectionView.Media.ExitReadLock();
+                MediaCollectionView.ExitReadLock();
             }
 
             App.Current.Dispatcher.BeginInvoke(new Action(() => {

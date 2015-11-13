@@ -46,8 +46,9 @@ void VideoTranscoder::setLogCallback(LogCallbackDelegate ^logCallback, bool enab
 
 }
 
-void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken token, 
-								Dictionary<String ^, Object ^> ^options, TranscodeProgressDelegate ^progressCallback)
+void VideoTranscoder::transcode(String ^inputVideoLocation, String ^output, CancellationToken token, 
+								Dictionary<String ^, Object ^> ^options, TranscodeProgressDelegate ^progressCallback,
+								String ^inputAudioLocation)
 {
 	GCHandle gch = GCHandle::Alloc(progressCallback);
 	try {
@@ -55,7 +56,7 @@ void VideoTranscoder::transcode(String ^input, String ^output, CancellationToken
 		IntPtr ip = Marshal::GetFunctionPointerForDelegate(progressCallback);
 		VideoTranscode::ProgressCallback cb = static_cast<VideoTranscode::ProgressCallback>(ip.ToPointer());
 
-		videoTranscode->transcode(input, output, token, options, cb);
+		videoTranscode->transcode(inputVideoLocation, output, token, options, cb, inputAudioLocation);
 
 	} finally {
 

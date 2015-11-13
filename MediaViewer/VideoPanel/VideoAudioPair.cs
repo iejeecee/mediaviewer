@@ -9,7 +9,7 @@ namespace MediaViewer.VideoPanel
 {
     public class VideoAudioPair
     {
-        public VideoAudioPair(MediaItem video, MediaItem audio)
+        public VideoAudioPair(MediaItem video, MediaItem audio = null)
         {
             Video = video;
             Audio = audio;

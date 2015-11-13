@@ -152,7 +152,7 @@ public:
 
 	AVStream *getVideoStream() const {
 
-		return(stream[videoIdx]->getStream());
+		return(stream[videoIdx]->getAVStream());
 	}
 
 	const AVCodec *getVideoCodec() const {
@@ -167,7 +167,7 @@ public:
 
 	AVStream *getAudioStream() const {
 
-		return(stream[audioIdx]->getStream());
+		return(stream[audioIdx]->getAVStream());
 	}
 
 	const AVCodec *getAudioCodec() const {

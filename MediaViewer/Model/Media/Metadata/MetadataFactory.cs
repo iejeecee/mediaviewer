@@ -149,20 +149,27 @@ namespace MediaViewer.Model.metadata.Metadata
         {
 
             BaseMetadata metadata = null;
+            MetadataReader reader = null;
 
             if (mimeType.ToLower().StartsWith("image"))
             {
                 metadata = new ImageMetadata(location, data);
-                ImageMetadataReader imageMetaData = new ImageMetadataReader();
-                imageMetaData.readMetadata(data, options, metadata, token, timeoutSeconds);
+                reader = new ImageMetadataReader();
+                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
 
             }
             else if (mimeType.ToLower().StartsWith("video"))
             {
                 metadata = new VideoMetadata(location, data);
-                VideoMetadataReader videoMetaData = new VideoMetadataReader();
-                videoMetaData.readMetadata(data, options, metadata, token, timeoutSeconds);
+                reader = new VideoMetadataReader();
+                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
 
+            }
+            else if (mimeType.ToLower().StartsWith("audio"))
+            {
+                metadata = new AudioMetadata(location, data);
+                reader = new AudioMetadataReader();
+                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
             }
             else
             {
@@ -188,12 +195,7 @@ namespace MediaViewer.Model.metadata.Metadata
                 if (metadata != null)
                 {
                     metadata.IsImported = true;
-
-                    foreach(Thumbnail thumb in metadata.Thumbnails)
-                    {
-                        thumb.decodeImage();
-                    }
-
+                                     
                     if (options.HasFlag(ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ))
                     {
                         Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,

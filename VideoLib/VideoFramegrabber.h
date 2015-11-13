@@ -8,6 +8,8 @@
 #include "VideoDecoder.h"
 #include "WindowsFileUtil.h"
 
+using namespace System::Windows::Media::Imaging;
+
 namespace VideoLib {
 
 class VideoFrameGrabber : public VideoDecoder {
@@ -56,7 +58,7 @@ private:
 			return;
 		//probe_object_header(name);
 		while ((entry = av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX))) {
-		
+					
 			metaData.push_back(std::string(entry->key) + ": " + std::string(entry->value));
 		
 		}
@@ -112,30 +114,34 @@ public:
 		durationSeconds = getDurationSeconds();
 
 		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
-
-		width = getWidth();
-		height = getHeight();
-		
 		container = std::string(formatContext->iformat->long_name);
-		videoCodecName = std::string(getVideoCodec()->name);
+
+		if(hasVideo()) 
+		{
+			width = getWidth();
+			height = getHeight();
+				
+			videoCodecName = std::string(getVideoCodec()->name);
 	
-		char buf[64];
-		av_get_pix_fmt_string(buf, 64, getVideoCodecContext()->pix_fmt);
-		pixelFormat = std::string(buf);
+			char buf[64];
+			av_get_pix_fmt_string(buf, 64, getVideoCodecContext()->pix_fmt);
+			pixelFormat = std::string(buf);
 
-		int pos = (int)pixelFormat.find_first_of(' ');
-		if(pos != std::string::npos) {
+			int pos = (int)pixelFormat.find_first_of(' ');
+			if(pos != std::string::npos) {
 
-			pixelFormat = pixelFormat.substr(0, pos);
-		}
+				pixelFormat = pixelFormat.substr(0, pos);
+			}
 
-		if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) {
+			if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) {
 
-			frameRate = av_q2d(getVideoStream()->avg_frame_rate);
+				frameRate = av_q2d(getVideoStream()->avg_frame_rate);
 			
-		} else {
+			} else {
 
-			frameRate = 1.0 / av_q2d(getVideoStream()->time_base);
+				frameRate = 1.0 / av_q2d(getVideoStream()->time_base);
+			}
+			
 		}
 
 		probe_dict(formatContext->metadata, "");
@@ -192,7 +198,11 @@ public:
 	void grab(int maxThumbWidth, int maxThumbHeight, 
 			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^ cancellationToken, int timeOutSeconds)
 	{
-		if(getWidth() == 0 || getHeight() == 0) {
+		if(!hasVideo() && hasAudio()) 
+		{			
+			return;
+
+		} else if(getWidth() == 0 || getHeight() == 0) {
 
 			throw gcnew VideoLib::VideoLibException("invalid video stream");
 		}
@@ -277,6 +287,46 @@ public:
 		}
 
 	}
+
+	/*void grabAttachedImage(int maxThumbWidth, int maxThumbHeight, CancellationToken ^token) {
+
+		for(int i = 0; i < stream.size(); i++) {
+
+			if(stream[i]->getStream()->disposition & AV_DISPOSITION_ATTACHED_PIC)
+			{
+				AVPacket pkt = stream[i]->getStream()->attached_pic;
+				
+				array<Byte>^ byteArray = gcnew array< Byte >(pkt.size);
+			
+				Marshal::Copy((IntPtr)pkt.data, byteArray, 0, pkt.size);
+				
+				System::IO::Stream ^encodedJpeg = gcnew System::IO::MemoryStream(byteArray); 
+				
+				JpegBitmapDecoder ^decoder = gcnew JpegBitmapDecoder(encodedJpeg, BitmapCreateOptions::PreservePixelFormat, BitmapCacheOption::Default);
+				BitmapSource ^bitmapSource = decoder->Frames[0];
+
+				thumbWidth = bitmapSource->PixelWidth;
+				thumbHeight = bitmapSource->PixelHeight;
+
+				int bytesPerPixel = bitmapSource->Format.BitsPerPixel / 8;
+				int stride = 4 * ((width * bytesPerPixel + 3) / 4);
+				int sizeBytes = stride * thumbHeight;
+
+				frame->data[0] = new uint8_t[sizeBytes];
+			    frame->linesize[0] = stride;
+
+				bitmapSource->CopyPixels(System::Windows::Int32Rect::Empty, IntPtr(frame->data[0]), sizeBytes, stride);
+				
+				if(decodedFrame != NULL) {
+					decodedFrame(NULL, NULL, frame,VideoLib::Video::FrameType::VIDEO);
+				}
+
+				delete frame->data[0];
+				frame->data[0] = NULL;
+			}
+		}
+		
+	}*/
 
 	int getThumbWidth() const {
 

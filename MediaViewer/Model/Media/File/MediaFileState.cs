@@ -176,15 +176,15 @@ namespace MediaViewer.Model.Media.File
 
                     //if (item.Metadata == null)
                     //{
-                    item.EnterWriteLock();
+                    item.EnterUpgradeableReadLock();
                     try
                     {
-                        item.readMetadata_WLock(MetadataFactory.ReadOptions.AUTO |
+                        item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
                                 MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS, token);
                     }
                     finally
                     {
-                        item.ExitWriteLock();
+                        item.ExitUpgradeableReadLock();
                     }
 
                     if (item.Metadata == null || item.Metadata is UnknownMetadata)
