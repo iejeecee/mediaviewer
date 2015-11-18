@@ -21,7 +21,7 @@ class MuxedAVInputStream {
 	
 	int audioStreamOffset;
 
-	double videoPts,videoDts,audioPts,audioDts;
+	double videoDts, audioDts;
 	AVPacket videoPacket,audioPacket;
 
 	bool bHasAudioDecoder;
@@ -103,7 +103,7 @@ public:
 			// Seeking in the video stream can be non-exact due to keyframes.
 			readVideoFrame(videoPacket);
 
-			result = audioDecoder->seek(getVideoTimeSeconds());
+			result = audioDecoder->seek(videoDts);
 			if(result == false) return(result);
 
 			readAudioFrame(audioPacket);
@@ -215,7 +215,7 @@ public:
 
 		} else {
 
-			if(getVideoTimeSeconds() <= getAudioTimeSeconds()) {
+			if(videoDts <= audioDts) {
 
 				av_free_packet(&videoPacket);
 
@@ -232,7 +232,7 @@ public:
 			
 		}
 				
-		if(getVideoTimeSeconds() <= getAudioTimeSeconds()) {
+		if(videoDts <= audioDts) {
 
 			*packet = &videoPacket;
 			
@@ -245,24 +245,18 @@ public:
 	}
 
 	VideoDecoder::ReadFrameResult readVideoFrame(AVPacket &packet) {
-		
-		VideoDecoder::ReadFrameResult result = VideoDecoder::ReadFrameResult::OK;
+				 
+		VideoDecoder::ReadFrameResult result = videoDecoder->readFrame(&packet);
 
-		videoDecoder->readFrame(&packet);
+		if(result != VideoDecoder::ReadFrameResult::OK) return result;
 
 		if(packet.dts != AV_NOPTS_VALUE) {
 
 			videoDts = videoDecoder->stream[videoDecoder->getVideoStreamIndex()]->getTimeSeconds(packet.dts);
 
-		} else if(packet.pts != AV_NOPTS_VALUE) {
-
-			videoDts = AV_NOPTS_VALUE;
-
-			videoPts = videoDecoder->stream[videoDecoder->getVideoStreamIndex()]->getTimeSeconds(packet.pts);
-
 		} else {
 
-			throw gcnew VideoLib::VideoLibException("Input video stream does not contain valid timestamps");
+			throw gcnew VideoLib::VideoLibException("Input video stream does not contain valid decoding timestamps");
 		}
 
 		return(result);
@@ -270,53 +264,24 @@ public:
 	}
 
 	VideoDecoder::ReadFrameResult readAudioFrame(AVPacket &packet) {
-		
-		VideoDecoder::ReadFrameResult result = VideoDecoder::ReadFrameResult::OK;
+			
+		VideoDecoder::ReadFrameResult result = audioDecoder->readFrame(&packet);
 
-		audioDecoder->readFrame(&packet);
+		if(result != VideoDecoder::ReadFrameResult::OK) return result;
 
 		if(packet.dts != AV_NOPTS_VALUE) {
 
 			audioDts = audioDecoder->stream[audioDecoder->getAudioStreamIndex()]->getTimeSeconds(packet.dts);
 
-		} else if(packet.pts != AV_NOPTS_VALUE) {
-
-			audioDts = AV_NOPTS_VALUE;
-
-			audioPts = audioDecoder->stream[audioDecoder->getAudioStreamIndex()]->getTimeSeconds(packet.pts);
-
 		} else {
 
-			throw gcnew VideoLib::VideoLibException("Input audio stream does not contain valid timestamps");
+			throw gcnew VideoLib::VideoLibException("Input audio stream does not contain valid decoding timestamps");
 		}
 
 		return(result);
 	}
 
-	double getVideoTimeSeconds() const {
-
-		if(audioDts != AV_NOPTS_VALUE) {
-
-			return(videoDts);
-
-		}else {
-
-			return(videoPts);
-		}
-
-	}
-
-	double getAudioTimeSeconds() const {
-
-		if(audioDts != AV_NOPTS_VALUE) {
-
-			return(audioDts);
-
-		}else {
-
-			return(audioPts);
-		}
-	}
+	
 	
 
 };

@@ -67,6 +67,11 @@ namespace MediaViewer.Transcode.Video
                 options.Add("height", AsyncState.Height.Value);
             }
 
+            if (AsyncState.FramesPerSecond.HasValue)
+            {
+                options.Add("framesPerSecond", AsyncState.FramesPerSecond.Value); 
+            }
+
             if (AsyncState.SampleRate.HasValue)
             {
                 options.Add("sampleRate", AsyncState.SampleRate.Value);

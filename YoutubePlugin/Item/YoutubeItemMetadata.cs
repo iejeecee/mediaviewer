@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace YoutubePlugin.Item
 {
-    class YoutubeItemMetadata : BaseMetadata
+    class YoutubeItemMetadata : BaseMetadata, ICloneable
     {       
         public int Url { get; set; }
         public int? Width { get; set; }
@@ -94,6 +94,11 @@ namespace YoutubePlugin.Item
                              
                 return (sb.ToString());
             }
+        }
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }

@@ -183,7 +183,7 @@ namespace MediaViewer.UserControls.TagPicker
 
             view.addButton.IsEnabled = !isReadOnly;
             view.clearButton.IsEnabled = !isReadOnly;
-            view.addTagAutoCompleteBox.IsEnabled = !isReadOnly;
+            view.addTagAutoCompleteBox.IsEnabled = !isReadOnly;          
         }
         
         public bool AddLinkedTags
@@ -408,10 +408,11 @@ namespace MediaViewer.UserControls.TagPicker
                 }
             }
 
-            if (Tags.Count > 0 && IsReadOnly == false)
+            if (Tags.Count > 0)
             {
                 contextMenuCopy.IsEnabled = true;
-                contextMenuCut.IsEnabled = true;                
+                if(IsReadOnly == false) contextMenuCut.IsEnabled = true;
+                else contextMenuCut.IsEnabled = false;
             }
             else
             {
@@ -419,7 +420,7 @@ namespace MediaViewer.UserControls.TagPicker
                 contextMenuCut.IsEnabled = false;               
             }
 
-            if (Clipboard.ContainsData(tagClipboardDataFormat))
+            if (Clipboard.ContainsData(tagClipboardDataFormat) && IsReadOnly == false)
             {
                 contextMenuPaste.IsEnabled = true;
             }

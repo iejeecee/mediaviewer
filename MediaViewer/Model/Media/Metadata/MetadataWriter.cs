@@ -12,12 +12,12 @@ namespace MediaViewer.Model.Media.Metadata
 {
     abstract class MetadataWriter 
     {
-
+    
         protected CancellableOperationProgressBase Progress { get; set; }
         
-        public virtual void writeMetadata(BaseMetadata media, CancellableOperationProgressBase progress)
+        public virtual void writeMetadata(BaseMetadata media, CancellableOperationProgressBase progress = null)
         {
-            Progress = progress;
+            Progress = progress;       
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
             // bug in xmplib, crashes on write when video is mpg and a progresscallback is active
@@ -77,7 +77,8 @@ namespace MediaViewer.Model.Media.Metadata
 
             if (media.Rating != null)
             {
-                xmpMetaDataWriter.setProperty(Consts.XMP_NS_XMP, "Rating", media.Rating.ToString(), Consts.PropOptions.XMP_DeleteExisting);
+                xmpMetaDataWriter.setProperty_Float(Consts.XMP_NS_XMP, "Rating", media.Rating.Value);
+                //xmpMetaDataWriter.setProperty(Consts.XMP_NS_XMP, "Rating", media.Rating.ToString(), Consts.PropOptions.XMP_DeleteExisting);
             }
 
             if (!string.IsNullOrEmpty(media.Description))

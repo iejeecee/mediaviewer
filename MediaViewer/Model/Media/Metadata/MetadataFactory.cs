@@ -241,7 +241,7 @@ namespace MediaViewer.Model.metadata.Metadata
             return (metadata);
         }
 
-        public static void write(BaseMetadata metadata, WriteOptions options, CancellableOperationProgressBase progress)
+        public static void write(BaseMetadata metadata, WriteOptions options, CancellableOperationProgressBase progress = null)
         {
            
             if (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DISK))
@@ -258,6 +258,11 @@ namespace MediaViewer.Model.metadata.Metadata
                     VideoMetadataWriter videoMetadataWriter = new VideoMetadataWriter();
                     videoMetadataWriter.writeMetadata(metadata, progress);
 
+                }
+                else if (metadata.MimeType.ToLower().StartsWith("audio"))
+                {
+                    AudioMetadataWriter audioMetadataWriter = new AudioMetadataWriter();
+                    audioMetadataWriter.writeMetadata(metadata, progress);
                 }
             }
 

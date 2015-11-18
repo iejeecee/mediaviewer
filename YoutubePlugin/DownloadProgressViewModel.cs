@@ -2,6 +2,8 @@
 using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.File;
+using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -24,8 +26,8 @@ namespace YoutubePlugin
 
         public DownloadProgressViewModel()
         {
-            WindowTitle = "Image Search Download";
-            WindowIcon = "pack://application:,,,/ImageSearchPlugin;component/Resources/Icons/Search.ico";
+            WindowTitle = "Youtube Download";
+            WindowIcon = "pack://application:,,,/YoutubePlugin;component/Resources/Icons/youtube.ico";
 
             videoTranscoder = new VideoLib.VideoTranscoder();
             videoTranscoder.setLogCallback(muxingInfoCallback, true, VideoLib.VideoTranscoder.LogLevel.LOG_LEVEL_INFO);
@@ -35,52 +37,84 @@ namespace YoutubePlugin
         {
             TotalProgress = 0;
             TotalProgressMax = items.Count;
-            
-            foreach (YoutubeVideoItem item in items)
+
+            try
             {
-                if (CancellationToken.IsCancellationRequested) return;
-
-                YoutubeVideoStreamedItem videoStream, audioStream;
-                item.getBestQualityStreams(out videoStream, out audioStream);
-
-                if (videoStream == null)
+                foreach (YoutubeVideoItem item in items)
                 {
-                    InfoMessages.Add("Skipping: " + item.Name + " no streams found");
-                    continue;
+                    CancellationToken.ThrowIfCancellationRequested();
+
+                    YoutubeVideoStreamedItem videoStream, audioStream;
+                    item.getBestQualityStreams(out videoStream, out audioStream);
+
+                    if (videoStream == null)
+                    {
+                        InfoMessages.Add("Skipping: " + item.Name + " no streams found");
+                        continue;
+                    }
+
+                    YoutubeItemMetadata metadata = item.Metadata as YoutubeItemMetadata;
+
+                    String fullpath;
+                    String ext = "." + MediaFormatConvert.mimeTypeToExtension(metadata.MimeType);
+                    String filename = FileUtils.removeIllegalCharsFromFileName(item.Name, " ") + ext;
+
+                    try
+                    {
+                        fullpath = FileUtils.getUniqueFileName(outputPath + "\\" + filename);
+                    }
+                    catch (Exception)
+                    {
+                        fullpath = FileUtils.getUniqueFileName(outputPath + "\\" + "stream" + ext);
+                    }
+
+                    if (audioStream == null)
+                    {
+                        singleStreamDownload(fullpath, videoStream);
+                    }
+                    else
+                    {
+                        downloadAndMuxStreams(fullpath, videoStream, audioStream);
+                    }
+
+                    saveMetadata(fullpath, item);
+
+                    InfoMessages.Add("Finished: " + videoStream.Name + " -> " + fullpath);
+
+                    TotalProgress++;
                 }
-
-                YoutubeItemMetadata metadata = item.Metadata as YoutubeItemMetadata;
-
-                String fullpath;
-                String ext = "." + MediaFormatConvert.mimeTypeToExtension(metadata.MimeType);
-                String filename = FileUtils.removeIllegalCharsFromFileName(item.Name, " ") + ext;
-
-                try
-                {
-                    fullpath = FileUtils.getUniqueFileName(outputPath + "\\" + filename);
-                }
-                catch (Exception)
-                {
-                    fullpath = FileUtils.getUniqueFileName(outputPath + "\\" + "stream" + ext);
-                }
-
-                if (audioStream == null)
-                {
-                    singleStreamDownload(fullpath, videoStream);
-                }
-                else
-                {
-                    muxStreamsDownload(fullpath, videoStream, audioStream);
-                }
-
-                InfoMessages.Add("Finished: " + videoStream.Name + " -> " + fullpath);
-
-                TotalProgress++;
+            }
+            catch (Exception e)
+            {
+                InfoMessages.Add("Error: " + e.Message);
             }
 
         }
 
-        private void muxStreamsDownload(string fullpath, YoutubeVideoStreamedItem videoStream, 
+        private void saveMetadata(string fullpath, YoutubeVideoItem item)
+        {
+            YoutubeItemMetadata metadata = item.Metadata as YoutubeItemMetadata;
+
+            MediaFileItem fileItem = MediaFileItem.Factory.create(fullpath);
+
+            fileItem.EnterWriteLock();
+
+            YoutubeItemMetadata saveMetadata = metadata.Clone() as YoutubeItemMetadata;
+
+            saveMetadata.Location = fullpath;
+            ItemProgress = 0;
+            ItemInfo = "Saving metadata: " + item.Name;
+            MetadataFactory.write(saveMetadata, MetadataFactory.WriteOptions.WRITE_TO_DISK, this);
+            InfoMessages.Add("Finished saving metadata: " + fullpath);
+
+            fileItem.ExitWriteLock();
+
+            /*fileItem.EnterUpgradeableReadLock();
+            fileItem.readMetadata_URLock(MetadataFactory.ReadOptions.READ_FROM_DISK, CancellationToken);
+            fileItem.ExitUpgradeableReadLock();*/
+        }
+
+        private void downloadAndMuxStreams(string fullpath, YoutubeVideoStreamedItem videoStream, 
             YoutubeVideoStreamedItem audioStream)
         {                    
             TotalProgress = 0;
@@ -100,7 +134,7 @@ namespace YoutubePlugin
             }
             catch (Exception e)
             {
-                InfoMessages.Add("Error transcoding: " + e.Message);
+                InfoMessages.Add("Error muxing: " + e.Message);
 
                 try
                 {

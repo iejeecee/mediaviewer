@@ -89,8 +89,11 @@ namespace MediaViewer.Infrastructure.Utils
 
             Rectangle stretched = new Rectangle(rec.X, rec.Y, 0, 0);
 
-            stretched.Width = (int)(Math.Round(rec.Width * Math.Min(widthScale, heightScale)));
-            stretched.Height = (int)(Math.Round(rec.Height * Math.Min(widthScale, heightScale)));
+            stretched.Width = (int)(rec.Width * Math.Min(widthScale, heightScale));
+            stretched.Height = (int)(rec.Height * Math.Min(widthScale, heightScale));
+
+            if (stretched.Width > max.Width) stretched.Width = max.Width;
+            if (stretched.Height > max.Height) stretched.Height = max.Height;
 
             return (stretched);
         }

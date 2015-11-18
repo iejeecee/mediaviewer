@@ -175,7 +175,7 @@ public:
 
 				if(token.IsCancellationRequested) {
 
-					throw gcnew VideoLib::VideoLibException("Cancelled transcoding: " + outputFilename);
+					token.ThrowIfCancellationRequested();
 				}
 
 				if (input->readFrame(&packet) != VideoDecoder::ReadFrameResult::OK) {
@@ -605,14 +605,35 @@ protected:
 					
 				System::Drawing::Rectangle inRect(0,0,inWidth,inHeight);
 				System::Drawing::Rectangle outRect(0,0,outWidth,outHeight);
-
-				System::Drawing::Rectangle scaledRect = ImageUtils::stretchRectangle(inRect,outRect);
-				System::Drawing::Rectangle centeredRect = ImageUtils::centerRectangle(outRect, scaledRect);
-
-				String ^videoGraph = "scale=" + centeredRect.Width + "x" + centeredRect.Height + 
-					",pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y +
-					",format=" + outputFmt;
 				
+				System::Drawing::Rectangle centeredRect;
+				
+				if(options->ContainsKey("width") && options->ContainsKey("height")) {
+
+					// maintain aspect ratio of input
+					System::Drawing::Rectangle scaledRect = ImageUtils::stretchRectangle(inRect,outRect);
+					centeredRect = ImageUtils::centerRectangle(outRect, scaledRect);
+
+				} else {
+
+					centeredRect = outRect;
+				}
+				
+				String ^videoGraph = "scale=" + centeredRect.Width + "x" + centeredRect.Height;
+
+				if(centeredRect.Width != outWidth || centeredRect.Height != outHeight) 
+				{
+					// maintain aspect ratio using padding
+					videoGraph += ",pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y;
+				}
+				
+				videoGraph += ",format=" + outputFmt;
+				
+				if(options->ContainsKey("framesPerSecond")) {
+
+					videoGraph += ",fps=" + (float)options["framesPerSecond"];
+				}
+
 				std::string value = msclr::interop::marshal_as<std::string>(videoGraph);
 
 				streamInfo[i]->filterGraph->createGraph(value.c_str());				

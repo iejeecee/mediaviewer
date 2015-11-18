@@ -102,7 +102,7 @@ namespace MediaViewer.Model.Media.File
             }
         }
                                 
-        public void writeMetadata_URLock(MetadataFactory.WriteOptions options, CancellableOperationProgressBase progress)
+        public void writeMetadata_URLock(MetadataFactory.WriteOptions options, CancellableOperationProgressBase progress = null)
         {                  
             if (Metadata != null)
             {
@@ -184,6 +184,52 @@ namespace MediaViewer.Model.Media.File
 
             }
             
+        }
+
+        // update metadata from disk
+        public void updateFromDisk_URLock(CancellationToken token)
+        {
+            MetadataFactory.ReadOptions readOptions = MetadataFactory.ReadOptions.READ_FROM_DISK;
+
+            ICollection<Thumbnail> thumbs = null;      
+            int id = 0;
+
+            if (Metadata != null)
+            {                
+                id = Metadata.Id;
+
+                if (Metadata.Thumbnails.Count == 0)
+                {
+                    // generate thumbnail
+                    readOptions |= MetadataFactory.ReadOptions.GENERATE_THUMBNAIL;
+
+                } else {
+
+                    // save current thumbs
+                    thumbs = Metadata.Thumbnails;
+                }
+            }
+
+            readMetadata_URLock(readOptions, token);
+
+            if (Metadata != null && thumbs != null)
+            {
+                // restore thumbnails
+                Metadata.Thumbnails = thumbs;
+            }
+
+            if (Metadata != null && id != 0)
+            {
+                // update changes to database
+                using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
+                {
+                    Metadata.Id = id;                    
+                    Metadata = metadataCommands.update(Metadata);
+                                     
+                }
+               
+            }
+
         }
 
         // function should only be called inside a write lock

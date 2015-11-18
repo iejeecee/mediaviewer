@@ -267,6 +267,7 @@
     <Compile Include="Model\Collections\ObservableCollectionWithoutReentrantChecks.cs" />
     <Compile Include="Model\Concurrency\ILockable.cs" />
     <Compile Include="Model\Media\Metadata\AudioMetadataReader.cs" />
+    <Compile Include="Model\Media\Metadata\AudioMetadataWriter.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Filter\TagItemList.cs" />
     <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">

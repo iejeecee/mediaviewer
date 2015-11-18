@@ -86,6 +86,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Label Grid.Row="0" Grid.Column="0" Content="Video Stream" Style="{StaticResource labelStyle}"/>
                 <Grid Grid.Row="0" Grid.Column="1">
@@ -116,6 +117,8 @@
                 <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" Value="{Binding Width}" Min="32" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
                 <Label Grid.Row="3" Grid.Column="0" Content="Height" Style="{StaticResource labelStyle}"/>
                 <NumberSpinner:IntegerSpinner Grid.Row="3" Grid.Column="1" Value="{Binding Height}" Min="32" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
+                <Label Grid.Row="4" Grid.Column="0" Content="Fps" Style="{StaticResource labelStyle}"/>
+                <NumberSpinner:FloatSpinner Grid.Row="4" Grid.Column="1" Value="{Binding FramesPerSecond}" Min="1" Max="200" VerticalAlignment="Center" TextAlignment="Left" IsEnabled="{Binding VideoStreamMode, Converter={StaticResource isOptionsEnabledConverter}}"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="2" Header="Audio Options">

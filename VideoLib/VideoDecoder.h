@@ -635,7 +635,9 @@ public:
 		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
 	
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
-							
+		
+		
+
 		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
 		int ret = avformat_seek_file(formatContext, -1, 0, seekTarget, seekTarget, flags);
 		if(ret >= 0) { 
@@ -649,7 +651,7 @@ public:
 
 				avcodec_flush_buffers(getAudioCodecContext());
 			}
-
+			
 			return true;
 		}
 

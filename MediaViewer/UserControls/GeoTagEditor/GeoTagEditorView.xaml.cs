@@ -244,8 +244,10 @@ namespace MediaViewer.UserControls.GeoTagEditor
 
         private void map_PreviewMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
+           
             // Disables the default mouse double-click action.
             e.Handled = true;
+            if (IsReadOnly) return;
 
             // Determin the location to place the pushpin at on the map.
 
@@ -358,8 +360,20 @@ namespace MediaViewer.UserControls.GeoTagEditor
         {           
            centerMenuItem.IsEnabled = !Coordinate.IsEmpty;            
         }
-        
 
+
+
+        public bool IsReadOnly
+        {
+            get { return (bool)GetValue(IsReadOnlyProperty); }
+            set { SetValue(IsReadOnlyProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for IsReadOnly.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty IsReadOnlyProperty =
+            DependencyProperty.Register("IsReadOnly", typeof(bool), typeof(GeoTagEditorView), new PropertyMetadata(false));
+
+        
         
     }
 }

@@ -830,9 +830,7 @@ restartvideo:
             
                 audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
             }
-           
-            // buffer and allow video and audio decoding to continue   
-            //await videoDecoder.FrameQueue.startPacketQueueBuffering();
+              
             if (VideoState == VideoPlayerControl.VideoState.PLAYING)
             {
                 videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.PLAY,

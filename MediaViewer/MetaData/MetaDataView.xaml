@@ -120,7 +120,8 @@
                 <Label Grid.Row="5" Grid.Column="0" Content="Rating"/>
                 <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
 					Value="{Binding Rating, Mode=TwoWay}" 
-					IsEnabled="{Binding RatingEnabled}">
+					IsEnabled="{Binding RatingEnabled}"
+                    IsReadOnly="{Binding IsReadOnly}">
                     <inputtoolkit:Rating.ContextMenu>
                         <ContextMenu>
                             <MenuItem Header="Clear" Command="{Binding ClearRatingCommand}" />
@@ -133,7 +134,7 @@
                 <Label Grid.Row="7" Grid.Column="0" Content="Title"/>
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="titleNameTextBox" Grid.Row="7" Grid.Column="1" Margin="5,5,5,5" VerticalAlignment="Top"
 					Text="{Binding Title, Converter={StaticResource removeNewlinesConverter}}"
-					IsEnabled="{Binding TitleEnabled}" WordWrap="False"/>
+					IsEnabled="{Binding TitleEnabled}" WordWrap="False" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="7" Grid.Column="2" 
 					IsChecked="{Binding TitleEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -142,14 +143,14 @@
 					Margin="5, 5, 5, 5" Height="70" WordWrap="True"
 					VerticalScrollBarVisibility="Auto"
 					Text="{Binding Description}"                     
-					IsEnabled="{Binding DescriptionEnabled}"/>
+					IsEnabled="{Binding DescriptionEnabled}" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="8" Grid.Column="2" 
 					IsChecked="{Binding DescriptionEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="9" Grid.Column="0" Content="Author"/>
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="authorTextBox" Grid.Row="9" Grid.Column="1" Margin="5, 5, 5, 5" VerticalAlignment="Top"
 					Text="{Binding Author, Converter={StaticResource removeNewlinesConverter}}"
-					IsEnabled="{Binding AuthorEnabled}"/>
+					IsEnabled="{Binding AuthorEnabled}" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="9" Grid.Column="2" 
 					IsChecked="{Binding AuthorEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -157,20 +158,20 @@
                 <HyperlinkTextBox:HyperlinkTextBoxView x:Name="copyrightTextBox" Grid.Row="10" Grid.Column="1"
 					VerticalScrollBarVisibility="Auto" Margin="5, 5, 5, 5" Height="35" WordWrap="True"
 					Text="{Binding Copyright}"
-					IsEnabled="{Binding CopyrightEnabled}"/>
+					IsEnabled="{Binding CopyrightEnabled}" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="10" Grid.Column="2" 
 					IsChecked="{Binding CopyrightEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="11" Grid.Column="0" Content="Creation"/>
                 <DateTimePicker:DateTimePicker Grid.Row="11" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5,5,5,5" ToolTip="Media Creation Date"                                                                                                   
 					Value="{Binding Creation, Mode=TwoWay}"
-					IsEnabled="{Binding CreationEnabled}"/>
+					IsEnabled="{Binding CreationEnabled}" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="11" Grid.Column="2" 
 					IsChecked="{Binding CreationEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
                 <Label Grid.Row="12" Grid.Column="0" Content="Geotag"/>
                 <GeoTagEditor:GeoTagEditorView Grid.Row="12" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,5,5,5" Coordinate="{Binding Geotag}"
-					IsEnabled="{Binding IsGeotagEnabled}"/>
+					IsEnabled="{Binding IsGeotagEnabled}" IsReadOnly="{Binding IsReadOnly}"/>
                 <CheckBox Grid.Row="12" Grid.Column="2" 
 					IsChecked="{Binding IsGeotagEnabled}"
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"/>
@@ -187,6 +188,7 @@
                 <TagPicker:TagPickerView Grid.Row="14" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding Tags}"
 					IsEnabled="{Binding IsEnabled}"
+                    IsReadOnly="{Binding IsReadOnly}"
 					Visibility="{Binding BatchMode, ConverterParameter=invert, Converter={StaticResource visibilityConverter}}"
 					Margin="5, 5, 5, 5" EnableLinkingTags="True" IsStartsWithAutoCompleteMode="True"/>
                 <Label Grid.Row="15" Grid.Column="0" Content="Add Tags"
@@ -202,9 +204,9 @@
                 <TagPicker:TagPickerView Grid.Row="16" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Top" 
 					Tags="{Binding RemoveTags}"                                      
 					Visibility="{Binding BatchMode, Converter={StaticResource visibilityConverter}}"
-					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="false" IsStartsWithAutoCompleteMode="True"/>
+					Margin="5, 5, 5, 5" EnableLinkingTags="True" AddLinkedTags="False" IsStartsWithAutoCompleteMode="True"/>
                 <Button Grid.Row="17" Grid.Column="1" Content="Save" Width="50" HorizontalAlignment="Right" Margin="5, 5, 5, 5"
-					IsEnabled="{Binding IsReadOnly, Converter={StaticResource booleanNegatorConverter}}"
+					IsEnabled="{Binding IsEnabled}"
 					Command="{Binding WriteMetaDataCommand}"
 					ToolTip="Save Metadata To Disk"/>                
             </Grid>

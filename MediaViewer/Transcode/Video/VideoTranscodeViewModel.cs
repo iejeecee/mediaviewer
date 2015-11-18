@@ -336,6 +336,14 @@ namespace MediaViewer.Transcode.Video
             set { SetProperty(ref height, value); }
         }
 
+        float? framesPerSecond;
+
+        public float? FramesPerSecond
+        {
+            get { return framesPerSecond; }
+            set { SetProperty(ref framesPerSecond, value); }
+        }
+
         int? sampleRate;
 
         public int? SampleRate

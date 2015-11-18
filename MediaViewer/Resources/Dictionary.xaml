@@ -30,6 +30,9 @@
             <DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="false">
                 <Setter Property="Background" Value="{StaticResource disabledColor}"/>
             </DataTrigger>
+            <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="False">
+                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+            </DataTrigger>
         </Style.Triggers>
     </Style>
   

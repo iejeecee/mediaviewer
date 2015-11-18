@@ -69,6 +69,9 @@
     <!-- HyperlinkTextBox -->
     <Style TargetType="{x:Type HyperlinkTextBox:HyperlinkTextBoxView}">
         <Style.Triggers>
+            <Trigger Property="IsReadOnly" Value="True">
+                <Setter Property="Background" Value="{StaticResource disabledColor}"/>
+            </Trigger>
             <Trigger Property="IsEnabled" Value="False">
                 <Setter Property="Background" Value="{StaticResource disabledColor}"/>
             </Trigger>

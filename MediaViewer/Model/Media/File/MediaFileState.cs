@@ -1,4 +1,5 @@
-﻿using MediaViewer.MediaDatabase;
+﻿using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.State;
@@ -294,22 +295,21 @@ namespace MediaViewer.Model.Media.File
                 info.Refresh();
 
                 if (info.Exists)
-                {
-                    item.EnterWriteLock();
+                {                    
+                    item.EnterUpgradeableReadLock();
                     try
                     {
-                        if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
-                        {
-                            item.IsReadOnly = true;
-                        }
-                        else
-                        {
-                            item.IsReadOnly = false;
-                        }
+                        CancellationTokenSource tokenSource = new CancellationTokenSource();
+                        item.updateFromDisk_URLock(tokenSource.Token);
+                                                
                     }
-                    finally
+                    catch(Exception e)
                     {
-                        item.ExitWriteLock();
+                        Logger.Log.Error("Error updating mediafile: " + item.Location, e);
+
+                    } finally
+                    {
+                        item.ExitUpgradeableReadLock();
                     }
                 }
             }
