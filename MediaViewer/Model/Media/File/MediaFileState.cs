@@ -1,8 +1,8 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -113,14 +113,14 @@ namespace MediaViewer.Model.Media.File
 
                         bool isImported = false;
 
-                        item.EnterWriteLock();
+                        item.EnterUpgradeableReadLock();
                         try
                         {
-                            isImported = item.move_WLock(location, progress);
+                            isImported = item.move_URLock(location, progress);
                         }
                         finally
                         {
-                            item.ExitWriteLock();
+                            item.ExitUpgradeableReadLock();
                         }
 
                         if (MediaFileWatcher.Instance.IsWatcherEnabled &&
@@ -175,37 +175,40 @@ namespace MediaViewer.Model.Media.File
                 {
                     if (token.IsCancellationRequested) return(importedItems.Count);
 
-                    //if (item.Metadata == null)
-                    //{
+                    bool success = false;
+               
                     item.EnterUpgradeableReadLock();
                     try
                     {
+                        if (item.Metadata != null && item.Metadata.IsImported == true)
+                        {
+                            // skip if item is already imported
+                            continue;
+                        }
+
                         item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
                                 MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS, token);
+
+                        if (item.Metadata == null || item.Metadata is UnknownMetadata)
+                        {
+                            throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
+                        }
+                    
+                        item.EnterWriteLock();
+                        try
+                        {
+                            success = item.import_WLock(token);
+                        }
+                        finally
+                        {
+                            item.ExitWriteLock(false);
+                        }
                     }
                     finally
                     {
                         item.ExitUpgradeableReadLock();
                     }
-
-                    if (item.Metadata == null || item.Metadata is UnknownMetadata)
-                    {
-                        throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);
-                    }
-                    //}
-
-                    bool success = false;
-
-                    item.EnterWriteLock();
-                    try
-                    {
-                        success = item.import_WLock(token);
-                    }
-                    finally
-                    {
-                        item.ExitWriteLock();
-                    }
-
+                   
                     if (success)
                     {
                         importedItems.Add(item);
@@ -295,21 +298,15 @@ namespace MediaViewer.Model.Media.File
                 info.Refresh();
 
                 if (info.Exists)
-                {                    
-                    item.EnterUpgradeableReadLock();
+                {
+                    UIMediaCollection.EnterWriteLock();
                     try
                     {
-                        CancellationTokenSource tokenSource = new CancellationTokenSource();
-                        item.updateFromDisk_URLock(tokenSource.Token);
-                                                
+                        UIMediaCollection.Reload(item);
                     }
-                    catch(Exception e)
+                    finally
                     {
-                        Logger.Log.Error("Error updating mediafile: " + item.Location, e);
-
-                    } finally
-                    {
-                        item.ExitUpgradeableReadLock();
+                        UIMediaCollection.ExitWriteLock();
                     }
                 }
             }

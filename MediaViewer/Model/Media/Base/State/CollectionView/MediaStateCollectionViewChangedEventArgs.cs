@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State.CollectionView
+namespace MediaViewer.Model.Media.Base.State.CollectionView
 {
     public class MediaStateCollectionViewChangedEventArgs : MediaStateChangedEventArgsBase<SelectableMediaItem>
     {

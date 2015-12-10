@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System;
 using System.Collections.Generic;

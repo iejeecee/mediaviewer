@@ -1,4 +1,5 @@
 ﻿using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.UserControls.MediaGridItem;
 using System;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace YoutubePlugin
 
         }
 
-        public override System.Windows.Media.Imaging.BitmapSource getInfoIconsBitmap(MediaViewer.Model.Media.Base.MediaItem item)
+        public override System.Windows.Media.Imaging.BitmapSource getInfoIconsBitmap(MediaItem item)
         {
             
             String key = "";

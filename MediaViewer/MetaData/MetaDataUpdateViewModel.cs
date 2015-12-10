@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Settings;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Mvvm;

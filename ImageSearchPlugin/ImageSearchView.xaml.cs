@@ -1,5 +1,5 @@
 ﻿using ImageSearchPlugin.Properties;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using System;
 using System.Collections.Generic;
 using System.Linq;

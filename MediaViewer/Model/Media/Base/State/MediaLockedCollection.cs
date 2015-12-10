@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Collections;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -14,7 +14,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State
+namespace MediaViewer.Model.Media.Base.State
 {
 
     /// <summary>
@@ -50,8 +50,9 @@ namespace MediaViewer.Model.Media.State
             {
                 // check to make sure the loaded item is actually in the current state
                 if(Contains(sender as MediaItem)) {
+                   
                     NrLoadedItems++;
-
+                    
                     if (NrLoadedItems == Count)
                     {
                         IsLoading = false;
@@ -96,7 +97,7 @@ namespace MediaViewer.Model.Media.State
                 
                 if (nrLoadedItems == value) return;
 
-                nrLoadedItems = value;
+                nrLoadedItems = value;                
                 OnPropertyChanged(new PropertyChangedEventArgs("NrLoadedItems"));           
             }
         }
@@ -158,6 +159,17 @@ namespace MediaViewer.Model.Media.State
             return (success);
            
         }
+
+        public void Reload(MediaItem item)
+        {
+            item.EnterWriteLock();          
+            item.ItemState = MediaItemState.RELOAD;
+            item.ExitWriteLock();
+
+            NrLoadedItems--;
+            itemLoader.add(item);
+        }
+        
 
         override protected void afterItemAdded(MediaItem item)
         {

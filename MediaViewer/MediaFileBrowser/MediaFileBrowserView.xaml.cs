@@ -28,7 +28,7 @@ using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.VideoPanel;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Infrastructure;
 using MediaViewer.Infrastructure.Global.Events;
 using MediaViewer.UserControls.MediaGrid;

@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.TabbedExpander;
 using Microsoft.Practices.Prism.PubSubEvents;

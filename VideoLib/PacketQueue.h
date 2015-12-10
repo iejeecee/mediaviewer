@@ -14,7 +14,7 @@ namespace VideoLib {
 	public:
 
 		event EventHandler ^StartBuffering;		
-		event EventHandler ^AddedPacket;
+		event EventHandler<PacketType> ^AddedPacket;
 		event EventHandler ^IsFinished;
 
 		enum class PacketQueueState {			
@@ -53,7 +53,8 @@ namespace VideoLib {
 
 				return(state);
 			}
-		
+
+					
 			void set(PacketQueueState value) {
 
 				Monitor::Enter(lockObject);
@@ -61,9 +62,9 @@ namespace VideoLib {
 
 					if(state != value) {
 						
-						if(value == PacketQueueState::CLOSE_START &&
-							state == PacketQueueState::CLOSE_END) return;
-
+						// closed queue cannot change state, use reset instead
+						if(state == PacketQueueState::CLOSE_END) return;
+					
 						if(value == PacketQueueState::PAUSE_START &&
 							state == PacketQueueState::PAUSE_END) return;
 
@@ -116,6 +117,21 @@ namespace VideoLib {
 			}
 		}
 				
+
+		void reset() {
+
+			Monitor::Enter(lockObject);
+			try
+			{
+				state = PacketQueueState::OPEN;
+
+			} finally {
+
+				Monitor::Exit(lockObject);
+			}
+
+		}
+
 		// clear the queue
 		void flush() {
 
@@ -241,7 +257,7 @@ namespace VideoLib {
 		
 				queue->Enqueue(packet);
 
-				AddedPacket(this,EventArgs::Empty);
+				AddedPacket(this, packet->Type);
 												 
 				if(queue->Count == 1) {
 		

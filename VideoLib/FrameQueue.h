@@ -44,10 +44,9 @@ namespace VideoLib {
 
 	private:
 		
-		static int nrPackets = 300;	
-		static int maxBufferedPackets = 100;
+		static int nrPackets = 500;	
+		static int minBufferedPackets = 100;
 		
-
 		FrameQueueState state;
 
 		Object ^lockObject;
@@ -72,6 +71,8 @@ namespace VideoLib {
 
 		bool isBuffering;	
 		int nrBufferedPackets;
+		int nrLastPacketsRead;
+		int nrLastPackets;
 
 		int nrVideoPacketReadErrors;
 		int nrAudioPacketReadErrors;
@@ -145,12 +146,12 @@ namespace VideoLib {
 		{
 			bool isState = true;
 
-			if(videoDecoder->hasVideo()) {
+			if(videoPackets->State != PacketQueue::PacketQueueState::CLOSE_END) {
 
 				isState = videoPackets->State == videoState && isState;
 			} 
 							
-			if(audioDecoder->hasAudio()) {
+			if(audioPackets->State != PacketQueue::PacketQueueState::CLOSE_END) {
 
 				isState = audioPackets->State == audioState && isState;
 			} 
@@ -193,10 +194,9 @@ namespace VideoLib {
 
 		// always called while framequeue is locked
 		void isPacketQueueFinished(Object ^sender, EventArgs ^e) 
-		{
-						
-			bool isVideoFinished = videoPackets->State == PacketQueue::PacketQueueState::CLOSE_END || !videoDecoder->hasVideo();
-			bool isAudioFinished = audioPackets->State == PacketQueue::PacketQueueState::CLOSE_END || !audioDecoder->hasAudio();
+		{						
+			bool isVideoFinished = videoPackets->State == PacketQueue::PacketQueueState::CLOSE_END;
+			bool isAudioFinished = audioPackets->State == PacketQueue::PacketQueueState::CLOSE_END;
 
 			if(isVideoFinished && isAudioFinished)
 			{
@@ -211,8 +211,10 @@ namespace VideoLib {
 		// always called while framequeue is locked
 		void startPacketQueueBuffering(Object ^sender, EventArgs ^e)
 		{			
-			bool isVideoBuffering = videoPackets->NrPacketsInQueue == 0 && videoDecoder->hasVideo();
-			bool isAudioBuffering = audioPackets->NrPacketsInQueue == 0 && audioDecoder->hasAudio();
+			bool isVideoBuffering = videoPackets->NrPacketsInQueue == 0 && 
+				!(videoPackets->State == PacketQueue::PacketQueueState::CLOSE_END);
+			bool isAudioBuffering = audioPackets->NrPacketsInQueue == 0 && 
+				!(audioPackets->State == PacketQueue::PacketQueueState::CLOSE_END);
 
 			if(isVideoBuffering || isAudioBuffering) {
 
@@ -226,16 +228,26 @@ namespace VideoLib {
 		}
 
 		// always called while framequeue is locked
-		void isPacketQueueBufferFull(Object ^sender, EventArgs ^e)
+		void addedPacketToPacketQueue(Object ^sender, PacketType e)
 		{			
 			if(IsBuffering) 
 			{
 				nrBufferedPackets++;
 
-				bool isVideoReady = videoPackets->NrPacketsInQueue > 0 || !videoDecoder->hasVideo();
-				bool isAudioReady = audioPackets->NrPacketsInQueue > 0 || !audioDecoder->hasAudio();
+				bool isVideoReady = videoPackets->NrPacketsInQueue > 0 || 
+					videoPackets->State == PacketQueue::PacketQueueState::CLOSE_END;
+				bool isAudioReady = audioPackets->NrPacketsInQueue > 0 || 
+					audioPackets->State == PacketQueue::PacketQueueState::CLOSE_END;
 
-				if(isVideoReady && isAudioReady && nrBufferedPackets >= maxBufferedPackets) {
+				if(e == PacketType::LAST_PACKET) {
+
+					nrLastPacketsRead++;
+				}
+
+				// stop buffering when atleast minBufferedPackets are read or the lastpacket(s)
+				if(isVideoReady && isAudioReady && nrBufferedPackets >= minBufferedPackets 
+					|| nrLastPacketsRead == nrLastPackets) 
+				{
 
 					IsBuffering = false;
 									
@@ -302,8 +314,8 @@ namespace VideoLib {
 			videoPackets->StartBuffering += gcnew EventHandler(this,&FrameQueue::startPacketQueueBuffering);
 			audioPackets->StartBuffering += gcnew EventHandler(this,&FrameQueue::startPacketQueueBuffering);
 
-			videoPackets->AddedPacket += gcnew EventHandler(this,&FrameQueue::isPacketQueueBufferFull);
-			audioPackets->AddedPacket += gcnew EventHandler(this,&FrameQueue::isPacketQueueBufferFull);
+			videoPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::addedPacketToPacketQueue);
+			audioPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::addedPacketToPacketQueue);
 
 			videoPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
 			audioPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
@@ -452,6 +464,21 @@ namespace VideoLib {
 			}
 		}
 
+		property int MinBufferedPackets {
+
+			int get() {
+
+				return(minBufferedPackets);
+			}
+
+			void set(int value) {
+
+				if(value < 0) value = 0;
+				if(value > nrPackets) value = nrPackets;
+				
+				minBufferedPackets = value;
+			}
+		}
 		
 		void initialize(VideoDecoder *videoDecoder, VideoDecoder *audioDecoder) {
 
@@ -463,6 +490,8 @@ namespace VideoLib {
 			videoClock = 0;
 			audioClock = 0;
 
+			nrLastPackets = 0;
+
 			if(videoDecoder->hasVideo()) 
 			{
 				videoFrame = gcnew VideoFrame();
@@ -471,6 +500,11 @@ namespace VideoLib {
 					videoDecoder->getWidth(), 
 					videoDecoder->getHeight(), 
 					videoDecoder->getOutputPixelFormat());
+
+				nrLastPackets++; 
+
+				videoPackets->reset();
+
 			} else {
 
 				videoPackets->State = PacketQueue::PacketQueueState::CLOSE_END;
@@ -485,6 +519,10 @@ namespace VideoLib {
 					audioDecoder->getOutputChannelLayout(),
 					audioDecoder->getOutputSampleRate());
 
+				nrLastPackets++; 
+
+				audioPackets->reset();
+
 			} else {
 
 				audioPackets->State = PacketQueue::PacketQueueState::CLOSE_END;
@@ -494,7 +532,9 @@ namespace VideoLib {
 
 				freePackets->addPacket(packetData[i]);
 			}
-				
+			
+			freePackets->reset();
+
 			audioPacket = nullptr;
 
 			nrVideoPacketReadErrors = 0;
@@ -502,6 +542,8 @@ namespace VideoLib {
 
 			IsBuffering = false;
 			nrBufferedPackets = 0;
+			nrLastPacketsRead = 0;
+			
 			isSingleFrame = false;
 		}
 		
@@ -524,6 +566,7 @@ namespace VideoLib {
 
 				IsBuffering = false;
 				nrBufferedPackets = 0;
+				nrLastPacketsRead = 0;
 				isSingleFrame = false;
 				audioPacket = nullptr;
 

@@ -1,6 +1,6 @@
 ﻿using MediaViewer.Infrastructure.Global.Events;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Mvvm;

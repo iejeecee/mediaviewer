@@ -1,5 +1,6 @@
 ﻿using MediaViewer.Infrastructure.Utils;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;

@@ -1,8 +1,8 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.ServiceLocation;

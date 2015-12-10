@@ -1,7 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;

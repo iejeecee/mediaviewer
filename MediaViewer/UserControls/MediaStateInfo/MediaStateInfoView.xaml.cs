@@ -11,10 +11,10 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using System.ComponentModel;
-using MediaViewer.Model.Media.State.CollectionView;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.State.CollectionView;
+using MediaViewer.Model.Media.Base.Item;
 using System.Collections.Generic;
 using MediaViewer.Model.Utils;
 
@@ -52,7 +52,7 @@ namespace MediaViewer.UserControls.MediaStateInfo
             {
                 MediaStateCollectionView oldState = (MediaStateCollectionView)e.OldValue;
 
-                WeakEventManager<MediaViewer.Model.Media.State.MediaState, PropertyChangedEventArgs>.RemoveHandler(oldState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
+                WeakEventManager<MediaViewer.Model.Media.Base.State.MediaState, PropertyChangedEventArgs>.RemoveHandler(oldState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
                 WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.RemoveHandler(oldState.MediaState.UIMediaCollection, "PropertyChanged", view.uiMediaCollection_PropertyChanged);
                 WeakEventManager<MediaStateCollectionView, EventArgs>.RemoveHandler(oldState, "SelectionChanged", view.selectionChanged);
             }
@@ -61,7 +61,7 @@ namespace MediaViewer.UserControls.MediaStateInfo
             {
                 MediaStateCollectionView newState = (MediaStateCollectionView)e.NewValue;
 
-                WeakEventManager<MediaViewer.Model.Media.State.MediaState, PropertyChangedEventArgs>.AddHandler(newState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
+                WeakEventManager<MediaViewer.Model.Media.Base.State.MediaState, PropertyChangedEventArgs>.AddHandler(newState.MediaState, "PropertyChanged", view.mediaState_PropertyChanged);
                 WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.AddHandler(newState.MediaState.UIMediaCollection, "PropertyChanged", view.uiMediaCollection_PropertyChanged);
                 WeakEventManager<MediaStateCollectionView, EventArgs>.AddHandler(newState, "SelectionChanged", view.selectionChanged);
 
@@ -98,7 +98,7 @@ namespace MediaViewer.UserControls.MediaStateInfo
             }));
         }
 
-        void initialize(MediaViewer.Model.Media.State.MediaState state)
+        void initialize(Model.Media.Base.State.MediaState state)
         {
             infoLabelTextBlock.Text = state.MediaStateInfo;
             dateTimeLabel.Content = state.MediaStateDateTime.ToString(dateFormat);
@@ -109,7 +109,7 @@ namespace MediaViewer.UserControls.MediaStateInfo
 
         private void mediaState_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            MediaViewer.Model.Media.State.MediaState state = (MediaViewer.Model.Media.State.MediaState)sender;
+            MediaViewer.Model.Media.Base.State.MediaState state = (MediaViewer.Model.Media.Base.State.MediaState)sender;
 
             switch (e.PropertyName)
             {

@@ -16,13 +16,13 @@ using System.Windows.Shapes;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Media.File;
 using MediaViewer.UserControls.Pager;
 using Microsoft.Practices.Prism.Mvvm;
 using System.ComponentModel;
 using MediaViewer.Infrastructure.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Utils;
 
 namespace MediaViewer.UserControls.MediaStackPanel

@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;

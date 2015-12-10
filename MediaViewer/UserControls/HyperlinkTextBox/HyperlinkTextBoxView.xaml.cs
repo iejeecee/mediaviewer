@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Infrastructure.Logging;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;

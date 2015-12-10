@@ -1,5 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using System;
 using System.Collections.Generic;
 using System.Linq;

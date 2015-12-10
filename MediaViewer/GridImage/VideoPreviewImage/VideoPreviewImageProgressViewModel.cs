@@ -1,6 +1,6 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.metadata.Metadata;

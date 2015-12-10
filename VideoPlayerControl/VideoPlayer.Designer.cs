@@ -43,7 +43,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.MinimumSize = new System.Drawing.Size(64, 64);
             this.Name = "VideoPlayer";
-            this.Size = new System.Drawing.Size(64, 64);          
+            this.Size = new System.Drawing.Size(64, 64);
             this.Resize += new System.EventHandler(this.videoPlayer_Resize);
             this.ResumeLayout(false);
 

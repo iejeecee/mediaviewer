@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.Base
+namespace MediaViewer.Model.Media.Base.Item
 {
     // Class state should only be modified under write lock and read under read lock
     // Lock recursion is not supported, see this for a good explanation why 

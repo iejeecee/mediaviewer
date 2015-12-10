@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.State.CollectionView;
+﻿using MediaViewer.Model.Media.Base.State.CollectionView;
 using System;
 using System.Collections.Generic;
 using System.Linq;

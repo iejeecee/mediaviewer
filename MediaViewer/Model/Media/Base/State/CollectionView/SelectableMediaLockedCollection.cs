@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Collections;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State
+namespace MediaViewer.Model.Media.Base.State.CollectionView
 {
     public class SelectableMediaLockedCollection : LockedObservableCollection<SelectableMediaItem>
     {

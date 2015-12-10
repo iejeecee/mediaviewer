@@ -132,6 +132,10 @@
     <Reference Include="SharpDX.XAudio2">
       <HintPath>$(SharpDXPackageBinDir)\SharpDX.XAudio2.dll</HintPath>
     </Reference>
+    <Reference Include="SubtitlesParser, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SubtitlesParser.1.4.6\lib\net40-Client\SubtitlesParser.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xaml" />
@@ -146,6 +150,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioPlayer.cs" />
+    <Compile Include="Subtitles.cs" />
     <Compile Include="Timers\DefaultTimer.cs" />
     <Compile Include="Timers\HRTimer.cs" />
     <Compile Include="Timers\HRTimerFactory.cs" />
@@ -184,6 +189,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\ButtonClose.ico" />
+    <EmbeddedResource Include="Resources\ButtonPause.ico" />
+    <EmbeddedResource Include="Resources\ButtonPlay.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\SharpDX.2.6.3\build\SharpDX.targets" Condition="Exists('..\packages\SharpDX.2.6.3\build\SharpDX.targets')" />

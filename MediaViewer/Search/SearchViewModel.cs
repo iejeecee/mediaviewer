@@ -1,9 +1,9 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;

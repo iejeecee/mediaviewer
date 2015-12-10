@@ -13,6 +13,8 @@ namespace MediaViewer.Model.Settings
 {
     public class SettingsBase : BindableBase, IComparable<SettingsBase>, IEquatable<SettingsBase>
     {
+        public event EventHandler SettingsChanged;
+
         private Command SaveCommand { get; set; }
 
         protected SettingsBase(String title, Uri navigationUri)
@@ -61,7 +63,10 @@ namespace MediaViewer.Model.Settings
      
         protected virtual void OnSave()
         {
-
+            if (SettingsChanged != null)
+            {
+                SettingsChanged(this, EventArgs.Empty);
+            }
         }
        
     }

@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -123,6 +123,12 @@ namespace MediaViewer.Model.Media.File
 
         public override void readMetadata_URLock(MetadataFactory.ReadOptions options, CancellationToken token)
         {
+            if (ItemState == MediaItemState.RELOAD)
+            {
+                reloadFromDisk_URLock(token);
+                return;
+            }
+
             EnterWriteLock();
             ItemState = MediaItemState.LOADING;
             ExitWriteLock(false);
@@ -187,8 +193,12 @@ namespace MediaViewer.Model.Media.File
         }
 
         // update metadata from disk
-        public void updateFromDisk_URLock(CancellationToken token)
+        void reloadFromDisk_URLock(CancellationToken token)
         {
+            EnterWriteLock();
+            ItemState = MediaItemState.LOADING;
+            ExitWriteLock(false);
+
             MetadataFactory.ReadOptions readOptions = MetadataFactory.ReadOptions.READ_FROM_DISK;
 
             ICollection<Thumbnail> thumbs = null;      
@@ -305,7 +315,7 @@ namespace MediaViewer.Model.Media.File
         /// <param name="newLocation"></param>
         /// <param name="progress"></param>        
         /// <returns></returns>
-        public bool move_WLock(String newLocation, CancellableOperationProgressBase progress)
+        public bool move_URLock(String newLocation, CancellableOperationProgressBase progress)
         {                    
             bool isImported = false;
 
@@ -315,13 +325,15 @@ namespace MediaViewer.Model.Media.File
             }
                
             FileUtils fileUtils = new FileUtils();
-
+            
             fileUtils.moveFile(Location, newLocation, progress);
                            
             // A delete event will be fired by the mediafilewatcher for the current item with it's old location.
             // If location is changed to it's new location it will not be be found in the current mediastate. 
             // So only update the location when mediafilewatcher is not active.               
+            EnterWriteLock();
             Location = newLocation;
+            ExitWriteLock(false);
                                              
             return (isImported = Metadata.IsImported);
                        

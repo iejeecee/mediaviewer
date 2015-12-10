@@ -166,6 +166,23 @@ public:
 		return nrStreams;
 	}
 
+	int getBestVideoStreamIndex() const {
+
+		return(videoDecoder->getVideoStreamIndex());
+	}
+
+	int getBestAudioStreamIndex() const {
+
+		if(bHasAudioDecoder) {
+
+			return(audioDecoder->getAudioStreamIndex() + audioStreamOffset);
+
+		} else {
+
+			return videoDecoder->getAudioStreamIndex();
+		}
+	}
+
 	VideoLib::Stream *getStream(int i) const
 	{		
 		if(i < audioStreamOffset) {

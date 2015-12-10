@@ -34,7 +34,7 @@ using MediaViewer.Model.Utils.Windows;
 using MediaViewer.MediaDatabase;
 using System.Data.Entity;
 using MediaViewer.MediaDatabase.DbCommands;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Properties;
 using MediaViewer.Model.Collections;

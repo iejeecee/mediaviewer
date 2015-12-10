@@ -4,7 +4,7 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MetaData;
 using MediaViewer.Model.Media.Metadata;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using System;
@@ -31,7 +31,7 @@ namespace MediaViewer.Model.metadata.Metadata
             READ_FROM_DATABASE = 1 << 2,
             GENERATE_THUMBNAIL = 1 << 3,
             GENERATE_MULTIPLE_THUMBNAILS = 1 << 4,
-            LEAVE_STREAM_OPENED_AFTER_READ = 1 << 5
+            LEAVE_STREAM_OPENED_AFTER_READ = 1 << 5,         
         }
 
         public enum WriteOptions

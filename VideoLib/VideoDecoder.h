@@ -94,6 +94,8 @@ protected:
 		return(duration);
 	}
 
+	
+
 	gcroot<CancellationToken ^> *cancellationToken;
 
 public:
@@ -273,12 +275,12 @@ public:
 		outNrChannels = 0;
 		outSampleRate = inSampleRate = 0;
 		outChannelLayout = inChannelLayout = 0;
-		outBytesPerSample = 0;
+		outBytesPerSample = 0;	
 
 		samplingMode = X;
 
 		startTime = 0;
-	
+			
 		closed = true;
 	}
 
@@ -288,9 +290,7 @@ public:
 	}
 	
 	virtual void open(String ^location, System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
-
 		 
-
 		// Convert location to UTF8 string pointer
 		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
 
@@ -365,7 +365,7 @@ public:
 					throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
 				}
 			}
-
+			
 			VideoLib::Stream *newStream = new VideoLib::Stream(formatContext->streams[i], decoder);			
 		
 			stream.push_back(newStream);			
@@ -376,6 +376,7 @@ public:
 					
 			stream[videoIdx]->open();
 			stream[videoIdx]->getCodecContext()->skip_frame = AVDISCARD_DEFAULT; 	
+			
 		}
 			
 		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
@@ -430,6 +431,26 @@ public:
 	int getSizeBytes() const {
 
 		return(sizeBytes);
+	}
+
+	// returns 0 if unknown or no video 
+	double getFrameRate() const {
+
+		double frameRate = 0;
+
+		if(!hasVideo()) return frameRate;
+
+		if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) 
+		{
+
+			frameRate = av_q2d(getVideoStream()->avg_frame_rate);
+			
+		} else {
+
+			frameRate = av_q2d(getVideoCodecContext()->framerate);		
+		} 
+		
+		return frameRate;
 	}
 
 	int getAudioSamplesPerSecond() const {

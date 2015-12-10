@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maps.MapControl.WPF;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.Metadata;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.UserControls.GeoTagEditor;
 using Microsoft.Practices.Prism.PubSubEvents;
@@ -20,7 +20,7 @@ using System.Windows.Controls;
 using System.Windows;
 using System.Windows.Input;
 using MediaViewer.Model.Utils;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Infrastructure.Global.Events;
 using System.IO;
 
@@ -378,24 +378,24 @@ namespace MediaViewer.GeotagFileBrowser
         {
             switch (e.Action)
             {
-                case MediaViewer.Model.Media.State.MediaStateChangedAction.Add:
+                case MediaViewer.Model.Media.Base.State.MediaStateChangedAction.Add:
                     foreach (SelectableMediaItem item in e.NewItems)
                     {
                         App.Current.Dispatcher.BeginInvoke(new Action(() => mapAddItem(item)));
                     }
                     break;
-                case MediaViewer.Model.Media.State.MediaStateChangedAction.Remove:
+                case MediaViewer.Model.Media.Base.State.MediaStateChangedAction.Remove:
                     foreach (SelectableMediaItem item in e.OldItems)
                     {
                         App.Current.Dispatcher.BeginInvoke(new Action(() => mapRemoveItem(item)));
                     }
                     break;
-                case MediaViewer.Model.Media.State.MediaStateChangedAction.Clear:
+                case MediaViewer.Model.Media.Base.State.MediaStateChangedAction.Clear:
                     App.Current.Dispatcher.BeginInvoke(new Action(() => mapClearItems()));                                         
                     break;
-                case MediaViewer.Model.Media.State.MediaStateChangedAction.Modified:
+                case MediaViewer.Model.Media.Base.State.MediaStateChangedAction.Modified:
                     break;
-                case MediaViewer.Model.Media.State.MediaStateChangedAction.Replace:
+                case MediaViewer.Model.Media.Base.State.MediaStateChangedAction.Replace:
                     break;
                 default:
                     break;

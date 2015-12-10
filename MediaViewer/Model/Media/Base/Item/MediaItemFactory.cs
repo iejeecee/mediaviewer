@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.Base
+namespace MediaViewer.Model.Media.Base.Item
 {
     class MediaItemFactory
     {

@@ -1,5 +1,5 @@
-﻿using MediaViewer.Model.Media.State;
-using MediaViewer.Model.Media.State.CollectionView;
+﻿using MediaViewer.Model.Media.Base.State;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.SortComboBox;
 using System;

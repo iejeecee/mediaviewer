@@ -3,7 +3,7 @@ using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;

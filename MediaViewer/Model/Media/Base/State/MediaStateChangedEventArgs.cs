@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State
+namespace MediaViewer.Model.Media.Base.State
 {
 
 

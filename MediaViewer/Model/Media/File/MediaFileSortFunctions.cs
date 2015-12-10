@@ -1,6 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Utils.Strings;
 using MediaViewer.UserControls.SortComboBox;

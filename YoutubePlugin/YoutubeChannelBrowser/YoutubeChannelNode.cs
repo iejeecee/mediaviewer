@@ -41,8 +41,8 @@ namespace YoutubePlugin.YoutubeChannelBrowser
         public void updateStatistics(ChannelStatistics statistics)
         {
             if (State.Statistics != null)
-            {
-                NrVideos = statistics.VideoCount - State.Statistics.VideoCount;
+            {      
+                NrVideos = statistics.VideoCount < State.Statistics.VideoCount ? 0 : statistics.VideoCount - State.Statistics.VideoCount;
             }
 
             State.Statistics = statistics;

@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using System;
 using System.Collections.Generic;
@@ -20,7 +20,8 @@ namespace MediaViewer.UserControls.MediaGridItem
 
              if (state == MediaItemState.LOADING ||
                  state == MediaItemState.EMPTY ||
-                 state == MediaItemState.TIMED_OUT)
+                 state == MediaItemState.TIMED_OUT ||
+                 state == MediaItemState.RELOAD)
              {
               
                  isLoading = true;

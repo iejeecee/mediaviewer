@@ -1,8 +1,8 @@
 ﻿using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.Pager;

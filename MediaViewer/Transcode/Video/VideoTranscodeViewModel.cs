@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using MediaViewer.Model.Utils;
 using MediaViewer.Properties;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.VideoPanel;
 
 namespace MediaViewer.Transcode.Video

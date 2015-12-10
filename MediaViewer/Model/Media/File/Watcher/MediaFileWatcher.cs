@@ -9,7 +9,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Windows.Data;
 using System.ComponentModel.Composition;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Utils;
 using MediaViewer.Infrastructure.Logging;
 

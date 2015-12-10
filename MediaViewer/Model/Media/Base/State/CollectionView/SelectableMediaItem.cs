@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Base;
+﻿using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.State.CollectionView
+namespace MediaViewer.Model.Media.Base.State.CollectionView
 {
     public class SelectableMediaItem : BindableBase, IComparable<SelectableMediaItem>, IEquatable<SelectableMediaItem>
     {

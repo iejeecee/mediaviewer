@@ -183,7 +183,8 @@ namespace MediaViewer.UserControls.TagPicker
 
             view.addButton.IsEnabled = !isReadOnly;
             view.clearButton.IsEnabled = !isReadOnly;
-            view.addTagAutoCompleteBox.IsEnabled = !isReadOnly;          
+            view.addTagAutoCompleteBox.IsEnabled = !isReadOnly;
+            view.tagListBox.IsEnabled = !isReadOnly;
         }
         
         public bool AddLinkedTags

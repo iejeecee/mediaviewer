@@ -6,8 +6,8 @@ using MediaViewer;
 using MediaViewer.Filter;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Progress;
 using MediaViewer.UserControls.TabbedExpander;
@@ -32,6 +32,7 @@ using YoutubePlugin.Properties;
 using YoutubePlugin.YoutubeChannelBrowser;
 using YoutubePlugin.YoutubeMetadata;
 using YoutubePlugin.YoutubeSearch;
+using MediaViewer.Model.Media.Base.Item;
 
 namespace YoutubePlugin
 {    

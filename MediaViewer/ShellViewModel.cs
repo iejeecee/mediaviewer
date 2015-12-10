@@ -11,13 +11,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Settings;
 using MediaViewer.Infrastructure;
 using MediaViewer.MediaFileStackPanel;
 using MediaViewer.Model.Collections.Sort;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Collections;
 
 namespace MediaViewer

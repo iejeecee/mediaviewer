@@ -2,7 +2,7 @@
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;

@@ -96,6 +96,15 @@ namespace VideoLib {
 			}
 		}
 
+		property double FramesPerSecond {
+
+			double get() {
+
+				return videoDecoder->getFrameRate();
+			}
+
+		}
+
 		property int SamplesPerSecond {
 
 			int get() {

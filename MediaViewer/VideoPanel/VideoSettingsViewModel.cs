@@ -48,6 +48,25 @@ namespace MediaViewer.VideoPanel
             isVideoScreenShotLocationFixed = Settings.Default.IsVideoScreenShotLocationFixed;
             IsVideoScreenShotLocationAsk = Settings.Default.IsVideoScreenShotLocationAsk;
             IsVideoScreenShotLocationCurrent = Settings.Default.IsVideoScreenShotLocationCurrent;
+            MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+
+            NrPackets = 500;
+        }
+
+        int minBufferedPackets;
+
+        public int MinBufferedPackets
+        {
+            get { return minBufferedPackets; }
+            set { SetProperty(ref minBufferedPackets, value); }
+        }
+
+        int nrPackets;
+
+        public int NrPackets
+        {
+            get { return nrPackets; }
+            set { SetProperty(ref nrPackets, value); }
         }
 
         int videoScreenShotTimeOffset;
@@ -121,8 +140,9 @@ namespace MediaViewer.VideoPanel
             Settings.Default.VideoScreenShotLocation = VideoScreenShotLocation;
             Settings.Default.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
             Settings.Default.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;
+            Settings.Default.VideoMinBufferedPackets = MinBufferedPackets;
 
-            
+            base.OnSave();
         }
     }
 }

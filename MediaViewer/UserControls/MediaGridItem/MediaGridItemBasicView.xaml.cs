@@ -16,11 +16,11 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using MediaViewer.Model.Utils;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using Microsoft.Practices.Prism.PubSubEvents;
 using System.ComponentModel.Composition;
 using Microsoft.Practices.ServiceLocation;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 
 namespace MediaViewer.UserControls.MediaGridItem
 {

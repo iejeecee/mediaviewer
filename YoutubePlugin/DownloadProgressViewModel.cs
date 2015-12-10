@@ -2,6 +2,7 @@
 using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
@@ -105,6 +106,7 @@ namespace YoutubePlugin
             ItemProgress = 0;
             ItemInfo = "Saving metadata: " + item.Name;
             MetadataFactory.write(saveMetadata, MetadataFactory.WriteOptions.WRITE_TO_DISK, this);
+            ItemProgress = 100;
             InfoMessages.Add("Finished saving metadata: " + fullpath);
 
             fileItem.ExitWriteLock();

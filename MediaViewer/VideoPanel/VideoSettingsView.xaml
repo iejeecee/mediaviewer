@@ -47,13 +47,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Label Grid.Row="0" Grid.Column="1" Content="Screenshot" Style="{StaticResource labelHeaderStyle}"/>
-        <Label Grid.Row="1" Grid.Column="0" Content="Browse Path" Style="{StaticResource labelStyle}"/>
-        <RadioButton Grid.Row="1" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationCurrent}" GroupName="One" VerticalAlignment="Center"/>
-        <Label Grid.Row="2" Grid.Column="0" Content="Ask" Style="{StaticResource labelStyle}"/>
-        <RadioButton Grid.Row="2" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationAsk}" GroupName="One" VerticalAlignment="Center"/>
-        <Label Grid.Row="3" Grid.Column="0" Content="Location" Style="{StaticResource labelStyle}"/>
-        <RadioButton  Grid.Row="3" Grid.Column="1" GroupName="One" IsChecked="{Binding IsVideoScreenShotLocationFixed}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+        <Label Grid.Row="0" Grid.Column="1" Content="Playback" Style="{StaticResource labelHeaderStyle}"/>
+        <Label Grid.Row="1" Grid.Column="0" Content="Buffer Size" Style="{StaticResource labelStyle}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding MinBufferedPackets}" Min="0" Max="{Binding NrPackets}"/>
+        <Label Grid.Row="2" Grid.Column="1" Content="Screenshot" Style="{StaticResource labelHeaderStyle}"/>
+        <Label Grid.Row="3" Grid.Column="0" Content="Browse Path" Style="{StaticResource labelStyle}"/>
+        <RadioButton Grid.Row="3" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationCurrent}" GroupName="One" VerticalAlignment="Center"/>
+        <Label Grid.Row="4" Grid.Column="0" Content="Ask" Style="{StaticResource labelStyle}"/>
+        <RadioButton Grid.Row="4" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationAsk}" GroupName="One" VerticalAlignment="Center"/>
+        <Label Grid.Row="5" Grid.Column="0" Content="Location" Style="{StaticResource labelStyle}"/>
+        <RadioButton  Grid.Row="5" Grid.Column="1" GroupName="One" IsChecked="{Binding IsVideoScreenShotLocationFixed}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
             <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -73,7 +76,7 @@
                 </Button>
             </Grid>
         </RadioButton>
-        <Label Grid.Row="4" Grid.Column="0" Content="Offset (Sec)" Style="{StaticResource labelStyle}"/>
-        <NumberSpinner:IntegerSpinner Grid.Row="4" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding VideoScreenShotTimeOffset}"/>
+        <Label Grid.Row="6" Grid.Column="0" Content="Offset (Sec)" Style="{StaticResource labelStyle}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding VideoScreenShotTimeOffset}"/>
     </Grid>
 </UserControl>

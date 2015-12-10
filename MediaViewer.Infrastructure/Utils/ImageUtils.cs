@@ -174,7 +174,7 @@ namespace MediaViewer.Infrastructure.Utils
 
         }
 
-        private static bool isUrl(string path)
+        public static bool isUrl(string path)
         {
             Uri uriResult;
 

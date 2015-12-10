@@ -83,7 +83,7 @@ void VideoPreview::open(String ^videoLocation, System::Threading::CancellationTo
 		height = frameGrabber->height;
 		container = marshal_as<String ^>(frameGrabber->container);
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
-		frameRate = frameGrabber->frameRate;
+		frameRate = frameGrabber->getFrameRate();
 		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
 
 		audioCodecName = marshal_as<String ^>(frameGrabber->audioCodecName);

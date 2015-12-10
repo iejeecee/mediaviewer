@@ -24,7 +24,7 @@ using System.Windows.Shapes;
 using MediaViewer.Model.Utils;
 using MediaViewer.UserControls.VideoSlider;
 using MediaViewer.Infrastructure.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 
 namespace MediaViewer.VideoPanel
 {

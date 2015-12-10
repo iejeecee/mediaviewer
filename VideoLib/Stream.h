@@ -19,9 +19,7 @@ protected:
 	const AVCodec *codec;
 	
 	AVStream *stream;
-	
-	
-
+		
 public:
 
 	Stream(AVStream *stream, const AVCodec *codec) {
@@ -69,6 +67,16 @@ public:
 		return(codecContext);
 	}
 
+	bool isVideo() const {
+
+		return(codecContext->codec_type == AVMEDIA_TYPE_VIDEO);
+	}
+
+	bool isAudio() const {
+
+		return(codecContext->codec_type == AVMEDIA_TYPE_AUDIO);
+	}
+
 	AVMediaType getCodecType() const {
 
 		return(codecContext->codec_type);
@@ -93,15 +101,42 @@ public:
 	{
 		return int64_t(timeSeconds / av_q2d(stream->time_base));	
 	}
+
+	void listOptions() 
+	{
+		const AVOption *option = NULL;
+
+		while((option = av_opt_next(codecContext,option)) != NULL) {
+
+			String ^name = gcnew String(option->name);
+			String ^help = gcnew String(option->help);
+
+			System::Diagnostics::Debug::Print(name + ": " + help);
+		}
+	}
 			
 	void setOption(const std::string &name, const std::string &value) 
 	{
+		
 		int result = av_opt_set(codecContext, name.c_str(), value.c_str(), 0);
 		if(result != 0)
 		{				
 			throw gcnew VideoLib::VideoLibException("Error setting option: " + VideoInit::errorToString(result));
 		}
 
+	}
+
+	void listPrivateOptions() 
+	{
+		const AVOption *option = NULL;
+
+		while((option = av_opt_next(codecContext->priv_data,option)) != NULL) {
+
+			String ^name = gcnew String(option->name);
+			String ^help = gcnew String(option->help);
+
+			System::Diagnostics::Debug::Print(name + ": " + help);
+		}
 	}
 
 	void setPrivateOption(const std::string &name, const std::string &value) 

@@ -23,7 +23,7 @@ using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Infrastructure.Logging;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.UserControls.Layout;
 using MediaViewer.Model.Global.Events;

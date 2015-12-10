@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Concurrency;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using System;
 using System.Collections;
 using System.Collections.Concurrent;

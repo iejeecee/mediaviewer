@@ -1,5 +1,5 @@
 ﻿using MediaViewer.Model.Concurrency;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.metadata.Metadata;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
@@ -11,7 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.Base
+namespace MediaViewer.Model.Media.Base.Item
 {
     class MediaItemMetadataLoader : BindableBase, IDisposable
     {
@@ -156,16 +156,19 @@ namespace MediaViewer.Model.Media.Base
                         Monitor.Enter(queuedItems);
                         nrLoadingTasks--;
 
+                        bool isFinishedLoading = true;
+
                         if (item.ItemState == MediaItemState.TIMED_OUT)
                         {
                             // the item timed out, try loading it again later
                             queuedItems.Add(item);
+                            isFinishedLoading = false;
                         }
 
                         Monitor.PulseAll(queuedItems);
                         Monitor.Exit(queuedItems);
 
-                        if (isFinishedLoading(item))
+                        if (isFinishedLoading)
                         {
                             OnItemFinishedLoading(item);
                         }
@@ -179,18 +182,7 @@ namespace MediaViewer.Model.Media.Base
             }
         
         }
-
-        bool isFinishedLoading(MediaItem item)
-        {
-            if (item.ItemState == MediaItemState.TIMED_OUT || item.ItemState == MediaItemState.LOADING)
-            {
-                return (false);
-            }
-            else
-            {
-                return (true);
-            }
-        }
+     
 
         void OnItemFinishedLoading(MediaItem item)
         {

@@ -386,7 +386,7 @@ protected:
 
 			AVCodecContext *dec_ctx = inStream->getCodecContext();
 
-			if(inStream->getCodecType() == AVMEDIA_TYPE_VIDEO) {
+			if(inStream->isVideo()) {
 
 				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["videoEncoder"]).ToString());
 				 
@@ -431,7 +431,12 @@ protected:
 					//outStream->setOption("crf", "5");
 					outStream->setOption("qmin", "4");
 					outStream->setOption("qmax", "50");
+
+				} else if(outStream->getCodecID() == AV_CODEC_ID_GIF) {
+								
+					
 				}
+
 				
 			} else {
 
@@ -477,7 +482,8 @@ protected:
 				
 			Stream *inStream = input->getStream(i);
 											
-			if (inStream->getCodecType() == AVMEDIA_TYPE_VIDEO || inStream->getCodecType() == AVMEDIA_TYPE_AUDIO) {
+			if ((inStream->isVideo() && i == input->getBestVideoStreamIndex())
+				|| (inStream->isAudio() && i == input->getBestAudioStreamIndex())) {
 
 				StreamOptions streamMode = inStream->getCodecType() == AVMEDIA_TYPE_VIDEO ? 
 					(StreamOptions)options["videoStreamMode"] : (StreamOptions)options["audioStreamMode"];
@@ -590,7 +596,7 @@ protected:
 						
 		for (i = 0; i < input->getNrStreams(); i++) {
 											
-			if (input->getStream(i)->getCodecType() == AVMEDIA_TYPE_VIDEO) {
+			if (input->getStream(i)->isVideo() && i == input->getBestVideoStreamIndex()) {
 
 				if((StreamOptions)options["videoStreamMode"] != StreamOptions::Encode) continue;
 
@@ -623,7 +629,7 @@ protected:
 
 				if(centeredRect.Width != outWidth || centeredRect.Height != outHeight) 
 				{
-					// maintain aspect ratio using padding
+					// create a centered rectangle to maintain input aspect ratio using the padding filter			
 					videoGraph += ",pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y;
 				}
 				
@@ -631,14 +637,19 @@ protected:
 				
 				if(options->ContainsKey("framesPerSecond")) {
 
-					videoGraph += ",fps=" + (float)options["framesPerSecond"];
+					float newFps = (float)options["framesPerSecond"];
+					float inFps = input->getVideoDecoder()->getFrameRate();
+
+					String ^scalePts = (inFps / newFps).ToString(System::Globalization::CultureInfo::InvariantCulture);
+					
+					videoGraph += ",fps=" + newFps + ",setpts=" + scalePts + "*PTS";
 				}
 
 				std::string value = msclr::interop::marshal_as<std::string>(videoGraph);
 
 				streamInfo[i]->filterGraph->createGraph(value.c_str());				
 
-			} else if(input->getStream(i)->getCodecType() == AVMEDIA_TYPE_AUDIO) {
+			} else if(input->getStream(i)->isAudio() && i == input->getBestAudioStreamIndex()) {
 
 				if((StreamOptions)options["audioStreamMode"] != StreamOptions::Encode) continue;
 

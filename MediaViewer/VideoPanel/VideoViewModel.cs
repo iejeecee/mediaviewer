@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using VideoPlayerControl;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Global.Events;
@@ -31,7 +31,7 @@ using MediaViewer.Infrastructure.Video.TranscodeOptions;
 using MediaViewer.Infrastructure.Global.Events;
 using Microsoft.Practices.ServiceLocation;
 using MediaViewer.Infrastructure.Logging;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.UserControls.MediaGrid;
 using MediaViewer.MediaFileGrid;
 using MediaViewer.Model.Media.Streamed;
@@ -56,6 +56,7 @@ namespace MediaViewer.VideoPanel
         {
             EventAggregator = eventAggregator;
             VideoSettings = ServiceLocator.Current.GetInstance(typeof(VideoSettingsViewModel)) as VideoSettingsViewModel;
+            VideoSettings.SettingsChanged += VideoSettings_SettingsChanged;
 
             IsInitialized = false;
             isInitializedSignal = new SemaphoreSlim(0, 1);
@@ -104,7 +105,7 @@ namespace MediaViewer.VideoPanel
                     CloseCommand.IsExecutable = true;
                
                     IsLoading = true;
-                   
+                    
                     await VideoPlayer.openAndPlay(videoLocation, videoFormatName, audioLocation, audioFormatName);                   
                                         
                 }
@@ -309,6 +310,14 @@ namespace MediaViewer.VideoPanel
             IsTimeRangeEnabled = false;
             StartTimeRange = 0;
             EndTimeRange = 0;
+            
+        }
+
+        private void VideoSettings_SettingsChanged(object sender, EventArgs e)
+        {
+            if (VideoPlayer == null) return;
+
+            VideoPlayer.MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
         }
        
         bool isInitialized;
@@ -342,7 +351,10 @@ namespace MediaViewer.VideoPanel
             MaxVolume = videoPlayer.MaxVolume;
             videoPlayer.IsMuted = IsMuted;
             videoPlayer.Volume = Volume;
-                                          
+
+            videoPlayer.MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+            VideoSettings.NrPackets = videoPlayer.NrPackets;
+
             IsInitialized = true;
             isInitializedSignal.Release();
         }

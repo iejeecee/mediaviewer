@@ -2,6 +2,7 @@
 using Google.Apis.YouTube.v3.Data;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;

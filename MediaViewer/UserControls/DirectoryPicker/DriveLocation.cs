@@ -1,6 +1,6 @@
 ﻿using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.State;
+using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Utils.Windows;
 using System;
 using System.Collections.Generic;

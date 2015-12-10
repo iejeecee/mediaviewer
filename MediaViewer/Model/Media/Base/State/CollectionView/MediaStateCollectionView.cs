@@ -2,7 +2,7 @@
 using MediaViewer.Model.Collections;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Concurrency;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Utils;
@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Data;
 
-namespace MediaViewer.Model.Media.State.CollectionView
+namespace MediaViewer.Model.Media.Base.State.CollectionView
 {
     /// <summary>
     /// Provides a sortable/filterable view on a MediaState bindable to the User Interface
@@ -784,7 +784,7 @@ namespace MediaViewer.Model.Media.State.CollectionView
             MediaItem media = item.Item;
 
             if (TagFilter.Count == 0) return (true);
-            if (media.ItemState == Base.MediaItemState.LOADING) return (true);
+            if (media.ItemState == Base.Item.MediaItemState.LOADING) return (true);
             if (media.Metadata == null) return (false);
 
             foreach (TagItem tagItem in TagFilter)

@@ -103,5 +103,17 @@ namespace MediaViewer.Properties {
                 this["IsVideoScreenShotLocationFixed"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int VideoMinBufferedPackets {
+            get {
+                return ((int)(this["VideoMinBufferedPackets"]));
+            }
+            set {
+                this["VideoMinBufferedPackets"] = value;
+            }
+        }
     }
 }

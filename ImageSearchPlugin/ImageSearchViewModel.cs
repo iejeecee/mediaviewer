@@ -5,8 +5,8 @@ using MediaViewer.MediaFileGrid;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.Metadata;
-using MediaViewer.Model.Media.State;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Data;
+using MediaViewer.Model.Media.Base.Item;
 
 namespace ImageSearchPlugin
 {

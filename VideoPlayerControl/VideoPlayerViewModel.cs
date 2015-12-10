@@ -10,6 +10,8 @@ using VideoLib;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Windows.Threading;
+using System.IO;
+using SubtitlesParser.Classes;
 
 namespace VideoPlayerControl
 {
@@ -26,7 +28,7 @@ namespace VideoPlayerControl
         public VideoLib.VideoPlayer.OutputPixelFormat DecodedVideoFormat {get; protected set;}
         public String VideoLocation { get; protected set; }
                     
-        public bool DisplayOverlayText
+        public bool DisplayInfoText
         {
             get
             {
@@ -35,6 +37,18 @@ namespace VideoPlayerControl
             set
             {
                 videoRender.DisplayInfoText = value;
+            }
+        }
+
+        public bool DisplaySubtitles
+        {
+            get
+            {
+                return videoRender.DisplaySubtitles;
+            }
+            set
+            {
+                videoRender.DisplaySubtitles = value;
             }
         }
 
@@ -81,6 +95,17 @@ namespace VideoPlayerControl
         {
             get { return videoDecoder.Height; }
 
+        }
+
+        public int MinBufferedPackets
+        {
+            get {return videoDecoder.FrameQueue.MinBufferedPackets;}
+            set {videoDecoder.FrameQueue.MinBufferedPackets = value;}
+        }
+
+        public int NrPackets
+        {
+            get { return videoDecoder.FrameQueue.MaxVideoPackets; }
         }
 
         enum SyncMode
@@ -190,6 +215,18 @@ namespace VideoPlayerControl
             get { return audioPlayer.MinVolume; }        
         }
 
+        public AspectRatio AspectRatio {
+
+            get
+            {
+                return (videoRender.AspectRatio);
+            }
+            set
+            {
+                videoRender.AspectRatio = value;
+            }
+        }
+
         public double VideoClock { get; protected set; }
         public double AudioClock { get; protected set; }
 
@@ -199,6 +236,8 @@ namespace VideoPlayerControl
         }
               
         public log4net.ILog Log { get; set; }
+
+        public Subtitles Subtitles { get; protected set; }
              
         public VideoPlayerViewModel(Control owner,
             VideoLib.VideoPlayer.OutputPixelFormat decodedVideoFormat = VideoLib.VideoPlayer.OutputPixelFormat.YUV420P)
@@ -250,6 +289,7 @@ namespace VideoPlayerControl
             VideoState = VideoState.CLOSED;
             VideoLocation = "";
 
+            Subtitles = new Subtitles(Log);
             //interruptIOTokenSource = new CancellationTokenSource();       
         }
 
@@ -383,6 +423,7 @@ restartvideo:
             StringBuilder builder = new StringBuilder();
 
             builder.AppendLine("State: " + VideoState.ToString());
+            builder.AppendLine("Resolution: " + videoDecoder.Width + " x " + videoDecoder.Height + "@" + videoDecoder.FramesPerSecond.ToString("0.##"));
             builder.Append("Free Packets (" + videoDecoder.FrameQueue.FreePacketQueueState.ToString() + ") ");                                            
             builder.AppendLine(": " + videoDecoder.FrameQueue.FreePacketsInQueue + "/" + videoDecoder.FrameQueue.MaxFreePackets);
 
@@ -401,6 +442,8 @@ restartvideo:
             builder.AppendLine("Audio Clock: " + AudioClock.ToString("#.####"));
 
             videoRender.InfoText = builder.ToString();
+
+            videoRender.SubtitleItem = Subtitles.getSubtitle(VideoClock);
             
         }
   
@@ -417,8 +460,9 @@ restartvideo:
 
             previousVideoPts = videoPts;
             previousVideoDelay = delay;
-
-            if (videoDecoder.HasAudio && syncMode == SyncMode.VIDEO_SYNCS_TO_AUDIO)
+         
+            if (syncMode == SyncMode.VIDEO_SYNCS_TO_AUDIO &&
+                videoDecoder.FrameQueue.AudioPacketQueueState != PacketQueue.PacketQueueState.CLOSE_END)
             {           
                 // synchronize video to audio                                
                 double diff = getVideoClock() - audioPlayer.getAudioClock();
@@ -760,7 +804,6 @@ restartvideo:
         }
         
         
-
         void startDemuxing()
         {        
             demuxPacketsCancellationTokenSource = new CancellationTokenSource();
@@ -857,7 +900,6 @@ restartvideo:
 
         public void pause()
         {
-
             if (VideoState == VideoState.PAUSED ||
                 VideoState == VideoState.CLOSED)
             {
@@ -897,7 +939,7 @@ restartvideo:
              
         public async Task openAndPlay(string location,        
             string inputFormatName = null, string audioLocation = null,
-            string audioFormatName = null)
+            string audioFormatName = null, List<String> subtitleLocations = null)
         {
             try
             {
@@ -921,6 +963,19 @@ restartvideo:
                 if (videoDecoder.HasVideo)
                 {
                     videoRender.initialize(videoDecoder.Width, videoDecoder.Height);
+
+                    Subtitles.clear();
+                    Subtitles.findMatchingSubtitleFiles(location);
+
+                    if (subtitleLocations != null)
+                    {
+                        foreach (String subtitleLocation in subtitleLocations)
+                        {
+                            Subtitles.addSubtitleFile(subtitleLocation);
+                        }
+                    }
+                    
+                    Subtitles.Track = 0;
                 }
 
                 DurationSeconds = videoDecoder.DurationSeconds;
@@ -990,9 +1045,7 @@ restartvideo:
             await Task.WhenAll(demuxPacketsTask);
 
             videoDecoder.close();
-
-            
-            
+                        
             videoPts = 0;
             videoPtsDrift = 0;
 

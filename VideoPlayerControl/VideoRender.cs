@@ -15,6 +15,7 @@ using System.IO;
 using SharpDX.Direct3D9;
 using MediaViewer.Infrastructure.Utils;
 using MediaViewer.Infrastructure;
+using SubtitlesParser.Classes;
 
 namespace VideoPlayerControl
 {
@@ -26,10 +27,20 @@ namespace VideoPlayerControl
         PAUSED
     };
 
+    public enum AspectRatio
+    {
+        DEFAULT,
+        RATIO_1_1,
+        RATIO_16_9,
+        RATIO_4_3,
+        RATIO_16_10
+    };
+
 
     class VideoRender : IDisposable
     {
         public RenderMode RenderMode { get; protected set; }
+        public AspectRatio AspectRatio { get; set; }
        
         public VideoRender(System.Windows.Forms.Control owner)
         {
@@ -45,7 +56,12 @@ namespace VideoPlayerControl
 
             InfoText = null;
             DisplayInfoText = false;
-            RenderMode = VideoPlayerControl.RenderMode.PAUSED; 
+
+            SubtitleItem = null;
+            DisplaySubtitles = true;
+
+            RenderMode = VideoPlayerControl.RenderMode.PAUSED;
+            AspectRatio = VideoPlayerControl.AspectRatio.DEFAULT;
         }
 
         public void Dispose()
@@ -86,8 +102,16 @@ namespace VideoPlayerControl
 
         public String InfoText { get; set; }
         public bool DisplayInfoText { get; set; }
-
         D3D.Font infoFont;
+
+        public SubtitleItem SubtitleItem { get; set; }
+        public bool DisplaySubtitles { get; set; }
+        D3D.Font subtitleFont;
+
+        int subtitleShadowOffset;
+        int subtitleBottomMargin;
+
+        SharpDX.Rectangle videoDestRect;
 
         System.Windows.Forms.Control owner;
 
@@ -216,7 +240,20 @@ namespace VideoPlayerControl
             fontDescription.Height = 15;         
 
             infoFont = new D3D.Font(device, fontDescription);
-            
+
+            fontDescription = new FontDescription();
+            fontDescription.FaceName = "Arial";
+
+            videoDestRect = getVideoDestRect(backBuffer);
+       
+            fontDescription.Height = videoDestRect.Height / 14;
+             
+            fontDescription.Quality = FontQuality.Antialiased;
+
+            subtitleShadowOffset = fontDescription.Height / 18;
+            subtitleBottomMargin = videoDestRect.Height / 12;
+
+            subtitleFont = new D3D.Font(device, fontDescription);
         }
 
         
@@ -226,7 +263,7 @@ namespace VideoPlayerControl
             Utils.removeAndDispose(ref offscreen);                                 
             Utils.removeAndDispose(ref screenShot);
             Utils.removeAndDispose(ref infoFont);
-            
+            Utils.removeAndDispose(ref subtitleFont);            
         }
 
         public void setWindowed()
@@ -401,7 +438,7 @@ namespace VideoPlayerControl
         SharpDX.Rectangle getVideoDestRect(D3D.Surface backBuffer)
         {
             Rectangle screenRect = new Rectangle(0, 0, backBuffer.Description.Width, backBuffer.Description.Height);
-            Rectangle videoRect = new Rectangle(0, 0, videoWidth, videoHeight);
+            Rectangle videoRect = calcOutputAspectRatio(new Rectangle(0, 0, videoWidth, videoHeight));
 
             Rectangle scaledVideo = Utils.stretchRectangle(videoRect, screenRect);
 
@@ -413,10 +450,36 @@ namespace VideoPlayerControl
             return (scaledCenteredVideoDx);
         }
 
+        Rectangle calcOutputAspectRatio(Rectangle inputSize)
+        {
+            Rectangle outputSize = inputSize;
+
+            switch (AspectRatio)
+            {
+                case AspectRatio.DEFAULT:
+                    break;            
+                case AspectRatio.RATIO_1_1:
+                    outputSize = new Rectangle(0,0,inputSize.Height, inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_16_9:             
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height / 9.0 * 16), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_4_3:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height / 3 * 4), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_16_10:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height / 10 * 16), inputSize.Height);
+                    break;
+                default:
+                    break;
+            }
+
+            return(outputSize);
+        }
+
         public void display(VideoFrame videoFrame, Color backColor, RenderMode mode)
         {
             
-
             lock (renderLock)
             {
                 if (device == null) return;          
@@ -459,11 +522,10 @@ namespace VideoPlayerControl
                             videoSourceRect = new SharpDX.Rectangle(0, 0, offscreen.Description.Width, offscreen.Description.Height);
                         }
                                           
-                        SharpDX.Rectangle videoDestRect = getVideoDestRect(backBuffer);
+                        videoDestRect = getVideoDestRect(backBuffer);
 
                         device.StretchRectangle(offscreen, videoSourceRect,
                             backBuffer, videoDestRect, D3D.TextureFilter.Linear);
-
 
                         drawText();
 
@@ -505,6 +567,25 @@ namespace VideoPlayerControl
                 
                     //AABBGGRR
                 infoFont.DrawText(null, InfoText, 5, 0, SharpDX.ColorBGRA.FromRgba(0xFFFFFFFF));
+            }
+
+            if (DisplaySubtitles && SubtitleItem != null && SubtitleItem.Lines.Count > 0)
+            {                
+                String lines = SubtitleItem.Lines[0];
+                for(int i = 1; i < SubtitleItem.Lines.Count; i++)
+                {
+                    lines += "\n" + SubtitleItem.Lines[i];
+                }
+               
+                SharpDX.Rectangle fontRect = subtitleFont.MeasureText(null, lines, FontDrawFlags.Center);
+                
+                fontRect.X = backBuffer.Description.Width / 2 + fontRect.X;
+                fontRect.Y = videoDestRect.BottomLeft.Y - fontRect.Height - subtitleBottomMargin;
+            
+                SharpDX.Rectangle shadowRect = new SharpDX.Rectangle(fontRect.X + subtitleShadowOffset, fontRect.Y + subtitleShadowOffset, fontRect.Width, fontRect.Height);
+
+                subtitleFont.DrawText(null, lines, shadowRect, FontDrawFlags.Center, SharpDX.ColorBGRA.FromRgba(0xCC000000));
+                subtitleFont.DrawText(null, lines, fontRect, FontDrawFlags.Center, SharpDX.ColorBGRA.FromRgba(0xFFF9FBFB));                
             }
             
         }        

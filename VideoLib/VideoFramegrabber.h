@@ -79,8 +79,6 @@ public:
 	std::string pixelFormat;
 	std::vector<std::string> metaData;
 
-	double frameRate;
-
 	std::string audioCodecName;
 
 	int samplesPerSecond;
@@ -132,16 +130,7 @@ public:
 
 				pixelFormat = pixelFormat.substr(0, pos);
 			}
-
-			if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) {
-
-				frameRate = av_q2d(getVideoStream()->avg_frame_rate);
-			
-			} else {
-
-				frameRate = 1.0 / av_q2d(getVideoStream()->time_base);
-			}
-			
+						
 		}
 
 		probe_dict(formatContext->metadata, "");

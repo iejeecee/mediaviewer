@@ -23,12 +23,12 @@ using Microsoft.Practices.Prism.Mvvm;
 using Microsoft.Practices.Prism.Regions;
 using System.ComponentModel.Composition;
 using MediaViewer.MediaFileBrowser;
-using MediaViewer.Model.Media.State.CollectionView;
+using MediaViewer.Model.Media.Base.State.CollectionView;
 using System.Windows.Controls.Primitives;
 using Microsoft.Practices.Prism.PubSubEvents;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Global.Events;
-using MediaViewer.Model.Media.Base;
+using MediaViewer.Model.Media.Base.Item;
 
 namespace MediaViewer.UserControls.MediaGrid
 {   
