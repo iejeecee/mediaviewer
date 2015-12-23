@@ -70,7 +70,7 @@ namespace MediaViewer.Model.Media.Metadata
 
         protected virtual void write(XMPLib.MetaData xmpMetaDataWriter, BaseMetadata media) {
         
-            if (!string.IsNullOrEmpty(media.Title))
+            if (media.Title != null)
             {
                 xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "title", "en", "en-US", media.Title);
             }
@@ -81,19 +81,19 @@ namespace MediaViewer.Model.Media.Metadata
                 //xmpMetaDataWriter.setProperty(Consts.XMP_NS_XMP, "Rating", media.Rating.ToString(), Consts.PropOptions.XMP_DeleteExisting);
             }
 
-            if (!string.IsNullOrEmpty(media.Description))
+            if (media.Description != null)
             {
                 xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "description", "en", "en-US", media.Description);
             }
 
-            if (!string.IsNullOrEmpty(media.Software))
+            if (media.Software != null)
             {
 
                 xmpMetaDataWriter.setProperty(Consts.XMP_NS_XMP, "CreatorTool", media.Software,
                     Consts.PropOptions.XMP_DeleteExisting);
             }
 
-            if (!string.IsNullOrEmpty(media.Author))
+            if (media.Author != null)
             {
 
                 if (xmpMetaDataWriter.doesArrayItemExist(Consts.XMP_NS_DC, "creator", 1))
@@ -111,7 +111,7 @@ namespace MediaViewer.Model.Media.Metadata
 
             }
 
-            if (!string.IsNullOrEmpty(media.Copyright))
+            if (media.Copyright != null)
             {
 
                 xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "rights", "en", "en-US", media.Copyright);

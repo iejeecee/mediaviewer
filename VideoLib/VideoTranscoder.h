@@ -34,7 +34,7 @@ namespace VideoLib {
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging, LogLevel level);
 
-		void transcode(String ^inputVideoLocation, String ^output, CancellationToken token, Dictionary<String ^, Object ^> ^options,
-			TranscodeProgressDelegate ^progressCallback, String ^inputAudioLocation);
+		void transcode(OpenVideoArgs ^openArgs, String ^output, CancellationToken token, Dictionary<String ^, Object ^> ^options,
+			TranscodeProgressDelegate ^progressCallback);
 	};
 }

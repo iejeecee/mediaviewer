@@ -30,10 +30,14 @@ namespace VideoPlayerControl
     public enum AspectRatio
     {
         DEFAULT,
-        RATIO_1_1,
-        RATIO_16_9,
+        RATIO_1_1,        
         RATIO_4_3,
-        RATIO_16_10
+        RATIO_16_9,
+        RATIO_16_10,
+        RATIO_221_1,
+        RATIO_235_1,
+        RATIO_239_1,
+        RATIO_5_4
     };
 
 
@@ -361,12 +365,30 @@ namespace VideoPlayerControl
                 int width = offscreen.Description.Width;
                 int height = offscreen.Description.Height;
 
-                SharpDX.Rectangle videoRect = new SharpDX.Rectangle(0, 0, width, height);
+                Rectangle sourceSize = new Rectangle(0, 0, width, height);
+                Rectangle destSize = calcOutputAspectRatio(sourceSize);
 
-                device.StretchRectangle(offscreen, videoRect,
-                    screenShot, videoRect, D3D.TextureFilter.Linear);
+                if (screenShot.Description.Width != destSize.Width ||
+                    screenShot.Description.Height != destSize.Height)
+                {
+                    Utils.removeAndDispose(ref screenShot); 
 
-                SharpDX.DataRectangle stream = screenShot.LockRectangle(videoRect, D3D.LockFlags.ReadOnly);
+                    screenShot = D3D.Surface.CreateRenderTarget(device,
+                        destSize.Width,
+                        destSize.Height,
+                        D3D.Format.A8R8G8B8,
+                        MultisampleType.None,
+                        0,
+                        true);
+                }
+
+                SharpDX.Rectangle sourceSizeDX = new SharpDX.Rectangle(0, 0, sourceSize.Width, sourceSize.Height);
+                SharpDX.Rectangle destSizeDX = new SharpDX.Rectangle(0, 0, destSize.Width, destSize.Height);
+
+                device.StretchRectangle(offscreen, sourceSizeDX,
+                    screenShot, destSizeDX, D3D.TextureFilter.Linear);
+
+                SharpDX.DataRectangle stream = screenShot.LockRectangle(destSizeDX, D3D.LockFlags.ReadOnly);
                 try
                 {
                     JpegBitmapEncoder encoder = new JpegBitmapEncoder();
@@ -399,8 +421,8 @@ namespace VideoPlayerControl
                     metaData.DateTaken = DateTime.Now.ToString("R");
 
                     BitmapSource image = System.Windows.Media.Imaging.BitmapSource.Create(
-                        width,
-                        height,
+                        destSize.Width,
+                        destSize.Height,
                         96,
                         96,
                         System.Windows.Media.PixelFormats.Bgra32,
@@ -409,8 +431,8 @@ namespace VideoPlayerControl
                         height * stream.Pitch,
                         stream.Pitch
                     );
-                   
-                    float scale = ImageUtils.resizeRectangle(width, height, Constants.MAX_THUMBNAIL_WIDTH, Constants.MAX_THUMBNAIL_HEIGHT);
+
+                    float scale = ImageUtils.resizeRectangle(destSize.Width, destSize.Height, Constants.MAX_THUMBNAIL_WIDTH, Constants.MAX_THUMBNAIL_HEIGHT);
 
                     TransformedBitmap thumbnail = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale,scale));
                    
@@ -469,6 +491,18 @@ namespace VideoPlayerControl
                     break;
                 case AspectRatio.RATIO_16_10:
                     outputSize = new Rectangle(0, 0, (int)(inputSize.Height / 10 * 16), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_5_4:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height / 4 * 5), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_221_1:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height * 2.21), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_235_1:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height * 2.35), inputSize.Height);
+                    break;
+                case AspectRatio.RATIO_239_1:
+                    outputSize = new Rectangle(0, 0, (int)(inputSize.Height * 2.39), inputSize.Height);
                     break;
                 default:
                     break;

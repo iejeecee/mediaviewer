@@ -65,22 +65,17 @@ namespace VideoPlayerControl
             contextMenu.Items.Add(stopMenuItem);
             stopMenuItem.Click += stopMenuItem_Click;
 
-            ToolStripMenuItem toggleShowInfoMenuItem = new ToolStripMenuItem();
-            toggleShowInfoMenuItem.Text = "&Display Info";           
-            
-            contextMenu.Items.Add(toggleShowInfoMenuItem);
-            toggleShowInfoMenuItem.Checked = viewModel.DisplayInfoText;
-            toggleShowInfoMenuItem.Click += toggleDebugInfoMenuItem_Click;
+            contextMenu.Items.Add("-");
 
+            createAudioContextMenu(contextMenu);
+            createVideoContextMenu(contextMenu);
             createSubtitleContextMenu(contextMenu);
-            createAspectRatioContextMenu(contextMenu);
-                        
+                                    
 #if DEBUG
+            contextMenu.Items.Add("-");
             createDebugContextMenu(contextMenu);
 #endif           
         }
-
-       
 
         private async void stopMenuItem_Click(object sender, EventArgs e)
         {
@@ -128,37 +123,101 @@ namespace VideoPlayerControl
             subtitle.Enabled = hasVideo;           
                         
         }
-
-        void createSubtitleContextMenu(ContextMenuStrip menu)
+        
+        private void createAudioContextMenu(System.Windows.Forms.ContextMenuStrip contextMenu)
         {
-            ToolStripMenuItem subtitlesMenuItem = new ToolStripMenuItem();
-            subtitlesMenuItem.Name = "subtitle";
-            subtitlesMenuItem.Text = "&Subtitle";
-            subtitlesMenuItem.DropDownOpening += subtitlesMenuItem_Popup;
-            menu.Items.Add(subtitlesMenuItem);
+            ToolStripMenuItem audioMenuItem = new ToolStripMenuItem();
+            audioMenuItem.Name = "audio";
+            audioMenuItem.Text = "&Audio";
+            contextMenu.Items.Add(audioMenuItem);
+            audioMenuItem.DropDownOpening += audioMenuItem_DropDownOpening;
+                       
+            ToolStripMenuItem increaseVolumeMenuItem = new ToolStripMenuItem();
+            increaseVolumeMenuItem.Text = "&Increase Volume";
+            increaseVolumeMenuItem.Click += increaseVolumeMenuItem_Click;
+            audioMenuItem.DropDownItems.Add(increaseVolumeMenuItem);
 
-            subtitlesMenuItem.Click += disableSubtitlesMenuItem_Click;
+            ToolStripMenuItem decreaseVolumeMenuItem = new ToolStripMenuItem();
+            decreaseVolumeMenuItem.Text = "&Decrease Volume";
+            decreaseVolumeMenuItem.Click += decreaseVolumeMenuItem_Click;
+            audioMenuItem.DropDownItems.Add(decreaseVolumeMenuItem);
 
-            ToolStripMenuItem addSubtitlesMenuItem = new ToolStripMenuItem();
-            addSubtitlesMenuItem.Text = "&Add Subtitle File...";
-            subtitlesMenuItem.DropDownItems.Add(addSubtitlesMenuItem);
-            addSubtitlesMenuItem.Click += addSubtitlesMenuItem_Click;
-
-            ToolStripMenuItem subtitleTrackMenuItem = new ToolStripMenuItem();
-            subtitleTrackMenuItem.Name = "Track";
-            subtitleTrackMenuItem.Text = "&Track";
-            subtitleTrackMenuItem.DropDownOpening += subtitleTrackMenuItem_Popup;
-            subtitleTrackMenuItem.DropDownItems.Add(new ToolStripMenuItem());
-            subtitlesMenuItem.DropDownItems.Add(subtitleTrackMenuItem);
+            ToolStripMenuItem toggleMuteMenuItem = new ToolStripMenuItem();
+            toggleMuteMenuItem.Name = "mute";
+            toggleMuteMenuItem.Text = "&Mute";
+            toggleMuteMenuItem.Click += toggleMuteMenuItem_Click;
+            audioMenuItem.DropDownItems.Add(toggleMuteMenuItem);
             
         }
 
-        private void createAspectRatioContextMenu(System.Windows.Forms.ContextMenuStrip contextMenu)
+        private void decreaseVolumeMenuItem_Click(object sender, EventArgs e)
+        {
+            double step = (ViewModel.MinVolume - ViewModel.MaxVolume) / 10.0;
+            ViewModel.Volume += step;
+        }
+
+        private void increaseVolumeMenuItem_Click(object sender, EventArgs e)
+        {
+            double step = (ViewModel.MinVolume - ViewModel.MaxVolume) / 10.0;
+            ViewModel.Volume -= step;
+        }
+
+        private void toggleMuteMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem toggleMuteMenuItem = sender as ToolStripMenuItem;
+            ViewModel.IsMuted = !toggleMuteMenuItem.Checked;
+        }
+
+        void audioMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            ToolStripMenuItem audioMenuItem = sender as ToolStripMenuItem;
+            ToolStripMenuItem toggleMuteMenuItem = audioMenuItem.DropDownItems.Find("mute", false)[0] as ToolStripMenuItem;
+
+            toggleMuteMenuItem.Checked = viewModel.IsMuted;
+        }
+
+        void createVideoContextMenu(ContextMenuStrip contextMenu)
+        {
+            ToolStripMenuItem videoMenuItem = new ToolStripMenuItem();
+            videoMenuItem.Name = "video";
+            videoMenuItem.Text = "&Video";
+            videoMenuItem.DropDownOpening += videoMenuItem_DropDownOpening;
+            contextMenu.Items.Add(videoMenuItem);
+
+            ToolStripMenuItem toggleShowInfoMenuItem = new ToolStripMenuItem();
+            toggleShowInfoMenuItem.Text = "&Display Info";
+            videoMenuItem.DropDownItems.Add(toggleShowInfoMenuItem);
+            toggleShowInfoMenuItem.Checked = viewModel.DisplayInfoText;
+            toggleShowInfoMenuItem.Click += toggleDebugInfoMenuItem_Click;
+
+            ToolStripMenuItem toggleFullScreenMenuItem = new ToolStripMenuItem();
+            toggleFullScreenMenuItem.Name = "toggleFullscreen";
+            toggleFullScreenMenuItem.Text = "&Toggle Fullscreen";
+            //videoMenuItem.DropDownItems.Add(toggleFullScreenMenuItem);
+            toggleFullScreenMenuItem.Click += toggleFullScreenMenuItem_Click;
+       
+            createAspectRatioContextMenu(videoMenuItem);
+        }
+
+        private void toggleFullScreenMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem toggleFullScreenMenuItem = sender as ToolStripMenuItem;
+            ViewModel.IsFullScreen = !toggleFullScreenMenuItem.Checked;
+        }
+
+        void videoMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            ToolStripMenuItem videoMenuItem = sender as ToolStripMenuItem;
+            //ToolStripMenuItem toggleFullScreenMenuItem = videoMenuItem.DropDownItems.Find("toggleFullscreen", false)[0] as ToolStripMenuItem;
+            //toggleFullScreenMenuItem.Checked = viewModel.IsFullScreen;
+        }
+
+        void createAspectRatioContextMenu(ToolStripMenuItem contextMenu)
         {
             ToolStripMenuItem aspectRatioMenuItem = new ToolStripMenuItem();
             aspectRatioMenuItem.Name = "aspectRatio";
             aspectRatioMenuItem.Text = "&Aspect Ratio";
-            contextMenu.Items.Add(aspectRatioMenuItem);
+            contextMenu.DropDownItems.Add(aspectRatioMenuItem);
 
             ToolStripMenuItem aspectRatioItemMenuItem = new ToolStripMenuItem();
             aspectRatioItemMenuItem.Tag = AspectRatio.DEFAULT;
@@ -190,6 +249,31 @@ namespace VideoPlayerControl
             aspectRatioItemMenuItem.Text = "&16:10";
             aspectRatioMenuItem.DropDownItems.Add(aspectRatioItemMenuItem);
             aspectRatioItemMenuItem.Click += aspectRatioItemMenuItem_Click;
+
+            aspectRatioItemMenuItem = new ToolStripMenuItem();
+            aspectRatioItemMenuItem.Tag = AspectRatio.RATIO_221_1;
+            aspectRatioItemMenuItem.Text = "&2.21:1";
+            aspectRatioMenuItem.DropDownItems.Add(aspectRatioItemMenuItem);
+            aspectRatioItemMenuItem.Click += aspectRatioItemMenuItem_Click;
+            
+            aspectRatioItemMenuItem = new ToolStripMenuItem();
+            aspectRatioItemMenuItem.Tag = AspectRatio.RATIO_235_1;
+            aspectRatioItemMenuItem.Text = "&2.35:1";
+            aspectRatioMenuItem.DropDownItems.Add(aspectRatioItemMenuItem);
+            aspectRatioItemMenuItem.Click += aspectRatioItemMenuItem_Click;
+
+            aspectRatioItemMenuItem = new ToolStripMenuItem();
+            aspectRatioItemMenuItem.Tag = AspectRatio.RATIO_239_1;
+            aspectRatioItemMenuItem.Text = "&2.39:1";
+            aspectRatioMenuItem.DropDownItems.Add(aspectRatioItemMenuItem);
+            aspectRatioItemMenuItem.Click += aspectRatioItemMenuItem_Click;
+
+            aspectRatioItemMenuItem = new ToolStripMenuItem();
+            aspectRatioItemMenuItem.Tag = AspectRatio.RATIO_5_4;
+            aspectRatioItemMenuItem.Text = "&5:4";
+            aspectRatioMenuItem.DropDownItems.Add(aspectRatioItemMenuItem);
+            aspectRatioItemMenuItem.Click += aspectRatioItemMenuItem_Click;
+            
         }
 
         private void aspectRatioItemMenuItem_Click(object sender, EventArgs e)
@@ -203,6 +287,30 @@ namespace VideoPlayerControl
 
             aspectRatioItemMenuItem.Checked = true;
             ViewModel.AspectRatio = (AspectRatio)aspectRatioItemMenuItem.Tag;
+        }
+
+        void createSubtitleContextMenu(ContextMenuStrip menu)
+        {
+            ToolStripMenuItem subtitlesMenuItem = new ToolStripMenuItem();
+            subtitlesMenuItem.Name = "subtitle";
+            subtitlesMenuItem.Text = "&Subtitle";
+            subtitlesMenuItem.DropDownOpening += subtitlesMenuItem_Popup;
+            menu.Items.Add(subtitlesMenuItem);
+
+            subtitlesMenuItem.Click += disableSubtitlesMenuItem_Click;
+
+            ToolStripMenuItem addSubtitlesMenuItem = new ToolStripMenuItem();
+            addSubtitlesMenuItem.Text = "&Add Subtitle File...";
+            subtitlesMenuItem.DropDownItems.Add(addSubtitlesMenuItem);
+            addSubtitlesMenuItem.Click += addSubtitlesMenuItem_Click;
+
+            ToolStripMenuItem subtitleTrackMenuItem = new ToolStripMenuItem();
+            subtitleTrackMenuItem.Name = "Track";
+            subtitleTrackMenuItem.Text = "&Track";
+            subtitleTrackMenuItem.DropDownOpening += subtitleTrackMenuItem_Popup;
+            subtitleTrackMenuItem.DropDownItems.Add(new ToolStripMenuItem());
+            subtitlesMenuItem.DropDownItems.Add(subtitleTrackMenuItem);
+
         }
 
         void subtitlesMenuItem_Popup(object sender, EventArgs e)
@@ -262,8 +370,7 @@ namespace VideoPlayerControl
 
         void createDebugContextMenu(ContextMenuStrip contextMenu)
         {
-            contextMenu.Items.Add("-");
-
+            
             ToolStripMenuItem debugMenuItem = new ToolStripMenuItem();    
             debugMenuItem.Text = "&Debug";
             contextMenu.Items.Add(debugMenuItem);

@@ -1,4 +1,4 @@
-#include "VideoDecoder.h"
+#include "IVideoDecoder.h"
 #include "VideoFrame.h"
 #include "FrameQueue.h"
 
@@ -15,10 +15,8 @@ namespace VideoLib {
 
 	private:
 		
-		VideoDecoder *videoDecoder,*audioDecoder;
-
-		std::vector<VideoDecoder *> *decoder;
-		
+		IVideoDecoder *videoDecoder;
+				
 		FrameQueue ^frameQueue;		
 
 		System::Runtime::InteropServices::GCHandle gch;
@@ -109,7 +107,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(decoder->operator[](decoder->size() - 1)->getOutputSampleRate());
+				return(videoDecoder->getOutputSampleRate());
 			}
 		}
 
@@ -117,7 +115,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(decoder->operator[](decoder->size() - 1)->getOutputBytesPerSample());
+				return(videoDecoder->getOutputBytesPerSample());
 			}
 		}
 
@@ -125,7 +123,7 @@ namespace VideoLib {
 
 			int get() {
 
-				return(decoder->operator[](decoder->size() - 1)->getOutputNrChannels());
+				return(videoDecoder->getOutputNrChannels());
 			}
 		}
 
@@ -141,7 +139,7 @@ namespace VideoLib {
 
 			bool get() {
 
-				return(decoder->operator[](decoder->size() - 1)->hasAudio());
+				return(videoDecoder->hasAudio());
 			}
 		}
 
@@ -153,13 +151,13 @@ namespace VideoLib {
 			}
 		}
 
-		property bool HasSeperateAudioStream {
+		/*property bool HasSeperateAudioStream {
 
 			bool get() {
 
 				return decoder->size() == 1 ? false : true;
 			}
-		}
+		}*/
 
 
 		property double TimeNow {
@@ -193,19 +191,11 @@ namespace VideoLib {
 
 		VideoPlayer();
 		~VideoPlayer();
-			
-		void open(String ^videoLocation, OutputPixelFormat format, String ^inputFormatName, 
-			System::Threading::CancellationToken ^token);
-		// video with seperate audio stream (e.g. youtube)
-		void open(String ^videoLocation, OutputPixelFormat format, String ^videoFormatName,
-			String ^audioLocation, String ^audioFormatName, System::Threading::CancellationToken ^token);
+				
+		void open(OpenVideoArgs ^args, OutputPixelFormat videoFormat, System::Threading::CancellationToken ^token);
 		bool seek(double posSeconds);
-
-		// i == 0, video packet
-		// i == 1, audio packet		
-		DemuxPacketsResult demuxPacketFromStream(int i);
 	
-		DemuxPacketsResult demuxPacketInterleaved();			
+		DemuxPacketsResult demuxPacket();			
 
 		void close();
 

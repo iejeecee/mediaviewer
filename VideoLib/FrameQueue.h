@@ -8,12 +8,11 @@
 # include "stdint.h"
 #endif
 
-//#include "PacketQueue.h"
 #include "VideoFrame.h"
 #include "AudioFrame.h"
 #include "PacketQueue.h"
 #include "Packet.h"
-#include "VideoDecoder.h"
+#include "IVideoDecoder.h"
 
 using namespace System::Collections::Generic;
 using namespace System::Threading;
@@ -51,7 +50,7 @@ namespace VideoLib {
 
 		Object ^lockObject;
 
-		VideoDecoder *videoDecoder, *audioDecoder;
+		IVideoDecoder *videoDecoder;
 
 		VideoFrame ^videoFrame, ^convertedVideoFrame;
 		AudioFrame ^audioFrame, ^convertedAudioFrame;
@@ -84,7 +83,9 @@ namespace VideoLib {
 			if(dts != AV_NOPTS_VALUE) {
 
 				// convert pts to seconds
-				pts = dts * av_q2d(videoDecoder->getVideoStream()->time_base);
+				int64_t startTime = videoDecoder->getVideoStream()->start_time == AV_NOPTS_VALUE ? 
+					0 : videoDecoder->getVideoStream()->start_time;
+				pts = (dts + startTime) * av_q2d(videoDecoder->getVideoStream()->time_base);
 				// set clock to current pts;
 				videoClock = pts;
 
@@ -110,7 +111,9 @@ namespace VideoLib {
 			if(dts != AV_NOPTS_VALUE) {
 
 				// convert pts to seconds
-				pts = dts * av_q2d(audioDecoder->getAudioStream()->time_base);
+				int64_t startTime = videoDecoder->getAudioStream()->start_time == AV_NOPTS_VALUE ? 0 : 
+					videoDecoder->getAudioStream()->start_time;	
+				pts = (dts + startTime) * av_q2d(videoDecoder->getAudioStream()->time_base);
 				// set clock to current pts;
 				audioClock = pts;
 
@@ -119,7 +122,7 @@ namespace VideoLib {
 				// if we aren't given a pts, set it to the clock 
 				pts = audioClock;
 				// calculate next pts in seconds
-				audioClock += sizeBytes / double(audioDecoder->getAudioBytesPerSecond());
+				audioClock += sizeBytes / double(videoDecoder->getAudioBytesPerSecond());
 			}
 
 			return(pts);
@@ -133,7 +136,7 @@ namespace VideoLib {
 				videoPackets->State = videoState;
 			} 
 							
-			if(audioDecoder->hasAudio()) {
+			if(videoDecoder->hasAudio()) {
 
 				audioPackets->State = audioState;
 			} 
@@ -228,7 +231,7 @@ namespace VideoLib {
 		}
 
 		// always called while framequeue is locked
-		void addedPacketToPacketQueue(Object ^sender, PacketType e)
+		void packetIsAddedToPacketQueue(Object ^sender, PacketType e)
 		{			
 			if(IsBuffering) 
 			{
@@ -314,8 +317,8 @@ namespace VideoLib {
 			videoPackets->StartBuffering += gcnew EventHandler(this,&FrameQueue::startPacketQueueBuffering);
 			audioPackets->StartBuffering += gcnew EventHandler(this,&FrameQueue::startPacketQueueBuffering);
 
-			videoPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::addedPacketToPacketQueue);
-			audioPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::addedPacketToPacketQueue);
+			videoPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::packetIsAddedToPacketQueue);
+			audioPackets->AddedPacket += gcnew EventHandler<PacketType>(this,&FrameQueue::packetIsAddedToPacketQueue);
 
 			videoPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
 			audioPackets->IsFinished += gcnew EventHandler(this,&FrameQueue::isPacketQueueFinished);
@@ -480,12 +483,11 @@ namespace VideoLib {
 			}
 		}
 		
-		void initialize(VideoDecoder *videoDecoder, VideoDecoder *audioDecoder) {
+		void initialize(IVideoDecoder *videoDecoder) {
 
 			release();
 
-			this->videoDecoder = videoDecoder;
-			this->audioDecoder = audioDecoder;
+			this->videoDecoder = videoDecoder;			
 
 			videoClock = 0;
 			audioClock = 0;
@@ -510,14 +512,14 @@ namespace VideoLib {
 				videoPackets->State = PacketQueue::PacketQueueState::CLOSE_END;
 			}
 			
-			if(audioDecoder->hasAudio()) 
+			if(videoDecoder->hasAudio()) 
 			{
 				audioFrame = gcnew AudioFrame();
 
 				convertedAudioFrame = gcnew AudioFrame(
-					audioDecoder->getOutputSampleFormat(),
-					audioDecoder->getOutputChannelLayout(),
-					audioDecoder->getOutputSampleRate());
+					videoDecoder->getOutputSampleFormat(),
+					videoDecoder->getOutputChannelLayout(),
+					videoDecoder->getOutputSampleRate());
 
 				nrLastPackets++; 
 
@@ -692,7 +694,8 @@ namespace VideoLib {
 
 					convertedVideoFrame->Pts = synchronizeVideo(
 						videoFrame->AVLibFrameData->repeat_pict, 
-						videoPacket->AVLibPacketData->dts);					
+						convertedVideoFrame->AVLibFrameData->pts);
+						//videoPacket->AVLibPacketData->dts);					
 				}
 
 				addFreePacket(videoPacket);
@@ -743,7 +746,7 @@ namespace VideoLib {
 
 					audioFrame->setFrameDefaults();
 
-					int bytesConsumed = audioDecoder->decodeAudioFrame(audioFrame->AVLibFrameData, 
+					int bytesConsumed = videoDecoder->decodeAudioFrame(audioFrame->AVLibFrameData, 
 						&frameFinished, audioPacket->AVLibPacketData);						
 					if(bytesConsumed < 0) {
 					
@@ -759,10 +762,11 @@ namespace VideoLib {
 
 					if(frameFinished)
 					{									
-						convertedAudioFrame->Length = audioDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
+						convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
 					
 						convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
-								audioPacket->AVLibPacketData->dts);
+							convertedAudioFrame->AVLibFrameData->pts);
+							//audioPacket->AVLibPacketData->dts);
 
 						convertedAudioFrame->copyAudioDataToManagedMemory();
 

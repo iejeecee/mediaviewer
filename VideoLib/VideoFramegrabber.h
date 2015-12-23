@@ -104,9 +104,9 @@ public:
 
 	}
 
-	virtual void open(String ^location, System::Threading::CancellationToken ^ token) {
+	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^ token) {
 
-		VideoDecoder::open(location, token, nullptr);
+		VideoDecoder::open(args, token);
 
 		// get video metadata
 		durationSeconds = getDurationSeconds();
@@ -220,7 +220,7 @@ public:
 		bool suppressError = false, int decodingTimeOut = 0)
 	{
 
-		setVideoOutputFormat(PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
+		setVideoOutputFormat(AV_PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
 
 		double duration = getDurationSeconds();
 

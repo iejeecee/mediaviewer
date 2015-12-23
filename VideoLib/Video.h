@@ -13,13 +13,10 @@ namespace VideoLib {
 typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);
 
 class Video {
-
-public:
-
-	std::vector<VideoLib::Stream *> stream;
-
+	
 protected:
 
+	std::vector<VideoLib::Stream *> stream;
 	AVFormatContext *formatContext;
 	
 	int videoIdx;
@@ -119,74 +116,78 @@ public:
 	
 	}
 
-	AVFormatContext *getFormatContext() const {
+	virtual AVFormatContext *getFormatContext() const {
 
 		return(formatContext);
 	}
 
-	int getVideoStreamIndex() const {
+	virtual VideoLib::Stream *getStream(int i) const 
+	{
+		return(stream[i]);
+	}
+
+	virtual int getVideoStreamIndex() const {
 
 		return(videoIdx);
 	}
 
-	int getAudioStreamIndex() const {
+	virtual int getAudioStreamIndex() const {
 
 		return(audioIdx);
 	}
 
-	void setVideoStreamIndex(int idx) {
+	virtual void setVideoStreamIndex(int idx) {
 
 		videoIdx = idx;
 	}
 
-	void setAudioStreamIndex(int idx) {
+	virtual void setAudioStreamIndex(int idx) {
 
 		audioIdx = idx;
 	}
 
-
-	int getNrStreams() const {
-
-		return((int)stream.size());
+	virtual unsigned int getNrStreams() const {
+		 
+		return((unsigned int)stream.size());
 	}
 
-	AVStream *getVideoStream() const {
+	virtual AVStream *getVideoStream() const {
 
 		return(stream[videoIdx]->getAVStream());
 	}
 
-	const AVCodec *getVideoCodec() const {
+	virtual const AVCodec *getVideoCodec() const {
 
 		return(stream[videoIdx]->getCodec());
 	}
 
-	AVCodecContext *getVideoCodecContext() const {
+	virtual AVCodecContext *getVideoCodecContext() const {
 
 		return(stream[videoIdx]->getCodecContext());
 	}
 
-	AVStream *getAudioStream() const {
+	virtual AVStream *getAudioStream() const {
 
 		return(stream[audioIdx]->getAVStream());
 	}
 
-	const AVCodec *getAudioCodec() const {
+	virtual const AVCodec *getAudioCodec() const {
 
 		return(stream[audioIdx]->getCodec());
 	}
 
-	AVCodecContext *getAudioCodecContext() const {
+	virtual AVCodecContext *getAudioCodecContext() const {
 
 		return(stream[audioIdx]->getCodecContext());
 	}
 
 	
-	bool hasVideo() const {
+	virtual bool hasVideo() const {
 
 		return(videoIdx >= 0);
 	}
 
-	bool hasAudio() const {
+	virtual bool hasAudio() const {
 
 		return(audioIdx >= 0);
 	}

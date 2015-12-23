@@ -22,6 +22,9 @@ namespace VideoPlayerControl
         public event EventHandler<int> PositionSecondsChanged;
         public event EventHandler<int> DurationSecondsChanged;
         public event EventHandler<bool> HasAudioChanged;
+        public event EventHandler<bool> IsMutedChanged;
+        public event EventHandler<double> VolumeChanged;
+        public event EventHandler<bool> IsFullScreenChanged;
              
         Control owner;
 
@@ -133,7 +136,7 @@ namespace VideoPlayerControl
         double audioDiffThreshold;
         int audioDiffAvgCount;
    
-        Task[] demuxPacketsTask;
+        Task demuxPacketsTask;
         CancellationTokenSource demuxPacketsCancellationTokenSource;
 
         Task OpenTask { get; set; }
@@ -175,8 +178,15 @@ namespace VideoPlayerControl
             get { return audioPlayer.IsMuted; }
             set
             {
+                if (audioPlayer.IsMuted == value ||
+                    HasAudio == false && value == true) return;
+
                 audioPlayer.IsMuted = value;
-             
+
+                if (IsMutedChanged != null)
+                {
+                    IsMutedChanged(this, audioPlayer.IsMuted);
+                }
             }
         }
 
@@ -202,7 +212,19 @@ namespace VideoPlayerControl
         public double Volume
         {
             get { return audioPlayer.Volume; }
-            set { audioPlayer.Volume = value; }
+            set {
+
+                value = Utils.clamp<double>(value, MinVolume, MaxVolume);
+
+                if (value == audioPlayer.Volume) return;
+                
+                audioPlayer.Volume = value;
+
+                if (VolumeChanged != null)
+                {
+                    VolumeChanged(this, audioPlayer.Volume);
+                }
+            }
         }
 
         public int MaxVolume
@@ -807,48 +829,22 @@ restartvideo:
         void startDemuxing()
         {        
             demuxPacketsCancellationTokenSource = new CancellationTokenSource();
+                           
+            demuxPacketsTask = new Task(() => { demuxPackets(demuxPacketsCancellationTokenSource.Token); },
+                demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
 
-            if (videoDecoder.HasSeperateAudioStream)
-            {
-                // video and audio is in seperate input streams
-                demuxPacketsTask = new Task[2];
-
-                demuxPacketsTask[0] = new Task(() => { demuxPackets(0, demuxPacketsCancellationTokenSource.Token); },
-                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
-                demuxPacketsTask[1] = new Task(() => { demuxPackets(1, demuxPacketsCancellationTokenSource.Token); },
-                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
-            }
-            else
-            {
-                demuxPacketsTask = new Task[1];
-
-                // video and audio is in the same input stream
-                demuxPacketsTask[0] = new Task(() => { demuxPackets(-1, demuxPacketsCancellationTokenSource.Token); },
-                    demuxPacketsCancellationTokenSource.Token, TaskCreationOptions.LongRunning);
-            }
-
-            foreach (Task t in demuxPacketsTask)
-            {
-                t.Start();
-            }
-
+            demuxPacketsTask.Start();
+            
         }
 
-        void demuxPackets(int i, CancellationToken token)
+        void demuxPackets(CancellationToken token)
         {
             VideoLib.VideoPlayer.DemuxPacketsResult result = VideoLib.VideoPlayer.DemuxPacketsResult.SUCCESS;
 
             do
-            {
-                if (i == -1)
-                {
-                    result = videoDecoder.demuxPacketInterleaved();
-                }
-                else
-                {
-                    result = videoDecoder.demuxPacketFromStream(i);
-                }
-
+            {                
+                result = videoDecoder.demuxPacket();
+              
             } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
         }
 
@@ -957,7 +953,9 @@ restartvideo:
 
                 VideoLocation = location;
 
-                OpenTask = Task.Factory.StartNew(() => videoDecoder.open(location, DecodedVideoFormat, inputFormatName, audioLocation, audioFormatName, newCancelTokenSource.Token), newCancelTokenSource.Token);
+                OpenVideoArgs args = new OpenVideoArgs(location, inputFormatName, audioLocation, audioFormatName);
+
+                OpenTask = Task.Factory.StartNew(() => videoDecoder.open(args, DecodedVideoFormat, newCancelTokenSource.Token), newCancelTokenSource.Token);
                 await OpenTask;
 
                 if (videoDecoder.HasVideo)
@@ -1069,15 +1067,30 @@ restartvideo:
             videoRender.resize();           
         }
 
-        public void toggleFullScreen()
+        public bool IsFullScreen
         {
-            if (videoRender.Windowed == true)
-            {
-                videoRender.setFullScreen();
+            get {
+
+                return(videoRender.Windowed == false);
             }
-            else
+
+            set
             {
-                videoRender.setWindowed();
+                if (IsFullScreen == value) return;
+
+                if (value == true)
+                {
+                    videoRender.setFullScreen();
+                }
+                else
+                {
+                    videoRender.setWindowed();
+                }
+
+                if (IsFullScreenChanged != null)
+                {
+                    IsFullScreenChanged(this, IsFullScreen);
+                }
             }
         }
     }

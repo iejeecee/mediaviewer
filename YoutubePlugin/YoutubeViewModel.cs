@@ -33,6 +33,7 @@ using YoutubePlugin.YoutubeChannelBrowser;
 using YoutubePlugin.YoutubeMetadata;
 using YoutubePlugin.YoutubeSearch;
 using MediaViewer.Model.Media.Base.Item;
+using MediaViewer.MediaFileStackPanel;
 
 namespace YoutubePlugin
 {    
@@ -68,7 +69,8 @@ namespace YoutubePlugin
             MediaState.clearUIState("Empty", DateTime.Now, MediaStateType.SearchResult);
 
             MediaStateCollectionView.SelectionChanged += mediaStateCollectionView_SelectionChanged;
-            
+
+                        
             ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
             {               
                 if(selectableItem.Item.Metadata == null) return;
@@ -240,19 +242,19 @@ namespace YoutubePlugin
             get { return nrColumns; }
             set { SetProperty(ref nrColumns, value); }
         }
-               
-        public Command<SelectableMediaItem> ViewCommand { get; set; }
-        public AsyncCommand LoadNextPageCommand { get; set; }
-        public AsyncCommand<SelectableMediaItem> ViewChannelCommand { get; set; }
-        public AsyncCommand<SelectableMediaItem> ViewPlaylistCommand { get; set; }
-        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; set; }
-        public Command<SelectableMediaItem> SubscribeCommand { get; set; }
-        public Command SelectAllCommand { get; set; }
-        public Command DeselectAllCommand { get; set; }
-        public Command ShutdownCommand { get; set; }
 
-        public MediaState MediaState { get; set; }
-        public YoutubeCollectionView MediaStateCollectionView { get; set; }
+        public Command<SelectableMediaItem> ViewCommand { get; protected set; }
+        public AsyncCommand LoadNextPageCommand { get; protected set; }
+        public AsyncCommand<SelectableMediaItem> ViewChannelCommand { get; protected set; }
+        public AsyncCommand<SelectableMediaItem> ViewPlaylistCommand { get; protected set; }
+        public AsyncCommand<SelectableMediaItem> DownloadCommand { get; protected set; }
+        public Command<SelectableMediaItem> SubscribeCommand { get; protected set; }
+        public Command SelectAllCommand { get; protected set; }
+        public Command DeselectAllCommand { get; protected set; }
+        public Command ShutdownCommand { get; protected set; }
+
+        public MediaState MediaState { get; protected set; }
+        public YoutubeCollectionView MediaStateCollectionView { get; protected set; }        
 
         String NextPageToken { get; set; }
         public IClientServiceRequest CurrentQuery { get; set; }

@@ -346,6 +346,9 @@ namespace MediaViewer.VideoPanel
             videoPlayer.PositionSecondsChanged += videoPlayer_PositionSecondsChanged;
             videoPlayer.DurationSecondsChanged += videoPlayer_DurationSecondsChanged;
             videoPlayer.HasAudioChanged += videoPlayer_HasAudioChanged;
+            videoPlayer.IsMutedChanged += videoPlayer_IsMutedChanged;
+            videoPlayer.VolumeChanged += videoPlayer_VolumeChanged;
+            videoPlayer.Log = Logger.Log;
 
             MinVolume = videoPlayer.MinVolume;
             MaxVolume = videoPlayer.MaxVolume;
@@ -357,6 +360,16 @@ namespace MediaViewer.VideoPanel
 
             IsInitialized = true;
             isInitializedSignal.Release();
+        }
+
+        void videoPlayer_VolumeChanged(object sender, double e)
+        {        
+            Volume = e;
+        }
+
+        void videoPlayer_IsMutedChanged(object sender, bool e)
+        {
+            IsMuted = e;
         }
       
         private void videoPlayer_IsBufferingChanged(object sender, bool isBuffering)

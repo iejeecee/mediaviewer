@@ -65,7 +65,7 @@ void VideoPreview::open(String ^videoLocation, System::Threading::CancellationTo
 
 	try {
 		
-		frameGrabber->open(videoLocation, token);
+		frameGrabber->open(gcnew OpenVideoArgs(videoLocation), token);
 
 		metaData = gcnew List<String ^>();
 

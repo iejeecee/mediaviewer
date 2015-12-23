@@ -93,12 +93,14 @@ public:
 	}
 
 	double getTimeSeconds(int64_t timeBaseUnits) 
-	{
+	{		
 		return av_q2d(stream->time_base) * timeBaseUnits;	
 	}
 
 	int64_t getTimeBaseUnits(double timeSeconds) 
 	{
+		int64_t startTime = stream->start_time == AV_NOPTS_VALUE ? 0 : stream->start_time;
+
 		return int64_t(timeSeconds / av_q2d(stream->time_base));	
 	}
 

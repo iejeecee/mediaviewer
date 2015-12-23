@@ -68,11 +68,16 @@ namespace ImageSearchPlugin
                         CurrentQuery = new ImageSearchQuery(this);
                     }
 
+                    SearchCommand.IsExecutable = false;
                     await doSearch(CurrentQuery, imageOffset);
                 }
                 catch (Exception e)
                 {
-                    MessageBox.Show("Image search error\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error); 
+                    MessageBox.Show("Image search error\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                finally
+                {
+                    SearchCommand.IsExecutable = true;
                 }
             });
 
@@ -286,14 +291,10 @@ namespace ImageSearchPlugin
             var imageQuery = bingContainer.Image(Query, null, null, state.SafeSearch, state.GeoTag.LatDecimal, state.GeoTag.LonDecimal, imageFilters);
             imageQuery = imageQuery.AddQueryOption("$top", 50);
             imageQuery = imageQuery.AddQueryOption("$skip", imageOffset);
-            
-            SearchCommand.IsExecutable = false;
-
+                        
             IEnumerable<Bing.ImageResult> imageResults = 
                 await Task.Factory.FromAsync<IEnumerable<Bing.ImageResult>>(imageQuery.BeginExecute(null, null), imageQuery.EndExecute);
-                       
-            SearchCommand.IsExecutable = true;
-
+                               
             if (imageOffset == 0)
             {
                 MediaState.clearUIState(Query, DateTime.Now, MediaStateType.SearchResult);

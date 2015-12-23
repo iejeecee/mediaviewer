@@ -3,15 +3,19 @@
 #include "Video.h"
 #include "VideoLibException.h"
 #include "FilterGraph.h"
+#include "IVideoDecoder.h"
 #include <algorithm>
+#include <msclr\marshal_cppstd.h>
 
 using namespace System::Threading;
+using namespace msclr::interop;
+using namespace System::Runtime::InteropServices;
 
 namespace VideoLib {
 
 typedef void (__stdcall *DECODED_FRAME_CALLBACK)(void *data, AVPacket *packet, AVFrame *frame, Video::FrameType type);
 
-class VideoDecoder : public Video {
+class VideoDecoder : public IVideoDecoder {
 
 protected:
 
@@ -19,6 +23,8 @@ protected:
 	
 	SwsContext *imageConvertContext;
 	SwrContext *audioConvertContext;
+
+	AVDictionary *openOptions;
 
 	// video
 	AVPixelFormat inPixelFormat, outPixelFormat;
@@ -98,22 +104,7 @@ protected:
 
 	gcroot<CancellationToken ^> *cancellationToken;
 
-public:
-
-	enum SamplingMode {
-		FAST_BILINEAR = SWS_FAST_BILINEAR,
-		BILINEAR = SWS_BILINEAR,
-		BICUBIC = SWS_BICUBIC,
-		X = SWS_X,
-		POINT = SWS_POINT,
-		AREA = SWS_AREA,
-		BICUBLIN = SWS_BICUBLIN,
-		GAUSS = SWS_GAUSS,
-		SINC = SWS_SINC,
-		LANCZOS = SWS_LANCZOS,
-		SPLINE = SWS_SPLINE
-	};
-
+	
 private:
 
 	SamplingMode samplingMode;
@@ -136,13 +127,6 @@ private:
 
 public:
 
-	enum ReadFrameResult
-	{
-		OK,
-		END_OF_STREAM,
-		READ_ERROR
-	};
-
 	enum VideoDecodeMode {		
 		DECODE_KEY_FRAMES_ONLY,
 		DECODE_VIDEO,
@@ -156,6 +140,7 @@ public:
 
 	VideoDecoder()
 	{
+		openOptions = NULL;
 		
 		decodedFrame = NULL;
 		data = NULL;
@@ -197,13 +182,13 @@ public:
 	}
 
 	virtual ~VideoDecoder() {
-
+		
 		close();
-
+	
 		delete cancellationToken;
 	}
 
-	bool isClosed() {
+	bool isClosed() const {
 
 		return(closed);
 	}
@@ -216,7 +201,7 @@ public:
 	}
 
 	virtual void close() {
-
+		
 		Video::close();
 
 		if(formatContext != NULL) {
@@ -267,6 +252,11 @@ public:
 			audioFilterGraph = NULL;
 		}
 
+		if(openOptions != NULL) {
+
+			av_dict_free(&openOptions);
+		}
+
 		outPixelFormat = inPixelFormat = AV_PIX_FMT_YUV420P;
 		inWidth = outWidth = 0;
 		inHeight = outHeight = 0;
@@ -289,10 +279,11 @@ public:
 		return(formatContext->filename);
 	}
 	
-	virtual void open(String ^location, System::Threading::CancellationToken ^token, String ^inputFormatName = nullptr) {
+	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) 
+	{
 		 
 		// Convert location to UTF8 string pointer
-		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
+		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(args->VideoLocation);
 
 		// prevent GC moving the bytes around while this variable is on the stack
 		pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
@@ -301,19 +292,7 @@ public:
 		char *locationUTF8 = reinterpret_cast<char*>(pinnedBytes);
 
 		int errorCode = 0;
-
-		AVInputFormat *inputFormat = NULL;
-		 				
-		if(inputFormatName != nullptr) {
-
-			IntPtr p = Marshal::StringToHGlobalAnsi(inputFormatName);
-			char *shortName = static_cast<char*>(p.ToPointer());
-
-			inputFormat = av_find_input_format(shortName);
-
-			Marshal::FreeHGlobal(p);			
-		}
-
+		
 		// allow cancellation of IO operations
 		*cancellationToken = token;
 		
@@ -322,9 +301,30 @@ public:
  		
 		formatContext = avformat_alloc_context();
 		formatContext->interrupt_callback = ioInterruptSettings;
+			
+		AVInputFormat *inputFormat = NULL;
+			 				
+		if(args->VideoType != nullptr) {
+
+			IntPtr p = Marshal::StringToHGlobalAnsi(args->VideoType);
+			char *shortName = static_cast<char*>(p.ToPointer());
+
+			inputFormat = av_find_input_format(shortName);
+						
+			//av_dict_set(&openOptions, "formatprobesize", "0", 0); 
+			//av_dict_set(&openOptions, "analyzeduration", "32", 0); 
+			//av_dict_set(&openOptions, "probesize", "32", 0); 
+
+			//formatContext->flags |= AVFMT_FLAG_IGNIDX;
+
+			//av_log_set_level(AV_LOG_DEBUG);
+
+			Marshal::FreeHGlobal(p);			
+		}
+
 		
 	    // Initialize Input format context
-		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, NULL)) != 0)
+		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, &openOptions)) != 0)
 		{		
 			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
 				
@@ -335,7 +335,7 @@ public:
 				throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
 			}
 		}
-				
+	
 		// generate pts?? -- from ffplay, not documented
 		// it should make av_read_frame() generate pts for unknown value
 		formatContext->flags |= AVFMT_FLAG_GENPTS;
@@ -385,7 +385,7 @@ public:
 			stream[audioIdx]->open();		
 		}
 			
-		frame = avcodec_alloc_frame();
+		frame = av_frame_alloc();
 		if(frame == NULL)
 		{		
 			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
@@ -602,9 +602,9 @@ public:
 
 			// only decode video/keyframe or non corrupt packets
 			if(packet.stream_index == videoIdx && videoMode != SKIP_VIDEO)
-			{
-				avcodec_get_frame_defaults(frame);
-
+			{			
+				av_frame_unref(frame);
+			
 				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
 				if(ret < 0) {
 
@@ -624,7 +624,7 @@ public:
 
 			} else if(packet.stream_index == audioIdx && audioMode == DECODE_AUDIO) {
 
-					avcodec_get_frame_defaults(frame);
+					av_frame_unref(frame);
 
 					int ret = avcodec_decode_audio4(getAudioCodecContext(), frame, &frameFinished, 
 						&packet);
@@ -656,9 +656,7 @@ public:
 		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
 	
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
-		
-		
-
+				
 		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
 		int ret = avformat_seek_file(formatContext, -1, 0, seekTarget, seekTarget, flags);
 		if(ret >= 0) { 
@@ -700,11 +698,11 @@ public:
 		
 		if(convertedFrame != NULL) {
 
-			avcodec_free_frame(&convertedFrame);
+			av_frame_free(&convertedFrame);
 			convertedFrame = NULL;
 		}
 
-		convertedFrame = avcodec_alloc_frame();
+		convertedFrame = av_frame_alloc();
 		if(convertedFrame == NULL)
 		{
 			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
@@ -740,6 +738,8 @@ public:
 			input->height,
 			output->data,
 			output->linesize);	
+
+		output->pts = av_frame_get_best_effort_timestamp(input);
 	}
 	
 	void setAudioOutputFormat(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
@@ -811,8 +811,12 @@ public:
 											numSamplesOut,
 											outSampleFormat, 1);									
 					
+		output->pts = av_frame_get_best_effort_timestamp(input);
+
 		return(length);
 	}
+
+
 	
 };
 
