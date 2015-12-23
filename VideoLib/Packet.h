@@ -76,7 +76,7 @@ namespace VideoLib {
 
 			if(avPacket != NULL && avPacket->data != NULL) {
 
-				av_free_packet(avPacket);
+				av_packet_unref(avPacket);
 				av_init_packet(avPacket);
 				avPacket->data = NULL;
 				avPacket->size = 0;

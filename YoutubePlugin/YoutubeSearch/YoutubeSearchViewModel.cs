@@ -39,7 +39,7 @@ namespace YoutubePlugin.YoutubeSearch
     {
         IEventAggregator EventAggregator { get; set; }
         YouTubeService Youtube { get; set; }
-        const int maxResults = 50;
+        public static int maxResults = 28;
 
         public YoutubeSearchViewModel(IEventAggregator eventAggregator)
         {

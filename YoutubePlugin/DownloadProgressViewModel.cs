@@ -17,6 +17,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using VideoLib;
 using YoutubePlugin.Item;
 
 namespace YoutubePlugin
@@ -131,8 +132,9 @@ namespace YoutubePlugin
 
             try
             {
-                videoTranscoder.transcode(videoStream.Location, fullpath, CancellationToken, options,
-                    muxingProgressCallback, audioStream.Location);
+                OpenVideoArgs openArgs = new OpenVideoArgs(videoStream.Location, null, audioStream.Location, null);
+
+                videoTranscoder.transcode(openArgs, fullpath, CancellationToken, options,muxingProgressCallback);
             }
             catch (Exception e)
             {

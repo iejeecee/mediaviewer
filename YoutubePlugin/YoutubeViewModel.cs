@@ -42,8 +42,7 @@ namespace YoutubePlugin
         IRegionManager RegionManager { get; set; }
         IEventAggregator EventAggregator { get; set; }
         public static YouTubeService Youtube { get; protected set; }
-        const int maxResults = 50;
-
+    
         Task SearchTask { get; set; }
         public CancellationTokenSource TokenSource { get; set; }
 
@@ -69,7 +68,6 @@ namespace YoutubePlugin
             MediaState.clearUIState("Empty", DateTime.Now, MediaStateType.SearchResult);
 
             MediaStateCollectionView.SelectionChanged += mediaStateCollectionView_SelectionChanged;
-
                         
             ViewCommand = new Command<SelectableMediaItem>((selectableItem) =>
             {               
@@ -102,7 +100,7 @@ namespace YoutubePlugin
 
                 SearchResource.ListRequest searchListRequest = Youtube.Search.List("snippet");
                 searchListRequest.ChannelId = item.ChannelId;
-                searchListRequest.MaxResults = maxResults;
+                searchListRequest.MaxResults = YoutubeSearchViewModel.maxResults;
                 searchListRequest.Order = Google.Apis.YouTube.v3.SearchResource.ListRequest.OrderEnum.Date;
 
                 MediaStateCollectionView.FilterModes.MoveCurrentToFirst();
@@ -119,7 +117,7 @@ namespace YoutubePlugin
 
                     PlaylistItemsResource.ListRequest searchListRequest = Youtube.PlaylistItems.List("snippet");
                     searchListRequest.PlaylistId = item.PlaylistId;
-                    searchListRequest.MaxResults = maxResults;
+                    searchListRequest.MaxResults = YoutubeSearchViewModel.maxResults;
 
                     MediaStateCollectionView.FilterModes.MoveCurrentToFirst();
 
@@ -182,6 +180,8 @@ namespace YoutubePlugin
                     Settings.Default.Save();
                 });
 
+            MediaState.UIMediaCollection.IsLoadingChanged += UIMediaCollection_IsLoadingChanged;
+
             MediaViewer.Model.Global.Commands.GlobalCommands.ShutdownCommand.RegisterCommand(ShutdownCommand);
 
             setupViews();
@@ -189,6 +189,18 @@ namespace YoutubePlugin
             EventAggregator.GetEvent<SearchEvent>().Subscribe(searchEvent);
 
             SearchTask = null;
+        }
+
+        void UIMediaCollection_IsLoadingChanged(object sender, EventArgs e)
+        {
+            if (MediaState.UIMediaCollection.NrLoadedItems == MediaState.UIMediaCollection.Count())
+            {
+                SelectAllCommand.IsExecutable = true;
+            }
+            else
+            {
+                SelectAllCommand.IsExecutable = false;
+            }
         }
 
         void setupViews()

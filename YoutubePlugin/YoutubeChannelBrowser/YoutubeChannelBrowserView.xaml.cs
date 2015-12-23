@@ -69,7 +69,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             {
                 SearchResource.ListRequest searchListRequest = searchListRequest = Youtube.Search.List("snippet");
                 searchListRequest.ChannelId = item.ChannelId;
-                searchListRequest.MaxResults = 30;
+                searchListRequest.MaxResults = YoutubeSearchViewModel.maxResults;
                 searchListRequest.Order = Google.Apis.YouTube.v3.SearchResource.ListRequest.OrderEnum.Date;
 
                 youtubeSearch = new YoutubeSearchQuery(searchListRequest, item.Name);
@@ -78,7 +78,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             {
                 PlaylistsResource.ListRequest playlistRequest = Youtube.Playlists.List("snippet");
                 playlistRequest.ChannelId = item.ChannelId;
-                playlistRequest.MaxResults = 30;
+                playlistRequest.MaxResults = YoutubeSearchViewModel.maxResults;
 
                 youtubeSearch = new YoutubeSearchQuery(playlistRequest, item.Name);
             }
