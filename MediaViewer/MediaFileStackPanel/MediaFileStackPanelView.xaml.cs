@@ -59,17 +59,44 @@ namespace MediaViewer.MediaFileStackPanel
 
         public void OnNavigatedFrom(NavigationContext navigationContext)
         {
-            ViewModel.MediaStateCollectionView.Cleared -= MediaStateCollectionView_Cleared;
-            ViewModel.OnNavigatedFrom(navigationContext);
+            if (ViewModel != null)
+            {
+                ViewModel.MediaStateCollectionView.Cleared -= MediaStateCollectionView_Cleared;
+                ViewModel.OnNavigatedFrom(navigationContext);
+            }
         }
 
         public void OnNavigatedTo(NavigationContext navigationContext)
-        {
-            ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];                          
+        {            
+            ViewModel = (MediaFileStackPanelViewModel)navigationContext.Parameters["viewModel"];
             DataContext = ViewModel;
 
-            if (ViewModel.IsEnabled == false) return;
+            if (ViewModel == null)
+            {
+                collapseableGrid.Visibility = System.Windows.Visibility.Collapsed;
+                collapseableButtonGrid.Visibility = System.Windows.Visibility.Collapsed;
+                return;
+            }
+            else
+            {
+                Binding binding = new Binding();
+                binding.Path = new PropertyPath("IsEnabled");
+                binding.Converter = new BooleanToVisibilityConverter();
+                binding.Source = ViewModel;  
 
+                BindingOperations.SetBinding(collapseableButtonGrid, Grid.VisibilityProperty, binding);
+
+                binding = new Binding();
+                binding.Path = new PropertyPath("IsVisible");
+                binding.Converter = new BooleanToVisibilityConverter();
+                binding.Source = ViewModel;
+
+                BindingOperations.SetBinding(collapseableGrid, Grid.VisibilityProperty, binding); 
+
+            }
+
+            if (ViewModel.IsEnabled == false) return;
+                                       
             ViewModel.MediaStateCollectionView.Cleared += MediaStateCollectionView_Cleared;
             ViewModel.OnNavigatedTo(navigationContext);   
             

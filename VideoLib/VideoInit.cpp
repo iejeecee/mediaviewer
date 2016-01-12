@@ -29,6 +29,7 @@ void VideoInit::initializeAVLib() {
 
 			isAVlibInitialized = true;	
 
+			enableLibAVLogging(logLevel);
 		}				
 
 	} finally {
@@ -41,5 +42,8 @@ void VideoInit::initializeAVLib() {
 bool VideoInit::isAVlibInitialized = false;
 void *VideoInit::lockObject = GCHandle::ToIntPtr(GCHandle::Alloc(gcnew Object())).ToPointer();
 
+int VideoInit::logLevel = AV_LOG_WARNING;
+AV_LOG_CALLBACK VideoInit::nativeLogCallback = NULL;
+LOG_CALLBACK VideoInit::managedLogCallback = NULL;
 
 }

@@ -126,6 +126,8 @@ namespace MediaViewer.Model.metadata.Metadata
         static BaseMetadata readMetadataFromFile(String location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
 
+            Logger.Log.Info("Reading metadata for: " + location);
+
             Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
                 FILE_OPEN_ASYNC_TIMEOUT_MS, token);
 

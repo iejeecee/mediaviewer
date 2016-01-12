@@ -145,6 +145,8 @@ namespace MediaViewer.Model.Media.File.Watcher
 
                             if (item != null)
                             {
+                                // remove any changed events on files that will be deleted anyway
+                                changed.RemoveAll(t => t.Id == item.Id);
                                 removed.Add(item);
                             }
                         }

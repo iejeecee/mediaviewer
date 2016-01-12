@@ -19,7 +19,7 @@ namespace VideoLib {
 				
 		FrameQueue ^frameQueue;		
 
-		System::Runtime::InteropServices::GCHandle gch;
+		static System::Runtime::InteropServices::GCHandle gch;
 
 		array<bool> ^isFinalPacketAdded;
 					
@@ -199,8 +199,9 @@ namespace VideoLib {
 
 		void close();
 
-		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging,
-			LogLevel level);
+		static void setLogCallback(LogCallbackDelegate ^callback);
+		static void enableLibAVLogging(LogLevel level);
+		static void disableLibAVLogging();		
 		
 		static int getAvFormatVersion();
 		static String ^getAvFormatBuildInfo();

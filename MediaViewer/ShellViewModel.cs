@@ -19,6 +19,8 @@ using MediaViewer.MediaFileStackPanel;
 using MediaViewer.Model.Collections.Sort;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Collections;
+using VideoPlayerControl;
+using MediaViewer.Infrastructure.Logging;
 
 namespace MediaViewer
 {
@@ -100,6 +102,9 @@ namespace MediaViewer
             videoMediaStackPanelViewModel.MediaStateCollectionView.FilterModes.MoveCurrentTo(MediaFilterMode.Video);
 
             MediaFileBrowserViewModel = new MediaFileBrowserViewModel(mediaFileWatcher, regionManager, eventAggregator);
+
+            VideoPlayerViewModel.setLibAVLogCallback(Logger.Log);
+            VideoPlayerViewModel.enableLibAVLogging(LogMessageModel.LogLevel.INFO);
 
             //TestWindow window = new TestWindow();
             //window.Show();

@@ -4,6 +4,7 @@
 #include "VideoLibException.h"
 #include "FilterGraph.h"
 #include "IVideoDecoder.h"
+#include "MemoryStreamAVIOContext.h"
 #include <algorithm>
 #include <msclr\marshal_cppstd.h>
 
@@ -124,6 +125,115 @@ private:
 			return 0;
 		}
 	} 
+
+	void open(const char *locationUTF8, System::Threading::CancellationToken ^token, AVInputFormat *inputFormat = NULL) {
+
+		int errorCode = 0;
+
+		// Initialize Input format context
+		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, &openOptions)) != 0)
+		{		
+			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
+				
+				throw gcnew System::OperationCanceledException(*token);
+
+			} else {
+
+				throw gcnew VideoLib::VideoLibException("Unable to open the stream: ", errorCode);
+			}
+		}
+	
+		// generate pts?? -- from ffplay, not documented
+		// it should make av_read_frame() generate pts for unknown value
+		formatContext->flags |= AVFMT_FLAG_GENPTS;
+		
+		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
+		{		
+			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
+
+				throw gcnew System::OperationCanceledException(*token);
+
+			} else {
+
+				throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: ", errorCode);
+			}
+		}
+		
+		for(unsigned int i = 0; i < formatContext->nb_streams; i++) {
+
+			AVCodec *decoder = NULL;
+
+			if(formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO ||
+				formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO)
+			{
+				decoder = avcodec_find_decoder(formatContext->streams[i]->codec->codec_id);
+				if(decoder == NULL)
+				{		
+					throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
+				}
+			}
+			
+			VideoLib::Stream *newStream = new VideoLib::Stream(formatContext->streams[i], decoder);			
+		
+			stream.push_back(newStream);			
+		}
+
+		videoIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
+		if(videoIdx >= 0) {
+					
+			stream[videoIdx]->open();
+			stream[videoIdx]->getCodecContext()->skip_frame = AVDISCARD_DEFAULT; 	
+			
+		}
+			
+		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
+		if(audioIdx >= 0) {
+				
+			stream[audioIdx]->open();		
+		}
+			
+		frame = av_frame_alloc();
+		if(frame == NULL)
+		{		
+			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
+		}
+
+		if(formatContext->start_time == AV_NOPTS_VALUE) {
+
+			startTime = 0;
+
+		} else {
+
+			startTime = formatContext->start_time / AV_TIME_BASE;
+		}
+
+		durationSeconds = calcDurationSeconds();
+						
+		av_init_packet(&packet);
+		packet.data = NULL;
+		packet.size = 0;
+
+		// int64_t duration_tb = duration / av_q2d(pStream->time_base); 
+		closed = false;
+
+		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
+
+		if(hasAudio()) {
+			
+			if(getAudioCodecContext()->channel_layout == 0) {
+
+				getAudioCodecContext()->channel_layout = av_get_default_channel_layout(getAudioCodecContext()->channels);
+			}
+
+			samplesPerSecond = getAudioCodecContext()->sample_rate;
+			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
+			
+			nrChannels = getAudioCodecContext()->channels;
+		}		
+
+		// make sure a cancel exception is thrown if open was cancelled at any point during it's execution
+		token->ThrowIfCancellationRequested();
+	}
 
 public:
 
@@ -278,21 +388,38 @@ public:
 
 		return(formatContext->filename);
 	}
+
+	void open(MemoryStreamAVIOContext *memoryStreamCtx, System::Threading::CancellationToken ^token) 
+	{
+		// allow cancellation of IO operations
+		*cancellationToken = token;
+		
+		ioInterruptSettings.callback = ioInterruptCallback;
+		ioInterruptSettings.opaque = cancellationToken;
+
+		formatContext = avformat_alloc_context();		
+		formatContext->interrupt_callback = ioInterruptSettings;
+
+		// set custom aviocontext
+		formatContext->pb = memoryStreamCtx->getAVIOContext();
+
+		open("", token);
+	}
 	
 	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) 
 	{
-		 
+
+		String ^location = args->VideoLocation != nullptr ? args->VideoLocation : args->AudioLocation;
+
 		// Convert location to UTF8 string pointer
-		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(args->VideoLocation);
+		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(location);
 
 		// prevent GC moving the bytes around while this variable is on the stack
 		pin_ptr<Byte> pinnedBytes = &encodedBytes[0];
 
 		// Call the function, typecast from byte* -> char* is required
 		char *locationUTF8 = reinterpret_cast<char*>(pinnedBytes);
-
-		int errorCode = 0;
-		
+				
 		// allow cancellation of IO operations
 		*cancellationToken = token;
 		
@@ -302,11 +429,15 @@ public:
 		formatContext = avformat_alloc_context();
 		formatContext->interrupt_callback = ioInterruptSettings;
 			
+		// potentially speed up opening video if we know it's type beforehand
 		AVInputFormat *inputFormat = NULL;
-			 				
-		if(args->VideoType != nullptr) {
+				
+		String ^inputType = args->VideoType != nullptr ? args->VideoType : nullptr;
+		inputType = args->AudioType != nullptr ? args->AudioType : nullptr;
 
-			IntPtr p = Marshal::StringToHGlobalAnsi(args->VideoType);
+		if(inputType != nullptr) {
+
+			IntPtr p = Marshal::StringToHGlobalAnsi(inputType);
 			char *shortName = static_cast<char*>(p.ToPointer());
 
 			inputFormat = av_find_input_format(shortName);
@@ -315,117 +446,13 @@ public:
 			//av_dict_set(&openOptions, "analyzeduration", "32", 0); 
 			//av_dict_set(&openOptions, "probesize", "32", 0); 
 
-			//formatContext->flags |= AVFMT_FLAG_IGNIDX;
-
-			//av_log_set_level(AV_LOG_DEBUG);
+			//formatContext->flags |= AVFMT_FLAG_IGNIDX;		
 
 			Marshal::FreeHGlobal(p);			
 		}
 
 		
-	    // Initialize Input format context
-		if((errorCode = avformat_open_input(&formatContext, locationUTF8, inputFormat, &openOptions)) != 0)
-		{		
-			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
-				
-				throw gcnew System::OperationCanceledException(*token);
-
-			} else {
-
-				throw gcnew VideoLib::VideoLibException("Unable to open the stream:" + VideoInit::errorToString(errorCode));
-			}
-		}
-	
-		// generate pts?? -- from ffplay, not documented
-		// it should make av_read_frame() generate pts for unknown value
-		formatContext->flags |= AVFMT_FLAG_GENPTS;
-		
-		if((errorCode = avformat_find_stream_info(formatContext, NULL)) < 0)
-		{		
-			if(errorCode == AVERROR_EXIT || errorCode == AVERROR_EOF) {
-
-				throw gcnew System::OperationCanceledException(*token);
-
-			} else {
-
-				throw gcnew VideoLib::VideoLibException("Unable to find the stream's info: " + VideoInit::errorToString(errorCode));
-			}
-		}
-		
-		for(unsigned int i = 0; i < formatContext->nb_streams; i++) {
-
-			AVCodec *decoder = NULL;
-
-			if(formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_VIDEO ||
-				formatContext->streams[i]->codec->codec_type == AVMediaType::AVMEDIA_TYPE_AUDIO)
-			{
-				decoder = avcodec_find_decoder(formatContext->streams[i]->codec->codec_id);
-				if(decoder == NULL)
-				{		
-					throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
-				}
-			}
-			
-			VideoLib::Stream *newStream = new VideoLib::Stream(formatContext->streams[i], decoder);			
-		
-			stream.push_back(newStream);			
-		}
-
-		videoIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-		if(videoIdx >= 0) {
-					
-			stream[videoIdx]->open();
-			stream[videoIdx]->getCodecContext()->skip_frame = AVDISCARD_DEFAULT; 	
-			
-		}
-			
-		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
-		if(audioIdx >= 0) {
-				
-			stream[audioIdx]->open();		
-		}
-			
-		frame = av_frame_alloc();
-		if(frame == NULL)
-		{		
-			throw gcnew VideoLib::VideoLibException("Unable to allocate frame memory");
-		}
-
-		if(formatContext->start_time == AV_NOPTS_VALUE) {
-
-			startTime = 0;
-
-		} else {
-
-			startTime = formatContext->start_time / AV_TIME_BASE;
-		}
-
-		durationSeconds = calcDurationSeconds();
-						
-		av_init_packet(&packet);
-		packet.data = NULL;
-		packet.size = 0;
-
-		// int64_t duration_tb = duration / av_q2d(pStream->time_base); 
-		closed = false;
-
-		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
-
-		if(hasAudio()) {
-			
-			if(getAudioCodecContext()->channel_layout == 0) {
-
-				getAudioCodecContext()->channel_layout = av_get_default_channel_layout(getAudioCodecContext()->channels);
-			}
-
-			samplesPerSecond = getAudioCodecContext()->sample_rate;
-			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
-			
-			nrChannels = getAudioCodecContext()->channels;
-		}		
-
-		// make sure a cancel exception is thrown if open was cancelled at any point during it's execution
-		token->ThrowIfCancellationRequested();
+		open(locationUTF8, token, inputFormat);	    
 	}
 
 	int getSizeBytes() const {
@@ -531,7 +558,7 @@ public:
 		{					
 			if(error == AVERROR_INVALIDDATA)
 			{
-				writeToLog(AV_LOG_ERROR, "Error reading frame from input stream");	
+				VideoInit::writeToLog(AV_LOG_ERROR, "Error reading frame from input stream");	
 				return(ReadFrameResult::READ_ERROR);
 
 			} else {	
@@ -551,7 +578,7 @@ public:
 					picture, got_picture_ptr, avpkt);
 		if(ret < 0) {
 
-			Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
+			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode video frame");
 			return ret;
 		}
 
@@ -565,7 +592,7 @@ public:
 						audio, got_audio_ptr, avpkt);	
 		if(ret < 0) {
 
-			Video::writeToLog(AV_LOG_WARNING, "could not decode audio frame");		
+			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode audio frame");		
 			return ret;
 		}
 
@@ -642,7 +669,7 @@ public:
 					}
 			}
 
-			av_free_packet(&packet);
+			av_packet_unref(&packet);
 		}
 
 		return(true);

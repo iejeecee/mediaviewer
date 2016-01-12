@@ -31,20 +31,12 @@ VideoPlayer::~VideoPlayer() {
 	
 	delete frameQueue;
 
-	if(gch.IsAllocated) {
-
-		gch.Free();
-	}
-
 }
 
 void VideoPlayer::open(OpenVideoArgs ^args,  OutputPixelFormat videoFormat, System::Threading::CancellationToken^ token)
 {
 	try {		
-			
-		//DashVideoDecoder *temp = new DashVideoDecoder();
-		//videoDecoder = temp;
-
+				
 		videoDecoder = VideoDecoderFactory::create(videoDecoder, args);
 					
 		videoDecoder->open(args, token);
@@ -183,7 +175,7 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 
 	if(packet->AVLibPacketData->flags & AV_PKT_FLAG_CORRUPT) {
 
-		Video::writeToLog(AV_LOG_WARNING, "corrupt packet");
+		VideoInit::writeToLog(AV_LOG_WARNING, "corrupt packet");
 	}
 
 	if(packet->AVLibPacketData->stream_index == videoDecoder->getVideoStreamIndex()) {
@@ -241,10 +233,19 @@ void VideoPlayer::close() {
 	frameQueue->release();
 }
 
-void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLibAVLogging,
-								 LogLevel level)
-{
 
+void VideoPlayer::enableLibAVLogging(LogLevel level)
+{
+	VideoInit::enableLibAVLogging((int)level);
+}
+
+void VideoPlayer::disableLibAVLogging()
+{
+	VideoInit::disableLibAVLogging();
+}
+
+void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback)
+{
 	if(gch.IsAllocated) {
 
 		gch.Free();
@@ -256,17 +257,8 @@ void VideoPlayer::setLogCallback(LogCallbackDelegate ^logCallback, bool enableLi
 		
 	LOG_CALLBACK nativeLogCallback = static_cast<LOG_CALLBACK>(voidPtr.ToPointer());
 
-	Video::setLogCallback(nativeLogCallback);
-
-	if(enableLibAVLogging == true) {
-
-		Video::enableLibAVLogging((int)level);
-
-	} else {
-
-		Video::disableLibAVLogging();
-	}
-
+	VideoInit::setLogCallback(nativeLogCallback);
+	
 }
 
 int VideoPlayer::getAvFormatVersion() {

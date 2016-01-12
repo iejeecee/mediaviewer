@@ -71,9 +71,11 @@ namespace MediaViewer.UserControls.MediaStateInfo
 
         private void selectionChanged(object sender, EventArgs e)
         {
+            MediaStateCollectionView view = sender as MediaStateCollectionView;
+
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                List<MediaItem> selectedItems = MediaCollectionView.getSelectedItems();
+                List<MediaItem> selectedItems = view.getSelectedItems();
 
                 long totalSizeBytes = 0;
                 int nrSelectedItems = selectedItems.Count;

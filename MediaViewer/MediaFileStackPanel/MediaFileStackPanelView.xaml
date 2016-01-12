@@ -67,7 +67,7 @@
                 </MediaStackPanel:MediaStackPanelView.MediaItemContextMenu>
             </MediaStackPanel:MediaStackPanelView>
         </Grid>
-        <Grid Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource booleanToVisibilityConverter}}">
+        <Grid x:Name="collapseableButtonGrid" Grid.Row="1" Visibility="{Binding IsEnabled, Converter={StaticResource booleanToVisibilityConverter}}">
             <ToggleButton  x:Name="collapseToggleButton" Grid.Column="0" Height="10" 
 				IsChecked="{Binding IsVisible}">
                 <ToggleButton.Style>

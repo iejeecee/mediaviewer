@@ -214,6 +214,9 @@
       <DependentUpon>YoutubeSearchView.xaml</DependentUpon>
     </Compile>
     <Compile Include="YoutubeSearch\YoutubeSearchViewModel.cs" />
+    <Compile Include="YoutubeToolbarView.xaml.cs">
+      <DependentUpon>YoutubeToolbarView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="YoutubeView.xaml.cs">
       <DependentUpon>YoutubeView.xaml</DependentUpon>
     </Compile>
@@ -239,6 +242,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="YoutubeSearch\YoutubeSearchView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="YoutubeToolbarView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

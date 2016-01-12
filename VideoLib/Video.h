@@ -1,7 +1,5 @@
 #pragma once
 #pragma warning(disable : 4244)
-// unsafe function warning disable
-#pragma warning(disable : 4996)
 #include <algorithm>
 #include "stdafx.h"
 #include "VideoInit.h"
@@ -10,7 +8,6 @@
 
 namespace VideoLib {
 
-typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);
 
 class Video {
 	
@@ -35,41 +32,7 @@ protected:
 			
 	}
 
-	static void libAVLogCallback(void *ptr, int level, const char *fmt, va_list vargs)
-    {
-		char message[65536];   
-		const char *module = NULL;
-
-		// if no logging is done or level is above treshold return
-		if(logCallback == NULL || level > av_log_get_level()) return;
 	
-		// Get module name
-		if(ptr)
-		{
-			AVClass *avc = *(AVClass**) ptr;
-			module = avc->item_name(ptr);
-		}
-
-		std::string fullMessage = "FFMPEG";
-
-		if(module)
-		{
-			fullMessage.append(" (");
-			fullMessage.append(module);
-			fullMessage.append(")");
-		}
-
-		vsnprintf(message, sizeof(message), fmt, vargs);
-
-		fullMessage.append(": ");
-		fullMessage.append(message);
-
-		// remove trailing newline
-		fullMessage.erase(std::remove(fullMessage.begin(), fullMessage.end(), '\n'), fullMessage.end());
-
-		logCallback(level, fullMessage.c_str());
-	
-    }
 
 	virtual void addStream(VideoLib::Stream *stream) {
 
@@ -94,8 +57,7 @@ public:
 	};
 
 	virtual ~Video() {
-
-		disableLibAVLogging();
+		
 		close();
 	}
 
@@ -146,9 +108,9 @@ public:
 		audioIdx = idx;
 	}
 
-	virtual unsigned int getNrStreams() const {
+	virtual int getNrStreams() const {
 		 
-		return((unsigned int)stream.size());
+		return((int)stream.size());
 	}
 
 	virtual AVStream *getVideoStream() const {
@@ -193,30 +155,7 @@ public:
 	}
 	
 
-	static void enableLibAVLogging(int logLevel = AV_LOG_ERROR) {
 	
-		av_log_set_level(logLevel); 
-		av_log_set_callback(&Video::libAVLogCallback);			
-			
-	}
-
-	static void disableLibAVLogging() {
-
-		av_log_set_callback(NULL);	
-	}
-
-	static void setLogCallback(LOG_CALLBACK logCallback) 
-	{
-		Video::logCallback = logCallback;
-	}
-
-	static void writeToLog(int level, char *message) {
-
-		if(logCallback != NULL) {
-
-			logCallback(level, message);
-		}
-	}
 };
 
 

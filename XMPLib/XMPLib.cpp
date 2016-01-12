@@ -783,12 +783,12 @@ void MetaData::WStringToUTF8(String ^input, std::string &output) {
 void MetaData::UTF8ToWString(const std::string &input, String ^%output) {
 		
 	// How long will the UTF-16 string be
-	int wstrlen = MultiByteToWideChar(CP_UTF8, 0, input.c_str(), input.length(), NULL, NULL );
+	int wstrlen = MultiByteToWideChar(CP_UTF8, 0, input.c_str(), (int)input.length(), NULL, NULL );
 	
 	// allocate a buffer
 	wchar_t *buf = (wchar_t * ) malloc( wstrlen * 2 + 2 );
 	// convert to UTF-16
-	MultiByteToWideChar(CP_UTF8, 0, input.c_str(), input.length(), buf, wstrlen);
+	MultiByteToWideChar(CP_UTF8, 0, input.c_str(), (int)input.length(), buf, wstrlen);
 	// null terminate
 	buf[wstrlen] = '\0';
 	

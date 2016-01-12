@@ -1,7 +1,15 @@
-﻿using Microsoft.Practices.Prism.Mvvm;
+﻿using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Highlighting;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using log4net;
+using MediaViewer.Infrastructure.Logging;
+using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,6 +20,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Xml;
+using VideoPlayerControl;
 
 namespace MediaViewer.Logging
 {
@@ -20,7 +30,10 @@ namespace MediaViewer.Logging
     /// </summary>
     public partial class LogView : Window
     {
-      
+
+        LogViewModel ViewModel { get; set; }
+        private char[] trimChars;
+
         public LogView()
         {
             InitializeComponent();
@@ -28,54 +41,73 @@ namespace MediaViewer.Logging
             trimChars = new char[1];
             trimChars[0] = '\n';
 
-            logTextBox.Document.PageWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
-			//filterComboBox.SelectedIndex = 2;
-
-            DataContextChanged += new DependencyPropertyChangedEventHandler(logView_DataContextChanged);
+            //logTextBox.Document.PageWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
+		                       
             Loaded += new RoutedEventHandler((o, e) =>
             {              
                 logTextBox.ScrollToEnd();                
             });
 
-        }
+            Closing += LogView_Closing;
 
-        void logView_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            if (e.OldValue != null) return;
+            VisualAppender visualAppender = (VisualAppender)LogManager.GetRepository().GetAppenders().Single(t => t.Name.Equals("VisualAppender"));
+            DataContext = ViewModel = visualAppender.LogViewModel;
 
-            LogViewModel logViewModel = (LogViewModel)e.NewValue;
-
-            foreach (LogMessageModel message in logViewModel.Messages)
+            lock (ViewModel.MessagesLock)
             {
-                addMessage(message);
-            }
-          
-            logViewModel.Messages.CollectionChanged += new System.Collections.Specialized.NotifyCollectionChangedEventHandler((s, target) =>
+                foreach (LogMessageModel message in ViewModel.Messages)
                 {
-                    if (target.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
-                    {
-                        logTextBox.Document.Blocks.Clear();
-                    }
-                    else if (target.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
-                    {
-                        foreach (LogMessageModel message in target.NewItems)
-                        {
-                            addMessage(message);
-                        }
-                      
-                    }
+                    addMessage(message);
+                }
+            }
 
-                });           
-            
+            ViewModel.Messages.CollectionChanged += messagesCollectionChangedCallback;
+            ViewModel.LogLevel.CurrentChanged += LogLevel_CurrentChanged;
+     
+            using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("MediaViewer.Logging.LogSyntaxHighlighting.xshd"))
+            {
+                using (XmlTextReader reader = new XmlTextReader(s))
+                {
+                    logTextBox.SyntaxHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+                }
+            }
         }
 
-        private char[] trimChars;
+        void LogLevel_CurrentChanged(object sender, EventArgs e)
+        {
+            VideoPlayerViewModel.enableLibAVLogging((LogMessageModel.LogLevel)ViewModel.LogLevel.CurrentItem);
+        }
 
-        private MediaViewer.Logging.LogMessageModel.LogLevel filterLevel;
+        void LogView_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            ViewModel.Messages.CollectionChanged -= messagesCollectionChangedCallback;
+        }
+        
+        void messagesCollectionChangedCallback(Object sender, NotifyCollectionChangedEventArgs e)
+        {
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+                {
+                    logTextBox.Document.Text = null;
+                }
+                else if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add)
+                {
+                    foreach (LogMessageModel message in e.NewItems)
+                    {
+                        addMessage(message);
+                    }
 
+                }
+
+            }));
+
+        }
+
+          
         private void addMessage(LogMessageModel message)
         {
-            if ((int)message.Level > (int)filterLevel)
+            if ((int)message.Level > (int)ViewModel.LogLevel.CurrentItem)
             {
                 return;
             }
@@ -83,91 +115,21 @@ namespace MediaViewer.Logging
             String text = message.Text.TrimEnd(trimChars);
             text = text.Replace("\r\n", "\n");
             text = text.Replace("\n", "\r\t");
-           
-            
-            TextRange tr = new TextRange(logTextBox.Document.ContentEnd,
-            logTextBox.Document.ContentEnd);
 
-            tr.Text = text;
-
-            SolidColorBrush brush;
-
-            switch (message.Level)
+            if (logTextBox.Document.LineCount == LogViewModel.maxLinesInLog)
             {
-
-                case MediaViewer.Logging.LogMessageModel.LogLevel.UNKNOWN:
-                    {
-
-                        brush = Brushes.Black;
-                        break;
-                    }
-                case MediaViewer.Logging.LogMessageModel.LogLevel.DEBUG:
-                    {
-                        brush = Brushes.LightBlue;
-                        break;
-                    }
-                case MediaViewer.Logging.LogMessageModel.LogLevel.ERROR:
-                    {
-                        brush = Brushes.Red;
-                        break;
-                    }
-                case MediaViewer.Logging.LogMessageModel.LogLevel.FATAL:
-                    {
-                        brush = Brushes.DarkRed;
-                        break;
-                    }
-                case MediaViewer.Logging.LogMessageModel.LogLevel.INFO:
-                    {
-                        brush = Brushes.Blue;
-                        break;
-                    }
-                case MediaViewer.Logging.LogMessageModel.LogLevel.WARNING:
-                    {
-                        brush = Brushes.Orange;
-                        break;
-                    }
-                default:
-                    {
-                        brush = Brushes.Black;
-                        break;
-                    }
-
+                int length = logTextBox.Document.GetOffset(2, 0);
+                logTextBox.Document.Remove(0, length);
+            
             }
 
-            tr.ApplyPropertyValue(TextElement.ForegroundProperty, brush);
-  
-
+            int offset = logTextBox.Document.GetOffset(logTextBox.Document.LineCount, 0);
+            logTextBox.Document.Insert(offset, text);
+            
             logTextBox.ScrollToEnd();
             
         }
-
-    
-        private void filterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-            if (filterComboBox.SelectedIndex == 0)
-            {
-
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.ERROR;
-
-            }
-            else if (filterComboBox.SelectedIndex == 1)
-            {
-
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.WARNING;
-
-            }
-            else if (filterComboBox.SelectedIndex == 2)
-            {
-
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.INFO;
-            }
-            else
-            {
-                filterLevel = MediaViewer.Logging.LogMessageModel.LogLevel.DEBUG;
-            }
-        }
-
+            
       
     }
 }

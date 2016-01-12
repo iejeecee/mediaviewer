@@ -44,6 +44,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" Background="{StaticResource imageGridBorderColor2}">
                 <Grid Height="40">
@@ -61,7 +62,7 @@
                     <SortComboBox:SortComboBoxView Grid.Column="4" Margin="5,5,5,5"  HorizontalAlignment="Stretch" VerticalAlignment="Center" ItemsSource="{Binding MediaStateCollectionView.SortModes}"/>
                 </Grid>
             </mwt:ClassicBorderDecorator>
-            <MediaGrid:MediaGridView Grid.Row="2" Background="{StaticResource imageGridBackgroundColor}" 
+            <MediaGrid:MediaGridView Grid.Row="1" Background="{StaticResource imageGridBackgroundColor}" 
                                 NrColumns="{Binding NrColumns}" MediaStateCollectionView="{Binding MediaStateCollectionView}" ScrolledToEnd="mediaGridView_ScrolledToEnd">
                 <MediaGrid:MediaGridView.MediaItemContextMenu>
                     <ContextMenu>
@@ -81,7 +82,8 @@
                                     CommandParameter="{Binding}" Visibility="{Binding Path=., Converter={StaticResource isYoutubeItemConverter},ConverterParameter=YoutubeVideoItem}"/>
                     </ContextMenu>
                 </MediaGrid:MediaGridView.MediaItemContextMenu>
-            </MediaGrid:MediaGridView>                
+            </MediaGrid:MediaGridView>
+            <mwt:ClassicBorderDecorator Grid.Row="2" BorderThickness="2" Background="{StaticResource imageGridBorderColor2}" BorderStyle="Raised" Height="22"/>
         </Grid>
         <GridSplitter x:Name="rightGridSplitter" Width="2" Grid.Column="2" HorizontalAlignment="Left"/>
         <Layout:TabbedExpanderPanel Grid.Column="2" HorizontalAlignment="Stretch" 

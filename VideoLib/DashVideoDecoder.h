@@ -17,6 +17,8 @@ namespace VideoLib {
 
 		VideoDecoder::ReadFrameResult readVideoFrame(AVPacket &packet) {
 				 
+			av_packet_unref(&packet);
+
 			VideoDecoder::ReadFrameResult result = videoDecoder->readFrame(&packet);
 
 			if(result != VideoDecoder::ReadFrameResult::OK) return result;
@@ -36,7 +38,11 @@ namespace VideoLib {
 
 		VideoDecoder::ReadFrameResult readAudioFrame(AVPacket &packet) {
 			
+			av_packet_unref(&packet);
+
 			VideoDecoder::ReadFrameResult result = audioDecoder->readFrame(&packet);
+
+			packet.stream_index += audioStreamOffset;
 
 			if(result != VideoDecoder::ReadFrameResult::OK) return result;
 
@@ -92,7 +98,7 @@ namespace VideoLib {
 			audioDecoder->setAudioStreamIndex(idx - audioStreamOffset);
 		}
 
-		virtual unsigned int getNrStreams() const {
+		virtual int getNrStreams() const {
 
 			return(videoDecoder->getNrStreams() + audioDecoder->getNrStreams());
 		}
@@ -143,6 +149,8 @@ namespace VideoLib {
 			videoDecoder = new VideoDecoder();
 			audioDecoder = new VideoDecoder();
 
+			av_init_packet(&videoPacket);
+			av_init_packet(&audioPacket);
 			videoPacket.data = NULL;
 			videoPacket.size = 0;
 			audioPacket.data = NULL;
@@ -164,17 +172,20 @@ namespace VideoLib {
 
 			if(videoPacket.data != NULL) {
 
-				av_free_packet(&videoPacket);
+				av_packet_unref(&videoPacket);
 				videoPacket.data = NULL;
 				videoPacket.size = 0;
 			}
 
 			if(audioPacket.data != NULL) {
 
-				av_free_packet(&audioPacket);
+				av_packet_unref(&audioPacket);
 				audioPacket.data = NULL;
 				audioPacket.size = 0;
 			}
+
+			av_init_packet(&videoPacket);
+			av_init_packet(&audioPacket);
 		}
 
 		virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) 
@@ -280,39 +291,47 @@ namespace VideoLib {
 
 			if(videoPacket.data == NULL && audioPacket.data == NULL) {
 
-				if((result = readVideoFrame(videoPacket)) != VideoDecoder::ReadFrameResult::OK) return result;
-				if((result = readAudioFrame(audioPacket)) != VideoDecoder::ReadFrameResult::OK) return result;
-
-				audioPacket.stream_index += audioStreamOffset;
-
+				if((result = readVideoFrame(videoPacket)) != VideoDecoder::ReadFrameResult::OK) {
+					
+					av_packet_ref(packet, &videoPacket);
+					return result;
+				}
+				if((result = readAudioFrame(audioPacket)) != VideoDecoder::ReadFrameResult::OK) {
+					
+					av_packet_ref(packet, &audioPacket);
+					return result;
+				}
+			
 			} else {
 
 				if(videoDts <= audioDts) {
-
-					av_free_packet(&videoPacket);
-
-					if((result = readVideoFrame(videoPacket)) != VideoDecoder::ReadFrameResult::OK) return result;
+				
+					if((result = readVideoFrame(videoPacket)) != VideoDecoder::ReadFrameResult::OK) {
+						
+						av_packet_ref(packet, &videoPacket);
+						return result;
+					}
 				
 				} else {
-
-					av_free_packet(&audioPacket);
-
-					if((result = readAudioFrame(audioPacket)) != VideoDecoder::ReadFrameResult::OK) return result;
-
-					audioPacket.stream_index += audioStreamOffset;
+										
+					if((result = readAudioFrame(audioPacket)) != VideoDecoder::ReadFrameResult::OK) {
+						
+						av_packet_ref(packet, &audioPacket);
+						return result;
+					}					
 				}
 			
 			}
-				
+						
 			if(videoDts <= audioDts) {
 
-				av_copy_packet(packet, &videoPacket);
+				av_packet_ref(packet, &videoPacket);
 						
 			} else {
 
-				av_copy_packet(packet, &audioPacket);		
+				av_packet_ref(packet, &audioPacket);		
 			}
-		
+				
 			return(result);
 
 		}

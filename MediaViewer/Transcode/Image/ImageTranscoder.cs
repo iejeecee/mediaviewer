@@ -1,4 +1,5 @@
-﻿using MediaViewer.Infrastructure.Utils;
+﻿using MediaViewer.Infrastructure;
+using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;
@@ -22,7 +23,7 @@ namespace MediaViewer.Transcode.Image
             int width = image.PixelWidth;
             int height = image.PixelHeight;
 
-            float scale = ImageUtils.resizeRectangle(width, height, 240, 180);
+            float scale = ImageUtils.resizeRectangle(width, height, Constants.MAX_THUMBNAIL_WIDTH, Constants.MAX_THUMBNAIL_HEIGHT);
 
             TransformedBitmap thumbnail = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale, scale));
           

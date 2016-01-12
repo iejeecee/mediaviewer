@@ -117,18 +117,7 @@ namespace MediaViewer.MediaFileBrowser
             SetProperty(ref mediaFileGridViewModel, value);
             }
         }
-        
-        MediaFileStackPanelViewModel dummyMediaStackPanelViewModel;
-
-        public MediaFileStackPanelViewModel DummyMediaStackPanelViewModel
-        {
-            get { return dummyMediaStackPanelViewModel; }
-            set
-            {                
-                SetProperty(ref dummyMediaStackPanelViewModel, value);
-            }
-        }
-
+            
         GeotagFileBrowserViewModel geotagFileBrowserViewModel;
 
         internal GeotagFileBrowserViewModel GeotagFileBrowserViewModel
@@ -189,10 +178,7 @@ namespace MediaViewer.MediaFileBrowser
             EventAggregator = eventAggregator;
           
             MediaFileGridViewModel = new MediaFileGridViewModel(mediaFileWatcher.MediaFileState, EventAggregator);
-
-            DummyMediaStackPanelViewModel = new MediaFileStackPanelViewModel(MediaFileGridViewModel.MediaStateCollectionView, EventAggregator);
-            DummyMediaStackPanelViewModel.IsEnabled = false;
-
+       
             ImageViewModel = new MediaFileBrowserImagePanelViewModel(eventAggregator);
             ImageViewModel.SelectedScaleMode = MediaViewer.UserControls.ImagePanel.ScaleMode.FIT_HEIGHT_AND_WIDTH;
 
@@ -439,7 +425,7 @@ namespace MediaViewer.MediaFileBrowser
            
             }, navigationParams);
 
-            Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
+            Shell.ShellViewModel.navigateToMediaStackPanelView(null);
 
             Title = MediaFileWatcher.Path;
         }
@@ -533,7 +519,7 @@ namespace MediaViewer.MediaFileBrowser
             {
                 if (CurrentViewModel is MediaFileGridViewModel)
                 {
-                    Shell.ShellViewModel.navigateToMediaStackPanelView(DummyMediaStackPanelViewModel);
+                    Shell.ShellViewModel.navigateToMediaStackPanelView(null);
                     newTitle = MediaFileWatcher.Path;
                 }
                 else if (CurrentViewModel is MediaFileBrowserImagePanelViewModel)

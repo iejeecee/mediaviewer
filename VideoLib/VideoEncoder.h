@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Video.h"
 #include "VideoLibException.h"
+#include "MemoryStreamAVIOContext.h"
 
 using namespace msclr::interop;
 
@@ -33,6 +34,26 @@ public:
 		
 	}
 
+	virtual ~VideoEncoder() {
+
+		close();
+	}
+
+	void open(MemoryStreamAVIOContext *memoryStreamCtx, const char *formatName) {
+
+		formatContext = avformat_alloc_context();		
+		formatContext->pb =  memoryStreamCtx->getAVIOContext();
+
+		avformat_alloc_output_context2(&formatContext, NULL, formatName, NULL);		
+		if(formatContext == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot create output format context with memorystream");
+		}
+	
+		outFormat = formatContext->oformat;
+
+	}
+
 	virtual void open(String ^outputFilename) {
 
 		// Convert location to UTF8 string pointer
@@ -44,8 +65,7 @@ public:
 		// Call the function, typecast from byte* -> char* is required
 		char *outputUTF8 = reinterpret_cast<char*>(pinnedBytes);
 			
-		avformat_alloc_output_context2(&formatContext, NULL, NULL, outputUTF8);
-		
+		avformat_alloc_output_context2(&formatContext, NULL, NULL, outputUTF8);		
 		if(formatContext == NULL) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot create output format context: " + outputFilename);
@@ -179,7 +199,7 @@ public:
 		ret = avformat_write_header(formatContext, NULL);
 		if (ret < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Error writing header: " + marshal_as<String ^>(formatContext->filename) + " " + VideoInit::errorToString(ret));	
+			throw gcnew VideoLib::VideoLibException("Error writing header: " + marshal_as<String ^>(formatContext->filename) + " ", ret);	
 
 		}
 
@@ -210,7 +230,7 @@ public:
 
 		if(ret < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Error encoding frame: " + marshal_as<String ^>(formatContext->filename) + " " + VideoInit::errorToString(ret));	
+			throw gcnew VideoLib::VideoLibException("Error encoding frame: " + marshal_as<String ^>(formatContext->filename) + " ", ret);	
 		}
 
 		encPacket->stream_index = streamIdx;
@@ -223,7 +243,7 @@ public:
 		int ret = av_interleaved_write_frame(formatContext, encPacket);
 		if(ret != 0) {
 
-			throw gcnew VideoLib::VideoLibException("Error writing encoded packet for: " + marshal_as<String ^>(formatContext->filename) + " " + VideoInit::errorToString(ret));	
+			throw gcnew VideoLib::VideoLibException("Error writing encoded packet for: " + marshal_as<String ^>(formatContext->filename) + " ", ret);	
 		}
 		
 	}
@@ -235,7 +255,7 @@ public:
 		int ret = av_write_trailer(formatContext);
 		if(ret != 0) {
 
-			throw gcnew VideoLib::VideoLibException("Error writing trailer for: " + marshal_as<String ^>(formatContext->filename) + " " + VideoInit::errorToString(ret));	
+			throw gcnew VideoLib::VideoLibException("Error writing trailer for: " + marshal_as<String ^>(formatContext->filename) + " ", ret);	
 		}
 	}
 

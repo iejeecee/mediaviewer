@@ -63,7 +63,7 @@ public:
 				packet->flags & AV_PKT_FLAG_KEY);
 			if (result > 0) {
 
-				av_free_packet(packet);
+				av_packet_unref(packet);
 				new_pkt.buf = av_buffer_create(new_pkt.data, new_pkt.size, av_buffer_default_free, NULL, 0);
 				if (!new_pkt.buf) {
 

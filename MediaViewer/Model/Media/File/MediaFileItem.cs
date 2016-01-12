@@ -304,6 +304,7 @@ namespace MediaViewer.Model.Media.File
 
             ItemState = MediaItemState.DELETED;
             //Factory.deleteFromDictionary(location);
+            Logger.Log.Info("Deleted: " + Location);
 
             return (isImported);            
            

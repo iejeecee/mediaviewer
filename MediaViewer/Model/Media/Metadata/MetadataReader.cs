@@ -31,6 +31,7 @@ namespace MediaViewer.Model.Media.Metadata
 
             try
             {
+                
                 FileInfo info = new FileInfo(media.Location);
                 info.Refresh();
                 media.LastModifiedDate = info.LastWriteTime < sqlMinDate ? sqlMinDate : info.LastWriteTime;

@@ -348,8 +348,7 @@ namespace MediaViewer.VideoPanel
             videoPlayer.HasAudioChanged += videoPlayer_HasAudioChanged;
             videoPlayer.IsMutedChanged += videoPlayer_IsMutedChanged;
             videoPlayer.VolumeChanged += videoPlayer_VolumeChanged;
-            videoPlayer.Log = Logger.Log;
-
+            
             MinVolume = videoPlayer.MinVolume;
             MaxVolume = videoPlayer.MaxVolume;
             videoPlayer.IsMuted = IsMuted;

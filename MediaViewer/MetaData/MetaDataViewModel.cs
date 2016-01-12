@@ -225,21 +225,7 @@ namespace MediaViewer.MetaData
                 }
 
             });
-
-            EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Subscribe((item) =>
-            {
-                lock(itemsLock)            
-                {
-                    if (BatchMode == false && Items.Count > 0)
-                    {
-                        if (Items.ElementAt(0).Equals(item))
-                        {
-                            grabData();
-                        }
-                    }
-                }
-                
-            });
+         
 
             mediaFileWatcher.MediaFileState.ItemPropertyChanged += MediaState_ItemPropertiesChanged;
           
@@ -267,6 +253,22 @@ namespace MediaViewer.MetaData
                         {
                             Filename = Path.GetFileNameWithoutExtension(modifiedItem.Location);
                             Location = FileUtils.getPathWithoutFileName(modifiedItem.Location);
+                        }
+                    }
+                }
+
+            }
+            else if (e.PropertyName.Equals("Metadata"))
+            {
+                lock (itemsLock)
+                {
+                    if (BatchMode == false && Items.Count > 0)
+                    {
+                        MediaFileItem modifiedItem = sender as MediaFileItem;
+
+                        if (Items.ElementAt(0).Equals(modifiedItem))
+                        {
+                            grabData();
                         }
                     }
                 }

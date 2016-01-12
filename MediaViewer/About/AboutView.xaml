@@ -12,12 +12,13 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>         
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" Text="MediaViewer" VerticalAlignment="Top" FontSize="48" Foreground="White" Margin="0,40,0,0"/>
-        <TextBlock Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center" Foreground="LightGray">
+        <TextBlock Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" TextAlignment="Center" Foreground="LightGray" Margin="0,10,0,10">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}v{0} ({1})">                 
                     <Binding Path="AssemblyInfo.Version"/>
@@ -25,7 +26,8 @@
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
-        <TextBox Grid.Row="2" HorizontalAlignment="Center" Height="160" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True"/>
-        <TextBlock Grid.Row="3" HorizontalAlignment="Center" Text="©2013/2014 IJC. All Rights Reserved" Foreground="LightGray" Margin="0,0,0,10"/>                        
+        <TextBox Grid.Row="2" HorizontalAlignment="Center" Height="50" TextWrapping="Wrap" Text="{Binding LibraryVersionsInfo}" VerticalAlignment="Center" Width="230" VerticalScrollBarVisibility="Visible" IsReadOnly="True" AcceptsReturn="True"/>
+        <TextBlock Grid.Row="3" HorizontalAlignment="Center" Text="©2013/2014 IJC. All Rights Reserved" Foreground="LightGray" Margin="0,10,0,10"/>                        
+        <Button Grid.Row="4" Width="50" Height="20" Content="Log" Command="{Binding LogCommand}"/>
     </Grid>                         
 </UserControl>

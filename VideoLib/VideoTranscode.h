@@ -2,9 +2,8 @@
 #include "VideoDecoderFactory.h"
 #include "IVideoDecoder.h"
 #include "VideoEncoder.h"
-#include "FilterGraph.h"
-#include "BitStreamFilter.h"
-#include "VideoTranscodeStreamsInfo.h"
+#include "VideoTransformer.h"
+#include "Utils.h"
 
 #define DISCARD_STREAM -1
 
@@ -17,15 +16,33 @@ using namespace MediaViewer::Infrastructure::Logging;
 
 namespace VideoLib {
 
-class VideoTranscode {
+class VideoTranscode : VideoTransformer {
 
 protected:
 	
-	IVideoDecoder *input;
+	IVideoDecoder *input, *input2;
 	VideoEncoder *output;
 
-	VideoTranscodeStreamsInfo streamInfo;
 	int inputStreamOffset;
+	
+	StreamTransformMode streamOptionsToStreamTransformMode(StreamOptions mode) {
+
+		switch (mode)
+		{
+		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Discard:
+			return(StreamTransformMode::DISCARD);
+			break;
+		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Copy:
+			return(StreamTransformMode::COPY);
+			break;
+		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Encode:
+			return(StreamTransformMode::ENCODE);
+			break;
+		default:
+			throw gcnew VideoLibException("Unknown stream transform mode");
+			break;
+		}
+	}
 
 public:
 
@@ -34,47 +51,40 @@ public:
 	VideoTranscode() {
 		
 		input = NULL;
-		output = new VideoEncoder();	
-				
+		output = new VideoEncoder();						
 	}
 
-	~VideoTranscode()
+	virtual ~VideoTranscode()
 	{
 		if(input != NULL) {
+
 			delete input;
 		}
-		delete output;		
+
+		delete output;			
 	}
 				
+	bool getNextPacketCustom(AVPacket *packet, int &inputIdx) {
+
+		return false;
+	}
+
 	void transcode(OpenVideoArgs ^openArgs, String ^outputFilename, System::Threading::CancellationToken token, 
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
-	{
-		
-		AVPacket packet;
-		
-		AVFrame *frame = NULL;
-		AVMediaType type;
-		int ret = 0;	
-				
-		int got_frame;
-		
+	{			
+		VideoTransformerInputInfo *inputInfo = NULL,*inputInfo2;
+		VideoTransformerOutputInfo *outputInfo = NULL;
+
 		try {
 
-			initialize(openArgs, outputFilename, options, token);
-			
-			av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
-
+			input = VideoDecoderFactory::create(input, openArgs);
+			input->open(openArgs, token);
+						
 			double startTimeRange = 0;
 
 			if(options->ContainsKey("startTimeRange")) {
 
-				startTimeRange = (double)options["startTimeRange"];
-
-				bool result = input->seek(startTimeRange);				
-				if(result == false) {
-					
-					throw gcnew VideoLib::VideoLibException("Could not search in input stream(s)");
-				}
+				startTimeRange = (double)options["startTimeRange"];				
 			}
 
 			double endTimeRange = DBL_MAX;
@@ -84,189 +94,56 @@ public:
 				endTimeRange = (double)options["endTimeRange"];						
 			}
 
-			streamInfo.initialize(input, startTimeRange, endTimeRange);
+			inputInfo = new VideoTransformerInputInfo(input,startTimeRange,endTimeRange);
 
-			int i = 0;
-			double progress = 0;
-						
-			// read all packets 
-			while (1) {
+			output = new VideoEncoder();
+			output->open(outputFilename);
 
-				if(token.IsCancellationRequested) {
+			outputInfo = new VideoTransformerOutputInfo(output);
 
-					token.ThrowIfCancellationRequested();
-				}
+			initialize(inputInfo, outputInfo, options, token);
+			
+			addInput(inputInfo);
+			addOutput(outputInfo);
 
-				if (input->readFrame(&packet) != VideoDecoder::ReadFrameResult::OK) {
-					// finished
-					break;
-				}
-						
-				unsigned int inStreamIdx = packet.stream_index;	
-				unsigned int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
-															
-				type = input->getStream(inStreamIdx)->getCodecType();
+			input2 = new VideoDecoder();
+			input2->open(gcnew OpenVideoArgs("D:\\game\\XMP-Toolkit-SDK-5.1.2\\samples\\testfiles\\b.mp4"), token);
 
-				// discard packets from this input stream
-				if(outStreamIdx == DISCARD_STREAM) continue;
-												
-				if(streamInfo[inStreamIdx]->filterGraph != NULL) {
-					
-					// transcode packets
-					frame = av_frame_alloc();
-					if (!frame) {
+			inputInfo2 = new VideoTransformerInputInfo(input2);
+			inputInfo2->addStreamInfo(new VideoTransformerInputStreamInfo(0,0,StreamTransformMode::ENCODE,0,"in2"));
+			inputInfo2->addStreamInfo(new VideoTransformerInputStreamInfo(1,1,StreamTransformMode::ENCODE,0,"in2"));
+			addInput(inputInfo2);
+			
+			initFilters(options);
 
-						throw gcnew VideoLib::VideoLibException("Out of memory");	
-					}
-																																
-					if(type == AVMEDIA_TYPE_VIDEO) {
-
-						ret = input->decodeVideoFrame(frame, &got_frame, &packet);
-
-					} else {
-
-						ret = input->decodeAudioFrame(frame, &got_frame, &packet);
-					}
-				
-					if (ret < 0) {
-
-						av_frame_free(&frame);
-						Logger::Log->Error("Error decoding input: " + openArgs->VideoLocation);
-						break;										
-					}
-
-					if (got_frame) {
-
-						frame->pts = av_frame_get_best_effort_timestamp(frame);
-						
-						if(frame->pts == AV_NOPTS_VALUE) {
-
-							throw gcnew VideoLib::VideoLibException("Cannot encode frame without pts value");	
-						}
-
-						ret = 0;
-
-						// skip frames which are outside the specified timerange 
-						double frameTimeSeconds = input->getStream(inStreamIdx)->getTimeSeconds(frame->pts);
-						if(frameTimeSeconds >= streamInfo.getStartTimeSeconds()) {
-							
-							streamInfo.calcDtsOffsets(inStreamIdx, frame->pts, AV_NOPTS_VALUE);
-
-							// subtract starting offset from frame pts value												
-							frame->pts += streamInfo[inStreamIdx]->dtsOffset;
-
-							// rescale pts from stream time base to codec time base
-							frame->pts = av_rescale_q_rnd(frame->pts,
-								input->getStream(inStreamIdx)->getAVStream()->time_base,
-								input->getStream(inStreamIdx)->getAVStream()->codec->time_base,
-								(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-														
-							ret = filterEncodeWriteFrame(frame, inStreamIdx);
-						}
-
-						av_frame_free(&frame);
-
-						if(streamInfo.hasEveryStreamPassedEndTime()) break;
-																
-						if (ret < 0) {
-							return;
-						}
-													
-					} else {
-
-						av_frame_free(&frame);
-					}
-
-				} else {
-					
-					//get the dts value of the first input packet and subtract it from subsequent dts & pts
-					//values to make sure the output video starts at time zero.										
-					streamInfo.calcDtsOffsets(packet.stream_index, packet.pts, packet.dts);
-
-					if(streamInfo.hasEveryStreamPassedEndTime()) break;
-
-					// copy packets					
-					packet.stream_index = outStreamIdx;
-
-					// subtract starting offset from packet pts and dts values
-					if(packet.dts != AV_NOPTS_VALUE) {
-
-						packet.dts += streamInfo[inStreamIdx]->dtsOffset;
-					}
-
-					if(packet.pts != AV_NOPTS_VALUE) {
-
-						packet.pts += streamInfo[inStreamIdx]->dtsOffset;
-					}
-									
-					// remux this frame without reencoding 
-					packet.dts = av_rescale_q_rnd(packet.dts,
-						input->getStream(inStreamIdx)->getAVStream()->time_base,
-						output->getFormatContext()->streams[outStreamIdx]->time_base,
-						(AVRounding)(AV_ROUND_NEAR_INF | AV_ROUND_PASS_MINMAX));
-
-					packet.pts = av_rescale_q_rnd(packet.pts,
-						input->getStream(inStreamIdx)->getAVStream()->time_base,
-						output->getFormatContext()->streams[outStreamIdx]->time_base,
-						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-
-					packet.duration = av_rescale_q(packet.duration, 
-						input->getStream(inStreamIdx)->getAVStream()->time_base, 
-						output->getFormatContext()->streams[outStreamIdx]->time_base);
-
-					packet.pos = -1;
-										
-					streamInfo[inStreamIdx]->bitStreamFilter->filterPacket(&packet, output->getStream(outStreamIdx)->getCodecContext());
-					
-					output->writeEncodedPacket(&packet);											
-
-				}
-
-				av_packet_unref(&packet);
-
-				if(i++ % 500 && progressCallback != NULL) {
-										
-					double endTime = Math::Min(endTimeRange, input->getDurationSeconds());
-					double totalSeconds = endTime - startTimeRange;
-
-					double progress = (streamInfo[inStreamIdx]->posSeconds - startTimeRange) / totalSeconds; 
-
-					progressCallback(progress);
-
-				}
-				
-			}
-
-			// flush filters and encoders 
-			for(unsigned int i = 0; i < input->getNrStreams(); i++) 
-			{
-				if (streamInfo[i]->filterGraph == NULL) continue;
-
-				// flush filter 					
-				ret = filterEncodeWriteFrame(NULL, i);
-				if (ret < 0) {
-
-					throw gcnew VideoLib::VideoLibException("Flushing filter failed.");			
-				}
-
-				// flush encoder 
-				ret = flushEncoder(i);
-				if (ret < 0) {
-
-					throw gcnew VideoLib::VideoLibException("Flushing encoder failed.");					
-				}
-			}
-
-			output->writeTrailer();
+			av_dump_format(output->getFormatContext(), 0, output->getFormatContext()->filename, 1);
+			
+			transform(token, progressCallback, &VideoTranscode::getNextPacketSeqOrder);
 
 		} finally {
-		
-			av_packet_unref(&packet);
-			av_frame_free(&frame);
 			
-			streamInfo.clear();
-						
-			input->close();
+			if(inputInfo != NULL) {
+
+				delete inputInfo;
+			}
+			
+			if(input2 != NULL) {
+
+				input2->close();
+				delete input2;
+			}
+
+			if(inputInfo2 != NULL) {
+
+				delete inputInfo2;
+			}
+
+			if(outputInfo != NULL) 
+			{
+				delete outputInfo;
+			}
+
+			input->close();			
 			output->close();
 		}		
 
@@ -274,24 +151,25 @@ public:
 
 protected:
 
+	virtual double calculateProgress() {
 
-	void initOutputStream(Stream *inStream, StreamOptions streamMode, Dictionary<String ^, Object ^> ^options) 
+		double endTime = Math::Min(inputs[0]->endTimeRange, inputs[0]->decoder->getDurationSeconds());
+		double totalSeconds = endTime - inputs[0]->startTimeRange;
+
+		double progress = (inputs[0]->streamsInfo[0]->posSeconds - inputs[0]->startTimeRange) / totalSeconds; 
+
+		return progress;
+	}
+
+	void initOutputStream(Stream *inStream, StreamTransformMode streamMode, Dictionary<String ^, Object ^> ^options) 
 	{
-				
-		if(streamMode == StreamOptions::Discard) {
-
-			streamInfo.add();
-		
-		} else if(streamMode == StreamOptions::Copy) {
-
-			output->createStream(inStream);
-
-			int outStreamIdx = output->getNrStreams() - 1;
-
-			streamInfo.add(outStreamIdx);
-			
-		} else {
-
+						
+		if(streamMode == StreamTransformMode::COPY) 
+		{		
+			output->createStream(inStream);						
+		} 
+		else if(streamMode == StreamTransformMode::ENCODE) 
+		{			
 			VideoLib::Stream *outStream;
 
 			AVCodecContext *dec_ctx = inStream->getCodecContext();
@@ -370,151 +248,69 @@ protected:
 			}
 								
 			outStream->open();
-			
-			int outStreamIdx = output->getNrStreams() - 1;
-
-			streamInfo.add(outStreamIdx);
+					
 		}			
 						
 	}
 
 		
-	void initialize(OpenVideoArgs ^openArgs, String ^outputFilename, Dictionary<String ^,Object ^> ^options, 
-		System::Threading::CancellationToken token) 
+	void initialize(VideoTransformerInputInfo *inputInfo, VideoTransformerOutputInfo *outputInfo,
+		Dictionary<String ^,Object ^> ^options, System::Threading::CancellationToken token) 
 	{
-		inputStreamOffset = 0;
-		
-		output->open(outputFilename);
-
-		streamInfo.clear();	
-
-		input = VideoDecoderFactory::create(input, openArgs);
-
-		input->open(openArgs, token);
-										
-		for(unsigned int i = 0; i < input->getNrStreams(); i++) {
+		inputStreamOffset = 0;				
+					
+		for(int i = 0; i < input->getNrStreams(); i++) {
 				
+			VideoTransformerInputStreamInfo *inputStreamInfo;
+
 			Stream *inStream = input->getStream(i);
 											
-			if ((inStream->isVideo() && i == input->getVideoStreamIndex())
-				|| (inStream->isAudio() && i == input->getAudioStreamIndex())) {
+			if ((inStream->isVideo() && i == input->getVideoStreamIndex()) ||
+				(inStream->isAudio() && i == input->getAudioStreamIndex()))
+			{
+				StreamTransformMode streamMode = inStream->isVideo() ? 
+					streamOptionsToStreamTransformMode((StreamOptions)options["videoStreamMode"])
+					: streamOptionsToStreamTransformMode((StreamOptions)options["audioStreamMode"]);
 
-				StreamOptions streamMode = inStream->getCodecType() == AVMEDIA_TYPE_VIDEO ? 
-					(StreamOptions)options["videoStreamMode"] : (StreamOptions)options["audioStreamMode"];
-							
-				initOutputStream(inStream, streamMode, options);
-							
-			} else if (inStream->getCodecType() == AVMEDIA_TYPE_UNKNOWN) {
+				int outStreamIdx = output->getNrStreams();
 
-				throw gcnew VideoLib::VideoLibException("Elementary stream is of unknown type, cannot proceed: " + outputFilename);
+				inputStreamInfo = new VideoTransformerInputStreamInfo(i, outStreamIdx, streamMode);
 
-			} else {
+				if(streamMode != StreamTransformMode::DISCARD) {
 
-				streamInfo.add();				
-			}
-			
-		}
-		
-		output->writeHeader();
+					VideoTransformerOutputStreamInfo *outputStreamInfo = 
+						new VideoTransformerOutputStreamInfo(outStreamIdx, streamMode);
 
-		initFilters(options);
-	}
+					outputInfo->addStreamInfo(outputStreamInfo);
 
-	int flushEncoder(unsigned int inStreamIdx)
-	{		
-		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
-
-		if (!(output->getStream(outStreamIdx)->getCodec()->capabilities & CODEC_CAP_DELAY))
-		{
-			return 0;
-		}
-
-		while (encodeWriteFrame(NULL, inStreamIdx)) {}
-
-		return 0;
-	}
-
-	bool encodeWriteFrame(AVFrame *filt_frame, unsigned int inStreamIdx) {
-	
-		AVPacket enc_pkt;
-
-		int outStreamIdx = streamInfo[inStreamIdx]->outStreamIdx;
-
-		bool gotPacket = output->encodeFrame(outStreamIdx, filt_frame, &enc_pkt);
-	
-		if (gotPacket == false) return false;					
-
-		// prepare packet for muxing 		
-
-		enc_pkt.dts = av_rescale_q_rnd(enc_pkt.dts,
-			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
-			output->getFormatContext()->streams[outStreamIdx]->time_base,
-			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-
-		enc_pkt.pts = av_rescale_q_rnd(enc_pkt.pts,
-			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
-			output->getFormatContext()->streams[outStreamIdx]->time_base,
-			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-
-		enc_pkt.duration = av_rescale_q(enc_pkt.duration,
-			output->getFormatContext()->streams[outStreamIdx]->codec->time_base,
-			output->getFormatContext()->streams[outStreamIdx]->time_base);
-		
-		streamInfo[inStreamIdx]->bitStreamFilter->filterPacket(&enc_pkt, output->getStream(outStreamIdx)->getCodecContext());
-		
-		output->writeEncodedPacket(&enc_pkt);	
-
-		return true;
-	}
-
-	int filterEncodeWriteFrame(AVFrame *frame, unsigned int inStreamIdx)
-	{
-				
-		// push frame trough filtergraph
-		streamInfo[inStreamIdx]->filterGraph->pushFrame(frame);
-			
-		// pull filtered frames from the filtergraph
-		while (1) {
-
-			AVFrame *filteredFrame = av_frame_alloc();
-			if (!filteredFrame) {
-
-				throw gcnew VideoLib::VideoLibException("Not enough memory");				
-			}
-
-			try {
-
-				bool success = streamInfo[inStreamIdx]->filterGraph->pullFrame(filteredFrame);			
-				if (success == false) {
-				
-					return(0);
+					initOutputStream(inStream, streamMode, options);
+					initBitstreamFilters(i,outStreamIdx,streamMode,outputInfo); 
 				}
-		
-				encodeWriteFrame(filteredFrame, inStreamIdx);
-				
-			} finally {
-
-				av_frame_free(&filteredFrame);
+			} 
+			else 
+			{				
+				inputStreamInfo = new VideoTransformerInputStreamInfo(i,-1, StreamTransformMode::DISCARD);
 			}
+			
+			inputInfo->addStreamInfo(inputStreamInfo);
 		}
-
-		return(0);
+		
 	}
 
 	int initFilters(Dictionary<String ^,Object ^> ^options)
 	{		
-		unsigned int i;
-						
-		for (i = 0; i < input->getNrStreams(); i++) {
-											
+								
+		for (int i = 0; i < input->getNrStreams(); i++) {
+					
+			//int inIdx = i;
+			//int outIdx = streamInfo[inIdx]->outStreamIdx;
+
 			if (input->getStream(i)->isVideo() && i == input->getVideoStreamIndex()) {
 
-				if((StreamOptions)options["videoStreamMode"] != StreamOptions::Encode) continue;
-
-				streamInfo[i]->filterGraph = new FilterGraph(input->getVideoCodecContext(),
-					output->getVideoCodecContext()->pix_fmt, SWS_BICUBIC);
-
-				int outputFmt = (int)output->getVideoCodecContext()->pix_fmt;
+				StreamOptions videoStreamMode = (StreamOptions)options["videoStreamMode"];	
+				
+				if(videoStreamMode != StreamOptions::Encode) continue;
+																	
 				int inWidth = input->getWidth();
 				int inHeight = input->getHeight();
 				int outWidth = output->getVideoCodecContext()->width;
@@ -536,99 +332,116 @@ protected:
 					centeredRect = outRect;
 				}
 				
-				String ^videoGraph = "scale=" + centeredRect.Width + "x" + centeredRect.Height;
+				String ^videoGraph = "";
+
+				if(inWidth != outWidth || inHeight != outHeight) {
+
+					if(!String::IsNullOrEmpty(videoGraph)) videoGraph += ",";
+
+					videoGraph += "scale=" + centeredRect.Width + "x" + centeredRect.Height;
+				}
 
 				if(centeredRect.Width != outWidth || centeredRect.Height != outHeight) 
 				{
+					if(!String::IsNullOrEmpty(videoGraph)) videoGraph += ",";
+
 					// create a centered rectangle to maintain input aspect ratio using the padding filter			
-					videoGraph += ",pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y;
+					videoGraph += "pad=" + outWidth + ":" + outHeight + ":" + centeredRect.X + ":" + centeredRect.Y;
 				}
-				
-				videoGraph += ",format=" + outputFmt;				
-				
+															
 				if(options->ContainsKey("framesPerSecond")) {
+
+					if(!String::IsNullOrEmpty(videoGraph)) videoGraph += ",";
 
 					float newFps = (float)options["framesPerSecond"];
 					float inFps = input->getFrameRate();
 
 					String ^scalePts = (inFps / newFps).ToString(System::Globalization::CultureInfo::InvariantCulture);
 					
-					videoGraph += ",fps=" + newFps + ",setpts=" + scalePts + "*PTS";
+					videoGraph += "fps=" + newFps + ",setpts=" + scalePts + "*PTS";
 				}
+
+				videoGraph = "[in] [in2] concat=v=1:a=0";
+
+				if(String::IsNullOrEmpty(videoGraph)) videoGraph = "null";
 
 				std::string value = msclr::interop::marshal_as<std::string>(videoGraph);
 
-				streamInfo[i]->filterGraph->createGraph(value.c_str());				
+				initVideoFilterGraph(value.c_str());				
 
 			} else if(input->getStream(i)->isAudio() && i == input->getAudioStreamIndex()) {
 
-				StreamOptions audioStreamMode = (StreamOptions)options["audioStreamMode"];
-
-				initAudioBitstreamFilters(i, audioStreamMode);
-
+				StreamOptions audioStreamMode = (StreamOptions)options["audioStreamMode"];		
+				
 				if(audioStreamMode != StreamOptions::Encode) continue;
-							
-				streamInfo[i]->filterGraph = new FilterGraph(input->getAudioCodecContext(),
-					output->getAudioCodecContext()->sample_fmt, output->getAudioCodecContext()->channel_layout,
-					output->getAudioCodecContext()->sample_rate);
-
-				String ^audioGraph = "anull";
+																		
+				String ^audioGraph = "";
 
 				if(output->getAudioCodecContext()->frame_size != 0) {
 
-					audioGraph = "asetnsamples=n=" + output->getAudioCodecContext()->frame_size;
+					if(!String::IsNullOrEmpty(audioGraph)) audioGraph += ",";
+
+					audioGraph += "asetnsamples=n=" + output->getAudioCodecContext()->frame_size;
 				}
 
 				if(output->getAudioCodecContext()->sample_rate != input->getAudioCodecContext()->sample_rate)
 				{
-					if(audioGraph->Equals("anull")) {
-
-						audioGraph = "";
-
-					} else {
-
-						audioGraph += ",";
-					}
+					if(!String::IsNullOrEmpty(audioGraph)) audioGraph += ",";
 
 					audioGraph = "aresample=" + output->getAudioCodecContext()->sample_rate;
 				}
 
+				//audioGraph = "[in2] asetnsamples=n=" + output->getAudioCodecContext()->frame_size + " [bud]; [in] [bud] concat=v=0:a=1";
+				audioGraph = "[in] [in2] concat=v=0:a=1";
+
+				if(String::IsNullOrEmpty(audioGraph)) audioGraph = "anull";
+
 				std::string value = msclr::interop::marshal_as<std::string>(audioGraph);
 
-				streamInfo[i]->filterGraph->createGraph(value.c_str());	
-				
+				initAudioFilterGraph(value.c_str());	
+
+				if(output->getAudioCodecContext()->frame_size != 0) {
+
+					audioFilterGraph->setAudioSinkFrameSize("out",output->getAudioCodecContext()->frame_size);
+				}
 			}
 			
-		}
+		}		
 
 		return 0;
 	}
 
-	void initAudioBitstreamFilters(int inputStreamIdx, StreamOptions audioStreamMode) {
+	void initBitstreamFilters(int inputStreamIdx, int outputStreamIdx, StreamTransformMode mode,
+		VideoTransformerOutputInfo *outputInfo) 
+	{
+		if(output->getStream(outputStreamIdx)->isVideo()) {
+		
+			if(output->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_MPEG4) {
+			
+				outputInfo->streamsInfo[outputStreamIdx]->addBitstreamFilter("mpeg4_unpack_bframes");			
+			}
 
-		if(audioStreamMode == StreamOptions::Discard) 
-		{					
-			return;
-		}
-		else 
-		{
-			// add aac_adtstoasc bitstream filter if output is mp4 aac and input is dts aac
-			bool encodeNeedsBSFilter = audioStreamMode == StreamOptions::Encode &&
-				output->getAudioCodecContext()->codec_id == AV_CODEC_ID_AAC &&
+		} else {
+
+				// add aac_adtstoasc bitstream filter if output is mp4 aac and input is dts aac
+			bool encodeNeedsAACFilter = mode == StreamTransformMode::ENCODE &&
+				output->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_AAC &&
 				strcmp(output->getOutputFormat()->name,"mp4") == 0;
 			
-			bool copyNeedsBSFilter = audioStreamMode == StreamOptions::Copy &&
-				output->getAudioCodecContext()->codec_id == AV_CODEC_ID_AAC &&
+			bool copyNeedsAACFilter = mode == StreamTransformMode::COPY &&
+				output->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_AAC &&
 				strcmp(output->getOutputFormat()->name,"mp4") == 0 &&
 				strcmp(input->getFormatContext()->iformat->name,"mpegts") == 0;
 			
-			if(encodeNeedsBSFilter || copyNeedsBSFilter) 
+			if(encodeNeedsAACFilter || copyNeedsAACFilter) 
 			{					
-				streamInfo[inputStreamIdx]->bitStreamFilter->add("aac_adtstoasc");
+				outputInfo->streamsInfo[outputStreamIdx]->addBitstreamFilter("aac_adtstoasc");
 			}
-			
-		} 
+
+		}
 	}
+
+	
 
 	
 

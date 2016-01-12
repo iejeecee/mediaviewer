@@ -1,9 +1,12 @@
 #pragma once
+// unsafe function warning disable
+#pragma warning(disable : 4996)
 #include "stdafx.h"
 #include <winbase.h>
 #include <msclr\marshal_cppstd.h>
 #include "ThreadSafeList.h"
-#include <iostream>    
+#include <iostream>   
+#include <algorithm>
 
 extern "C" {
 
@@ -38,8 +41,10 @@ extern "C" {
 #endif
 }
 
-
 namespace VideoLib {
+
+typedef void (__stdcall *LOG_CALLBACK)(int level, const char *message);
+typedef void (*AV_LOG_CALLBACK)(void*, int, const char*, va_list);
 
 class VideoInit {
 
@@ -48,7 +53,84 @@ protected:
 	static bool isAVlibInitialized;
 	static void *lockObject;
 
+	static int logLevel;
+	static AV_LOG_CALLBACK nativeLogCallback;
+	static LOG_CALLBACK managedLogCallback;
+
+	static void libAVLogCallback(void *ptr, int level, const char *fmt, va_list vargs)
+    {
+		char message[65536];   
+		const char *module = NULL;
+
+		// if no logging is done or level is above treshold return
+		if(managedLogCallback == NULL || level > av_log_get_level()) return;
+	
+		// Get module name
+		if(ptr)
+		{
+			AVClass *avc = *(AVClass**) ptr;
+			module = avc->item_name(ptr);
+		}
+
+		std::string fullMessage = "FFMPEG";
+
+		if(module)
+		{
+			fullMessage.append(" (");
+			fullMessage.append(module);
+			fullMessage.append(")");
+		}
+
+		vsnprintf(message, sizeof(message), fmt, vargs);
+
+		fullMessage.append(": ");
+		fullMessage.append(message);
+
+		// remove trailing newline
+		fullMessage.erase(std::remove(fullMessage.begin(), fullMessage.end(), '\n'), fullMessage.end());
+
+		managedLogCallback(level, fullMessage.c_str());
+	
+    }
+
 public:
+	
+
+	static void enableLibAVLogging(int logLevel = AV_LOG_ERROR) {
+	
+		VideoInit::logLevel = logLevel;
+		VideoInit::nativeLogCallback = &libAVLogCallback;
+
+		if(isAVlibInitialized) {
+
+			av_log_set_level(VideoInit::logLevel); 
+			av_log_set_callback(VideoInit::nativeLogCallback);			
+		}
+			
+	}
+
+	static void disableLibAVLogging() {
+
+		VideoInit::nativeLogCallback = NULL;
+
+		if(isAVlibInitialized) {
+
+			av_log_set_callback(VideoInit::nativeLogCallback);	
+		}
+	}
+
+	static void setLogCallback(LOG_CALLBACK logCallback) 
+	{
+		VideoInit::managedLogCallback = logCallback;
+	}
+
+	static void writeToLog(int level, char *message) {
+
+		if(managedLogCallback != NULL) {
+
+			managedLogCallback(level, message);
+		}
+	}
 
 	static void initializeAVLib();
 	

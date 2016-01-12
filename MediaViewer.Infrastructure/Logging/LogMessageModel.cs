@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Logging
+namespace MediaViewer.Infrastructure.Logging
 {
     public class LogMessageModel
     {

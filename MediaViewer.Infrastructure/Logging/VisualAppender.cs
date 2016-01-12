@@ -1,16 +1,16 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 
-namespace MediaViewer.Logging
+namespace MediaViewer.Infrastructure.Logging
 {
-    class VisualAppender //: log4net.Appender.AppenderSkeleton
+    public class VisualAppender : log4net.Appender.AppenderSkeleton
 	{
-
-       /* LogViewModel logViewModel;
+        LogViewModel logViewModel;
 
         public LogViewModel LogViewModel
         {
@@ -25,7 +25,6 @@ namespace MediaViewer.Logging
 
 		protected override void Append(log4net.Core.LoggingEvent loggingEvent) 
 		{
-
 			LogMessageModel.LogLevel logLevel;
 
 			if(loggingEvent.Level.Value == infoLevel) {
@@ -59,13 +58,11 @@ namespace MediaViewer.Logging
 
             logViewModel.addMessage(message); 
 		}
-
 	
-
 		public VisualAppender() {
 
 			log4net.Repository.ILoggerRepository repository = LogManager.GetRepository();
-
+            
 			debugLevel = repository.LevelMap["DEBUG"].Value;
 			warningLevel = repository.LevelMap["WARN"].Value;
 			infoLevel = repository.LevelMap["INFO"].Value;
@@ -83,6 +80,6 @@ namespace MediaViewer.Logging
 				return(LogMessageModel);
 			}
 		}
-        */
+        
 	}
 }

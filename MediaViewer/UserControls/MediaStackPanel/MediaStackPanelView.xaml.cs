@@ -82,7 +82,7 @@ namespace MediaViewer.UserControls.MediaStackPanel
 
             if (e.OldValue != null)
             {
-                MediaStateCollectionView collectionView = (MediaStateCollectionView)e.NewValue;
+                MediaStateCollectionView collectionView = (MediaStateCollectionView)e.OldValue;
 
                 collectionView.SelectionChanged -= view.mediaStateCollectionView_SelectionChanged;
             }
@@ -97,12 +97,14 @@ namespace MediaViewer.UserControls.MediaStackPanel
 
         private void mediaStateCollectionView_SelectionChanged(object sender, EventArgs e)
         {
+            MediaStateCollectionView view = sender as MediaStateCollectionView;
+
             Dispatcher.BeginInvoke(new Action(() => {
 
-                ICollection<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();
+                ICollection<MediaItem> selectedItems = view.getSelectedItems();
                 if (selectedItems.Count == 0) return;
 
-                scrollToIndex = MediaStateCollectionView.IndexOf(new SelectableMediaItem(selectedItems.ElementAt(0)));
+                scrollToIndex = view.IndexOf(new SelectableMediaItem(selectedItems.ElementAt(0)));
 
                 if (scrollViewer != null)
                 {

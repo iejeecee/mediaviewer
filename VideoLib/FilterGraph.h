@@ -4,8 +4,8 @@
 #pragma warning(disable : 4996)
 #include <algorithm>
 #include "stdafx.h"
-#include "VideoInit.h"
 #include "VideoLibException.h"
+#include "Utils.h"
 #include <msclr\marshal.h>
 
 
@@ -15,249 +15,352 @@ class FilterGraph {
 
 protected:
 
+	AVFilterInOut *inputs;
+	AVFilterInOut *outputs;
+
 	AVFilterGraph *filterGraph; 
+		
+	AVFilterContext *initVideoInput(VideoLib::Stream *videoStream, const char *name) {
 
-	AVFilter *buffersrc;
-	AVFilter *buffersink;
-	AVFilterContext *buffersrc_ctx;
-	AVFilterContext *buffersink_ctx;
-	
-	void initialize() {
+		AVCodecContext *videoContext = videoStream->getCodecContext();
 
-		filterGraph = avfilter_graph_alloc();				
-		if (!filterGraph) {
-				
-			throw gcnew VideoLib::VideoLibException("Not enough memory");	
+		AVFilter *buffersrc = avfilter_get_by_name("buffer");
+		if (buffersrc == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Video buffer source filter not found");					
 		}
 
-		avfilter_graph_set_auto_convert(filterGraph, AVFILTER_AUTO_CONVERT_ALL);
-	}
+		/*char args[512];
 
-
-public:
-
-	FilterGraph(AVCodecContext *inputContext, AVPixelFormat outputPixFMT, int64_t scalemode) {
-
-		enum AVPixelFormat pix_fmts[] = { outputPixFMT, AV_PIX_FMT_NONE };
-
-		char args[512];
-		int result = 0;
-
-		initialize();
-
-		AVBufferSinkParams *buffersink_params = NULL;
-
-		try {
-
-			buffersink_params = av_buffersink_params_alloc();
-			buffersink_params->pixel_fmts = pix_fmts;
-
-			buffersrc = avfilter_get_by_name("buffer");
-			buffersink = avfilter_get_by_name("buffersink");
-
-			if (!buffersrc || !buffersink) {
-
-				throw gcnew VideoLib::VideoLibException("Filtering source or sink element not found");					
-			}
-
-			_snprintf(args, sizeof(args),
+		_snprintf(args, sizeof(args),
 				"video_size=%dx%d:pix_fmt=%d:time_base=%d/%d:pixel_aspect=%d/%d",
-				inputContext->width, inputContext->height, inputContext->pix_fmt,
-				inputContext->time_base.num, inputContext->time_base.den,
-				inputContext->sample_aspect_ratio.num,
-				inputContext->sample_aspect_ratio.den);
+				videoContext->width, videoContext->height, videoContext->pix_fmt,
+				videoContext->time_base.num, videoContext->time_base.den,
+				videoContext->sample_aspect_ratio.num, videoContext->sample_aspect_ratio.den);*/
 
-			result = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
-				args, NULL, filterGraph);
-			if (result < 0) {
+		AVFilterContext *buffersrc_ctx = avfilter_graph_alloc_filter(filterGraph, buffersrc, name);
+		if (buffersrc_ctx == NULL) {
 
-				throw gcnew VideoLib::VideoLibException("Cannot create buffer source");					
-			}
-		
-			result = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
-				NULL, buffersink_params, filterGraph);
-			if (result < 0) {
+			throw gcnew VideoLib::VideoLibException("Error creating video buffer source filter");					
+		}
+	
+		/*int result = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, name, NULL, NULL, filterGraph);
+		if (result < 0) {
 
-				throw gcnew VideoLib::VideoLibException("Cannot create buffer sink");		
-			}
-		
-			char sws_flags_str[128];
+			throw gcnew VideoLib::VideoLibException("Error creating video buffer source filter");					
+		}*/
 
-			_snprintf(sws_flags_str, sizeof(sws_flags_str), "flags=%I64d", scalemode);
-			filterGraph->scale_sws_opts = av_strdup(sws_flags_str);
+		av_opt_set_image_size(buffersrc_ctx,"video_size", videoContext->width, videoContext->height, AV_OPT_SEARCH_CHILDREN);	
+		av_opt_set_pixel_fmt(buffersrc_ctx,"pix_fmt",videoContext->pix_fmt, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_q(buffersrc_ctx,"time_base",videoContext->time_base, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_q(buffersrc_ctx,"pixel_aspect",videoContext->sample_aspect_ratio, AV_OPT_SEARCH_CHILDREN);			
 
-		} finally {
+		int result = avfilter_init_str(buffersrc_ctx, NULL);
+		if (result < 0) {
 
-			if(buffersink_params != NULL) {
-
-				av_freep(&buffersink_params);
-			}
+			throw gcnew VideoLib::VideoLibException("Cannot initialize video buffer source filter");	
 		}
 		
+		return buffersrc_ctx;
 	}
 
-	FilterGraph(AVCodecContext *inputContext,  AVSampleFormat outputSampleFMT, uint64_t outputChannelLayout, int outputSampleRate) 
-	{		
+	AVFilterContext *initAudioInput(VideoLib::Stream *audioStream, const char *name) {
+
+		AVCodecContext *audioContext = audioStream->getCodecContext();
+
+		AVFilter *abuffersrc = avfilter_get_by_name("abuffer");
+		if (abuffersrc == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Audio buffer source filter not found");					
+		}
+
+		if (!audioContext->channel_layout) {
+
+			audioContext->channel_layout = av_get_default_channel_layout(audioContext->channels);
+		}
 		
-		int result = 0;
+		AVFilterContext *abuffersrc_ctx = avfilter_graph_alloc_filter(filterGraph, abuffersrc, name);
+		if (abuffersrc_ctx == NULL) {
 
-		initialize();
-
-		buffersrc = avfilter_get_by_name("abuffer");
-		buffersink = avfilter_get_by_name("abuffersink");
-
-		if (!buffersrc || !buffersink) {
-
-			throw gcnew VideoLib::VideoLibException("filtering source or sink element not found");					
-		}
-
-		if (!inputContext->channel_layout) {
-
-			inputContext->channel_layout = av_get_default_channel_layout(inputContext->channels);
-		}
-		 
-		buffersrc_ctx = avfilter_graph_alloc_filter(filterGraph, buffersrc, "src");
-		if (!buffersrc_ctx) {
-
-			throw gcnew VideoLib::VideoLibException("Cannot allocate audio buffer source");		
+			throw gcnew VideoLib::VideoLibException("Error creating audio buffer source filter");					
 		}
 
 		// https://www.ffmpeg.org/doxygen/2.2/filter_audio_8c-example.html
 		// Set the filter options through the AVOptions API. 
 		char ch_layout[64];
-		av_get_channel_layout_string(ch_layout, sizeof(ch_layout), 0, inputContext->channel_layout);
-		av_opt_set (buffersrc_ctx, "channel_layout", ch_layout, AV_OPT_SEARCH_CHILDREN);
-		av_opt_set (buffersrc_ctx, "sample_fmt", av_get_sample_fmt_name(inputContext->sample_fmt), AV_OPT_SEARCH_CHILDREN);
-		av_opt_set_q (buffersrc_ctx, "time_base", inputContext->time_base, AV_OPT_SEARCH_CHILDREN);
-		av_opt_set_int(buffersrc_ctx, "sample_rate", inputContext->sample_rate, AV_OPT_SEARCH_CHILDREN);
-		// Now initialize the filter; we pass NULL options, since we have already
-		// set all the options above. 
-		result = avfilter_init_str(buffersrc_ctx, NULL);
+		av_get_channel_layout_string(ch_layout, sizeof(ch_layout), 0, audioContext->channel_layout);
+		av_opt_set(abuffersrc_ctx, "channel_layout", ch_layout, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set (abuffersrc_ctx, "sample_fmt", av_get_sample_fmt_name(audioContext->sample_fmt), AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_q(abuffersrc_ctx, "time_base", audioContext->time_base, AV_OPT_SEARCH_CHILDREN);
+		av_opt_set_int(abuffersrc_ctx, "sample_rate", audioContext->sample_rate, AV_OPT_SEARCH_CHILDREN);
+
+		int result = avfilter_init_str(abuffersrc_ctx, NULL);
 		if (result < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Cannot create audio buffer source");	
+			throw gcnew VideoLib::VideoLibException("Cannot initialize audio buffer source filter");	
 		}
+	
+		return(abuffersrc_ctx);
+	}
 
-		/*
-		char args[512];
+	AVFilterContext *initVideoOutput(VideoLib::Stream *videoStream, const char *name) {
+		
+		AVCodecContext *videoContext = videoStream->getCodecContext();
+								
+		AVFilter *buffersink = avfilter_get_by_name("buffersink");
+		if (buffersink == NULL) {
 
-		_snprintf(args, sizeof(args),
-			"time_base=%d/%d:sample_rate=%d:sample_fmt=%s:channel_layout=0x%I64u",
-			inputContext->time_base.num, inputContext->time_base.den, inputContext->sample_rate,
-			av_get_sample_fmt_name(inputContext->sample_fmt),
-			inputContext->channel_layout);
+			throw gcnew VideoLib::VideoLibException("Video buffer sink filter not found");					
+		}
+			
+		AVFilterContext *buffersink_ctx = NULL;
 
-		result = avfilter_graph_create_filter(&buffersrc_ctx, buffersrc, "in",
-			args, NULL, filterGraph);
-		if (result < 0) {
-
-			throw gcnew VideoLib::VideoLibException("Cannot create audio buffer source");					
-		}*/
-
-		result = avfilter_graph_create_filter(&buffersink_ctx, buffersink, "out",
+		int result = avfilter_graph_create_filter(&buffersink_ctx, buffersink, name,
 			NULL, NULL, filterGraph);
 		if (result < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Cannot create audio buffer sink");				
+			throw gcnew VideoLib::VideoLibException("Error creating video buffer sink filter");		
+		}
+				
+		result = av_opt_set_bin(buffersink_ctx, "pix_fmts",
+			(uint8_t*)&videoContext->pix_fmt, sizeof(videoContext->pix_fmt),
+			AV_OPT_SEARCH_CHILDREN);
+		if (result < 0) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot set output pixel format");					
+		}
+		
+		return buffersink_ctx;
+
+	}
+
+	AVFilterContext *initAudioOutput(VideoLib::Stream *audioStream, const char *name) {
+													
+		AVFilter *abuffersink = avfilter_get_by_name("abuffersink");
+		if (abuffersink == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Audio buffer sink filter not found");					
 		}
 
-		result = av_opt_set_bin(buffersink_ctx, "sample_fmts",
-			(uint8_t*)&outputSampleFMT, sizeof(outputSampleFMT),
+		AVFilterContext *abuffersink_ctx = NULL;
+
+		int result = avfilter_graph_create_filter(&abuffersink_ctx, abuffersink, name,
+			NULL, NULL, filterGraph);
+		if (result < 0) {
+
+			throw gcnew VideoLib::VideoLibException("Error creating audio buffer sink filter");				
+		}			
+
+		AVCodecContext *audioContext = audioStream->getCodecContext();
+
+		result = av_opt_set_bin(abuffersink_ctx, "sample_fmts",
+			(uint8_t*)&audioContext->sample_fmt, sizeof(audioContext->sample_fmt),
 			AV_OPT_SEARCH_CHILDREN);
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot set output sample format");					
 		}
 
-		result = av_opt_set_bin(buffersink_ctx, "channel_layouts",
-			(uint8_t*)&outputChannelLayout,
-			sizeof(outputChannelLayout), AV_OPT_SEARCH_CHILDREN);
+		result = av_opt_set_bin(abuffersink_ctx, "channel_layouts",
+			(uint8_t*)&audioContext->channel_layout, sizeof(audioContext->channel_layout), 
+			AV_OPT_SEARCH_CHILDREN);
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot set output channel layout");	
 		}
 
-		result = av_opt_set_bin(buffersink_ctx, "sample_rates",
-			(uint8_t*)&outputSampleRate, sizeof(outputSampleRate),
+		result = av_opt_set_bin(abuffersink_ctx, "sample_rates",
+			(uint8_t*)&audioContext->sample_rate, sizeof(audioContext->sample_rate),
 			AV_OPT_SEARCH_CHILDREN);
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot set output sample rate");			
 		}
-		 		
-	}
-
-	void createGraph(const char *filterSpec) {
-
-		AVFilterInOut *outputs = avfilter_inout_alloc();
-		if (!outputs) {
-				
-			throw gcnew VideoLib::VideoLibException("Not enough memory");	
-		}
-
-		AVFilterInOut *inputs = avfilter_inout_alloc();
-		if (!inputs) {
-				
-			throw gcnew VideoLib::VideoLibException("Not enough memory");	
-		}
-		
-		int result = 0;
-
-		try {
-
-			// Endpoints for the filter graph. 
-			outputs->name = av_strdup("in");
-			outputs->filter_ctx = buffersrc_ctx;
-			outputs->pad_idx = 0;
-			outputs->next = NULL;
-			inputs->name = av_strdup("out");
-			inputs->filter_ctx = buffersink_ctx;
-			inputs->pad_idx = 0;
-			inputs->next = NULL;
-
-			if (!outputs->name || !inputs->name) {
-
-				throw gcnew VideoLib::VideoLibException("Not enough memory");	
-			}
-
-			result = avfilter_graph_parse_ptr(filterGraph, filterSpec, &inputs, &outputs, NULL);
-			if(result < 0) {
-
-				throw gcnew VideoLib::VideoLibException("error parsing filter graph");	
-			}
-					
-			result = avfilter_graph_config(filterGraph, NULL);
-			if(result < 0) {
-
-				throw gcnew VideoLib::VideoLibException("error configuring filter graph");	
-			}
-							
-		} finally {
-
-			avfilter_inout_free(&inputs);
-			avfilter_inout_free(&outputs);
-		}
-	}
 			
+		return abuffersink_ctx;
+									
+	}
+	
+public:
+
+	FilterGraph() {
+
+		filterGraph = avfilter_graph_alloc();				
+		if (!filterGraph) {
+				
+			throw gcnew VideoLib::VideoLibException("Error allocating filter graph");	
+		}
+
+		avfilter_graph_set_auto_convert(filterGraph, AVFILTER_AUTO_CONVERT_ALL);
+		setScaleMode(SWS_BICUBIC);
+
+		inputs = NULL;
+		outputs = NULL;
+	}
+
 	~FilterGraph() {
 	
 		avfilter_graph_free(&filterGraph);
+
+		avfilter_inout_free(&inputs);
+		avfilter_inout_free(&outputs);
 		
 	}
 
-	void pushFrame(AVFrame *input) {
+	void setScaleMode(int64_t scalemode) {
+
+		char sws_flags_str[128];
+
+		_snprintf(sws_flags_str, sizeof(sws_flags_str), "flags=%I64d", scalemode);
+		filterGraph->scale_sws_opts = av_strdup(sws_flags_str);
+	}
+
+	void setAudioSinkFrameSize(char *audioSinkName, unsigned int frameSize) {
+
+		AVFilterContext *filter_ctx = avfilter_graph_get_filter(filterGraph, audioSinkName);		
+		if(filter_ctx == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Audio sink filter not found");	
+		}
+
+		av_buffersink_set_frame_size(filter_ctx, frameSize);
+		
+	}
+		
+
+	void addInputStream(VideoLib::Stream *inputStream, const char *name = "in") 
+	{
+		AVFilterInOut *input = avfilter_inout_alloc();
+		if (input == NULL) {
+				
+			throw gcnew VideoLib::VideoLibException("Error allocating input");	
+		};
+
+		AVFilterContext *filter_ctx = NULL;
+
+		if(inputStream->isVideo()) {
+
+			filter_ctx = initVideoInput(inputStream, name);
+		} 
+		else if(inputStream->isAudio()) 
+		{
+			filter_ctx = initAudioInput(inputStream, name);
+		}
+		
+		input->name = av_strdup(filter_ctx->name);
+		input->filter_ctx = filter_ctx;
+		input->pad_idx = 0;			
+		input->next = NULL;
+		
+		if(inputs == NULL) { 
+
+			inputs = input;
+
+		} else {
+
+			AVFilterInOut *next = inputs;
+
+			while(next->next != NULL) {
+
+				next = next->next;
+			}
+
+			next->next = input;
+		}
+	}
+
+	void addOutputStream(VideoLib::Stream *outputStream, const char *name = "out")
+	{
+		AVFilterInOut *output = avfilter_inout_alloc();
+		if (output == NULL) {
+				
+			throw gcnew VideoLib::VideoLibException("Error allocating output");	
+		};
+
+		AVFilterContext *filter_ctx = NULL;
+
+		if(outputStream->isVideo()) {
+
+			filter_ctx = initVideoOutput(outputStream, name);
+		} 
+		else if(outputStream->isAudio()) 
+		{
+			filter_ctx = initAudioOutput(outputStream, name);
+		}
+
+		output->name = av_strdup(filter_ctx->name);
+		output->filter_ctx = filter_ctx;
+		output->pad_idx = 0;			
+		output->next = NULL;
+	
+
+		if(outputs == NULL) { 
+
+			outputs = output;
+
+		} else {
+
+			AVFilterInOut *next = outputs;
+
+			while(next->next != NULL) {
+
+				next = next->next;
+			}
+
+			next->next = output;
+		}
+	}
+				
+	void createGraph(const char *filterSpec) {
+				
+		int result = 0;
+							
+		result = avfilter_graph_parse_ptr(filterGraph, filterSpec, &outputs, &inputs, NULL);
+		if(result < 0) {
+
+			throw gcnew VideoLib::VideoLibException("error parsing filter graph: ", result);	
+		}
+							
+		result = avfilter_graph_config(filterGraph, NULL);
+		if(result < 0) {
+
+			throw gcnew VideoLib::VideoLibException("error configuring filter graph: ", result);	
+		}
+
+		char *graph = avfilter_graph_dump(filterGraph, NULL);
+		VideoInit::writeToLog(AV_LOG_INFO, graph);
+		av_free(graph);
+		
+		avfilter_inout_free(&inputs);
+		avfilter_inout_free(&outputs);
+		
+	}
+
+	void pushFrame(AVFrame *input, const char *inputName = "in") {
 					
+		AVFilterContext *filter_ctx = avfilter_graph_get_filter(filterGraph, inputName);		
+		if(filter_ctx == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot find input filter");	
+		}
+
 		// push the decoded frame into the filtergraph 
-		int result = av_buffersrc_add_frame_flags(buffersrc_ctx, input, 0);
+		int result = av_buffersrc_add_frame_flags(filter_ctx, input, 0);
 		if (result < 0) {
 
 			throw gcnew VideoLib::VideoLibException("Error adding frame to filtergraph");			
 		}
 	}
 
-	bool pullFrame(AVFrame *output) {
+	bool pullFrame(AVFrame *output, const char *outputName = "out") {
 
-		int result = av_buffersink_get_frame(buffersink_ctx, output);
+		AVFilterContext *filter_ctx = avfilter_graph_get_filter(filterGraph, outputName);		
+		if(filter_ctx == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot find output filter");	
+		}
+
+		int result = av_buffersink_get_frame(filter_ctx, output);
 		if (result < 0) {
 
 			// if no more frames for output - returns AVERROR(EAGAIN)
@@ -275,17 +378,7 @@ public:
 
 		return(true);
 	}
-	
-	AVFilterContext *getBufferSourceContext() const {
-
-		return(buffersrc_ctx);
-	}
-
-	AVFilterContext *getBufferSinkContext() const {
-
-		return(buffersink_ctx);
-	}
-
+		
 };
 
 

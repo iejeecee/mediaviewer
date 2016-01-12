@@ -1,4 +1,6 @@
-﻿using MediaViewer.Infrastructure;
+﻿using MediaViewer;
+using MediaViewer.Infrastructure;
+using MediaViewer.MediaFileGrid;
 using Microsoft.Practices.Prism.Regions;
 using System;
 using System.Collections.Generic;
@@ -31,12 +33,16 @@ namespace YoutubePlugin
         public YoutubeNavigationItemView(IRegionManager regionManager)
         {
             InitializeComponent();
-            RegionManager = regionManager;                       
+            RegionManager = regionManager;
+           
         }
                
         private void navigationButton_Click(object sender, RoutedEventArgs e)
         {
-            RegionManager.RequestNavigate(RegionNames.MainContentRegion, typeof(YoutubeView).FullName);                    
+            RegionManager.RequestNavigate(RegionNames.MainContentRegion, typeof(YoutubeView).FullName);
+            RegionManager.RequestNavigate(RegionNames.MainOptionalToolBarRegion, typeof(YoutubeToolbarView).FullName);
+            
+            Shell.ShellViewModel.navigateToMediaStackPanelView(null);
         }
 
         

@@ -1,7 +1,9 @@
 ﻿<Window x:Name="logWindow" x:Class="MediaViewer.Logging.LogView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Log" Height="300" Width="600" MinHeight="300" MinWidth="300" Icon="pack://application:,,,/Resources/Icons/Logger.Log.ico">
+        xmlns:avalonEdit="http://icsharpcode.net/sharpdevelop/avalonedit"
+        xmlns:mwt="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Classic"
+        Title="Log" Height="300" Width="600" MinHeight="300" MinWidth="300" Icon="pack://application:,,,/Resources/Icons/log.ico">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -9,32 +11,24 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
-    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{StaticResource imageGridBackgroundColorBrush}">     
-        <Grid.ColumnDefinitions >
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
+    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Background="{StaticResource imageGridBackgroundColorBrush}">            
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="35"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <Border Grid.Column="0" Grid.Row="0" x:Name="RowZeroBorder" Margin="1,0,0,0"/>
-        <RichTextBox x:Name="logTextBox" Height="{Binding Path=ActualHeight, ElementName=RowZeroBorder}" HorizontalAlignment="Stretch" Grid.RowSpan="3" VerticalAlignment="Top" Grid.ColumnSpan="2" IsReadOnly="True" IsDocumentEnabled="True" IsManipulationEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Margin="0,0,0.333,0">
-            <FlowDocument>
-                <Paragraph>
-                    <Run Text=""/>
-                </Paragraph>
-            </FlowDocument>
-        </RichTextBox>
-        <Button x:Name="clearButton" Content="Clear" HorizontalAlignment="Right" Margin="0,0,10.333,6.333" Grid.Row="1" VerticalAlignment="Bottom" Width="75" Grid.Column="0" Command="{Binding ClearLog}"/>
-        <ComboBox x:Name="filterComboBox" HorizontalAlignment="Left" Margin="38,0,0,5.333" Grid.Row="1" 
-                  VerticalAlignment="Bottom" Width="120" SelectedIndex="2" Grid.ColumnSpan="2" 
-                  SelectionChanged="filterComboBox_SelectionChanged"
-                  >
-            <ListBoxItem Content="Errors"/>
-            <ListBoxItem Content="Warnings"/>
-            <ListBoxItem Content="Info"/>
-            <ListBoxItem Content="Debug"/>
-        </ComboBox>
-        <Label Content="Filter:" HorizontalAlignment="Left" Margin="0,0,0,5.333" Grid.Row="1" VerticalAlignment="Bottom"/>
+        <mwt:ClassicBorderDecorator Grid.Row="0" BorderThickness="2,2,2,2" BorderStyle="Sunken">
+            <avalonEdit:TextEditor x:Name="logTextBox" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsReadOnly="True" IsManipulationEnabled="True" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"/>           
+        </mwt:ClassicBorderDecorator>
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Filter:" HorizontalAlignment="Left" />
+            <ComboBox Grid.Column="1" x:Name="filterComboBox" HorizontalAlignment="Left" VerticalAlignment="Bottom" Width="120" 
+                  ItemsSource="{Binding LogLevel}"/>
+            <Button Grid.Column="2" x:Name="clearButton" Content="Clear" HorizontalAlignment="Right"  VerticalAlignment="Bottom" Width="75" Command="{Binding ClearLog}"/>
+        </Grid>        
     </Grid>
 </Window>

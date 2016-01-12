@@ -7,17 +7,35 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.Composition;
+using MediaViewer.Model.Mvvm;
+using MediaViewer.Logging;
 
 namespace MediaViewer.About
 {
     [Export]
     public class AboutViewModel : SettingsBase
     {
+        public Command LogCommand { get; set; }
+
         public AboutViewModel() :
             base("About", new Uri(typeof(AboutView).FullName, UriKind.Relative))
         {
             AssemblyInfo = Assembly.GetEntryAssembly().GetName();       
             getLibraryVersionsInfo();
+
+            LogCommand = new Command(() =>
+            {
+                LogCommand.IsExecutable = false;
+
+                LogView logView = new LogView();
+                logView.Closed += logView_Closed;
+                logView.Show();
+            });
+        }
+
+        void logView_Closed(object sender, EventArgs e)
+        {
+            LogCommand.IsExecutable = true;
         }
 
         AssemblyName assemblyInfo;
@@ -62,9 +80,7 @@ namespace MediaViewer.About
             sb.AppendLine("FFmpeg Version: " + major + "." + minor + "." + micro);
 
             sb.AppendLine();
-            sb.AppendLine("Warning this computer program is protected by copyright law and international treaties.");
-            sb.AppendLine("Unathorized reproduction or distribution of this program, or any portion of it, may result in severe criminal penalties, and will be prosecuted to the maximum extent possible under the law.");
-            
+                        
             LibraryVersionsInfo = sb.ToString();
         }
     }

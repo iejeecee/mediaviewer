@@ -1,4 +1,5 @@
 #pragma once
+#include "VideoInit.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;
@@ -13,7 +14,13 @@ namespace VideoLib {
 		  VideoLibException(String ^message) 
 			  : Exception(message) 
 		  {
+			  
+		  }
 
+		  VideoLibException(String ^message, int averror) 
+			  : Exception(message + VideoInit::errorToString(averror)) 
+		  {
+			  
 		  }
 
 		  VideoLibException(String ^message, Exception ^inner) 

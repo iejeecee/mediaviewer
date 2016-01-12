@@ -42,7 +42,7 @@ public:
 		int result = avcodec_open2(codecContext, codec, NULL);
 		if(result != 0)
 		{	
-			throw gcnew VideoLib::VideoLibException("Error opening codec: " + VideoInit::errorToString(result));
+			throw gcnew VideoLib::VideoLibException("Error opening codec: ", result);
 		}
 
 	}
@@ -123,7 +123,7 @@ public:
 		int result = av_opt_set(codecContext, name.c_str(), value.c_str(), 0);
 		if(result != 0)
 		{				
-			throw gcnew VideoLib::VideoLibException("Error setting option: " + VideoInit::errorToString(result));
+			throw gcnew VideoLib::VideoLibException("Error setting option: ", result);
 		}
 
 	}
@@ -146,7 +146,7 @@ public:
 		int result = av_opt_set(codecContext->priv_data, name.c_str(), value.c_str(), 0);
 		if(result != 0)
 		{	
-			throw gcnew VideoLib::VideoLibException("Error setting private option: " + VideoInit::errorToString(result));
+			throw gcnew VideoLib::VideoLibException("Error setting private option: ", result);
 		}
 	}
 };

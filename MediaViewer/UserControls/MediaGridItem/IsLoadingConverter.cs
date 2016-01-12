@@ -17,7 +17,7 @@ namespace MediaViewer.UserControls.MediaGridItem
             MediaItemState state = (MediaItemState)value;
 
              bool isLoading = false;
-
+            
              if (state == MediaItemState.LOADING ||
                  state == MediaItemState.EMPTY ||
                  state == MediaItemState.TIMED_OUT ||

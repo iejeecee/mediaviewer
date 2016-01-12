@@ -29,7 +29,7 @@ namespace VideoLib {
 					return oldDecoder;
 				}
 
-			} else if(args->VideoLocation != nullptr) {
+			} else if(args->VideoLocation != nullptr || args->AudioLocation != nullptr) {
 
 				VideoDecoder *normalDecoder = dynamic_cast<VideoDecoder *>(oldDecoder);
 

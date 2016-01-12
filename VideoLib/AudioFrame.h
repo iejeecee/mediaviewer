@@ -15,7 +15,7 @@ namespace VideoLib {
 	{
 	private:
 	
-		MemoryStream ^stream;
+		System::IO::MemoryStream ^stream;
 		array<unsigned char> ^data;
 		int length;
 
@@ -27,7 +27,7 @@ namespace VideoLib {
 		AudioFrame() : Frame(FrameType::AUDIO) {
 
 			data = gcnew array<unsigned char>(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
-			stream = gcnew MemoryStream(data);
+			stream = gcnew System::IO::MemoryStream(data);
 			length = 0;
 		
 			hasAllocatedOwnBuffers = false;
@@ -39,7 +39,7 @@ namespace VideoLib {
 		{
 
 			data = gcnew array<unsigned char>(AVCODEC_MAX_AUDIO_FRAME_SIZE * 2);
-			stream = gcnew MemoryStream(data);
+			stream = gcnew System::IO::MemoryStream(data);
 			length = 0;
 
 			// planar types should allocate more data planes
@@ -74,9 +74,9 @@ namespace VideoLib {
 			this->!AudioFrame();
 		}
 
-		property MemoryStream ^Stream {
+		property System::IO::MemoryStream ^Stream {
 
-			MemoryStream ^get() {
+			System::IO::MemoryStream ^get() {
 
 				return(stream);
 			}

@@ -78,7 +78,7 @@ namespace MediaViewer.MetaData
                 GlobalCommands.MetaDataUpdateCommand.Execute(state);
                 writeMetaData(state);
 
-            }, CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+            }, CancellationToken, TaskCreationOptions.None, PriorityScheduler.Lowest);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
@@ -98,159 +98,152 @@ namespace MediaViewer.MetaData
                 ItemInfo = "Opening: " + item.Location;
                 bool isModified = false;
 
+                
+                // Update Metadata values
+                item.EnterWriteLock();
                 try
                 {
-                    // Update Metadata values
-                    item.EnterWriteLock();
-                    try
-                    {
-                        isModified = updateMetadata(item, state);
-                    }
-                    catch (Exception e)
-                    {
-                        string info = "Error updating Metadata: " + item.Location;
+                    isModified = updateMetadata(item, state);
+                }
+                catch (Exception e)
+                {
+                    string info = "Error updating Metadata: " + item.Location;
 
-                        InfoMessages.Add(info);
-                        Logger.Log.Error(info, e);
-                        MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-                    }
-                    finally
-                    {
-                        item.ExitWriteLock();
-                    }
-
-                    // Save Metadata to disk
-                    if (isModified)
-                    {
-                        String info;
-                        ItemInfo = "Saving MetaData: " + item.Location;
-
-                        item.EnterUpgradeableReadLock();
-                        try
-                        {
-                            item.writeMetadata_URLock(MetadataFactory.WriteOptions.AUTO, this);
-                        }
-                        catch (Exception e)
-                        {
-                            info = "Error saving Metadata: " + item.Location;
-
-                            InfoMessages.Add(info);
-                            Logger.Log.Error(info, e);
-                            MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-
-                            // reload metaData, exceptions are caught in readMetadata
-                            if (item.Metadata != null)
-                            {
-                                item.Metadata.clear();
-                            }
-                           
-                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
-                                MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
-
-                            return;
-                        }
-                        finally
-                        {
-                            item.ExitUpgradeableReadLock();
-                        }
-
-                        info = "Completed updating Metadata for: " + item.Location;
-
-                        InfoMessages.Add(info);
-                        Logger.Log.Info(info);
-                    }
-                    else
-                    {
-                        string info = "Skipped updating Metadata (no changes) for: " + item.Location;
-
-                        InfoMessages.Add(info);
-                        Logger.Log.Info(info);
-                    }
-
-                    // Export if requested
-                    if (state.ImportedEnabled == true && state.IsImported == false)
-                    {
-                        bool success = MediaFileState.export(item, CancellationToken);
-
-                        if (success)
-                        {
-                            string info = "Exported: " + item.Location;
-
-                            InfoMessages.Add(info);
-                            Logger.Log.Info(info);
-                        }
-                    }
-
-                    //rename and/or move   
-                    item.EnterReadLock();
-                    try
-                    {
-                        oldPath = FileUtils.getPathWithoutFileName(item.Location);
-                        oldFilename = Path.GetFileNameWithoutExtension(item.Location);
-                        ext = Path.GetExtension(item.Location);
-
-                        newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Metadata);
-                        newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
-                        newPath = newPath.TrimEnd('\\');
-                    }
-                    finally
-                    {
-                        item.ExitReadLock();
-                    }
-
-                    try
-                    {
-                        MediaFileState.move(item, newPath + "\\" + newFilename + ext, this);
-                    }
-                    catch (Exception e)
-                    {
-                        string info = "Error moving/renaming: " + item.Location;
-
-                        InfoMessages.Add(info);
-                        Logger.Log.Error(info, e);
-                        MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                        return;
-
-                    }
-
-                    // import if requested
-                    if (state.ImportedEnabled == true && state.IsImported == true)
-                    {
-                        bool success = false;
-                        try
-                        {
-                            success = MediaFileState.import(item, CancellationToken);
-                        }
-                        catch (Exception e)
-                        {
-                            string info = "Error importing media: " + item.Location;
-
-                            InfoMessages.Add(info);
-                            Logger.Log.Error(info, e);
-                            MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-
-                        if (success)
-                        {
-                            string info = "Imported: " + item.Metadata.Location;
-
-                            InfoMessages.Add(info);
-                            Logger.Log.Info(info);
-                        }
-
-                    }
-
-                    ItemProgress = 100;
-                    TotalProgress++;
-
+                    InfoMessages.Add(info);
+                    Logger.Log.Error(info, e);
+                    MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
                 }
                 finally
                 {
-                    EventAggregator.GetEvent<MetaDataUpdateCompleteEvent>().Publish(item);
+                    item.ExitWriteLock();
                 }
 
+                // Save Metadata to disk
+                if (isModified)
+                {
+                    String info;
+                    ItemInfo = "Saving MetaData: " + item.Location;
+
+                    item.EnterUpgradeableReadLock();
+                    try
+                    {
+                        item.writeMetadata_URLock(MetadataFactory.WriteOptions.AUTO, this);
+                    }
+                    catch (Exception e)
+                    {
+                        info = "Error saving Metadata: " + item.Location;
+
+                        InfoMessages.Add(info);
+                        Logger.Log.Error(info, e);
+                        MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                        // reload metaData, exceptions are caught in readMetadata
+                        if (item.Metadata != null)
+                        {
+                            item.Metadata.clear();
+                        }
+                           
+                        item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
+                            MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, CancellationToken);
+
+                        return;
+                    }
+                    finally
+                    {
+                        item.ExitUpgradeableReadLock();
+                    }
+
+                    info = "Completed updating Metadata for: " + item.Location;
+
+                    InfoMessages.Add(info);
+                    Logger.Log.Info(info);
+                }
+                else
+                {
+                    string info = "Skipped updating Metadata (no changes) for: " + item.Location;
+
+                    InfoMessages.Add(info);
+                    Logger.Log.Info(info);
+                }
+
+                // Export if requested
+                if (state.ImportedEnabled == true && state.IsImported == false)
+                {
+                    bool success = MediaFileState.export(item, CancellationToken);
+
+                    if (success)
+                    {
+                        string info = "Exported: " + item.Location;
+
+                        InfoMessages.Add(info);
+                        Logger.Log.Info(info);
+                    }
+                }
+
+                //rename and/or move   
+                item.EnterReadLock();
+                try
+                {
+                    oldPath = FileUtils.getPathWithoutFileName(item.Location);
+                    oldFilename = Path.GetFileNameWithoutExtension(item.Location);
+                    ext = Path.GetExtension(item.Location);
+
+                    newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Metadata);
+                    newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
+                    newPath = newPath.TrimEnd('\\');
+                }
+                finally
+                {
+                    item.ExitReadLock();
+                }
+
+                try
+                {
+                    MediaFileState.move(item, newPath + "\\" + newFilename + ext, this);
+                }
+                catch (Exception e)
+                {
+                    string info = "Error moving/renaming: " + item.Location;
+
+                    InfoMessages.Add(info);
+                    Logger.Log.Error(info, e);
+                    MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+
+                }
+
+                // import if requested
+                if (state.ImportedEnabled == true && state.IsImported == true)
+                {
+                    bool success = false;
+                    try
+                    {
+                        success = MediaFileState.import(item, CancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        string info = "Error importing media: " + item.Location;
+
+                        InfoMessages.Add(info);
+                        Logger.Log.Error(info, e);
+                        MessageBox.Show(info + "\n\n" + e.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
+                    if (success)
+                    {
+                        string info = "Imported: " + item.Metadata.Location;
+
+                        InfoMessages.Add(info);
+                        Logger.Log.Info(info);
+                    }
+
+                }
+
+                ItemProgress = 100;
+                TotalProgress++;
+                                
             }
 
             if (state.BatchMode == true)

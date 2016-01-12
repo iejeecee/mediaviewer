@@ -145,7 +145,7 @@ namespace MediaViewer.Transcode.Video
                 try
                 {
                     VideoLib.OpenVideoArgs openArgs = 
-                        new VideoLib.OpenVideoArgs(input.Location, null, input.Audio.Location, null);
+                        new VideoLib.OpenVideoArgs(input.Location, null, input.Audio == null ? null : input.Audio.Location, null);
 
                     videoTranscoder.transcode(openArgs, outLocation, CancellationToken, options,
                         transcodeProgressCallback);

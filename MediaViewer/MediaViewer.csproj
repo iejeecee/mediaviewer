@@ -350,7 +350,6 @@
     </Compile>
     <Compile Include="MediaFileStackPanel\MediaFileStackPanelViewModel.cs" />
     <Compile Include="UserControls\MediaGridItem\RatingCache.cs" />
-    <Compile Include="MetaData\MetaDataUpdateCompleteEvent.cs" />
     <Compile Include="Model\Collections\LockedObservableCollection.cs" />
     <Compile Include="Model\Collections\Sort\CollectionsSort.cs" />
     <Compile Include="Model\Global\Commands\GlobalCommands.cs" />
@@ -524,8 +523,6 @@
     <Compile Include="Input\InputView.xaml.cs">
       <DependentUpon>InputView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Logging\LogMessageModel.cs" />
-    <Compile Include="Logging\LogViewModel.cs" />
     <Compile Include="Logging\LogView.xaml.cs">
       <DependentUpon>LogView.xaml</DependentUpon>
     </Compile>
@@ -1010,6 +1007,9 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <EmbeddedResource Include="Logging\LogSyntaxHighlighting.xshd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <None Include="MediaDatabase\MediaDatabase.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>MediaDatabase.edmx</DependentUpon>

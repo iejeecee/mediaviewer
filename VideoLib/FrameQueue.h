@@ -685,7 +685,7 @@ namespace VideoLib {
 					videoPacket->AVLibPacketData);
 				if(ret < 0) {
 
-					Video::writeToLog(AV_LOG_WARNING, "could not decode video frame");
+					VideoInit::writeToLog(AV_LOG_WARNING, "could not decode video frame");
 				}
 			
 				if(frameFinished)
@@ -694,8 +694,7 @@ namespace VideoLib {
 
 					convertedVideoFrame->Pts = synchronizeVideo(
 						videoFrame->AVLibFrameData->repeat_pict, 
-						convertedVideoFrame->AVLibFrameData->pts);
-						//videoPacket->AVLibPacketData->dts);					
+						convertedVideoFrame->AVLibFrameData->pts);									
 				}
 
 				addFreePacket(videoPacket);
@@ -750,7 +749,7 @@ namespace VideoLib {
 						&frameFinished, audioPacket->AVLibPacketData);						
 					if(bytesConsumed < 0) {
 					
-						// skip this packet and play silence
+						// error decoding packet, skip and play silence
 						frameFinished = true;
 						audioPacket->AVLibPacketData->size = 0;
 
@@ -765,8 +764,7 @@ namespace VideoLib {
 						convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
 					
 						convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
-							convertedAudioFrame->AVLibFrameData->pts);
-							//audioPacket->AVLibPacketData->dts);
+							convertedAudioFrame->AVLibFrameData->pts);					
 
 						convertedAudioFrame->copyAudioDataToManagedMemory();
 

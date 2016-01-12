@@ -250,7 +250,7 @@ namespace ImageSearchPlugin
            
             // Configure bingContainer to use your credentials.
 
-            bingContainer.Credentials = new NetworkCredential(BingAccountKey.accountKey, BingAccountKey.accountKey);
+            bingContainer.Credentials = new NetworkCredential(BingAccountKey.accountKey, BingAccountKey.accountKey);           
 
             // Build the query.
             String imageFilters = null;

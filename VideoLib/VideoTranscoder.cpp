@@ -22,7 +22,7 @@ void VideoTranscoder::setLogCallback(LogCallbackDelegate ^logCallback, bool enab
 									 LogLevel level)
 {
 
-	if(gch.IsAllocated) {
+	/*if(gch.IsAllocated) {
 
 		gch.Free();
 	}
@@ -42,7 +42,7 @@ void VideoTranscoder::setLogCallback(LogCallbackDelegate ^logCallback, bool enab
 	} else {
 
 		Video::disableLibAVLogging();
-	}
+	}*/
 
 }
 

@@ -36,10 +36,12 @@ namespace MediaViewer.Model.Media.File.Watcher
             watcher = new FileSystemWatcher();
             MediaFileState = new MediaFileState();
                                
-            /* Watch for changes in LastAccess and LastWrite times, and 
-            the renaming of files or directories. */
-            watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
-                NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Attributes);
+            // Watch for changes in LastAccess and LastWrite times, and 
+            //the renaming of files or directories. 
+            //watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastAccess |
+            //    NotifyFilters.LastWrite | NotifyFilters.FileName | NotifyFilters.DirectoryName | NotifyFilters.Attributes);
+
+            watcher.NotifyFilter = (NotifyFilters)(NotifyFilters.LastWrite | NotifyFilters.FileName |  NotifyFilters.Attributes);
 
             // Only watch text files.
             watcher.Filter = "*.*";

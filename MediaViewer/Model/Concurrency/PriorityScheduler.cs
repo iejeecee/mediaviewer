@@ -49,10 +49,11 @@ namespace MediaViewer.Model.Concurrency
                         foreach (Task t in _tasks.GetConsumingEnumerable())
                             base.TryExecuteTask(t);
                     });
-                    _threads[i].Name = string.Format("PriorityScheduler: ", i);
+                    _threads[i].Name = _threads[i].ManagedThreadId + " " + _priority.ToString();
                     _threads[i].Priority = _priority;
                     _threads[i].IsBackground = true;
                     _threads[i].Start();
+                    
                 }
             }
         }
