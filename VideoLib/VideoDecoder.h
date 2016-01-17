@@ -578,8 +578,7 @@ public:
 					picture, got_picture_ptr, avpkt);
 		if(ret < 0) {
 
-			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode video frame");
-			return ret;
+			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode video frame");		
 		}
 
 		return ret;
@@ -592,8 +591,7 @@ public:
 						audio, got_audio_ptr, avpkt);	
 		if(ret < 0) {
 
-			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode audio frame");		
-			return ret;
+			VideoInit::writeToLog(AV_LOG_WARNING, "could not decode audio frame");				
 		}
 
 		return ret;

@@ -1,5 +1,6 @@
-#include "VideoTranscode.h"
-
+#pragma once
+#include "Video.h"
+#include "OpenVideoArgs.h"
 using namespace System;
 using namespace System::Collections::Generic;
 using namespace System::IO;
@@ -8,12 +9,10 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
-	public ref class VideoTranscoder 
+	public ref class VideoOperations
 	{
 		System::Runtime::InteropServices::GCHandle gch;
-
-		VideoTranscode *videoTranscode;
-
+		
 	public:
 
 		enum class LogLevel {
@@ -27,14 +26,17 @@ namespace VideoLib {
 		};
 
 		delegate void LogCallbackDelegate(int level, String ^message);
-		delegate void TranscodeProgressDelegate(double progress);		
+		delegate void OperationProgressDelegate(int totalProgress, double progress);		
 
-		VideoTranscoder();
-		~VideoTranscoder();
+		VideoOperations();
+		~VideoOperations();
 
 		void setLogCallback(LogCallbackDelegate ^callback, bool enableLibAVLogging, LogLevel level);
 
 		void transcode(OpenVideoArgs ^openArgs, String ^output, CancellationToken token, Dictionary<String ^, Object ^> ^options,
-			TranscodeProgressDelegate ^progressCallback);
+			OperationProgressDelegate ^progressCallback);
+
+		void concat(List<OpenVideoArgs ^> ^openArgs, String ^output, CancellationToken token, Dictionary<String ^, Object ^> ^options,
+			OperationProgressDelegate ^progressCallback);
 	};
 }

@@ -52,6 +52,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>               
                 <Label Grid.Row="0" Grid.Column="0" Content="Output Path" Style="{StaticResource labelStyle}"/>
                 <ComboBox Grid.Row="0" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="0, 2, 21, 2"  VerticalAlignment="Center"                         
@@ -72,6 +73,8 @@
 			        ItemsSource="{Binding Source={StaticResource containersEnum}}"			       
 			        IsReadOnly="True" IsEditable="True"
 			        />
+                <Label Grid.Row="2" Grid.Column="0" Content="Concat" Style="{StaticResource labelStyle}" Visibility="{Binding IsConcatEnabled, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                <CheckBox Grid.Row="2" Grid.Column="1" IsChecked="{Binding IsConcat}" VerticalAlignment="Center" Visibility="{Binding IsConcatEnabled, Converter={StaticResource booleanToVisibilityConverter}}"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Header="Video Options">

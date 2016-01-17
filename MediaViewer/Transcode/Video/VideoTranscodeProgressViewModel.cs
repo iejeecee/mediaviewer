@@ -32,16 +32,23 @@ namespace MediaViewer.Transcode.Video
 
             CancelCommand.IsExecutable = true;
             OkCommand.IsExecutable = false;
-                    
+
         }
 
         public async Task startTranscodeAsync()
         {
             await Task.Factory.StartNew(() =>
             {
-                startTranscode();
+                if (AsyncState.IsConcat)
+                {
+                    startConcat();
+                }
+                else
+                {
+                    startTranscode();
+                }
 
-            },CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+            }, CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
@@ -69,7 +76,7 @@ namespace MediaViewer.Transcode.Video
 
             if (AsyncState.FramesPerSecond.HasValue)
             {
-                options.Add("framesPerSecond", AsyncState.FramesPerSecond.Value); 
+                options.Add("framesPerSecond", AsyncState.FramesPerSecond.Value);
             }
 
             if (AsyncState.SampleRate.HasValue)
@@ -98,15 +105,14 @@ namespace MediaViewer.Transcode.Video
 
         void startTranscode()
         {
-            
-            VideoLib.VideoTranscoder videoTranscoder = new VideoLib.VideoTranscoder();
-            videoTranscoder.setLogCallback(logCallback, true, VideoLib.VideoTranscoder.LogLevel.LOG_LEVEL_INFO);
+            VideoLib.VideoOperations videoOperations = new VideoLib.VideoOperations();
+            videoOperations.setLogCallback(logCallback, true, VideoLib.VideoOperations.LogLevel.LOG_LEVEL_INFO);
             TotalProgressMax = Items.Count;
             TotalProgress = 0;
             ItemProgressMax = 100;
-           
+
             Dictionary<String, Object> options = getOptions();
-                
+
             foreach (VideoAudioPair input in Items)
             {
                 ItemProgress = 0;
@@ -120,34 +126,14 @@ namespace MediaViewer.Transcode.Video
                     continue;
                 }
 
-                String outFilename;
-
-                if (FileUtils.isUrl(input.Location))
-                {
-                    outFilename = FileUtils.removeIllegalCharsFromFileName(input.Name," ");
-
-                    if (String.IsNullOrEmpty(outFilename) || String.IsNullOrWhiteSpace(outFilename))
-                    {
-                        outFilename = "stream";
-                    }
-                }
-                else
-                {
-                    outFilename = Path.GetFileNameWithoutExtension(input.Location);
-                }
-
-                String outLocation = AsyncState.OutputPath + "\\" + outFilename;
-
-                outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
-                                       
-                outLocation = FileUtils.getUniqueFileName(outLocation);
+                String outLocation = getOutputLocation(input);
 
                 try
                 {
-                    VideoLib.OpenVideoArgs openArgs = 
+                    VideoLib.OpenVideoArgs openArgs =
                         new VideoLib.OpenVideoArgs(input.Location, null, input.Audio == null ? null : input.Audio.Location, null);
 
-                    videoTranscoder.transcode(openArgs, outLocation, CancellationToken, options,
+                    videoOperations.transcode(openArgs, outLocation, CancellationToken, options,
                         transcodeProgressCallback);
                 }
                 catch (Exception e)
@@ -162,10 +148,10 @@ namespace MediaViewer.Transcode.Video
                     {
                         InfoMessages.Add("Error deleting: " + outLocation + " " + ex.Message);
                     }
-                    
+
                     return;
                 }
-                    
+
                 ItemProgress = 100;
                 TotalProgress++;
 
@@ -174,10 +160,91 @@ namespace MediaViewer.Transcode.Video
 
         }
 
-        void transcodeProgressCallback(double progress)
+        void startConcat()
         {
+            VideoLib.VideoOperations videoOperations = new VideoLib.VideoOperations();
+            videoOperations.setLogCallback(logCallback, true, VideoLib.VideoOperations.LogLevel.LOG_LEVEL_INFO);
+            TotalProgressMax = Items.Count;
+            TotalProgress = 0;
+            ItemProgressMax = 100;
+
+            List<VideoLib.OpenVideoArgs> inputArgs = new List<VideoLib.OpenVideoArgs>();
+
+            foreach (VideoAudioPair input in Items)
+            {
+                inputArgs.Add(new VideoLib.OpenVideoArgs(input.Location, null, input.Audio == null ? null : input.Audio.Location, null));
+            }
+            
+            String outLocation = getOutputLocation(Items.ElementAt(0));
+            Dictionary<String, Object> options = getOptions();
+
+            try
+            {
+                videoOperations.concat(inputArgs, outLocation, CancellationToken, options,
+                    concatProgressCallback);
+            }
+            catch (Exception e)
+            {
+                InfoMessages.Add("Error concatenating: " + e.Message);
+
+                try
+                {
+                    File.Delete(outLocation);
+                }
+                catch (Exception ex)
+                {
+                    InfoMessages.Add("Error deleting: " + outLocation + " " + ex.Message);
+                }
+
+                return;
+            }
+
+            ItemProgress = 100;
+            TotalProgress++;
+
+            InfoMessages.Add("Finished concatenating: " + outLocation);
+
+        }
+
+        string getOutputLocation(VideoAudioPair input)
+        {
+            String outFilename;
+
+            if (FileUtils.isUrl(input.Location))
+            {
+                outFilename = FileUtils.removeIllegalCharsFromFileName(input.Name, " ");
+
+                if (String.IsNullOrEmpty(outFilename) || String.IsNullOrWhiteSpace(outFilename))
+                {
+                    outFilename = "stream";
+                }
+            }
+            else
+            {
+                outFilename = Path.GetFileNameWithoutExtension(input.Location);
+            }
+
+            String outLocation = AsyncState.OutputPath + "\\" + outFilename;
+
+            outLocation += "." + AsyncState.ContainerFormat.ToString().ToLower();
+
+            outLocation = FileUtils.getUniqueFileName(outLocation);
+
+            return outLocation;
+        }
+
+        void transcodeProgressCallback(int totalProgress, double progress)
+        {          
             ItemProgress = (int)(progress * 100);
         }
-       
+
+        void concatProgressCallback(int totalProgress, double progress)
+        {
+            TotalProgress = totalProgress;
+            ItemInfo = "Concatenating: " + Items.ElementAt(TotalProgress).Name;
+
+            ItemProgress = (int)(progress * 100);
+        }
+
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "VideoTransformerStreamInfo.h"
+#include <string>
 
 namespace VideoLib {
 
@@ -11,8 +12,9 @@ namespace VideoLib {
 		int inputStreamIndex;
 		int outputStreamIndex;
 		StreamTransformMode mode;
-		char *name;
+		std::string name;
 		double dtsOffset;
+		double nextDts;
 		double posSeconds;
 
 		VideoTransformerInputStream(const VideoTransformerInputStreamInfo *inputStreamInfo) {
@@ -21,11 +23,11 @@ namespace VideoLib {
 			inputStreamIndex = inputStreamInfo->inputStreamIndex;
 			outputStreamIndex = inputStreamInfo->outputStreamIndex;
 			mode = inputStreamInfo->mode;
-			name = inputStreamInfo->name;		
-
+			
 			isFinished = false;
-			dtsOffset = 0;	
+			dtsOffset = -DBL_MAX;			
 			posSeconds = 0;
+			nextDts = 0;
 		}
 	};
 
@@ -38,7 +40,7 @@ namespace VideoLib {
 
 			bool isInputFinished = true;
 
-			for(int i = 0; i < streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				isInputFinished = isInputFinished && streamsInfo[i]->isFinished;
 			}
@@ -72,7 +74,7 @@ namespace VideoLib {
 			packet.data = NULL;
 			packet.size = 0;
 
-			for(int i = 0; i < inputStreamInfo->streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)inputStreamInfo->streamsInfo.size(); i++) {
 
 				streamsInfo.push_back(new VideoTransformerInputStream(inputStreamInfo->streamsInfo[i]));
 			}
@@ -82,7 +84,7 @@ namespace VideoLib {
 
 		~VideoTransformerInput() 
 		{
-			for(int i = 0; i < streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				delete streamsInfo[i];
 			}
@@ -141,7 +143,6 @@ namespace VideoLib {
 			}
 			
 			streamsInfo[streamIndex]->posSeconds = decoder->getStream(streamIndex)->getTimeSeconds(ts);
-
 			if(streamsInfo[streamIndex]->dtsOffset != -DBL_MAX) return;
 
 			//get the dts value of the first input packet and subtract it from subsequent dts & pts

@@ -24,15 +24,15 @@ namespace YoutubePlugin
 {
     class DownloadProgressViewModel : CancellableOperationProgressBase
     {
-        VideoLib.VideoTranscoder videoTranscoder;
+        VideoLib.VideoOperations videoTranscoder;
 
         public DownloadProgressViewModel()
         {
             WindowTitle = "Youtube Download";
             WindowIcon = "pack://application:,,,/YoutubePlugin;component/Resources/Icons/youtube.ico";
 
-            videoTranscoder = new VideoLib.VideoTranscoder();
-            videoTranscoder.setLogCallback(muxingInfoCallback, true, VideoLib.VideoTranscoder.LogLevel.LOG_LEVEL_INFO);
+            videoTranscoder = new VideoLib.VideoOperations();
+            videoTranscoder.setLogCallback(muxingInfoCallback, true, VideoLib.VideoOperations.LogLevel.LOG_LEVEL_INFO);
         }
 
         public void startDownload(String outputPath, List<MediaItem> items)
@@ -197,7 +197,7 @@ namespace YoutubePlugin
             ItemProgress = (int)bytesDownloaded;
         }
 
-        void muxingProgressCallback(double progress)
+        void muxingProgressCallback(int totalProgress, double progress)
         {
             ItemProgress = (int)(progress * 100);
         }

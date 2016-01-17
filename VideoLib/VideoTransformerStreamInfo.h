@@ -17,15 +17,13 @@ namespace VideoLib {
 		int outputStreamIndex;
 		int outputIndex;
 		StreamTransformMode mode;
-		char *name;
 		
-		VideoTransformerInputStreamInfo(int inputStreamIndex, int outputStreamIndex, StreamTransformMode mode, int outputIndex = 0, char *name = "in") 
+		VideoTransformerInputStreamInfo(int inputStreamIndex, int outputStreamIndex, StreamTransformMode mode, int outputIndex = 0) 
 		{
 			this->inputStreamIndex = inputStreamIndex;
 			this->outputStreamIndex = outputStreamIndex;
 			this->outputIndex = outputIndex;
-			this->mode = mode;
-			this->name = name;			
+			this->mode = mode;			
 		}
 
 	};
@@ -49,10 +47,13 @@ namespace VideoLib {
 
 		~VideoTransformerInputInfo()
 		{
-			for(int i = 0; i < streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				delete streamsInfo[i];
 			}
+
+			decoder->close();
+			delete decoder;
 		}
 
 		void addStreamInfo(VideoTransformerInputStreamInfo *streamInfo) {
@@ -66,14 +67,12 @@ namespace VideoLib {
 	struct VideoTransformerOutputStreamInfo {
 				
 		int outputIndex;	
-		char *name;
 		StreamTransformMode mode;
 		std::vector<char *> bitStreamFilters;
 		
-		VideoTransformerOutputStreamInfo(int outputIndex, StreamTransformMode mode, char *name = "out") 
+		VideoTransformerOutputStreamInfo(int outputIndex, StreamTransformMode mode) 
 		{					
 			this->outputIndex = outputIndex;	
-			this->name = name;
 			this->mode = mode;
 		}
 
@@ -96,10 +95,13 @@ namespace VideoLib {
 
 		~VideoTransformerOutputInfo()
 		{
-			for(int i = 0; i < streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				delete streamsInfo[i];
 			}
+
+			encoder->close();
+			delete encoder;
 		}
 
 		void addStreamInfo(VideoTransformerOutputStreamInfo *streamInfo) {

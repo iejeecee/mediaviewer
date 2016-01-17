@@ -84,7 +84,7 @@ public:
 	}
 
 	virtual VideoLib::Stream *getStream(int i) const 
-	{
+	{		
 		return(stream[i]);
 	}
 

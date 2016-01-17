@@ -180,10 +180,8 @@ protected:
 		return abuffersink_ctx;
 									
 	}
-	
-public:
 
-	FilterGraph() {
+	void init() {
 
 		filterGraph = avfilter_graph_alloc();				
 		if (!filterGraph) {
@@ -198,13 +196,24 @@ public:
 		outputs = NULL;
 	}
 
-	~FilterGraph() {
-	
+	void free() {
+
 		avfilter_graph_free(&filterGraph);
 
 		avfilter_inout_free(&inputs);
 		avfilter_inout_free(&outputs);
-		
+	}
+	
+public:
+
+	FilterGraph() {
+
+		init();
+	}
+
+	~FilterGraph() {
+	
+		free();		
 	}
 
 	void setScaleMode(int64_t scalemode) {
@@ -226,8 +235,18 @@ public:
 		av_buffersink_set_frame_size(filter_ctx, frameSize);
 		
 	}
-		
 
+	int getInputFailedRequests(const char *inputName) {
+
+		AVFilterContext *buffer_src = avfilter_graph_get_filter(filterGraph, inputName);		
+		if(buffer_src == NULL) {
+
+			throw gcnew VideoLib::VideoLibException("Cannot find input filter");	
+		}
+
+		return (int)av_buffersrc_get_nb_failed_requests(buffer_src);
+	}
+		
 	void addInputStream(VideoLib::Stream *inputStream, const char *name = "in") 
 	{
 		AVFilterInOut *input = avfilter_inout_alloc();
@@ -293,7 +312,6 @@ public:
 		output->pad_idx = 0;			
 		output->next = NULL;
 	
-
 		if(outputs == NULL) { 
 
 			outputs = output;
@@ -348,7 +366,7 @@ public:
 		int result = av_buffersrc_add_frame_flags(filter_ctx, input, 0);
 		if (result < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Error adding frame to filtergraph");			
+			throw gcnew VideoLib::VideoLibException("Error adding frame to filtergraph: ", result);			
 		}
 	}
 
@@ -360,18 +378,18 @@ public:
 			throw gcnew VideoLib::VideoLibException("Cannot find output filter");	
 		}
 
-		int result = av_buffersink_get_frame(filter_ctx, output);
+		
+		int result = av_buffersink_get_frame_flags(filter_ctx, output, 0);
 		if (result < 0) {
 
 			// if no more frames for output - returns AVERROR(EAGAIN)
-			// if flushed and no more frames for output - returns AVERROR_EOF
-			// rewrite retcode to 0 to show it as normal procedure completion				
+			// if flushed and no more frames for output - returns AVERROR_EOF					
 			if (result == AVERROR(EAGAIN) || result == AVERROR_EOF) {
 
 				return(false);
 			}
 			
-			throw gcnew VideoLib::VideoLibException("Error pulling frame from filtergraph");	
+			throw gcnew VideoLib::VideoLibException("Error pulling frame from filtergraph: ", result);	
 		}
 	  
 		output->pict_type = AV_PICTURE_TYPE_NONE;
@@ -379,6 +397,18 @@ public:
 		return(true);
 	}
 		
+	AVFilterContext *getFilter(const char *name) {
+
+		AVFilterContext *filter_ctx = avfilter_graph_get_filter(filterGraph, name);
+
+		return filter_ctx;
+	}
+
+	void clear() {
+
+		free();
+		init();
+	}
 };
 
 

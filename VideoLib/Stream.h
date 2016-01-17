@@ -86,6 +86,11 @@ public:
 
 		return(codecContext->codec_id);
 	}
+
+	const AVCodecDescriptor *getCodecDescriptor() const {
+
+		return av_codec_get_codec_descriptor(getCodecContext());
+	}
 		
 	AVStream *getAVStream() const {
 

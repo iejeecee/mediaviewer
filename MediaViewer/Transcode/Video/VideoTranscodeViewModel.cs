@@ -25,7 +25,7 @@ namespace MediaViewer.Transcode.Video
         public Command OkCommand { get; set; }
         public Command DirectoryPickerCommand { get; set; }
 
-        public ICollection<VideoAudioPair> Items { get; set; }
+       
 
         public VideoTranscodeViewModel()
         {
@@ -188,7 +188,8 @@ namespace MediaViewer.Transcode.Video
             
             AudioStreamMode = StreamOptions.Copy;
             AudioEncoder = AudioEncoders.libvo_aacenc;
-            
+
+            IsConcat = false;
         }
 
         ObservableCollection<String> outputPathHistory;
@@ -397,6 +398,34 @@ namespace MediaViewer.Transcode.Video
         {
             get { return endTimeRange; }
             set { SetProperty(ref endTimeRange, value); }
+        }
+
+        bool isConcat;
+
+        public bool IsConcat
+        {
+            get { return isConcat; }
+            set { SetProperty(ref isConcat, value); }
+        }
+
+        bool isConcatEnabled;
+
+        public bool IsConcatEnabled
+        {
+            get { return isConcatEnabled; }
+            set { SetProperty(ref isConcatEnabled, value); }
+        }
+
+        private ICollection<VideoAudioPair> items;
+
+        public ICollection<VideoAudioPair> Items
+        {
+            get { return items; }
+            set { 
+                
+                SetProperty(ref items, value);
+                IsConcatEnabled = items != null && items.Count > 1;            
+            }
         }
     }
 }

@@ -7,7 +7,7 @@ namespace VideoLib {
 	class VideoDecoderFactory {
 
 	public:
-		static IVideoDecoder *create(IVideoDecoder *oldDecoder, OpenVideoArgs ^args) {
+		static IVideoDecoder *create(OpenVideoArgs ^args, IVideoDecoder *oldDecoder = NULL) {
 
 			if(args->VideoLocation != nullptr && args->AudioLocation != nullptr) {
 

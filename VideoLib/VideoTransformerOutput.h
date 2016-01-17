@@ -1,24 +1,24 @@
 #pragma once
 #include "VideoTransformerStreamInfo.h"
+#include <string>
 
 namespace VideoLib {
 
 	struct VideoTransformerOutputStream {
 
-		char *name;
+		std::string name;
 		int outputIndex;
 		StreamTransformMode mode;
 		BitStreamFilter *bitStreamFilter;
 		
 		VideoTransformerOutputStream(const VideoTransformerOutputStreamInfo *streamInfo) {
 
-			name = streamInfo->name;
 			outputIndex = streamInfo->outputIndex;
 			mode = streamInfo->mode;
 
 			bitStreamFilter = new BitStreamFilter;
 		
-			for(int i = 0; i < streamInfo->bitStreamFilters.size(); i++) {
+			for(int i = 0; i < (int)streamInfo->bitStreamFilters.size(); i++) {
 
 				bitStreamFilter->add(streamInfo->bitStreamFilters[i]);
 			}
@@ -41,7 +41,7 @@ namespace VideoLib {
 			
 			this->encoder = outputInfo->encoder;
 			
-			for(int i = 0; i < outputInfo->streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)outputInfo->streamsInfo.size(); i++) {
 
 				streamsInfo.push_back(new VideoTransformerOutputStream(outputInfo->streamsInfo[i]));
 			}
@@ -50,7 +50,7 @@ namespace VideoLib {
 
 		~VideoTransformerOutput() 
 		{
-			for(int i = 0; i < streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				delete streamsInfo[i];
 			}

@@ -37,7 +37,7 @@ void VideoPlayer::open(OpenVideoArgs ^args,  OutputPixelFormat videoFormat, Syst
 {
 	try {		
 				
-		videoDecoder = VideoDecoderFactory::create(videoDecoder, args);
+		videoDecoder = VideoDecoderFactory::create(args, videoDecoder);
 					
 		videoDecoder->open(args, token);
 
