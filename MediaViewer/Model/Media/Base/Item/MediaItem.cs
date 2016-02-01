@@ -1,7 +1,7 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Concurrency;
+using MediaViewer.Model.Media.Base.Metadata;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.metadata.Metadata;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Concurrent;

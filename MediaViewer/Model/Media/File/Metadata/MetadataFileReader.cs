@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.metadata.Metadata;
+using MediaViewer.Model.Media.Base;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,18 +10,18 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using XMPLib;
+using MediaViewer.Model.Media.Base.Metadata;
+using VideoLib;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {    
 
-    abstract class MetadataReader
+    abstract class MetadataFileReader
     {
-        
-
-       
+               
         protected static DateTime sqlMinDate = new DateTime(1753, 1, 1);     
 
-        public virtual void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, CancellationToken token, int timeoutSeconds)
+        public virtual void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, CancellationToken token, int timeoutSeconds)
         {
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);
@@ -143,32 +143,6 @@ namespace MediaViewer.Model.Media.Metadata
             media.Latitude = geoPair.LatDecimal;
             media.Longitude = geoPair.LonDecimal;
             
-/*
-            List<MetaDataProperty> tiffProps = new List<MetaDataProperty>();
-
-            metaDataReader.iterate(Consts.XMP_NS_TIFF, Consts.IterOptions.XMP_IterProperties, ref tiffProps);
-            miscProps.AddRange(tiffProps);
-
-            List<MetaDataProperty> exifProps = new List<MetaDataProperty>();
-
-            metaDataReader.iterate(Consts.XMP_NS_EXIF, Consts.IterOptions.XMP_IterProperties, ref exifProps);
-            miscProps.AddRange(exifProps);
-
-            List<MetaDataProperty> exifAuxProps = new List<MetaDataProperty>();
-
-            metaDataReader.iterate(Consts.XMP_NS_EXIF_Aux, Consts.IterOptions.XMP_IterProperties, ref exifAuxProps);
-            miscProps.AddRange(exifAuxProps);
-
-            List<MetaDataProperty> xmpProps = new List<MetaDataProperty>();
-
-            metaDataReader.iterate(Consts.XMP_NS_XMP, Consts.IterOptions.XMP_IterProperties, ref xmpProps);
-            miscProps.AddRange(xmpProps);
-
-            bool hasLat = false;
-            bool hasLon = false;
-
-            tags = new List<string>();
-*/
             media.Tags.Clear();
             
             int nrTags = xmpMetaDataReader.countArrayItems(Consts.XMP_NS_DC, "subject");
@@ -186,30 +160,10 @@ namespace MediaViewer.Model.Media.Metadata
                     newTag.Name = tagName.Trim();
 
                     media.Tags.Add(newTag);
-/*
-                    if (tag.StartsWith(latString))
-                    {
 
-                        geoTag.Latitude.Decimal = Convert.ToDouble(tag.Substring(latString.Length), CultureInfo.InvariantCulture);
-                        hasLat = true;
-
-                    }
-                    else if (tag.StartsWith(lonString))
-                    {
-
-                        geoTag.Longitude.Decimal = Convert.ToDouble(tag.Substring(lonString.Length), CultureInfo.InvariantCulture);
-                        hasLon = true;
-                    }
- */
                 }
             }
-/*
-            if (hasLat && hasLon)
-            {
 
-                hasGeoTag = true;
-            }          
- */
         }
     }
 }

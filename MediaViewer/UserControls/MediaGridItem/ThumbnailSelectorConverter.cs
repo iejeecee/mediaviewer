@@ -1,4 +1,5 @@
 ﻿using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File.Watcher;
 using System;
 using System.Collections.Generic;
@@ -22,14 +23,14 @@ namespace MediaViewer.UserControls.MediaGridItem
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             BaseMetadata media = (BaseMetadata)value;
-
-            if (media == null || media.Thumbnails.Count == 0) 
+                                                   
+            if (media == null || media.Thumbnails.Count == 0)               
             {
                 if (media is AudioMetadata) return audioIcon;
                 else return parameter;
             }
             else
-            {                
+            {
                 return (media.Thumbnails.ElementAt(0).Image);
             }
             

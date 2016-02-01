@@ -17,7 +17,6 @@ using System.Windows.Data;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Settings;
 using Microsoft.Practices.Prism.Regions;
-using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.PubSubEvents;
 using Microsoft.Practices.Prism.Commands;
@@ -28,6 +27,7 @@ using Microsoft.Practices.ServiceLocation;
 using MediaViewer.UserControls.Layout;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Properties;
+using MediaViewer.Model.Media.File.Metadata;
 
 namespace MediaViewer.MetaData
 {
@@ -730,6 +730,10 @@ namespace MediaViewer.MetaData
 
                 DynamicProperties.Clear();
 
+                if (metadata is ImageMetadata)
+                {
+                    getImageProperties(DynamicProperties, metadata as ImageMetadata);
+                }
                 if (metadata is VideoMetadata)
                 {
                     getVideoProperties(DynamicProperties, metadata as VideoMetadata);
@@ -746,7 +750,7 @@ namespace MediaViewer.MetaData
                 Copyright = metadata.Copyright;
                 Creation = metadata.CreationDate;
                 IsImported = metadata.IsImported;
-                IsReadOnly = media.IsReadOnly || !metadata.SupportsXMPMetadata;
+                IsReadOnly = media.IsReadOnly || !metadata.SupportsXMPMetadata || metadata is UnknownMetadata;
              
                 Geotag = new GeoTagCoordinatePair(metadata.Latitude, metadata.Longitude);                  
                 
@@ -798,6 +802,18 @@ namespace MediaViewer.MetaData
 
         private void getExifProperties(ObservableCollection<Tuple<string, string>> p, BaseMetadata media)
         {
+            p.Add(new Tuple<string, string>("Size", MediaViewer.Model.Utils.MiscUtils.formatSizeBytes(media.SizeBytes)));
+
+            if (media.FileDate != null)
+            {
+                p.Add(new Tuple<string, string>("File Date", media.FileDate.ToString()));
+            }
+
+            if (media.LastModifiedDate != null)
+            {
+                p.Add(new Tuple<string, string>("File Modified", media.LastModifiedDate.ToString()));
+            }
+
             int nrProps = p.Count;
            
             if (media.Software != null)
@@ -860,6 +876,7 @@ namespace MediaViewer.MetaData
                                 
             }
 
+            
             if (media.Latitude != null)
             {
                 p.Add(new Tuple<string, string>("GPS Latitude", media.Latitude.Value.ToString("0.00000")));
@@ -875,7 +892,16 @@ namespace MediaViewer.MetaData
                 p.Insert(nrProps, new Tuple<string, string>("", "EXIF"));
             }
             
-        }    
+        }
+
+        void getImageProperties(ObservableCollection<Tuple<String, String>> p, ImageMetadata image)
+        {
+            p.Add(new Tuple<string, string>("", "IMAGE"));
+
+            p.Add(new Tuple<string, string>("Resolution", image.Width + " x " + image.Height));
+            p.Add(new Tuple<string, string>("Pixel Format", image.PixelFormat));
+            p.Add(new Tuple<string, string>("Bits Per Pixel", image.BitsPerPixel.ToString()));           
+        }
 
         void getVideoProperties(ObservableCollection<Tuple<String, String>> p, VideoMetadata video)
         {
@@ -890,8 +916,9 @@ namespace MediaViewer.MetaData
             }
 
             p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
-            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));
+            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));            
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
+            p.Add(new Tuple<string, string>("Bits Per Pixel", video.BitsPerPixel.ToString()));
             p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString("0.##")));
           
             if (!String.IsNullOrEmpty(video.AudioCodec))
@@ -907,7 +934,7 @@ namespace MediaViewer.MetaData
         void getAudioProperties(ObservableCollection<Tuple<String, String>> p, AudioMetadata audio)
         {
             p.Add(new Tuple<string, string>("", "AUDIO"));                                             
-            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(audio.DurationSeconds)));             
+            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(audio.DurationSeconds)));           
             p.Add(new Tuple<string, string>("Audio Codec", audio.AudioCodec));
             p.Add(new Tuple<string, string>("Bits Per Sample", audio.BitsPerSample.ToString()));
             p.Add(new Tuple<string, string>("Samples Per Second", audio.SamplesPerSecond.ToString()));

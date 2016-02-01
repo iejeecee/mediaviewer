@@ -277,6 +277,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if (query.SearchType == MediaType.All)
                 {
                     result = Db.BaseMetadataSet.Include("Tags").Include("Thumbnails").Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    
                 }
                 else if (query.SearchType == MediaType.Video)
                 {

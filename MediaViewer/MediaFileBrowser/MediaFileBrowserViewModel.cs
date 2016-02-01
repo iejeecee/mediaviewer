@@ -48,6 +48,7 @@ using MediaViewer.Transcode.Image;
 using MediaViewer.Filter;
 using MediaViewer.MediaFileBrowser.DirectoryBrowser;
 using MediaViewer.UserControls.MediaPreview;
+using MediaViewer.MediaDatabase;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -221,12 +222,12 @@ namespace MediaViewer.MediaFileBrowser
                     item = SelectedItems.ElementAt(0) as MediaFileItem;
                 }
 
-                if (MediaFormatConvert.isImageFile(item.Location))
+                if (item.Metadata is ImageMetadata)
                 {
                     navigateToImageView(item);
                 }
-                else if (MediaFormatConvert.isVideoFile(item.Location) || 
-                    MediaFormatConvert.isAudioFile(item.Location))
+                else if (item.Metadata is VideoMetadata ||
+                    item.Metadata is AudioMetadata)
                 {
                     navigateToVideoView(item);
                 }

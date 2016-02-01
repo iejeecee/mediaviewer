@@ -4,7 +4,6 @@ using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.Base.State;
-using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using Microsoft.Practices.Prism.Commands;

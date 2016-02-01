@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Metadata;
+﻿using MediaViewer.Model.Media.File.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -8,9 +8,9 @@ using System.Text;
 using System.Threading.Tasks;
 using XMPLib;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
-    abstract class MetadataWriter 
+    abstract class MetadataFileWriter 
     {
     
         protected CancellableOperationProgressBase Progress { get; set; }

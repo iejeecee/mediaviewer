@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
-    class AudioMetadataWriter : MetadataWriter
+    class AudioFileMetadataWriter : MetadataFileWriter
     {
-        public AudioMetadataWriter()           
+        public AudioFileMetadataWriter()           
         {
 
         }

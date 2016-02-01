@@ -1,3 +1,4 @@
+#pragma once
 #include "IVideoDecoder.h"
 #include "VideoFrame.h"
 #include "FrameQueue.h"
@@ -70,9 +71,9 @@ namespace VideoLib {
 			}
 		}
 	
-		property int DurationSeconds {
+		property double DurationSeconds {
 
-			int get() {
+			double get() {
 
 				return(videoDecoder->getDurationSeconds());
 			}

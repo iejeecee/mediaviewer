@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using MediaViewer.MediaDatabase;
 
 namespace MediaViewer.MediaFileGrid
 {
@@ -35,12 +36,12 @@ namespace MediaViewer.MediaFileGrid
             {
                 MediaItem item = selectableItem.Item;
 
-                if (MediaFormatConvert.isImageFile(item.Location))
+                if (item.Metadata is ImageMetadata)
                 {
                     Shell.ShellViewModel.navigateToImageView(item);
                 }
-                else if (MediaFormatConvert.isVideoFile(item.Location) || 
-                    MediaFormatConvert.isAudioFile(item.Location))
+                else if (item.Metadata is VideoMetadata ||
+                    item.Metadata is AudioMetadata)
                 {
                     Shell.ShellViewModel.navigateToVideoView(item);
                 }
@@ -136,6 +137,7 @@ namespace MediaViewer.MediaFileGrid
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+         
             MediaStateCollectionView.SelectionChanged += MediaStateCollectionView_SelectionChanged;
 
             List<MediaItem> selectedItems = MediaStateCollectionView.getSelectedItems();

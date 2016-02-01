@@ -356,7 +356,7 @@ namespace VideoPlayerControl
 
         }                                           
 
-        public void createScreenShot(String screenShotName, int positionSeconds, String videoLocation, int offsetSeconds)
+        public void createScreenShot(String screenShotName, double positionSeconds, String videoLocation, int offsetSeconds)
         {
             lock (renderLock)
             {
@@ -396,7 +396,9 @@ namespace VideoPlayerControl
 
                     UriBuilder uri = new UriBuilder(new Uri(videoLocation).AbsoluteUri);
                  
-                    TimeSpan time = new TimeSpan(0, 0, Math.Max(positionSeconds + offsetSeconds, 0));
+                    int seconds = (int)Math.Floor(Math.Max(positionSeconds + offsetSeconds, 0));
+
+                    TimeSpan time = new TimeSpan(0, 0, seconds);
                     String timeString = "";
 
                     if (time.Days > 0)

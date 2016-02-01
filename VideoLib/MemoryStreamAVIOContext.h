@@ -15,27 +15,36 @@ namespace VideoLib {
 	{
 	private:
 		
-		MemoryStream *inputStream; // abstract stream interface, You can adapt it to TMemoryStream  
-		int bufferSize;
-		unsigned char *buffer;  
+		MemoryStream *inputStream; // abstract stream interface, You can adapt it to TMemoryStream   
 		AVIOContext *avioCtx;
 
 	public:
 
-		MemoryStreamAVIOContext(MemoryStream *inputStream, bool isWriteable = false)		 		  
+		enum Mode
+		{
+			READABLE,
+			WRITEABLE
+		};
+
+		MemoryStreamAVIOContext(MemoryStream *inputStream, Mode mode)		 		  
 		{
 			this->inputStream = inputStream;
-			bufferSize = 4 * 1024;
-			buffer = (unsigned char *)av_malloc(bufferSize);
+			
+			int bufferSize = 4 * 1024;
+			unsigned char *buffer = (unsigned char *)av_malloc(bufferSize);
 
-			avioCtx = avio_alloc_context(buffer, bufferSize, isWriteable ? 1 : 0, this, 
+			avioCtx = avio_alloc_context(buffer, bufferSize, mode == WRITEABLE ? 1 : 0, this, 
 				&readPacket, &writePacket, &seek); 
 		}
 
 		~MemoryStreamAVIOContext() 
-		{ 
+		{ 		
+			// free buffer owned by avioCtx 	
+			av_free(avioCtx->buffer);							
 			av_free(avioCtx);
-			av_free(buffer); 
+
+			avioCtx = NULL;
+									
 		}
 
 		static int readPacket(void *opaque, uint8_t *buf, int bufSize) 

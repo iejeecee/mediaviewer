@@ -246,6 +246,11 @@ public:
 
 		return (int)av_buffersrc_get_nb_failed_requests(buffer_src);
 	}
+
+	int requestFrame() {
+
+		return avfilter_graph_request_oldest(filterGraph);	
+	}
 		
 	void addInputStream(VideoLib::Stream *inputStream, const char *name = "in") 
 	{

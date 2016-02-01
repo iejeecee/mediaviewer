@@ -3,7 +3,6 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
-using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.Mvvm;

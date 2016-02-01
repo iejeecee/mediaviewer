@@ -1,8 +1,9 @@
 ﻿using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Base.Item;
-using MediaViewer.Model.metadata.Metadata;
+using MediaViewer.Model.Media.Base.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using Microsoft.Practices.Prism.Mvvm;

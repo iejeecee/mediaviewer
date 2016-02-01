@@ -30,7 +30,7 @@ namespace MediaViewer.MediaDatabase
                     return MetadataReadError.Message;
                 }
 
-                return (Location);
+                return ("Unknown media");
             }
         }
 

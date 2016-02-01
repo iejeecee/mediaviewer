@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maps.MapControl.WPF;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.MediaFileBrowser;
 using MediaViewer.UserControls.GeoTagEditor;
@@ -23,6 +22,7 @@ using MediaViewer.Model.Utils;
 using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Infrastructure.Global.Events;
 using System.IO;
+using MediaViewer.Model.Media.File.Metadata;
 
 namespace MediaViewer.GeotagFileBrowser
 {

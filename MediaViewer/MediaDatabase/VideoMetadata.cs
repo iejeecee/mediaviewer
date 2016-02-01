@@ -29,5 +29,6 @@ namespace MediaViewer.MediaDatabase
         public Nullable<int> MinorVersion { get; set; }
         public Nullable<bool> IsVariableBitRate { get; set; }
         public string WMFSDKVersion { get; set; }
+        public Nullable<short> BitsPerPixel { get; set; }
     }
 }

@@ -2,7 +2,7 @@
 #include "VideoDecoderFactory.h"
 #include "IVideoDecoder.h"
 #include "VideoEncoder.h"
-#include "VideoTransformer.h"
+#include "VideoTranscodeBase.h"
 #include "Utils.h"
 #include <vector>
 
@@ -14,61 +14,16 @@ using namespace MediaViewer::Infrastructure::Logging;
 
 namespace VideoLib {
 
-class VideoConcat : public VideoTransformer {
-
-protected:
-	
-	std::vector<VideoTransformerInputInfo *> input;
-	VideoTransformerOutputInfo *output;
-	
-	StreamTransformMode streamOptionsToStreamTransformMode(StreamOptions mode) {
-
-		switch (mode)
-		{
-		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Discard:
-			return(StreamTransformMode::DISCARD);
-			break;
-		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Copy:
-			return(StreamTransformMode::COPY);
-			break;
-		case MediaViewer::Infrastructure::Video::TranscodeOptions::StreamOptions::Encode:
-			return(StreamTransformMode::ENCODE);
-			break;
-		default:
-			throw gcnew VideoLibException("Unknown stream transform mode");
-			break;
-		}
-	}
+class VideoConcat : public VideoTranscodeBase {
 
 public:
 	
-
-	VideoConcat() {
-			
-		output = NULL;
-	}
-
-	virtual ~VideoConcat()
-	{
-		for(int i = 0; i < (int)input.size(); i++) {
-
-			delete input[i];		
-		}
-
-		input.clear();
-	
-		if(output != NULL)
-		{
-			delete output;			
-		}
-	}
-				
-
 	void concat(List<OpenVideoArgs ^> ^openArgs, String ^outputFilename, System::Threading::CancellationToken token, 
 		Dictionary<String ^,Object ^> ^options, ProgressCallback progressCallback = NULL) 
 	{			
 		
-		VideoTransformerOutputInfo *outputInfo = NULL;
+		std::vector<VideoTransformerInputInfo *> input;
+		VideoTransformerOutputInfo *output = NULL;
 
 		try {
 
@@ -77,8 +32,7 @@ public:
 				IVideoDecoder *decoder = VideoDecoderFactory::create(openArgs[i]);
 				decoder->open(openArgs[i], token);
 				
-				input.push_back(new VideoTransformerInputInfo(decoder));
-				
+				input.push_back(new VideoTransformerInputInfo(decoder));				
 			}
 				
 			VideoEncoder *encoder = new VideoEncoder();
@@ -86,27 +40,22 @@ public:
 
 			output = new VideoTransformerOutputInfo(encoder);
 		
-			initialize(options, token);
-			
-			for(int i = 0; i < (int)input.size(); i++) {
+			initialize(input, output, options, token);
+						
+			checkInputsValidity(input, output,options);
 
-				addInput(input[i]);
-			}
-
-			addOutput(output);
-
-			checkInputsValidity(options);
-
-			initFilters(options);
+			initFilters(input, output, options);
 
 			av_dump_format(output->encoder->getFormatContext(), 0, output->encoder->getFormatContext()->filename, 1);
 			
-			transform(token, progressCallback, &VideoConcat::getNextPacketSeqOrder);
+			transform(token, progressCallback, (GetNextPacketFunc)&VideoConcat::getNextPacketSeq);
 
 		} finally {
 						
 			for(int i = 0; i < (int)input.size(); i++) {
 			
+				input[i]->decoder->close();
+				delete input[i]->decoder;
 				delete input[i];		
 			}
 
@@ -114,6 +63,8 @@ public:
 	
 			if(output != NULL) {
 
+				output->encoder->close();
+				delete output->encoder;
 				delete output;	
 				output = NULL;
 			}
@@ -124,12 +75,14 @@ public:
 
 protected:
 
-	void checkInputsValidity(Dictionary<String ^,Object ^> ^options) {
+	void checkInputsValidity(std::vector<VideoTransformerInputInfo *> &input,
+		VideoTransformerOutputInfo *output, Dictionary<String ^,Object ^> ^options) 
+	{
 
 		StreamTransformMode videoStreamMode = streamOptionsToStreamTransformMode((StreamOptions)options["videoStreamMode"]);
 		StreamTransformMode audioStreamMode = streamOptionsToStreamTransformMode((StreamOptions)options["audioStreamMode"]);
 
-		if(videoStreamMode == StreamTransformMode::COPY) {
+		if(videoStreamMode == StreamTransformMode::COPY && output->encoder->hasVideo()) {
 			
 			Stream *outStream = output->encoder->getStream(output->encoder->getVideoStreamIndex());
 
@@ -163,7 +116,7 @@ protected:
 
 		}
 
-		if(audioStreamMode == StreamTransformMode::COPY) {
+		if(audioStreamMode == StreamTransformMode::COPY && output->encoder->hasAudio()) {
 			
 			Stream *outStream = output->encoder->getStream(output->encoder->getAudioStreamIndex());
 
@@ -221,102 +174,9 @@ protected:
 
 		return progress;
 	}
-
-	void initOutputStream(Stream *inStream, StreamTransformMode streamMode, Dictionary<String ^, Object ^> ^options) 
-	{
-						
-		if(streamMode == StreamTransformMode::COPY) 
-		{		
-			output->encoder->createStream(inStream);						
-		} 
-		else if(streamMode == StreamTransformMode::ENCODE) 
-		{			
-			VideoLib::Stream *outStream;
-
-			AVCodecContext *dec_ctx = inStream->getCodecContext();
-
-			if(inStream->isVideo()) {
-
-				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["videoEncoder"]).ToString());
-				 
-				int width = dec_ctx->width;
-				int height = dec_ctx->height;
-
-				if(options->ContainsKey("width")) {
-
-					width = (int)options["width"];
-
-					if(!options->ContainsKey("height")) {
-
-						height = int(((float)width / dec_ctx->width) * dec_ctx->height);
-					}
-
-				} 
-				
-				if(options->ContainsKey("height")) {
-
-					height = (int)options["height"];
-
-					if(!options->ContainsKey("width")) {
-
-						width = int(((float)height / dec_ctx->height) * dec_ctx->width);
-					}
-				}
-
-				outStream = output->encoder->createStream(encoderName, width, height, dec_ctx->sample_aspect_ratio, 
-					dec_ctx->time_base);
-								
-				if(outStream->getCodecID() == AV_CODEC_ID_H264 || outStream->getCodecID() == AV_CODEC_ID_HEVC) 
-				{						
-					String ^preset = ((VideoEncoderPresets)options["videoEncoderPreset"]).ToString()->ToLower();
-
-					std::string value = marshal_as<std::string>(preset);
-
-					outStream->setPrivateOption("preset", value.c_str());
-				
-				} else if(outStream->getCodecID() == AV_CODEC_ID_VP8) {
-			
-					outStream->getCodecContext()->bit_rate = 3200000;
-
-					//outStream->setOption("crf", "5");
-					outStream->setOption("qmin", "4");
-					outStream->setOption("qmax", "50");
-
-				} else if(outStream->getCodecID() == AV_CODEC_ID_GIF) {
-								
-					
-				}
-
-				
-			} else {
-
-				std::string encoderName = marshal_as<std::string>(((AudioEncoders)options["audioEncoder"]).ToString());
-
-				int sampleRate = dec_ctx->sample_rate;
-
-				if(options->ContainsKey("sampleRate")) {
-
-					sampleRate = (int)options["sampleRate"];
-				}
-
-				int nrChannels = dec_ctx->channels;
-
-				if(options->ContainsKey("nrChannels")) {
-
-					nrChannels = (int)options["nrChannels"];
-				} 
-
-				outStream = output->encoder->createStream(encoderName, sampleRate, nrChannels);		
-			}
-								
-			outStream->open();
-					
-		}			
-						
-	}
-
 		
-	void initialize(Dictionary<String ^,Object ^> ^options, System::Threading::CancellationToken token) 
+	void initialize(std::vector<VideoTransformerInputInfo *> &input, VideoTransformerOutputInfo *output, 
+		Dictionary<String ^,Object ^> ^options, System::Threading::CancellationToken token) 
 	{
 		StreamTransformMode videoStreamMode = streamOptionsToStreamTransformMode((StreamOptions)options["videoStreamMode"]);
 		
@@ -324,12 +184,9 @@ protected:
 			
 			Stream *videoStream = input[0]->decoder->getStream(input[0]->decoder->getVideoStreamIndex());
 
-			initOutputStream(videoStream, videoStreamMode, options);
-
-			VideoTransformerOutputStreamInfo *outputStreamInfo = 
-				new VideoTransformerOutputStreamInfo(output->encoder->getNrStreams(), videoStreamMode);
-
-			output->addStreamInfo(outputStreamInfo);
+			initOutputStream(videoStream, output, videoStreamMode, options);
+			
+			output->addStreamInfo(output->encoder->getNrStreams(), videoStreamMode);
 		}
 
 		StreamTransformMode audioStreamMode = streamOptionsToStreamTransformMode((StreamOptions)options["audioStreamMode"]);
@@ -338,12 +195,9 @@ protected:
 			
 			Stream *audioStream = input[0]->decoder->getStream(input[0]->decoder->getAudioStreamIndex());
 
-			initOutputStream(audioStream, audioStreamMode, options);
-
-			VideoTransformerOutputStreamInfo *outputStreamInfo = 
-				new VideoTransformerOutputStreamInfo(output->encoder->getNrStreams(), audioStreamMode);
-
-			output->addStreamInfo(outputStreamInfo);
+			initOutputStream(audioStream, output, audioStreamMode, options);
+		
+			output->addStreamInfo(output->encoder->getNrStreams(), audioStreamMode);
 		}
 
 		for(int inputIdx = 0; inputIdx < (int)input.size(); inputIdx++) {
@@ -351,9 +205,7 @@ protected:
 			IVideoDecoder *decoder = input[inputIdx]->decoder;
 			
 			for(int inStreamIdx = 0; inStreamIdx < decoder->getNrStreams(); inStreamIdx++) {
-				
-				VideoTransformerInputStreamInfo *inputStreamInfo;
-
+							
 				Stream *inStream = decoder->getStream(inStreamIdx);
 											
 				if (inStream->isVideo() && inStreamIdx == decoder->getVideoStreamIndex()
@@ -361,8 +213,8 @@ protected:
 				{					
 					int outStreamIdx = output->encoder->getVideoStreamIndex();
 
-					inputStreamInfo = new VideoTransformerInputStreamInfo(inStreamIdx, outStreamIdx, videoStreamMode);																
-					initBitstreamFilters(inStreamIdx,outStreamIdx, videoStreamMode); 
+					input[inputIdx]->addStreamInfo(outStreamIdx, videoStreamMode);																
+					initBitstreamFilters(input[0], output, inStreamIdx, outStreamIdx, videoStreamMode); 
 					
 				} 
 				else if(inStream->isAudio() && inStreamIdx == decoder->getAudioStreamIndex()
@@ -370,22 +222,30 @@ protected:
 				{
 					int outStreamIdx = output->encoder->getAudioStreamIndex();
 
-					inputStreamInfo = new VideoTransformerInputStreamInfo(inStreamIdx, outStreamIdx, audioStreamMode);																
-					initBitstreamFilters(inStreamIdx, outStreamIdx, audioStreamMode); 
+					input[inputIdx]->addStreamInfo(outStreamIdx, audioStreamMode);	
+					initBitstreamFilters(input[0], output, inStreamIdx, outStreamIdx, audioStreamMode); 
 				}
 				else 
 				{				
-					inputStreamInfo = new VideoTransformerInputStreamInfo(inStreamIdx,-1, StreamTransformMode::DISCARD);
+					input[inputIdx]->addStreamInfo(-1, StreamTransformMode::DISCARD);
 				}
 			
-				input[inputIdx]->addStreamInfo(inputStreamInfo);
+			
 			}
 
 		}
 		
+		for(int i = 0; i < (int)input.size(); i++) {
+
+			addInput(input[i]);
+		}
+
+		addOutput(output);
+
 	}
 
-	void initFilters(Dictionary<String ^,Object ^> ^options)
+	void initFilters(std::vector<VideoTransformerInputInfo *> &input,
+		VideoTransformerOutputInfo *output, Dictionary<String ^,Object ^> ^options)
 	{			
 		
 		std::stringstream inputVideoFilters;
@@ -508,33 +368,69 @@ protected:
 	
 	}
 
-	void initBitstreamFilters(int inputStreamIdx, int outputStreamIdx, StreamTransformMode mode) 
-	{
-		if(output->encoder->getStream(outputStreamIdx)->isVideo()) {
-		
-			if(output->encoder->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_MPEG4) {
+	
+
+	virtual void modifyTS(int inputIdx, int streamIdx, int64_t pts, int64_t dts, int64_t duration) {
+
+		int64_t ts = dts != AV_NOPTS_VALUE ? dts : pts; 	
+
+		VideoTransformerInputStream *inputStream = inputs[inputIdx]->streamsInfo[streamIdx];
+
+		inputStream->posSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(ts);
 			
-				output->streamsInfo[outputStreamIdx]->addBitstreamFilter("mpeg4_unpack_bframes");			
+		if(!inputStream->isTsOffsetSet)
+		{		
+			for(int i = 0; i < inputs[inputIdx]->streamsInfo.size(); i++) 
+			{
+				if(inputs[inputIdx]->streamsInfo[i]->mode != StreamTransformMode::COPY) continue;
+
+				// make sure the stream starts at zero 
+				int64_t tsOffset = -av_rescale_q_rnd(
+					inputs[inputIdx]->decoder->getFormatContext()->start_time,
+					av_make_q(1, AV_TIME_BASE),
+					inputs[inputIdx]->decoder->getStream(i)->getTimeBase(),
+					(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+
+				if(inputIdx > 0) {
+
+					// find the exact length of the previous input and add it to the offset				
+					double prevInputLengthSeconds = DBL_MIN;
+
+					for(int j = 0; j < inputs[inputIdx - 1]->streamsInfo.size(); j++)
+					{
+						double streamLengthSeconds = inputs[inputIdx - 1]->decoder->getStream(j)->getTimeSeconds(inputs[inputIdx - 1]->streamsInfo[j]->nextTs);
+
+						if(streamLengthSeconds > prevInputLengthSeconds) {
+
+							prevInputLengthSeconds = streamLengthSeconds;
+						}
+					}
+												
+					tsOffset += inputs[inputIdx]->decoder->getStream(i)->getTimeBaseUnits(prevInputLengthSeconds);
+				}
+
+				inputs[inputIdx]->streamsInfo[i]->setTsOffset(tsOffset);		
 			}
-
-		} else {
-
-				// add aac_adtstoasc bitstream filter if output is mp4 aac and input is dts aac
-			bool encodeNeedsAACFilter = mode == StreamTransformMode::ENCODE &&
-				output->encoder->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_AAC &&
-				strcmp(output->encoder->getOutputFormat()->name,"mp4") == 0;
-			
-			bool copyNeedsAACFilter = mode == StreamTransformMode::COPY &&
-				output->encoder->getStream(outputStreamIdx)->getCodecID() == AV_CODEC_ID_AAC &&
-				strcmp(output->encoder->getOutputFormat()->name,"mp4") == 0 &&
-				strcmp(input[0]->decoder->getFormatContext()->iformat->name,"mpegts") == 0;
-			
-			if(encodeNeedsAACFilter || copyNeedsAACFilter) 
-			{					
-				output->streamsInfo[outputStreamIdx]->addBitstreamFilter("aac_adtstoasc");
-			}
-
 		}
+
+		
+		/*int64_t curDts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + dts;
+		double dtsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curDts);
+
+		int64_t nextDts = curDts + duration;
+
+		int curPts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + pts;
+		double ptsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curPts);*/
+			
+		int64_t nextPts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + pts + duration;
+
+		if(nextPts > inputs[inputIdx]->streamsInfo[streamIdx]->nextTs) {
+
+			inputs[inputIdx]->streamsInfo[streamIdx]->nextTs = nextPts;
+		}
+		
+		//System::Diagnostics::Debug::Print("file:" + inputIdx + " stream:" + streamIdx + " pts:" + curPts + " pts_time:" + ptsSeconds + " dts:" + curDts + " dts_time:" + dtsSeconds);
+
 	}
 
 };

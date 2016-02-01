@@ -3,7 +3,6 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.Base.State;
-using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using System;
@@ -13,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaViewer.Model.Media.Base.Metadata;
 
 namespace MediaViewer.Model.Media.File
 {

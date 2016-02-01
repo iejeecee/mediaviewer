@@ -119,6 +119,9 @@ namespace MediaViewer.Transcode.Video
                 case ContainerFormats.GIF:
                     if (encoder == VideoEncoders.gif) return true;
                     else return (false);                
+                case ContainerFormats.PNG:
+                    if (encoder == VideoEncoders.apng) return true;
+                    else return (false);
                 case ContainerFormats.MP3:
                     if (encoder == VideoEncoders.none) return (true);
                     else return (false);              
@@ -161,6 +164,9 @@ namespace MediaViewer.Transcode.Video
                     if (encoder == AudioEncoders.libvorbis) return true;
                     else return (false); 
                 case ContainerFormats.GIF:
+                    if (encoder == AudioEncoders.none) return (true);
+                    else return (false);
+                case ContainerFormats.PNG:
                     if (encoder == AudioEncoders.none) return (true);
                     else return (false);
                 case ContainerFormats.MP3:
@@ -230,7 +236,8 @@ namespace MediaViewer.Transcode.Video
                     AudioStreamMode = StreamOptions.Encode;
                 
                 }
-                else if (containerFormat == ContainerFormats.GIF)
+                else if (containerFormat == ContainerFormats.GIF || 
+                    containerFormat == ContainerFormats.PNG)
                 {
                     IsContainerSupportsVideoStream = true;
                     IsContainerSupportsAudioStream = false;

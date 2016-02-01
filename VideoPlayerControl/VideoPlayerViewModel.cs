@@ -22,8 +22,8 @@ namespace VideoPlayerControl
 
         public event EventHandler<bool> IsBufferingChanged;
         public event EventHandler<VideoState> StateChanged;
-        public event EventHandler<int> PositionSecondsChanged;
-        public event EventHandler<int> DurationSecondsChanged;
+        public event EventHandler<double> PositionSecondsChanged;
+        public event EventHandler<double> DurationSecondsChanged;
         public event EventHandler<bool> HasAudioChanged;
         public event EventHandler<bool> IsMutedChanged;
         public event EventHandler<double> VolumeChanged;
@@ -147,9 +147,11 @@ namespace VideoPlayerControl
         Task OpenTask { get; set; }
         CancellationTokenSource CancelTokenSource { get; set; }
 
-        int positionSeconds;
+        Task SeekTask { get; set; }
 
-        public int PositionSeconds
+        double positionSeconds;
+
+        public double PositionSeconds
         {
             get { return positionSeconds; }
             set
@@ -163,9 +165,9 @@ namespace VideoPlayerControl
             }
         }
 
-        int durationSeconds;
+        double durationSeconds;
 
-        public int DurationSeconds
+        public double DurationSeconds
         {
             get { return durationSeconds; }
             set
@@ -451,7 +453,7 @@ namespace VideoPlayerControl
         {
             VideoClock = getVideoClock();
             AudioClock = audioPlayer.getAudioClock();
-            PositionSeconds = (int)Math.Floor(videoDecoder.HasAudio == true ? AudioClock : VideoClock);
+            PositionSeconds = videoDecoder.HasAudio == true ? AudioClock : VideoClock;
 
             StringBuilder builder = new StringBuilder();
 
@@ -833,7 +835,17 @@ namespace VideoPlayerControl
             } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
         }
 
-        public void seek(double positionSeconds)
+        public async Task seek(double positionSeconds)
+        {
+            if (SeekTask != null)
+            {
+                await SeekTask;
+            }
+
+            SeekTask = Task.Factory.StartNew(() => seekFunc(positionSeconds), CancelTokenSource.Token);
+        }
+
+        void seekFunc(double positionSeconds)
         {
             if (VideoState == VideoPlayerControl.VideoState.CLOSED)
             {

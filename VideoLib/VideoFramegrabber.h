@@ -56,69 +56,45 @@ private:
 		AVDictionaryEntry *entry = NULL;
 		if (!dict)
 			return;
-		//probe_object_header(name);
+	
 		while ((entry = av_dict_get(dict, "", entry, AV_DICT_IGNORE_SUFFIX))) {
 					
 			metaData.push_back(std::string(entry->key) + ": " + std::string(entry->value));
 		
 		}
-		//probe_object_footer(name);
+	
 	}
 
 public:
 
-	int durationSeconds;
-
-	int64_t sizeBytes;
-
-	int width;
-	int height;
-
 	std::string container;
 	std::string videoCodecName;
 	std::string pixelFormat;
+	int bitsPerPixel;
 	std::vector<std::string> metaData;
 
 	std::string audioCodecName;
 
-	int samplesPerSecond;
-	int bytesPerSample;	
-	int nrChannels;
-
 	VideoFrameGrabber() 
 	{
 		setDecodedFrameCallback(decodedFrame, this);
-
-		durationSeconds = 0;
-		sizeBytes = 0;
-		width = 0;
-		height = 0;
+	
 		container = "";
-		videoCodecName = "";
 
+		videoCodecName = "";
 		audioCodecName = "";
 
-		samplesPerSecond = 0;
-		bytesPerSample = 0;	
-		nrChannels = 0;
-
+		bitsPerPixel = 0;
 	}
 
 	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^ token) {
 
 		VideoDecoder::open(args, token);
 
-		// get video metadata
-		durationSeconds = getDurationSeconds();
-
-		sizeBytes = formatContext->pb ? avio_size(formatContext->pb) : 0;
 		container = std::string(formatContext->iformat->long_name);
 
 		if(hasVideo()) 
-		{
-			width = getWidth();
-			height = getHeight();
-				
+		{						
 			videoCodecName = std::string(getVideoCodec()->name);
 	
 			char buf[64];
@@ -130,7 +106,14 @@ public:
 
 				pixelFormat = pixelFormat.substr(0, pos);
 			}
-						
+			
+			const AVPixFmtDescriptor *pixFmtDescriptor = av_pix_fmt_desc_get(getVideoCodecContext()->pix_fmt);
+
+			if(pixFmtDescriptor != NULL) 
+			{
+				bitsPerPixel = av_get_bits_per_pixel(pixFmtDescriptor);
+			}
+			
 		}
 
 		probe_dict(formatContext->metadata, "");
@@ -138,23 +121,14 @@ public:
 		// audio info
 		if(hasAudio()) {
 
-			audioCodecName = std::string(getAudioCodec()->name);
-
-			samplesPerSecond = getAudioCodecContext()->sample_rate;
-			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
-		
-			nrChannels = getAudioCodecContext()->channels;
+			audioCodecName = std::string(getAudioCodec()->name);		
 		}
 	}
 
 	virtual void close() {
 
 		VideoDecoder::close();
-
-		durationSeconds = 0;
-		sizeBytes = 0;
-		width = 0;
-		height = 0;
+	
 		container = "";
 		videoCodecName = "";
 
@@ -251,14 +225,12 @@ public:
 
 			double pos = offset + frameNr * step;
 
-			bool seekSuccess = seek(pos);
+			if(pos != 0) {
 
-			if(seekSuccess == false && nrFrames == 1) {
-				
-				seekSuccess = seek(0);
+				bool seekSuccess = seek(pos);
 			}
 			
-			bool frameOk = decodeFrame(cancellationToken, DECODE_VIDEO, SKIP_AUDIO, decodingTimeOut);
+			bool frameOk = decodeFrame(cancellationToken, decodingTimeOut);
 
 			if(!frameOk) {
 			
@@ -274,6 +246,74 @@ public:
 			}
 				
 		}
+
+	}
+
+	bool decodeFrame(System::Threading::CancellationToken ^token, int timeOutSeconds = 0) 
+	{
+		if(isClosed()) return(false);
+
+		int frameFinished = 0;
+
+		DateTime startTime = DateTime::Now;
+
+		while(frameFinished == 0) {
+		
+			if(timeOutSeconds > 0 && (DateTime::Now - startTime).TotalSeconds > timeOutSeconds) {
+
+				throw gcnew VideoLibException("Timed out during decoding");
+			}
+
+			if(token->IsCancellationRequested) {
+
+				throw gcnew OperationCanceledException(*token);
+			}
+
+			if(readFrame(&packet) == ReadFrameResult::END_OF_STREAM) {
+				
+				// flush decoder with null packets
+				// see AV_CODEC_CAP_DELAY
+				packet.size = 0;
+				packet.data = NULL;
+				packet.stream_index = videoIdx;
+				
+			}
+		
+			if(packet.stream_index == videoIdx)
+			{			
+				av_frame_unref(frame);
+			
+				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
+				if(ret < 0) {
+
+					//Error decoding video frame
+					VideoInit::writeToLog(AV_LOG_WARNING, "could not decode video frame");	
+					return(false);
+				} 
+
+				if(frameFinished != 0)
+				{										
+					convertVideoFrame(frame, convertedFrame);				
+
+					if(decodedFrame != NULL) {
+
+						decodedFrame(data, &packet, convertedFrame, VIDEO);
+					}
+
+				}
+
+				if(ret == 0) {
+
+					// no more frames to decode
+					return(frameFinished != 0 ? true : false);
+				}
+
+			} 
+
+			av_packet_unref(&packet);
+		}
+
+		return(true);
 
 	}
 
@@ -325,6 +365,43 @@ public:
 	int getThumbHeight() const {
 
 		return(thumbHeight);
+	}
+
+	bool isVideo() const {
+	
+		if(!hasVideo()) return false;	
+
+		if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) > 0) return false;
+
+		bool hasFramerate = getFrameRate() > 0;
+
+		bool hasDuration = getDurationSeconds() > 0;
+
+		return hasFramerate || hasDuration;
+	}
+
+	bool isAudio() const {
+
+		if(!hasAudio()) return false;		
+		if(getFrameRate() > 0) return false;
+		
+		if(hasVideo()) {
+		
+			if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) == 0) return false;
+		}
+
+		return true;	
+	}
+
+	bool isImage() const {
+
+		if(hasAudio()) return false;
+		if(getFrameRate() > 0) return false;
+		if(getDurationSeconds() > 0) return false;
+		if(!hasVideo()) return false;
+	
+		return(true);
+
 	}
 
 };

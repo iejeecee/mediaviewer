@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
 
 public class FormatMetaData
@@ -469,9 +469,7 @@ public class FormatMetaData
         // http://ptgmedia.pearsoncmg.com/images/art_evening_lrmetadata/elementLinks/fig04.jpg
 
         List<Tuple<String, String>> propList = new List<Tuple<string, string>>();
-           
-        propList.Add(new Tuple<string, string>("Size", image.Width + " x " + image.Height));
-
+       
         if (image.ExposureTime.HasValue)
         {
             propList.Add(new Tuple<string,string>("Exposure Time", "1/" + 1/image.ExposureTime.Value + "s"));
@@ -554,26 +552,7 @@ public class FormatMetaData
     {
 
 		if(String.IsNullOrEmpty(name) || String.IsNullOrEmpty(value)) return("");
-/*
-		int pos = value.IndexOf("/");
 
-		if(pos != -1) {
-
-			try {
-
-				String nom = value.Substring(0, pos);
-				String den = value.Substring(pos + 1);
-
-				double val = Convert.ToDouble(nom) / Convert.ToDouble(den);
-
-				value = String.Format("{0:0.###}", val);
-
-			} catch (Exception e) {
-
-                Logger.Log.Warn("Error converting property value to number: " + value, e);
-			}
-		}
-*/
 		String result = "";
 
 		FormatInfo info;

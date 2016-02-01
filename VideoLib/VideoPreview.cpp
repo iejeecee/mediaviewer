@@ -77,19 +77,23 @@ void VideoPreview::open(String ^videoLocation, System::Threading::CancellationTo
 			metaData->Add(info);
 		}
 
-		durationSeconds = frameGrabber->durationSeconds;
-		sizeBytes = frameGrabber->sizeBytes;
-		width = frameGrabber->width;
-		height = frameGrabber->height;
+		durationSeconds = frameGrabber->getDurationSeconds();
+		sizeBytes = frameGrabber->getSizeBytes();
+		width = frameGrabber->getWidth();
+		height = frameGrabber->getHeight();
 		container = marshal_as<String ^>(frameGrabber->container);
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
 		frameRate = frameGrabber->getFrameRate();
 		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
+		bitsPerPixel = frameGrabber->bitsPerPixel;
+		isVideo = frameGrabber->isVideo();
+		isAudio = frameGrabber->isAudio();
+		isImage = frameGrabber->isImage();
 
 		audioCodecName = marshal_as<String ^>(frameGrabber->audioCodecName);
-		bytesPerSample = frameGrabber->bytesPerSample;
-		samplesPerSecond = frameGrabber->samplesPerSecond;
-		nrChannels = frameGrabber->nrChannels;
+		bytesPerSample = frameGrabber->getAudioBytesPerSample();
+		samplesPerSecond = frameGrabber->getAudioSamplesPerSecond();
+		nrChannels = frameGrabber->getAudioNrChannels();
 
 	} catch (Exception ^) {
 
@@ -118,8 +122,8 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 		frame->linesize[0]);
 	
 	bitmap->Freeze();
-	
-	long positionSeconds = packet->dts * av_q2d(frameGrabber->getVideoStream()->time_base);
+		
+	long positionSeconds = frameGrabber->getStream(packet->stream_index)->getTimeSeconds(packet->dts);
 
 	VideoThumb ^thumb = gcnew VideoThumb(bitmap, positionSeconds);
 

@@ -6,9 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using XMPLib;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
-    class ImageMetadataWriter : MetadataWriter
+    class ImageFileMetadataWriter : MetadataFileWriter
     {
         protected override void write(XMPLib.MetaData xmpMetaDataWriter, MediaDatabase.BaseMetadata media)
         {

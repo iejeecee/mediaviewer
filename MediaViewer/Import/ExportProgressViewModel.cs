@@ -4,7 +4,6 @@ using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Media.File;
 using MediaViewer.Model.Media.File.Watcher;
 using MediaViewer.Model.Media.Base.State;
-using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
@@ -20,6 +19,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using MediaViewer.Model.Media.Base.Metadata;
 
 namespace MediaViewer.Import
 {

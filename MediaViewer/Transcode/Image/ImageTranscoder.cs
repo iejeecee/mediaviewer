@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Infrastructure;
 using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
-using MediaViewer.Model.Media.Metadata;
+using MediaViewer.Model.Media.File.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using System;
@@ -95,7 +95,7 @@ namespace MediaViewer.Transcode.Image
             if (metaData != null)
             {
                 metaData.Location = outputPath;
-                ImageMetadataWriter metadataWriter = new ImageMetadataWriter();
+                ImageFileMetadataWriter metadataWriter = new ImageFileMetadataWriter();
                 metadataWriter.writeMetadata(metaData, progress);
             }
         }

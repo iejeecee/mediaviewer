@@ -155,9 +155,9 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
-            SeekCommand = new Command<double>((pos) =>
+            SeekCommand = new AsyncCommand<double>(async (pos) =>
             {              
-                VideoPlayer.seek(pos); 
+                await VideoPlayer.seek(pos); 
 
             }, false);
 
@@ -411,11 +411,11 @@ namespace MediaViewer.VideoPanel
         private void videoPlayer_HasAudioChanged(object sender, bool newHasAudio)
         {
             HasAudio = newHasAudio;
-        }                 
+        }
 
-        int durationSeconds;
+        double durationSeconds;
 
-        public int DurationSeconds
+        public double DurationSeconds
         {
             get { return durationSeconds; }
             set {
@@ -423,14 +423,14 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        private void videoPlayer_DurationSecondsChanged(object sender, int newDurationSeconds)
+        private void videoPlayer_DurationSecondsChanged(object sender, double newDurationSeconds)
         {
             DurationSeconds = newDurationSeconds;
         }
 
-        int positionSeconds;
+        double positionSeconds;
 
-        public int PositionSeconds
+        public double PositionSeconds
         {
             get { return positionSeconds; }
             set {
@@ -439,7 +439,7 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        private void videoPlayer_PositionSecondsChanged(object sender, int newPositionSeconds)
+        private void videoPlayer_PositionSecondsChanged(object sender, double newPositionSeconds)
         {
             PositionSeconds = newPositionSeconds;
         }
@@ -559,7 +559,7 @@ namespace MediaViewer.VideoPanel
         public Command PauseCommand { get; set; }
         public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
-        public Command<double> SeekCommand { get; set; }
+        public AsyncCommand<double> SeekCommand { get; set; }
         public Command FrameByFrameCommand { get; set; }      
         public Command SetLeftMarkerCommand { get; set; }
         public Command SetRightMarkerCommand { get; set; }

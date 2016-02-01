@@ -97,63 +97,35 @@ public:
 		return(stream);
 	}
 
-	double getTimeSeconds(int64_t timeBaseUnits) 
+	double getTimeSeconds(int64_t timeBaseUnits) const
 	{		
 		return av_q2d(stream->time_base) * timeBaseUnits;	
 	}
 
-	int64_t getTimeBaseUnits(double timeSeconds) 
+	int64_t getTimeBaseUnits(double timeSeconds) const
 	{
 		int64_t startTime = stream->start_time == AV_NOPTS_VALUE ? 0 : stream->start_time;
 
 		return int64_t(timeSeconds / av_q2d(stream->time_base));	
 	}
 
-	void listOptions() 
+	AVRational getTimeBase() const
 	{
-		const AVOption *option = NULL;
-
-		while((option = av_opt_next(codecContext,option)) != NULL) {
-
-			String ^name = gcnew String(option->name);
-			String ^help = gcnew String(option->help);
-
-			System::Diagnostics::Debug::Print(name + ": " + help);
-		}
+		return stream->time_base;
 	}
 			
 	void setOption(const std::string &name, const std::string &value) 
 	{
 		
-		int result = av_opt_set(codecContext, name.c_str(), value.c_str(), 0);
+		int result = av_opt_set(codecContext, name.c_str(), value.c_str(), AV_OPT_SEARCH_CHILDREN);
 		if(result != 0)
 		{				
-			throw gcnew VideoLib::VideoLibException("Error setting option: ", result);
+			throw gcnew VideoLib::VideoLibException("Error setting option: " + gcnew String(name.c_str()) + " ", result);
 		}
 
 	}
 
-	void listPrivateOptions() 
-	{
-		const AVOption *option = NULL;
-
-		while((option = av_opt_next(codecContext->priv_data,option)) != NULL) {
-
-			String ^name = gcnew String(option->name);
-			String ^help = gcnew String(option->help);
-
-			System::Diagnostics::Debug::Print(name + ": " + help);
-		}
-	}
-
-	void setPrivateOption(const std::string &name, const std::string &value) 
-	{
-		int result = av_opt_set(codecContext->priv_data, name.c_str(), value.c_str(), 0);
-		if(result != 0)
-		{	
-			throw gcnew VideoLib::VideoLibException("Error setting private option: ", result);
-		}
-	}
+	
 };
 
 

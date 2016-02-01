@@ -41,20 +41,22 @@ public:
 
 	void open(MemoryStreamAVIOContext *memoryStreamCtx, const char *formatName) {
 
-		formatContext = avformat_alloc_context();		
-		formatContext->pb =  memoryStreamCtx->getAVIOContext();
-
+		//formatContext = avformat_alloc_context();		
+		
 		avformat_alloc_output_context2(&formatContext, NULL, formatName, NULL);		
 		if(formatContext == NULL) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot create output format context with memorystream");
 		}
 	
+		formatContext->flags |= AVFMT_FLAG_CUSTOM_IO;
+		formatContext->pb = memoryStreamCtx->getAVIOContext();
+		
 		outFormat = formatContext->oformat;
 
 	}
 
-	virtual void open(String ^outputFilename) {
+	virtual void open(String ^outputFilename, const char *formatName = NULL) {
 
 		// Convert location to UTF8 string pointer
 		array<Byte>^ encodedBytes = System::Text::Encoding::UTF8->GetBytes(outputFilename);
@@ -65,7 +67,7 @@ public:
 		// Call the function, typecast from byte* -> char* is required
 		char *outputUTF8 = reinterpret_cast<char*>(pinnedBytes);
 			
-		avformat_alloc_output_context2(&formatContext, NULL, NULL, outputUTF8);		
+		avformat_alloc_output_context2(&formatContext, NULL, formatName, outputUTF8);		
 		if(formatContext == NULL) {
 
 			throw gcnew VideoLib::VideoLibException("Cannot create output format context: " + outputFilename);
@@ -95,8 +97,16 @@ public:
 		int ret = avcodec_copy_context(stream->codec, copy->getCodecContext());
 		if (ret < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Copying stream context failed: " + marshal_as<String ^>(formatContext->filename));							
+			throw gcnew VideoLib::VideoLibException("Copying stream context failed: " + marshal_as<String ^>(formatContext->filename) + " ", ret);							
 		}
+
+		av_stream_set_r_frame_rate(stream, copy->getAVStream()->r_frame_rate);
+	
+		stream->avg_frame_rate      = copy->getAVStream()->avg_frame_rate;
+		stream->time_base           = copy->getAVStream()->time_base;
+		stream->sample_aspect_ratio = copy->getAVStream()->sample_aspect_ratio;		
+
+		av_dict_copy(&stream->metadata, copy->getAVStream()->metadata, 0);
 
 		stream->codec->codec_tag = 0;
 
@@ -108,7 +118,7 @@ public:
 	}
 
 	Stream *createStream(const std::string &encoderName, int width, int height, const AVRational &sampleAspectRatio,
-		const AVRational &timeBase) 
+		const AVRational &timeBase, AVPixelFormat pixelFormat = AV_PIX_FMT_NONE) 
 	{
 		_ASSERT(formatContext != NULL);
 
@@ -129,8 +139,65 @@ public:
 		enc_ctx->width = width;
 		enc_ctx->height = height;		
 		enc_ctx->sample_aspect_ratio = sampleAspectRatio;
-		// take first format from list of supported formats 
-		enc_ctx->pix_fmt = encoder->pix_fmts[0];
+			
+		if(pixelFormat == AV_PIX_FMT_NONE) {
+
+			if(encoder->pix_fmts == NULL) {
+
+				throw gcnew VideoLib::VideoLibException("No default pixel format for output stream");
+			}
+
+			//take first format from list of supported formats 
+			enc_ctx->pix_fmt = encoder->pix_fmts[0];
+
+		} else {
+			
+			bool isPixelFormatSupported = encoder->pix_fmts == NULL;
+
+			if(encoder->pix_fmts != NULL) {
+				
+				int i = 0;
+
+				while(encoder->pix_fmts[i] != -1) {
+
+					if(pixelFormat == encoder->pix_fmts[i++]) {
+
+						isPixelFormatSupported = true;
+					}
+				
+				}
+
+			} 
+
+			if(!isPixelFormatSupported)
+			{
+				throw gcnew VideoLib::VideoLibException("Pixel format not supported for output stream");				
+			} 
+
+			enc_ctx->pix_fmt = pixelFormat;
+			
+
+		}
+		
+		const AVRational *supportedFrameRate = encoder->supported_framerates;
+		int i = 0;
+		bool isFrameRateSupported = supportedFrameRate == NULL ? true : false;
+
+		while(supportedFrameRate != NULL && (*supportedFrameRate).den != 0) {
+
+			if(av_cmp_q(*supportedFrameRate,timeBase) == 0) {
+
+				isFrameRateSupported = true;
+				break;
+			}
+
+			supportedFrameRate = &supportedFrameRate[++i];
+		}
+
+		if (isFrameRateSupported == false) {
+			
+			throw gcnew VideoLib::VideoLibException("Unsupported framerate for video stream: " + timeBase.num + " / " + timeBase.den);
+		}
 
 		// video time_base can be set to whatever is handy and supported by encoder 					
 		stream->time_base = enc_ctx->time_base = timeBase;	
@@ -183,16 +250,14 @@ public:
 		_ASSERT(formatContext != NULL);
 
 		int ret;
+			
+		if(formatContext->pb == NULL) {
 
-		if(formatContext->oformat->flags & AVFMT_NOFILE) {
+			ret = avio_open(&formatContext->pb, formatContext->filename, AVIO_FLAG_WRITE);
+			if (ret < 0) {
 
-			throw gcnew VideoLib::VideoLibException("Cannot write header, output is not a file");										
-		}
-		
-		ret = avio_open(&formatContext->pb, formatContext->filename, AVIO_FLAG_WRITE);
-		if (ret < 0) {
-
-			throw gcnew VideoLib::VideoLibException("Could not open output file: " + marshal_as<String ^>(formatContext->filename));										
+				throw gcnew VideoLib::VideoLibException("Could not open output file: " + marshal_as<String ^>(formatContext->filename) + " ", ret);										
+			}
 		}
 		
 		// init muxer, write output file header 
@@ -214,7 +279,7 @@ public:
 
 		int ret = 0;
 		int gotPacket = 0;
-
+		
 		if(stream[streamIdx]->getCodecType() == AVMEDIA_TYPE_VIDEO) 
 		{
 			ret = avcodec_encode_video2(stream[streamIdx]->getCodecContext(), encPacket, frame, &gotPacket);
@@ -265,7 +330,7 @@ public:
 
 		 if (formatContext != NULL) 
 		 {
-			if(!(formatContext->oformat->flags & AVFMT_NOFILE) && formatContext->pb != NULL) {
+			if(!(formatContext->flags & AVFMT_FLAG_CUSTOM_IO) && formatContext->pb != NULL) {
 				
 				avio_close(formatContext->pb);		
 			}		

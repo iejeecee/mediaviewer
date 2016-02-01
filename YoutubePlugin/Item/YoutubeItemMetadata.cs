@@ -45,7 +45,7 @@ namespace YoutubePlugin.Item
                 if (CreationDate != null)
                 {
                     sb.AppendLine();
-                    sb.AppendLine("Published: " + CreationDate.Value.ToString("MMM d, yyyy"));
+                    sb.AppendLine("Published: " + MiscUtils.formatTimeAgo(CreationDate.Value) + " ago");
                 }
 
                 if (ViewCount != null)

@@ -13,14 +13,12 @@ namespace VideoLib {
 		
 	struct VideoTransformerInputStreamInfo {
 
-		int inputStreamIndex;
 		int outputStreamIndex;
 		int outputIndex;
 		StreamTransformMode mode;
 		
-		VideoTransformerInputStreamInfo(int inputStreamIndex, int outputStreamIndex, StreamTransformMode mode, int outputIndex = 0) 
-		{
-			this->inputStreamIndex = inputStreamIndex;
+		VideoTransformerInputStreamInfo(int outputStreamIndex, StreamTransformMode mode, int outputIndex = 0) 
+		{		
 			this->outputStreamIndex = outputStreamIndex;
 			this->outputIndex = outputIndex;
 			this->mode = mode;			
@@ -51,14 +49,12 @@ namespace VideoLib {
 
 				delete streamsInfo[i];
 			}
-
-			decoder->close();
-			delete decoder;
+			
 		}
 
-		void addStreamInfo(VideoTransformerInputStreamInfo *streamInfo) {
-
-			streamsInfo.push_back(streamInfo);
+		void addStreamInfo(int outputStreamIndex, StreamTransformMode mode, int outputIndex = 0)
+		{
+			streamsInfo.push_back(new VideoTransformerInputStreamInfo(outputStreamIndex, mode, outputIndex));
 		}
 
 		
@@ -98,15 +94,12 @@ namespace VideoLib {
 			for(int i = 0; i < (int)streamsInfo.size(); i++) {
 
 				delete streamsInfo[i];
-			}
-
-			encoder->close();
-			delete encoder;
+			}				
 		}
 
-		void addStreamInfo(VideoTransformerOutputStreamInfo *streamInfo) {
-
-			streamsInfo.push_back(streamInfo);
+		void addStreamInfo(int outputIndex, StreamTransformMode mode)
+		{
+			streamsInfo.push_back(new VideoTransformerOutputStreamInfo(outputIndex, mode));
 		}
 
 	};

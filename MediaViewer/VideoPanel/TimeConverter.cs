@@ -14,8 +14,8 @@ namespace MediaViewer.VideoPanel
 
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
-            int temp = (int)value;
-            int s = (int)temp;
+            double temp = (double)value;
+            int s = (int)Math.Floor(temp);
                  
             TimeSpan timeSpan = new TimeSpan(0, 0, 0, s);
 

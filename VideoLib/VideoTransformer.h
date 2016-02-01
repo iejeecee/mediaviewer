@@ -27,173 +27,115 @@ public:
 
 protected:
 	
+	typedef bool (VideoLib::VideoTransformer::*GetNextPacketFunc)(AVPacket *,int &, bool &);
+
 	std::vector<VideoTransformerInput *> inputs;
 	std::vector<VideoTransformerOutput *> outputs;
 		
 	FilterGraph *filterGraph;
+	
 
-	bool getNextPacketSeqOrder(AVPacket *packet, int &inputIdx, bool &isInputEOF)
-	{
-		isInputEOF = false;
-				
-		for(int i = 0; i < (int)inputs.size(); i++) {
+	// this should be the default function to use when all input streams are pushed trough 
+	// a framegraph	
+	bool getNextPacket(AVPacket *packet, int &inputIdx, bool &isInputEOF) {
 
-			if(inputs[i]->getIsInputFinished() == false) {
-				
-				bool success = true;
-
-				if(inputs[i]->packet.data == NULL) {
-
-					success = inputs[i]->readFrame();
-				}
-			
-				if(success == false) {
-
-					inputIdx = i;
-					isInputEOF = true;
-					return true;
-				}
-
-				int result = av_packet_ref(packet, &inputs[i]->packet);
-				if(result < 0) {
-
-					throw gcnew VideoLibException("Error copying packet: ", result);
-				}
-			
-				av_packet_unref(&inputs[i]->packet);			
-				inputIdx = i;
-
-				int inStreamIdx = packet->stream_index;
-
-				if(i > 0 && inputs[i]->streamsInfo[inStreamIdx]->mode == StreamTransformMode::COPY &&
-					inputs[i]->streamsInfo[inStreamIdx]->dtsOffset == -DBL_MAX) 
-				{					
-					// set dts offset for copied streams
-					double prevLength = inputs[i - 1]->streamsInfo[inStreamIdx]->nextDts;
-
-					inputs[i]->streamsInfo[inStreamIdx]->dtsOffset = inputs[i - 1]->streamsInfo[inStreamIdx]->dtsOffset + prevLength;
-				}
-				
-				if(inputs[i]->streamsInfo[inStreamIdx]->mode == StreamTransformMode::COPY) {
-					
-					//calculate next dts					
-					inputs[i]->streamsInfo[inStreamIdx]->nextDts = packet->dts + packet->duration;
-				}
-
-				return(true);
-			}
-		}
-
-		return(false);
-	}
-
-	bool getNextPacketRequestOrder(AVPacket *packet, int &inputIdx, bool &isInputEOF) {
-
-		// read the next packet from the input media requested by the framegraph
-		// this should be the default function to use when all input streams are pushed trough 
-		// a framegraph
-		int selectedInput = -1;
+		// request a output frame from the filtergraph
+		filterGraph->requestFrame();
+	
+		// pick the media item(s) with the highest amount of failed request as the next
+		// input to read a packet from
 		int maxFailedRequests = -1;
+		std::vector<int> potentialInputs;
 
 		for(int i = 0; i < (int)inputs.size(); i++) {
 			
 			if(inputs[i]->getIsInputFinished()) continue;
 
+			int inputMaxFailedRequests = -1;
+
 			for(int j = 0; j < (int)inputs[i]->streamsInfo.size(); j++) 
 			{
 				if(inputs[i]->streamsInfo[j]->mode == StreamTransformMode::ENCODE) 
 				{					
-					int failedRequests = filterGraph->getInputFailedRequests(inputs[i]->streamsInfo[j]->name.c_str());
-					if(failedRequests > maxFailedRequests) {
-
-						selectedInput = i;
-						maxFailedRequests = failedRequests;
+					int streamFailedRequests = filterGraph->getInputFailedRequests(inputs[i]->streamsInfo[j]->name.c_str());
+					if(streamFailedRequests > inputMaxFailedRequests) {
+						
+						inputMaxFailedRequests = streamFailedRequests;
 					}
 				}
+			}
 
+			if(inputMaxFailedRequests > maxFailedRequests) {
+
+				maxFailedRequests = inputMaxFailedRequests;
+				potentialInputs.clear();
+
+				potentialInputs.push_back(i);
+			} 
+			else if(inputMaxFailedRequests == maxFailedRequests)
+			{
+				potentialInputs.push_back(i);
 			}
 		}
 
-		if(selectedInput = -1) return false;
-
-		inputIdx = selectedInput;
-		bool success = inputs[selectedInput]->readFrame();		
-			
-		if(success == false) {
+		if(potentialInputs.empty()) return false;
 		
-			isInputEOF = true;
-			return true;
-		}
-
-		int result = av_packet_ref(packet, &inputs[selectedInput]->packet);
-		if(result < 0) {
-
-			throw gcnew VideoLibException("Error copying packet: ", result);
-		}
-			
-		av_packet_unref(&inputs[selectedInput]->packet);	
-
-		return true;
-	}
-
-	/*bool getNextPacketDTSOrder(AVPacket *packet, int &inputIdx, bool &isInputEOF) {
-		
-		// select the packet with the smallest dts value from all inputs
-		// as the next packet to process
-
+		// select the packet with the smallest dts from the available potential inputs		
 		AVPacket *nextPacket = NULL;
 		double smallestDts = DBL_MAX;
 
-		for(int i = 0; i < (int)inputs.size(); i++) {
-
-			if(inputs[i]->getIsInputFinished() == false) {
-				
-				bool success = true;
-
-				if(inputs[i]->packet.data == NULL) {
-
-					success = inputs[i]->readFrame();
-				}
+		for(int i = 0; i < potentialInputs.size(); i++) {
+					
+			int curIdx = potentialInputs[i];
+			bool success = true;
 			
-				if(success == false) {
+			if(inputs[curIdx]->packet.data == NULL) {
 
-					inputIdx = i;
-					isInputEOF = true;
-					return true;
-				}
-
-				AVPacket *curPacket = &inputs[i]->packet;
-				VideoLib::Stream *stream = inputs[i]->decoder->getStream(curPacket->stream_index);
-
-				double currentDts = stream->getTimeSeconds(curPacket->dts + inputs[i]->streamsInfo[curPacket->stream_index]->dtsOffset);
-
-				if(currentDts < smallestDts) {
-
-					nextPacket = curPacket;
-					inputIdx = i;
-
-					smallestDts = currentDts;
-				}
+				success = inputs[curIdx]->readFrame();
 			}
-		}
+			
+			if(success == false) {
+			
+				//System::Diagnostics::Debug::Print(curIdx + " IS EOF");
 
-		if(nextPacket == NULL) return false;
+				inputIdx = curIdx;
+				isInputEOF = true;
+				return true;
+			}
+
+			AVPacket *curPacket = &inputs[curIdx]->packet;
+			VideoLib::Stream *stream = inputs[curIdx]->decoder->getStream(curPacket->stream_index);
+
+			//inputs[curIdx]->calcDtsOffsets(curPacket);
+			
+			double currentDts = stream->getTimeSeconds(curPacket->dts + inputs[curIdx]->streamsInfo[curPacket->stream_index]->tsOffset);
+
+			//System::Diagnostics::Debug::Print(curIdx + " - " + maxFailedRequests + " " + currentDts);
+
+			if(currentDts < smallestDts) {
+
+				nextPacket = curPacket;
+				inputIdx = curIdx;
+
+				smallestDts = currentDts;
+			}
+
+		}
 
 		int result = av_packet_ref(packet, nextPacket);
 		if(result < 0) {
 
 			throw gcnew VideoLibException("Error copying packet: ", result);
 		}
+			
+		av_packet_unref(&inputs[inputIdx]->packet);	
+		inputs[inputIdx]->packet.size = 0;
+		inputs[inputIdx]->packet.data = NULL;
 
-		av_packet_unref(nextPacket);
-		inputs[inputIdx]->readFrame();
-
-		return(true);
-	}*/
-
+		return true;
+	}
 	
-	typedef bool (VideoLib::VideoTransformer::*GetNextPacketFunc)(AVPacket *,int &, bool &);
-
+		
 	VideoTransformer() {
 			
 		filterGraph = new FilterGraph();		
@@ -281,10 +223,9 @@ protected:
 	}
 				
 	void transform(System::Threading::CancellationToken token, ProgressCallback progressCallback = NULL,
-		GetNextPacketFunc getNextPacket = &VideoTransformer::getNextPacketRequestOrder) 
+		GetNextPacketFunc getNextPacketFunc = &VideoTransformer::getNextPacket) 
 	{				
-		AVPacket packet;		
-		AVFrame *frame = NULL;		
+		AVPacket packet;				
 		int ret = 0;	
 					
 		unsigned int nrPackets = 0;
@@ -312,120 +253,39 @@ protected:
 																		
 			// process packets 
 			while (1) {
-
-				if(token.IsCancellationRequested) {
-
-					token.ThrowIfCancellationRequested();
-				}
-
+				
+				token.ThrowIfCancellationRequested();
+				
 				int inputIdx;
-				bool isInputEOF;
+				bool isInputEOF = false;
 
-				if ((this->*getNextPacket)(&packet, inputIdx, isInputEOF) == false) 
+				if ((this->*getNextPacketFunc)(&packet, inputIdx, isInputEOF) == false)  
 				{
 					// all inputs are finished
+					flushDecoders(inputIdx);
 					break;
 				}
 
 				if(isInputEOF) {
-
+				
+					flushDecoders(inputIdx);
 					// inform the filtergraph all streams from media item inputIdx are finished
 					flushFilters(inputIdx);
 					continue;
 				}
 					
 				int inStreamIdx = packet.stream_index;
-				VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
-
+			
 				int outIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputIndex;
 				int outStreamIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputStreamIndex;
-				VideoLib::Stream *outStream = outputs[outIdx]->encoder->getStream(outStreamIdx);
-
-				if(inputs[inputIdx]->streamsInfo[inStreamIdx]->mode == StreamTransformMode::ENCODE) {
-					
-					// filter packets
-					frame = av_frame_alloc();
-					if (!frame) {
-
-						throw gcnew VideoLib::VideoLibException("Error allocating frame");	
-					}
-					
-					int got_frame = 0;
-
-					if(inStream->isVideo()) {
-
-						ret = inputs[inputIdx]->decoder->decodeVideoFrame(frame, &got_frame, &packet);
-
-					} else {
-
-						ret = inputs[inputIdx]->decoder->decodeAudioFrame(frame, &got_frame, &packet);
-					}
-				
-					if (ret < 0) {
-					
-						throw gcnew VideoLibException("Error decoding input");															
-					}
-
-					if (got_frame) {
-
-						frame->pts = av_frame_get_best_effort_timestamp(frame);
-						
-						if(frame->pts == AV_NOPTS_VALUE) {
-
-							throw gcnew VideoLib::VideoLibException("Cannot encode frame without pts value");	
-						}
-						
-						// skip frames which are outside the specified timerange 
-						double frameTimeSeconds = inStream->getTimeSeconds(frame->pts);
-						if(frameTimeSeconds >= inputs[inputIdx]->startTimeRange) 
-						{							
-							inputs[inputIdx]->calcDtsOffsets(inStreamIdx, frame->pts, AV_NOPTS_VALUE);
-
-							// subtract starting offset from frame pts value												
-							frame->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->dtsOffset;
-
-							// rescale pts from stream time base to codec time base
-							frame->pts = av_rescale_q_rnd(frame->pts,
-								inStream->getAVStream()->time_base,
-								inStream->getCodecContext()->time_base,
-								(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-														
-							filterEncodeWriteFrame(frame, inputIdx, inStreamIdx);
-						}
-					}
-						
-					av_frame_free(&frame);
-					
-				} else {
-					
-					//get the dts value of the first input packet and subtract it from subsequent dts & pts
-					//values to make sure the output video starts at time zero.										
-					inputs[inputIdx]->calcDtsOffsets(packet.stream_index, packet.pts, packet.dts);
-					
-					// copy packets					
-					packet.stream_index = outStreamIdx;
-
-					// subtract starting offset from packet pts and dts values
-					if(packet.dts != AV_NOPTS_VALUE) {
-
-						packet.dts += inputs[inputIdx]->streamsInfo[inStreamIdx]->dtsOffset;
-					}
-
-					if(packet.pts != AV_NOPTS_VALUE) {
-
-						packet.pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->dtsOffset;
-					}
-							
-					rescaleTimeBase(&packet, 
-						inStream->getAVStream()->time_base, 
-						outStream->getAVStream()->time_base);
-					
-					packet.pos = -1;
-										
-					outputs[outIdx]->streamsInfo[outStreamIdx]->bitStreamFilter->filterPacket(&packet, outStream->getCodecContext());
-					
-					outputs[outIdx]->encoder->writeEncodedPacket(&packet);											
-
+			
+				if(inputs[inputIdx]->streamsInfo[inStreamIdx]->mode == StreamTransformMode::ENCODE) 
+				{					
+					decodeFilterFrame(inputIdx, &packet);					
+				} 
+				else if(inputs[inputIdx]->streamsInfo[inStreamIdx]->mode == StreamTransformMode::COPY) 
+				{					
+					copyPacket(inputIdx, &packet);									
 				}
 
 				av_packet_unref(&packet);
@@ -461,10 +321,13 @@ protected:
 
 		} finally {
 		
-			av_packet_unref(&packet);
-			av_frame_free(&frame);
+			av_packet_unref(&packet);		
 														
 		}		
+
+	}
+
+	virtual void modifyTS(int inputIdx, int streamIdx, int64_t pts, int64_t dts, int64_t duration) {
 
 	}
 
@@ -497,6 +360,143 @@ protected:
 	}
 
 private:
+
+	bool decodeFilterFrame(int inputIdx, AVPacket *packet)
+	{
+		// filter packets
+		AVFrame *frame = av_frame_alloc();
+		if (!frame) {
+
+			throw gcnew VideoLib::VideoLibException("Error allocating frame");	
+		}
+	
+		try 
+		{
+			int got_frame = 0;
+			int ret = 0;
+
+			int inStreamIdx = packet->stream_index;
+			VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
+
+			if(inStream->isVideo()) {
+
+				ret = inputs[inputIdx]->decoder->decodeVideoFrame(frame, &got_frame, packet);
+
+			} else {
+
+				ret = inputs[inputIdx]->decoder->decodeAudioFrame(frame, &got_frame, packet);
+			}
+				
+			if (ret < 0) {
+					
+				throw gcnew VideoLibException("Error decoding input");															
+			}
+
+			if (got_frame) {
+
+				frame->pts = av_frame_get_best_effort_timestamp(frame);
+						
+				if(frame->pts == AV_NOPTS_VALUE) {
+
+					throw gcnew VideoLib::VideoLibException("Cannot encode frame without pts value");	
+				}
+						
+				// skip frames which are outside the specified timerange 
+				double frameTimeSeconds = inStream->getTimeSeconds(frame->pts);
+				if(frameTimeSeconds >= inputs[inputIdx]->startTimeRange) 
+				{							
+					modifyTS(inputIdx, inStreamIdx, frame->pts, AV_NOPTS_VALUE, av_frame_get_pkt_duration(frame));
+
+					// subtract starting offset from frame pts value												
+					frame->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
+
+					// rescale pts from stream time base to codec time base
+					frame->pts = av_rescale_q_rnd(frame->pts,
+						inStream->getAVStream()->time_base,
+						inStream->getCodecContext()->time_base,
+						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+														
+					filterEncodeWriteFrame(frame, inputIdx, inStreamIdx);
+				}
+			}
+
+			if(ret == 0) {
+		
+				return(true);
+
+			} else {
+
+				return(false);
+			}
+				
+		} finally {
+
+			av_frame_free(&frame);
+		}
+
+	}
+
+	void copyPacket(int inputIdx, AVPacket *packet) {
+
+		int inStreamIdx = packet->stream_index;
+		VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
+
+		int outIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputIndex;
+		int outStreamIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputStreamIndex;
+		VideoLib::Stream *outStream = outputs[outIdx]->encoder->getStream(outStreamIdx);
+
+		//get the dts value of the first input packet and subtract it from subsequent dts & pts
+		//values to make sure the output video starts at time zero.
+		modifyTS(inputIdx, inStreamIdx, packet->pts, packet->dts, packet->duration);					
+								
+		packet->stream_index = outStreamIdx;
+
+		// subtract starting offset from packet pts and dts values
+		if(packet->dts != AV_NOPTS_VALUE) {
+
+			packet->dts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
+		}
+
+		if(packet->pts != AV_NOPTS_VALUE) {
+
+			packet->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
+		}
+							
+		rescaleTimeBase(packet, 
+			inStream->getAVStream()->time_base, 
+			outStream->getAVStream()->time_base);
+					
+		packet->pos = -1;
+										
+		outputs[outIdx]->streamsInfo[outStreamIdx]->bitStreamFilter->filterPacket(packet, outStream->getCodecContext());
+					
+		outputs[outIdx]->encoder->writeEncodedPacket(packet);		
+
+	}
+
+	void flushDecoders(int inputIdx)
+	{
+		for(int inStreamIdx = 0; inStreamIdx < inputs[inputIdx]->decoder->getNrStreams(); inStreamIdx++) 
+		{
+			if (inputs[inputIdx]->streamsInfo[inStreamIdx]->mode != StreamTransformMode::ENCODE) continue;
+			
+			bool finished = false;
+
+			while(!finished) {
+
+				AVPacket packet;
+
+				av_init_packet(&packet);
+				packet.data = NULL;
+				packet.size = 0;
+				packet.stream_index = inStreamIdx;
+
+				finished = decodeFilterFrame(inputIdx, &packet);									
+			}
+		}
+
+	}
+
 
 	void flushFilters(int inputIdx) {
 

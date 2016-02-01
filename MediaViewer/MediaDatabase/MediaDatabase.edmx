@@ -172,6 +172,8 @@
     <Property Name="ISOSpeedRating" Type="int" Nullable="true" />
     <Property Name="Contrast" Type="smallint" Nullable="true" />
     <Property Name="Orientation" Type="smallint" Nullable="true" />
+    <Property Name="PixelFormat" Type="nvarchar(max)" Nullable="false" />
+    <Property Name="BitsPerPixel" Type="smallint" Nullable="false" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="BaseMetadataSet_VideoMetadata">
@@ -193,6 +195,7 @@
     <Property Name="MinorVersion" Type="int" Nullable="true" />
     <Property Name="IsVariableBitRate" Type="bit" Nullable="true" />
     <Property Name="WMFSDKVersion" Type="nvarchar(max)" Nullable="true" />
+    <Property Name="BitsPerPixel" Type="smallint" Nullable="true" />
     <Property Name="Id" Type="int" Nullable="false" />
   </EntityType>
   <EntityType Name="BaseMetadataSet_UnknownMetadata">
@@ -572,6 +575,8 @@
           <Property Type="Int32" Name="ISOSpeedRating" Nullable="true" />
           <Property Type="Int16" Name="Contrast" Nullable="true" />
           <Property Type="Int16" Name="Orientation" Nullable="true" />
+          <Property Type="String" Name="PixelFormat" Nullable="false" />
+          <Property Type="Int16" Name="BitsPerPixel" Nullable="false" />
         </EntityType>
         <EntityType Name="VideoMetadata" BaseType="MediaDatabase.BaseMetadata" >
           <Property Type="Int32" Name="Width" Nullable="false" />
@@ -589,6 +594,7 @@
           <Property Type="Int32" Name="MinorVersion" Nullable="true" />
           <Property Type="Boolean" Name="IsVariableBitRate" Nullable="true" />
           <Property Type="String" Name="WMFSDKVersion" Nullable="true" />
+          <Property Type="Int16" Name="BitsPerPixel" Nullable="true" />
         </EntityType>
         <EntityType Name="UnknownMetadata" BaseType="MediaDatabase.BaseMetadata" />
         <Association Name="BaseMetadataTag">
@@ -700,6 +706,8 @@
           <ScalarProperty Name="ISOSpeedRating" ColumnName="ISOSpeedRating" />
           <ScalarProperty Name="Contrast" ColumnName="Contrast" />
           <ScalarProperty Name="Orientation" ColumnName="Orientation" />
+          <ScalarProperty Name="PixelFormat" ColumnName="PixelFormat" />
+          <ScalarProperty Name="BitsPerPixel" ColumnName="BitsPerPixel" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.VideoMetadata)">
@@ -720,6 +728,7 @@
           <ScalarProperty Name="MinorVersion" ColumnName="MinorVersion" />
           <ScalarProperty Name="IsVariableBitRate" ColumnName="IsVariableBitRate" />
           <ScalarProperty Name="WMFSDKVersion" ColumnName="WMFSDKVersion" />
+          <ScalarProperty Name="BitsPerPixel" ColumnName="BitsPerPixel" />
         </MappingFragment>
       </EntityTypeMapping>
       <EntityTypeMapping TypeName="IsTypeOf(MediaDatabase.UnknownMetadata)">

@@ -23,8 +23,8 @@ using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Global.Commands;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Concurrency;
-using MediaViewer.Model.metadata.Metadata;
 using MediaViewer.Properties;
+using MediaViewer.Model.Media.Base.Metadata;
 
 namespace MediaViewer.MetaData
 {

@@ -207,7 +207,7 @@ namespace VideoLib {
 			} 
 		}
 
-		int getSizeBytes() const {
+		int64_t getSizeBytes() const {
 
 			return(videoDecoder->getSizeBytes() + audioDecoder->getSizeBytes());
 		}

@@ -3,7 +3,7 @@ using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.File;
-using MediaViewer.Model.metadata.Metadata;
+using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -14,134 +14,74 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using XMPLib;
+using MediaViewer.Model.Media.Base.Metadata;
+using VideoLib;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
-    class ImageMetadataReader : MetadataReader
+    class ImageFileMetadataReader : MetadataFileReader
     {
-        
-        public override void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, 
+
+        public override void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
             CancellationToken token, int timeoutSeconds)
         {
             ImageMetadata image = media as ImageMetadata;
-            media.SizeBytes = data.Length;
+            image.SizeBytes = data.Length;
 
             if (FileUtils.isUrl(image.Location))
             {
                 image.SupportsXMPMetadata = false;
             }
             else
-            {               
-                image.SupportsXMPMetadata = true;
-
-                base.readMetadata(data, options, media, token, timeoutSeconds);
-            }
-
-            BitmapDecoder bitmapDecoder = null;
-         
-            try
             {
-                bitmapDecoder = BitmapDecoder.Create(data,
-                  BitmapCreateOptions.DelayCreation,
-                  BitmapCacheOption.OnDemand);
-
-                BitmapFrame frame = bitmapDecoder.Frames[0];
+                image.SupportsXMPMetadata = true;
+                base.readMetadata(mediaPreview, data, options, media, token, timeoutSeconds);
+            }
+                                                                 
+            image.Width = mediaPreview.Width;
+            image.Height = mediaPreview.Height;
+            image.PixelFormat = mediaPreview.PixelFormat;
+            image.BitsPerPixel = (short)mediaPreview.BitsPerPixel;
            
-                image.Width = frame.PixelWidth;
-                image.Height = frame.PixelHeight;
-
+            List<String> fsMetaData = mediaPreview.MetaData;
+               
+            try
+            {                   
                 if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
                     options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
                 {
-                    generateThumbnail(data, frame, image);
+                    generateThumbnail(mediaPreview, image, token, timeoutSeconds, 1);
                 }
-
+                    
             }
             catch (Exception e)
             {
-                Logger.Log.Error("Cannot generate image thumbnail: " + image.Location, e);
+                Logger.Log.Error("Cannot create image thumbnail: " + image.Location, e);
                 media.MetadataReadError = e;
             }
-            finally
-            {
-                data.Position = 0;
-            }
-
+            
+                        
         }
 
-        public void generateThumbnail(Stream data, BitmapFrame frame, ImageMetadata image)
+        public void generateThumbnail(VideoPreview mediaPreview, ImageMetadata image,
+            CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
-            BitmapSource thumb = frame.Thumbnail;
+          
+            // possibly could not seek in video, try to get the first frame in the video
+            List<VideoThumb> thumbBitmaps = mediaPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                Constants.MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
+           
+            image.Thumbnails.Clear();
 
-            Rotation rotation = Rotation.Rotate0;
-
-            if (image.Orientation != null)
+            foreach (VideoThumb imageThumb in thumbBitmaps)
             {
-                switch (image.Orientation.Value)
-                {
-                    case 8:
-                        {
-                            rotation = Rotation.Rotate270;
-                            break;
-                        }
-                    case 3:
-                        {
-                            rotation = Rotation.Rotate180;
-                            break;
-                        }
-                    case 6:
-                        {
-                            rotation = Rotation.Rotate90;
-                            break;
-                        }
-                    default:
-                        {
-                            rotation = Rotation.Rotate0; 
-                            break;
-                        }
-                }
+                image.Thumbnails.Add(new Thumbnail(imageThumb.Thumb));
             }
-
-            if (thumb == null)
-            {
-                data.Position = 0;
-
-                var tempImage = new BitmapImage();
-                tempImage.BeginInit();
-                tempImage.CacheOption = BitmapCacheOption.OnLoad;
-                tempImage.StreamSource = data;
-                tempImage.Rotation = rotation;
-                tempImage.DecodePixelWidth = Constants.MAX_THUMBNAIL_WIDTH;
-                tempImage.EndInit();
-
-                thumb = tempImage;
-            }
-            else
-            {
-                data.Position = 0;
-
-                Rotation? result = ImageUtils.getOrientationFromMetatdata(thumb.Metadata as BitmapMetadata);
-
-                if (result != null)
-                {
-                    rotation = result.Value;
-                }
-
-                if (rotation != Rotation.Rotate0)
-                {
-                    double angle = (int)rotation * 90;
-
-                    thumb = new TransformedBitmap(thumb.Clone(), new System.Windows.Media.RotateTransform(angle));
-                }
-
-            }                                   
-            
-            image.Thumbnails.Add(new Thumbnail(thumb));
 
         }
 
         Nullable<double> parseRational(String rational)
-        {           
+        {
             Nullable<double> result = new Nullable<double>();
 
             if (rational == null)
@@ -151,7 +91,7 @@ namespace MediaViewer.Model.Media.Metadata
 
             try
             {
-                char[] splitter = new char[]{'/'};
+                char[] splitter = new char[] { '/' };
 
                 string[] split = rational.Split(splitter);
 
@@ -177,7 +117,7 @@ namespace MediaViewer.Model.Media.Metadata
                         value = 0;
                     }
                 }
-            
+
                 result = value;
             }
             catch (Exception)
@@ -188,12 +128,13 @@ namespace MediaViewer.Model.Media.Metadata
             return (result);
         }
 
-        protected override void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, BaseMetadata media) {
+        protected override void readXMPMetadata(XMPLib.MetaData xmpMetaDataReader, BaseMetadata media)
+        {
 
             base.readXMPMetadata(xmpMetaDataReader, media);
 
             ImageMetadata image = media as ImageMetadata;
-            
+
             Nullable<int> intVal = new Nullable<int>();
             String temp = "";
             bool exists = false;
@@ -205,7 +146,7 @@ namespace MediaViewer.Model.Media.Metadata
                 {
                     image.FlashFired = Boolean.Parse(temp);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     image.FlashFired = null;
                 }
@@ -295,7 +236,7 @@ namespace MediaViewer.Model.Media.Metadata
 
             xmpMetaDataReader.getProperty(Consts.XMP_NS_EXIF, "ShutterSpeedValue", ref shutterSpeedValue);
             image.ShutterSpeedValue = parseRational(shutterSpeedValue);
-        
+
             xmpMetaDataReader.getProperty_Int(Consts.XMP_NS_EXIF, "SubjectDistanceRange", ref intVal);
             if (intVal == null)
             {
@@ -311,10 +252,11 @@ namespace MediaViewer.Model.Media.Metadata
             int nrSpeedRatings = xmpMetaDataReader.countArrayItems(Consts.XMP_NS_EXIF, "ISOSpeedRatings");
             if (nrSpeedRatings > 0)
             {
-                xmpMetaDataReader.getArrayItem(Consts.XMP_NS_EXIF, "ISOSpeedRatings", 1, ref isoSpeedRating);  
+                xmpMetaDataReader.getArrayItem(Consts.XMP_NS_EXIF, "ISOSpeedRatings", 1, ref isoSpeedRating);
                 int value = 0;
-                if(int.TryParse(isoSpeedRating, out value)) {
-                    image.ISOSpeedRating = value;           
+                if (int.TryParse(isoSpeedRating, out value))
+                {
+                    image.ISOSpeedRating = value;
                 }
             }
             else

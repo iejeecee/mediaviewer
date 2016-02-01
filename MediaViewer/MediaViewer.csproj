@@ -101,6 +101,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\mediaviewer external libs\wpftreelistview_src_original\Aga.Controls\bin\Debug\Aga.Controls.dll</HintPath>
     </Reference>
+    <Reference Include="AlphaChiTech.Virtualization, Version=1.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VirtualizingObservableCollection.1.2.0\lib\AlphaChiTech.Virtualization.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="AutoMapper">
       <HintPath>..\packages\AutoMapper.3.2.0\lib\net40\AutoMapper.dll</HintPath>
     </Reference>
@@ -266,8 +270,10 @@
     <Compile Include="Model\Collections\Cache\LRUCache.cs" />
     <Compile Include="Model\Collections\ObservableCollectionWithoutReentrantChecks.cs" />
     <Compile Include="Model\Concurrency\ILockable.cs" />
-    <Compile Include="Model\Media\Metadata\AudioMetadataReader.cs" />
-    <Compile Include="Model\Media\Metadata\AudioMetadataWriter.cs" />
+    <Compile Include="Model\Media\File\Metadata\AudioFileMetadataReader.cs" />
+    <Compile Include="Model\Media\File\Metadata\AudioFileMetadataWriter.cs" />
+    <Compile Include="Model\Media\File\Metadata\ImageFileMetadataReader.cs" />
+    <Compile Include="Model\Media\File\Metadata\MetadataFileFactory.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Filter\TagItemList.cs" />
     <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">
@@ -506,13 +512,12 @@
     <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
     <Compile Include="MediaDatabase\UnknownMetadataPartial.cs" />
     <Compile Include="MediaDatabase\VideoMetadataPartial.cs" />
-    <Compile Include="Model\Media\Metadata\ImageMetadataReader.cs" />
-    <Compile Include="Model\Media\Metadata\ImageMetadataWriter.cs" />
+    <Compile Include="Model\Media\File\Metadata\ImageFileMetadataWriter.cs" />
     <Compile Include="Model\Media\Base\State\MediaState.cs" />
-    <Compile Include="Model\Media\Metadata\MetadataReader.cs" />
-    <Compile Include="Model\Media\Metadata\MetadataWriter.cs" />
-    <Compile Include="Model\Media\Metadata\VideoMetadataReader.cs" />
-    <Compile Include="Model\Media\Metadata\VideoMetadataWriter.cs" />
+    <Compile Include="Model\Media\File\Metadata\MetadataFileReader.cs" />
+    <Compile Include="Model\Media\File\Metadata\MetadataFileWriter.cs" />
+    <Compile Include="Model\Media\File\Metadata\VideoFileMetadataReader.cs" />
+    <Compile Include="Model\Media\File\Metadata\VideoFileMetadataWriter.cs" />
     <Compile Include="Model\Media\Base\State\MediaLockedCollection.cs" />
     <Compile Include="Model\Media\File\MediaFileItem.cs" />
     <Compile Include="Model\Media\Base\Item\MediaItemState.cs" />
@@ -531,7 +536,7 @@
       <DependentUpon>MediaFileBrowserView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MediaFileBrowser\MediaFileBrowserViewModel.cs" />
-    <Compile Include="Model\Media\Metadata\MetadataFactory.cs" />
+    <Compile Include="Model\Media\Base\Metadata\MetadataFactory.cs" />
     <Compile Include="Model\Media\File\Watcher\MediaFileWatcherQueue.cs" />
     <Compile Include="ImagePanel\ImageView.xaml.cs">
       <DependentUpon>ImageView.xaml</DependentUpon>
@@ -543,9 +548,9 @@
       <DependentUpon>FilenamePresetsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="MetaData\FilenamePresetsViewModel.cs" />
-    <Compile Include="Model\Media\Metadata\FormatMetaData.cs" />
-    <Compile Include="Model\Media\Metadata\GeoTagCoordinate.cs" />
-    <Compile Include="Model\Media\Metadata\GeoTagCoordinatePair.cs" />
+    <Compile Include="Model\Media\File\Metadata\FormatMetaData.cs" />
+    <Compile Include="Model\Media\File\Metadata\GeoTagCoordinate.cs" />
+    <Compile Include="Model\Media\File\Metadata\GeoTagCoordinatePair.cs" />
     <Compile Include="TagEditor\TagEditorView.xaml.cs">
       <DependentUpon>TagEditorView.xaml</DependentUpon>
     </Compile>

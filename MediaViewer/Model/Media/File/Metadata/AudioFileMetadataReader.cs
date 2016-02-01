@@ -1,7 +1,7 @@
 ﻿using MediaViewer.Infrastructure;
 using MediaViewer.Infrastructure.Logging;
 using MediaViewer.MediaDatabase;
-using MediaViewer.Model.metadata.Metadata;
+using MediaViewer.Model.Media.Base.Metadata;
 using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
@@ -12,93 +12,63 @@ using System.Threading;
 using System.Threading.Tasks;
 using VideoLib;
 
-namespace MediaViewer.Model.Media.Metadata
+namespace MediaViewer.Model.Media.File.Metadata
 {
-    class AudioMetadataReader : MetadataReader
+    class AudioFileMetadataReader : MetadataFileReader
     {
-        public override void readMetadata(Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
+        public override void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
             CancellationToken token, int timeoutSeconds)
         {
             AudioMetadata audio = media as AudioMetadata;
-
-            VideoPreview videoPreview = null;
-            List<String> fsMetaData = null;
-
-            try
-            {
-                try
-                {
-                    videoPreview = new VideoPreview();
-                    videoPreview.open(media.Location, token);
-
-                    audio.DurationSeconds = videoPreview.DurationSeconds;
-                    audio.SizeBytes = videoPreview.SizeBytes;
+                                       
+            audio.DurationSeconds = mediaPreview.DurationSeconds;
+            audio.SizeBytes = mediaPreview.SizeBytes;
                                               
-                    if (!String.IsNullOrEmpty(videoPreview.AudioCodecName))
-                    {
-                        audio.AudioCodec = videoPreview.AudioCodecName;
-                        audio.SamplesPerSecond = videoPreview.SamplesPerSecond;
-                        audio.BitsPerSample = (short)(videoPreview.BytesPerSample * 8);
-                        audio.NrChannels = (short)videoPreview.NrChannels;
-                    }
-                    
-
-                    fsMetaData = videoPreview.MetaData;
-
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error("FFMPG cannot read audio file: " + audio.Location, e);
-                    media.MetadataReadError = e;
-                }
-
-                try
-                {
-                    if (videoPreview != null)
-                    {
-                        if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
-                            options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
-                        {
-                            generateThumbnail(videoPreview, audio, token, timeoutSeconds, 1);
-                        }                        
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error("Cannot read audio thumbnail: " + audio.Location, e);
-                    media.MetadataReadError = e;
-                }
-
-                if(audio.AudioCodec.ToLower().Equals("mp3") || audio.AudioCodec.ToLower().StartsWith("pcm"))
-                {
-                    audio.SupportsXMPMetadata = true;
-                    base.readMetadata(data, options, media, token, timeoutSeconds);
-                }
-                else
-                {
-                    audio.SupportsXMPMetadata = false;
-                }
-                               
-                parseFFMpegMetaData(fsMetaData, audio);
-
-            }
-            finally
+            if (!String.IsNullOrEmpty(mediaPreview.AudioCodecName))
             {
-                if (videoPreview != null)
-                {
-                    videoPreview.close();
-                    videoPreview.Dispose();
-                }
+                audio.AudioCodec = mediaPreview.AudioCodecName;
+                audio.SamplesPerSecond = mediaPreview.SamplesPerSecond;
+                audio.BitsPerSample = (short)(mediaPreview.BytesPerSample * 8);
+                audio.NrChannels = (short)mediaPreview.NrChannels;
             }
-           
+                    
+            List<string> fsMetaData = mediaPreview.MetaData;
+               
+            try
+            {                
+                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
+                    options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
+                {
+                    generateThumbnail(mediaPreview, audio, token, timeoutSeconds, 1);
+                }                                        
+            }
+            catch (Exception e)
+            {
+                Logger.Log.Error("Cannot read audio thumbnail: " + audio.Location, e);
+                media.MetadataReadError = e;
+            }
+
+            if(audio.AudioCodec.ToLower().Equals("mp3") || audio.AudioCodec.ToLower().StartsWith("pcm"))
+            {
+                audio.SupportsXMPMetadata = true;                
+            }
+            else
+            {
+                audio.SupportsXMPMetadata = false;
+            }
+
+            base.readMetadata(mediaPreview, data, options, media, token, timeoutSeconds);
+ 
+            parseFFMpegMetaData(fsMetaData, audio);
+                      
         }
 
-        public void generateThumbnail(VideoPreview videoPreview, AudioMetadata audio,
+        public void generateThumbnail(VideoPreview mediaPreview, AudioMetadata audio,
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
           
             // possibly could not seek in video, try to get the first frame in the video
-            List<VideoThumb> thumbBitmaps = videoPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+            List<VideoThumb> thumbBitmaps = mediaPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
                 Constants.MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
            
             audio.Thumbnails.Clear();

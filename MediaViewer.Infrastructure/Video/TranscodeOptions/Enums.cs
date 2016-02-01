@@ -16,6 +16,7 @@ namespace MediaViewer.Infrastructure.Video.TranscodeOptions
         WMV,
         WEBM,
         GIF,
+        PNG,
         MP3,
         M4A,
         OGG
@@ -35,7 +36,8 @@ namespace MediaViewer.Infrastructure.Video.TranscodeOptions
         libx265,
         libvpx,
         msmpeg4,
-        gif
+        gif,
+        apng
     }
 
     public enum VideoEncoderPresets

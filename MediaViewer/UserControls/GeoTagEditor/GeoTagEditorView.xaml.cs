@@ -1,4 +1,4 @@
-﻿using MediaViewer.Model.Media.Metadata;
+﻿using MediaViewer.Model.Media.File.Metadata;
 using MediaViewer.Model.Utils;
 using Microsoft.Maps.MapControl.WPF;
 using System;

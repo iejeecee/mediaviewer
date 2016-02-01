@@ -40,7 +40,7 @@ namespace VideoLib {
 
 		virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) = 0;  
 		
-		virtual int getSizeBytes() const = 0;
+		virtual int64_t getSizeBytes() const = 0;
 		virtual double getFrameRate() const = 0;	
 
 		virtual int getAudioSamplesPerSecond() const = 0;		

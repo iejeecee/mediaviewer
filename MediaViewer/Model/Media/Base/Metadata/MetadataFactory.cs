@@ -3,8 +3,8 @@ using MediaViewer.Logging;
 using MediaViewer.MediaDatabase;
 using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.MetaData;
-using MediaViewer.Model.Media.Metadata;
 using MediaViewer.Model.Media.Base.State;
+using MediaViewer.Model.Media.File.Metadata;
 using MediaViewer.Model.Utils;
 using MediaViewer.Progress;
 using System;
@@ -16,14 +16,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MediaViewer.Model.metadata.Metadata
+namespace MediaViewer.Model.Media.Base.Metadata
 {
     public class MetadataFactory
     {
         static int maxConcurrentReads = 10;
         static SemaphoreSlim limitConcurrentReadsSemaphore = new SemaphoreSlim(maxConcurrentReads, maxConcurrentReads);
        
-
         public enum ReadOptions
         {
             AUTO = 1,
@@ -51,8 +50,8 @@ namespace MediaViewer.Model.metadata.Metadata
         
         static BaseMetadata readMetadataFromWeb(string location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
-
-            HttpWebResponse response = null;
+            return null;
+            /*HttpWebResponse response = null;
             Stream responseStream = null;
 
             try
@@ -120,72 +119,10 @@ namespace MediaViewer.Model.metadata.Metadata
                 {
                     response.Close();
                 }
-            }
+            }*/
         }
 
-        static BaseMetadata readMetadataFromFile(String location, ReadOptions options, CancellationToken token, int timeoutSeconds)
-        {
-
-            Logger.Log.Info("Reading metadata for: " + location);
-
-            Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read,
-                FILE_OPEN_ASYNC_TIMEOUT_MS, token);
-
-            string mimeType = MediaFormatConvert.fileNameToMimeType(location);
-
-            BaseMetadata metadata = createMetadataFromMimeType(location, options, mimeType, data, token, timeoutSeconds);
-
-            FileInfo info = new FileInfo(location);
-            info.Refresh();
-
-            if (info.Attributes.HasFlag(FileAttributes.ReadOnly))
-            {
-                metadata.IsReadOnly = true;
-            }
-
-            return (metadata);
-        }
-
-        static BaseMetadata createMetadataFromMimeType(String location, ReadOptions options,
-            string mimeType, Stream data, CancellationToken token, int timeoutSeconds)
-        {
-
-            BaseMetadata metadata = null;
-            MetadataReader reader = null;
-
-            if (mimeType.ToLower().StartsWith("image"))
-            {
-                metadata = new ImageMetadata(location, data);
-                reader = new ImageMetadataReader();
-                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
-
-            }
-            else if (mimeType.ToLower().StartsWith("video"))
-            {
-                metadata = new VideoMetadata(location, data);
-                reader = new VideoMetadataReader();
-                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
-
-            }
-            else if (mimeType.ToLower().StartsWith("audio"))
-            {
-                metadata = new AudioMetadata(location, data);
-                reader = new AudioMetadataReader();
-                reader.readMetadata(data, options, metadata, token, timeoutSeconds);
-            }
-            else
-            {
-                metadata = new UnknownMetadata(location);
-            }
-
-            if(!options.HasFlag(ReadOptions.LEAVE_STREAM_OPENED_AFTER_READ)) {
-
-                metadata.close();
-            }
-
-            return (metadata);
-        }
-
+                
         private static BaseMetadata readMetadataFromDatabase(string location, ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
             BaseMetadata metadata = null;
@@ -221,7 +158,7 @@ namespace MediaViewer.Model.metadata.Metadata
                         // metadata is outdated so update in database
                         Logger.Log.Info("Updated: " + metadata.Location + " - Database timestamp: " + metadata.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
                         int id = metadata.Id;
-                        metadata = readMetadataFromFile(metadata.Location, options, token, timeoutSeconds);
+                        metadata = MetadataFileFactory.read(metadata.Location, options, token, timeoutSeconds);
 
                         if (metadata != null)
                         {
@@ -248,24 +185,7 @@ namespace MediaViewer.Model.metadata.Metadata
            
             if (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DISK))
             {
-
-                if (metadata.MimeType.ToLower().StartsWith("image"))
-                {
-                    ImageMetadataWriter imageMetadataWriter = new ImageMetadataWriter();
-                    imageMetadataWriter.writeMetadata(metadata, progress);
-
-                }
-                else if (metadata.MimeType.ToLower().StartsWith("video"))
-                {
-                    VideoMetadataWriter videoMetadataWriter = new VideoMetadataWriter();
-                    videoMetadataWriter.writeMetadata(metadata, progress);
-
-                }
-                else if (metadata.MimeType.ToLower().StartsWith("audio"))
-                {
-                    AudioMetadataWriter audioMetadataWriter = new AudioMetadataWriter();
-                    audioMetadataWriter.writeMetadata(metadata, progress);
-                }
+                MetadataFileFactory.write(metadata, progress);                
             }
 
             if (metadata.IsImported && (options.HasFlag(WriteOptions.AUTO) || options.HasFlag(WriteOptions.WRITE_TO_DATABASE)))
@@ -316,7 +236,7 @@ namespace MediaViewer.Model.metadata.Metadata
                     if ((metadata == null && options.HasFlag(ReadOptions.AUTO)) ||
                         options.HasFlag(ReadOptions.READ_FROM_DISK))
                     {
-                        metadata = readMetadataFromFile(location, options, token, timeoutSeconds);
+                        metadata = MetadataFileFactory.read(location, options, token, timeoutSeconds);
                     }
                 }
 

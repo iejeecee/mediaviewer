@@ -78,13 +78,7 @@ protected:
 		if(duration < 0) {
 
 			if(hasVideo()) {
-
-				if(strcmp(stream[videoIdx]->getCodec()->name, "gif") == 0) {
-
-					// should calculate animated gif duration in some other fashion?
-					return(0);
-				}
-
+							
 				duration = getVideoStream()->duration * av_q2d(getVideoStream()->time_base);
 			} 
 			else if(hasAudio()) {
@@ -94,8 +88,8 @@ protected:
 		}
 		
 		if(duration < 0) {
-					
-			throw gcnew VideoLib::VideoLibException("can't determine video duration");
+										
+			duration = 0;
 		}
 
 		return(duration);
@@ -229,7 +223,8 @@ private:
 			bytesPerSample = av_get_bytes_per_sample(getAudioCodecContext()->sample_fmt);
 			
 			nrChannels = getAudioCodecContext()->channels;
-		}		
+		
+		} 
 
 		// make sure a cancel exception is thrown if open was cancelled at any point during it's execution
 		token->ThrowIfCancellationRequested();
@@ -389,7 +384,8 @@ public:
 		return(formatContext->filename);
 	}
 
-	void open(MemoryStreamAVIOContext *memoryStreamCtx, System::Threading::CancellationToken ^token) 
+	void open(MemoryStreamAVIOContext *memoryStreamCtx, System::Threading::CancellationToken ^token,
+		const char *formatName = NULL) 
 	{
 		// allow cancellation of IO operations
 		*cancellationToken = token;
@@ -401,9 +397,17 @@ public:
 		formatContext->interrupt_callback = ioInterruptSettings;
 
 		// set custom aviocontext
+		formatContext->flags |= AVFMT_FLAG_CUSTOM_IO;
 		formatContext->pb = memoryStreamCtx->getAVIOContext();
 
-		open("", token);
+		AVInputFormat *inputFormat = NULL;
+
+		if(formatName != NULL) {
+
+			inputFormat = av_find_input_format(formatName);
+		}
+
+		open(NULL, token, inputFormat);
 	}
 	
 	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) 
@@ -455,7 +459,7 @@ public:
 		open(locationUTF8, token, inputFormat);	    
 	}
 
-	int getSizeBytes() const {
+	int64_t getSizeBytes() const {
 
 		return(sizeBytes);
 	}
@@ -467,14 +471,11 @@ public:
 
 		if(!hasVideo()) return frameRate;
 
-		if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) 
+		frameRate = av_q2d(getVideoCodecContext()->framerate);	
+
+		if(frameRate == 0 && getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) 
 		{
-
-			frameRate = av_q2d(getVideoStream()->avg_frame_rate);
-			
-		} else {
-
-			frameRate = av_q2d(getVideoCodecContext()->framerate);		
+			frameRate = av_q2d(getVideoStream()->avg_frame_rate);			
 		} 
 		
 		return frameRate;
@@ -595,85 +596,7 @@ public:
 		}
 
 		return ret;
-	}
-
-	bool decodeFrame(System::Threading::CancellationToken ^token, VideoDecodeMode videoMode = DECODE_VIDEO, 
-		AudioDecodeMode audioMode = DECODE_AUDIO, int timeOutSeconds = 0) 
-	{
-
-		if(isClosed()) return(false);
-
-		int frameFinished = 0;
-
-		DateTime startTime = DateTime::Now;
-
-		while(!frameFinished) {
-		
-			if(timeOutSeconds > 0 && (DateTime::Now - startTime).TotalSeconds > timeOutSeconds) {
-
-				throw gcnew VideoLibException("Timed out during decoding");
-			}
-
-			if(token->IsCancellationRequested) {
-
-				throw gcnew OperationCanceledException(*token);
-			}
-
-			if(readFrame(&packet) == ReadFrameResult::END_OF_STREAM) {
-
-				// cannot read frame or end of file				
-				return(false);
-			}
-
-			// only decode video/keyframe or non corrupt packets
-			if(packet.stream_index == videoIdx && videoMode != SKIP_VIDEO)
-			{			
-				av_frame_unref(frame);
-			
-				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
-				if(ret < 0) {
-
-					//Error decoding video frame
-					//return(0);
-				}
-
-				if(frameFinished)
-				{										
-					convertVideoFrame(frame, convertedFrame);				
-
-					if(decodedFrame != NULL) {
-						decodedFrame(data, &packet, convertedFrame, VIDEO);
-					}
-
-				}
-
-			} else if(packet.stream_index == audioIdx && audioMode == DECODE_AUDIO) {
-
-					av_frame_unref(frame);
-
-					int ret = avcodec_decode_audio4(getAudioCodecContext(), frame, &frameFinished, 
-						&packet);
-
-					if(ret < 0) {
-						//Error decoding audio frame
-						//return(0);
-					}
-
-					if(frameFinished)
-					{		
-						if(decodedFrame != NULL) {
-							decodedFrame(data, &packet, frame, AUDIO);				
-						}
-					}
-			}
-
-			av_packet_unref(&packet);
-		}
-
-		return(true);
-
-	}
-
+	}	
 
 	bool seek(double posSeconds, int flags = 0) {
 
@@ -683,7 +606,7 @@ public:
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
 				
 		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
-		int ret = avformat_seek_file(formatContext, -1, 0, seekTarget, seekTarget, flags);
+		int ret = avformat_seek_file(formatContext, -1, INT64_MIN, seekTarget, seekTarget, flags);
 		if(ret >= 0) { 
 			
 			if(hasVideo()) {

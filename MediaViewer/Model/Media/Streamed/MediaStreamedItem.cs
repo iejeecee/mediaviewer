@@ -1,5 +1,6 @@
 ﻿using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base.Item;
+using MediaViewer.Model.Media.Base.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace MediaViewer.Model.Media.Streamed
            
         }
 
-        public override void readMetadata_URLock(metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_URLock(MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {           
             ItemState = MediaItemState.LOADED;
         }

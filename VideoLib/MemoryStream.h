@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <fstream>
 #include "Video.h"
 
 namespace VideoLib {
@@ -44,6 +45,11 @@ namespace VideoLib {
 				bufSize = size() - pos;
 			}
 
+			if(bufSize == 0) {
+
+				return(0);
+			}
+
 			memcpy(buf, &buffer[pos], bufSize);
 			pos += bufSize;
 
@@ -65,7 +71,7 @@ namespace VideoLib {
 			} 
 			else if(whence == SEEK_CUR) 
 			{
-				newPos += offset;
+				newPos = pos + offset;
 			
 			} 
 			else if(whence == SEEK_END)
@@ -88,6 +94,15 @@ namespace VideoLib {
 		int64_t size() {
 
 			return(buffer.size());
+		}
+
+		void saveToDisk(const char *filename)
+		{
+			std::ofstream output(filename, std::ios::binary);
+			
+			output.write(&buffer[0], buffer.size());
+			output.close();
+
 		}
 
 	};

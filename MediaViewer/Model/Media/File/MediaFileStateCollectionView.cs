@@ -163,19 +163,19 @@ namespace MediaViewer.Model.Media.File
                     case MediaFilterMode.None:
                         break;                           
                     case MediaFilterMode.Video:
-                        if (!Utils.MediaFormatConvert.isVideoFile(item.Item.Location))
+                        if (!(item.Item.Metadata is VideoMetadata))
                         {
                             return (false);
                         }
                         break;
                     case MediaFilterMode.Images:
-                        if (!Utils.MediaFormatConvert.isImageFile(item.Item.Location))
+                        if (!(item.Item.Metadata is ImageMetadata))
                         {
                             return (false);
                         }
                         break;
                     case MediaFilterMode.Audio:
-                        if (!Utils.MediaFormatConvert.isAudioFile(item.Item.Location))
+                        if (!(item.Item.Metadata is AudioMetadata))
                         {
                             return (false);
                         }

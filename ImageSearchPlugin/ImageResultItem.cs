@@ -2,6 +2,7 @@
 using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Base.Item;
+using MediaViewer.Model.Media.Base.Metadata;
 using MediaViewer.Model.Media.Streamed;
 using MediaViewer.Model.Utils;
 using System;
@@ -28,7 +29,7 @@ namespace ImageSearchPlugin
             Relevance = relevance;
         }
 
-        public override void readMetadata_URLock(MediaViewer.Model.metadata.Metadata.MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
+        public override void readMetadata_URLock(MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {
             MemoryStream data = new MemoryStream();
             String mimeType;

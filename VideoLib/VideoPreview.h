@@ -1,3 +1,4 @@
+#pragma once
 #include "VideoFrameGrabber.h"
 
 using namespace System;
@@ -66,6 +67,7 @@ namespace VideoLib {
 		String ^container;
 		String ^videoCodecName;
 		String ^pixelFormat;
+		int bitsPerPixel;
 		List<String ^> ^metaData;
 
 		float frameRate;
@@ -74,6 +76,8 @@ namespace VideoLib {
 		int samplesPerSecond;
 		int bytesPerSample;
 		int nrChannels;
+
+		bool isVideo, isAudio, isImage;
 
 		DecodedFrameProgressDelegate ^decodedFrameProgressCallback;
 
@@ -154,6 +158,14 @@ namespace VideoLib {
 			}
 		}
 
+		property int BitsPerPixel {
+
+			int get() {
+
+				return(bitsPerPixel);
+			}
+		}
+
 		property String ^AudioCodecName {
 
 			String ^get() {
@@ -183,6 +195,30 @@ namespace VideoLib {
 			int get() {
 
 				return(nrChannels);
+			}
+		}
+
+		property bool IsVideo {
+
+			bool get() {
+
+				return(isVideo);
+			}
+		}
+
+		property bool IsAudio {
+
+			bool get() {
+
+				return(isAudio);
+			}
+		}
+
+		property bool IsImage {
+
+			bool get() {
+
+				return(isImage);
 			}
 		}
 
