@@ -17,6 +17,7 @@ using XMPLib;
 using MediaViewer.Model.Media.Base.Metadata;
 using VideoLib;
 
+
 namespace MediaViewer.Model.Media.File.Metadata
 {
     class ImageFileMetadataReader : MetadataFileReader
@@ -37,7 +38,8 @@ namespace MediaViewer.Model.Media.File.Metadata
                 image.SupportsXMPMetadata = true;
                 base.readMetadata(mediaPreview, data, options, media, token, timeoutSeconds);
             }
-                                                                 
+
+            image.ImageContainer = mediaPreview.Container;
             image.Width = mediaPreview.Width;
             image.Height = mediaPreview.Height;
             image.PixelFormat = mediaPreview.PixelFormat;
@@ -75,7 +77,72 @@ namespace MediaViewer.Model.Media.File.Metadata
 
             foreach (VideoThumb imageThumb in thumbBitmaps)
             {
-                image.Thumbnails.Add(new Thumbnail(imageThumb.Thumb));
+                BitmapSource thumb = imageThumb.Thumb;
+
+                if(image.Orientation.HasValue &&  image.Orientation.Value != 1) {
+                
+                    System.Windows.Media.Transform transform = null;
+
+                    switch(image.Orientation.Value)
+                    {                        
+                        case 2: 
+                            {
+                                //Mirror horizontal
+                                transform = new System.Windows.Media.MatrixTransform(-1, 0, 0, 1, 0, 0);
+                                break;
+                            }
+                   
+                        case 3: 
+                            {
+                                //Rotate 180°
+                                transform = new System.Windows.Media.RotateTransform(180);
+                                break;
+                            }
+                        case 4: 
+                            {
+                                //Mirror vertical
+                                transform = new System.Windows.Media.MatrixTransform(1, 0, 0, -1, 0, 0);
+                                break;
+                            }
+                        case 5: 
+                            {
+                                //Mirror horizontal, rotate 270°
+                                transform = new System.Windows.Media.MatrixTransform(0, -1, -1, 0, 0, 0);
+                                break;
+                            }
+                        case 6: 
+                            {
+                                //Rotate 90°
+                                transform = new System.Windows.Media.RotateTransform(90);
+                                break;
+                            }
+                        case 7: 
+                            {
+                                //Mirror horizontal, rotate 90°
+                                transform = new System.Windows.Media.MatrixTransform(0, 1, 1, 0, 0, 0);
+                                break;
+                            }
+                        case 8: 
+                            {
+                                //Rotate 270°
+                                transform = new System.Windows.Media.RotateTransform(270);
+                                break;
+                            }
+                        default:
+                            {
+                                Logger.Log.Warn("Unknown orientation for image");
+                                break;
+                            }
+
+                    }
+
+                    if (transform != null)
+                    {
+                        thumb = new TransformedBitmap(thumb, transform);
+                    }
+                }
+
+                image.Thumbnails.Add(new Thumbnail(thumb));
             }
 
         }

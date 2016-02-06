@@ -351,7 +351,7 @@ public:
 		}
 
 		char *graph = avfilter_graph_dump(filterGraph, NULL);
-		VideoInit::writeToLog(AV_LOG_INFO, graph);
+		VideoInit::writeToLog(AV_LOG_DEBUG, graph);
 		av_free(graph);
 		
 		avfilter_inout_free(&inputs);

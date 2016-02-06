@@ -262,7 +262,6 @@ protected:
 				if ((this->*getNextPacketFunc)(&packet, inputIdx, isInputEOF) == false)  
 				{
 					// all inputs are finished
-					flushDecoders(inputIdx);
 					break;
 				}
 
@@ -363,77 +362,165 @@ private:
 
 	bool decodeFilterFrame(int inputIdx, AVPacket *packet)
 	{
-		// filter packets
-		AVFrame *frame = av_frame_alloc();
-		if (!frame) {
-
-			throw gcnew VideoLib::VideoLibException("Error allocating frame");	
-		}
-	
-		try 
-		{
-			int got_frame = 0;
-			int ret = 0;
-
-			int inStreamIdx = packet->stream_index;
-			VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
-
-			if(inStream->isVideo()) {
-
-				ret = inputs[inputIdx]->decoder->decodeVideoFrame(frame, &got_frame, packet);
-
-			} else {
-
-				ret = inputs[inputIdx]->decoder->decodeAudioFrame(frame, &got_frame, packet);
-			}
-				
-			if (ret < 0) {
-					
-				throw gcnew VideoLibException("Error decoding input");															
-			}
-
-			if (got_frame) {
-
-				frame->pts = av_frame_get_best_effort_timestamp(frame);
-						
-				if(frame->pts == AV_NOPTS_VALUE) {
-
-					throw gcnew VideoLib::VideoLibException("Cannot encode frame without pts value");	
-				}
-						
-				// skip frames which are outside the specified timerange 
-				double frameTimeSeconds = inStream->getTimeSeconds(frame->pts);
-				if(frameTimeSeconds >= inputs[inputIdx]->startTimeRange) 
-				{							
-					modifyTS(inputIdx, inStreamIdx, frame->pts, AV_NOPTS_VALUE, av_frame_get_pkt_duration(frame));
-
-					// subtract starting offset from frame pts value												
-					frame->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
-
-					// rescale pts from stream time base to codec time base
-					frame->pts = av_rescale_q_rnd(frame->pts,
-						inStream->getAVStream()->time_base,
-						inStream->getCodecContext()->time_base,
-						(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-														
-					filterEncodeWriteFrame(frame, inputIdx, inStreamIdx);
-				}
-			}
-
-			if(ret == 0) {
 		
-				return(true);
+		do 
+		{
+			// filter packets
+			AVFrame *frame = av_frame_alloc();
+			if (!frame) {
 
-			} else {
-
-				return(false);
+				throw gcnew VideoLib::VideoLibException("Error allocating frame");	
 			}
+	
+			try 
+			{
+				int got_frame = 0;
+				int bytesConsumed = 0;
+
+				int inStreamIdx = packet->stream_index;
+				VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
+
+				if(inStream->isVideo()) {
+
+					bytesConsumed = inputs[inputIdx]->decoder->decodeVideoFrame(frame, &got_frame, packet);
+
+				} else {
+
+					bytesConsumed = inputs[inputIdx]->decoder->decodeAudioFrame(frame, &got_frame, packet);								
+				}
 				
-		} finally {
+				if (bytesConsumed < 0) {
+					
+					VideoInit::writeToLog(AV_LOG_ERROR, "error decoding input");
+					return(true);
+					//throw gcnew VideoLibException("Error decoding input");															
+				}
+			
+				if (got_frame) {
 
-			av_frame_free(&frame);
-		}
+					frame->pts = av_frame_get_best_effort_timestamp(frame);
+						
+					if(frame->pts == AV_NOPTS_VALUE) {
 
+						throw gcnew VideoLib::VideoLibException("Cannot encode frame without pts value");	
+					}
+						
+					// skip frames which are outside the specified timerange 
+					double frameTimeSeconds = inStream->getTimeSeconds(frame->pts);
+					if(frameTimeSeconds >= inputs[inputIdx]->startTimeRange &&
+						frameTimeSeconds <= inputs[inputIdx]->endTimeRange) 
+					{							
+						modifyTS(inputIdx, inStreamIdx, frame->pts, AV_NOPTS_VALUE, av_frame_get_pkt_duration(frame));
+
+						// subtract starting offset from frame pts value												
+						frame->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
+
+						// rescale pts from stream time base to codec time base
+						frame->pts = av_rescale_q_rnd(frame->pts,
+							inStream->getTimeBase(),
+							inStream->getCodecContext()->time_base,
+							(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+														
+						filterEncodeWriteFrame(frame, inputIdx, inStreamIdx);
+					
+						if(frame->sample_rate > 0) {
+
+							// generate next pts for audio packets that contain multiple frames
+							double audioDurationSec = (double)frame->nb_samples / inputs[inputIdx]->decoder->getAudioSamplesPerSecond();
+							
+							int64_t audioDuration = inputs[inputIdx]->decoder->getStream(inStreamIdx)->getTimeBaseUnits(audioDurationSec);
+
+							packet->pts += audioDuration;						
+						}
+					}
+				}
+			
+				if(bytesConsumed == 0) {
+		
+					return(true);
+				} 
+
+				if(packet->size > 0) {
+
+					packet->size -= bytesConsumed;
+					packet->data += bytesConsumed;
+										
+				}
+									
+			} finally {
+
+				av_frame_free(&frame);
+			}
+
+		} while(packet->size > 0);
+
+		return(false);
+	}
+
+	void filterEncodeWriteFrame(AVFrame *frame, int inputIdx, int inStreamIdx)
+	{
+		const char *inputName = inputs[inputIdx]->streamsInfo[inStreamIdx]->name.c_str();
+				
+		// push frame trough filtergraph		
+		filterGraph->pushFrame(frame, inputName);
+			
+		// pull filtered frames from the filtergraph outputs		
+		for(int outputIdx = 0; outputIdx < (int)outputs.size(); outputIdx++) 
+		{
+			for(int outStreamIdx = 0; outStreamIdx < outputs[outputIdx]->encoder->getNrStreams(); outStreamIdx++) 
+			{
+				if(outputs[outputIdx]->streamsInfo[outStreamIdx]->mode != StreamTransformMode::ENCODE) continue;
+
+				bool success;
+				const char *name = outputs[outputIdx]->streamsInfo[outStreamIdx]->name.c_str();
+
+				do
+				{
+					AVFrame *filteredFrame = av_frame_alloc();
+					if (!filteredFrame) 
+					{
+						throw gcnew VideoLib::VideoLibException("Error allocating frame");				
+					}
+
+					success = filterGraph->pullFrame(filteredFrame, name);							
+					if (success) 
+					{				
+						encodeWriteFrame(filteredFrame, outputIdx, outStreamIdx);
+					}
+															
+					av_frame_free(&filteredFrame);					
+				
+				} while(success);
+			}
+
+		}	
+	}
+
+	bool encodeWriteFrame(AVFrame *filt_frame, int outputIdx, int outStreamIdx) {
+	
+		AVPacket enc_pkt;
+		
+		VideoLib::Stream *outStream = outputs[outputIdx]->encoder->getStream(outStreamIdx);
+
+		bool gotPacket = outputs[outputIdx]->encoder->encodeFrame(outStreamIdx, filt_frame, &enc_pkt);
+	
+		if (gotPacket == false) return false;					
+
+		// prepare packet for muxing, convert packet pts/dts/duration from input to output timebase values 	
+		AVFilterContext *outFilter = filterGraph->getFilter(outputs[outputIdx]->streamsInfo[outStreamIdx]->name.c_str());
+		AVRational inputTimeBase = outFilter->inputs[0]->time_base;
+		
+		rescaleTimeBase(&enc_pkt, 
+			inputTimeBase, 
+			outStream->getTimeBase()); 
+		
+		outputs[outputIdx]->streamsInfo[outStreamIdx]->bitStreamFilter->filterPacket(&enc_pkt, outStream->getCodecContext());
+		
+		//System::Diagnostics::Debug::Print(enc_pkt.stream_index + " : " + outStream->getTimeSeconds(enc_pkt.dts));
+
+		outputs[outputIdx]->encoder->writeEncodedPacket(&enc_pkt);	
+		
+		return true;
 	}
 
 	void copyPacket(int inputIdx, AVPacket *packet) {
@@ -462,9 +549,7 @@ private:
 			packet->pts += inputs[inputIdx]->streamsInfo[inStreamIdx]->tsOffset;
 		}
 							
-		rescaleTimeBase(packet, 
-			inStream->getAVStream()->time_base, 
-			outStream->getAVStream()->time_base);
+		rescaleTimeBase(packet, inStream->getTimeBase(), outStream->getTimeBase());
 					
 		packet->pos = -1;
 										
@@ -539,72 +624,8 @@ private:
 		while (encodeWriteFrame(NULL, outputIdx, outStreamIdx) == true) {}
 	
 	}
-
-	bool encodeWriteFrame(AVFrame *filt_frame, int outputIdx, int outStreamIdx) {
 	
-		AVPacket enc_pkt;
-		
-		VideoLib::Stream *outStream = outputs[outputIdx]->encoder->getStream(outStreamIdx);
-
-		bool gotPacket = outputs[outputIdx]->encoder->encodeFrame(outStreamIdx, filt_frame, &enc_pkt);
 	
-		if (gotPacket == false) return false;					
-
-		// prepare packet for muxing, convert packet pts/dts/duration from input to output timebase values 	
-		AVFilterContext *outFilter = filterGraph->getFilter(outputs[outputIdx]->streamsInfo[outStreamIdx]->name.c_str());
-		AVRational inputTimeBase = outFilter->inputs[0]->time_base;
-		
-		rescaleTimeBase(&enc_pkt, 
-			inputTimeBase, 
-			outStream->getAVStream()->time_base); 
-		
-		outputs[outputIdx]->streamsInfo[outStreamIdx]->bitStreamFilter->filterPacket(&enc_pkt, outStream->getCodecContext());
-		
-		//System::Diagnostics::Debug::Print(enc_pkt.stream_index + " : " + outStream->getTimeSeconds(enc_pkt.dts));
-
-		outputs[outputIdx]->encoder->writeEncodedPacket(&enc_pkt);	
-		
-		return true;
-	}
-
-	void filterEncodeWriteFrame(AVFrame *frame, int inputIdx, int inStreamIdx)
-	{
-		const char *inputName = inputs[inputIdx]->streamsInfo[inStreamIdx]->name.c_str();
-				
-		// push frame trough filtergraph		
-		filterGraph->pushFrame(frame, inputName);
-			
-		// pull filtered frames from the filtergraph outputs		
-		for(int outputIdx = 0; outputIdx < (int)outputs.size(); outputIdx++) 
-		{
-			for(int outStreamIdx = 0; outStreamIdx < outputs[outputIdx]->encoder->getNrStreams(); outStreamIdx++) 
-			{
-				if(outputs[outputIdx]->streamsInfo[outStreamIdx]->mode != StreamTransformMode::ENCODE) continue;
-
-				bool success;
-				const char *name = outputs[outputIdx]->streamsInfo[outStreamIdx]->name.c_str();
-
-				do
-				{
-					AVFrame *filteredFrame = av_frame_alloc();
-					if (!filteredFrame) 
-					{
-						throw gcnew VideoLib::VideoLibException("Error allocating frame");				
-					}
-
-					success = filterGraph->pullFrame(filteredFrame, name);							
-					if (success) 
-					{				
-						encodeWriteFrame(filteredFrame, outputIdx, outStreamIdx);
-					}
-															
-					av_frame_free(&filteredFrame);					
-				
-				} while(success);
-			}
-
-		}			
-	}
 
 };
 

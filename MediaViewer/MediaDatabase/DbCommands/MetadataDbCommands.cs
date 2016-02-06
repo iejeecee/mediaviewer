@@ -5,11 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Core;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Data.SqlTypes;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
@@ -530,20 +532,49 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (result == null)
                 {
-                    Tag newTag = tagCommands.create(tag);
-                    newTag.Used = 1;
-                    newMedia.Tags.Add(newTag);
-                }
-                else
-                {
-                    result.Used += 1;                   
-                    newMedia.Tags.Add(result);
-                   
+                    result = tagCommands.create(tag);                    
                 }
                
+                result.Used += 1;                   
+                newMedia.Tags.Add(result);                                                  
             }
+           
+            int maxRetries = 15;
 
-            Db.SaveChanges();
+            do
+            {
+                try
+                {
+                    Db.SaveChanges();
+                    maxRetries = 0;
+                }
+                catch (DbUpdateConcurrencyException e)
+                {                    
+                    if (--maxRetries == 0)
+                    {
+                        throw;
+                    }
+
+                    foreach (DbEntityEntry conflictingEntity in e.Entries)
+                    {
+                        if (conflictingEntity.Entity is Tag)
+                        {
+                            // reload the conflicting tag (database wins)
+                            conflictingEntity.Reload();
+                            (conflictingEntity.Entity as Tag).Used += 1;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }    
+                
+                    Random random = new Random();
+
+                    Thread.Sleep(random.Next(50,100));
+                }
+
+            } while (maxRetries > 0);
 
             newMedia.IsImported = true;
 

@@ -96,7 +96,8 @@ namespace MediaViewer.Transcode.Video
             switch (ContainerFormat)
             {
                 case ContainerFormats.MP4:
-                    if (encoder == VideoEncoders.libx264 || encoder == VideoEncoders.libx265) return true;
+                    if (encoder == VideoEncoders.libx264 
+                        || encoder == VideoEncoders.libx265) return true;
                     else return (false);            
                 case ContainerFormats.MOV:
                     if (encoder == VideoEncoders.libx264) return true;
@@ -105,16 +106,22 @@ namespace MediaViewer.Transcode.Video
                     if (encoder == VideoEncoders.libx264) return true;
                     else return (false);            
                 case ContainerFormats.MKV:
-                    if (encoder == VideoEncoders.libx264 || encoder == VideoEncoders.libvpx) return true;
+                    if (encoder == VideoEncoders.libx264 
+                        || encoder == VideoEncoders.libx265
+                        || encoder == VideoEncoders.libvpx
+                        || encoder == VideoEncoders.libvpx_vp9) return true;
                     else return (false);
                 case ContainerFormats.FLV:
                     if (encoder == VideoEncoders.libx264) return true;
                     else return (false);
                 case ContainerFormats.WMV:
-                    if (encoder == VideoEncoders.msmpeg4) return true;
+                    if (encoder == VideoEncoders.msmpeg4
+                        || encoder == VideoEncoders.wmv1
+                        || encoder == VideoEncoders.wmv2) return true;
                     else return (false);
                 case ContainerFormats.WEBM:
-                    if (encoder == VideoEncoders.libvpx) return true;
+                    if (encoder == VideoEncoders.libvpx 
+                        || encoder == VideoEncoders.libvpx_vp9) return true;
                     else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == VideoEncoders.gif) return true;
@@ -130,7 +137,10 @@ namespace MediaViewer.Transcode.Video
                     else return (false);
                 case ContainerFormats.OGG:
                     if (encoder == VideoEncoders.none) return (true);
-                    else return (false);   
+                    else return (false);
+                case ContainerFormats.FLAC:
+                    if (encoder == VideoEncoders.none) return (true);
+                    else return (false);
                 default:
                     return (false);
             }
@@ -143,25 +153,33 @@ namespace MediaViewer.Transcode.Video
             switch (ContainerFormat)
             {
                 case ContainerFormats.MP4:
-                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    if (encoder == AudioEncoders.libmp3lame 
+                        || encoder == AudioEncoders.libvo_aacenc) return (true);
                     else return (false);                   
                 case ContainerFormats.MOV:
-                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    if (encoder == AudioEncoders.libmp3lame 
+                        || encoder == AudioEncoders.libvo_aacenc) return (true);
                     else return (false);                
                 case ContainerFormats.AVI:
                     if (encoder == AudioEncoders.libmp3lame) return (true);
                     else return (false);
                 case ContainerFormats.MKV:
-                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc || encoder == AudioEncoders.libvorbis) return (true);
+                    if (encoder == AudioEncoders.libmp3lame 
+                        || encoder == AudioEncoders.libvo_aacenc 
+                        || encoder == AudioEncoders.libvorbis
+                        || encoder == AudioEncoders.libopus) return (true);
                     else return (false);    
                 case ContainerFormats.FLV:
-                    if (encoder == AudioEncoders.libmp3lame || encoder == AudioEncoders.libvo_aacenc) return (true);
+                    if (encoder == AudioEncoders.libmp3lame 
+                        || encoder == AudioEncoders.libvo_aacenc) return (true);
                     else return (false);
                 case ContainerFormats.WMV:
-                    if (encoder == AudioEncoders.wmav2) return true;
+                    if (encoder == AudioEncoders.wmav2 ||
+                        encoder == AudioEncoders.wmav1) return true;
                     else return (false);
                 case ContainerFormats.WEBM:
-                    if (encoder == AudioEncoders.libvorbis) return true;
+                    if (encoder == AudioEncoders.libvorbis 
+                        || encoder == AudioEncoders.libopus) return true;
                     else return (false); 
                 case ContainerFormats.GIF:
                     if (encoder == AudioEncoders.none) return (true);
@@ -176,7 +194,11 @@ namespace MediaViewer.Transcode.Video
                     if (encoder == AudioEncoders.libvo_aacenc) return (true);
                     else return (false);
                 case ContainerFormats.OGG:
-                    if(encoder == AudioEncoders.libvorbis) return(true);
+                    if(encoder == AudioEncoders.libvorbis 
+                        || encoder == AudioEncoders.libopus) return (true);
+                    else return (false);
+                case ContainerFormats.FLAC:
+                    if (encoder == AudioEncoders.flac) return (true);
                     else return (false);
                 default:
                     return (false);
@@ -227,8 +249,10 @@ namespace MediaViewer.Transcode.Video
                 SupportedAudioEncoders.Refresh();
                 SupportedVideoEncoders.Refresh();
 
-                if (containerFormat == ContainerFormats.MP3 || containerFormat == ContainerFormats.M4A ||
-                    containerFormat == ContainerFormats.OGG)
+                if (containerFormat == ContainerFormats.MP3 
+                    || containerFormat == ContainerFormats.M4A
+                    || containerFormat == ContainerFormats.OGG
+                    || containerFormat == ContainerFormats.FLAC)
                 {
                     IsContainerSupportsVideoStream = false;
                     IsContainerSupportsAudioStream = true;

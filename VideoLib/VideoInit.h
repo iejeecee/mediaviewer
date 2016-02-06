@@ -124,11 +124,14 @@ public:
 		VideoInit::managedLogCallback = logCallback;
 	}
 
-	static void writeToLog(int level, char *message) {
+	static void writeToLog(int level, const char *message) {
 
 		if(managedLogCallback != NULL) {
 
-			managedLogCallback(level, message);
+			std::string fullMessage = "VideoLib: ";
+			fullMessage.append(message);
+
+			managedLogCallback(level, fullMessage.c_str());
 		}
 	}
 

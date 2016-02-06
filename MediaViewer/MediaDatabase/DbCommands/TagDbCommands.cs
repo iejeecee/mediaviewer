@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace MediaViewer.MediaDatabase.DbCommands
@@ -143,8 +145,35 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 newTag.ChildTags.Add(child);
             }
-         
-            Db.SaveChanges();
+
+            int maxRetries = 15;
+
+            do
+            {
+                try
+                {
+                    Db.SaveChanges();
+                    maxRetries = 0;
+                }
+                catch (DbUpdateConcurrencyException e)
+                {
+                    if (--maxRetries == 0)
+                    {
+                        throw;
+                    }
+
+                    foreach (DbEntityEntry conflictingEntity in e.Entries)
+                    {                       
+                        // reload the conflicting tag (database wins)
+                        conflictingEntity.Reload();                                                   
+                    }
+
+                    Random random = new Random();
+
+                    Thread.Sleep(random.Next(50, 100));
+                }
+
+            } while (maxRetries > 0);
 
             return (newTag);
         }

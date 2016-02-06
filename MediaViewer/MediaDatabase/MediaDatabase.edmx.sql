@@ -2,7 +2,7 @@
 -- --------------------------------------------------
 -- Entity Designer DDL Script for SQL Server 2005, 2008, and Azure
 -- --------------------------------------------------
--- Date Created: 01/29/2016 20:38:17
+-- Date Created: 02/02/2016 15:55:24
 -- Generated from EDMX file: D:\Repos\mediaviewer\MediaViewer\MediaDatabase\MediaDatabase.edmx
 -- --------------------------------------------------
 
@@ -204,6 +204,7 @@ CREATE TABLE [dbo].[BaseMetadataSet_ImageMetadata] (
     [Orientation] smallint  NULL,
     [PixelFormat] nvarchar(max)  NOT NULL,
     [BitsPerPixel] smallint  NOT NULL,
+    [ImageContainer] nvarchar(max)  NULL,
     [Id] int  NOT NULL
 );
 GO
@@ -249,6 +250,7 @@ CREATE TABLE [dbo].[BaseMetadataSet_AudioMetadata] (
     [TotalTracks] int  NULL,
     [DiscNr] int  NULL,
     [TotalDiscs] int  NULL,
+    [AudioContainer] nvarchar(max)  NULL,
     [Id] int  NOT NULL
 );
 GO

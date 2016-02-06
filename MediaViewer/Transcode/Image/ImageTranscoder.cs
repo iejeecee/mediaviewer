@@ -54,9 +54,8 @@ namespace MediaViewer.Transcode.Image
             BitmapSource outImage = image;
 
             if (width != image.PixelWidth || height != image.PixelHeight)
-            {
-                scale = ImageUtils.resizeRectangle(image.PixelWidth, image.PixelHeight, width, height);
-                outImage = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform(scale, scale));
+            {      
+                outImage = new TransformedBitmap(image, new System.Windows.Media.ScaleTransform((double)width / image.PixelWidth, (double)height / image.PixelHeight));
             }
           
             ImageFormat format = MediaFormatConvert.fileNameToImageFormat(outputPath);

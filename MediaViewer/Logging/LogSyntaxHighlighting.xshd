@@ -1,0 +1,23 @@
+﻿<SyntaxDefinition name="Log"
+        xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+      
+    <!-- This is the main ruleset. -->
+    <RuleSet>  
+		<Keywords fontWeight="bold" foreground="LightBlue">
+            <Word>DEBUG</Word>           
+        </Keywords>                
+        <Keywords fontWeight="bold" foreground="Blue">
+            <Word>INFO</Word>           
+        </Keywords>   
+		<Keywords fontWeight="bold" foreground="Orange">
+            <Word>WARN</Word>           
+        </Keywords> 
+		<Keywords fontWeight="bold" foreground="Red">
+            <Word>ERROR</Word>           
+        </Keywords>
+		<Keywords fontWeight="bold" foreground="DarkRed">
+            <Word>FATAL</Word>           
+        </Keywords>    		    
+    </RuleSet>
+</SyntaxDefinition>
+

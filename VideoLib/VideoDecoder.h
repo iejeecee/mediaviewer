@@ -73,7 +73,7 @@ protected:
 
 	double calcDurationSeconds() {
 
-		double duration = formatContext->duration / AV_TIME_BASE;
+		double duration = (double)formatContext->duration / AV_TIME_BASE;
 		
 		if(duration < 0) {
 
@@ -163,7 +163,8 @@ private:
 				decoder = avcodec_find_decoder(formatContext->streams[i]->codec->codec_id);
 				if(decoder == NULL)
 				{		
-					throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
+					VideoInit::writeToLog(AV_LOG_ERROR, "Decoder not found for input stream");
+					//throw gcnew VideoLib::VideoLibException("Decoder not found for input stream");
 				}
 			}
 			
@@ -175,15 +176,31 @@ private:
 		videoIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
 		if(videoIdx >= 0) {
 					
-			stream[videoIdx]->open();
-			stream[videoIdx]->getCodecContext()->skip_frame = AVDISCARD_DEFAULT; 	
+			if(stream[videoIdx]->getCodec() != NULL)
+			{
+				stream[videoIdx]->open();
+
+			} else {
+
+				// no decoder for video
+				videoIdx = 0;
+			}
 			
 		}
 			
 		audioIdx = av_find_best_stream(formatContext, AVMEDIA_TYPE_AUDIO, -1, -1, NULL, 0);
 		if(audioIdx >= 0) {
-				
-			stream[audioIdx]->open();		
+					
+			if(stream[audioIdx]->getCodec() != NULL)
+			{
+				stream[audioIdx]->open();
+
+			} else {
+
+				// no decoder for audio
+				audioIdx = 0;
+			}
+			
 		}
 			
 		frame = av_frame_alloc();
@@ -470,13 +487,15 @@ public:
 		double frameRate = 0;
 
 		if(!hasVideo()) return frameRate;
-
-		frameRate = av_q2d(getVideoCodecContext()->framerate);	
-
-		if(frameRate == 0 && getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) 
+		
+		if(getVideoStream()->avg_frame_rate.den != 0 && getVideoStream()->avg_frame_rate.num != 0) 
 		{
-			frameRate = av_q2d(getVideoStream()->avg_frame_rate);			
-		} 
+			frameRate = av_q2d(getVideoStream()->avg_frame_rate);	
+
+		} else {
+
+			frameRate = av_q2d(getVideoCodecContext()->framerate);	
+		}
 		
 		return frameRate;
 	}

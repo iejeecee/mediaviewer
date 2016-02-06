@@ -95,6 +95,12 @@ namespace MediaViewer.Transcode.Video
                 options.Add("endTimeRange", AsyncState.EndTimeRange);
             }
 
+            Dictionary<String, Object> encoderOptions = new Dictionary<string, object>();
+
+            EncoderOptions.setVideoOptions(encoderOptions, AsyncState.VideoEncoderPreset, AsyncState.VideoEncoder);
+
+            options.Add("videoEncoderOptions", encoderOptions);
+
             return (options);
         }
 
@@ -119,12 +125,12 @@ namespace MediaViewer.Transcode.Video
                 ItemInfo = "Transcoding: " + input.Name;
 
                 if (CancellationToken.IsCancellationRequested) return;
-                if (MediaFormatConvert.isImageFile(input.Location))
+                /*if (MediaFormatConvert.isImageFile(input.Location))
                 {
                     InfoMessages.Add("Skipping: " + input.Name + " is not a video file.");
                     TotalProgress++;
                     continue;
-                }
+                }*/
 
                 String outLocation = getOutputLocation(input);
 

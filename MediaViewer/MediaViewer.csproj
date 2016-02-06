@@ -330,6 +330,7 @@
     </Compile>
     <Compile Include="Transcode\Image\ImageTranscodeViewModel.cs" />
     <Compile Include="Transcode\Image\OptionsVisibilityConverter.cs" />
+    <Compile Include="Transcode\Video\EncoderOptions.cs" />
     <Compile Include="UserControls\ColorPicker\ColorPickerView.xaml.cs">
       <DependentUpon>ColorPickerView.xaml</DependentUpon>
     </Compile>

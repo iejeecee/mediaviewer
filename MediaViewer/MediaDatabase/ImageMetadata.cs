@@ -43,5 +43,6 @@ namespace MediaViewer.MediaDatabase
         public Nullable<short> Orientation { get; set; }
         public string PixelFormat { get; set; }
         public short BitsPerPixel { get; set; }
+        public string ImageContainer { get; set; }
     }
 }

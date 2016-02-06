@@ -898,6 +898,7 @@ namespace MediaViewer.MetaData
         {
             p.Add(new Tuple<string, string>("", "IMAGE"));
 
+            p.Add(new Tuple<string, string>("Image Container", image.ImageContainer));
             p.Add(new Tuple<string, string>("Resolution", image.Width + " x " + image.Height));
             p.Add(new Tuple<string, string>("Pixel Format", image.PixelFormat));
             p.Add(new Tuple<string, string>("Bits Per Pixel", image.BitsPerPixel.ToString()));           
@@ -933,7 +934,8 @@ namespace MediaViewer.MetaData
 
         void getAudioProperties(ObservableCollection<Tuple<String, String>> p, AudioMetadata audio)
         {
-            p.Add(new Tuple<string, string>("", "AUDIO"));                                             
+            p.Add(new Tuple<string, string>("", "AUDIO"));
+            p.Add(new Tuple<string, string>("Audio Container", audio.AudioContainer));                               
             p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(audio.DurationSeconds)));           
             p.Add(new Tuple<string, string>("Audio Codec", audio.AudioCodec));
             p.Add(new Tuple<string, string>("Bits Per Sample", audio.BitsPerSample.ToString()));

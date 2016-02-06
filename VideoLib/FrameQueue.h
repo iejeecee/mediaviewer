@@ -768,6 +768,13 @@ namespace VideoLib {
 
 						convertedAudioFrame->copyAudioDataToManagedMemory();
 
+						// generate next pts for audio packets that contain multiple frames
+						double audioDurationSec = (double)audioFrame->AVLibFrameData->nb_samples / videoDecoder->getAudioSamplesPerSecond();
+							
+						int64_t audioDuration = videoDecoder->getStream(audioPacket->AVLibPacketData->stream_index)->getTimeBaseUnits(audioDurationSec);
+
+						audioPacket->AVLibPacketData->pts += audioDuration;	
+
 						return(convertedAudioFrame);
 					}
 				}

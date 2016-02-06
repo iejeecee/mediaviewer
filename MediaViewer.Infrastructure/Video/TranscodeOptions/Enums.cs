@@ -18,6 +18,7 @@ namespace MediaViewer.Infrastructure.Video.TranscodeOptions
         GIF,
         PNG,
         MP3,
+        FLAC,
         M4A,
         OGG
     }
@@ -35,9 +36,20 @@ namespace MediaViewer.Infrastructure.Video.TranscodeOptions
         libx264,
         libx265,
         libvpx,
+        libvpx_vp9,
         msmpeg4,
+        wmv1,
+        wmv2,
         gif,
         apng
+    }
+
+    public enum ImageEncoders
+    {
+        none = 0,
+        jpegls,
+        jpeg2000,
+        webp
     }
 
     public enum VideoEncoderPresets
@@ -59,6 +71,9 @@ namespace MediaViewer.Infrastructure.Video.TranscodeOptions
         libvo_aacenc,      
         libmp3lame,
         libvorbis,
-        wmav2
+        wmav1,
+        wmav2,
+        flac,
+        libopus
     }
 }

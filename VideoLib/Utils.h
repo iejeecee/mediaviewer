@@ -148,6 +148,45 @@ namespace VideoLib {
 			}
 
 		}
+
+		static std::string getPixelformatName(AVPixelFormat pixFmt) {
+
+			char buf[64];
+			av_get_pix_fmt_string(buf, 64, pixFmt);
+			std::string pixelFormatName = std::string(buf);
+
+			int pos = (int)pixelFormatName.find_first_of(' ');
+			if(pos != std::string::npos) {
+
+				pixelFormatName = pixelFormatName.substr(0, pos);
+			}
+
+			return pixelFormatName;
+		}
+
+		static std::string getSampleFormatName(AVSampleFormat sampleFormat)
+		{
+			std::string sampleFormatName;
+
+			const char *name = av_get_sample_fmt_name(sampleFormat);
+
+			if(name != NULL) {
+
+				sampleFormatName = std::string(name);
+			}
+
+			return(sampleFormatName);
+		}
+
+		static std::string getChannelLayoutName(uint64_t channelLayout) {
+
+			char buf[64];
+			av_get_channel_layout_string(buf,64,-1,channelLayout);
+
+			std::string channelLayoutName = std::string(buf);
+
+			return channelLayoutName;
+		}
 	};
 
 }

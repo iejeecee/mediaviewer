@@ -10,6 +10,7 @@
 #include "Utils.h"
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
+using namespace System::Collections;
 using namespace System::Collections::Generic;
 using namespace msclr::interop;
 using namespace MediaViewer::Infrastructure::Utils;
@@ -80,21 +81,25 @@ protected:
 
 	
 	void initOutputStream(Stream *inStream, VideoTransformerOutputInfo *output, StreamTransformMode streamMode, Dictionary<String ^, Object ^> ^options) 
-	{						
+	{		
+		VideoLib::Stream *outStream = NULL;
+
 		if(streamMode == StreamTransformMode::COPY) 
 		{		
-			output->encoder->createStream(inStream);						
+			outStream = output->encoder->createStream(inStream);						
 		} 
 		else if(streamMode == StreamTransformMode::ENCODE) 
-		{			
-			VideoLib::Stream *outStream;
-
+		{						
 			AVCodecContext *dec_ctx = inStream->getCodecContext();
 
 			if(inStream->isVideo()) {
 
-				std::string encoderName = marshal_as<std::string>(((VideoEncoders)options["videoEncoder"]).ToString());
-				 
+				std::string encoderName = marshal_as<std::string>(options["videoEncoder"]->ToString());
+				if(encoderName.compare("libvpx_vp9") == 0) {
+
+					encoderName = "libvpx-vp9";
+				}
+
 				int width = dec_ctx->width;
 				int height = dec_ctx->height;
 
@@ -131,33 +136,19 @@ protected:
 				outStream = output->encoder->createStream(encoderName, width, height, dec_ctx->sample_aspect_ratio, 
 					frameRate);
 								
-				if(outStream->getCodecID() == AV_CODEC_ID_H264 || outStream->getCodecID() == AV_CODEC_ID_HEVC) 
-				{						
-					String ^preset = ((VideoEncoderPresets)options["videoEncoderPreset"]).ToString()->ToLower();
+				Dictionary<String ^, Object ^> ^encoderOptions = (Dictionary<String ^, Object ^> ^)options["videoEncoderOptions"];
 
-					std::string value = marshal_as<std::string>(preset);
+				System::Collections::IEnumerator ^enumerator = encoderOptions->GetEnumerator();
 
-					outStream->setOption("preset", value.c_str());
-				
-				} else if(outStream->getCodecID() == AV_CODEC_ID_VP8) {
-			
-					outStream->getCodecContext()->bit_rate = 3200000;
-
-					//outStream->setOption("crf", "5");
-					outStream->setOption("qmin", "4");
-					outStream->setOption("qmax", "50");
-
-				} else if(outStream->getCodecID() == AV_CODEC_ID_GIF) {
-								
+				while(enumerator->MoveNext()) 
+				{
+					KeyValuePair<String ^, Object ^> ^pair = (KeyValuePair<String ^, Object ^>)enumerator->Current;
 					
-				} else if(outStream->getCodecID() == AV_CODEC_ID_APNG) {
-
-					// loop animation
-					//Utils::printOpts((void *)outStream->getCodec());
-					//outStream->setOption("plays", "0");
+					outStream->setOption(marshal_as<std::string>(pair->Key), marshal_as<std::string>(pair->Value->ToString()));
 				}
 
-				
+				//Utils::printOpts(outStream->getCodecContext());
+								
 			} else {
 
 				std::string encoderName = marshal_as<std::string>(((AudioEncoders)options["audioEncoder"]).ToString());
@@ -178,11 +169,11 @@ protected:
 
 				outStream = output->encoder->createStream(encoderName, sampleRate, nrChannels);		
 			}
-								
+				
 			outStream->open();
-					
 		}			
-						
+			
+		
 	}
 
 	virtual void initBitstreamFilters(VideoTransformerInputInfo *input,

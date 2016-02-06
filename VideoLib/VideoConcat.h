@@ -393,9 +393,16 @@ protected:
 
 				if(inputIdx > 0) {
 
-					// find the exact length of the previous input and add it to the offset				
-					double prevInputLengthSeconds = DBL_MIN;
+					// find the exact length of the previous input(s) and add it to the offset
+					double prevInputLengthSeconds = 0;
 
+					for(int j = 0; j < inputIdx; j++) {
+
+						prevInputLengthSeconds += inputs[j]->decoder->getDurationSeconds();
+					}					 
+
+					// do a backup calculation for inputs that don't have a duration
+					// e.g. animated gif's & png's
 					for(int j = 0; j < inputs[inputIdx - 1]->streamsInfo.size(); j++)
 					{
 						double streamLengthSeconds = inputs[inputIdx - 1]->decoder->getStream(j)->getTimeSeconds(inputs[inputIdx - 1]->streamsInfo[j]->nextTs);
@@ -412,24 +419,23 @@ protected:
 				inputs[inputIdx]->streamsInfo[i]->setTsOffset(tsOffset);		
 			}
 		}
-
-		
-		/*int64_t curDts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + dts;
-		double dtsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curDts);
-
-		int64_t nextDts = curDts + duration;
-
-		int curPts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + pts;
-		double ptsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curPts);*/
-			
+							
 		int64_t nextPts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + pts + duration;
 
 		if(nextPts > inputs[inputIdx]->streamsInfo[streamIdx]->nextTs) {
 
 			inputs[inputIdx]->streamsInfo[streamIdx]->nextTs = nextPts;
 		}
+
+		/*int64_t curDts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + dts;
+		double dtsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curDts);
+
+		int64_t nextDts = curDts + duration;
+
+		int curPts = inputs[inputIdx]->streamsInfo[streamIdx]->tsOffset + pts;
+		double ptsSeconds = inputs[inputIdx]->decoder->getStream(streamIdx)->getTimeSeconds(curPts);
 		
-		//System::Diagnostics::Debug::Print("file:" + inputIdx + " stream:" + streamIdx + " pts:" + curPts + " pts_time:" + ptsSeconds + " dts:" + curDts + " dts_time:" + dtsSeconds);
+		System::Diagnostics::Debug::Print("file:" + inputIdx + " stream:" + streamIdx + " pts:" + curPts + " pts_time:" + ptsSeconds + " dts:" + curDts + " dts_time:" + dtsSeconds);*/
 
 	}
 

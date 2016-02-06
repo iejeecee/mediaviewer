@@ -126,7 +126,7 @@ protected:
 			pngEncoder = new VideoEncoder();
 
 			pngEncoder->open(outMemoryStreamCtx, "apng");
-			pngEncoder->createStream("apng", 16, 16, av_make_q(1,1), av_make_q(1, 25), AV_PIX_FMT_RGBA)->open();
+			pngEncoder->createStream("apng", 16, 16, av_make_q(1,1), av_make_q(1, 25), AV_PIX_FMT_RGBA)->open();		
 	
 			av_dump_format(pngEncoder->getFormatContext(), 0, NULL, 1);
 

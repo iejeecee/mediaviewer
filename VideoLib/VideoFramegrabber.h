@@ -96,17 +96,9 @@ public:
 		if(hasVideo()) 
 		{						
 			videoCodecName = std::string(getVideoCodec()->name);
-	
-			char buf[64];
-			av_get_pix_fmt_string(buf, 64, getVideoCodecContext()->pix_fmt);
-			pixelFormat = std::string(buf);
-
-			int pos = (int)pixelFormat.find_first_of(' ');
-			if(pos != std::string::npos) {
-
-				pixelFormat = pixelFormat.substr(0, pos);
-			}
-			
+				
+			pixelFormat = Utils::getPixelformatName(getVideoCodecContext()->pix_fmt);
+						
 			const AVPixFmtDescriptor *pixFmtDescriptor = av_pix_fmt_desc_get(getVideoCodecContext()->pix_fmt);
 
 			if(pixFmtDescriptor != NULL) 
@@ -194,7 +186,7 @@ public:
 		bool suppressError = false, int decodingTimeOut = 0)
 	{
 
-		setVideoOutputFormat(AV_PIX_FMT_BGR24, thumbWidth, thumbHeight, SPLINE);
+		setVideoOutputFormat(AV_PIX_FMT_BGR24, thumbWidth, thumbHeight, LANCZOS);
 
 		double duration = getDurationSeconds();
 
@@ -371,7 +363,8 @@ public:
 	
 		if(!hasVideo()) return false;	
 
-		if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) > 0) return false;
+		if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) > 0) return false; //mp3 cover art etc
+		if(container.compare("image2 sequence") == 0) return(false); //jpeg
 
 		bool hasFramerate = getFrameRate() > 0;
 
@@ -397,6 +390,7 @@ public:
 
 		if(hasAudio()) return false;
 		if(getFrameRate() > 0) return false;
+		if(container.compare("image2 sequence") == 0) return(true); //jpeg
 		if(getDurationSeconds() > 0) return false;
 		if(!hasVideo()) return false;
 	

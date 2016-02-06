@@ -23,15 +23,13 @@ namespace MediaViewer.Model.Media.File.Metadata
                                        
             audio.DurationSeconds = mediaPreview.DurationSeconds;
             audio.SizeBytes = mediaPreview.SizeBytes;
-                                              
-            if (!String.IsNullOrEmpty(mediaPreview.AudioCodecName))
-            {
-                audio.AudioCodec = mediaPreview.AudioCodecName;
-                audio.SamplesPerSecond = mediaPreview.SamplesPerSecond;
-                audio.BitsPerSample = (short)(mediaPreview.BytesPerSample * 8);
-                audio.NrChannels = (short)mediaPreview.NrChannels;
-            }
-                    
+
+            audio.AudioContainer = mediaPreview.Container;                     
+            audio.AudioCodec = mediaPreview.AudioCodecName;
+            audio.SamplesPerSecond = mediaPreview.SamplesPerSecond;
+            audio.BitsPerSample = (short)(mediaPreview.BytesPerSample * 8);
+            audio.NrChannels = (short)mediaPreview.NrChannels;
+                                
             List<string> fsMetaData = mediaPreview.MetaData;
                
             try

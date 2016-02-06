@@ -109,6 +109,7 @@ public:
 		return int64_t(timeSeconds / av_q2d(stream->time_base));	
 	}
 
+	// return stream timebase
 	AVRational getTimeBase() const
 	{
 		return stream->time_base;

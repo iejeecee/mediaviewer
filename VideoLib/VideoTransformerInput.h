@@ -73,7 +73,7 @@ namespace VideoLib {
 		
 		double startTimeRange;
 		double endTimeRange;
-			
+					
 		AVPacket packet;
 
 		VideoTransformerInput(const VideoTransformerInputInfo *inputStreamInfo) {
@@ -86,7 +86,7 @@ namespace VideoLib {
 			av_init_packet(&packet);
 			packet.data = NULL;
 			packet.size = 0;
-
+			
 			for(int i = 0; i < (int)inputStreamInfo->streamsInfo.size(); i++) {
 
 				streamsInfo.push_back(new VideoTransformerInputStream(inputStreamInfo->streamsInfo[i]));				
