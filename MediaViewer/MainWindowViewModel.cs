@@ -14,7 +14,6 @@ using MediaViewer.Model.Media.File.Watcher;
 using System.ComponentModel.Composition;
 using MediaViewer.Model.Settings;
 using MediaViewer.Model.Utils;
-using MediaViewer.TagEditor;
 using Microsoft.Practices.Prism.Commands;
 using MediaViewer.Model.Mvvm;
 using MediaViewer.Infrastructure.Logging;

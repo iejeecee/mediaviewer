@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include <msclr\marshal_cppstd.h>
-#include "VideoInit.h"
+#include "Video\VideoInit.h"
 
 using namespace System;
 using namespace System::Threading;

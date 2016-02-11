@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Video.h"
 #include "VideoLibException.h"
-#include "FilterGraph.h"
+#include "FilterGraph\FilterGraph.h"
 #include "OpenVideoArgs.h"
 #include <algorithm>
 #include <msclr\marshal_cppstd.h>

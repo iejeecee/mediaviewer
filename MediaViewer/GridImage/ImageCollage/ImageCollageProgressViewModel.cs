@@ -119,7 +119,7 @@ namespace MediaViewer.GridImage.ImageCollage
             }
         }
 
-        private void grabThumbnails_UpdateProgressCallback(VideoThumb thumb)
+        private void grabThumbnails_UpdateProgressCallback(MediaThumb thumb)
         {
             ItemProgress += 1;
         }

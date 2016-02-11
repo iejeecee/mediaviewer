@@ -587,11 +587,7 @@ namespace MediaViewer.UserControls.TagPicker
             ToggleButton button = sender as ToggleButton;
             Tag selectedTag = (button.Tag as Tag);
 
-            String tooltip = selectedTag.Name;
-            if (selectedTag.TagCategory != null)
-            {
-                tooltip += " (" + selectedTag.TagCategory.Name + ")";
-            }            
+            String tooltip = selectedTag.Name;              
 
             try
             {

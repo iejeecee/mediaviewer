@@ -2,14 +2,14 @@
 #include <string>       
 #include <iostream>     
 #include <sstream> 
-#include "VideoDecoderFactory.h"
-#include "IVideoDecoder.h"
-#include "VideoEncoder.h"
-#include "FilterGraph.h"
+#include "Video\VideoDecoderFactory.h"
+#include "Video\IVideoDecoder.h"
+#include "Video\VideoEncoder.h"
+#include "FilterGraph\FilterGraph.h"
 #include "BitStreamFilter.h"
 #include "VideoTransformerInput.h"
 #include "VideoTransformerOutput.h"
-#include "Utils.h"
+#include "Utils\Utils.h"
  
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;

@@ -202,14 +202,15 @@ namespace MediaViewer.Model.Media.File
 
             MetadataFactory.ReadOptions readOptions = MetadataFactory.ReadOptions.READ_FROM_DISK;
 
-            ICollection<Thumbnail> thumbs = null;      
+            Thumbnail thumb = null;
+            ICollection<VideoThumbnail> videoThumbs = null;
             int id = 0;
 
             if (Metadata != null)
             {                
                 id = Metadata.Id;
 
-                if (Metadata.Thumbnails.Count == 0)
+                if (Metadata.Thumbnail == null)
                 {
                     // generate thumbnail
                     readOptions |= MetadataFactory.ReadOptions.GENERATE_THUMBNAIL;
@@ -217,16 +218,26 @@ namespace MediaViewer.Model.Media.File
                 } else {
 
                     // save current thumbs
-                    thumbs = Metadata.Thumbnails;
-                }
+                    thumb = Metadata.Thumbnail;
+
+                    if (Metadata is VideoMetadata)
+                    {
+                        videoThumbs = (Metadata as VideoMetadata).VideoThumbnails;
+                    }
+                }                
             }
 
             readMetadata_URLock(readOptions, token);
 
-            if (Metadata != null && thumbs != null)
+            if (Metadata != null && thumb != null)
             {
                 // restore thumbnails
-                Metadata.Thumbnails = thumbs;
+                Metadata.Thumbnail = thumb;
+
+                if (Metadata is VideoMetadata)
+                {
+                   (Metadata as VideoMetadata).VideoThumbnails = videoThumbs;
+                }
             }
 
             if (Metadata != null && id != 0)
@@ -394,7 +405,7 @@ namespace MediaViewer.Model.Media.File
             static ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
             static Dictionary<String, WeakReference<MediaFileItem>> dictionary = new Dictionary<String, WeakReference<MediaFileItem>>();
 
-            public static MediaFileItem create(string location)
+            public static MediaFileItem create(string location, BaseMetadata metadata = null)
             {                               
                 rwLock.EnterWriteLock();
                 try
@@ -412,6 +423,13 @@ namespace MediaViewer.Model.Media.File
                       
                             // item has been garbage collected, recreate
                             item = new MediaFileItem(location);
+                            if (metadata != null)
+                            {
+                                item.Metadata = metadata;                              
+                                item.checkVariables(metadata);
+                                item.ItemState = MediaItemState.LOADED;
+                            }
+                            
                             reference = new WeakReference<MediaFileItem>(item);
                             dictionary.Remove(location);
                             dictionary.Add(location, reference);
@@ -422,6 +440,13 @@ namespace MediaViewer.Model.Media.File
                     {
                         // item did not exist yet
                         item = new MediaFileItem(location);
+                        if (metadata != null)
+                        {
+                            item.Metadata = metadata;                           
+                            item.checkVariables(metadata);
+                            item.ItemState = MediaItemState.LOADED;
+                        }
+
                         reference = new WeakReference<MediaFileItem>(item);
                         dictionary.Add(location, reference);
                   

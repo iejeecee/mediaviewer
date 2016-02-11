@@ -21,7 +21,7 @@ namespace MediaViewer.Model.Media.File.Metadata
                
         protected static DateTime sqlMinDate = new DateTime(1753, 1, 1);     
 
-        public virtual void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, CancellationToken token, int timeoutSeconds)
+        public virtual void readMetadata(MediaProbe mediaProbe, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media, CancellationToken token, int timeoutSeconds)
         {
 
             XMPLib.MetaData.ErrorCallbackDelegate errorCallbackDelegate = new XMPLib.MetaData.ErrorCallbackDelegate(errorCallback);

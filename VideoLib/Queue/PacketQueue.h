@@ -1,8 +1,8 @@
 #pragma once
 // http://stackoverflow.com/questions/530211/creating-a-blocking-queuet-in-net/530228#530228
 
-#include "VideoFrame.h"
-#include "Packet.h"
+#include "Frame\VideoFrame.h"
+#include "Frame\Packet.h"
 
 using namespace System::Collections::Generic;
 using namespace System::Threading;

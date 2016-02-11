@@ -7,7 +7,7 @@
              d:DesignHeight="300" d:DesignWidth="300">
     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Border x:Name="previewImageBorder" BorderThickness="2" BorderBrush="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
-            <Image x:Name="previewImage" MouseLeave="previewImage_MouseLeave" PreviewMouseMove="previewImage_previewMouseMove"/>
+            <Image x:Name="previewImage" MouseLeave="previewImage_MouseLeave" PreviewMouseMove="previewImage_previewMouseMove" MouseEnter="previewImage_MouseEnter"/>
         </Border>
     </Grid>
 </UserControl>

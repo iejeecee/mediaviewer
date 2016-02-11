@@ -18,19 +18,19 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 {
    class VideoGridImage : GridImageBase
     {            
-        static List<BitmapSource> getImages(List<VideoThumb> thumbs)
+        static List<BitmapSource> getImages(List<MediaThumb> thumbs)
         {
             List<BitmapSource> images = new List<BitmapSource>();
 
-            foreach(VideoThumb thumb in thumbs) {
+            foreach(MediaThumb videoThumb in thumbs) {
 
-                images.Add(thumb.Thumb);
+                images.Add(videoThumb.Thumb);
             }
 
             return (images);
         }
 
-        public VideoGridImage(VideoMetadata video, VideoPreviewImageViewModel vm, List<VideoThumb> thumbs) :
+        public VideoGridImage(VideoMetadata video, VideoPreviewImageViewModel vm, List<MediaThumb> thumbs) :
             base(vm.MaxPreviewImageWidth,vm.NrRows, vm.NrColumns, getImages(thumbs), vm.BackgroundColor, vm.FontColor)
         {                                 
             Video = video;
@@ -38,7 +38,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             Thumbs = thumbs;
         }
 
-        List<VideoThumb> Thumbs { get; set; }
+        List<MediaThumb> Thumbs { get; set; }
         VideoMetadata Video { get; set; }
         VideoPreviewImageViewModel Vm { get; set; }
 

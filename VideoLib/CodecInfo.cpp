@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include <msclr\marshal_cppstd.h>
 #include "CodecInfo.h"
-#include "Video.h"
+#include "Video\Video.h"
 
 namespace VideoLib {
 

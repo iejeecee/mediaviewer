@@ -12,9 +12,7 @@ namespace MediaViewer.MediaDatabase.DataTransferObjects
         public static void Run()
         {
             Mapper.CreateMap<Tag, TagDTO>();
-            Mapper.CreateMap<TagDTO, Tag>();
-            Mapper.CreateMap<TagCategory, TagCategoryDTO>();
-            Mapper.CreateMap<TagCategoryDTO, TagCategory>();
+            Mapper.CreateMap<TagDTO, Tag>();        
         }
     }
 }

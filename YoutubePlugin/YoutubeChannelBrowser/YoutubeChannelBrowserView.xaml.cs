@@ -101,5 +101,10 @@ namespace YoutubePlugin.YoutubeChannelBrowser
 
             (treeView.Root as YoutubeChannelRootNode).removeChannel(selectedNode);
         }
+
+        private async void refreshMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            await (treeView.Root as YoutubeChannelRootNode).loadChannelStatistics();
+        }
     }
 }

@@ -36,8 +36,8 @@
                                     <sd:SharpTreeNodeView>
                                         <sd:SharpTreeNodeView.ContextMenu>
                                             <ContextMenu>
-                                                <MenuItem x:Name="removeMenuItem"  Header="Remove" Click="removeMenuItem_Click"/>                                               
-                                                <MenuItem Header="Refresh" />                                               
+                                                <MenuItem x:Name="removeMenuItem"  Header="Remove" Click="removeMenuItem_Click"/>
+                                                <MenuItem x:Name="refreshMenuItem" Header="Refresh" Click="refreshMenuItem_Click"/>                                               
                                             </ContextMenu>
                                         </sd:SharpTreeNodeView.ContextMenu>
                                     </sd:SharpTreeNodeView>

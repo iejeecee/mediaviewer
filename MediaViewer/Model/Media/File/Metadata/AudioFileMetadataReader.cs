@@ -16,28 +16,28 @@ namespace MediaViewer.Model.Media.File.Metadata
 {
     class AudioFileMetadataReader : MetadataFileReader
     {
-        public override void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
+        public override void readMetadata(MediaProbe mediaProbe, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
             CancellationToken token, int timeoutSeconds)
         {
             AudioMetadata audio = media as AudioMetadata;
                                        
-            audio.DurationSeconds = mediaPreview.DurationSeconds;
-            audio.SizeBytes = mediaPreview.SizeBytes;
+            audio.DurationSeconds = mediaProbe.DurationSeconds;
+            audio.SizeBytes = mediaProbe.SizeBytes;
 
-            audio.AudioContainer = mediaPreview.Container;                     
-            audio.AudioCodec = mediaPreview.AudioCodecName;
-            audio.SamplesPerSecond = mediaPreview.SamplesPerSecond;
-            audio.BitsPerSample = (short)(mediaPreview.BytesPerSample * 8);
-            audio.NrChannels = (short)mediaPreview.NrChannels;
+            audio.AudioContainer = mediaProbe.Container;                     
+            audio.AudioCodec = mediaProbe.AudioCodecName;
+            audio.SamplesPerSecond = mediaProbe.SamplesPerSecond;
+            audio.BitsPerSample = (short)(mediaProbe.BytesPerSample * 8);
+            audio.NrChannels = (short)mediaProbe.NrChannels;
                                 
-            List<string> fsMetaData = mediaPreview.MetaData;
+            List<string> fsMetaData = mediaProbe.MetaData;
                
             try
             {                
                 if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
                     options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
                 {
-                    generateThumbnail(mediaPreview, audio, token, timeoutSeconds, 1);
+                    generateThumbnail(mediaProbe, audio, token, timeoutSeconds, 1);
                 }                                        
             }
             catch (Exception e)
@@ -55,27 +55,25 @@ namespace MediaViewer.Model.Media.File.Metadata
                 audio.SupportsXMPMetadata = false;
             }
 
-            base.readMetadata(mediaPreview, data, options, media, token, timeoutSeconds);
+            base.readMetadata(mediaProbe, data, options, media, token, timeoutSeconds);
  
             parseFFMpegMetaData(fsMetaData, audio);
                       
         }
 
-        public void generateThumbnail(VideoPreview mediaPreview, AudioMetadata audio,
+        public void generateThumbnail(MediaProbe mediaProbe, AudioMetadata audio,
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
           
             // possibly could not seek in video, try to get the first frame in the video
-            List<VideoThumb> thumbBitmaps = mediaPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
-                Constants.MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
-           
-            audio.Thumbnails.Clear();
+            List<MediaThumb> thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                Constants.MAX_THUMBNAIL_HEIGHT, 0, 1, 0, token, timeoutSeconds, null);
 
-            foreach (VideoThumb videoThumb in thumbBitmaps)
+            if (thumbBitmaps.Count > 0)
             {
-                audio.Thumbnails.Add(new Thumbnail(videoThumb.Thumb, videoThumb.PositionSeconds));
+                audio.Thumbnail = new Thumbnail(thumbBitmaps[0].Thumb); 
             }
-
+            
         }
 
         static List<String> encoderMatch = new List<String>() { "encoder", "encoded_with", "encoded_by"};

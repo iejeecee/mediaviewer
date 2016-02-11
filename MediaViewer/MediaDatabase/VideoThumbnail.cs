@@ -12,17 +12,16 @@ namespace MediaViewer.MediaDatabase
     using System;
     using System.Collections.Generic;
     
-    public partial class TagCategory
+    public partial class VideoThumbnail
     {
-        public TagCategory()
-        {
-            this.Tag = new HashSet<Tag>();
-        }
-    
         public int Id { get; set; }
-        public string Name { get; set; }
+        public byte[] ImageData { get; set; }
+        public short Width { get; set; }
+        public short Height { get; set; }
+        public Nullable<double> TimeSeconds { get; set; }
         public byte[] TimeStamp { get; set; }
+        public int VideoMetadataId { get; set; }
     
-        public virtual ICollection<Tag> Tag { get; set; }
+        public virtual VideoMetadata VideoMetadata { get; set; }
     }
 }

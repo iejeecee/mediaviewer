@@ -24,14 +24,14 @@ namespace MediaViewer.UserControls.MediaGridItem
         {
             BaseMetadata media = (BaseMetadata)value;
                                                    
-            if (media == null || media.Thumbnails.Count == 0)               
+            if (media == null || media.Thumbnail == null)               
             {
                 if (media is AudioMetadata) return audioIcon;
                 else return parameter;
             }
             else
             {
-                return (media.Thumbnails.ElementAt(0).Image);
+                return (media.Thumbnail.Image);
             }
             
         }

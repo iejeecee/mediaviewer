@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Frame.h"
-#include "VideoDecoder.h"
+#include "Video\VideoDecoder.h"
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000 
 

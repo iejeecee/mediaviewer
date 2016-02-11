@@ -48,7 +48,7 @@ namespace ImageSearchPlugin
                 bitmapSource.Freeze();
 
                 ImageMetadata metaData = new ImageMetadata();
-                metaData.Thumbnails.Add(new Thumbnail(bitmapSource));
+                metaData.Thumbnail = new Thumbnail(bitmapSource);
 
                 metaData.Title = ImageInfo.Title;
                 metaData.Location = ImageInfo.MediaUrl;

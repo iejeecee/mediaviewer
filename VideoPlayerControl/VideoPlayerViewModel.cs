@@ -802,7 +802,8 @@ namespace VideoPlayerControl
         
         double getVideoClock()
         {
-            if (videoState == VideoState.PAUSED || videoDecoder.FrameQueue.IsBuffering)
+            if (videoDecoder.FrameQueue.VideoPacketQueueState != PacketQueue.PacketQueueState.OPEN ||
+                videoDecoder.FrameQueue.IsBuffering)
             {
                 return (videoPts);
             }

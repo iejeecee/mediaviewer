@@ -18,8 +18,7 @@ namespace MediaViewer.MediaDatabase
         public byte[] ImageData { get; set; }
         public short Width { get; set; }
         public short Height { get; set; }
-        public Nullable<double> TimeSeconds { get; set; }
-        public int BaseMetadataId { get; set; }
+        public byte[] TimeStamp { get; set; }
     
         public virtual BaseMetadata BaseMetadata { get; set; }
     }

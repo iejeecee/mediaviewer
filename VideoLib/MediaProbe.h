@@ -1,5 +1,5 @@
 #pragma once
-#include "VideoFrameGrabber.h"
+#include "Video\VideoFrameGrabber.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -9,14 +9,14 @@ using namespace System::Threading;
 
 namespace VideoLib {
 
-	public ref class VideoThumb 
+	public ref class MediaThumb 
 	{
 		BitmapSource ^thumb;
 		long positionSeconds;
 
 	public: 
 
-		VideoThumb(BitmapSource ^thumb, long positionSeconds);
+		MediaThumb(BitmapSource ^thumb, long positionSeconds);
 		
 		property BitmapSource ^Thumb {
 
@@ -37,11 +37,11 @@ namespace VideoLib {
 	};
 
 
-	public ref class VideoPreview
+	public ref class MediaProbe
 	{
 	public:
 
-		delegate void DecodedFrameProgressDelegate(VideoThumb ^thumb);
+		delegate void DecodedFrameProgressDelegate(MediaThumb ^thumb);
 
 	private:
 		
@@ -55,7 +55,7 @@ namespace VideoLib {
 
 		void UTF8ToWString(const std::string &input, String ^%output);
 
-		List<VideoThumb ^> ^thumbs;
+		List<MediaThumb ^> ^thumbs;
 
 		int durationSeconds;
 
@@ -83,8 +83,8 @@ namespace VideoLib {
 
 	public:
 		
-		VideoPreview();
-		~VideoPreview();
+		MediaProbe();
+		~MediaProbe();
 
 		property int Width {
 
@@ -223,15 +223,15 @@ namespace VideoLib {
 		}
 
 
-		void open(String ^videoLocation, System::Threading::CancellationToken cancellationToken);
+		void open(String ^mediaLocation, System::Threading::CancellationToken cancellationToken);
 		void close();
-
-		List<VideoThumb ^> ^grabThumbnails(int thumbWidth, 
-			int captureInterval, int nrThumbs, double startOffset, 
-			System::Threading::CancellationToken cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
-
-		List<VideoThumb ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken cancellationToken, int timeoutSeconds);
+		
+		// If captureintervalseconds > 0 a frame will be captured every captureIntervalSeconds 
+		// else a total of nrThumbs will be returned.
+		// The first thumbnail is captured at duration * startOffset
+		List<MediaThumb ^> ^grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+			double captureIntervalSeconds, int nrThumbs, double startOffset, System::Threading::CancellationToken cancellationToken, int timeoutSeconds,
+			DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
 
 		
 	};

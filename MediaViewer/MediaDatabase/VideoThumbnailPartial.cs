@@ -1,6 +1,4 @@
 ﻿using MediaViewer.Infrastructure;
-using MediaViewer.Model.Collections.Cache.LRUCache;
-using MediaViewer.Model.Media.File.Watcher;
 using Microsoft.Practices.Prism.Mvvm;
 using System;
 using System.Collections.Generic;
@@ -12,16 +10,8 @@ using System.Windows.Media.Imaging;
 
 namespace MediaViewer.MediaDatabase
 {
-    [Serializable]
-    partial class Thumbnail : BindableBase, IEquatable<Thumbnail>
+    partial class VideoThumbnail : BindableBase
     {
-        static LRUCache<Guid, BitmapSource> thumbCache;
-
-        static Thumbnail()
-        {
-            thumbCache = new LRUCache<Guid, BitmapSource>(100);
-        }
-              
         public BitmapSource Image
         {
             get {
@@ -29,14 +19,9 @@ namespace MediaViewer.MediaDatabase
                 BitmapSource image;
 
                 // get decoded image from the cache if possible
-                if ((image = thumbCache.get(Guid)) != null)
-                {
-                    return (image);
-                } 
-                else if (ImageData != null)
+                if (ImageData != null)
                 {                   
-                    image = decodeImage();
-                    thumbCache.add(Guid, image);
+                    image = decodeImage();                    
                     return (image);
                 }
                 else
@@ -47,12 +32,12 @@ namespace MediaViewer.MediaDatabase
             
         }
 
-        public Thumbnail()
+        public VideoThumbnail()
         {
-            Guid = Guid.NewGuid();
+            
         }
-      
-        public Thumbnail(BitmapSource source)
+            
+        public VideoThumbnail(BitmapSource source, double? timeSeconds)
         {
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();
             BitmapFrame outputFrame = BitmapFrame.Create(source, null, null, null);
@@ -66,8 +51,8 @@ namespace MediaViewer.MediaDatabase
             this.ImageData = stream.ToArray();
             this.Width = (short)source.PixelWidth;
             this.Height = (short)source.PixelHeight;
-                      
-            Guid = Guid.NewGuid();
+           
+            TimeSeconds = timeSeconds;           
         }
 
         BitmapImage decodeImage()
@@ -90,17 +75,6 @@ namespace MediaViewer.MediaDatabase
            
         }
 
-        public bool Equals(Thumbnail other)
-        {
-            if (other == null)
-            {
-                throw new InvalidOperationException();
-            }
-
-            if (other.Id == Id) return (true);
-            else return (false);
-        }
-
-        public Guid Guid { get; protected set; }
+        
     }
 }

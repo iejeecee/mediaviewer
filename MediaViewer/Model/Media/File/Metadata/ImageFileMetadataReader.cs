@@ -23,7 +23,7 @@ namespace MediaViewer.Model.Media.File.Metadata
     class ImageFileMetadataReader : MetadataFileReader
     {
 
-        public override void readMetadata(VideoPreview mediaPreview, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
+        public override void readMetadata(MediaProbe mediaProbe, Stream data, MetadataFactory.ReadOptions options, BaseMetadata media,
             CancellationToken token, int timeoutSeconds)
         {
             ImageMetadata image = media as ImageMetadata;
@@ -36,23 +36,23 @@ namespace MediaViewer.Model.Media.File.Metadata
             else
             {
                 image.SupportsXMPMetadata = true;
-                base.readMetadata(mediaPreview, data, options, media, token, timeoutSeconds);
+                base.readMetadata(mediaProbe, data, options, media, token, timeoutSeconds);
             }
 
-            image.ImageContainer = mediaPreview.Container;
-            image.Width = mediaPreview.Width;
-            image.Height = mediaPreview.Height;
-            image.PixelFormat = mediaPreview.PixelFormat;
-            image.BitsPerPixel = (short)mediaPreview.BitsPerPixel;
+            image.ImageContainer = mediaProbe.Container;
+            image.Width = mediaProbe.Width;
+            image.Height = mediaProbe.Height;
+            image.PixelFormat = mediaProbe.PixelFormat;
+            image.BitsPerPixel = (short)mediaProbe.BitsPerPixel;
            
-            List<String> fsMetaData = mediaPreview.MetaData;
+            List<String> fsMetaData = mediaProbe.MetaData;
                
             try
             {                   
                 if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
                     options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
                 {
-                    generateThumbnail(mediaPreview, image, token, timeoutSeconds, 1);
+                    generateThumbnail(mediaProbe, image, token, timeoutSeconds, 1);
                 }
                     
             }
@@ -65,64 +65,63 @@ namespace MediaViewer.Model.Media.File.Metadata
                         
         }
 
-        public void generateThumbnail(VideoPreview mediaPreview, ImageMetadata image,
+        public void generateThumbnail(MediaProbe mediaProbe, ImageMetadata image,
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
           
             // possibly could not seek in video, try to get the first frame in the video
-            List<VideoThumb> thumbBitmaps = mediaPreview.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
-                Constants.MAX_THUMBNAIL_HEIGHT, -1, 1, 0, token, timeoutSeconds);
-           
-            image.Thumbnails.Clear();
+            List<MediaThumb> thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                Constants.MAX_THUMBNAIL_HEIGHT, 0, 1, 0, token, timeoutSeconds, null);
 
-            foreach (VideoThumb imageThumb in thumbBitmaps)
+            if (thumbBitmaps.Count > 0)
             {
-                BitmapSource thumb = imageThumb.Thumb;
+                BitmapSource thumb = thumbBitmaps[0].Thumb;
 
-                if(image.Orientation.HasValue &&  image.Orientation.Value != 1) {
-                
+                if (image.Orientation.HasValue && image.Orientation.Value != 1)
+                {
+
                     System.Windows.Media.Transform transform = null;
 
-                    switch(image.Orientation.Value)
-                    {                        
-                        case 2: 
+                    switch (image.Orientation.Value)
+                    {
+                        case 2:
                             {
                                 //Mirror horizontal
                                 transform = new System.Windows.Media.MatrixTransform(-1, 0, 0, 1, 0, 0);
                                 break;
                             }
-                   
-                        case 3: 
+
+                        case 3:
                             {
                                 //Rotate 180°
                                 transform = new System.Windows.Media.RotateTransform(180);
                                 break;
                             }
-                        case 4: 
+                        case 4:
                             {
                                 //Mirror vertical
                                 transform = new System.Windows.Media.MatrixTransform(1, 0, 0, -1, 0, 0);
                                 break;
                             }
-                        case 5: 
+                        case 5:
                             {
                                 //Mirror horizontal, rotate 270°
                                 transform = new System.Windows.Media.MatrixTransform(0, -1, -1, 0, 0, 0);
                                 break;
                             }
-                        case 6: 
+                        case 6:
                             {
                                 //Rotate 90°
                                 transform = new System.Windows.Media.RotateTransform(90);
                                 break;
                             }
-                        case 7: 
+                        case 7:
                             {
                                 //Mirror horizontal, rotate 90°
                                 transform = new System.Windows.Media.MatrixTransform(0, 1, 1, 0, 0, 0);
                                 break;
                             }
-                        case 8: 
+                        case 8:
                             {
                                 //Rotate 270°
                                 transform = new System.Windows.Media.RotateTransform(270);
@@ -142,9 +141,13 @@ namespace MediaViewer.Model.Media.File.Metadata
                     }
                 }
 
-                image.Thumbnails.Add(new Thumbnail(thumb));
+                image.Thumbnail = new Thumbnail(thumb);
             }
-
+            else
+            {
+                image.Thumbnail = null;
+            }
+                                        
         }
 
         Nullable<double> parseRational(String rational)

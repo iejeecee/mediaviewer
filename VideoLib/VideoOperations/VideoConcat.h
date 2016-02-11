@@ -1,9 +1,9 @@
 #pragma once
-#include "VideoDecoderFactory.h"
-#include "IVideoDecoder.h"
-#include "VideoEncoder.h"
+#include "Video\VideoDecoderFactory.h"
+#include "Video\IVideoDecoder.h"
+#include "Video\VideoEncoder.h"
 #include "VideoTranscodeBase.h"
-#include "Utils.h"
+#include "Utils\Utils.h"
 #include <vector>
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;

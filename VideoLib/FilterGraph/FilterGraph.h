@@ -5,7 +5,7 @@
 #include <algorithm>
 #include "stdafx.h"
 #include "VideoLibException.h"
-#include "Utils.h"
+#include "Utils\Utils.h"
 #include <msclr\marshal.h>
 
 

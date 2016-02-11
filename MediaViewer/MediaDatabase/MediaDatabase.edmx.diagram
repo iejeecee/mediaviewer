@@ -6,13 +6,11 @@
     <edmx:Diagrams>
       <Diagram DiagramId="c86114a749be4989a46eaa85528e08cb" Name="Diagram1" >
         <EntityTypeShape EntityType="MediaDatabase.Tag" Width="1.5" PointX="2.375" PointY="0.875" />
-        <EntityTypeShape EntityType="MediaDatabase.TagCategory" Width="1.5" PointX="0.625" PointY="0.875" />
-        <AssociationConnector Association="MediaDatabase.TagCategoryTag" />
         <EntityTypeShape EntityType="MediaDatabase.BaseMetadata" Width="1.5" PointX="4.125" PointY="0.875" />
         <EntityTypeShape EntityType="MediaDatabase.PresetMetadata" Width="1.5" PointX="7.875" PointY="0.75" />
         <AssociationConnector Association="MediaDatabase.PresetMetadataTag" />
         <AssociationConnector Association="MediaDatabase.TagTag" />
-        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" Width="1.5" PointX="0.875" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="MediaDatabase.Thumbnail" PointX="0.625" PointY="3.25" Width="1.5" IsExpanded="true" />
         <EntityTypeShape EntityType="MediaDatabase.ImageMetadata" Width="1.5" PointX="5.875" PointY="2" />
         <InheritanceConnector EntityType="MediaDatabase.ImageMetadata" />
         <EntityTypeShape EntityType="MediaDatabase.VideoMetadata" Width="1.5" PointX="2.5" PointY="5.75" />
@@ -22,9 +20,11 @@
         <InheritanceConnector EntityType="MediaDatabase.ImageMetadata" />
         <InheritanceConnector EntityType="MediaDatabase.VideoMetadata" />
         <AssociationConnector Association="MediaDatabase.BaseMetadataTag" />
-        <AssociationConnector Association="MediaDatabase.BaseMetadataThumbnail" />
         <EntityTypeShape EntityType="MediaDatabase.AudioMetadata" Width="1.5" PointX="4.125" PointY="5.75" />
         <InheritanceConnector EntityType="MediaDatabase.AudioMetadata" />
+        <AssociationConnector Association="MediaDatabase.BaseMetadataThumbnail" />
+        <EntityTypeShape EntityType="MediaDatabase.VideoThumbnail" Width="1.5" PointX="0.625" PointY="5.75" />
+        <AssociationConnector Association="MediaDatabase.VideoMetadataVideoThumbnail" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

@@ -4,7 +4,7 @@
 #pragma warning(disable : 4996)
 #include <algorithm>
 #include "stdafx.h"
-#include "VideoInit.h"
+#include "Video\VideoInit.h"
 #include "VideoLibException.h"
 #include <msclr\marshal.h>
 

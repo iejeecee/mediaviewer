@@ -27,30 +27,30 @@ namespace MediaViewer.Model.Media.File.Metadata
 
             Stream data = FileUtils.waitForFileAccess(location, FileAccess.Read, timeoutMs, token);
 
-            VideoPreview mediaPreview = new VideoPreview();
+            MediaProbe mediaProbe = new MediaProbe();
 
             try
             {
-                mediaPreview.open(location, token);
+                mediaProbe.open(location, token);
 
-                if (mediaPreview.IsAudio)
+                if (mediaProbe.IsAudio)
                 {
                     metadata = new AudioMetadata(location, data);
                     AudioFileMetadataReader reader = new AudioFileMetadataReader();
-                    reader.readMetadata(mediaPreview, data, options, metadata, token, timeoutSeconds);
+                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                 }
-                else if (mediaPreview.IsVideo)
+                else if (mediaProbe.IsVideo)
                 {
                     metadata = new VideoMetadata(location, data);
                     VideoFileMetadataReader reader = new VideoFileMetadataReader();
-                    reader.readMetadata(mediaPreview, data, options, metadata, token, timeoutSeconds);
+                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
 
                 }
-                else if (mediaPreview.IsImage)
+                else if (mediaProbe.IsImage)
                 {
                     metadata = new ImageMetadata(location, data);
                     ImageFileMetadataReader reader = new ImageFileMetadataReader();
-                    reader.readMetadata(mediaPreview, data, options, metadata, token, timeoutSeconds);
+                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                 }
 
                 FileInfo info = new FileInfo(location);
@@ -73,8 +73,8 @@ namespace MediaViewer.Model.Media.File.Metadata
             }
             finally
             {                
-                mediaPreview.close();
-                mediaPreview.Dispose();                
+                mediaProbe.close();
+                mediaProbe.Dispose();                
             }
                         
             return metadata;

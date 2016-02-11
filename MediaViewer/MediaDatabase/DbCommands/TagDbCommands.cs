@@ -32,7 +32,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (loadAllReferences == true)
             {
-                foreach (Tag tag in Db.TagSet.Include("TagCategory").Include("ChildTags").Include("ParentTags").OrderBy(x => x.Name))
+                foreach (Tag tag in Db.TagSet.Include(t => t.ChildTags).Include(t => t.ParentTags).OrderBy(x => x.Name))
                 {
                     tags.Add(tag);
                 }
@@ -72,7 +72,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public Tag getTagByName(String name)
         {
-            List<Tag> result = (from b in Db.TagSet.Include("ChildTags").Include("TagCategory")
+            List<Tag> result = (from b in Db.TagSet.Include(t => t.ChildTags)
                                 where b.Name == name
                                 select b).ToList();
 
@@ -82,7 +82,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public Tag getTagById(int id)
         {
-            List<Tag> result = (from b in Db.TagSet.Include("ChildTags").Include("TagCategory")
+            List<Tag> result = (from b in Db.TagSet.Include(t => t.ChildTags)
                                 where b.Id == id
                                 select b).ToList();
 
@@ -122,15 +122,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             Db.Entry<Tag>(newTag).CurrentValues.SetValues(tag);
             newTag.Id = 0;
-
-            TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
-
-            // Attach tagcategory to the context, otherwise a duplicate tagcategory will be created
-            if (tag.TagCategory != null)
-            {
-                newTag.TagCategory = tagCategoryCommands.getCategoryById(tag.TagCategory.Id);
-            }
-
+           
             newTag.ChildTags.Clear();
 
             foreach (Tag childTag in tag.ChildTags)
@@ -212,19 +204,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
 
             Db.Entry<Tag>(tag).CurrentValues.SetValues(updateTag);
-
-            TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
-
-            if (updateTag.TagCategory != null)
-            {
-                tag.TagCategory = tagCategoryCommands.getCategoryById(updateTag.TagCategory.Id);
-            }
-            else
-            {
-                tag.TagCategory = null;
-            }
-
-
+           
             tag.ChildTags.Clear();
 
             foreach (Tag updateChild in updateTag.ChildTags)
@@ -252,23 +232,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         /// </summary>
         /// <param name="mergeTag"></param>
         public void merge(Tag mergeTag)
-        {
-             TagCategoryDbCommands tagCategoryCommands = new TagCategoryDbCommands(Db);
-
-             if (mergeTag.TagCategory != null)
-             {
-                 TagCategory existingCategory = tagCategoryCommands.getCategoryByName(mergeTag.TagCategory.Name);
-
-                 if (existingCategory != null)
-                 {
-                     mergeTag.TagCategory = existingCategory;
-                 }
-                 else
-                 {
-                     mergeTag.TagCategory = tagCategoryCommands.create(mergeTag.TagCategory);
-                 }
-             }
-
+        {             
              Tag existingTag = getTagByName(mergeTag.Name);
 
              if (existingTag == null)
@@ -283,8 +247,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                      if (existingChildTag == null)
                      {
-                         newChildTag.ChildTags.Clear();
-                         newChildTag.TagCategory = null;
+                         newChildTag.ChildTags.Clear();                      
                          existingChildTag = create(newChildTag);
                      }
 
@@ -303,13 +266,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
              else
              {
                  bool isModified = false;
-
-                 if (existingTag.TagCategory == null)
-                 {
-                     existingTag.TagCategory = mergeTag.TagCategory;
-                     isModified = true;
-                 }
-
+               
                  foreach (Tag newChildTag in mergeTag.ChildTags)
                  {
                      Tag existingChildTag = getTagByName(newChildTag.Name);
@@ -317,8 +274,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                      if (existingChildTag == null)
                      {
                          newChildTag.ChildTags.Clear();
-                         newChildTag.TagCategory = null;
-
+                      
                          existingTag.ChildTags.Add(create(newChildTag));
 
                          isModified = true;

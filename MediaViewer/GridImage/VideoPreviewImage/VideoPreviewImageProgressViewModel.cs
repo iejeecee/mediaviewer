@@ -40,7 +40,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             WindowTitle = "Video Preview Image";
             WindowIcon = "pack://application:,,,/Resources/Icons/videopreview.ico";
 
-            videoPreview = new VideoLib.VideoPreview();
+            mediaProbe = new MediaProbe();
 
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
@@ -52,10 +52,10 @@ namespace MediaViewer.GridImage.VideoPreviewImage
           
             if (cleanupManaged)
             {
-                if (videoPreview != null)
+                if (mediaProbe != null)
                 {
-                    videoPreview.Dispose();
-                    videoPreview = null;
+                    mediaProbe.Dispose();
+                    mediaProbe = null;
                 }                
             }
         }
@@ -147,7 +147,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             FileStream outputFile = null;
             RenderTargetBitmap bitmap = null;
 
-            videoPreview.open(item.Location, CancellationToken);
+            mediaProbe.open(item.Location, CancellationToken);
             try
             {
 
@@ -159,7 +159,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                 }
                 else
                 {
-                    nrFrames = videoPreview.DurationSeconds / asyncState.CaptureIntervalSeconds;
+                    nrFrames = mediaProbe.DurationSeconds / asyncState.CaptureIntervalSeconds;
                     nrFrames = calcNrRowsNrColumns(nrFrames);
                 }
 
@@ -167,8 +167,10 @@ namespace MediaViewer.GridImage.VideoPreviewImage
 
                 ItemProgressMax = nrFrames;
 
-                List<VideoThumb> thumbs = videoPreview.grabThumbnails(thumbWidth,
-                       asyncState.IsCaptureIntervalSecondsEnabled ? asyncState.CaptureIntervalSeconds : -1, nrFrames, 0.01, CancellationToken, grabThumbnails_UpdateProgressCallback);
+                double captureIntervalSeconds = asyncState.IsCaptureIntervalSecondsEnabled ? asyncState.CaptureIntervalSeconds : 0;
+
+                List<MediaThumb> thumbs = mediaProbe.grabThumbnails(thumbWidth, 0, captureIntervalSeconds
+                       ,nrFrames, 0.01, CancellationToken, 0, grabThumbnails_UpdateProgressCallback);
              
                 if (thumbs.Count == 0 || CancellationToken.IsCancellationRequested) return;
 
@@ -268,7 +270,7 @@ namespace MediaViewer.GridImage.VideoPreviewImage
                     outputFile.Dispose();
                 }
                 
-                videoPreview.close();
+                mediaProbe.close();
 
                 // because of the extreme amount of memory used by rendertargetbitmap 
                 // make sure we have it all back before moving on to prevent out of memory spikes
@@ -278,17 +280,17 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             }
         }
 
-        private void grabThumbnails_UpdateProgressCallback(VideoThumb thumb)
+        private void grabThumbnails_UpdateProgressCallback(MediaThumb thumb)
         {
             ItemProgress += 1;
         }
 
-        VideoLib.VideoPreview videoPreview;
+        MediaProbe mediaProbe;
 
-        private VideoLib.VideoPreview VideoPreview
+        private MediaProbe MediaProbe
         {
-            get { return videoPreview; }
-            set { videoPreview = value; }
+            get { return mediaProbe; }
+            set { mediaProbe = value; }
         }
        
                

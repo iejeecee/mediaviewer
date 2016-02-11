@@ -3,11 +3,11 @@
 #include <iostream>  
 #include <iomanip> 
 #include <sstream> 
-#include "VideoDecoderFactory.h"
-#include "IVideoDecoder.h"
-#include "VideoEncoder.h"
-#include "VideoTransformer.h"
-#include "Utils.h"
+#include "Video\VideoDecoderFactory.h"
+#include "Video\IVideoDecoder.h"
+#include "Video\VideoEncoder.h"
+#include "VideoTransformer\VideoTransformer.h"
+#include "Utils\Utils.h"
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections;

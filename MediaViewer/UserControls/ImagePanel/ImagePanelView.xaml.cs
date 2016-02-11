@@ -19,6 +19,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using VideoLib;
 
 namespace MediaViewer.UserControls.ImagePanel
 {
@@ -87,10 +88,11 @@ namespace MediaViewer.UserControls.ImagePanel
             try
             {
                 view.IsLoading = true;
+                //view.ImageLoadingTask = Task<BitmapSource>.Factory.StartNew(() => loadImage(location, view.Token), view.Token);
                 view.ImageLoadingTask = Task<BitmapImage>.Factory.StartNew(() => ImageUtils.loadImage(location, view.Token), view.Token);
 
                 await view.ImageLoadingTask;
-
+                         
                 view.pictureBox.Source = view.ImageLoadingTask.Result;
                 view.scrollViewer.ScrollToHorizontalOffset(0);
                 view.scrollViewer.ScrollToVerticalOffset(0);
@@ -111,9 +113,28 @@ namespace MediaViewer.UserControls.ImagePanel
             }
         }
 
-        
+        /*static BitmapSource loadImage(string location, CancellationToken token)
+        {
+            VideoLib.MediaProbe mediaProbe = new VideoLib.MediaProbe();
 
-        
+            try
+            {
+                mediaProbe.open(location, token);
+                List<MediaThumb> image = mediaProbe.grabThumbnails(0, 0, 0, 1, 0, token, 0, null);
+
+                if (image.Count > 0)
+                {
+                    return (image[0].Thumb);
+                }
+            }
+            finally
+            {
+                mediaProbe.close();
+                mediaProbe.Dispose();
+            }
+
+            return (null);
+        } */       
 
         public bool IsLoading
         {

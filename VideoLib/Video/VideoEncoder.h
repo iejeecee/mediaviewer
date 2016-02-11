@@ -2,7 +2,7 @@
 #include "stdafx.h"
 #include "Video.h"
 #include "VideoLibException.h"
-#include "MemoryStreamAVIOContext.h"
+#include "VideoTransformer\MemoryStreamAVIOContext.h"
 
 using namespace msclr::interop;
 

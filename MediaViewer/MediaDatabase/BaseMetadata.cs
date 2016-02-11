@@ -18,7 +18,6 @@ namespace MediaViewer.MediaDatabase
         {
             this.SupportsXMPMetadata = true;
             this.Tags = new HashSet<Tag>();
-            this.Thumbnails = new HashSet<Thumbnail>();
         }
     
         public int Id { get; set; }
@@ -42,6 +41,6 @@ namespace MediaViewer.MediaDatabase
         public System.DateTime FileDate { get; set; }
     
         public virtual ICollection<Tag> Tags { get; set; }
-        public virtual ICollection<Thumbnail> Thumbnails { get; set; }
+        public virtual Thumbnail Thumbnail { get; set; }
     }
 }

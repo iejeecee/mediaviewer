@@ -146,7 +146,7 @@ namespace YoutubePlugin.Item
                 
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
 
-                metaData.Thumbnails.Add(new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out thumbnailMimeType, token)));
+                metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out thumbnailMimeType, token));
                 metaData.CreationDate = PublishedAt;
                 metaData.Title = Title;
                 metaData.Description = String.IsNullOrEmpty(Description) ? Title : Description;

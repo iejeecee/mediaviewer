@@ -28,16 +28,7 @@ namespace MediaViewer.Filter
             this.tag = tag;
             Name = tag.Name;       
             Count = 1;
-
-            if (tag.TagCategory != null)
-            {
-                Category = tag.TagCategory.Name;
-            }
-            else
-            {
-                Category = "None";
-            }
-
+         
             TagItem item = mediaCollectionView.TagFilter.Find((i) => i.Name.Equals(Name));
 
             if (item != null)

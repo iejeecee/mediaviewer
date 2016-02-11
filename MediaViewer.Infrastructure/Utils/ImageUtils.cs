@@ -182,7 +182,7 @@ namespace MediaViewer.Infrastructure.Utils
 
             return (isUrl);
         }
-
+       
         public static BitmapImage loadImage(string location, CancellationToken token)
         {
 

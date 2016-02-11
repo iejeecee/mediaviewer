@@ -31,7 +31,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public PresetMetadata getPresetMetadataById(int id) {
 
-            PresetMetadata result = Db.PresetMetadataSet.Include("Tags").FirstOrDefault(x => x.Id == id);
+            PresetMetadata result = Db.PresetMetadataSet.FirstOrDefault(x => x.Id == id);
 
             return (result);
         }

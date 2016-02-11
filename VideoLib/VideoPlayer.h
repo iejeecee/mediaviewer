@@ -1,7 +1,7 @@
 #pragma once
-#include "IVideoDecoder.h"
-#include "VideoFrame.h"
-#include "FrameQueue.h"
+#include "Video\IVideoDecoder.h"
+#include "Frame\VideoFrame.h"
+#include "Queue\FrameQueue.h"
 
 using namespace System;
 using namespace System::Collections::Generic;

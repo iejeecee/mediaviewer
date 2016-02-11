@@ -1,7 +1,7 @@
 // FFMPEG Video Player tutorial http://dranger.com/ffmpeg/tutorial05.html
 #include "stdafx.h"
 #include <msclr\marshal_cppstd.h>
-#include "VideoDecoderFactory.h"
+#include "Video\VideoDecoderFactory.h"
 
 #include "VideoPlayer.h"
 

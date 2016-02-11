@@ -16,6 +16,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Data.Entity;
 
 namespace MediaViewer.Search
 {
@@ -118,12 +119,17 @@ namespace MediaViewer.Search
         {
             using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
             {
+                //mediaCommands.Db.Configuration.LazyLoadingEnabled = false;
+
                 List<BaseMetadata> results = mediaCommands.findMetadataByQuery(searchQuery);
                 List<MediaFileItem> items = new List<MediaFileItem>();
 
                 foreach (BaseMetadata result in results)
-                {
-                    items.Add(MediaFileItem.Factory.create(result.Location));
+                {                    
+                    result.IsImported = true;
+                    MediaFileItem item = MediaFileItem.Factory.create(result.Location, result);
+
+                    items.Add(item);
                 }
 
                 return (items);

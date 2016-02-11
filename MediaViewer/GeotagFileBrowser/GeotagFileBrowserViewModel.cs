@@ -246,7 +246,7 @@ namespace MediaViewer.GeotagFileBrowser
                        
                     Image image = new Image();                      
                     image.Tag = item;
-                    image.Source = item.Metadata.Thumbnails.ElementAt(0).Image;                    
+                    image.Source = item.Metadata.Thumbnail.Image;                    
                     image.PreviewMouseDown += item_PreviewMouseDown;
                     image.ToolTip = item.Metadata.DefaultFormatCaption;
 

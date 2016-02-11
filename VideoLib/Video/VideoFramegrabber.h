@@ -135,25 +135,13 @@ public:
 
 	}
 
-	void grab(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^ cancellationToken) {
-
-		if(getWidth() == 0 || getHeight() == 0) {
-
-			throw gcnew VideoLib::VideoLibException("invalid video stream");
-		}
-				
-		float scale = thumbWidth / (float)getWidth();				
-
-		this->thumbWidth = thumbWidth;
-		thumbHeight = round(getHeight() * scale);
-
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, cancellationToken, true);
-	}
-
-	void grab(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^ cancellationToken, int timeOutSeconds)
+	// If captureintervalseconds > 0 a frame will be captured every captureIntervalSeconds 
+	// else a total of nrThumbs will be generated.
+	// The first thumbnail is captured at duration * startOffset
+	void grab(int maxThumbWidth, int maxThumbHeight, double captureIntervalSeconds, int nrThumbs, 
+		double startOffset, System::Threading::CancellationToken ^cancellationToken = nullptr, int timeOutSeconds = 0)
 	{
-		if(!hasVideo() && hasAudio()) 
+		if(!hasVideo()) 
 		{			
 			return;
 
@@ -165,12 +153,12 @@ public:
 		float widthScale = 1;
 		float heightScale = 1;
 
-		if(getWidth() > maxThumbWidth) {
+		if(maxThumbWidth > 0 && getWidth() > maxThumbWidth) {
 			
 			widthScale = maxThumbWidth / (float)getWidth();				
 		}
 
-		if(getHeight() > maxThumbHeight) {
+		if(maxThumbHeight > 0 && getHeight() > maxThumbHeight) {
 			
 			heightScale = maxThumbHeight / (float)getHeight();
 		}
@@ -178,27 +166,19 @@ public:
 		thumbWidth = round(getWidth() * std::min<float>(widthScale, heightScale));
 		thumbHeight = round(getHeight() * std::min<float>(widthScale, heightScale));
 
-		startGrab(thumbWidth, thumbHeight, captureInterval, nrThumbs,startOffset, cancellationToken, false, timeOutSeconds);
-	}
-
-	void startGrab(int thumbWidth, int thumbHeight, 
-		int captureInterval, int nrThumbs, double startOffset, System::Threading::CancellationToken ^cancellationToken,
-		bool suppressError = false, int decodingTimeOut = 0)
-	{
-
 		setVideoOutputFormat(AV_PIX_FMT_BGR24, thumbWidth, thumbHeight, LANCZOS);
 
 		double duration = getDurationSeconds();
 
 		int nrFrames = 0;
 
-		if(captureInterval == -1) {
+		if(captureIntervalSeconds == 0) {
 
 			nrFrames = nrThumbs;
 
 		} else {
 
-			nrFrames = duration / captureInterval;
+			nrFrames = duration / captureIntervalSeconds;
 
 			if(nrFrames == 0) {
 				// make sure to grab atleast one frame
@@ -222,25 +202,17 @@ public:
 				bool seekSuccess = seek(pos);
 			}
 			
-			bool frameOk = decodeFrame(cancellationToken, decodingTimeOut);
+			bool success = decodeFrame(cancellationToken, timeOutSeconds);
 
-			if(!frameOk) {
-			
-				if(suppressError == false) {
-
-					throw gcnew VideoLib::VideoLibException("could not decode frame");
-
-				} else {
-
-					return;
-				}
-				
+			if(!success) {
+							
+				throw gcnew VideoLib::VideoLibException("could not decode frame");
+								
 			}
 				
 		}
-
 	}
-
+	
 	bool decodeFrame(System::Threading::CancellationToken ^token, int timeOutSeconds = 0) 
 	{
 		if(isClosed()) return(false);

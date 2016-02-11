@@ -10,7 +10,6 @@ using MediaViewer.Model.Media.Base.State;
 using MediaViewer.Model.Media.Base.State.CollectionView;
 using MediaViewer.Model.Utils;
 using MediaViewer.Model.Utils.WPF;
-using MediaViewer.TagEditor;
 using MediaViewer.UserControls.Layout;
 using MediaViewer.UserControls.TabbedExpander;
 using Microsoft.Practices.Prism.PubSubEvents;

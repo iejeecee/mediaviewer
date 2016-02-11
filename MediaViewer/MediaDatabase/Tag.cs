@@ -28,7 +28,6 @@ namespace MediaViewer.MediaDatabase
         public long Used { get; set; }
         public byte[] TimeStamp { get; set; }
     
-        public virtual TagCategory TagCategory { get; set; }
         public virtual ICollection<Tag> ChildTags { get; set; }
         public virtual ICollection<Tag> ParentTags { get; set; }
         public virtual ICollection<BaseMetadata> BaseMetadatas { get; set; }

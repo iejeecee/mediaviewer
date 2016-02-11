@@ -8,11 +8,11 @@
 # include "stdint.h"
 #endif
 
-#include "VideoFrame.h"
-#include "AudioFrame.h"
 #include "PacketQueue.h"
-#include "Packet.h"
-#include "IVideoDecoder.h"
+#include "Frame\VideoFrame.h"
+#include "Frame\AudioFrame.h"
+#include "Frame\Packet.h"
+#include "Video\IVideoDecoder.h"
 
 using namespace System::Collections::Generic;
 using namespace System::Threading;

@@ -25,7 +25,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
       
             if (item.Metadata != null)
             {
-                ThumbString = System.Convert.ToBase64String(item.Metadata.Thumbnails.ElementAt(0).ImageData);
+                ThumbString = System.Convert.ToBase64String(item.Metadata.Thumbnail.ImageData);
             }
             else
             {

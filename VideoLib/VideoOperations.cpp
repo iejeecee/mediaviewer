@@ -2,8 +2,8 @@
 #include <msclr\marshal_cppstd.h>
 
 #include "VideoOperations.h"
-#include "VideoTranscode.h"
-#include "VideoConcat.h"
+#include "VideoOperations\VideoTranscode.h"
+#include "VideoOperations\VideoConcat.h"
 
 namespace VideoLib {
 

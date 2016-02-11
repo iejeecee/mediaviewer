@@ -1,29 +1,29 @@
 #include "stdafx.h"
 #include <msclr\marshal_cppstd.h>
 
-#include "VideoPreview.h"
-#include "VideoFrameGrabber.h"
+#include "MediaProbe.h"
+#include "Video\VideoFrameGrabber.h"
 
 namespace VideoLib {
 
 using namespace msclr::interop;
 using namespace System::Runtime::InteropServices;
 
-VideoThumb::VideoThumb(BitmapSource ^thumb, long positionSeconds) {
+MediaThumb::MediaThumb(BitmapSource ^thumb, long positionSeconds) {
 
 	this->thumb = thumb;
 	this->positionSeconds = positionSeconds;
 }
 
 
-VideoPreview::VideoPreview() {
+MediaProbe::MediaProbe() {
 
 	frameGrabber = new VideoFrameGrabber();
 
 	// marshal a managed delegate to a native function pointer
 	//http://msdn.microsoft.com/en-us/library/367eeye0%28v=vs.80%29.aspx
 	DecodedFrameDelegate ^managedDecodedFrameCallback = 
-		gcnew DecodedFrameDelegate(this, &VideoPreview::decodedFrameCallback);
+		gcnew DecodedFrameDelegate(this, &MediaProbe::decodedFrameCallback);
 
 	// make sure the delegate doesn't get garbage collected
 	gch = GCHandle::Alloc(managedDecodedFrameCallback);
@@ -34,17 +34,17 @@ VideoPreview::VideoPreview() {
 
 	frameGrabber->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
 
-	thumbs = gcnew List<VideoThumb ^>();
+	thumbs = gcnew List<MediaThumb ^>();
 	
 }
 
-VideoPreview::~VideoPreview() {
+MediaProbe::~MediaProbe() {
 
 	delete frameGrabber;
 	gch.Free();
 }
 
-void VideoPreview::UTF8ToWString(const std::string &input, String ^%output) {
+void MediaProbe::UTF8ToWString(const std::string &input, String ^%output) {
 		
 	// How long will the UTF-16 string be
 	int wstrlen = MultiByteToWideChar(CP_UTF8, 0, input.c_str(), (int)input.length(), NULL, NULL );
@@ -61,11 +61,11 @@ void VideoPreview::UTF8ToWString(const std::string &input, String ^%output) {
 	delete buf;
 }
 
-void VideoPreview::open(String ^videoLocation, System::Threading::CancellationToken token) {
+void MediaProbe::open(String ^mediaLocation, System::Threading::CancellationToken token) {
 
 	try {
 		
-		frameGrabber->open(gcnew OpenVideoArgs(videoLocation), token);
+		frameGrabber->open(gcnew OpenVideoArgs(mediaLocation), token);
 
 		metaData = gcnew List<String ^>();
 
@@ -102,12 +102,12 @@ void VideoPreview::open(String ^videoLocation, System::Threading::CancellationTo
 	}
 }
 
-void VideoPreview::close() {
+void MediaProbe::close() {
 
 	frameGrabber->close();
 }
 
-void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet, 
+void MediaProbe::decodedFrameCallback(void *data, AVPacket *packet, 
 									   AVFrame *frame, Video::FrameType type)
 {	
 	int sizeBytes = frameGrabber->getThumbHeight() * frame->linesize[0];
@@ -125,7 +125,7 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 		
 	long positionSeconds = frameGrabber->getStream(packet->stream_index)->getTimeSeconds(packet->dts);
 
-	VideoThumb ^thumb = gcnew VideoThumb(bitmap, positionSeconds);
+	MediaThumb ^thumb = gcnew MediaThumb(bitmap, positionSeconds);
 
 	thumbs->Add(thumb);
 
@@ -136,7 +136,7 @@ void VideoPreview::decodedFrameCallback(void *data, AVPacket *packet,
 
 }
 
-List<VideoThumb ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, 
+/*List<MediaThumb ^> ^MediaProbe::grabThumbnails(int thumbWidth, int captureInterval, int nrThumbs, double startOffset, 
 												 CancellationToken cancellationToken, DecodedFrameProgressDelegate ^decodedFrameProgressCallback) 
 {
 
@@ -147,17 +147,21 @@ List<VideoThumb ^> ^VideoPreview::grabThumbnails(int thumbWidth, int captureInte
 	frameGrabber->grab(thumbWidth, captureInterval, nrThumbs, startOffset, cancellationToken);
 
 	return(thumbs);
-}
+}*/
 
 
-List<VideoThumb ^> ^VideoPreview::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
-			int captureInterval, int nrThumbs, double startOffset, CancellationToken cancellationToken, int timeoutSeconds) 
+List<MediaThumb ^> ^MediaProbe::grabThumbnails(int maxThumbWidth, int maxThumbHeight, 
+			double captureIntervalSeconds, int nrThumbs, double startOffset, 
+			CancellationToken cancellationToken, int timeoutSeconds,
+			DecodedFrameProgressDelegate ^decodedFrameProgressCallback) 
 {
+
+	this->decodedFrameProgressCallback = decodedFrameProgressCallback;
 
 	thumbs->Clear();
 
 	frameGrabber->grab(maxThumbWidth, maxThumbHeight,
-			captureInterval, nrThumbs, startOffset, cancellationToken, timeoutSeconds);
+			captureIntervalSeconds, nrThumbs, startOffset, cancellationToken, timeoutSeconds);
 
 	return(thumbs);
 }

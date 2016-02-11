@@ -11,14 +11,21 @@ namespace MediaViewer.MediaDatabase
     [Serializable]
     partial class VideoMetadata
     {
-        public VideoMetadata()
+        /*public VideoMetadata()
         {
 
-        }
+        }*/
 
         public VideoMetadata(String location, Stream data) : base(location, data)
         {
-            
+            VideoThumbnails = new HashSet<VideoThumbnail>();
+        }
+
+        public override void clear()
+        {
+            base.clear();
+
+            VideoThumbnails = new HashSet<VideoThumbnail>(); 
         }
 
         public override string DefaultFormatCaption

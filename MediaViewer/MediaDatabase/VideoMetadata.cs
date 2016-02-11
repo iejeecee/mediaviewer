@@ -14,6 +14,11 @@ namespace MediaViewer.MediaDatabase
     
     public partial class VideoMetadata : BaseMetadata
     {
+        public VideoMetadata()
+        {
+            this.VideoThumbnails = new HashSet<VideoThumbnail>();
+        }
+    
         public int Width { get; set; }
         public int Height { get; set; }
         public Nullable<short> BitsPerSample { get; set; }
@@ -30,5 +35,7 @@ namespace MediaViewer.MediaDatabase
         public Nullable<bool> IsVariableBitRate { get; set; }
         public string WMFSDKVersion { get; set; }
         public Nullable<short> BitsPerPixel { get; set; }
+    
+        public virtual ICollection<VideoThumbnail> VideoThumbnails { get; set; }
     }
 }

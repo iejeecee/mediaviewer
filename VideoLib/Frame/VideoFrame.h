@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Frame.h"
-#include "VideoDecoder.h"
+#include "Video\VideoDecoder.h"
 
 using namespace System;
 using namespace System::Diagnostics;

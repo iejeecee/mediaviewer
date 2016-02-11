@@ -252,9 +252,6 @@
     <Compile Include="MediaDatabase\Tag.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
-    <Compile Include="MediaDatabase\TagCategory.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
     <Compile Include="MediaDatabase\Thumbnail.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
@@ -267,6 +264,10 @@
     <Compile Include="MediaDatabase\VideoProps.cs">
       <DependentUpon>MediaDatabase.tt</DependentUpon>
     </Compile>
+    <Compile Include="MediaDatabase\VideoThumbnail.cs">
+      <DependentUpon>MediaDatabase.tt</DependentUpon>
+    </Compile>
+    <Compile Include="MediaDatabase\VideoThumbnailPartial.cs" />
     <Compile Include="Model\Collections\Cache\LRUCache.cs" />
     <Compile Include="Model\Collections\ObservableCollectionWithoutReentrantChecks.cs" />
     <Compile Include="Model\Concurrency\ILockable.cs" />
@@ -422,7 +423,6 @@
     </Compile>
     <Compile Include="MediaDatabase\DataTransferObjects\AutoMapperSetup.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagCategoryDTO.cs" />
-    <Compile Include="MediaDatabase\DbCommands\TagCategoryDbCommands.cs" />
     <Compile Include="MediaDatabase\DataTransferObjects\TagDTO.cs" />
     <Compile Include="Model\Media\Base\State\CollectionView\SelectableMediaItem.cs" />
     <Compile Include="Model\Media\Base\State\MediaStateChangedEventArgs.cs" />
@@ -441,8 +441,6 @@
     <Compile Include="Model\Settings\SettingsViewModel.cs" />
     <Compile Include="Model\Utils\Windows\ColorUtils.cs" />
     <Compile Include="Model\Utils\WPF\ThemeHelper.cs" />
-    <Compile Include="TagEditor\TagEditorEvent.cs" />
-    <Compile Include="TagEditor\TagEditorImportViewModel.cs" />
     <Compile Include="Model\Media\Base\State\CollectionView\SelectableMediaLockedCollection.cs" />
     <Compile Include="Torrent\ScanFilesViewModel.cs" />
     <Compile Include="UserControls\LocationBox\Converters\BooleanToSolidColorBrushConverter.cs" />
@@ -507,7 +505,6 @@
     <Compile Include="MediaDatabase\BaseMetadataPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\PresetMetadataDbCommands.cs" />
     <Compile Include="MediaDatabase\PresetMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\TagCategoryPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagDbCommands.cs" />
     <Compile Include="MediaDatabase\TagPartial.cs" />
     <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
@@ -552,10 +549,6 @@
     <Compile Include="Model\Media\File\Metadata\FormatMetaData.cs" />
     <Compile Include="Model\Media\File\Metadata\GeoTagCoordinate.cs" />
     <Compile Include="Model\Media\File\Metadata\GeoTagCoordinatePair.cs" />
-    <Compile Include="TagEditor\TagEditorView.xaml.cs">
-      <DependentUpon>TagEditorView.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="TagEditor\TagEditorViewModel.cs" />
     <Compile Include="MetaData\MetaDataPresetsView.xaml.cs">
       <DependentUpon>MetaDataPresetsView.xaml</DependentUpon>
     </Compile>
@@ -851,10 +844,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MetaData\FilenamePresetsView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="TagEditor\TagEditorView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

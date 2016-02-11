@@ -1,5 +1,6 @@
 ﻿using MediaViewer.Infrastructure.Utils;
 using MediaViewer.MediaDatabase;
+using MediaViewer.MediaDatabase.DbCommands;
 using MediaViewer.Model.Global.Events;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Utils;
@@ -105,10 +106,10 @@ namespace MediaViewer.UserControls.MediaPreview
 
             PreviewItem = selection.Items.ElementAt(0);
 
-            if (PreviewItem.Metadata.Thumbnails.Count > 0)
+            if (PreviewItem.Metadata.Thumbnail != null)
             {
                 previewImage.Stretch = Stretch.Uniform;
-                previewImage.Source = PreviewItem.Metadata.Thumbnails.ElementAt(0).Image;
+                previewImage.Source = PreviewItem.Metadata.Thumbnail.Image;
             }
             else
             {                
@@ -132,7 +133,7 @@ namespace MediaViewer.UserControls.MediaPreview
         {
             if (CurrentPreviewImage != 0)
             {
-                previewImage.Source = PreviewItem.Metadata.Thumbnails.ElementAt(0).Image;
+                previewImage.Source = PreviewItem.Metadata.Thumbnail.Image;
                 CurrentPreviewImage = 0;
             }
 
@@ -142,19 +143,21 @@ namespace MediaViewer.UserControls.MediaPreview
 
         private void previewImage_previewMouseMove(object sender, MouseEventArgs e)
         {
-            if (PreviewItem.Metadata == null || PreviewItem.Metadata.Thumbnails.Count <= 1)
+            VideoMetadata videoMetadata = PreviewItem.Metadata as VideoMetadata;
+
+            if (videoMetadata == null || videoMetadata.VideoThumbnails.Count == 0)
             {
                 return;
-            }
-
+            }            
+                   
             Point mousePos = Mouse.GetPosition(previewImage);
 
-            double grid = previewImage.ActualWidth / PreviewItem.Metadata.Thumbnails.Count;
-            int previewImageNr = MiscUtils.clamp<int>((int)Math.Floor(mousePos.X / grid), 0, PreviewItem.Metadata.Thumbnails.Count - 1);
+            double grid = previewImage.ActualWidth / videoMetadata.VideoThumbnails.Count;
+            int previewImageNr = MiscUtils.clamp<int>((int)Math.Floor(mousePos.X / grid), 0, videoMetadata.VideoThumbnails.Count - 1);
 
             if (previewImageNr != CurrentPreviewImage)
-            {              
-                previewImage.Source = PreviewItem.Metadata.Thumbnails.ElementAt(previewImageNr).Image;
+            {
+                previewImage.Source = videoMetadata.VideoThumbnails.ElementAt(previewImageNr).Image;
                 CurrentPreviewImage = previewImageNr;
             }
 
@@ -170,10 +173,28 @@ namespace MediaViewer.UserControls.MediaPreview
             if (xRight > previewImage.ActualWidth) xLeft = previewImage.ActualWidth - size.Width;
 
             TimeAdorner.Location = new Point(xLeft, previewImage.ActualHeight - size.Height);
-            TimeAdorner.TimeSeconds = (int)PreviewItem.Metadata.Thumbnails.ElementAt(previewImageNr).TimeSeconds;
+            TimeAdorner.TimeSeconds = (int)videoMetadata.VideoThumbnails.ElementAt(previewImageNr).TimeSeconds;
 
             adornerLayer.Add(TimeAdorner);
+            
+        }
 
+        private void previewImage_MouseEnter(object sender, MouseEventArgs e)
+        {
+            VideoMetadata videoMetadata = PreviewItem.Metadata as VideoMetadata;
+
+            if (videoMetadata == null || videoMetadata.IsImported == false)
+            {
+                return;
+            }    
+      
+            using (MediaDatabaseContext Db = new MediaDatabaseContext())
+            {
+                Db.BaseMetadataSet.Attach(videoMetadata);
+
+                // load lazy loaded videothumbnails from the database
+                int i = videoMetadata.VideoThumbnails.Count;
+            }
         }
 
     }
