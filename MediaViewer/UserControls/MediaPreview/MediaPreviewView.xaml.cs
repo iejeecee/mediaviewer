@@ -186,14 +186,11 @@ namespace MediaViewer.UserControls.MediaPreview
             if (videoMetadata == null || videoMetadata.IsImported == false)
             {
                 return;
-            }    
-      
-            using (MediaDatabaseContext Db = new MediaDatabaseContext())
-            {
-                Db.BaseMetadataSet.Attach(videoMetadata);
+            }
 
-                // load lazy loaded videothumbnails from the database
-                int i = videoMetadata.VideoThumbnails.Count;
+            using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
+            {
+                metadataCommands.loadVideoThumbnails(videoMetadata);
             }
         }
 

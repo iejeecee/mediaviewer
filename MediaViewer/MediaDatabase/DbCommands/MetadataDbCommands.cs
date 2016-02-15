@@ -760,6 +760,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
             Db.Entry<VideoMetadata>(updateMetadata).CurrentValues.SetValues(metadata);
 
+            if (metadata.VideoThumbnails == null) return;
+
             // remove unused thumbnails
             for (int i = updateMetadata.VideoThumbnails.Count - 1; i >= 0; i--)
             {
@@ -800,6 +802,16 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
 
             metadata.VideoThumbnails.Clear();
+        }
+
+        public void loadVideoThumbnails(VideoMetadata metadata)
+        {
+            if (metadata.Id == 0) return;
+
+            Db.BaseMetadataSet.Attach(metadata);
+
+            Db.Entry(metadata).Collection(m => m.VideoThumbnails).Load(); 
+        
         }
        
     }

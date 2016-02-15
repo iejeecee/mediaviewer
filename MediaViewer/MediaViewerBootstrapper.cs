@@ -21,7 +21,7 @@ namespace MediaViewer
            
             this.AggregateCatalog.Catalogs.Add(new AssemblyCatalog(typeof(MediaViewerBootstrapper).Assembly));
             this.AggregateCatalog.Catalogs.Add(new DirectoryCatalog(".\\Plugins"));
-           
+                      
         }
 
         protected override System.Windows.DependencyObject CreateShell()
