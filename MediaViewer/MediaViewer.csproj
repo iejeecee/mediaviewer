@@ -230,41 +230,27 @@
     <Compile Include="About\AboutViewModel.cs" />
     <Compile Include="Converters\IsEqualConverter.cs" />
     <Compile Include="Converters\RemoveNewlinesConverter.cs" />
-    <Compile Include="MediaDatabase\AudioMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\AudioMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\BaseMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\ImageMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\ImageProps.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\PresetMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\Tag.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\Thumbnail.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\UnknownMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoMetadata.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoProps.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoThumbnail.cs">
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\VideoThumbnailPartial.cs" />
+    <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="MediaDatabase\AudioMetadata.cs" />
+    <Compile Include="MediaDatabase\BaseMetadata.cs" />
+    <Compile Include="MediaDatabase\ImageMetadata.cs" />
+    <Compile Include="MediaDatabase\Mapping\AudioMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\BaseMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\ImageMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\PresetMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\TagMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\ThumbnailMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\UnknownMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\VideoMetadataMap.cs" />
+    <Compile Include="MediaDatabase\Mapping\VideoThumbnailMap.cs" />
+    <Compile Include="MediaDatabase\MediaDatabaseConfiguration.cs" />
+    <Compile Include="MediaDatabase\MediaDatabaseContext.cs" />
+    <Compile Include="MediaDatabase\PresetMetadata.cs" />
+    <Compile Include="MediaDatabase\Tag.cs" />
+    <Compile Include="MediaDatabase\Thumbnail.cs" />
+    <Compile Include="MediaDatabase\UnknownMetadata.cs" />
+    <Compile Include="MediaDatabase\VideoMetadata.cs" />
+    <Compile Include="MediaDatabase\VideoThumbnail.cs" />
     <Compile Include="Model\Collections\Cache\LRUCache.cs" />
     <Compile Include="Model\Collections\ObservableCollectionWithoutReentrantChecks.cs" />
     <Compile Include="Model\Concurrency\ILockable.cs" />
@@ -292,7 +278,6 @@
     </Compile>
     <Compile Include="MediaDatabase\DbSettings\DbSettingsViewModel.cs" />
     <Compile Include="MediaDatabase\DbSettings\TagOperationsViewModel.cs" />
-    <Compile Include="MediaDatabase\InitializeDb.cs" />
     <Compile Include="MediaFileBrowser\DirectoryBrowser\MediaFileBrowserDirectoryBrowserView.xaml.cs">
       <DependentUpon>MediaFileBrowserDirectoryBrowserView.xaml</DependentUpon>
     </Compile>
@@ -483,30 +468,8 @@
     <Compile Include="Input\InputViewModel.cs" />
     <Compile Include="MediaDatabase\DbCommands\DbCommands.cs" />
     <Compile Include="MediaDatabase\DbCommands\MetadataDbCommands.cs" />
-    <Compile Include="MediaDatabase\ImageMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\MediaDatabase.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MediaDatabase.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\MediaDatabase.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MediaDatabase.tt</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\MediaDatabase.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>MediaDatabase.edmx</DependentUpon>
-    </Compile>
-    <Compile Include="MediaDatabase\BaseMetadataPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\PresetMetadataDbCommands.cs" />
-    <Compile Include="MediaDatabase\PresetMetadataPartial.cs" />
     <Compile Include="MediaDatabase\DbCommands\TagDbCommands.cs" />
-    <Compile Include="MediaDatabase\TagPartial.cs" />
-    <Compile Include="MediaDatabase\ThumbnailPartial.cs" />
-    <Compile Include="MediaDatabase\UnknownMetadataPartial.cs" />
-    <Compile Include="MediaDatabase\VideoMetadataPartial.cs" />
     <Compile Include="Model\Media\File\Metadata\ImageFileMetadataWriter.cs" />
     <Compile Include="Model\Media\Base\State\MediaState.cs" />
     <Compile Include="Model\Media\File\Metadata\MetadataFileReader.cs" />
@@ -995,26 +958,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EntityDeploy Include="MediaDatabase\MediaDatabase.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>MediaDatabase.Designer.cs</LastGenOutput>
-    </EntityDeploy>
     <EmbeddedResource Include="Logging\LogSyntaxHighlighting.xshd">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <None Include="MediaDatabase\MediaDatabase.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>MediaDatabase.edmx</DependentUpon>
-      <LastGenOutput>MediaDatabase.Context.cs</LastGenOutput>
-    </None>
-    <None Include="MediaDatabase\MediaDatabase.edmx.diagram">
-      <DependentUpon>MediaDatabase.edmx</DependentUpon>
-    </None>
-    <None Include="MediaDatabase\MediaDatabase.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>MediaDatabase.edmx</DependentUpon>
-      <LastGenOutput>MediaDatabase.cs</LastGenOutput>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -1176,7 +1122,6 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="MediaDatabase\MediaDatabase.edmx.sql" />
     <Resource Include="Resources\Icons\audio.ico" />
     <Resource Include="Resources\Icons\readonly.ico" />
     <Resource Include="Resources\Images\loading.png" />

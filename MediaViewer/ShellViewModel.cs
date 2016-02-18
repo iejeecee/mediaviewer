@@ -21,6 +21,7 @@ using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.Model.Collections;
 using VideoPlayerControl;
 using MediaViewer.Infrastructure.Logging;
+using MediaViewer.MediaDatabase;
 
 namespace MediaViewer
 {
@@ -106,9 +107,29 @@ namespace MediaViewer
             VideoPlayerViewModel.setLibAVLogCallback(Logger.Log);
             VideoPlayerViewModel.enableLibAVLogging(LogMessageModel.LogLevel.INFO);
 
+            createDatabase();
+            
             //TestWindow window = new TestWindow();
             //window.Show();
-        } 
+        }
+
+        void createDatabase()
+        {
+            // database location ("username"/appdata/local/MediaViewer) mapped to |Datalocation| in App.config
+            String databaseLocation = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "MediaViewer");
+            AppDomain.CurrentDomain.SetData("DataDirectory", databaseLocation);
+
+            bool exists = System.IO.Directory.Exists(databaseLocation);
+
+            if (!exists)
+            {               
+                System.IO.Directory.CreateDirectory(databaseLocation);                
+            }
+
+            //var context = new MediaDatabaseContext();
+            //context.Database.Create();
+
+        }
 
         public void navigateToMediaStackPanelView(MediaFileStackPanelViewModel viewModel, String location = null)
         {

@@ -27,47 +27,47 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public List<BaseMetadata> getAllMetadata()
         {
-            return(Db.BaseMetadataSet.ToList());
+            return(Db.BaseMetadatas.ToList());
         }
 
         public int getNrMetadata()
         {
-            int result = Db.BaseMetadataSet.Count();
+            int result = Db.BaseMetadatas.Count();
 
             return (result);
         }
 
         public int getNrImageMetadata()
         {
-            int result = Db.BaseMetadataSet.OfType<ImageMetadata>().Count();
+            int result = Db.BaseMetadatas.OfType<ImageMetadata>().Count();
 
             return (result);
         }
 
         public int getNrVideoMetadata()
         {
-            int result = Db.BaseMetadataSet.OfType<VideoMetadata>().Count();
+            int result = Db.BaseMetadatas.OfType<VideoMetadata>().Count();
 
             return (result);
         }
 
         public int getNrMetadataInLocation(String location)
         {
-            int result = Db.BaseMetadataSet.Where(m => m.Location.StartsWith(location)).Count();
+            int result = Db.BaseMetadatas.Where(m => m.Location.StartsWith(location)).Count();
 
             return (result);
         }
 
         public List<BaseMetadata> getMetadataInLocation(String location)
         {
-            List<BaseMetadata> result = Db.BaseMetadataSet.Where(m => m.Location.StartsWith(location)).ToList();
+            List<BaseMetadata> result = Db.BaseMetadatas.Where(m => m.Location.StartsWith(location)).ToList();
 
             return (result);
         }
 
         public BaseMetadata findMetadataByLocation(String location)
         {            
-            BaseMetadata result = Db.BaseMetadataSet.Include(m => m.Tags).Include(m => m.Thumbnail).FirstOrDefault(m => m.Location.Equals(location));
+            BaseMetadata result = Db.BaseMetadatas.Include(m => m.Tags).Include(m => m.Thumbnail).FirstOrDefault(m => m.Location.Equals(location));
            
             return (result);
         }
@@ -176,19 +176,19 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (query.SearchType == MediaType.All)
             {
-                result = Db.BaseMetadataSet;
+                result = Db.BaseMetadatas;
             }
             else if (query.SearchType == MediaType.Images)
             {
-                result = Db.BaseMetadataSet.OfType<ImageMetadata>();
+                result = Db.BaseMetadatas.OfType<ImageMetadata>();
             }
             else if (query.SearchType == MediaType.Video)
             {
-                result = Db.BaseMetadataSet.OfType<VideoMetadata>();
+                result = Db.BaseMetadatas.OfType<VideoMetadata>();
             }
             else if (query.SearchType == MediaType.Audio)
             {
-                result = Db.BaseMetadataSet.OfType<AudioMetadata>();
+                result = Db.BaseMetadatas.OfType<AudioMetadata>();
             }
 
             return (result);
@@ -206,7 +206,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             if (query.SearchType == MediaType.All)
             {
 
-                result = Db.BaseMetadataSet.Where(m =>
+                result = Db.BaseMetadatas.Where(m =>
                        (m.Location.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -217,7 +217,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else if (query.SearchType == MediaType.Images)
             {
-                result = Db.BaseMetadataSet.OfType<ImageMetadata>().Where(m =>
+                result = Db.BaseMetadatas.OfType<ImageMetadata>().Where(m =>
                        (m.Location.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                        (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -231,7 +231,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else if (query.SearchType == MediaType.Video)
             {              
-                result = Db.BaseMetadataSet.OfType<VideoMetadata>().Where(m =>
+                result = Db.BaseMetadatas.OfType<VideoMetadata>().Where(m =>
                         (m.Location.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -246,7 +246,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             }
             else if (query.SearchType == MediaType.Audio)
             {
-                result = Db.BaseMetadataSet.OfType<AudioMetadata>().Where(m =>
+                result = Db.BaseMetadatas.OfType<AudioMetadata>().Where(m =>
                         (m.Location.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Title) && m.Title.Contains(query.Text)) ||
                         (!String.IsNullOrEmpty(m.Description) && m.Description.Contains(query.Text)) ||
@@ -278,20 +278,20 @@ namespace MediaViewer.MediaDatabase.DbCommands
             {
                 if (query.SearchType == MediaType.All)
                 {
-                    result = Db.BaseMetadataSet.Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMetadatas.Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                     
                 }
                 else if (query.SearchType == MediaType.Video)
                 {
-                    result = Db.BaseMetadataSet.OfType<VideoMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMetadatas.OfType<VideoMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
                 else if (query.SearchType == MediaType.Images)
                 {
-                    result = Db.BaseMetadataSet.OfType<ImageMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMetadatas.OfType<ImageMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
                 else if (query.SearchType == MediaType.Audio)
                 {
-                    result = Db.BaseMetadataSet.OfType<AudioMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
+                    result = Db.BaseMetadatas.OfType<AudioMetadata>().Where(m => m.Tags.Select(t => t.Id).Intersect(tagIds).Count() == tagIds.Count);
                 }
             }
             else
@@ -458,7 +458,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Error creating metadata, location cannot be null, empty or whitespace");
             }
 
-            if (Db.BaseMetadataSet.Any(t => t.Location == metadata.Location))
+            if (Db.BaseMetadatas.Any(t => t.Location == metadata.Location))
             {
                 throw new DbEntityValidationException("Cannot create metadata with duplicate location: " + metadata.Location);
             }
@@ -472,7 +472,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             else if(metadata is ImageMetadata)
             {
                 ImageMetadata imageMetadata = new ImageMetadata(metadata.Location, null);
-                Db.BaseMetadataSet.Add(imageMetadata);
+                Db.BaseMetadatas.Add(imageMetadata);
 
                 Db.Entry<ImageMetadata>(imageMetadata).CurrentValues.SetValues(metadata);
                 newMetadata = imageMetadata;
@@ -480,7 +480,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             else if (metadata is AudioMetadata)
             {
                 AudioMetadata audioMetadata = new AudioMetadata(metadata.Location, null);
-                Db.BaseMetadataSet.Add(audioMetadata);
+                Db.BaseMetadatas.Add(audioMetadata);
 
                 Db.Entry<AudioMetadata>(audioMetadata).CurrentValues.SetValues(metadata);
                 newMetadata = audioMetadata;
@@ -507,12 +507,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if (metadata.Thumbnail.Id != 0)
                 {
                     //thumbnail already exists
-                    Thumbnail existing = Db.ThumbnailSet.FirstOrDefault(t => t.Id == metadata.Thumbnail.Id);             
+                    Thumbnail existing = Db.Thumbnails.FirstOrDefault(t => t.Id == metadata.Thumbnail.Id);             
                     newMetadata.Thumbnail = existing;
                 }
                 else
                 {
-                    Db.ThumbnailSet.Add(metadata.Thumbnail);
+                    Db.Thumbnails.Add(metadata.Thumbnail);
                     newMetadata.Thumbnail = metadata.Thumbnail;
                 }
             }            
@@ -581,7 +581,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Error updating metadata, location cannot be null, empty or whitespace");
             }
             
-            BaseMetadata updateMetadata = Db.BaseMetadataSet.FirstOrDefault(t => t.Id == metadata.Id);
+            BaseMetadata updateMetadata = Db.BaseMetadatas.FirstOrDefault(t => t.Id == metadata.Id);
             if (updateMetadata == null)
             {
                 throw new DbEntityValidationException("Cannot update non existing metadata: " + metadata.Id.ToString());
@@ -609,7 +609,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if ((metadata.Thumbnail != null && updateMetadata.Thumbnail.Id != metadata.Thumbnail.Id) ||
                     metadata.Thumbnail == null)
                 {
-                    Db.ThumbnailSet.Remove(updateMetadata.Thumbnail);                                  
+                    Db.Thumbnails.Remove(updateMetadata.Thumbnail);                                  
                 }               
             }
 
@@ -618,12 +618,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if (metadata.Thumbnail.Id != 0)
                 {
                     //thumbnail already exists
-                    Thumbnail existing = Db.ThumbnailSet.FirstOrDefault(t => t.Id == metadata.Thumbnail.Id);
+                    Thumbnail existing = Db.Thumbnails.FirstOrDefault(t => t.Id == metadata.Thumbnail.Id);
                     updateMetadata.Thumbnail = existing;
                 }
                 else
                 {
-                    Db.ThumbnailSet.Add(metadata.Thumbnail);
+                    Db.Thumbnails.Add(metadata.Thumbnail);
                     updateMetadata.Thumbnail = metadata.Thumbnail;
                 }
             }            
@@ -693,12 +693,12 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if(deleteMedia.Thumbnail != null)
             {
-                Db.ThumbnailSet.Remove(deleteMedia.Thumbnail);                      
+                Db.Thumbnails.Remove(deleteMedia.Thumbnail);                      
             }
 
             deleteMedia.Thumbnail = null;
 
-            Db.BaseMetadataSet.Remove(deleteMedia);
+            Db.BaseMetadatas.Remove(deleteMedia);
             Db.SaveChanges();
 
             metadata.Id = 0;
@@ -719,8 +719,8 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
             throw new NotImplementedException();
 
-            /*String[] tableNames = new String[] {"ThumbnailSet", "MediaTag", "MediaSet_ImageMetadata",
-                "MediaSet_VideoMetadata","MediaSet_UnknownMetadata","BaseMetadataSet"};
+            /*String[] tableNames = new String[] {"Thumbnails", "MediaTag", "MediaSet_ImageMetadata",
+                "MediaSet_VideoMetadata","MediaSet_UnknownMetadata","BaseMetadata"};
 
             for (int i = 0; i < tableNames.Count(); i++)
             {
@@ -732,7 +732,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         VideoMetadata createVideoMetadata(VideoMetadata metadata)
         {
             VideoMetadata videoMetadata = new VideoMetadata(metadata.Location, null);
-            Db.BaseMetadataSet.Add(videoMetadata);
+            Db.BaseMetadatas.Add(videoMetadata);
 
             Db.Entry<VideoMetadata>(videoMetadata).CurrentValues.SetValues(metadata);
 
@@ -742,13 +742,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if (thumb.Id != 0)
                 {
                     //thumbnail already exists
-                    VideoThumbnail existing = Db.VideoThumbnailSet.FirstOrDefault(t => t.Id == thumb.Id);
+                    VideoThumbnail existing = Db.VideoThumbnails.FirstOrDefault(t => t.Id == thumb.Id);
                     videoMetadata.VideoThumbnails.Add(existing);
                 }
                 else
                 {
                     // new thumbnail
-                    Db.VideoThumbnailSet.Add(thumb);
+                    Db.VideoThumbnails.Add(thumb);
                     videoMetadata.VideoThumbnails.Add(thumb);
                 }
             }
@@ -760,7 +760,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
             Db.Entry<VideoMetadata>(updateMetadata).CurrentValues.SetValues(metadata);
 
-            if (metadata.VideoThumbnails == null) return;
+            /*if (metadata.VideoThumbnails == null) return;
 
             // remove unused thumbnails
             for (int i = updateMetadata.VideoThumbnails.Count - 1; i >= 0; i--)
@@ -769,7 +769,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
                 if (!metadata.VideoThumbnails.Any(t => t.Id == thumb.Id))
                 {
-                    Db.VideoThumbnailSet.Remove(thumb);                                 
+                    Db.VideoThumbnails.Remove(thumb);                                 
                 }
             }
 
@@ -781,16 +781,16 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 if (thumb.Id != 0)
                 {
                     //thumbnail already exists
-                    VideoThumbnail existing = Db.VideoThumbnailSet.FirstOrDefault(t => t.Id == thumb.Id);
+                    VideoThumbnail existing = Db.VideoThumbnails.FirstOrDefault(t => t.Id == thumb.Id);
                     updateMetadata.VideoThumbnails.Add(existing);
                 }
                 else
                 {
                     // new thumbnail
-                    Db.VideoThumbnailSet.Add(thumb);
+                    Db.VideoThumbnails.Add(thumb);
                     updateMetadata.VideoThumbnails.Add(thumb);
                 }
-            }
+            }*/
         }
 
         void deleteVideoMetadata(VideoMetadata metadata)
@@ -798,7 +798,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             // remove unused thumbnails
             for (int i = metadata.VideoThumbnails.Count - 1; i >= 0; i--)
             {
-                Db.VideoThumbnailSet.Remove(metadata.VideoThumbnails.ElementAt(i));                                
+                Db.VideoThumbnails.Remove(metadata.VideoThumbnails.ElementAt(i));                                
             }
 
             metadata.VideoThumbnails.Clear();
@@ -808,7 +808,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
             if (metadata.Id == 0) return;
 
-            Db.BaseMetadataSet.Attach(metadata);
+            Db.BaseMetadatas.Attach(metadata);
 
             Db.Entry(metadata).Collection(m => m.VideoThumbnails).Load(); 
         

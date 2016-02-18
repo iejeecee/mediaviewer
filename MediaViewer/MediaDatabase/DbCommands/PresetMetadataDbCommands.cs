@@ -21,7 +21,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
         {
             List<PresetMetadata> presets = new List<PresetMetadata>();
 
-            foreach (PresetMetadata preset in Db.PresetMetadataSet.OrderBy(x => x.Name))
+            foreach (PresetMetadata preset in Db.PresetMetadatas.OrderBy(x => x.Name))
             {                
                 presets.Add(preset);
             }
@@ -31,7 +31,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public PresetMetadata getPresetMetadataById(int id) {
 
-            PresetMetadata result = Db.PresetMetadataSet.FirstOrDefault(x => x.Id == id);
+            PresetMetadata result = Db.PresetMetadatas.FirstOrDefault(x => x.Id == id);
 
             return (result);
         }
@@ -45,7 +45,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             PresetMetadata newPreset = new PresetMetadata();
 
-            Db.PresetMetadataSet.Add(newPreset);
+            Db.PresetMetadatas.Add(newPreset);
             Db.Entry<PresetMetadata>(newPreset).CurrentValues.SetValues(preset);
             newPreset.Id = 0;
             
@@ -113,7 +113,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Cannot delete non-existing presetMetadata: " + preset.Id.ToString());
             }
          
-            Db.PresetMetadataSet.Remove(deletePreset);
+            Db.PresetMetadatas.Remove(deletePreset);
             Db.SaveChanges();
         }
     }

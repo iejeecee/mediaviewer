@@ -21,7 +21,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public List<Tag> getAllUnusedTags()
         {           
-            List<Tag> tags = Db.TagSet.Where((t) => t.Used == 0).ToList();
+            List<Tag> tags = Db.Tags.Where((t) => t.Used == 0).ToList();
 
             return (tags);
         }
@@ -32,7 +32,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (loadAllReferences == true)
             {
-                foreach (Tag tag in Db.TagSet.Include(t => t.ChildTags).Include(t => t.ParentTags).OrderBy(x => x.Name))
+                foreach (Tag tag in Db.Tags.Include(t => t.ChildTags).Include(t => t.ParentTags).OrderBy(x => x.Name))
                 {
                     tags.Add(tag);
                 }
@@ -40,7 +40,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             else
             {
 
-                foreach (Tag tag in Db.TagSet.OrderBy(x => x.Name))
+                foreach (Tag tag in Db.Tags.OrderBy(x => x.Name))
                 {
                     tags.Add(tag);
                 }
@@ -51,7 +51,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public int getNrTags()
         {
-            return (Db.TagSet.Count());
+            return (Db.Tags.Count());
         }
 
         public List<Tag> getTagAutocompleteMatches(String query, int maxResults, bool startsWith = false)
@@ -60,11 +60,11 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
             if (startsWith == false)
             {
-                result = Db.TagSet.Where(t => t.Name.Contains(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
+                result = Db.Tags.Where(t => t.Name.Contains(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
             }
             else
             {
-                result = Db.TagSet.Where(t => t.Name.StartsWith(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
+                result = Db.Tags.Where(t => t.Name.StartsWith(query)).OrderByDescending(t => t.Used).Take(maxResults).ToList();
             }
 
             return (result);
@@ -72,7 +72,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public Tag getTagByName(String name)
         {
-            List<Tag> result = (from b in Db.TagSet.Include(t => t.ChildTags)
+            List<Tag> result = (from b in Db.Tags.Include(t => t.ChildTags)
                                 where b.Name == name
                                 select b).ToList();
 
@@ -82,7 +82,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public Tag getTagById(int id)
         {
-            List<Tag> result = (from b in Db.TagSet.Include(t => t.ChildTags)
+            List<Tag> result = (from b in Db.Tags.Include(t => t.ChildTags)
                                 where b.Id == id
                                 select b).ToList();
 
@@ -92,7 +92,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public int getNrChildTags(Tag tag)
         {
-            Tag result = Db.TagSet.FirstOrDefault(t => t.Id == tag.Id);
+            Tag result = Db.Tags.FirstOrDefault(t => t.Id == tag.Id);
 
             if (result == null)
             {
@@ -112,13 +112,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Error creating tag, name cannot be null, empty or whitespace");
             }
 
-            if (Db.TagSet.Any(t => t.Name == tag.Name))
+            if (Db.Tags.Any(t => t.Name == tag.Name))
             {
                 throw new DbEntityValidationException("Cannot create duplicate tag: " + tag.Name);
             }
 
             Tag newTag = new Tag();
-            Db.TagSet.Add(newTag);
+            Db.Tags.Add(newTag);
 
             Db.Entry<Tag>(newTag).CurrentValues.SetValues(tag);
             newTag.Id = 0;
@@ -185,7 +185,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 deleteTag.ParentTags.ElementAt(i).ChildTags.Remove(tag);
             }
 
-            Db.TagSet.Remove(deleteTag);
+            Db.Tags.Remove(deleteTag);
             Db.SaveChanges();
         }
 
@@ -296,7 +296,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public override void clearAll()
         {
-            String[] tableNames = new String[] {"PresetMetadataTag", "MediaTag", "TagTag", "TagSet"};
+            String[] tableNames = new String[] {"PresetMetadataTag", "MediaTag", "TagTag", "Tags"};
          
             for (int i = 0; i < tableNames.Count(); i++)
             {

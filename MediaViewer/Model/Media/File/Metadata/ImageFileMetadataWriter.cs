@@ -10,7 +10,7 @@ namespace MediaViewer.Model.Media.File.Metadata
 {
     class ImageFileMetadataWriter : MetadataFileWriter
     {
-        protected override void write(XMPLib.MetaData xmpMetaDataWriter, MediaDatabase.BaseMetadata media)
+        protected override void write(XMPLib.MetaData xmpMetaDataWriter, BaseMetadata media)
         {
             ImageMetadata image = media as ImageMetadata;
 
