@@ -8,7 +8,8 @@ namespace MediaViewer.MediaDatabase
     {
         static MediaDatabaseContext()
         {
-            Database.SetInitializer<MediaDatabaseContext>(new CreateDatabaseIfNotExists<MediaDatabaseContext>());
+            //Database.SetInitializer<MediaDatabaseContext>(new CreateDatabaseIfNotExists<MediaDatabaseContext>());
+            Database.SetInitializer<MediaDatabaseContext>(new DropCreateDatabaseIfModelChanges<MediaDatabaseContext>());
         }
 
         public MediaDatabaseContext()  : base("MediaDatabaseContext")        
@@ -23,7 +24,7 @@ namespace MediaViewer.MediaDatabase
         public DbSet<Thumbnail> Thumbnails { get; set; }
         public DbSet<UnknownMetadata> UnknownMetadatas { get; set; }
         public DbSet<VideoMetadata> VideoMetadatas { get; set; }
-        public DbSet<VideoThumbnail> VideoThumbnails { get; set; }
+        //public DbSet<VideoThumbnail> VideoThumbnails { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {            
@@ -35,7 +36,7 @@ namespace MediaViewer.MediaDatabase
             modelBuilder.Configurations.Add(new ThumbnailMap());
             modelBuilder.Configurations.Add(new UnknownMetadataMap());
             modelBuilder.Configurations.Add(new VideoMetadataMap());
-            modelBuilder.Configurations.Add(new VideoThumbnailMap());
+            //modelBuilder.Configurations.Add(new VideoThumbnailMap());
         }
     }
 }

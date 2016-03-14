@@ -77,6 +77,25 @@ namespace MediaViewer.MediaDatabase.DbSettings
             }
         }
 
+        public int NrAudio
+        {
+            get
+            {
+                int result = 0;
+
+                using (MetadataDbCommands mediaCommands = new MetadataDbCommands())
+                {
+                    result = mediaCommands.getNrAudioMetadata();
+                }
+
+                return (result);
+            }
+            private set
+            {
+                OnPropertyChanged("NrAudio");
+            }
+        }
+
         public int NrMedia
         {
             get

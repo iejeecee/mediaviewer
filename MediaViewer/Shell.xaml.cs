@@ -63,8 +63,8 @@ namespace MediaViewer
         public Shell()
         {
 
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(Application_UnhandledException);
-
+            System.Windows.Application.Current.DispatcherUnhandledException += Current_DispatcherUnhandledException;
+           
             InitializeComponent();
 
             XMPLib.MetaData.setLogCallback(new XMPLib.MetaData.LogCallbackDelegate(metaData_logCallback));
@@ -76,6 +76,11 @@ namespace MediaViewer
             this.Closing += Shell_Closing;
 
                
+        }
+
+        void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            Logger.Log.Error("Unhandled exception: " + e.Exception.ToString(), e.Exception);
         }
 
         public void OnImportsSatisfied()
@@ -195,10 +200,8 @@ namespace MediaViewer
             Dispatcher.InvokeShutdown();
         }
 
-        private void Application_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            Logger.Log.Error("Unhandled exception: " + e.ExceptionObject.ToString() + " Terminating: " + e.IsTerminating.ToString());
-        }
+      
+    
 
         void PrintLoadedAssemblies(AppDomain domain)
         {

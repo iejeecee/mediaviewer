@@ -340,7 +340,7 @@ namespace XMPDLL {
 			const std::string &fieldValue,
 			XMP_OptionBits options = 0) 
 		{
-			meta.SetStructField(nameSpace.c_str(), structName.c_str(), fieldNameSpace.c_str(), fieldName.c_str(), fieldValue, options);
+			meta.SetStructField(nameSpace.c_str(), structName.c_str(), fieldNameSpace.c_str(), fieldName.c_str(), fieldValue, options);			
 		}
 
 		void deleteStructField(const std::string &nameSpace,

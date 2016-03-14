@@ -51,6 +51,12 @@ namespace VideoLib {
 			DECODE_AUDIO_ONLY
 		};
 
+		enum class SeekKeyframeMode {
+
+			SEEK_BACKWARDS,
+			SEEK_FORWARDS
+		};
+
 		enum class LogLevel {
 
 			LOG_LEVEL_FATAL = AV_LOG_FATAL,
@@ -144,6 +150,22 @@ namespace VideoLib {
 			}
 		}
 
+		property VideoLib::MediaType MediaType {
+
+			VideoLib::MediaType get() {
+
+				return(videoDecoder->getMediaType());
+			}
+		}
+
+		property VideoLib::SeekMode SeekMode {
+
+			VideoLib::SeekMode get() {
+
+				return(videoDecoder->getSeekMode());
+			}
+		}
+
 		property int MaxAudioFrameSize {
 
 			int get() {
@@ -194,7 +216,7 @@ namespace VideoLib {
 		~VideoPlayer();
 				
 		void open(OpenVideoArgs ^args, OutputPixelFormat videoFormat, System::Threading::CancellationToken ^token);
-		bool seek(double posSeconds);
+		bool seek(double posSeconds, SeekKeyframeMode mode);
 	
 		DemuxPacketsResult demuxPacket();			
 

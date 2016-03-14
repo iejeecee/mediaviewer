@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 namespace YoutubePlugin.Item
@@ -70,15 +71,16 @@ namespace YoutubePlugin.Item
             StreamedItem = new List<YoutubeVideoStreamedItem>();
         }
 
-        public void getBestQualityStreams(out YoutubeVideoStreamedItem video, out YoutubeVideoStreamedItem audio) {
+        
 
+        public void getStreams(out YoutubeVideoStreamedItem video, out YoutubeVideoStreamedItem audio, int maxHeight = 4096, int maxSamplesPerSecond = 48000)
+        {
             video = null;
             audio = null;
 
             int bestHeight = 0;
             int bestSamplesPerSecond = 0;
 
-            
             // get best video stream
             foreach (YoutubeVideoStreamedItem item in StreamedItem)
             {
@@ -86,15 +88,15 @@ namespace YoutubePlugin.Item
 
                 VideoMetadata metaData = item.Metadata as VideoMetadata;
 
-                if (metaData.Height >= bestHeight)
-                {                        
-                    if (metaData.Height == bestHeight) 
+                if (metaData.Height >= bestHeight && metaData.Height <= maxHeight)
+                {
+                    if (metaData.Height == bestHeight)
                     {
                         // prefer mp4 over webm
-                        if(item.Metadata.MimeType.Equals("video/webm")) continue; 
+                        if (item.Metadata.MimeType.Equals("video/webm")) continue;
 
                         // prefer adaptive over normal streams
-                        if(item.StreamType == StreamType.VIDEO_AUDIO) continue;
+                        if (item.StreamType == StreamType.VIDEO_AUDIO) continue;
                     }
 
                     video = item;
@@ -112,7 +114,7 @@ namespace YoutubePlugin.Item
 
                 VideoMetadata metaData = item.Metadata as VideoMetadata;
 
-                if (metaData.SamplesPerSecond >= bestSamplesPerSecond)
+                if (metaData.SamplesPerSecond >= bestSamplesPerSecond && metaData.SamplesPerSecond <= maxSamplesPerSecond)
                 {
                     int idx = video.Metadata.MimeType.IndexOf('/');
 
@@ -125,7 +127,7 @@ namespace YoutubePlugin.Item
                     if (metaData.SamplesPerSecond == bestSamplesPerSecond)
                     {
                         // prefer aac over ogg
-                        if (item.Metadata.MimeType.Equals("audio/webm")) continue;                           
+                        if (item.Metadata.MimeType.Equals("audio/webm")) continue;
                     }
 
                     audio = item;
@@ -133,8 +135,8 @@ namespace YoutubePlugin.Item
                     bestSamplesPerSecond = metaData.SamplesPerSecond.Value;
                 }
             }
-                       
-        }
+
+        }        
        
         public override void readMetadata_URLock(MetadataFactory.ReadOptions options, System.Threading.CancellationToken token)
         {            
@@ -159,7 +161,7 @@ namespace YoutubePlugin.Item
                 {
                     YoutubeVideoStreamedItem video, audio;
 
-                    getBestQualityStreams(out video, out audio);
+                    getStreams(out video, out audio);
 
                     VideoMetadata videoMetadata = video == null ? null : video.Metadata as VideoMetadata;
                     VideoMetadata audioMetadata = audio == null ? null : audio.Metadata as VideoMetadata;

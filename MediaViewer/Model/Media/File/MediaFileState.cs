@@ -187,7 +187,7 @@ namespace MediaViewer.Model.Media.File
                         }
 
                         item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
-                                MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS, token);
+                                MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, token);
 
                         if (item.Metadata == null || item.Metadata is UnknownMetadata)
                         {

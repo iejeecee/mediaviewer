@@ -1,7 +1,7 @@
 #pragma once
 #pragma warning(disable : 4244)
 #include <algorithm>
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include "VideoInit.h"
 #include "Stream.h"
 #include <msclr\marshal.h>

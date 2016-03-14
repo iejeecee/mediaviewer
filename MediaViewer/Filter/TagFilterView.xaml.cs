@@ -121,11 +121,12 @@ namespace MediaViewer.Filter
                     VisualTreeUtils.findVisualChildByName<ToggleButton>(dataGrid, "excludeClearToggleButton");
 
                 if (includedClearToggleButton != null && excludedClearToggleButton != null)
-                {
-                
-                        includedClearToggleButton.IsEnabled = false;
-                        includedClearToggleButton.IsChecked = false;
-                
+                {                
+                    includedClearToggleButton.IsEnabled = false;
+                    includedClearToggleButton.IsChecked = false;
+
+                    excludedClearToggleButton.IsEnabled = false;
+                    excludedClearToggleButton.IsChecked = false;
                 }
             }));
             

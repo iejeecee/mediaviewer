@@ -46,7 +46,7 @@ namespace YoutubePlugin.Item
                 YoutubeItemMetadata metaData = new YoutubeItemMetadata();
 
                 SearchResult searchInfo = Info as SearchResult;
-
+                
                 metaData.Thumbnail = new MediaViewer.MediaDatabase.Thumbnail(loadThumbnail(out mimeType, token));
                 metaData.CreationDate = PublishedAt;
                 metaData.Title = Name;
@@ -57,7 +57,7 @@ namespace YoutubePlugin.Item
                 ItemState = MediaItemState.LOADED;
             }
             catch (Exception e)
-            {
+            {              
                 if (e is System.Net.WebException &&
                     ((System.Net.WebException)e).Status == WebExceptionStatus.Timeout)
                 {
@@ -80,7 +80,7 @@ namespace YoutubePlugin.Item
             try
             {
               
-                StreamUtils.readHttpRequest(new Uri(Thumbnail.High.Url), data, out mimeType, token);
+                StreamUtils.readHttpRequest(new Uri(Thumbnail.Medium.Url), data, out mimeType, token);
 
                 BitmapDecoder decoder = BitmapDecoder.Create(data,
                                     BitmapCreateOptions.PreservePixelFormat,

@@ -9,10 +9,10 @@
 #endif
 
 #include "PacketQueue.h"
-#include "Frame\VideoFrame.h"
-#include "Frame\AudioFrame.h"
-#include "Frame\Packet.h"
-#include "Video\IVideoDecoder.h"
+#include "..\Frame\VideoFrame.h"
+#include "..\Frame\AudioFrame.h"
+#include "..\Frame\Packet.h"
+#include "..\Video\IVideoDecoder.h"
 
 using namespace System::Collections::Generic;
 using namespace System::Threading;
@@ -44,7 +44,7 @@ namespace VideoLib {
 	private:
 		
 		static int nrPackets = 500;	
-		static int minBufferedPackets = 100;
+		static int minNrBufferedPackets = 100;
 		
 		FrameQueueState state;
 
@@ -76,56 +76,57 @@ namespace VideoLib {
 		int nrVideoPacketReadErrors;
 		int nrAudioPacketReadErrors;
 
-		double synchronizeVideo(int repeatFrame, __int64 dts) {
+		void synchronizeVideo(VideoFrame ^frame) {
+		
+			if(frame->AVLibFrameData->pts != AV_NOPTS_VALUE) {
 
-			double pts;
-
-			if(dts != AV_NOPTS_VALUE) {
-
-				// convert pts to seconds
-				int64_t startTime = videoDecoder->getVideoStream()->start_time == AV_NOPTS_VALUE ? 
-					0 : videoDecoder->getVideoStream()->start_time;
-				pts = (dts + startTime) * av_q2d(videoDecoder->getVideoStream()->time_base);
+				VideoLib::Stream *videoStream = videoDecoder->getStream(videoDecoder->getVideoStreamIndex());
+				
+				// convert pts to seconds, and shift by start_time
+				int64_t startTime = videoStream->getStartTime();
+								
+				frame->Pts = videoStream->getTimeSeconds(frame->AVLibFrameData->pts - startTime);
+				frame->Dts = videoStream->getTimeSeconds(frame->AVLibFrameData->pkt_dts - startTime);
 				// set clock to current pts;
-				videoClock = pts;
+				videoClock = frame->Pts;
 
 			} else {
 
 				// if we aren't given a pts, set it to the clock 
-				pts = videoClock;
+				frame->Pts = videoClock;
 			}
 
 			// update the video clock to the pts of the next frame
 			double frameDelay = av_q2d(videoDecoder->getVideoStream()->time_base);
 			// if we are repeating a frame, adjust clock accordingly 
-			frameDelay += repeatFrame * (frameDelay * 0.5);
+			frameDelay += frame->AVLibFrameData->repeat_pict * (frameDelay * 0.5);
 			videoClock += frameDelay;
-
-			return(pts);
+			
 		}
 
-		double synchronizeAudio(int sizeBytes, __int64 dts) {
+		void synchronizeAudio(AudioFrame ^frame) {
+		
+			if(frame->AVLibFrameData->pts != AV_NOPTS_VALUE) {
 
-			double pts;
+				VideoLib::Stream *audioStream = videoDecoder->getStream(videoDecoder->getAudioStreamIndex());
 
-			if(dts != AV_NOPTS_VALUE) {
+				// convert pts to seconds, and shift by start_time
+				int64_t startTime = audioStream->getStartTime();	
 
-				// convert pts to seconds
-				int64_t startTime = videoDecoder->getAudioStream()->start_time == AV_NOPTS_VALUE ? 0 : 
-					videoDecoder->getAudioStream()->start_time;	
-				pts = (dts + startTime) * av_q2d(videoDecoder->getAudioStream()->time_base);
+				frame->Pts = audioStream->getTimeSeconds(frame->AVLibFrameData->pts - startTime);
+				frame->Dts = audioStream->getTimeSeconds(frame->AVLibFrameData->pkt_dts - startTime);
+
 				// set clock to current pts;
-				audioClock = pts;
+				audioClock = frame->Pts;
 
 			} else {
 
 				// if we aren't given a pts, set it to the clock 
-				pts = audioClock;
+				frame->Pts = audioClock;
 				// calculate next pts in seconds
-				audioClock += sizeBytes / double(videoDecoder->getAudioBytesPerSecond());
+				audioClock += frame->Length / double(videoDecoder->getAudioBytesPerSecond());
 			}
-
-			return(pts);
+		
 		}
 
 		void setPacketQueueState(PacketQueue::PacketQueueState videoState, PacketQueue::PacketQueueState audioState, 
@@ -247,8 +248,8 @@ namespace VideoLib {
 					nrLastPacketsRead++;
 				}
 
-				// stop buffering when atleast minBufferedPackets are read or the lastpacket(s)
-				if(isVideoReady && isAudioReady && nrBufferedPackets >= minBufferedPackets 
+				// stop buffering when atleast minNrBufferedPackets are read or the lastpacket(s)
+				if(isVideoReady && isAudioReady && nrBufferedPackets >= minNrBufferedPackets 
 					|| nrLastPacketsRead == nrLastPackets) 
 				{
 
@@ -443,7 +444,7 @@ namespace VideoLib {
 			}
 		}
 		
-		property int FreePacketsInQueue {
+		property int NrFreePacketsInQueue {
 
 			int get() {
 
@@ -451,7 +452,7 @@ namespace VideoLib {
 			}
 		}
 
-		property int VideoPacketsInQueue {
+		property int NrVideoPacketsInQueue {
 
 			int get() {
 
@@ -459,7 +460,7 @@ namespace VideoLib {
 			}
 		}
 
-		property int AudioPacketsInQueue {
+		property int NrAudioPacketsInQueue {
 
 			int get() {
 
@@ -467,11 +468,11 @@ namespace VideoLib {
 			}
 		}
 
-		property int MinBufferedPackets {
+		property int MinNrBufferedPackets {
 
 			int get() {
 
-				return(minBufferedPackets);
+				return(minNrBufferedPackets);
 			}
 
 			void set(int value) {
@@ -479,7 +480,7 @@ namespace VideoLib {
 				if(value < 0) value = 0;
 				if(value > nrPackets) value = nrPackets;
 				
-				minBufferedPackets = value;
+				minNrBufferedPackets = value;
 			}
 		}
 		
@@ -583,7 +584,7 @@ namespace VideoLib {
 
 			Monitor::Enter(lockObject);
 			try {
-
+				
 				isSingleFrame = true;
 				videoPackets->State = PacketQueue::PacketQueueState::OPEN;
 				audioPackets->State = PacketQueue::PacketQueueState::OPEN;
@@ -692,9 +693,7 @@ namespace VideoLib {
 				{					
 					videoDecoder->convertVideoFrame(videoFrame->AVLibFrameData, convertedVideoFrame->AVLibFrameData);					
 
-					convertedVideoFrame->Pts = synchronizeVideo(
-						videoFrame->AVLibFrameData->repeat_pict, 
-						convertedVideoFrame->AVLibFrameData->pts);									
+					synchronizeVideo(convertedVideoFrame);									
 				}
 
 				addFreePacket(videoPacket);
@@ -763,8 +762,7 @@ namespace VideoLib {
 					{									
 						convertedAudioFrame->Length = videoDecoder->convertAudioFrame(audioFrame->AVLibFrameData, convertedAudioFrame->AVLibFrameData);											
 					
-						convertedAudioFrame->Pts = synchronizeAudio(convertedAudioFrame->Length, 
-							convertedAudioFrame->AVLibFrameData->pts);					
+						synchronizeAudio(convertedAudioFrame);					
 
 						convertedAudioFrame->copyAudioDataToManagedMemory();
 
@@ -774,6 +772,11 @@ namespace VideoLib {
 						int64_t audioDuration = videoDecoder->getStream(audioPacket->AVLibPacketData->stream_index)->getTimeBaseUnits(audioDurationSec);
 
 						audioPacket->AVLibPacketData->pts += audioDuration;	
+
+						if(videoDecoder->getMediaType() == MediaType::AUDIO_MEDIA && isSingleFrame) {
+
+							endSingleFrame();
+						}
 
 						return(convertedAudioFrame);
 					}

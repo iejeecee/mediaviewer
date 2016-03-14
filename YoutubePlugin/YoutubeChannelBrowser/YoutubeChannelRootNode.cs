@@ -41,7 +41,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
             lock (channelLock)
             {
                 Children.Add(node);                
-                Settings.Default.YoutubeChannels.Add(state);
+                Properties.Settings.Default.YoutubeChannels.Add(state);
             }  
            
         }
@@ -57,7 +57,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
                     if(child.ChannelId.Equals(node.ChannelId)) {
 
                         Children.RemoveAt(i);
-                        Settings.Default.YoutubeChannels.RemoveAt(i);                   
+                        Properties.Settings.Default.YoutubeChannels.RemoveAt(i);                   
                         return;
                     }
                 }
@@ -67,7 +67,7 @@ namespace YoutubePlugin.YoutubeChannelBrowser
 
         protected override void LoadChildren()
         {                              
-            foreach(YoutubeChannelNodeState state in Settings.Default.YoutubeChannels)
+            foreach(YoutubeChannelNodeState state in Properties.Settings.Default.YoutubeChannels)
             {              
                 YoutubeChannelNode node = new YoutubeChannelNode(state);
 

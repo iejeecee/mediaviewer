@@ -97,6 +97,7 @@ namespace MediaViewer.Properties
             {
                 AudioLocationHistory = new ObservableCollection<string>();
             }
+           
         }
 
         [global::System.Configuration.UserScopedSettingAttribute()]
@@ -292,6 +293,30 @@ namespace MediaViewer.Properties
             set
             {
                 this["AudioLocationHistory"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public MediaViewer.Infrastructure.Constants.SaveLocation VideoScreenShotSaveMode
+        {
+            get
+            {
+                Object value = this["VideoScreenShotSaveMode"];
+
+                if (value == null)
+                {
+                    return Infrastructure.Constants.SaveLocation.Ask;
+                }
+                else
+                {
+                    return (MediaViewer.Infrastructure.Constants.SaveLocation)value;
+                }
+            
+            }
+            set
+            {
+                this["VideoScreenShotSaveMode"] = value;
             }
         }
 

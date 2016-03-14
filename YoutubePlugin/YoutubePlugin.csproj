@@ -185,7 +185,14 @@
     <Compile Include="Item\YoutubePlaylistItem.cs" />
     <Compile Include="Item\YoutubeVideoItem.cs" />
     <Compile Include="Item\YoutubeVideoStreamedItem.cs" />
+    <Compile Include="Preview\YoutubePreviewViewModel.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="Settings\Constants.cs" />
+    <Compile Include="Settings\ResolutionEnumConverter.cs" />
+    <Compile Include="Settings\YoutubeSettingsView.xaml.cs">
+      <DependentUpon>YoutubeSettingsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Settings\YoutubeSettingsViewModel.cs" />
     <Compile Include="YoutubeApiKey.cs" />
     <Compile Include="YoutubeChannelBrowser\NrVideosConverter.cs" />
     <Compile Include="YoutubeChannelBrowser\YoutubeChannelNodeState.cs" />
@@ -221,6 +228,10 @@
       <DependentUpon>YoutubeView.xaml</DependentUpon>
     </Compile>
     <Compile Include="YoutubeViewModel.cs" />
+    <Page Include="Settings\YoutubeSettingsView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="YoutubeChannelBrowser\YoutubeChannelBrowserView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -309,9 +320,7 @@
   <ItemGroup>
     <Resource Include="Resources\Icons\playlist.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Settings\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

@@ -10,6 +10,7 @@ using Microsoft.Practices.Prism.Regions;
 using Microsoft.Windows.Themes;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
@@ -24,51 +25,114 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using VideoLib;
 
 namespace MediaViewer.UserControls.MediaPreview
 {
     /// <summary>
     /// Interaction logic for MediaPreviewView.xaml
     /// </summary>
-    [Export]
+    [Export, PartCreationPolicy(CreationPolicy.NonShared)]
     public partial class MediaPreviewView : UserControl, INavigationAware, ITabbedExpanderAware
     {
-        IEventAggregator EventAggregator { get; set; }
-
-        MediaItem PreviewItem { get; set; }
-        int CurrentPreviewImage { get; set; }
+        MediaPreviewViewModelBase ViewModel { get; set; }
+        TimeAdorner TimeAdorner { get; set; }
+        DispatcherTimer Timer { get; set; }
 
         CancellationTokenSource TokenSource { get; set; }
-        Task<BitmapImage> LoadImageTask { get; set; }
-      
-        TimeAdorner TimeAdorner { get; set; }
-
-        static BitmapImage audioImage;
-        static BitmapImage errorImage;
-
-        static MediaPreviewView()
-        {
-            audioImage = new BitmapImage(new Uri("pack://application:,,,/Resources/Icons/audio.ico", UriKind.Absolute));
-            errorImage = new BitmapImage(new Uri("pack://application:,,,/MediaViewer;component/Resources/Images/error.png", UriKind.Absolute));
+        SemaphoreSlim semaphore;
+        SemaphoreSlim Semaphore {
+            get
+            {
+                return semaphore;
+            }
+            set
+            {
+                semaphore = value;
+            }
         }
 
+        int nrWaitingThreads;
+                
         [ImportingConstructor]
-        public MediaPreviewView(IEventAggregator eventAggregator)
+        public MediaPreviewView()
         {
             InitializeComponent();
-
-            EventAggregator = eventAggregator;
-
+          
             TabName = "Preview";
             TabIsSelected = true;          
             TabMargin = new Thickness(2);
             TabBorderThickness = new Thickness(2);
             TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;
-
-            TokenSource = new CancellationTokenSource();
            
             TimeAdorner = new TimeAdorner(previewImage);
+                  
+            Timer = new DispatcherTimer();
+            Timer.Tick += Timer_Elapsed;
+            Timer.Interval = new TimeSpan(0, 0, 0, 0, 5);
+
+            nrWaitingThreads = 0;
+            Semaphore = new SemaphoreSlim(1);
         }
+
+        async void Timer_Elapsed(object sender, EventArgs e)
+        {
+            Timer.Stop();
+           
+            Point mousePos = Mouse.GetPosition(previewImage);
+         
+            double position = mousePos.X / previewImage.ActualWidth;
+
+            Interlocked.Increment(ref nrWaitingThreads);
+
+            try
+            {
+                MediaThumb thumbnail = await Task<MediaThumb>.Factory.StartNew(() =>
+                {
+                    Semaphore.Wait();
+
+                    Interlocked.Decrement(ref nrWaitingThreads);
+                  
+                    if (nrWaitingThreads > 0 || TokenSource.IsCancellationRequested)
+                    {
+                        return (null);
+                    }
+
+                    return ViewModel.getVideoPreviewThumbnail(position, TokenSource.Token);
+
+                });
+
+                if (thumbnail == null) return;
+
+                previewImage.Source = thumbnail.Thumb;
+
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
+
+                adornerLayer.Remove(TimeAdorner);
+
+                Size size = TimeAdorner.Size;
+                double xLeft = mousePos.X - size.Width / 2;
+                double xRight = xLeft + size.Width;
+
+                if (xLeft < 0) xLeft = 0;
+                if (xRight > previewImage.ActualWidth) xLeft = previewImage.ActualWidth - size.Width;
+
+                TimeAdorner.Location = new Point(xLeft, previewImage.ActualHeight - size.Height);
+                TimeAdorner.TimeSeconds = (int)thumbnail.PositionSeconds;
+
+                adornerLayer.Add(TimeAdorner);
+            }
+            catch (Exception)
+            {
+               
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
+        }
+               
 
         public string TabName { get; set; }
         public bool TabIsSelected { get; set; }
@@ -88,111 +152,115 @@ namespace MediaViewer.UserControls.MediaPreview
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
-            EventAggregator.GetEvent<MediaSelectionEvent>().Subscribe(mediaSelectionEvent,ThreadOption.UIThread);
+            ViewModel = navigationContext.Parameters["MediaPreviewViewModel"] as MediaPreviewViewModelBase;
+
+            if(ViewModel == null) throw new ArgumentNullException("Missing MediaPreviewViewModel in navigationContext parameters");
+
+            ViewModel.PropertyChanged -= viewModel_PropertyChanged;
+            ViewModel.PropertyChanged += viewModel_PropertyChanged;
         }
 
-        private void mediaSelectionEvent(MediaSelectionPayload selection)
-        {
-            if (selection.Items.Count == 0 || selection.Items.ElementAt(0).Metadata == null)
-            {
-                previewImageBorder.Visibility = Visibility.Collapsed;
-                previewImage.Source = null;
-                PreviewItem = null;
-                CurrentPreviewImage = 0;
-                return;
-            }
+        private async void viewModel_PropertyChanged(Object sender, PropertyChangedEventArgs e)
+        {            
+            await App.Current.Dispatcher.BeginInvoke(new Action(async () => {
 
-            previewImageBorder.Visibility = Visibility.Visible;
-
-            PreviewItem = selection.Items.ElementAt(0);
-
-            if (PreviewItem.Metadata.Thumbnail != null)
-            {
-                previewImage.Stretch = Stretch.Uniform;
-                previewImage.Source = PreviewItem.Metadata.Thumbnail.Image;
-            }
-            else
-            {                
-                if (PreviewItem.Metadata is AudioMetadata)
+                await close(); 
+             
+                if (ViewModel.MediaPreviewImage == null)
                 {
-                    previewImage.Stretch = Stretch.Uniform;
-                    previewImage.Source = audioImage;
+                    previewImageBorder.Visibility = Visibility.Collapsed;       
+                    previewImage.Source = null;             
+               
+                    return;
                 }
-                else
+
+                previewImageBorder.Visibility = Visibility.Visible;
+                previewImage.Source = ViewModel.MediaPreviewImage;
+
+                BitmapImage errorImage = (ViewModel.MediaPreviewImage as BitmapImage);
+
+                if (errorImage != null && 
+                    errorImage.UriSource != null && 
+                    errorImage.UriSource.ToString().EndsWith("error.png"))
                 {
                     previewImage.Stretch = Stretch.None;
-                    previewImage.Source = errorImage;
-                }
-            }
+                
+                } else {
 
-            CurrentPreviewImage = 0;
-            
+                    previewImage.Stretch = Stretch.Uniform;
+                }
+                       
+            }));
         }
       
-        private void previewImage_MouseLeave(object sender, MouseEventArgs e)
+        private async void previewImage_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (CurrentPreviewImage != 0)
-            {
-                previewImage.Source = PreviewItem.Metadata.Thumbnail.Image;
-                CurrentPreviewImage = 0;
-            }
-
-            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
-            adornerLayer.Remove(TimeAdorner);
+            await close();
         }
 
-        private void previewImage_previewMouseMove(object sender, MouseEventArgs e)
+        async Task close()
         {
-            VideoMetadata videoMetadata = PreviewItem.Metadata as VideoMetadata;
-
-            if (videoMetadata == null || videoMetadata.VideoThumbnails.Count == 0)
+            if (TokenSource != null)
             {
-                return;
-            }            
-                   
-            Point mousePos = Mouse.GetPosition(previewImage);
-
-            double grid = previewImage.ActualWidth / videoMetadata.VideoThumbnails.Count;
-            int previewImageNr = MiscUtils.clamp<int>((int)Math.Floor(mousePos.X / grid), 0, videoMetadata.VideoThumbnails.Count - 1);
-
-            if (previewImageNr != CurrentPreviewImage)
-            {
-                previewImage.Source = videoMetadata.VideoThumbnails.ElementAt(previewImageNr).Image;
-                CurrentPreviewImage = previewImageNr;
+                TokenSource.Cancel();
             }
 
-            AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
+            await Semaphore.WaitAsync();
+            try
+            {
+                ViewModel.endVideoPreview();
 
-            adornerLayer.Remove(TimeAdorner);
+                previewImage.Source = ViewModel.MediaPreviewImage;
 
-            Size size = TimeAdorner.Size;
-            double xLeft = grid * previewImageNr + grid / 2 - size.Width / 2;
-            double xRight = xLeft + size.Width;
+                AdornerLayer adornerLayer = AdornerLayer.GetAdornerLayer(this);
+                if (adornerLayer != null)
+                {
+                    adornerLayer.Remove(TimeAdorner);
+                }
+            }
+            finally
+            {
+                Semaphore.Release();
+            }
+        }
 
-            if (xLeft < 0) xLeft = 0;
-            if (xRight > previewImage.ActualWidth) xLeft = previewImage.ActualWidth - size.Width;
-
-            TimeAdorner.Location = new Point(xLeft, previewImage.ActualHeight - size.Height);
-            TimeAdorner.TimeSeconds = (int)videoMetadata.VideoThumbnails.ElementAt(previewImageNr).TimeSeconds;
-
-            adornerLayer.Add(TimeAdorner);
+      
+        private void previewImage_previewMouseMove(object sender, MouseEventArgs e)
+        {
+            Timer.Stop();
+            Timer.Start();            
             
         }
 
-        private void previewImage_MouseEnter(object sender, MouseEventArgs e)
-        {
-            VideoMetadata videoMetadata = PreviewItem.Metadata as VideoMetadata;
+        private async void previewImage_MouseEnter(object sender, MouseEventArgs e)
+        {            
+            loadingView.VisibilityAndAnimate = Visibility.Visible;
+            TokenSource = new CancellationTokenSource();
 
-            if (videoMetadata == null || videoMetadata.IsImported == false)
+            try
             {
-                return;
-            }
+                await Task.Factory.StartNew(() =>
+                {
+                    Semaphore.Wait();
+                    try
+                    {
+                        ViewModel.startVideoPreview(TokenSource.Token);
+                    }                 
+                    finally
+                    {
+                        Semaphore.Release();
+                    }
 
-            using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
-            {
-                metadataCommands.loadVideoThumbnails(videoMetadata);
+                }, TokenSource.Token);
+
             }
+            catch (Exception)
+            {
+
+            }
+                        
+            loadingView.VisibilityAndAnimate = Visibility.Collapsed;
         }
-
+                    
     }
 }

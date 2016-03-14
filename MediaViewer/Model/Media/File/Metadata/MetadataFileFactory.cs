@@ -33,26 +33,33 @@ namespace MediaViewer.Model.Media.File.Metadata
             {
                 mediaProbe.open(location, token);
 
-                if (mediaProbe.IsAudio)
+                switch (mediaProbe.MediaType)
                 {
-                    metadata = new AudioMetadata(location, data);
-                    AudioFileMetadataReader reader = new AudioFileMetadataReader();
-                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
+                    case MediaType.AUDIO_MEDIA:
+                        {
+                            metadata = new AudioMetadata(location, data);
+                            AudioFileMetadataReader reader = new AudioFileMetadataReader();
+                            reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
+                            break;
+                        }
+                    case MediaType.IMAGE_MEDIA:
+                        {
+                            metadata = new ImageMetadata(location, data);
+                            ImageFileMetadataReader reader = new ImageFileMetadataReader();
+                            reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
+                            break;
+                        }                
+                    case MediaType.VIDEO_MEDIA:
+                        {
+                            metadata = new VideoMetadata(location, data);
+                            VideoFileMetadataReader reader = new VideoFileMetadataReader();
+                            reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
+                            break;
+                        }
+                    default:
+                        break;
                 }
-                else if (mediaProbe.IsVideo)
-                {
-                    metadata = new VideoMetadata(location, data);
-                    VideoFileMetadataReader reader = new VideoFileMetadataReader();
-                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
-
-                }
-                else if (mediaProbe.IsImage)
-                {
-                    metadata = new ImageMetadata(location, data);
-                    ImageFileMetadataReader reader = new ImageFileMetadataReader();
-                    reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
-                }
-
+                
                 FileInfo info = new FileInfo(location);
                 info.Refresh();
 

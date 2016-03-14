@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <limits>
-#include "Video\IVideoDecoder.h"
+#include "..\Video\IVideoDecoder.h"
 
 namespace VideoLib {
 

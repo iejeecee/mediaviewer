@@ -1,6 +1,6 @@
 #pragma once
 #include "VideoDecoder.h"
-#include "Dash\DashVideoDecoder.h"
+#include "..\Dash\DashVideoDecoder.h"
 
 namespace VideoLib {
 

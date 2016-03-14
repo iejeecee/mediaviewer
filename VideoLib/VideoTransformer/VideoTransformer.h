@@ -2,14 +2,14 @@
 #include <string>       
 #include <iostream>     
 #include <sstream> 
-#include "Video\VideoDecoderFactory.h"
-#include "Video\IVideoDecoder.h"
-#include "Video\VideoEncoder.h"
-#include "FilterGraph\FilterGraph.h"
+#include "..\Video\VideoDecoderFactory.h"
+#include "..\Video\IVideoDecoder.h"
+#include "..\Video\VideoEncoder.h"
+#include "..\FilterGraph\FilterGraph.h"
 #include "BitStreamFilter.h"
 #include "VideoTransformerInput.h"
 #include "VideoTransformerOutput.h"
-#include "Utils\Utils.h"
+#include "..\Utils\Utils.h"
  
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
@@ -33,8 +33,8 @@ protected:
 	std::vector<VideoTransformerOutput *> outputs;
 		
 	FilterGraph *filterGraph;
-	
 
+	
 	// this should be the default function to use when all input streams are pushed trough 
 	// a framegraph	
 	bool getNextPacket(AVPacket *packet, int &inputIdx, bool &isInputEOF) {
@@ -84,7 +84,7 @@ protected:
 		AVPacket *nextPacket = NULL;
 		double smallestDts = DBL_MAX;
 
-		for(int i = 0; i < potentialInputs.size(); i++) {
+		for(int i = 0; i < (int)potentialInputs.size(); i++) {
 					
 			int curIdx = potentialInputs[i];
 			bool success = true;
@@ -138,7 +138,7 @@ protected:
 		
 	VideoTransformer() {
 			
-		filterGraph = new FilterGraph();		
+		filterGraph = new FilterGraph();	
 	}
 
 	virtual ~VideoTransformer()
@@ -298,7 +298,7 @@ protected:
 				}
 				
 			}
-
+		
 			// flush filters
 			for(int inputIdx = 0; inputIdx < (int)inputs.size(); inputIdx++) 
 			{
@@ -317,6 +317,7 @@ protected:
 				
 				outputs[outputIdx]->encoder->writeTrailer();
 			}	
+
 
 		} finally {
 		
@@ -406,7 +407,8 @@ private:
 					}
 						
 					// skip frames which are outside the specified timerange 
-					double frameTimeSeconds = inStream->getTimeSeconds(frame->pts);
+					double frameTimeSeconds = inStream->getTimeSeconds(frame->pts - inStream->getStartTime());
+				
 					if(frameTimeSeconds >= inputs[inputIdx]->startTimeRange &&
 						frameTimeSeconds <= inputs[inputIdx]->endTimeRange) 
 					{							
@@ -432,6 +434,13 @@ private:
 
 							packet->pts += audioDuration;						
 						}
+				
+					}
+
+					if(frameTimeSeconds > inputs[inputIdx]->endTimeRange) 
+					{
+						// we don't need anymore packets from this stream
+						inputs[inputIdx]->streamsInfo[inStreamIdx]->isFinished = true;
 					}
 				}
 			
@@ -524,13 +533,20 @@ private:
 	}
 
 	void copyPacket(int inputIdx, AVPacket *packet) {
-
+		
 		int inStreamIdx = packet->stream_index;
 		VideoLib::Stream *inStream = inputs[inputIdx]->decoder->getStream(inStreamIdx);	
 
 		int outIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputIndex;
 		int outStreamIdx = inputs[inputIdx]->streamsInfo[inStreamIdx]->outputStreamIndex;
 		VideoLib::Stream *outStream = outputs[outIdx]->encoder->getStream(outStreamIdx);
+
+		// check if we passed endTimeRange for the current stream
+		if(inStream->getTimeSeconds(packet->dts - inStream->getStartTime()) > inputs[inputIdx]->endTimeRange)
+		{			
+			inputs[inputIdx]->streamsInfo[inStreamIdx]->isFinished = true;
+			return;								
+		}
 
 		//get the dts value of the first input packet and subtract it from subsequent dts & pts
 		//values to make sure the output video starts at time zero.

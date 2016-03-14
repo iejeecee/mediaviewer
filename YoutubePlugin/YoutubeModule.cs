@@ -9,6 +9,7 @@ using Microsoft.Practices.Prism.Regions;
 using Microsoft.Practices.ServiceLocation;
 using System.ComponentModel.Composition;
 using MediaViewer.Infrastructure;
+using YoutubePlugin.Settings;
 
 namespace YoutubePlugin
 {
@@ -22,7 +23,7 @@ namespace YoutubePlugin
         {
             this.RegionManager.RegisterViewWithRegion(RegionNames.MainNavigationToolBarRegion, typeof(YoutubeNavigationItemView));
 
-            //ServiceLocator.Current.GetInstance(typeof(ImageSearchSettingsViewModel));
+            ServiceLocator.Current.GetInstance(typeof(YoutubeSettingsViewModel));
         }
     }
 }

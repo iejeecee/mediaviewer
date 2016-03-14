@@ -33,9 +33,7 @@ MediaProbe::MediaProbe() {
 	DECODED_FRAME_CALLBACK nativeDecodedFrameCallback = static_cast<DECODED_FRAME_CALLBACK>(voidPtr.ToPointer());
 
 	frameGrabber->setDecodedFrameCallback(nativeDecodedFrameCallback, nullptr);
-
-	thumbs = gcnew List<MediaThumb ^>();
-	
+		
 }
 
 MediaProbe::~MediaProbe() {
@@ -85,10 +83,7 @@ void MediaProbe::open(String ^mediaLocation, System::Threading::CancellationToke
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
 		frameRate = frameGrabber->getFrameRate();
 		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
-		bitsPerPixel = frameGrabber->bitsPerPixel;
-		isVideo = frameGrabber->isVideo();
-		isAudio = frameGrabber->isAudio();
-		isImage = frameGrabber->isImage();
+		bitsPerPixel = frameGrabber->bitsPerPixel;		
 
 		audioCodecName = marshal_as<String ^>(frameGrabber->audioCodecName);
 		bytesPerSample = frameGrabber->getAudioBytesPerSample();
@@ -158,10 +153,21 @@ List<MediaThumb ^> ^MediaProbe::grabThumbnails(int maxThumbWidth, int maxThumbHe
 
 	this->decodedFrameProgressCallback = decodedFrameProgressCallback;
 
-	thumbs->Clear();
+	thumbs = gcnew List<MediaThumb ^>(); 
 
-	frameGrabber->grab(maxThumbWidth, maxThumbHeight,
+	frameGrabber->grabThumbnails(maxThumbWidth, maxThumbHeight,
 			captureIntervalSeconds, nrThumbs, startOffset, cancellationToken, timeoutSeconds);
+
+	return(thumbs);
+}
+
+List<MediaThumb ^> ^MediaProbe::grabAttachedImages(int maxThumbWidth, int maxThumbHeight, 
+			CancellationToken cancellationToken, int timeoutSeconds) 
+{
+	
+	thumbs = gcnew List<MediaThumb ^>();
+
+	frameGrabber->grabAttachedImages(maxThumbWidth, maxThumbHeight, cancellationToken, timeoutSeconds);
 
 	return(thumbs);
 }

@@ -26,12 +26,12 @@ namespace YoutubePlugin.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string VideoDownloadPath {
+        public string FixedDownloadPath {
             get {
-                return ((string)(this["VideoDownloadPath"]));
+                return ((string)(this["FixedDownloadPath"]));
             }
             set {
-                this["VideoDownloadPath"] = value;
+                this["FixedDownloadPath"] = value;
             }
         }
         

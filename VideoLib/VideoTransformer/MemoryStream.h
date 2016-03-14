@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include <fstream>
-#include "Video.h"
+#include "..\Video\Video.h"
 
 namespace VideoLib {
 

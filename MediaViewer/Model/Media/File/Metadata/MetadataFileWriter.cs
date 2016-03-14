@@ -98,24 +98,29 @@ namespace MediaViewer.Model.Media.File.Metadata
 
                 if (xmpMetaDataWriter.doesArrayItemExist(Consts.XMP_NS_DC, "creator", 1))
                 {
-
                     xmpMetaDataWriter.setArrayItem(Consts.XMP_NS_DC, "creator", 1, media.Author, 0);
-
                 }
                 else
                 {
-
                     xmpMetaDataWriter.appendArrayItem(Consts.XMP_NS_DC, "creator",
                         Consts.PropOptions.XMP_PropArrayIsOrdered, media.Author, 0);
                 }
 
             }
 
+            /*if (media.Thumbnail != null)
+            {
+                string imageData = MediaViewer.Infrastructure.Utils.ImageUtils.imageToJpegBase64String(media.Thumbnail.Image);
+
+                xmpMetaDataWriter.setStructField(Consts.XMP_NS_XMP, "xmpGImg", Consts.XMP_NS_XMP_Image, "format", "JPEG", (uint)Consts.PropOptions.XMP_NoOptions);
+                xmpMetaDataWriter.setStructField(Consts.XMP_NS_XMP, "xmpGImg", Consts.XMP_NS_XMP_Image, "width", media.Thumbnail.Image.Width.ToString(), (uint)Consts.PropOptions.XMP_NoOptions);
+                xmpMetaDataWriter.setStructField(Consts.XMP_NS_XMP, "xmpGImg", Consts.XMP_NS_XMP_Image, "height", media.Thumbnail.Image.Height.ToString(), (uint)Consts.PropOptions.XMP_NoOptions);
+                xmpMetaDataWriter.setStructField(Consts.XMP_NS_XMP, "xmpGImg", Consts.XMP_NS_XMP_Image, "image", imageData, (uint)Consts.PropOptions.XMP_NoOptions);
+            }*/
+
             if (media.Copyright != null)
             {
-
-                xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "rights", "en", "en-US", media.Copyright);
-          
+                xmpMetaDataWriter.setLocalizedText(Consts.XMP_NS_DC, "rights", "en", "en-US", media.Copyright);          
             }
 
             if (media.CreationDate != null)

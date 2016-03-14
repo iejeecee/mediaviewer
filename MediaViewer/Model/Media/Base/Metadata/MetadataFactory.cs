@@ -28,9 +28,8 @@ namespace MediaViewer.Model.Media.Base.Metadata
             AUTO = 1,
             READ_FROM_DISK = 1 << 1,
             READ_FROM_DATABASE = 1 << 2,
-            GENERATE_THUMBNAIL = 1 << 3,
-            GENERATE_MULTIPLE_THUMBNAILS = 1 << 4,
-            LEAVE_STREAM_OPENED_AFTER_READ = 1 << 5,         
+            GENERATE_THUMBNAIL = 1 << 3,      
+            LEAVE_STREAM_OPENED_AFTER_READ = 1 << 4,         
         }
 
         public enum WriteOptions

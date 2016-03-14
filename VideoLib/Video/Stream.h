@@ -3,9 +3,9 @@
 // unsafe function warning disable
 #pragma warning(disable : 4996)
 #include <algorithm>
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include "VideoInit.h"
-#include "VideoLibException.h"
+#include "..\VideoLibException.h"
 #include <msclr\marshal.h>
 
 
@@ -104,9 +104,13 @@ public:
 
 	int64_t getTimeBaseUnits(double timeSeconds) const
 	{
-		int64_t startTime = stream->start_time == AV_NOPTS_VALUE ? 0 : stream->start_time;
-
+		
 		return int64_t(timeSeconds / av_q2d(stream->time_base));	
+	}
+
+	int64_t getStartTime() const
+	{
+		return stream->start_time == AV_NOPTS_VALUE ? 0 : stream->start_time;
 	}
 
 	// return stream timebase

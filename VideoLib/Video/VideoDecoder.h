@@ -2,9 +2,9 @@
 #include "stdafx.h"
 #include "Video.h"
 #include "VideoLibException.h"
-#include "FilterGraph\FilterGraph.h"
+#include "..\FilterGraph\FilterGraph.h"
 #include "IVideoDecoder.h"
-#include "VideoTransformer\MemoryStreamAVIOContext.h"
+#include "..\VideoTransformer\MemoryStreamAVIOContext.h"
 #include <algorithm>
 #include <msclr\marshal_cppstd.h>
 
@@ -247,6 +247,51 @@ private:
 		token->ThrowIfCancellationRequested();
 	}
 
+	bool isVideo() const {
+	
+		if(!hasVideo()) return false;	
+
+		if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) > 0) return false; //mp3 cover art etc
+
+		std::string container = std::string(formatContext->iformat->long_name);
+
+		if(container.compare("image2 sequence") == 0) return(false); //jpeg
+
+		bool hasFramerate = getFrameRate() > 0;
+
+		bool hasDuration = getDurationSeconds() > 0;
+
+		return hasFramerate || hasDuration;
+	}
+
+	bool isAudio() const {
+
+		if(!hasAudio()) return false;		
+		if(getFrameRate() > 0) return false;
+		
+		if(hasVideo()) {
+		
+			if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) == 0) return false;
+		}
+
+		return true;	
+	}
+
+	bool isImage() const {
+
+		if(hasAudio()) return false;
+		if(getFrameRate() > 0) return false;
+
+		std::string container = std::string(formatContext->iformat->long_name);
+
+		if(container.compare("image2 sequence") == 0) return(true); //jpeg
+		if(getDurationSeconds() > 0) return false;
+		if(!hasVideo()) return false;
+	
+		return(true);
+
+	}
+
 public:
 
 	enum VideoDecodeMode {		
@@ -259,7 +304,7 @@ public:
 		DECODE_AUDIO,
 		SKIP_AUDIO
 	};
-
+	
 	VideoDecoder()
 	{
 		openOptions = NULL;
@@ -617,15 +662,52 @@ public:
 		return ret;
 	}	
 
-	bool seek(double posSeconds, int flags = 0) {
+	bool seek(double posSeconds, int flags = AVSEEK_FLAG_BACKWARD) {
+						
+		/*int streamIndex;
+
+		switch(getMediaType()) 
+		{
+		case MediaType::VIDEO_MEDIA:
+			{
+				streamIndex = getVideoStreamIndex();
+				break;
+			}
+		case MediaType::AUDIO_MEDIA:
+			{
+				streamIndex = getAudioStreamIndex();
+				break;
+			}
+		default:
+			{
+				VideoInit::writeToLog(AV_LOG_WARNING, "cannot seek in non-video/audio media");	
+				return(false);
+			}
+		}
+		
+		int64_t seekTarget = getStream(streamIndex)->getTimeBaseUnits(posSeconds) + getStream(streamIndex)->getStartTime();*/
+
+		//int ret = av_seek_frame(formatContext, streamIndex, position, flags);
 
 		// convert timestamp into a videostream timestamp
 		AVRational myAVTIMEBASEQ = {1, AV_TIME_BASE}; 
-	
+			
 		int64_t seekTarget = posSeconds / av_q2d(myAVTIMEBASEQ);
-				
-		//int ret = av_seek_frame(formatContext, -1, seekTarget, 0);
-		int ret = avformat_seek_file(formatContext, -1, INT64_MIN, seekTarget, seekTarget, flags);
+
+		int64_t min_ts, max_ts;
+
+		if(flags & AVSEEK_FLAG_BACKWARD) 
+		{
+			min_ts = INT64_MIN;
+			max_ts = seekTarget;
+
+		} else {
+
+			min_ts = seekTarget;
+			max_ts = INT64_MAX;
+		}
+
+		int ret = avformat_seek_file(formatContext, -1, min_ts, seekTarget, max_ts, flags);
 		if(ret >= 0) { 
 			
 			if(hasVideo()) {
@@ -645,6 +727,7 @@ public:
 		
 	}
 
+	
 	int getWidth() const {
 
 		return(hasVideo() ? getVideoCodecContext()->width : 0);
@@ -697,6 +780,8 @@ public:
 			throw gcnew VideoLib::VideoLibException("Unable to allocate video convert context");
 		} 
 		
+		av_frame_copy_props(output, input);
+
 		// convert frame to the right format
 		sws_scale(imageConvertContext,
 			input->data,
@@ -706,7 +791,12 @@ public:
 			output->data,
 			output->linesize);	
 
+		output->width = outWidth;
+		output->height = outHeight;
+		output->format = outPixelFormat;
+
 		output->pts = av_frame_get_best_effort_timestamp(input);
+			
 	}
 	
 	void setAudioOutputFormat(int sampleRate = 44100, int64_t channelLayout = AV_CH_LAYOUT_STEREO, 
@@ -765,6 +855,8 @@ public:
 
 		}
 	
+		av_frame_copy_props(output, input);
+
 		int numSamplesOut = swr_convert(audioConvertContext,
 										output->data,
 										input->nb_samples,
@@ -777,13 +869,41 @@ public:
 											outNrChannels,
 											numSamplesOut,
 											outSampleFormat, 1);									
-					
+				
+		output->sample_rate = outSampleRate;
+		output->channel_layout = outChannelLayout;
+		output->format = outSampleFormat;
+
 		output->pts = av_frame_get_best_effort_timestamp(input);
 
 		return(length);
 	}
 
+	MediaType getMediaType() const 
+	{	
+		if(isVideo()) return MediaType::VIDEO_MEDIA;
+		if(isAudio()) return MediaType::AUDIO_MEDIA;
+		if(isImage()) return MediaType::IMAGE_MEDIA;
+		
+		return MediaType::UNKNOWN_MEDIA;
+	}
 
+	SeekMode getSeekMode() const 
+	{
+		if((getFormatContext()->iformat->flags & AVFMT_SEEK_TO_PTS) > 0) {
+
+			return SeekMode::SEEK_BY_PTS;
+
+		} else {
+
+			return SeekMode::SEEK_BY_DTS;
+		}
+
+	}
+
+
+
+	
 	
 };
 

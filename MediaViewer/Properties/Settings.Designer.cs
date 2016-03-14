@@ -70,42 +70,6 @@ namespace MediaViewer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool IsVideoScreenShotLocationAsk {
-            get {
-                return ((bool)(this["IsVideoScreenShotLocationAsk"]));
-            }
-            set {
-                this["IsVideoScreenShotLocationAsk"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool IsVideoScreenShotLocationCurrent {
-            get {
-                return ((bool)(this["IsVideoScreenShotLocationCurrent"]));
-            }
-            set {
-                this["IsVideoScreenShotLocationCurrent"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool IsVideoScreenShotLocationFixed {
-            get {
-                return ((bool)(this["IsVideoScreenShotLocationFixed"]));
-            }
-            set {
-                this["IsVideoScreenShotLocationFixed"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("100")]
         public int VideoMinBufferedPackets {
             get {
@@ -113,6 +77,18 @@ namespace MediaViewer.Properties {
             }
             set {
                 this["VideoMinBufferedPackets"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1")]
+        public double VideoStepDurationSeconds {
+            get {
+                return ((double)(this["VideoStepDurationSeconds"]));
+            }
+            set {
+                this["VideoStepDurationSeconds"] = value;
             }
         }
     }

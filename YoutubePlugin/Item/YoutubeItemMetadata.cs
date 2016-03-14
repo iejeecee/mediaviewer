@@ -16,11 +16,7 @@ namespace YoutubePlugin.Item
         public int? Height { get; set; }
         public long? DurationSeconds { get; set; }
         public long? ViewCount { get; set; }
-        public double? FramesPerSecond { get; set; }
-      
-        public YoutubeItemMetadata()
-        {            
-        }
+        public double? FramesPerSecond { get; set; }     
 
         public override string DefaultFormatCaption
         {

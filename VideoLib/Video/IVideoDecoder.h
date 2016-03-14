@@ -1,9 +1,10 @@
 #pragma once
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include "Video.h"
-#include "VideoLibException.h"
-#include "FilterGraph\FilterGraph.h"
-#include "OpenVideoArgs.h"
+#include "..\VideoLibException.h"
+#include "..\FilterGraph\FilterGraph.h"
+#include "..\Constants.h"
+#include "..\OpenVideoArgs.h"
 #include <algorithm>
 #include <msclr\marshal_cppstd.h>
 
@@ -37,7 +38,7 @@ namespace VideoLib {
 			LANCZOS = SWS_LANCZOS,
 			SPLINE = SWS_SPLINE
 		};
-
+		
 		virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^token) = 0;  
 		
 		virtual int64_t getSizeBytes() const = 0;
@@ -88,6 +89,8 @@ namespace VideoLib {
 	
 		virtual bool isClosed() const = 0;
 
+		virtual MediaType getMediaType() const = 0;
+		virtual SeekMode getSeekMode() const = 0;
 		
 	};
 

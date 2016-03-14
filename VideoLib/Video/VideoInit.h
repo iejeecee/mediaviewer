@@ -1,7 +1,7 @@
 #pragma once
 // unsafe function warning disable
 #pragma warning(disable : 4996)
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include <winbase.h>
 #include <msclr\marshal_cppstd.h>
 #include "ThreadSafeList.h"

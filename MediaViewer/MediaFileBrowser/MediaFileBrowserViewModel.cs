@@ -49,6 +49,7 @@ using MediaViewer.Filter;
 using MediaViewer.MediaFileBrowser.DirectoryBrowser;
 using MediaViewer.UserControls.MediaPreview;
 using MediaViewer.MediaDatabase;
+using MediaViewer.Model.Media.File.Preview;
 
 namespace MediaViewer.MediaFileBrowser
 {
@@ -408,7 +409,10 @@ namespace MediaViewer.MediaFileBrowser
 
             // add media preview
             Uri mediaPreviewUri = new Uri(typeof(MediaPreviewView).FullName, UriKind.Relative);
-            RegionManager.RequestNavigate("mediaPreviewExpander", mediaPreviewUri);
+            navigationParams = new NavigationParameters();
+            navigationParams.Add("MediaPreviewViewModel", new MediaFilePreviewViewModel2(EventAggregator));
+
+            RegionManager.RequestNavigate("mediaPreviewExpander", mediaPreviewUri, navigationParams);
 
             navigateToMediaFileGrid();
         }

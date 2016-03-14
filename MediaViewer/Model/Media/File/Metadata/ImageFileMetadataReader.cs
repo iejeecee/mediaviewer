@@ -49,8 +49,7 @@ namespace MediaViewer.Model.Media.File.Metadata
                
             try
             {                   
-                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
-                    options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
+                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL))
                 {
                     generateThumbnail(mediaProbe, image, token, timeoutSeconds, 1);
                 }
@@ -209,7 +208,7 @@ namespace MediaViewer.Model.Media.File.Metadata
             String temp = "";
             bool exists = false;
 
-            exists = xmpMetaDataReader.getStructField(Consts.XMP_NS_EXIF, "Flash", "http://ns.adobe.com/exif/1.0/", "exif:Fired", ref temp);
+            exists = xmpMetaDataReader.getStructField(Consts.XMP_NS_EXIF, "Flash", Consts.XMP_NS_EXIF, "exif:Fired", ref temp);
             if (exists)
             {
                 try

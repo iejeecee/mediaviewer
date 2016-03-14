@@ -33,7 +33,7 @@ namespace MediaViewer.Model.Media.Base.State
             if (autoLoadItems == true)
             {
                 itemLoader = new MediaItemMetadataLoader();
-                Task.Factory.StartNew(() => itemLoader.loadLoop());
+                
 
                 itemLoader.ItemFinishedLoading += itemLoader_ItemFinishedLoading;
             }
@@ -162,11 +162,17 @@ namespace MediaViewer.Model.Media.Base.State
 
         public void Reload(MediaItem item)
         {
-            item.EnterWriteLock();          
-            item.ItemState = MediaItemState.RELOAD;
-            item.ExitWriteLock();
+            if (item.ItemState != MediaItemState.LOADED)
+            {
+                // cannot reload item that hasn't been loaded
+                return;
+            }
 
-            NrLoadedItems--;
+            item.EnterWriteLock();                                         
+            item.ItemState = MediaItemState.RELOAD;           
+            item.ExitWriteLock();
+                        
+            NrLoadedItems--;            
             itemLoader.add(item);
         }
         

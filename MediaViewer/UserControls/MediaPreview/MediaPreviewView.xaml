@@ -3,11 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
-    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" MouseLeave="previewImage_MouseLeave" PreviewMouseMove="previewImage_previewMouseMove" MouseEnter="previewImage_MouseEnter">
         <Border x:Name="previewImageBorder" BorderThickness="2" BorderBrush="Black" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed">
-            <Image x:Name="previewImage" MouseLeave="previewImage_MouseLeave" PreviewMouseMove="previewImage_previewMouseMove" MouseEnter="previewImage_MouseEnter"/>
+            <Grid>
+                <Image x:Name="previewImage"/>
+                <Loading:LoadingView x:Name="loadingView" HorizontalAlignment="Center" VerticalAlignment="Center" VisibilityAndAnimate="Collapsed">
+                    <Loading:LoadingView.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform ScaleX="0.7" ScaleY="0.7"/>
+                        </TransformGroup>
+                    </Loading:LoadingView.RenderTransform>
+                </Loading:LoadingView>
+            </Grid>
         </Border>
     </Grid>
 </UserControl>

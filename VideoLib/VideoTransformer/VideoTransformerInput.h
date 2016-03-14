@@ -108,6 +108,9 @@ namespace VideoLib {
 
 			while(1) {
 
+				isInputFinished = checkIsInputFinished();
+				if(isInputFinished) return false;
+
 				VideoDecoder::ReadFrameResult result = decoder->readFrame(&packet); 			
 				if(result == VideoDecoder::ReadFrameResult::END_OF_STREAM) {
 
@@ -120,22 +123,13 @@ namespace VideoLib {
 					throw gcnew VideoLibException("Error reading packet from input");
 				}
 
-				if(streamsInfo[packet.stream_index]->mode == StreamTransformMode::DISCARD) {
-
-					av_packet_unref(&packet);
-					continue;
-				}
-
-				if(decoder->getStream(packet.stream_index)->getTimeSeconds(packet.dts) > endTimeRange)
+				if(streamsInfo[packet.stream_index]->mode == StreamTransformMode::DISCARD || 
+					streamsInfo[packet.stream_index]->isFinished == true) 
 				{
-					streamsInfo[packet.stream_index]->isFinished = true;
-					isInputFinished = checkIsInputFinished();
-
-					if(isInputFinished) return false;
 					av_packet_unref(&packet);
 					continue;
 				}
-				
+
 				return true;
 			}
 		}

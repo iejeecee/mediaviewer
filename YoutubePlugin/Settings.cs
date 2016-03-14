@@ -1,6 +1,7 @@
 ﻿using Google.Apis.YouTube.v3.Data;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Windows.Media.Imaging;
 using YoutubePlugin.YoutubeChannelBrowser;
 
@@ -38,6 +39,11 @@ namespace YoutubePlugin.Properties {
             {
                 YoutubeChannels = new List<YoutubeChannelNodeState>();
             }
+
+            if (FixedDownloadPathHistory == null)
+            {
+                FixedDownloadPathHistory = new ObservableCollection<string>();
+            }
            
         }
         
@@ -64,6 +70,91 @@ namespace YoutubePlugin.Properties {
             }
         }
 
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public ObservableCollection<String> FixedDownloadPathHistory
+        {
+            get
+            {
+                return ((ObservableCollection<String>)(this["FixedDownloadPathHistory"]));
+            }
+            set
+            {
+                this["FixedDownloadPathHistory"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public MediaViewer.Infrastructure.Constants.SaveLocation VideoSaveMode
+        {
+            get
+            {
+                Object value = this["VideoSaveMode"];
+
+                if (value == null)
+                {
+                    return MediaViewer.Infrastructure.Constants.SaveLocation.Ask;
+                }
+                else
+                {
+                    return (MediaViewer.Infrastructure.Constants.SaveLocation)value;
+                }
+
+            }
+            set
+            {
+                this["VideoSaveMode"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public YoutubePlugin.Settings.Constants.VideoResolution MaxPlaybackResolution
+        {
+            get
+            {
+                Object value = this["MaxPlaybackResolution"];
+
+                if (value == null)
+                {
+                    return YoutubePlugin.Settings.Constants.VideoResolution.r2160p;
+                }
+                else
+                {
+                    return (YoutubePlugin.Settings.Constants.VideoResolution)value;
+                }
+
+            }
+            set
+            {
+                this["MaxPlaybackResolution"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public YoutubePlugin.Settings.Constants.VideoResolution MaxDownloadResolution
+        {
+            get
+            {
+                Object value = this["MaxDownloadResolution"];
+
+                if (value == null)
+                {
+                    return YoutubePlugin.Settings.Constants.VideoResolution.r2160p;
+                }
+                else
+                {
+                    return (YoutubePlugin.Settings.Constants.VideoResolution)value;
+                }
+
+            }
+            set
+            {
+                this["MaxDownloadResolution"] = value;
+            }
+        }
         
     }
 

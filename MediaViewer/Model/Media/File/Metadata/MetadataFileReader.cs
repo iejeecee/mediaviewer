@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using XMPLib;
 using MediaViewer.Model.Media.Base.Metadata;
 using VideoLib;
+using System.Windows.Media.Imaging;
 
 namespace MediaViewer.Model.Media.File.Metadata
 {    
@@ -163,6 +164,16 @@ namespace MediaViewer.Model.Media.File.Metadata
 
                 }
             }
+
+            /*string imageData = "";
+
+            bool exists = xmpMetaDataReader.getStructField(Consts.XMP_NS_XMP, "xmpGImg", Consts.XMP_NS_XMP_Image, "image", ref imageData);
+            if (exists)
+            {
+                BitmapSource thumbnail = MediaViewer.Infrastructure.Utils.ImageUtils.jpegBase64StringToImage(imageData);
+              
+            }*/
+            
 
         }
     }

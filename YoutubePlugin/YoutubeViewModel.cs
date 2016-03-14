@@ -34,6 +34,9 @@ using YoutubePlugin.YoutubeMetadata;
 using YoutubePlugin.YoutubeSearch;
 using MediaViewer.Model.Media.Base.Item;
 using MediaViewer.MediaFileStackPanel;
+using MediaViewer.UserControls.MediaPreview;
+using YoutubePlugin.Preview;
+using MediaViewer.DirectoryPicker;
 
 namespace YoutubePlugin
 {    
@@ -84,7 +87,7 @@ namespace YoutubePlugin
                     else
                     {
                         YoutubeVideoStreamedItem video, audio;
-                        item.getBestQualityStreams(out video, out audio);
+                        item.getStreams(out video, out audio, (int)Properties.Settings.Default.MaxPlaybackResolution);
 
                         Shell.ShellViewModel.navigateToVideoView(video, null, audio);
                     }
@@ -140,7 +143,38 @@ namespace YoutubePlugin
                     items.Add(selectableItem.Item);
                 }
 
-                String outputPath = MediaFileWatcher.Instance.Path;
+                String outputPath = null;
+
+                switch (YoutubePlugin.Properties.Settings.Default.VideoSaveMode)
+                {
+                    case MediaViewer.Infrastructure.Constants.SaveLocation.Current:
+                        {
+                            outputPath = MediaFileWatcher.Instance.Path;
+                            break;
+                        }
+                    case MediaViewer.Infrastructure.Constants.SaveLocation.Ask:
+                        {
+                            DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                            directoryPicker.DirectoryPickerViewModel.InfoString = "Select Output Directory";
+                            directoryPicker.DirectoryPickerViewModel.SelectedPath = MediaFileWatcher.Instance.Path;
+
+                            if (directoryPicker.ShowDialog() == false)
+                            {
+                                return;
+                            }
+
+                            outputPath = directoryPicker.DirectoryPickerViewModel.SelectedPath;
+
+                            break;
+                        }
+                    case MediaViewer.Infrastructure.Constants.SaveLocation.Fixed:
+                        {
+                            outputPath = YoutubePlugin.Properties.Settings.Default.FixedDownloadPath;
+                            break;
+                        }
+                    default:
+                        break;
+                }
 
                 CancellableOperationProgressView progressView = new CancellableOperationProgressView();
                 DownloadProgressViewModel vm = new DownloadProgressViewModel();
@@ -177,7 +211,7 @@ namespace YoutubePlugin
 
             ShutdownCommand = new Command(() =>
                 {
-                    Settings.Default.Save();
+                    Properties.Settings.Default.Save();
                 });
 
             MediaState.UIMediaCollection.IsLoadingChanged += UIMediaCollection_IsLoadingChanged;
@@ -231,8 +265,13 @@ namespace YoutubePlugin
             Uri youtubeMetadataViewUri = new Uri(typeof(YoutubeMetadataView).FullName, UriKind.Relative);
 
             RegionManager.RequestNavigate("youtubeMetadataExpander", youtubeMetadataViewUri);
-
            
+            // preview
+            Uri mediaPreviewUri = new Uri(typeof(MediaPreviewView).FullName, UriKind.Relative);
+            NavigationParameters navigationParams = new NavigationParameters();
+            navigationParams.Add("MediaPreviewViewModel", new YoutubePreviewViewModel(EventAggregator));
+
+            RegionManager.RequestNavigate("youtubePreviewExpander", mediaPreviewUri, navigationParams);
         }
 
         void mediaStateCollectionView_SelectionChanged(object sender, EventArgs e)

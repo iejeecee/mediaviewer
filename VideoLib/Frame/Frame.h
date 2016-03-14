@@ -1,4 +1,5 @@
 #pragma once
+#include "..\Video\Video.h"
 
 namespace VideoLib {
 
@@ -16,7 +17,7 @@ namespace VideoLib {
 
 		AVFrame *avFrame;
 
-		double pts;
+		double pts,dts;
 		FrameType frameType;
 
 	public:
@@ -44,6 +45,7 @@ namespace VideoLib {
 
 			this->frameType = frameType;
 			pts = 0;
+			dts = 0;
 		}
 
 		!Frame() {
@@ -60,6 +62,7 @@ namespace VideoLib {
 			this->!Frame();
 		}
 
+		// presentation timestamp of the current frame in seconds, shifted by stream start_time
 		property double Pts {
 
 			void set(double pts) {
@@ -71,6 +74,26 @@ namespace VideoLib {
 			}
 		}
 
+		// decoding timestamp of the current frame in seconds, shifted by stream start_time
+		property double Dts {
+
+			void set(double dts) {
+				this->dts = dts;
+			}
+
+			double get() {
+				return(dts);
+			}
+		}
+
+		property long FramePts {
+
+			long get()
+			{ 
+				return(avFrame->pts);
+			}
+		}
+		
 		property FrameType FrameTypeP
 		{
 			FrameType get() {

@@ -285,14 +285,14 @@ namespace MediaViewer.Infrastructure.Utils
         }
 
 
-        public static string imageToJpegBase64String(BitmapSource image)
+        public static string imageToJpegBase64String(BitmapSource image, int qualityLevel = 100)
         {
             if (image == null) return (null);
 
             JpegBitmapEncoder encoder = new JpegBitmapEncoder();
 
             encoder.Frames.Add(BitmapFrame.Create(image));
-            encoder.QualityLevel = 100;
+            encoder.QualityLevel = qualityLevel;
             byte[] bytes = new byte[0];
             using (MemoryStream stream = new MemoryStream())
             {

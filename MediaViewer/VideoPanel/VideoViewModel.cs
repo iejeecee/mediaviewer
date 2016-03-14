@@ -161,6 +161,28 @@ namespace MediaViewer.VideoPanel
 
             }, false);
 
+            StepForwardCommand = new AsyncCommand(async () =>
+                {
+                    StepForwardCommand.IsExecutable = false;
+
+                    double timeStamp = VideoPlayer.getFrameSeekTimeStamp() + Settings.Default.VideoStepDurationSeconds;                    
+                    await VideoPlayer.seek(timeStamp, VideoLib.VideoPlayer.SeekKeyframeMode.SEEK_FORWARDS);
+
+                    StepForwardCommand.IsExecutable = true;
+
+                }, false);
+
+            StepBackwardCommand = new AsyncCommand(async () =>
+            {
+                StepBackwardCommand.IsExecutable = false;
+
+                double timeStamp = VideoPlayer.getFrameSeekTimeStamp() - Settings.Default.VideoStepDurationSeconds;                
+                await VideoPlayer.seek(timeStamp, VideoLib.VideoPlayer.SeekKeyframeMode.SEEK_BACKWARDS);
+
+                StepBackwardCommand.IsExecutable = true;
+
+            }, false);
+
             FrameByFrameCommand = new Command(() => {
              
                 VideoPlayer.displayNextFrame();
@@ -168,8 +190,7 @@ namespace MediaViewer.VideoPanel
             }, false);
 
             CutVideoCommand = new Command(() =>
-            {
-                
+            {                
                 String outputPath;
 
                 if(FileUtils.isUrl(VideoPlayer.VideoLocation)) {
@@ -188,8 +209,8 @@ namespace MediaViewer.VideoPanel
 
                 videoTranscode.ViewModel.OutputPath = outputPath;
                 videoTranscode.ViewModel.IsTimeRangeEnabled = IsTimeRangeEnabled;
-                videoTranscode.ViewModel.StartTimeRange = StartTimeRange;
-                videoTranscode.ViewModel.EndTimeRange = EndTimeRange;
+                videoTranscode.ViewModel.StartTimeRange = startTimeRangeTimeStamp;
+                videoTranscode.ViewModel.EndTimeRange = endTimeRangeTimeStamp;
 
                 String extension = Path.GetExtension(VideoPlayer.VideoLocation).ToLower().TrimStart('.');
 
@@ -213,34 +234,42 @@ namespace MediaViewer.VideoPanel
 
                     screenShotName += "." + "jpg";
 
-                    String path;
+                    String path = null;
 
-                    if (Settings.Default.IsVideoScreenShotLocationFixed)
+                    switch (Settings.Default.VideoScreenShotSaveMode)
                     {
-                        path = Settings.Default.VideoScreenShotLocation;                       
-                    }
-                    else if (Settings.Default.IsVideoScreenShotLocationAsk)
-                    {
-                        DirectoryPickerView directoryPicker = new DirectoryPickerView();
-                        DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
-                        directoryPicker.Title = "Screenshot Output Directory";
-                        vm.SelectedPath = Settings.Default.VideoScreenShotLocation;
-                        vm.PathHistory = Settings.Default.VideoScreenShotLocationHistory;
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Current:
+                            {
+                                path = MediaFileWatcher.Instance.Path;
+                                break;
+                            }
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Ask:
+                            {
+                                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                                DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
+                                directoryPicker.Title = "Screenshot Output Directory";
+                                vm.SelectedPath = Settings.Default.VideoScreenShotLocation;
+                                vm.PathHistory = Settings.Default.VideoScreenShotLocationHistory;
 
-                        if (directoryPicker.ShowDialog() == true)
-                        {
-                            path = vm.SelectedPath;
-                        }
-                        else
-                        {
-                            return;
-                        }
+                                if (directoryPicker.ShowDialog() == true)
+                                {
+                                    path = vm.SelectedPath;
+                                }
+                                else
+                                {
+                                    return;
+                                }
+                                break;
+                            }
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Fixed:
+                            {
+                                path = Settings.Default.VideoScreenShotLocation;
+                                break;
+                            }
+                        default:
+                            break;
                     }
-                    else
-                    {
-                        path = MediaFileWatcher.Instance.Path;
-                    }
-
+                                                                                                      
                     String fullPath = FileUtils.getUniqueFileName(path + "\\" + screenShotName);
 
                     VideoPlayer.createScreenShot(fullPath, VideoSettings.VideoScreenShotTimeOffset);
@@ -259,7 +288,9 @@ namespace MediaViewer.VideoPanel
                         IsTimeRangeEnabled = true;
                     }
 
+                    // get the exact time of the current audio or video frame, positionseconds is potentially inaccurate
                     StartTimeRange = VideoPlayer.PositionSeconds;
+                    startTimeRangeTimeStamp = VideoPlayer.getFrameSeekTimeStamp();
 
                 }, false);
 
@@ -269,10 +300,12 @@ namespace MediaViewer.VideoPanel
                 {
                     IsTimeRangeEnabled = true;
                     StartTimeRange = VideoPlayer.PositionSeconds;
+                    startTimeRangeTimeStamp = VideoPlayer.getFrameSeekTimeStamp();
                 }
                 else
                 {
                     EndTimeRange = VideoPlayer.PositionSeconds;
+                    endTimeRangeTimeStamp = VideoPlayer.getFrameSeekTimeStamp();
                 }
 
             }, false);
@@ -310,14 +343,18 @@ namespace MediaViewer.VideoPanel
             IsTimeRangeEnabled = false;
             StartTimeRange = 0;
             EndTimeRange = 0;
-            
+            startTimeRangeTimeStamp = 0;
+            endTimeRangeTimeStamp = 0;
+
         }
+
+        
 
         private void VideoSettings_SettingsChanged(object sender, EventArgs e)
         {
             if (VideoPlayer == null) return;
 
-            VideoPlayer.MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+            VideoPlayer.MinNrBufferedPackets = Settings.Default.VideoMinBufferedPackets;
         }
        
         bool isInitialized;
@@ -354,7 +391,7 @@ namespace MediaViewer.VideoPanel
             videoPlayer.IsMuted = IsMuted;
             videoPlayer.Volume = Volume;
 
-            videoPlayer.MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+            videoPlayer.MinNrBufferedPackets = Settings.Default.VideoMinBufferedPackets;
             VideoSettings.NrPackets = videoPlayer.NrPackets;
 
             IsInitialized = true;
@@ -456,7 +493,7 @@ namespace MediaViewer.VideoPanel
             }
         }
 
-        double startTimeRange;
+        double startTimeRange, startTimeRangeTimeStamp;
 
         public double StartTimeRange
         {
@@ -464,7 +501,7 @@ namespace MediaViewer.VideoPanel
             set { SetProperty(ref startTimeRange, value); }
         }
 
-        double endTimeRange;
+        double endTimeRange, endTimeRangeTimeStamp;
 
         public double EndTimeRange
         {
@@ -503,6 +540,8 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = false;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = false;
+                        StepForwardCommand.IsExecutable = false;
+                        StepBackwardCommand.IsExecutable = false;
                         FrameByFrameCommand.IsExecutable = false;                      
                         SetLeftMarkerCommand.IsExecutable = true;
                         SetRightMarkerCommand.IsExecutable = true;
@@ -515,6 +554,8 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = true;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = true;
+                        StepForwardCommand.IsExecutable = true;
+                        StepBackwardCommand.IsExecutable = true;
                         FrameByFrameCommand.IsExecutable = true;                      
                         SetLeftMarkerCommand.IsExecutable = true;
                         SetRightMarkerCommand.IsExecutable = true;
@@ -527,6 +568,8 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = true;
                         CloseCommand.IsExecutable = true;
                         SeekCommand.IsExecutable = true;
+                        StepForwardCommand.IsExecutable = true;
+                        StepBackwardCommand.IsExecutable = true;
                         FrameByFrameCommand.IsExecutable = true;                       
                         SetLeftMarkerCommand.IsExecutable = true;
                         SetRightMarkerCommand.IsExecutable = true;
@@ -539,6 +582,8 @@ namespace MediaViewer.VideoPanel
                         ScreenShotCommand.IsExecutable = false;
                         CloseCommand.IsExecutable = false;
                         SeekCommand.IsExecutable = false;
+                        StepForwardCommand.IsExecutable = false;
+                        StepBackwardCommand.IsExecutable = false;
                         FrameByFrameCommand.IsExecutable = false;                       
                         IsTimeRangeEnabled = false;                   
                         SetLeftMarkerCommand.IsExecutable = false;
@@ -560,6 +605,8 @@ namespace MediaViewer.VideoPanel
         public AsyncCommand CloseCommand { get; set; }
         public Command ScreenShotCommand { get; set; }
         public AsyncCommand<double> SeekCommand { get; set; }
+        public AsyncCommand StepForwardCommand { get; set; }
+        public AsyncCommand StepBackwardCommand { get; set; }
         public Command FrameByFrameCommand { get; set; }      
         public Command SetLeftMarkerCommand { get; set; }
         public Command SetRightMarkerCommand { get; set; }

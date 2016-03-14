@@ -10,19 +10,19 @@ namespace MediaViewer.MediaDatabase
     {
         public VideoMetadata()
         {
-            this.VideoThumbnails = new List<VideoThumbnail>();
+            //this.VideoThumbnails = new List<VideoThumbnail>();
         }
 
         public VideoMetadata(String location, Stream data) : base(location, data)
         {
-            VideoThumbnails = new HashSet<VideoThumbnail>();
+            //VideoThumbnails = new HashSet<VideoThumbnail>();
         }
 
         public override void clear()
         {
             base.clear();
 
-            VideoThumbnails = new HashSet<VideoThumbnail>(); 
+            //VideoThumbnails = new HashSet<VideoThumbnail>(); 
         }
 
         public override string DefaultFormatCaption
@@ -101,6 +101,8 @@ namespace MediaViewer.MediaDatabase
         public Nullable<short> BitsPerPixel { get; set; }
         //public int Id { get; set; }
         //public virtual BaseMetadata BaseMetadata { get; set; }
-        public virtual ICollection<VideoThumbnail> VideoThumbnails { get; set; }
+
+        //public ICollection<VideoThumbnail> VideoThumbnails { get; set; }
+        //public virtual ICollection<VideoThumbnail> VideoThumbnails { get; set; }
     }
 }

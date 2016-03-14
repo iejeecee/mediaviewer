@@ -47,6 +47,30 @@ namespace ImageSearchPlugin.Properties {
                 this["FixedDownloadPathHistory"] = value;
             }
         }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public MediaViewer.Infrastructure.Constants.SaveLocation ImageSaveMode
+        {
+            get
+            {
+                Object value = this["ImageSaveMode"];
+
+                if (value == null)
+                {
+                    return MediaViewer.Infrastructure.Constants.SaveLocation.Ask;
+                }
+                else
+                {
+                    return (MediaViewer.Infrastructure.Constants.SaveLocation)value;
+                }
+
+            }
+            set
+            {
+                this["ImageSaveMode"] = value;
+            }
+        }
         
         private void SettingChangingEventHandler(object sender, System.Configuration.SettingChangingEventArgs e) {
             // Add code to handle the SettingChangingEvent event here.

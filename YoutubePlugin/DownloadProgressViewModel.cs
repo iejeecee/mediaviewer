@@ -47,7 +47,7 @@ namespace YoutubePlugin
                     CancellationToken.ThrowIfCancellationRequested();
 
                     YoutubeVideoStreamedItem videoStream, audioStream;
-                    item.getBestQualityStreams(out videoStream, out audioStream);
+                    item.getStreams(out videoStream, out audioStream, (int)Properties.Settings.Default.MaxDownloadResolution);
 
                     if (videoStream == null)
                     {

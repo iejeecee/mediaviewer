@@ -3,11 +3,11 @@
 #include <iostream>  
 #include <iomanip> 
 #include <sstream> 
-#include "Video\VideoDecoderFactory.h"
-#include "Video\IVideoDecoder.h"
-#include "Video\VideoEncoder.h"
-#include "VideoOperations\VideoTranscodeBase.h"
-#include "Utils\Utils.h"
+#include "..\Video\VideoDecoderFactory.h"
+#include "..\Video\IVideoDecoder.h"
+#include "..\Video\VideoEncoder.h"
+#include "..\VideoOperations\VideoTranscodeBase.h"
+#include "..\Utils\Utils.h"
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;
@@ -218,7 +218,7 @@ protected:
 
 		double progress = (inputs[0]->streamsInfo[0]->posSeconds - inputs[0]->startTimeRange) / totalSeconds; 
 
-		return progress;
+		return Math::Min(100.0, Math::Max(0.0, progress));
 	}
 			
 	void initialize(VideoTransformerInputInfo *input, VideoTransformerOutputInfo *output,
@@ -398,7 +398,7 @@ protected:
 			
 		if(!inputStream->isTsOffsetSet)
 		{								
-			for(int i = 0; i < inputs[inputIdx]->streamsInfo.size(); i++) {
+			for(int i = 0; i < (int)inputs[inputIdx]->streamsInfo.size(); i++) {
 
 				int64_t tsOffset = -inputs[inputIdx]->decoder->getStream(i)->getTimeBaseUnits(inputStream->posSeconds);
 

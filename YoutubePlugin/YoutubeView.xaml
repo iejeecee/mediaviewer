@@ -36,6 +36,7 @@
         </Grid.ColumnDefinitions>
         <Layout:TabbedExpanderPanel Grid.Column="0" HorizontalAlignment="Stretch" 
                             VerticalAlignment="Stretch" regions:RegionManager.RegionName="youtubeLeftExpanderPanelRegion">
+            <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="True" regions:RegionManager.RegionName="youtubePreviewExpander" />
             <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="2" IsExpanded="True" regions:RegionManager.RegionName="youtubeSearchExpander" />
             <TabbedExpander:TabbedExpanderView Layout:TabbedExpanderPanel.ElemHeight="1" IsExpanded="False" regions:RegionManager.RegionName="youtubeFilterExpander" />
         </Layout:TabbedExpanderPanel>

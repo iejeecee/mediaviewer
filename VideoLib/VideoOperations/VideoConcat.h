@@ -1,9 +1,9 @@
 #pragma once
-#include "Video\VideoDecoderFactory.h"
-#include "Video\IVideoDecoder.h"
-#include "Video\VideoEncoder.h"
+#include "..\Video\VideoDecoderFactory.h"
+#include "..\Video\IVideoDecoder.h"
+#include "..\Video\VideoEncoder.h"
 #include "VideoTranscodeBase.h"
-#include "Utils\Utils.h"
+#include "..\Utils\Utils.h"
 #include <vector>
 
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
@@ -86,7 +86,7 @@ protected:
 			
 			Stream *outStream = output->encoder->getStream(output->encoder->getVideoStreamIndex());
 
-			for(int i = 0; i < input.size(); i++) {
+			for(int i = 0; i < (int)input.size(); i++) {
 
 				String ^filename = gcnew String(input[i]->decoder->getFormatContext()->filename);
 
@@ -120,7 +120,7 @@ protected:
 			
 			Stream *outStream = output->encoder->getStream(output->encoder->getAudioStreamIndex());
 
-			for(int i = 0; i < input.size(); i++) {
+			for(int i = 0; i < (int)input.size(); i++) {
 
 				String ^filename = gcnew String(input[i]->decoder->getFormatContext()->filename);
 
@@ -172,7 +172,7 @@ protected:
 	
 		double progress = inputs[inputIdx]->streamsInfo[0]->posSeconds / endTime; 
 
-		return progress;
+		return Math::Min(100.0, Math::Max(0.0, progress));
 	}
 		
 	void initialize(std::vector<VideoTransformerInputInfo *> &input, VideoTransformerOutputInfo *output, 
@@ -283,6 +283,7 @@ protected:
 			IVideoDecoder *decoder = input[inputIdx]->decoder;
 
 			int inStreamIdx = decoder->getVideoStreamIndex();
+			int outStreamIdx = input[inputIdx]->streamsInfo[inStreamIdx]->outputStreamIndex;
 
 			if (videoStreamMode == StreamOptions::Encode) 
 			{																									
@@ -317,7 +318,15 @@ protected:
 					if(nrVideoFilters++ > 0) videoGraph << ",";
 
 					videoGraph << "scale=" << centeredRect.Width << "x" << centeredRect.Height;
+
+					if(nrVideoFilters++ > 0) videoGraph << ",";
+
+					// adjust the output sample aspect ratio
+					AVRational outputSAR = outputs[0]->encoder->getStream(outStreamIdx)->getCodecContext()->sample_aspect_ratio;
+
+					videoGraph << "setsar=sar=" << outputSAR.num << "/" << outputSAR.den;
 				}
+				
 
 				if(centeredRect.Width != outWidth || centeredRect.Height != outHeight) 
 				{
@@ -340,6 +349,7 @@ protected:
 			} 
 			
 			inStreamIdx = decoder->getAudioStreamIndex();
+			outStreamIdx = input[inputIdx]->streamsInfo[inStreamIdx]->outputStreamIndex;
 
 			if(audioStreamMode == StreamOptions::Encode) {
 																				
@@ -380,7 +390,7 @@ protected:
 			
 		if(!inputStream->isTsOffsetSet)
 		{		
-			for(int i = 0; i < inputs[inputIdx]->streamsInfo.size(); i++) 
+			for(int i = 0; i < (int)inputs[inputIdx]->streamsInfo.size(); i++) 
 			{
 				if(inputs[inputIdx]->streamsInfo[i]->mode != StreamTransformMode::COPY) continue;
 
@@ -403,7 +413,7 @@ protected:
 
 					// do a backup calculation for inputs that don't have a duration
 					// e.g. animated gif's & png's
-					for(int j = 0; j < inputs[inputIdx - 1]->streamsInfo.size(); j++)
+					for(int j = 0; j < (int)inputs[inputIdx - 1]->streamsInfo.size(); j++)
 					{
 						double streamLengthSeconds = inputs[inputIdx - 1]->decoder->getStream(j)->getTimeSeconds(inputs[inputIdx - 1]->streamsInfo[j]->nextTs);
 

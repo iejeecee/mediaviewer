@@ -39,6 +39,7 @@ namespace MediaViewer
 
             AutoMapperSetup.Run();
         }
+  
 
         public static String getAppInfoString()
         {

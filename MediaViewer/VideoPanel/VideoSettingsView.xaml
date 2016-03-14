@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:NumberSpinner="clr-namespace:MediaViewer.UserControls.NumberSpinner" x:Class="MediaViewer.VideoPanel.VideoSettingsView" 
+             xmlns:VideoPanel="clr-namespace:MediaViewer.VideoPanel"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -19,13 +20,13 @@
                 <Setter Property="HorizontalAlignment" Value="Left"/>
                 <Setter Property="FontWeight" Value="Bold"/>
             </Style>
+            <VideoPanel:VideoScreenShotSaveModeConverter x:Key="videoScreenShotSaveModeConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Grid.Row="0">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>            
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -49,34 +50,33 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="1" Content="Playback" Style="{StaticResource labelHeaderStyle}"/>
         <Label Grid.Row="1" Grid.Column="0" Content="Buffer Size" Style="{StaticResource labelStyle}"/>
-        <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding MinBufferedPackets}" Min="0" Max="{Binding NrPackets}"/>
-        <Label Grid.Row="2" Grid.Column="1" Content="Screenshot" Style="{StaticResource labelHeaderStyle}"/>
-        <Label Grid.Row="3" Grid.Column="0" Content="Browse Path" Style="{StaticResource labelStyle}"/>
-        <RadioButton Grid.Row="3" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationCurrent}" GroupName="One" VerticalAlignment="Center"/>
-        <Label Grid.Row="4" Grid.Column="0" Content="Ask" Style="{StaticResource labelStyle}"/>
-        <RadioButton Grid.Row="4" Grid.Column="1" IsChecked="{Binding IsVideoScreenShotLocationAsk}" GroupName="One" VerticalAlignment="Center"/>
-        <Label Grid.Row="5" Grid.Column="0" Content="Location" Style="{StaticResource labelStyle}"/>
-        <RadioButton  Grid.Row="5" Grid.Column="1" GroupName="One" IsChecked="{Binding IsVideoScreenShotLocationFixed}" VerticalAlignment="Center" HorizontalAlignment="Stretch">
-            <Grid HorizontalAlignment="Stretch">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" x:Name="pathTextBox"  HorizontalAlignment="Stretch" VerticalAlignment="Center"                          
-			        Text="{Binding VideoScreenShotLocation, Mode=TwoWay}"
-			        ItemsSource="{Binding VideoScreenShotLocationHistory}"
-			        ToolTip="{Binding VideoScreenShotLocation}"
-			        IsReadOnly="True" IsEditable="True"
-			        />
-                <Button Grid.Row="3" Grid.Column="1" Margin="2, 2, 0, 2" Width="20" Height="19"
-			        HorizontalAlignment="Right"					
-			        Command="{Binding DirectoryPickerCommand}"
-			        ToolTip="Change Directory">
-                    <Image Source="pack://application:,,,/MediaViewer;component/Resources/Icons/folder_open.ico"/>
-                </Button>
-            </Grid>
-        </RadioButton>
-        <Label Grid.Row="6" Grid.Column="0" Content="Offset (Sec)" Style="{StaticResource labelStyle}"/>
-        <NumberSpinner:IntegerSpinner Grid.Row="6" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding VideoScreenShotTimeOffset}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding MinNrBufferedPackets}" Min="0" Max="{Binding NrPackets}"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="Step Duration (Sec)" Style="{StaticResource labelStyle}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding StepDurationSeconds}" Min="1" Max="3600"/>
+        <Label Grid.Row="3" Grid.Column="1" Content="Screenshot" Style="{StaticResource labelHeaderStyle}"/>        
+        <Label Grid.Row="4" Grid.Column="0" Content="Save Location" Style="{StaticResource labelStyle}"/>
+        <Grid Grid.Row="4" Grid.Column="1">                    
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ComboBox Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Stretch" ItemsSource="{Binding VideoScreenShotSaveMode}" HorizontalContentAlignment="Right"/>
+            <ComboBox Grid.Column="1" x:Name="pathTextBox"  HorizontalAlignment="Stretch" VerticalAlignment="Center" HorizontalContentAlignment="Right"                         
+			            Text="{Binding VideoScreenShotLocation, Mode=TwoWay}"
+			            ItemsSource="{Binding VideoScreenShotLocationHistory}"
+			            ToolTip="{Binding VideoScreenShotLocation}"
+			            IsReadOnly="True" IsEditable="True"
+			            IsEnabled="{Binding VideoScreenShotSaveMode.CurrentItem, Converter={StaticResource videoScreenShotSaveModeConverter}}"/>
+            <Button Grid.Column="2" Margin="2, 2, 5, 2" Width="20" Height="19"
+			            HorizontalAlignment="Right"					
+			            Command="{Binding DirectoryPickerCommand}"
+			            ToolTip="Change Directory"
+                        IsEnabled="{Binding VideoScreenShotSaveMode.CurrentItem, Converter={StaticResource videoScreenShotSaveModeConverter}}">
+                <Image Source="pack://application:,,,/MediaViewer;component/Resources/Icons/folder_open.ico"/>
+            </Button>
+        </Grid>
+        <Label Grid.Row="5" Grid.Column="0" Content="Offset (Sec)" Style="{StaticResource labelStyle}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="5" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding VideoScreenShotTimeOffset}"/>
     </Grid>
 </UserControl>

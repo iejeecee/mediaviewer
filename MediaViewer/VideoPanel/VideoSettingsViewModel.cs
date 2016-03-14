@@ -12,12 +12,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MediaViewer.Properties;
+using System.Windows.Data;
 
 namespace MediaViewer.VideoPanel
 {
     [Export]
     public class VideoSettingsViewModel : SettingsBase
-    {  
+    {
+        public ListCollectionView VideoScreenShotSaveMode { get; set; }
         public Command DirectoryPickerCommand { get; set; }
                        
         public VideoSettingsViewModel() :
@@ -43,22 +45,23 @@ namespace MediaViewer.VideoPanel
                 Settings.Default.VideoScreenShotLocation = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
             }
 
+            VideoScreenShotSaveMode = new ListCollectionView(Enum.GetValues(typeof(Infrastructure.Constants.SaveLocation)));
+            VideoScreenShotSaveMode.MoveCurrentTo(Settings.Default.VideoScreenShotSaveMode);
+           
             VideoScreenShotLocation = Settings.Default.VideoScreenShotLocation;
-            VideoScreenShotTimeOffset = Settings.Default.VideoScreenShotTimeOffset;
-            isVideoScreenShotLocationFixed = Settings.Default.IsVideoScreenShotLocationFixed;
-            IsVideoScreenShotLocationAsk = Settings.Default.IsVideoScreenShotLocationAsk;
-            IsVideoScreenShotLocationCurrent = Settings.Default.IsVideoScreenShotLocationCurrent;
-            MinBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+            VideoScreenShotTimeOffset = Settings.Default.VideoScreenShotTimeOffset;          
+            MinNrBufferedPackets = Settings.Default.VideoMinBufferedPackets;
+            StepDurationSeconds = Settings.Default.VideoStepDurationSeconds;
 
             NrPackets = 500;
         }
 
-        int minBufferedPackets;
+        int minNrBufferedPackets;
 
-        public int MinBufferedPackets
+        public int MinNrBufferedPackets
         {
-            get { return minBufferedPackets; }
-            set { SetProperty(ref minBufferedPackets, value); }
+            get { return minNrBufferedPackets; }
+            set { SetProperty(ref minNrBufferedPackets, value); }
         }
 
         int nrPackets;
@@ -76,46 +79,7 @@ namespace MediaViewer.VideoPanel
             get { return videoScreenShotTimeOffset; }
             set { SetProperty(ref videoScreenShotTimeOffset, value); }
         }
-
-        bool isVideoScreenShotLocationAsk;
-        public bool IsVideoScreenShotLocationAsk
-        {
-            get
-            {
-                return (isVideoScreenShotLocationAsk);
-            }
-            set
-            {
-                SetProperty(ref isVideoScreenShotLocationAsk, value);
-            }
-        }
-
-        bool isVideoScreenShotLocationCurrent;
-        public bool IsVideoScreenShotLocationCurrent
-        {
-            get
-            {
-                return (isVideoScreenShotLocationCurrent);
-            }
-            set
-            {
-                SetProperty(ref isVideoScreenShotLocationCurrent, value);
-            }
-        }
-
-        bool isVideoScreenShotLocationFixed;
-        public bool IsVideoScreenShotLocationFixed
-        {
-            get
-            {
-                return (isVideoScreenShotLocationFixed);
-            }
-            set
-            {
-                SetProperty(ref isVideoScreenShotLocationFixed, value);
-            }
-        }
-
+       
         string videoScreenShotLocation;
         public String VideoScreenShotLocation
         {
@@ -129,18 +93,28 @@ namespace MediaViewer.VideoPanel
             }
         }
 
+        double stepDurationSeconds;
+
+        public double StepDurationSeconds
+        {
+            get { return stepDurationSeconds; }
+            set
+            {
+                SetProperty(ref stepDurationSeconds, value);
+            }
+        }
+
         public ObservableCollection<String> VideoScreenShotLocationHistory { get; set; }
 
        
         protected override void OnSave() 
         {
-            Settings.Default.IsVideoScreenShotLocationAsk = IsVideoScreenShotLocationAsk;
-            Settings.Default.IsVideoScreenShotLocationCurrent = IsVideoScreenShotLocationCurrent;
-            Settings.Default.IsVideoScreenShotLocationFixed = isVideoScreenShotLocationFixed;
+            Settings.Default.VideoScreenShotSaveMode = (Infrastructure.Constants.SaveLocation) VideoScreenShotSaveMode.CurrentItem;          
             Settings.Default.VideoScreenShotLocation = VideoScreenShotLocation;
             Settings.Default.VideoScreenShotLocationHistory = VideoScreenShotLocationHistory;
             Settings.Default.VideoScreenShotTimeOffset = VideoScreenShotTimeOffset;
-            Settings.Default.VideoMinBufferedPackets = MinBufferedPackets;
+            Settings.Default.VideoMinBufferedPackets = MinNrBufferedPackets;
+            Settings.Default.VideoStepDurationSeconds = StepDurationSeconds;
 
             base.OnSave();
         }

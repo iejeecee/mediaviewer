@@ -1,8 +1,8 @@
 #pragma once
 // http://stackoverflow.com/questions/530211/creating-a-blocking-queuet-in-net/530228#530228
 
-#include "Frame\VideoFrame.h"
-#include "Frame\Packet.h"
+#include "..\Frame\VideoFrame.h"
+#include "..\Frame\Packet.h"
 
 using namespace System::Collections::Generic;
 using namespace System::Threading;
@@ -62,9 +62,12 @@ namespace VideoLib {
 
 					if(state != value) {
 						
-						// closed queue cannot change state, use reset instead
+						// closed queue cannot change state, use reset instead						
 						if(state == PacketQueueState::CLOSE_END) return;
 					
+						// once the close start state is set only the equivalent end state can follow
+						if(state == PacketQueueState::CLOSE_START && value != PacketQueueState::CLOSE_END) return;
+										
 						if(value == PacketQueueState::PAUSE_START &&
 							state == PacketQueueState::PAUSE_END) return;
 

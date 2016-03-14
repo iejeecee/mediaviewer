@@ -77,6 +77,7 @@ void VideoPlayer::open(OpenVideoArgs ^args,  OutputPixelFormat videoFormat, Syst
 			videoDecoder->setVideoOutputFormat(outputPixelFormat,
 				videoDecoder->getWidth(), videoDecoder->getHeight(), VideoDecoder::X);
 
+		
 		}
 	
 
@@ -221,9 +222,16 @@ VideoPlayer::DemuxPacketsResult VideoPlayer::demuxPacket() {
 	return(DemuxPacketsResult::SUCCESS);
 }
 
-bool VideoPlayer::seek(double posSeconds) {
+bool VideoPlayer::seek(double posSeconds, SeekKeyframeMode mode) {
 
-	return videoDecoder->seek(posSeconds);
+	int flags = 0;
+
+	if(mode == SeekKeyframeMode::SEEK_BACKWARDS) {
+
+		flags = AVSEEK_FLAG_BACKWARD;
+	}
+
+	return videoDecoder->seek(posSeconds, flags);
 }
 
 void VideoPlayer::close() {

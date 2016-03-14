@@ -1,5 +1,5 @@
 #pragma once
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -138,7 +138,7 @@ public:
 	// If captureintervalseconds > 0 a frame will be captured every captureIntervalSeconds 
 	// else a total of nrThumbs will be generated.
 	// The first thumbnail is captured at duration * startOffset
-	void grab(int maxThumbWidth, int maxThumbHeight, double captureIntervalSeconds, int nrThumbs, 
+	void grabThumbnails(int maxThumbWidth, int maxThumbHeight, double captureIntervalSeconds, int nrThumbs, 
 		double startOffset, System::Threading::CancellationToken ^cancellationToken = nullptr, int timeOutSeconds = 0)
 	{
 		if(!hasVideo()) 
@@ -244,9 +244,7 @@ public:
 			}
 		
 			if(packet.stream_index == videoIdx)
-			{			
-				av_frame_unref(frame);
-			
+			{										
 				int ret = avcodec_decode_video2(getVideoCodecContext(), frame, &frameFinished, &packet);
 				if(ret < 0) {
 
@@ -264,6 +262,7 @@ public:
 						decodedFrame(data, &packet, convertedFrame, VIDEO);
 					}
 
+					//av_frame_unref(convertedFrame);
 				}
 
 				if(ret == 0) {
@@ -272,6 +271,7 @@ public:
 					return(frameFinished != 0 ? true : false);
 				}
 
+				av_frame_unref(frame);
 			} 
 
 			av_packet_unref(&packet);
@@ -281,45 +281,93 @@ public:
 
 	}
 
-	/*void grabAttachedImage(int maxThumbWidth, int maxThumbHeight, CancellationToken ^token) {
-
-		for(int i = 0; i < stream.size(); i++) {
-
-			if(stream[i]->getStream()->disposition & AV_DISPOSITION_ATTACHED_PIC)
+	void grabAttachedImages(int maxThumbWidth, int maxThumbHeight, CancellationToken ^token, int timeOutSeconds = 0) {
+				
+		for(int i = 0; i < (int)stream.size(); i++) {
+						
+			DateTime startTime = DateTime::Now;
+										
+			if(stream[i]->getAVStream()->disposition & AV_DISPOSITION_ATTACHED_PIC)
 			{
-				AVPacket pkt = stream[i]->getStream()->attached_pic;
-				
-				array<Byte>^ byteArray = gcnew array< Byte >(pkt.size);
+				stream[i]->open();
+				//System::Diagnostics::Debug::Print(gcnew String(getFormatContext()->filename) + " " + gcnew String(stream[i]->getCodec()->name));
+
+				AVPacket *picPacket = av_packet_clone(&stream[i]->getAVStream()->attached_pic);
+
+				int frameFinished = 0;
+											
+				while(frameFinished == 0) {
+										
+					if(timeOutSeconds > 0 && (DateTime::Now - startTime).TotalSeconds > timeOutSeconds) {
+
+						throw gcnew VideoLibException("Timed out during decoding");
+					}
+
+					if(token->IsCancellationRequested) {
+
+						throw gcnew OperationCanceledException(*token);
+					}
+
+					int ret = avcodec_decode_video2(stream[i]->getCodecContext(), frame, &frameFinished, picPacket);
+					if(ret < 0) {
+
+						//Error decoding video frame
+						VideoInit::writeToLog(AV_LOG_WARNING, "could not decode attached image");	
+						break;
+					} 
+
+					if(frameFinished != 0)
+					{					
+						float widthScale = 1;
+						float heightScale = 1;
+
+						if(maxThumbWidth > 0 && frame->width > maxThumbWidth) {
 			
-				Marshal::Copy((IntPtr)pkt.data, byteArray, 0, pkt.size);
-				
-				System::IO::Stream ^encodedJpeg = gcnew System::IO::MemoryStream(byteArray); 
-				
-				JpegBitmapDecoder ^decoder = gcnew JpegBitmapDecoder(encodedJpeg, BitmapCreateOptions::PreservePixelFormat, BitmapCacheOption::Default);
-				BitmapSource ^bitmapSource = decoder->Frames[0];
+							widthScale = maxThumbWidth / (float)frame->width;				
+						}
 
-				thumbWidth = bitmapSource->PixelWidth;
-				thumbHeight = bitmapSource->PixelHeight;
+						if(maxThumbHeight > 0 && frame->height > maxThumbHeight) {
+			
+							heightScale = maxThumbHeight / (float)frame->height;
+						}
 
-				int bytesPerPixel = bitmapSource->Format.BitsPerPixel / 8;
-				int stride = 4 * ((width * bytesPerPixel + 3) / 4);
-				int sizeBytes = stride * thumbHeight;
+						thumbWidth = round(frame->width * std::min<float>(widthScale, heightScale));
+						thumbHeight = round(frame->height * std::min<float>(widthScale, heightScale));
 
-				frame->data[0] = new uint8_t[sizeBytes];
-			    frame->linesize[0] = stride;
+						setVideoOutputFormat(AV_PIX_FMT_BGR24, thumbWidth, thumbHeight, LANCZOS);
 
-				bitmapSource->CopyPixels(System::Windows::Int32Rect::Empty, IntPtr(frame->data[0]), sizeBytes, stride);
-				
-				if(decodedFrame != NULL) {
-					decodedFrame(NULL, NULL, frame,VideoLib::Video::FrameType::VIDEO);
-				}
+						convertVideoFrame(frame, convertedFrame);				
 
-				delete frame->data[0];
-				frame->data[0] = NULL;
+						if(decodedFrame != NULL) {
+
+							decodedFrame(data, &packet, convertedFrame, VIDEO);
+						}
+
+						//av_frame_unref(convertedFrame);
+
+					} else {
+						
+						av_packet_unref(picPacket);
+						picPacket->size = 0;
+						picPacket->data = NULL;
+						picPacket->stream_index = videoIdx;
+					}
+
+					av_frame_unref(frame);
+					
+					if(ret == 0) {
+
+						// no more frames to decode
+						break;
+					}
+				}	
+
+				stream[i]->close();
 			}
+			
 		}
 		
-	}*/
+	}
 
 	int getThumbWidth() const {
 
@@ -331,44 +379,7 @@ public:
 		return(thumbHeight);
 	}
 
-	bool isVideo() const {
 	
-		if(!hasVideo()) return false;	
-
-		if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) > 0) return false; //mp3 cover art etc
-		if(container.compare("image2 sequence") == 0) return(false); //jpeg
-
-		bool hasFramerate = getFrameRate() > 0;
-
-		bool hasDuration = getDurationSeconds() > 0;
-
-		return hasFramerate || hasDuration;
-	}
-
-	bool isAudio() const {
-
-		if(!hasAudio()) return false;		
-		if(getFrameRate() > 0) return false;
-		
-		if(hasVideo()) {
-		
-			if((getVideoStream()->disposition & AV_DISPOSITION_ATTACHED_PIC) == 0) return false;
-		}
-
-		return true;	
-	}
-
-	bool isImage() const {
-
-		if(hasAudio()) return false;
-		if(getFrameRate() > 0) return false;
-		if(container.compare("image2 sequence") == 0) return(true); //jpeg
-		if(getDurationSeconds() > 0) return false;
-		if(!hasVideo()) return false;
-	
-		return(true);
-
-	}
 
 };
 

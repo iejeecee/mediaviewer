@@ -17,15 +17,6 @@
     <Setting Name="Color" Type="System.String" Scope="User">
       <Value Profile="(Default)">All</Value>
     </Setting>
-    <Setting Name="IsAskDownloadPath" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="IsCurrentDownloadPath" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="IsFixedDownloadPath" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="FixedDownloadPath" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>

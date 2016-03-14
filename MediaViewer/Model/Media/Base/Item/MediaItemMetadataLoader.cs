@@ -29,7 +29,8 @@ namespace MediaViewer.Model.Media.Base.Item
             nrLoadingTasks = 0;
             
             tokenSource = new CancellationTokenSource();
-           
+
+            Task.Factory.StartNew(() => loadLoop(), TaskCreationOptions.LongRunning);           
         }
 
         public void Dispose()
@@ -111,14 +112,15 @@ namespace MediaViewer.Model.Media.Base.Item
             
         }
 
-        public void loadLoop()
+        void loadLoop()
         {
-            Monitor.Enter(queuedItems);
-            try
+                        
+            while (true)
             {
-                while (true)
+                Monitor.Enter(queuedItems);
+                try
                 {
-                    while(queuedItems.Count == 0)
+                    while (queuedItems.Count == 0)
                     {
                         Monitor.Wait(queuedItems);
                     }
@@ -129,58 +131,65 @@ namespace MediaViewer.Model.Media.Base.Item
                     // don't load already loaded/loading items
                     if (item.ItemState == MediaItemState.LOADED ||
                         item.ItemState == MediaItemState.LOADING) continue;
-              
+
                     // wait until we have a thread available to load the item
-                    while(nrLoadingTasks == maxLoadingTasks)
+                    while (nrLoadingTasks == maxLoadingTasks)
                     {
                         Monitor.Wait(queuedItems);
                     }
 
                     nrLoadingTasks++;
 
-                    Task.Factory.StartNew(() =>
-                    {
-                        item.EnterUpgradeableReadLock();
-                        try
-                        {
-                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
-                                    MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
-                        }
-                        finally
-                        {
-                            item.ExitUpgradeableReadLock();
-                        }
+                    Task.Factory.StartNew(new Action<Object>(loadItem), item, tokenSource.Token, TaskCreationOptions.None,PriorityScheduler.BelowNormal);
+                }
+                finally
+                {
+                    Monitor.Exit(queuedItems);
+                }
+                                                        
+            }
+                                
+        }
 
-                    },tokenSource.Token,TaskCreationOptions.None, PriorityScheduler.BelowNormal).ContinueWith((result) =>
-                    {                                                
-                        Monitor.Enter(queuedItems);
-                        nrLoadingTasks--;
+        void loadItem(Object itemObj)
+        {
+            MediaItem item = itemObj as MediaItem;
 
-                        bool isFinishedLoading = true;
+            item.EnterUpgradeableReadLock();
+            try
+            {
+                item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
+                        MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, tokenSource.Token);
+            }
+            finally
+            {
+                item.ExitUpgradeableReadLock();
+            }
 
-                        if (item.ItemState == MediaItemState.TIMED_OUT)
-                        {
-                            // the item timed out, try loading it again later
-                            queuedItems.Add(item);
-                            isFinishedLoading = false;
-                        }
+            bool isFinishedLoading = true;
 
-                        Monitor.PulseAll(queuedItems);
-                        Monitor.Exit(queuedItems);
-
-                        if (isFinishedLoading)
-                        {
-                            OnItemFinishedLoading(item);
-                        }
-
-                    }).ConfigureAwait(false);
+            Monitor.Enter(queuedItems);
+            try
+            {
+                nrLoadingTasks--;
+               
+                if (item.ItemState == MediaItemState.TIMED_OUT)
+                {
+                    // the item timed out, try loading it again later
+                    queuedItems.Add(item);
+                    isFinishedLoading = false;
                 }
             }
             finally
             {
+                Monitor.PulseAll(queuedItems);
                 Monitor.Exit(queuedItems);
-            }
-        
+
+                if (isFinishedLoading)
+                {
+                    OnItemFinishedLoading(item);
+                }
+            }            
         }
      
 

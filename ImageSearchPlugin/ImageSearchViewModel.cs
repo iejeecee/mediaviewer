@@ -125,30 +125,37 @@ namespace ImageSearchPlugin
                         items.Add(selectableItem.Item);
                     }
 
-                    String outputPath;
+                    String outputPath = null;
 
-                    if (SettingsViewModel.IsAskDownloadPath)
+                    switch (ImageSearchPlugin.Properties.Settings.Default.ImageSaveMode)
                     {
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Current:
+                            {
+                                outputPath = MediaFileWatcher.Instance.Path;
+                                break;
+                            }
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Ask:
+                            {
+                                DirectoryPickerView directoryPicker = new DirectoryPickerView();
+                                directoryPicker.DirectoryPickerViewModel.InfoString = "Select Output Directory";
+                                directoryPicker.DirectoryPickerViewModel.SelectedPath = MediaFileWatcher.Instance.Path;
 
-                        DirectoryPickerView directoryPicker = new DirectoryPickerView();
-                        directoryPicker.DirectoryPickerViewModel.InfoString = "Select Output Directory";
-                        directoryPicker.DirectoryPickerViewModel.SelectedPath = MediaFileWatcher.Instance.Path;
+                                if (directoryPicker.ShowDialog() == false)
+                                {
+                                    return;
+                                }
 
-                        if (directoryPicker.ShowDialog() == false)
-                        {
-                            return;
-                        }
+                                outputPath = directoryPicker.DirectoryPickerViewModel.SelectedPath;
 
-                        outputPath = directoryPicker.DirectoryPickerViewModel.SelectedPath;
-
-                    }
-                    else if (SettingsViewModel.IsCurrentDownloadPath)
-                    {
-                        outputPath = MediaFileWatcher.Instance.Path;
-                    }
-                    else
-                    {
-                        outputPath = SettingsViewModel.FixedDownloadPath;
+                                break;
+                            }
+                        case MediaViewer.Infrastructure.Constants.SaveLocation.Fixed:
+                            {
+                                outputPath = ImageSearchPlugin.Properties.Settings.Default.FixedDownloadPath;
+                                break;
+                            }
+                        default:
+                            break;
                     }
 
                     CancellableOperationProgressView progressView = new CancellableOperationProgressView();

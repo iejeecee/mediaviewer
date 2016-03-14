@@ -34,8 +34,7 @@ namespace MediaViewer.Model.Media.File.Metadata
                
             try
             {                
-                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL) ||
-                    options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
+                if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_THUMBNAIL))
                 {
                     generateThumbnail(mediaProbe, audio, token, timeoutSeconds, 1);
                 }                                        
@@ -65,9 +64,9 @@ namespace MediaViewer.Model.Media.File.Metadata
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
           
-            // possibly could not seek in video, try to get the first frame in the video
-            List<MediaThumb> thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
-                Constants.MAX_THUMBNAIL_HEIGHT, 0, 1, 0, token, timeoutSeconds, null);
+            // get attached images
+            List<MediaThumb> thumbBitmaps = mediaProbe.grabAttachedImages(Constants.MAX_THUMBNAIL_WIDTH,
+                Constants.MAX_THUMBNAIL_HEIGHT, token, timeoutSeconds);
 
             if (thumbBitmaps.Count > 0)
             {

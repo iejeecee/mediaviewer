@@ -61,10 +61,7 @@ namespace MediaViewer.Model.Media.File.Metadata
                 {
                     generateThumbnail(mediaProbe, video, token, timeoutSeconds, 1);
                 }
-                else if (options.HasFlag(MetadataFactory.ReadOptions.GENERATE_MULTIPLE_THUMBNAILS))
-                {
-                    generateThumbnail(mediaProbe, video, token, timeoutSeconds, 16);
-                }
+               
             }
             catch (Exception e)
             {
@@ -91,32 +88,27 @@ namespace MediaViewer.Model.Media.File.Metadata
         public void generateThumbnail(MediaProbe mediaProbe, VideoMetadata video,
             CancellationToken token, int timeoutSeconds, int nrThumbnails)
         {
+            video.Thumbnail = null;
+         
+            List<MediaThumb> coverBitmaps = mediaProbe.grabAttachedImages(Constants.MAX_THUMBNAIL_WIDTH,
+                 Constants.MAX_THUMBNAIL_HEIGHT, token, timeoutSeconds);
 
-            List<MediaThumb> thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
-                 Constants.MAX_THUMBNAIL_HEIGHT, 0, nrThumbnails, 0.025, token, timeoutSeconds, null);
-
-            if (thumbBitmaps.Count == 0)
+            if (coverBitmaps.Count > 0)
             {
-
-                // possibly could not seek in video, try to get the first frame in the video
-                thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
-                    Constants.MAX_THUMBNAIL_HEIGHT, 0, 1, 0, token, timeoutSeconds, null);
+                video.Thumbnail = new Thumbnail(coverBitmaps[0].Thumb);
             }
 
-            video.VideoThumbnails.Clear();
+            if (coverBitmaps.Count == 0 || nrThumbnails > 1)
+            {
 
-            foreach (MediaThumb videoThumb in thumbBitmaps)
-            {
-                video.VideoThumbnails.Add(new VideoThumbnail(videoThumb.Thumb, videoThumb.PositionSeconds));
-            }
-
-            if (thumbBitmaps.Count > 0)
-            {
-                video.Thumbnail = new Thumbnail(thumbBitmaps[0].Thumb);
-            }
-            else
-            {
-                video.Thumbnail = null;
+                List<MediaThumb> thumbBitmaps = mediaProbe.grabThumbnails(Constants.MAX_THUMBNAIL_WIDTH,
+                     Constants.MAX_THUMBNAIL_HEIGHT, 0, nrThumbnails, 0.025, token, timeoutSeconds, null);
+              
+                if (thumbBitmaps.Count > 0 && coverBitmaps.Count == 0)
+                {
+                    video.Thumbnail = new Thumbnail(thumbBitmaps[0].Thumb);
+                }
+                
             }
 
         }

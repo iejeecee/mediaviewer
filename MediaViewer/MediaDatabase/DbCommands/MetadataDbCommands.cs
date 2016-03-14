@@ -44,6 +44,13 @@ namespace MediaViewer.MediaDatabase.DbCommands
             return (result);
         }
 
+        public int getNrAudioMetadata()
+        {
+            int result = Db.BaseMetadatas.OfType<AudioMetadata>().Count();
+
+            return (result);
+        }
+
         public int getNrVideoMetadata()
         {
             int result = Db.BaseMetadatas.OfType<VideoMetadata>().Count();
@@ -737,7 +744,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
             Db.Entry<VideoMetadata>(videoMetadata).CurrentValues.SetValues(metadata);
 
             // add new or existing thumbnails
-            foreach (VideoThumbnail thumb in metadata.VideoThumbnails)
+            /*foreach (VideoThumbnail thumb in metadata.VideoThumbnails)
             {
                 if (thumb.Id != 0)
                 {
@@ -751,7 +758,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                     Db.VideoThumbnails.Add(thumb);
                     videoMetadata.VideoThumbnails.Add(thumb);
                 }
-            }
+            }*/
 
             return (videoMetadata);
         }
@@ -796,23 +803,26 @@ namespace MediaViewer.MediaDatabase.DbCommands
         void deleteVideoMetadata(VideoMetadata metadata)
         {
             // remove unused thumbnails
-            for (int i = metadata.VideoThumbnails.Count - 1; i >= 0; i--)
+            /*for (int i = metadata.VideoThumbnails.Count - 1; i >= 0; i--)
             {
                 Db.VideoThumbnails.Remove(metadata.VideoThumbnails.ElementAt(i));                                
             }
 
-            metadata.VideoThumbnails.Clear();
+            metadata.VideoThumbnails.Clear();*/
         }
 
-        public void loadVideoThumbnails(VideoMetadata metadata)
+        /*public ICollection<VideoThumbnail> loadVideoThumbnails(int videoMetadataId)
         {
-            if (metadata.Id == 0) return;
+            ICollection<VideoThumbnail> empty = new List<VideoThumbnail>();
 
-            Db.BaseMetadatas.Attach(metadata);
+            if (videoMetadataId == 0) return (empty);
 
-            Db.Entry(metadata).Collection(m => m.VideoThumbnails).Load(); 
-        
-        }
+            VideoMetadata item = Db.VideoMetadatas.Include(m => m.VideoThumbnails).FirstOrDefault(m => m.Id == videoMetadataId);
+
+            if (item == null) return (empty);
+            else return (item.VideoThumbnails);
+                   
+        }*/
        
     }
 }

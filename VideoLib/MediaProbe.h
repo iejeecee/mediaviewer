@@ -1,5 +1,6 @@
 #pragma once
 #include "Video\VideoFrameGrabber.h"
+#include "Constants.h"
 
 using namespace System;
 using namespace System::Collections::Generic;
@@ -197,32 +198,15 @@ namespace VideoLib {
 				return(nrChannels);
 			}
 		}
+		
+		property VideoLib::MediaType MediaType {
 
-		property bool IsVideo {
+			VideoLib::MediaType get() {
 
-			bool get() {
-
-				return(isVideo);
+				return(frameGrabber->getMediaType());
 			}
 		}
-
-		property bool IsAudio {
-
-			bool get() {
-
-				return(isAudio);
-			}
-		}
-
-		property bool IsImage {
-
-			bool get() {
-
-				return(isImage);
-			}
-		}
-
-
+		
 		void open(String ^mediaLocation, System::Threading::CancellationToken cancellationToken);
 		void close();
 		
@@ -233,6 +217,7 @@ namespace VideoLib {
 			double captureIntervalSeconds, int nrThumbs, double startOffset, System::Threading::CancellationToken cancellationToken, int timeoutSeconds,
 			DecodedFrameProgressDelegate ^decodedFrameProgressCallback);
 
-		
+		List<MediaThumb ^> ^grabAttachedImages(int maxThumbWidth, int maxThumbHeight,
+			System::Threading::CancellationToken cancellationToken, int timeoutSeconds);
 	};
 }

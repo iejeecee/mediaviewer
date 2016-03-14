@@ -123,12 +123,11 @@ namespace MediaViewer
 
             if (!exists)
             {               
-                System.IO.Directory.CreateDirectory(databaseLocation);                
+                System.IO.Directory.CreateDirectory(databaseLocation);
+                var context = new MediaDatabaseContext();
+                context.Database.Create();
             }
-
-            //var context = new MediaDatabaseContext();
-            //context.Database.Create();
-
+            
         }
 
         public void navigateToMediaStackPanelView(MediaFileStackPanelViewModel viewModel, String location = null)

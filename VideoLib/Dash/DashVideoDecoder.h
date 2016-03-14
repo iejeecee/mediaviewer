@@ -1,5 +1,5 @@
 #pragma once
-#include "Video/IVideoDecoder.h"
+#include "..\Video\IVideoDecoder.h"
 
 namespace VideoLib {
 
@@ -399,6 +399,24 @@ namespace VideoLib {
 		virtual bool isClosed() const {
 
 			return(videoDecoder->isClosed() && audioDecoder->isClosed());
+		}
+
+		virtual MediaType getMediaType() const {
+
+			if(videoDecoder->getMediaType() == MediaType::VIDEO_MEDIA)
+			{				
+				return(MediaType::VIDEO_MEDIA);
+				
+			} else {
+
+				return(audioDecoder->getMediaType());
+			}
+			
+		}
+
+		SeekMode getSeekMode() const
+		{
+			return(videoDecoder->getSeekMode());
 		}
 	};
 

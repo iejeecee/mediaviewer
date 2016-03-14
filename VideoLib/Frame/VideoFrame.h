@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Frame.h"
-#include "Video\VideoDecoder.h"
+#include "..\Video\VideoDecoder.h"
 
 using namespace System;
 using namespace System::Diagnostics;
@@ -59,6 +59,8 @@ namespace VideoLib {
 				return(AVLibFrameData->height);
 			}
 		}
+
+		
 
 		VideoFrame() :
 			Frame(FrameType::VIDEO)

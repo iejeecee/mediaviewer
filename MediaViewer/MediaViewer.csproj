@@ -242,7 +242,6 @@
     <Compile Include="MediaDatabase\Mapping\ThumbnailMap.cs" />
     <Compile Include="MediaDatabase\Mapping\UnknownMetadataMap.cs" />
     <Compile Include="MediaDatabase\Mapping\VideoMetadataMap.cs" />
-    <Compile Include="MediaDatabase\Mapping\VideoThumbnailMap.cs" />
     <Compile Include="MediaDatabase\MediaDatabaseConfiguration.cs" />
     <Compile Include="MediaDatabase\MediaDatabaseContext.cs" />
     <Compile Include="MediaDatabase\PresetMetadata.cs" />
@@ -250,7 +249,6 @@
     <Compile Include="MediaDatabase\Thumbnail.cs" />
     <Compile Include="MediaDatabase\UnknownMetadata.cs" />
     <Compile Include="MediaDatabase\VideoMetadata.cs" />
-    <Compile Include="MediaDatabase\VideoThumbnail.cs" />
     <Compile Include="Model\Collections\Cache\LRUCache.cs" />
     <Compile Include="Model\Collections\ObservableCollectionWithoutReentrantChecks.cs" />
     <Compile Include="Model\Concurrency\ILockable.cs" />
@@ -258,6 +256,7 @@
     <Compile Include="Model\Media\File\Metadata\AudioFileMetadataWriter.cs" />
     <Compile Include="Model\Media\File\Metadata\ImageFileMetadataReader.cs" />
     <Compile Include="Model\Media\File\Metadata\MetadataFileFactory.cs" />
+    <Compile Include="Model\Media\File\Preview\MediaFilePreviewViewModel2.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Filter\TagItemList.cs" />
     <Compile Include="GeotagFileBrowser\GeotagFileBrowserView.xaml.cs">
@@ -376,6 +375,7 @@
     <Compile Include="UserControls\MediaPreview\MediaPreviewView.xaml.cs">
       <DependentUpon>MediaPreviewView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserControls\MediaPreview\MediaPreviewViewModelBase.cs" />
     <Compile Include="UserControls\MediaPreview\TimeAdorner.cs" />
     <Compile Include="UserControls\MediaStackPanel\MediaStackPanelView.xaml.cs">
       <DependentUpon>MediaStackPanelView.xaml</DependentUpon>
@@ -628,6 +628,7 @@
       <DependentUpon>VideoOpenLocationView.xaml</DependentUpon>
     </Compile>
     <Compile Include="VideoPanel\VideoOpenLocationViewModel.cs" />
+    <Compile Include="VideoPanel\VideoScreenShotSaveModeConverter.cs" />
     <Compile Include="VideoPanel\VideoSettingsView.xaml.cs">
       <DependentUpon>VideoSettingsView.xaml</DependentUpon>
     </Compile>

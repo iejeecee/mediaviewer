@@ -15,47 +15,10 @@ namespace ImageSearchPlugin
 {
     [Export]
     public class ImageSearchSettingsViewModel : SettingsBase
-    {               
-        public Command DownloadDirectoryCommand { get; set; }
-
-        bool isAskDownloadPath;
-        public bool IsAskDownloadPath {
-            get
-            {
-                return (isAskDownloadPath);
-            }
-            set
-            {
-                SetProperty(ref isAskDownloadPath, value);
-            }
-        }
-
-        bool isCurrentDownloadPath;
-        public bool IsCurrentDownloadPath
-        {
-            get
-            {
-                return (isCurrentDownloadPath);
-            }
-            set
-            {
-                SetProperty(ref isCurrentDownloadPath, value);
-            }
-        }
-
-        bool isFixedDownloadPath;
-        public bool IsFixedDownloadPath
-        {
-            get
-            {
-                return (isFixedDownloadPath);
-            }
-            set
-            {
-                SetProperty(ref isFixedDownloadPath, value);
-            }
-        }
-
+    {
+        public ListCollectionView ImageSaveMode { get; set; }
+        public Command DirectoryPickerCommand { get; set; }
+        
         string fixedDownloadPath;
         public String FixedDownloadPath
         {
@@ -73,7 +36,7 @@ namespace ImageSearchPlugin
         
         public ImageSearchSettingsViewModel() : base("Image Search Plugin", new Uri(typeof(ImageSearchSettingsView).FullName, UriKind.Relative))
         {            
-            DownloadDirectoryCommand = new Command(() =>
+            DirectoryPickerCommand = new Command(() =>
             {                            
                 DirectoryPickerView directoryPicker = new DirectoryPickerView();                
                 DirectoryPickerViewModel vm = (DirectoryPickerViewModel)directoryPicker.DataContext;
@@ -85,11 +48,10 @@ namespace ImageSearchPlugin
                     MiscUtils.insertIntoHistoryCollection(FixedDownloadPathHistory, FixedDownloadPath);
                 }
             });
-           
-            IsAskDownloadPath = ImageSearchPlugin.Properties.Settings.Default.IsAskDownloadPath;
-            IsCurrentDownloadPath = ImageSearchPlugin.Properties.Settings.Default.IsCurrentDownloadPath;
-            IsFixedDownloadPath = ImageSearchPlugin.Properties.Settings.Default.IsFixedDownloadPath;
 
+            ImageSaveMode = new ListCollectionView(Enum.GetValues(typeof(MediaViewer.Infrastructure.Constants.SaveLocation)));
+            ImageSaveMode.MoveCurrentTo(ImageSearchPlugin.Properties.Settings.Default.ImageSaveMode);
+            
             if (String.IsNullOrEmpty(ImageSearchPlugin.Properties.Settings.Default.FixedDownloadPath))
             {
                 FixedDownloadPath = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
@@ -104,10 +66,8 @@ namespace ImageSearchPlugin
         }      
 
         protected override void OnSave()
-        {            
-            ImageSearchPlugin.Properties.Settings.Default.IsAskDownloadPath = IsAskDownloadPath;
-            ImageSearchPlugin.Properties.Settings.Default.IsCurrentDownloadPath = IsCurrentDownloadPath;
-            ImageSearchPlugin.Properties.Settings.Default.IsFixedDownloadPath = IsFixedDownloadPath;
+        {
+            ImageSearchPlugin.Properties.Settings.Default.ImageSaveMode = (MediaViewer.Infrastructure.Constants.SaveLocation)ImageSaveMode.CurrentItem;
             ImageSearchPlugin.Properties.Settings.Default.FixedDownloadPath = FixedDownloadPath;
                         
             ImageSearchPlugin.Properties.Settings.Default.Save();

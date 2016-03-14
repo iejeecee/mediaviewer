@@ -3,9 +3,9 @@
 // unsafe function warning disable
 #pragma warning(disable : 4996)
 #include <algorithm>
-#include "stdafx.h"
-#include "VideoLibException.h"
-#include "Utils\Utils.h"
+#include "..\stdafx.h"
+#include "..\VideoLibException.h"
+#include "..\Utils\Utils.h"
 #include <msclr\marshal.h>
 
 

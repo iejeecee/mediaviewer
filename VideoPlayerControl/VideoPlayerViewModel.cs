@@ -105,10 +105,15 @@ namespace VideoPlayerControl
 
         }
 
-        public int MinBufferedPackets
+        public double FramesPerSecond
         {
-            get { return videoDecoder.FrameQueue.MinBufferedPackets; }
-            set { videoDecoder.FrameQueue.MinBufferedPackets = value; }
+            get { return videoDecoder.FramesPerSecond; }
+        }
+
+        public int MinNrBufferedPackets
+        {
+            get { return videoDecoder.FrameQueue.MinNrBufferedPackets; }
+            set { videoDecoder.FrameQueue.MinNrBufferedPackets = value; }
         }
 
         public int NrPackets
@@ -134,8 +139,14 @@ namespace VideoPlayerControl
         HRTimer audioRefreshTimer;
 
         double videoPts;
+        double videoDts;
         double videoPtsDrift;
 
+        long framePts;      
+        bool isKeyFrame;
+
+        double audioPts;
+        double audioDts;
         double audioDiffCum;
         double audioDiffAvgCoef;
         double audioDiffThreshold;
@@ -194,6 +205,14 @@ namespace VideoPlayerControl
                 {
                     IsMutedChanged(this, audioPlayer.IsMuted);
                 }
+            }
+        }
+
+        public bool HasVideo
+        {
+            get
+            {
+                return (videoDecoder.HasVideo);
             }
         }
 
@@ -283,7 +302,6 @@ namespace VideoPlayerControl
 
             videoDecoder = new VideoLib.VideoPlayer();
 
-
             videoDecoder.FrameQueue.Finished += new EventHandler((s, e) =>
             {
                 owner.BeginInvoke(new Func<Task>(async () => await close()));
@@ -318,6 +336,9 @@ namespace VideoPlayerControl
 
             DurationSeconds = 0;
             PositionSeconds = 0;
+
+            videoPts = 0;
+            audioPts = 0;
 
             owner.HandleDestroyed += new EventHandler(async (s, e) => await close());
 
@@ -417,8 +438,9 @@ namespace VideoPlayerControl
                     // reset videoFrameTimer before (re)starting rendering
                     audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
                 }
-
+                
                 videoPts = videoFrame.Pts;
+                videoDts = videoFrame.Dts;
                 videoPtsDrift = videoFrame.Pts + HRTimer.getTimestamp();
 
                 if (skipVideoFrame == false)
@@ -429,6 +451,9 @@ namespace VideoPlayerControl
                 actualDelay = synchronizeVideo(videoPts);
 
                 NrFramesRendered++;
+                framePts = videoFrame.FramePts;
+                //frameDts = videoFrame.FrameDts;
+                isKeyFrame = videoFrame.IsKey;
             }
 
             updateObservableVariables();
@@ -460,21 +485,23 @@ namespace VideoPlayerControl
             builder.AppendLine("State: " + VideoState.ToString());
             builder.AppendLine("Resolution: " + videoDecoder.Width + " x " + videoDecoder.Height + "@" + videoDecoder.FramesPerSecond.ToString("0.##"));
             builder.Append("Free Packets (" + videoDecoder.FrameQueue.FreePacketQueueState.ToString() + ") ");
-            builder.AppendLine(": " + videoDecoder.FrameQueue.FreePacketsInQueue + "/" + videoDecoder.FrameQueue.MaxFreePackets);
+            builder.AppendLine(": " + videoDecoder.FrameQueue.NrFreePacketsInQueue + "/" + videoDecoder.FrameQueue.MaxFreePackets);
 
             builder.Append("Video Packets (" + videoDecoder.FrameQueue.VideoPacketQueueState.ToString() + ") ");
-            builder.AppendLine(": " + videoDecoder.FrameQueue.VideoPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxVideoPackets);
+            builder.AppendLine(": " + videoDecoder.FrameQueue.NrVideoPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxVideoPackets);
 
             builder.Append("Audio Packets (" + videoDecoder.FrameQueue.AudioPacketQueueState.ToString() + ") ");
-            builder.AppendLine(": " + videoDecoder.FrameQueue.AudioPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxAudioPackets);
+            builder.AppendLine(": " + videoDecoder.FrameQueue.NrAudioPacketsInQueue + "/" + videoDecoder.FrameQueue.MaxAudioPackets);
             builder.AppendLine("Audio State: " + audioPlayer.Status.ToString());
             builder.AppendLine("Buffering: " + videoDecoder.FrameQueue.IsBuffering.ToString());
-            builder.AppendLine("Video Packet Errors: " + videoDecoder.FrameQueue.NrVideoPacketReadErrors.ToString());
-            builder.AppendLine("Audio Packet Errors: " + videoDecoder.FrameQueue.NrAudioPacketReadErrors.ToString());
-
-            builder.AppendLine("Nr Frames Dropped: " + NrFramesDropped + "/" + NrFramesRendered);
+            builder.AppendLine("Packet Errors (V / A): " + videoDecoder.FrameQueue.NrVideoPacketReadErrors.ToString() + " / " + videoDecoder.FrameQueue.NrAudioPacketReadErrors.ToString());
+           
+            builder.AppendLine("Nr Frames Dropped: " + NrFramesDropped + " / " + NrFramesRendered);
             builder.AppendLine("Video Clock: " + VideoClock.ToString("#.####"));
             builder.AppendLine("Audio Clock: " + AudioClock.ToString("#.####"));
+
+            builder.AppendLine("Frame Pts: " + framePts);   
+            builder.AppendLine("Keyframe: " + isKeyFrame.ToString());
 
             videoRender.InfoText = builder.ToString();
 
@@ -482,10 +509,10 @@ namespace VideoPlayerControl
 
         }
 
-        double synchronizeVideo(double videoPts)
+        double synchronizeVideo(double VideoPts)
         {
             // assume delay to next frame equals delay between previous frames
-            double delay = videoPts - previousVideoPts;
+            double delay = VideoPts - previousVideoPts;
 
             if (delay <= 0 || delay >= 1.0)
             {
@@ -493,7 +520,7 @@ namespace VideoPlayerControl
                 delay = previousVideoDelay;
             }
 
-            previousVideoPts = videoPts;
+            previousVideoPts = VideoPts;
             previousVideoDelay = delay;
 
             if (syncMode == SyncMode.VIDEO_SYNCS_TO_AUDIO &&
@@ -524,7 +551,7 @@ namespace VideoPlayerControl
             // adjust delay based on the actual current time
             videoFrameTimer += delay;
             double actualDelay = videoFrameTimer - HRTimer.getTimestamp();
-
+                        
 
             return (actualDelay);
         }
@@ -560,6 +587,9 @@ namespace VideoPlayerControl
                     // reset audio frame timer before (re)starting playing
                     audioFrameTimer = videoFrameTimer = HRTimer.getTimestamp();
                 }
+
+                audioPts = audioFrame.Pts;
+                audioDts = audioFrame.Dts;
 
                 // if the audio is lagging behind too much, skip the buffer completely
                 double diff = getVideoClock() - audioFrame.Pts;
@@ -836,17 +866,58 @@ namespace VideoPlayerControl
             } while (result != VideoLib.VideoPlayer.DemuxPacketsResult.STOPPED && !token.IsCancellationRequested);
         }
 
-        public async Task seek(double positionSeconds)
+        /// <summary>
+        /// Provides a unique seekable timestamp of the current frame
+        /// </summary>
+        /// <returns>Timestamp in Seconds</returns> 
+        public double getFrameSeekTimeStamp()
         {
-            if (SeekTask != null)
+            if (SeekMode == VideoLib.SeekMode.SEEK_BY_DTS)
             {
-                await SeekTask;
+                if (MediaType == VideoLib.MediaType.VIDEO_MEDIA)
+                {
+                    return videoDts;
+                }
+                else
+                {
+                    return audioDts;
+                }
+            }
+            else
+            {
+                if (MediaType == VideoLib.MediaType.VIDEO_MEDIA)
+                {
+                    return videoPts;
+                }
+                else
+                {
+                    return audioPts;
+                }
             }
 
-            SeekTask = Task.Factory.StartNew(() => seekFunc(positionSeconds), CancelTokenSource.Token);
         }
 
-        void seekFunc(double positionSeconds)
+
+        public async Task seek(double positionSeconds, VideoLib.VideoPlayer.SeekKeyframeMode mode = VideoLib.VideoPlayer.SeekKeyframeMode.SEEK_BACKWARDS)
+        {
+            if (videoDecoder.FrameQueue.IsBuffering) return;
+
+            if (SeekTask != null)
+            {
+                try
+                {
+                    await SeekTask;
+                }
+                catch(TaskCanceledException)
+                {
+
+                }
+            }
+
+            SeekTask = Task.Factory.StartNew(() => seekFunc(positionSeconds, mode), CancelTokenSource.Token);
+        }
+
+        void seekFunc(double positionSeconds, VideoLib.VideoPlayer.SeekKeyframeMode mode)
         {
             if (VideoState == VideoPlayerControl.VideoState.CLOSED)
             {
@@ -859,7 +930,7 @@ namespace VideoPlayerControl
             videoDecoder.FrameQueue.setState(FrameQueue.FrameQueueState.BLOCK, FrameQueue.FrameQueueState.BLOCK,
                 FrameQueue.FrameQueueState.BLOCK);
 
-            if (videoDecoder.seek(positionSeconds) == true)
+            if (videoDecoder.seek(positionSeconds, mode) == true)
             {
                 // flush the framequeue	and audioplayer buffer				
                 videoDecoder.FrameQueue.flush();
@@ -1042,7 +1113,12 @@ namespace VideoPlayerControl
 
             videoDecoder.close();
 
+            VideoClock = 0;
+            AudioClock = 0;
+            
+            audioPts = 0;
             videoPts = 0;
+        
             videoPtsDrift = 0;
 
             DurationSeconds = 0;
@@ -1158,6 +1234,23 @@ namespace VideoPlayerControl
             {
                 Log.Info(message);
             }
+        }
+
+        public VideoLib.MediaType MediaType
+        {
+            get
+            {
+                return videoDecoder.MediaType;
+            }
+        }
+
+        public VideoLib.SeekMode SeekMode
+        {
+            get
+            {
+                return videoDecoder.SeekMode;
+            }
+
         }
     }
 

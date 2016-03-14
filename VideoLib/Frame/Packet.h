@@ -1,5 +1,5 @@
 #pragma once
-#include "Video\VideoDecoder.h"
+#include "..\Video\VideoDecoder.h"
 
 namespace VideoLib {
 

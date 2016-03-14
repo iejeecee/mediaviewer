@@ -202,8 +202,7 @@ namespace MediaViewer.Model.Media.File
 
             MetadataFactory.ReadOptions readOptions = MetadataFactory.ReadOptions.READ_FROM_DISK;
 
-            Thumbnail thumb = null;
-            ICollection<VideoThumbnail> videoThumbs = null;
+            Thumbnail thumb = null;    
             int id = 0;
 
             if (Metadata != null)
@@ -217,13 +216,8 @@ namespace MediaViewer.Model.Media.File
 
                 } else {
 
-                    // save current thumbs
-                    thumb = Metadata.Thumbnail;
-
-                    if (Metadata is VideoMetadata)
-                    {
-                        videoThumbs = (Metadata as VideoMetadata).VideoThumbnails;
-                    }
+                    // save current thumb
+                    thumb = Metadata.Thumbnail;                  
                 }                
             }
 
@@ -233,11 +227,6 @@ namespace MediaViewer.Model.Media.File
             {
                 // restore thumbnails
                 Metadata.Thumbnail = thumb;
-
-                if (Metadata is VideoMetadata)
-                {
-                   (Metadata as VideoMetadata).VideoThumbnails = videoThumbs;
-                }
             }
 
             if (Metadata != null && id != 0)

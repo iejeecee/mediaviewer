@@ -4,8 +4,8 @@
 #pragma warning(disable : 4996)
 #include <algorithm>
 #include "stdafx.h"
-#include "Video\VideoInit.h"
-#include "VideoLibException.h"
+#include "..\Video\VideoInit.h"
+#include "..\VideoLibException.h"
 #include <msclr\marshal.h>
 
 using namespace msclr::interop;

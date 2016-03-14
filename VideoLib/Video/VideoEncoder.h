@@ -1,8 +1,8 @@
 #pragma once
-#include "stdafx.h"
+#include "..\stdafx.h"
 #include "Video.h"
-#include "VideoLibException.h"
-#include "VideoTransformer\MemoryStreamAVIOContext.h"
+#include "..\VideoLibException.h"
+#include "..\VideoTransformer\MemoryStreamAVIOContext.h"
 
 using namespace msclr::interop;
 

@@ -7,7 +7,7 @@
              xmlns:dpf="clr-namespace:MediaViewer.VideoPanel"
              xmlns:Loading="clr-namespace:MediaViewer.UserControls.Loading"  x:Class="MediaViewer.VideoPanel.VideoView"
              mc:Ignorable="d" 
-             d:DesignHeight="300" d:DesignWidth="300"
+             d:DesignHeight="300" d:DesignWidth="500"
              DataContextChanged="VideoView_DataContextChanged">
     <UserControl.Resources>
         <ResourceDictionary>
@@ -55,6 +55,8 @@
             </Grid>
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
@@ -117,23 +119,44 @@
                 <Button Grid.Column="2" x:Name="screenShotButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Take a snapshot" Command="{Binding ScreenShotCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/screenshot.ico" />
                 </Button>
-                <Button Grid.Column="3" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
+                <Button Grid.Column="3" x:Name="stepForwardButton" Margin="10,5,0,5" Width="19" Height="21" ToolTip="Step Forward" Command="{Binding StepForwardCommand}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Polygon Grid.Column="0" Fill="#333333" StrokeThickness="0" Points="0,0 3,0 3,10 0,10" SnapsToDevicePixels="True"/>
+                        <Polygon Grid.Column="1" Margin="2,0,0,0" Fill="#333333" StrokeThickness="0" Points="0,0 5,5 0,10" SnapsToDevicePixels="True"/>
+                    </Grid>
+                </Button>
+                <Button Grid.Column="4" x:Name="stepBackwardButton" Margin="0,5,0,5" Width="19" Height="21" ToolTip="Step Backward" Command="{Binding StepBackwardCommand}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Polygon Grid.Column="0" Fill="#333333" StrokeThickness="0" Points="0,0 3,0 3,10 0,10" SnapsToDevicePixels="True"/>
+                        <Polygon Grid.Column="1" Margin="2,0,0,0" Fill="#333333" StrokeThickness="0" Points="5,0 0,5 5,10" SnapsToDevicePixels="True"/>
+                    </Grid>
+                </Button>
+                <Button Grid.Column="5" x:Name="frameByFrameButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Frame by frame" Command="{Binding FrameByFrameCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/frame.ico" />
                 </Button>
-                <Button Grid.Column="4" x:Name="leftMarkerButton" Margin="10,5,0,5" Width="19" Height="21" ToolTip="Set Start Range" Command="{Binding SetLeftMarkerCommand}">
+                <Button Grid.Column="6" x:Name="leftMarkerButton" Margin="10,5,0,5" Width="19" Height="21" ToolTip="Set Start Range" Command="{Binding SetLeftMarkerCommand}">
                     <Grid>
                         <Polygon Fill="LightBlue" Stroke="Black" StrokeThickness="1" Points="2,10 2,0 12,10" SnapsToDevicePixels="True"/>
                     </Grid>
                 </Button>
-                <Button Grid.Column="5" x:Name="rightMarkerButton" Margin="0,5,0,5" Width="19" Height="21" ToolTip="Set End Range" Command="{Binding SetRightMarkerCommand}">
+                <Button Grid.Column="7" x:Name="rightMarkerButton" Margin="0,5,0,5" Width="19" Height="21" ToolTip="Set End Range" Command="{Binding SetRightMarkerCommand}">
                     <Grid>
                         <Polygon Fill="LightBlue" Stroke="Black" StrokeThickness="1" Points="2,10 12,0 12,10" SnapsToDevicePixels="True"/>
                     </Grid>
                 </Button>
-                <Button Grid.Column="6" x:Name="cutButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Cut Selection" Command="{Binding CutVideoCommand}">
+                <Button Grid.Column="8" x:Name="cutButton" Margin="0,5,0,5" Width="38" Height="21" ToolTip="Cut Selection" Command="{Binding CutVideoCommand}">
                     <Image Source="pack://application:,,,/Resources/Icons/videocut.ico" />
                 </Button>
-                <ToggleButton Grid.Column="8" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
+                
+                <ToggleButton Grid.Column="10" Margin="5,5,0,5" Height="21" Width="25" IsChecked="{Binding IsMuted}" 
 					IsEnabled="{Binding HasAudio}" ToolTip="Mute">
                     <Image>
                         <Image.Style>
@@ -150,7 +173,7 @@
                         </Image.Style>
                     </Image>
                 </ToggleButton>
-                <Slider Grid.Column="9" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
+                <Slider Grid.Column="11" Margin="5,5,5,5" x:Name="volumeSlider" HorizontalAlignment="Right" Width="60" ToolTip="Volume"
 					Minimum="{Binding MinVolume}" Maximum="{Binding MaxVolume}" Value="{Binding Volume}" />
             </Grid>
         </Grid>        
