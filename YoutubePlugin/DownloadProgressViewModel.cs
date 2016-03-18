@@ -100,17 +100,24 @@ namespace YoutubePlugin
             MediaFileItem fileItem = MediaFileItem.Factory.create(fullpath);
 
             fileItem.EnterWriteLock();
+            try
+            {
+                YoutubeItemMetadata saveMetadata = metadata.Clone() as YoutubeItemMetadata;
 
-            YoutubeItemMetadata saveMetadata = metadata.Clone() as YoutubeItemMetadata;
+                saveMetadata.Location = fullpath;
+                ItemProgress = 0;
+                ItemInfo = "Saving metadata: " + item.Name;
+              
+                MetadataFactory.write(saveMetadata, MetadataFactory.WriteOptions.WRITE_TO_DISK, this);              
 
-            saveMetadata.Location = fullpath;
-            ItemProgress = 0;
-            ItemInfo = "Saving metadata: " + item.Name;
-            MetadataFactory.write(saveMetadata, MetadataFactory.WriteOptions.WRITE_TO_DISK, this);
-            ItemProgress = 100;
-            InfoMessages.Add("Finished saving metadata: " + fullpath);
+                ItemProgress = 100;
+                InfoMessages.Add("Finished saving metadata: " + fullpath);
 
-            fileItem.ExitWriteLock();
+            }
+            finally
+            {
+                fileItem.ExitWriteLock();
+            }
 
             /*fileItem.EnterUpgradeableReadLock();
             fileItem.readMetadata_URLock(MetadataFactory.ReadOptions.READ_FROM_DISK, CancellationToken);

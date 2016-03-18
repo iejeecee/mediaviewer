@@ -72,7 +72,7 @@ namespace VideoLib {
 		// returns number of bytes decoded
 		virtual int decodeAudioFrame(AVFrame *audio, int *got_audio_ptr, const AVPacket *avpkt) = 0;
 
-		virtual bool seek(double posSeconds, int flags = 0) = 0;
+		virtual bool seek(double posSeconds, int flags = AVSEEK_FLAG_BACKWARD) = 0;
 		
 		virtual int getWidth() const = 0;
 		virtual int getHeight() const = 0;

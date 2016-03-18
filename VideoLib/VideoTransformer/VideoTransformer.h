@@ -10,6 +10,7 @@
 #include "VideoTransformerInput.h"
 #include "VideoTransformerOutput.h"
 #include "..\Utils\Utils.h"
+#include "MediaSource.h"
  
 using namespace MediaViewer::Infrastructure::Video::TranscodeOptions;
 using namespace System::Collections::Generic;

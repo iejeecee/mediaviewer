@@ -291,6 +291,7 @@ namespace VideoPlayerControl
         static VideoPlayerViewModel()
         {
             VideoLib.VideoPlayer.setLogCallback(videoDecoderLogCallback);
+                     
         }
 
         public VideoPlayerViewModel(Control owner,

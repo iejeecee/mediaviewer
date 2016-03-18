@@ -35,8 +35,12 @@ namespace YoutubePlugin
                 YoutubeVideoItem videoItem = item as YoutubeVideoItem;
 
                 YoutubeItemMetadata metadata = item.Metadata as YoutubeItemMetadata;
-                
-                if (metadata.Height >= 1080)
+
+                if (metadata.Height >= 2160)
+                {
+                    key += "4";
+                } 
+                else if (metadata.Height >= 1080)
                 {
                     key += "0";
                 }

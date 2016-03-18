@@ -106,10 +106,11 @@ namespace MediaViewer.Model.Media.File.Metadata
                 AudioFileMetadataWriter audioMetadataWriter = new AudioFileMetadataWriter();
                 audioMetadataWriter.writeMetadata(metadata, progress);
             }
-            else
+            else 
             {
-                throw new Exception("cannot write metadata");
-            }
+                MetadataFileWriter metadataFileWriter = new MetadataFileWriter();
+                metadataFileWriter.writeMetadata(metadata, progress);
+            } 
 
         }
     }

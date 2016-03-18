@@ -57,10 +57,11 @@ namespace YoutubePlugin
 
             String iconPath = "pack://application:,,,/YoutubePlugin;component/Resources/Icons/";
 
-            icons.Add(new BitmapImage(new Uri(iconPath + "hd.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "hd.png", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "notsupported.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "channel.ico", UriKind.Absolute)));
             icons.Add(new BitmapImage(new Uri(iconPath + "playlist.ico", UriKind.Absolute)));
+            icons.Add(new BitmapImage(new Uri(iconPath + "4k.png", UriKind.Absolute)));
 
             InfoIconsCacheStatic = new YoutubeItemInfoIconsCache(icons);
         }

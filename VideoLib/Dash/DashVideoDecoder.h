@@ -347,7 +347,7 @@ namespace VideoLib {
 			return audioDecoder->decodeAudioFrame(audio, got_audio_ptr, avpkt);
 		}
 
-		virtual bool seek(double posSeconds, int flags = 0) 
+		virtual bool seek(double posSeconds, int flags = AVSEEK_FLAG_BACKWARD) 
 		{
 			bool result = videoDecoder->seek(posSeconds, flags);
 			if(result == false) return(result);

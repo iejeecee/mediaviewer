@@ -10,7 +10,7 @@ using XMPLib;
 
 namespace MediaViewer.Model.Media.File.Metadata
 {
-    abstract class MetadataFileWriter 
+    class MetadataFileWriter 
     {
     
         protected CancellableOperationProgressBase Progress { get; set; }

@@ -152,6 +152,7 @@ namespace YoutubePlugin.Item
                 metaData.CreationDate = PublishedAt;
                 metaData.Title = Title;
                 metaData.Description = String.IsNullOrEmpty(Description) ? Title : Description;
+                metaData.SupportsXMPMetadata = true;
              
                 NameValueCollection videoInfo;
 
