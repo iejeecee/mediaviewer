@@ -214,6 +214,7 @@ namespace VideoLib {
 
 		VideoPlayer();
 		~VideoPlayer();
+		!VideoPlayer();
 				
 		void open(OpenVideoArgs ^args, OutputPixelFormat videoFormat, System::Threading::CancellationToken ^token);
 		bool seek(double posSeconds, SeekKeyframeMode mode);

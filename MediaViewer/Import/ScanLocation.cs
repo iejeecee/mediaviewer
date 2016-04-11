@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace MediaViewer.Import
 {
-    class ImportExportLocation : BindableBase, IEquatable<ImportExportLocation>
+    class ScanLocation : BindableBase, IEquatable<ScanLocation>
     {
-        public ImportExportLocation(String location)
+        public ScanLocation(String location)
         {
             this.location = location;
             IsRecursive = true;
@@ -58,7 +58,7 @@ namespace MediaViewer.Import
             }
         }
 
-        public bool Equals(ImportExportLocation other)
+        public bool Equals(ScanLocation other)
         {
             if (other == null)
             {

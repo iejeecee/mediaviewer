@@ -45,9 +45,9 @@ namespace MediaViewer.Import
                     OnClosingRequest();
                 });
           
-            IncludeLocations = new ObservableCollection<ImportExportLocation>();
+            IncludeLocations = new ObservableCollection<ScanLocation>();
 
-            IncludeLocations.Add(new ImportExportLocation(mediaFileWatcher.Path));
+            IncludeLocations.Add(new ScanLocation(mediaFileWatcher.Path));
 
             AddIncludeLocationCommand = new Command(new Action(() =>
             {
@@ -65,7 +65,7 @@ namespace MediaViewer.Import
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    ImportExportLocation newLocation = new ImportExportLocation(vm.SelectedPath);
+                    ScanLocation newLocation = new ScanLocation(vm.SelectedPath);
                     if (!IncludeLocations.Contains(newLocation))
                     {
                         IncludeLocations.Add(newLocation);
@@ -101,7 +101,7 @@ namespace MediaViewer.Import
                 OkCommand.IsExecutable = false;
             }));
 
-            ExcludeLocations = new ObservableCollection<ImportExportLocation>();
+            ExcludeLocations = new ObservableCollection<ScanLocation>();
        
             AddExcludeLocationCommand = new Command(new Action(() =>
             {
@@ -119,7 +119,7 @@ namespace MediaViewer.Import
 
                 if (directoryPicker.ShowDialog() == true)
                 {
-                    ImportExportLocation newLocation = new ImportExportLocation(vm.SelectedPath);
+                    ScanLocation newLocation = new ScanLocation(vm.SelectedPath);
                     if (!ExcludeLocations.Contains(newLocation))
                     {
                         ExcludeLocations.Add(newLocation);
@@ -146,9 +146,9 @@ namespace MediaViewer.Import
             }));
         }
 
-        ObservableCollection<ImportExportLocation> includeLocations;
+        ObservableCollection<ScanLocation> includeLocations;
 
-        public ObservableCollection<ImportExportLocation> IncludeLocations
+        public ObservableCollection<ScanLocation> IncludeLocations
         {
             get { return includeLocations; }
             set { 
@@ -156,9 +156,9 @@ namespace MediaViewer.Import
             }
         }
 
-        ImportExportLocation selectedIncludeLocation;
+        ScanLocation selectedIncludeLocation;
 
-        public ImportExportLocation SelectedIncludeLocation
+        public ScanLocation SelectedIncludeLocation
         {
             get { return selectedIncludeLocation; }
             set { 
@@ -190,9 +190,9 @@ namespace MediaViewer.Import
             set { clearIncludeLocationsCommand = value; }
         }
 
-        ObservableCollection<ImportExportLocation> excludeLocations;
+        ObservableCollection<ScanLocation> excludeLocations;
 
-        public ObservableCollection<ImportExportLocation> ExcludeLocations
+        public ObservableCollection<ScanLocation> ExcludeLocations
         {
             get { return excludeLocations; }
             set
@@ -201,9 +201,9 @@ namespace MediaViewer.Import
             }
         }
 
-        ImportExportLocation selectedExcludeLocation;
+        ScanLocation selectedExcludeLocation;
 
-        public ImportExportLocation SelectedExcludeLocation
+        public ScanLocation SelectedExcludeLocation
         {
             get { return selectedExcludeLocation; }
             set

@@ -13,6 +13,7 @@ using XMPLib;
 using MediaViewer.Model.Media.Base.Metadata;
 using VideoLib;
 using System.Windows.Media.Imaging;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.Model.Media.File.Metadata
 {    
@@ -33,14 +34,15 @@ namespace MediaViewer.Model.Media.File.Metadata
             try
             {
                 
-                FileInfo info = new FileInfo(media.Location);
+                FileInfo info = new FileInfo(media.FullLocation);
                 info.Refresh();
                 media.LastModifiedDate = info.LastWriteTime < sqlMinDate ? sqlMinDate : info.LastWriteTime;
                 media.FileDate = info.CreationTime < sqlMinDate ? sqlMinDate : info.CreationTime;
+                media.MimeType = MediaFormatConvert.fileNameToMimeType(media.Name); 
 
                 if (media.SupportsXMPMetadata == false) return;
 
-                xmpMetaDataReader.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForRead);
+                xmpMetaDataReader.open(media.FullLocation, Consts.OpenOptions.XMPFiles_OpenForRead);
                                     
                 readXMPMetadata(xmpMetaDataReader, media);
                 

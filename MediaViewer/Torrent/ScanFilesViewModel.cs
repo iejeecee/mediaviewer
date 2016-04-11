@@ -26,7 +26,7 @@ namespace MediaViewer.Torrent
         {
             ObservableCollection<MediaFileItem> items = new ObservableCollection<MediaFileItem>();
                      
-            FileUtils.walkDirectoryTree(new DirectoryInfo(inputPath), addInputMedia, items, true);
+            FileUtils.iterateFilesInDirectory(new DirectoryInfo(inputPath), addInputMedia, items, true);
           
             TotalProgress = 1;
                         

@@ -92,18 +92,24 @@ namespace MediaViewer.Model.Utils
 
             parseTimeSeconds(totalSeconds, out seconds, out minutes, out hours);
 
-            string hoursStr = "";
+            string output = "";
 
             if (hours != 0)
             {
-
-                hoursStr = hours.ToString() + ":";
+                output += hours.ToString() + ":";
+            }       
+           
+            if (String.IsNullOrEmpty(output))
+            {
+                output += minutes.ToString() + ":";
             }
-
-            string output = hoursStr +
-                minutes.ToString("00") + ":" +
-                seconds.ToString("00");
-
+            else
+            {
+                output += minutes.ToString("00") + ":";
+            }
+                       
+            output += seconds.ToString("00");
+            
             return (output);
 
         }
@@ -138,6 +144,29 @@ namespace MediaViewer.Model.Utils
             }
 
             return (output);
+        }
+
+        /// <summary>
+        /// Provides as stable serializable hash from a string
+        /// </summary>
+        /// <param name="text">string to generate hash code for</param>
+        /// <returns>hash value</returns>
+        public static int hashString(string text)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException("hash text can't be null");
+            }
+
+            unchecked
+            {
+                int hash = 23;
+                foreach (char c in text)
+                {
+                    hash = hash * 31 + c;
+                }
+                return hash;
+            }
         }
 
 

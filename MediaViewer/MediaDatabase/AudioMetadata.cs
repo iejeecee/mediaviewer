@@ -34,19 +34,33 @@ namespace MediaViewer.MediaDatabase
                 sb.AppendLine(Path.GetFileName(Location));
                 sb.AppendLine();
 
-                sb.AppendLine("Mime type:");
-                sb.Append(MimeType);
+                sb.Append("Audio Codec (");
+                sb.Append(AudioCodec);
+                sb.AppendLine("):");
+                sb.Append(SamplesPerSecond);
+                sb.Append("Hz, ");
+                sb.Append(BitsPerSample);
+                sb.Append("bit, ");
+                sb.Append(NrChannels);
+                sb.Append(" chan");
+
+                if (BitRate.HasValue)
+                {
+                    sb.Append(", " + MiscUtils.formatSizeBytes(BitRate.Value / 8) + "/s");
+                }
+
                 sb.AppendLine();
                 sb.AppendLine();
 
                 sb.AppendLine("Duration:");
                 sb.Append(MiscUtils.formatTimeSeconds(DurationSeconds));
+
                 sb.AppendLine();
                 sb.AppendLine();
 
-                sb.AppendLine("NrChannels:");
-                sb.Append(NrChannels);
-
+                sb.AppendLine("Size:");
+                sb.Append(MiscUtils.formatSizeBytes(SizeBytes));
+                           
                 return (sb.ToString());
             }
         }
@@ -56,6 +70,7 @@ namespace MediaViewer.MediaDatabase
         public short NrChannels { get; set; }
         public int SamplesPerSecond { get; set; }
         public short BitsPerSample { get; set; }
+        public Nullable<long> BitRate { get; set; }
 
         [Required]
         public string AudioCodec { get; set; }

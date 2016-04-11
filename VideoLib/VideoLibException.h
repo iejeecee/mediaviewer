@@ -1,5 +1,5 @@
 #pragma once
-#include "VideoInit.h"
+#include "Video\VideoInit.h"
 
 using namespace System;
 using namespace System::Runtime::InteropServices;

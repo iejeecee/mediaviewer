@@ -52,12 +52,16 @@ namespace MediaViewer.MediaDatabase
                 sb.Append("x");
                 sb.Append(Height);
                 sb.Append(", " + PixelFormat + ", " + FramesPerSecond.ToString("0.00") + " fps");
+                if (VideoBitRate.HasValue)
+                {                  
+                    sb.Append(", " + MiscUtils.formatSizeBytes(VideoBitRate.Value / 8) + "/s");
+                }
+
                 sb.AppendLine();
                 sb.AppendLine();
 
                 if (AudioCodec != null)
                 {
-
                     sb.Append("Audio Codec (");
                     sb.Append(AudioCodec);
                     sb.AppendLine("):");
@@ -67,6 +71,12 @@ namespace MediaViewer.MediaDatabase
                     sb.Append("bit, ");
                     sb.Append(NrChannels);
                     sb.Append(" chan");
+
+                    if (AudioBitRate.HasValue)
+                    {                     
+                        sb.Append(", " + MiscUtils.formatSizeBytes(AudioBitRate.Value / 8) + "/s");
+                    }
+
                     sb.AppendLine();
                     sb.AppendLine();
                 }
@@ -85,6 +95,8 @@ namespace MediaViewer.MediaDatabase
 
         public int Width { get; set; }
         public int Height { get; set; }
+        public Nullable<long> VideoBitRate { get; set; }
+        public Nullable<long> AudioBitRate { get; set; }
         public Nullable<short> BitsPerSample { get; set; }
         public int DurationSeconds { get; set; }
         public double FramesPerSecond { get; set; }

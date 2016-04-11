@@ -151,8 +151,8 @@ namespace VideoPlayerControl
             //We only need to set the Width/Height in full-screen mode
             if (!windowed)
             {
-                presentParams[0].BackBufferHeight = 1080;
-                presentParams[0].BackBufferWidth = 1920;
+                presentParams[0].BackBufferHeight = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height;
+                presentParams[0].BackBufferWidth = System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width;
 
                 D3D.Format format = D3D.Format.X8R8G8B8;
 
@@ -173,8 +173,7 @@ namespace VideoPlayerControl
 
         void reset()
         {
-           
-            if (direct3D == null) return;
+            if (offscreen == null) return;
            
 			SharpDX.DataRectangle stream = offscreen.LockRectangle(LockFlags.ReadOnly);
 			
@@ -337,12 +336,22 @@ namespace VideoPlayerControl
                         owner.Handle,
                         D3D.CreateFlags.SoftwareVertexProcessing,
                         presentParams);
-              
+
+                    releaseResources();
+                    aquireResources();
+                }
+                else
+                {
+                    releaseResources();
+
+                    D3D.PresentParameters[] presentParams = createPresentParams(windowed, owner);
+
+                    device.Reset(presentParams);
+
+                    aquireResources();
+
                 }
 
-                releaseResources();
-                aquireResources();
-         
                 int sizeBytes = videoWidth * (videoHeight + videoHeight / 2);                           
                 offscreenBuffer = new Byte[sizeBytes];
 

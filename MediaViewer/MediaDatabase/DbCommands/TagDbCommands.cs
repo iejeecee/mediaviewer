@@ -105,6 +105,61 @@ namespace MediaViewer.MediaDatabase.DbCommands
            
         }
 
+        public void linkChildTags(Tag parentTag, List<Tag> childTags)
+        {
+            Tag parent = getTagByName(parentTag.Name);
+
+            if (parent == null)
+            {
+                parent = new Tag();
+                parent.Name = parentTag.Name;
+                Db.Entry(parent).State = EntityState.Added;
+            }
+            else
+            {
+                Db.Entry(parent).State = EntityState.Modified;
+            }
+
+            parent.ChildTags.Clear();
+
+            foreach(Tag child in childTags)
+            {
+                Tag tag = getTagByName(child.Name);
+
+                if (tag == null)
+                {
+                    tag = new Tag();
+                    tag.Name = child.Name;
+                    Db.Entry(tag).State = EntityState.Added;
+                }
+                else
+                {
+                    Db.Entry(tag).State = EntityState.Modified;
+                }
+
+                parent.ChildTags.Add(tag);
+            }
+
+            Db.SaveChanges();
+
+        }
+
+        public void unlinkChildTags(Tag parentTag)
+        {
+            Tag parent = getTagByName(parentTag.Name);
+
+            if (parent == null)
+            {
+                return;
+            }
+
+            Db.Entry(parent).State = EntityState.Modified;
+
+            parent.ChildTags.Clear();
+
+            Db.SaveChanges();
+        }
+
         protected override Tag createFunc(Tag tag)
         {
             if (String.IsNullOrEmpty(tag.Name) || String.IsNullOrWhiteSpace(tag.Name))

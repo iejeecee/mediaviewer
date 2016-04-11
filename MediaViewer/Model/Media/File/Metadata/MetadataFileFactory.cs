@@ -19,7 +19,8 @@ namespace MediaViewer.Model.Media.File.Metadata
 
         public static BaseMetadata read(String location, MetadataFactory.ReadOptions options, CancellationToken token, int timeoutSeconds)
         {
-            BaseMetadata metadata = new UnknownMetadata(location);
+            BaseMetadata metadata = new UnknownMetadata(FileUtils.getPathWithoutFileName(location));
+            metadata.Name = Path.GetFileName(location);
 
             Logger.Log.Info("Reading metadata for: " + location);
 
@@ -37,29 +38,32 @@ namespace MediaViewer.Model.Media.File.Metadata
                 {
                     case MediaType.AUDIO_MEDIA:
                         {
-                            metadata = new AudioMetadata(location, data);
+                            metadata = new AudioMetadata(FileUtils.getPathWithoutFileName(location), data);
+                            metadata.Name = Path.GetFileName(location);
                             AudioFileMetadataReader reader = new AudioFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;
                         }
                     case MediaType.IMAGE_MEDIA:
                         {
-                            metadata = new ImageMetadata(location, data);
+                            metadata = new ImageMetadata(FileUtils.getPathWithoutFileName(location), data);
+                            metadata.Name = Path.GetFileName(location);
                             ImageFileMetadataReader reader = new ImageFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;
                         }                
                     case MediaType.VIDEO_MEDIA:
                         {
-                            metadata = new VideoMetadata(location, data);
+                            metadata = new VideoMetadata(FileUtils.getPathWithoutFileName(location), data);
+                            metadata.Name = Path.GetFileName(location);
                             VideoFileMetadataReader reader = new VideoFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;
                         }
                     default:
                         break;
-                }
-                
+                }                
+
                 FileInfo info = new FileInfo(location);
                 info.Refresh();
 

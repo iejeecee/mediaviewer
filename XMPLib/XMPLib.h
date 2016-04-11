@@ -90,6 +90,7 @@ namespace XMPLib {
 	
 		MetaData(ErrorCallbackDelegate ^errorCallback, ProgressCallbackDelegate ^progress);
 		~MetaData();
+		!MetaData();
 
 		bool open(String ^filename, Consts::OpenOptions options); 
 

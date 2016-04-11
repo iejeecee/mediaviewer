@@ -50,7 +50,7 @@
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="1" Content="Playback" Style="{StaticResource labelHeaderStyle}"/>
         <Label Grid.Row="1" Grid.Column="0" Content="Buffer Size" Style="{StaticResource labelStyle}"/>
-        <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding MinNrBufferedPackets}" Min="0" Max="{Binding NrPackets}"/>
+        <NumberSpinner:IntegerSpinner Grid.Row="1" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding MinNrBufferedPackets}" Min="0" Max="{Binding MaxNrBufferedPackets}"/>
         <Label Grid.Row="2" Grid.Column="0" Content="Step Duration (Sec)" Style="{StaticResource labelStyle}"/>
         <NumberSpinner:IntegerSpinner Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,5,5,5" Value="{Binding StepDurationSeconds}" Min="1" Max="3600"/>
         <Label Grid.Row="3" Grid.Column="1" Content="Screenshot" Style="{StaticResource labelHeaderStyle}"/>        

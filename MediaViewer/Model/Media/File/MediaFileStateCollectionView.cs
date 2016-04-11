@@ -346,6 +346,18 @@ namespace MediaViewer.Model.Media.File
                             info = videoMetadata.FramesPerSecond.ToString("0.00") + " FPS";
                         }
                         break;
+                    case MediaFileSortMode.VideoRate:
+                        if (videoMetadata != null)
+                        {
+                            info = videoMetadata.VideoBitRate.HasValue ? MiscUtils.formatSizeBytes(videoMetadata.VideoBitRate.Value / 8) + "/s" : "";
+                        }
+                        break;
+                    case MediaFileSortMode.AudioRate:
+                        if (videoMetadata != null)
+                        {
+                            info = videoMetadata.AudioBitRate.HasValue ? MiscUtils.formatSizeBytes(videoMetadata.AudioBitRate.Value / 8) + "/s" : "";
+                        }
+                        break;                   
                     case MediaFileSortMode.VideoCodec:
                         if (videoMetadata != null)
                         {
@@ -474,6 +486,12 @@ namespace MediaViewer.Model.Media.File
                         if (audioMetadata != null)
                         {
                             info = audioMetadata.TotalDiscs == null ? "" : audioMetadata.TotalTracks.Value.ToString();
+                        }
+                        break;
+                    case MediaFileSortMode.Rate:
+                        if (audioMetadata != null)
+                        {
+                            info = audioMetadata.BitRate.HasValue ? MiscUtils.formatSizeBytes(audioMetadata.BitRate.Value / 8) + "/s" : "";
                         }
                         break;
                     default:

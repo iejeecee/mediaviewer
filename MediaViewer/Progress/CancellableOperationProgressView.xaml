@@ -11,15 +11,16 @@
             </ResourceDictionary.MergedDictionaries>
             <Progress:TotalProgressTextConverter x:Key="totalProgressTextConverter"/>
             <Progress:WindowTitleConverter x:Key="windowTitleConverter"/>
+            <Progress:IsZeroConverter x:Key="isZeroConverter"/>
         </ResourceDictionary>
     </Window.Resources>
     <Window.Title>
         <MultiBinding Converter="{StaticResource windowTitleConverter}">
             <Binding Path="WindowTitle"/>
             <Binding Path="TotalProgress"/>
-            <Binding Path="TotalProgressMax"/>
+            <Binding Path="TotalProgressMax"/>         
             <Binding Path="ItemProgress"/>
-            <Binding Path="ItemProgressMax"/>
+            <Binding Path="ItemProgressMax"/>         
         </MultiBinding>
     </Window.Title>
     <Grid Background="{StaticResource imageGridBackgroundColorBrush}">
@@ -31,16 +32,16 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ProgressBar Grid.Row="0" Maximum="{Binding TotalProgressMax}" Value="{Binding TotalProgress}" Height="19" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+        <ProgressBar Grid.Row="0" Maximum="{Binding TotalProgressMax}" Value="{Binding TotalProgress}" Height="19" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch" IsIndeterminate="{Binding TotalProgressMax,Converter={StaticResource isZeroConverter}}"/>
         <Label Grid.Row="1" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center">
             <Label.Content>            
                 <MultiBinding Converter="{StaticResource totalProgressTextConverter}">
                     <Binding Path="TotalProgress"/>
-                    <Binding Path="TotalProgressMax"/>
+                    <Binding Path="TotalProgressMax"/>                
                 </MultiBinding>
             </Label.Content>
         </Label>
-        <ProgressBar Grid.Row="2" Height="18" Maximum="{Binding ItemProgressMax}" Value="{Binding ItemProgress}" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch"/>
+        <ProgressBar Grid.Row="2" Height="18" Maximum="{Binding ItemProgressMax}" Value="{Binding ItemProgress}" Margin="10,5,10,5" VerticalAlignment="Top" HorizontalAlignment="Stretch" IsIndeterminate="{Binding ItemProgressMax, Converter={StaticResource isZeroConverter}}"/>
         <Label Grid.Row="3"  Content="{Binding ItemInfo}" ToolTip="{Binding ItemInfo}" Height="28" Margin="5,5,5,5" VerticalAlignment="Top" HorizontalAlignment="Center"/>
         <LogTextBox:LogTextBoxView Grid.Row="4" HorizontalAlignment="Stretch" Margin="10,10,10,10" VerticalAlignment="Stretch" InfoMessages="{Binding InfoMessages}"/>
         <Button Grid.Row="5" Content="Ok" HorizontalAlignment="Center" Margin="5,5,80,5" VerticalAlignment="Top" Width="75" Command="{Binding OkCommand}"/>

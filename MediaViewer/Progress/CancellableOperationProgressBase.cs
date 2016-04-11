@@ -39,6 +39,7 @@ namespace MediaViewer.Progress
 
             TotalProgress = 0;
             TotalProgressMax = 1;
+           
         }
 
         String itemInfo;
@@ -63,7 +64,7 @@ namespace MediaViewer.Progress
         {
             get { return itemProgressMax; }
             set { SetProperty(ref itemProgressMax, value); }
-        }
+        }       
 
         public ObservableCollection<String> InfoMessages { get; set; }
         public Command OkCommand { get; set; }

@@ -128,7 +128,10 @@ namespace MediaViewer.Model.Media.Base.Metadata
 
             using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
             {
-                metadata = metadataCommands.findMetadataByLocation(location);
+
+
+                metadata = metadataCommands.findMetadataByLocation(FileUtils.getPathWithoutFileName(location),
+                    Path.GetFileName(location));
 
                 if (metadata != null)
                 {
@@ -143,21 +146,21 @@ namespace MediaViewer.Model.Media.Base.Metadata
                     }
 
                     // check if metadata stored in the database is outdated                
-                    FileInfo info = new FileInfo(metadata.Location);
+                    FileInfo info = new FileInfo(location);
                     info.Refresh();
 
                     if (info.Exists == false)
                     {
-                        metadata.MetadataReadError = new FileNotFoundException("File not found", metadata.Location);
+                        metadata.MetadataReadError = new FileNotFoundException("File not found", location);
                         return (metadata);
                     }
 
                     if ((info.LastWriteTime - metadata.LastModifiedDate) > TimeSpan.FromSeconds(10))
                     {
                         // metadata is outdated so update in database
-                        Logger.Log.Info("Updated: " + metadata.Location + " - Database timestamp: " + metadata.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
+                        Logger.Log.Info("Updated: " + location + " - Database timestamp: " + metadata.LastModifiedDate.ToString() + " Disk timestamp: " + info.LastWriteTime.ToString());
                         int id = metadata.Id;
-                        metadata = MetadataFileFactory.read(metadata.Location, options, token, timeoutSeconds);
+                        metadata = MetadataFileFactory.read(location, options, token, timeoutSeconds);
 
                         if (metadata != null)
                         {

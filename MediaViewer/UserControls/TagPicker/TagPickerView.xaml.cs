@@ -474,56 +474,20 @@ namespace MediaViewer.UserControls.TagPicker
 
         void unlinkTags(TagDbCommands tagCommands)
         {
-            Tag parent = tagCommands.getTagByName((selectedTags[0].Tag as Tag).Name);
-
-            if (parent == null)
-            {
-                return;
-            }
-
-            tagCommands.Db.Entry(parent).State = EntityState.Modified;
-
-            parent.ChildTags.Clear();
-
-            tagCommands.Db.SaveChanges();
+            tagCommands.unlinkChildTags(selectedTags[0].Tag as Tag);           
         }
     
         void linkTags(TagDbCommands tagCommands)
         {
-            Tag parent = tagCommands.getTagByName((selectedTags[0].Tag as Tag).Name);
-
-            if (parent == null)
-            {
-                parent = new Tag();
-                parent.Name = (selectedTags[0].Tag as Tag).Name;
-                tagCommands.Db.Entry(parent).State = EntityState.Added;
-            }
-            else
-            {
-                tagCommands.Db.Entry(parent).State = EntityState.Modified;
-            }
-
-            parent.ChildTags.Clear();
+            Tag parent = selectedTags[0].Tag as Tag;
+            List<Tag> children = new List<Tag>();
 
             for (int i = 1; i < selectedTags.Count; i++)
             {
-                Tag tag = tagCommands.getTagByName((selectedTags[i].Tag as Tag).Name);
-
-                if (tag == null)
-                {
-                    tag = new Tag();
-                    tag.Name = (selectedTags[0].Tag as Tag).Name;
-                    tagCommands.Db.Entry(tag).State = EntityState.Added;
-                }
-                else
-                {
-                    tagCommands.Db.Entry(tag).State = EntityState.Modified;
-                }
-
-                parent.ChildTags.Add(tag);
+                children.Add(selectedTags[i].Tag as Tag);
             }
 
-            tagCommands.Db.SaveChanges();
+            tagCommands.linkChildTags(parent, children);
             
         }
 

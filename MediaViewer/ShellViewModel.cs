@@ -108,10 +108,15 @@ namespace MediaViewer
             VideoPlayerViewModel.enableLibAVLogging(LogMessageModel.LogLevel.INFO);
 
             createDatabase();
-            
+
+            VideoPlayer2.VideoPlayer2Test test = new VideoPlayer2.VideoPlayer2Test();
+            //test.Test();
+
             //TestWindow window = new TestWindow();
             //window.Show();
         }
+
+        
 
         void createDatabase()
         {

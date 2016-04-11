@@ -29,47 +29,11 @@ namespace MediaViewer.UserControls.DirectoryPicker
             MediaFileState = state;
             this.infoGatherTask = infoGatherTask;
 
-            state.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
+            //state.NrImportedItemsChanged += new EventHandler<MediaStateChangedEventArgs>(importStateChanged);
                      
         }
       
-        protected virtual void importStateChanged(object sender, MediaStateChangedEventArgs e)
-        {
-
-            if (e.NewItems != null)
-            {
-                foreach (MediaFileItem item in e.NewItems)
-                {
-                    if (item.Location.StartsWith(FullName))
-                    {
-                        NrImported++;
-                    }
-                }
-            }
-
-            if (e.OldItems != null)
-            {
-                foreach (MediaFileItem item in e.OldItems)
-                {
-                    if (item.Location.StartsWith(FullName))
-                    {
-                        NrImported--;
-                    }
-                }
-            }
-
-            if (e.OldLocations != null)
-            {
-                foreach (String location in e.OldLocations)
-                {
-                    if (location.StartsWith(FullName))
-                    {
-                        NrImported--;
-                    }
-                }
-            }
-
-        }
+        
 
         Task loadingChildrenTask;
 

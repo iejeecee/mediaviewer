@@ -34,7 +34,6 @@ protected:
 	std::vector<VideoTransformerOutput *> outputs;
 		
 	FilterGraph *filterGraph;
-
 	
 	// this should be the default function to use when all input streams are pushed trough 
 	// a framegraph	

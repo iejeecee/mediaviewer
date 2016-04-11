@@ -61,6 +61,8 @@ namespace VideoLib {
 		int durationSeconds;
 
 		__int64 sizeBytes;
+		__int64 videoBitRate;
+		__int64 audioBitRate;
 
 		int width;
 		int height;
@@ -86,6 +88,7 @@ namespace VideoLib {
 		
 		MediaProbe();
 		~MediaProbe();
+		!MediaProbe();
 
 		property int Width {
 
@@ -117,6 +120,24 @@ namespace VideoLib {
 
 				return(sizeBytes);
 			}
+		}
+
+		property __int64 VideoBitRate {
+
+			__int64 get() {
+
+				return(videoBitRate);
+			}
+
+		}
+
+		property __int64 AudioBitRate {
+
+			__int64 get() {
+
+				return(audioBitRate);
+			}
+
 		}
 
 		property String ^Container {

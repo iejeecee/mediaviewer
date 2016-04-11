@@ -23,14 +23,19 @@ VideoPlayer::VideoPlayer() {
 
 VideoPlayer::~VideoPlayer() {
 		
+	delete frameQueue;
+
+	this->!VideoPlayer();
+}
+
+VideoPlayer::!VideoPlayer() {
+
 	if(videoDecoder != NULL) {
 
 		delete videoDecoder;
-
+		videoDecoder = NULL;
 	}
 	
-	delete frameQueue;
-
 }
 
 void VideoPlayer::open(OpenVideoArgs ^args,  OutputPixelFormat videoFormat, System::Threading::CancellationToken^ token)

@@ -52,84 +52,55 @@ namespace MediaViewer.MetaData
             TabMargin = new Thickness(2);
             TabBorderThickness = new Thickness(2);
             TabBorderBrush = ClassicBorderDecorator.ClassicBorderBrush;
-        }                       
+        }
+
+        void insertStringInReplaceFilename(String str)
+        {
+            TextBox textBox = replaceTextBox.getChildrenOfType<TextBox>().
+                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+
+            if (textBox == null)
+            {
+                return;
+            }
+
+            int index = textBox.CaretIndex;
+
+            MetaDataViewModel.ReplaceFilename = MetaDataViewModel.ReplaceFilename.Insert(index, str);
+
+        }
         
         private void fileNameContextMenu_InsertCounter(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            }
-
-            int index = textBox.CaretIndex;
-
-            MetaDataViewModel.InsertCounterCommand.Execute(index);
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.counterMarker);
         }
 
-        private void fileNameContextMenu_InsertExistingFilename(object sender, RoutedEventArgs e)
+        private void fileNameContextMenu_InsertParentDir(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            }
-
-            int index = textBox.CaretIndex;
-
-            MetaDataViewModel.InsertExistingFilenameCommand.Execute(index);
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.parentDirMarker);
         }
 
-        private void fileNameContextMenu_InsertResolution(object sender, RoutedEventArgs e)
+        private void fileNameContextMenu_InsertWidth(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.widthMarker);
+        }
 
-            if (textBox == null)
-            {
-                return;
-            }
+        private void fileNameContextMenu_InsertHeight(object sender, RoutedEventArgs e)
+        {
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.heightMarker);
+        }
 
-            int index = textBox.CaretIndex;
-
-            MetaDataViewModel.InsertResolutionCommand.Execute(index);
-
+        private void fileNameContextMenu_InsertBitrate(object sender, RoutedEventArgs e)
+        {
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.bitrateMarker);
         }
 
         private void fileNameContextMenu_InsertDate(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            }
-
-            int index = textBox.CaretIndex;
-
-            MetaDataViewModel.InsertDateCommand.Execute(index);
+            insertStringInReplaceFilename(MetaDataUpdateViewModel.dateMarker);
 
         }
-
-        private void fileNameContextMenu_InsertReplaceString(object sender, RoutedEventArgs e)
-        {
-            TextBox textBox = fileNameTextBox.getChildrenOfType<TextBox>().
-                       FirstOrDefault(element => element.Name == "PART_EditableTextBox");
-
-            if (textBox == null)
-            {
-                return;
-            }
-
-            int index = textBox.CaretIndex;
-
-            MetaDataViewModel.InsertReplaceStringCommand.Execute(index);
-        }
+        
 
         public bool KeepAlive
         {

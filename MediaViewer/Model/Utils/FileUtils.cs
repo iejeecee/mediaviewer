@@ -239,8 +239,18 @@ namespace MediaViewer.Model.Utils
             {
                 progress.ItemProgress = 0;
                 progress.ItemInfo = "Moving: " + source + "->" + destination;
-                              
-                System.IO.Directory.Move(source, destination);
+                             
+                if(source.ToLowerInvariant().Equals(destination.ToLowerInvariant())) 
+                {
+                    // use temporary filename to change case of filename characters
+                    string temp = getUniqueFileName(source);
+                    System.IO.Directory.Move(source, temp);
+                    System.IO.Directory.Move(temp, destination);
+
+                } else {
+
+                    System.IO.Directory.Move(source, destination);
+                }
 
                 string info = "Moved: " + source + " -> " + destination;
 
@@ -589,8 +599,38 @@ namespace MediaViewer.Model.Utils
             return NaturalSortOrder.CompareNatural(x.Name, y.Name);            
         }
 
+        public static void iterateDirectories(DirectoryInfo location,
+            Func<DirectoryInfo, Object, bool> callback, Object state)
+        {
+            bool success = callback(location, state);
 
-        public static void walkDirectoryTree(DirectoryInfo root,
+            if (success == false) return;
+
+            DirectoryInfo[] subDirs = null;
+
+            try
+            {
+                subDirs = location.GetDirectories();
+            }
+            catch (UnauthorizedAccessException e)
+            {
+                Logger.Log.Warn(e.Message);
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Logger.Log.Warn(e.Message);
+            }
+
+            if (subDirs != null)
+            {
+                foreach (DirectoryInfo dirInfo in subDirs)
+                {                
+                    iterateDirectories(dirInfo, callback, state);
+                }
+            }
+        }
+
+        public static void iterateFilesInDirectory(DirectoryInfo location,
             Func<FileInfo,Object,bool> callback, Object state, bool recurseSubDirs, bool naturalSortOrder = true)
         {
             if (callback == null) return;
@@ -601,7 +641,7 @@ namespace MediaViewer.Model.Utils
             // First, process all the files directly under this folder 
             try
             {
-                files = root.GetFiles("*.*");
+                files = location.GetFiles("*.*");
             }
             // This is thrown if even one of the files requires permissions greater 
             // than the application provides. 
@@ -640,13 +680,12 @@ namespace MediaViewer.Model.Utils
                 // Now find all the subdirectories under this directory.
                 if (recurseSubDirs == true)
                 {
-
-                    subDirs = root.GetDirectories();
+                    subDirs = location.GetDirectories();
 
                     foreach (DirectoryInfo dirInfo in subDirs)
                     {
                         // Resursive call foreach subdirectory.
-                        walkDirectoryTree(dirInfo, callback, state, recurseSubDirs);
+                        iterateFilesInDirectory(dirInfo, callback, state, recurseSubDirs);
                     }
                 }
             }
@@ -703,7 +742,7 @@ namespace MediaViewer.Model.Utils
 
             if (string.IsNullOrEmpty(fileName)) return (fullPath);
 
-            return (fullPath.Remove(fullPath.Length - fileName.Length - 1));
+            return Path.GetDirectoryName(fullPath);           
         }
 
         public static string removeIllegalCharsFromFileName(string fileName, string replaceString)

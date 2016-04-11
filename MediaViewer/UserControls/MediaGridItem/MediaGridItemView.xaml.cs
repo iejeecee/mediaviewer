@@ -32,7 +32,9 @@ namespace MediaViewer.UserControls.MediaGridItem
         public event EventHandler<SelectableMediaItem> Click;
           
         static IEventAggregator EventAggregator { get; set; }
-   
+
+        int currentToolTipIconNr;
+
         public MediaGridItemView()
         {
             InitializeComponent();
@@ -41,7 +43,8 @@ namespace MediaViewer.UserControls.MediaGridItem
             {                                         
                 EventAggregator = ServiceLocator.Current.GetInstance(typeof(IEventAggregator)) as IEventAggregator;
             }
-        
+
+            currentToolTipIconNr = -1;
         }
 
         public SelectableMediaItem SelectableMediaItem
@@ -110,6 +113,8 @@ namespace MediaViewer.UserControls.MediaGridItem
             if (MediaStateCollectionView == null || MediaStateCollectionView.InfoIconsCache == null) return;
 
             infoIconsImage.Source = MediaStateCollectionView.InfoIconsCache.getInfoIconsBitmap(item);
+            infoIconsImage.ToolTip = "";
+            //infoIconsImage.ToolTip = MediaStateCollectionView.InfoIconsCache.getToolTip(0, SelectableMediaItem.Item);
         }
 
         void setExtraInfo()
@@ -143,6 +148,30 @@ namespace MediaViewer.UserControls.MediaGridItem
             }
             
         }
+
+        private void infoIconsImage_MouseLeave(object sender, MouseEventArgs e)
+        {
+            currentToolTipIconNr = -1;
+        }
+
+        private void infoIconsImage_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (MediaStateCollectionView == null || MediaStateCollectionView.InfoIconsCache == null) return;
+
+            Point mousePos = Mouse.GetPosition(infoIconsImage);
+
+            double iconWidth = infoIconsImage.ActualWidth / MediaStateCollectionView.InfoIconsCache.getNrIcons(SelectableMediaItem.Item);
+
+            int iconNr = (int)Math.Floor(mousePos.X / iconWidth);
+
+            if (iconNr != currentToolTipIconNr)
+            {
+                infoIconsImage.ToolTip = MediaStateCollectionView.InfoIconsCache.getToolTip(iconNr, SelectableMediaItem.Item);
+                currentToolTipIconNr = iconNr;
+            }
+        }
+
+        
      
     }
 }

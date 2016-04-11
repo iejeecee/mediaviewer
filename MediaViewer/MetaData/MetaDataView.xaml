@@ -28,11 +28,12 @@
                 <Setter Property="ToolTip" Value="Enable/Disable update"/>
             </Style>
             <ContextMenu x:Key="fileNameContextMenu">
-                <MenuItem Header="Insert Counter" Click="fileNameContextMenu_InsertCounter"/>
-                <MenuItem Header="Insert Existing Filename" Click="fileNameContextMenu_InsertExistingFilename"/>
-                <MenuItem Header="Insert Resolution" Click="fileNameContextMenu_InsertResolution"/>
+                <MenuItem Header="Insert Counter" Click="fileNameContextMenu_InsertCounter"/>               
+                <MenuItem Header="Insert Width" Click="fileNameContextMenu_InsertWidth"/>
+                <MenuItem Header="Insert Height" Click="fileNameContextMenu_InsertHeight"/>
+                <MenuItem Header="Insert Bitrate" Click="fileNameContextMenu_InsertBitrate"/>
                 <MenuItem Header="Insert Date" Click="fileNameContextMenu_InsertDate"/>
-                <MenuItem Header="Insert Replace String" Click="fileNameContextMenu_InsertReplaceString"/>
+                <MenuItem Header="Insert Parent Directory" Click="fileNameContextMenu_InsertParentDir"/>
                 <Separator/>
                 <MenuItem Command="ApplicationCommands.Copy" />
                 <MenuItem Command="ApplicationCommands.Cut" />
@@ -74,7 +75,61 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+                </Grid.RowDefinitions>                
+                <Label Grid.Row="0" Grid.Column="0" Content="Filename"/>
+                <ComboBox Grid.Row="0" x:Name="fileNameTextBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
+					Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
+					ItemsSource="{Binding FilenameHistory}"
+					IsEnabled="{Binding IsEnabled}"  
+					IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
+                <ToggleButton Grid.Row="0" x:Name="toggleRegexpButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+					HorizontalAlignment="Right"
+					IsEnabled="{Binding IsEnabled}"
+					IsChecked="{Binding IsRegexEnabled}">
+                    <Image Source="pack://application:,,,/Resources/Icons/regex.ico"/>
+                    <ToggleButton.Style>
+                        <Style>
+                            <Style.Triggers>
+                                <Trigger Property="ToggleButton.IsChecked" Value="True">
+                                    <Setter Property="ToggleButton.ToolTip" Value="Disable Regular Expression"/>                                                                  
+                                </Trigger>
+                                <Trigger Property="ToggleButton.IsChecked" Value="False">
+                                    <Setter Property="ToggleButton.ToolTip" Value="Enable Regular Expression"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ToggleButton.Style>
+                </ToggleButton>
+                <Label Grid.Row="1" Grid.Column="0" Content="Replace" Visibility="{Binding IsRegexEnabled, Converter={StaticResource booleanToVisibilityConverter}}"/>                
+                <MetaData:ExtendedComboBox Grid.Row="1" x:Name="replaceTextBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
+					Text="{Binding ReplaceFilename, UpdateSourceTrigger=PropertyChanged}"
+					ItemsSource="{Binding ReplaceFilenameHistory}"
+					IsEnabled="{Binding IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}" 
+					IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"
+                    Visibility="{Binding IsRegexEnabled, Converter={StaticResource booleanToVisibilityConverter}}"/>
+                <Button Grid.Row="1" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+					HorizontalAlignment="Right"
+					IsEnabled="{Binding IsEnabled}"
+					Command="{Binding FilenamePresetsCommand}"
+					ToolTip="Preset Regular Expression"
+                    Visibility="{Binding IsRegexEnabled, Converter={StaticResource booleanToVisibilityConverter}}">
+                    <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
+                </Button>
+                <Label Grid.Row="2" Grid.Column="0" Content="Path"/>                
+                <ComboBox Grid.Row="2" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5"  VerticalAlignment="Top"                         
+					Text="{Binding Location, Mode=TwoWay}"
+					ItemsSource="{Binding MovePathHistory}"
+					ToolTip="{Binding Location}"
+					IsEnabled="{Binding IsEnabled}" IsReadOnly="True" IsEditable="True"
+                    />
+                <Button Grid.Row="2" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
+					HorizontalAlignment="Right"
+					IsEnabled="{Binding IsEnabled}"
+					Command="{Binding DirectoryPickerCommand}"
+					ToolTip="Change Directory">
+                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
+                </Button>
+                <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
                 <Label Grid.Row="4" Grid.Column="0" Content="Preset"/>
                 <ComboBox Grid.Row="4" x:Name="presetComboBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
 					SelectedItem="{Binding SelectedMetaDataPreset, Mode=TwoWay}"
@@ -89,34 +144,6 @@
 					ToolTip="Create Preset">
                     <Image Source="pack://application:,,,/Resources/Icons/text.ico"/>
                 </Button>
-                <Label Grid.Row="0" Grid.Column="0" Content="Filename"/>
-                <MetaData:ExtendedComboBox Grid.Row="0" x:Name="fileNameTextBox" Grid.Column="1" Margin="5, 5, 25, 5" VerticalAlignment="Top"
-					Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}"
-					ItemsSource="{Binding FilenameHistory}"
-					IsEnabled="{Binding IsEnabled}" ContextMenu="{StaticResource fileNameContextMenu}" 
-					IsEditable="True" IsTextSearchEnabled="False" Style="{StaticResource {x:Type ComboBox}}"/>
-                <Button Grid.Row="0" x:Name="filenamePresetButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
-					HorizontalAlignment="Right"
-					IsEnabled="{Binding IsEnabled}"
-					Command="{Binding FilenamePresetsCommand}"
-					ToolTip="Preset Filename">
-                    <Image Source="pack://application:,,,/Resources/Icons/circle.ico"/>
-                </Button>
-                <Label Grid.Row="1" Grid.Column="0" Content="Path"/>                
-                <ComboBox Grid.Row="1" x:Name="pathTextBox" Grid.Column="1" HorizontalAlignment="Stretch" Margin="5, 5, 25, 5"  VerticalAlignment="Top"                         
-					Text="{Binding Location, Mode=TwoWay}"
-					ItemsSource="{Binding MovePathHistory}"
-					ToolTip="{Binding Location}"
-					IsEnabled="{Binding IsEnabled}" IsReadOnly="True" IsEditable="True"
-                    />
-                <Button Grid.Row="1" x:Name="directoryPickerButton" Grid.Column="1" Margin="5, 5, 5, 5" Width="20" Height="19"
-					HorizontalAlignment="Right"
-					IsEnabled="{Binding IsEnabled}"
-					Command="{Binding DirectoryPickerCommand}"
-					ToolTip="Change Directory">
-                    <Image Source="pack://application:,,,/Resources/Icons/folder_open.ico"/>
-                </Button>
-                <Separator Grid.Row="3" Grid.ColumnSpan="3"/>
                 <Label Grid.Row="5" Grid.Column="0" Content="Rating"/>
                 <inputtoolkit:Rating Grid.Row="5" x:Name="rating" ItemCount="5" Grid.Column="1" SelectionMode="Continuous" Background="{StaticResource uiElementBackgroundColor}" Margin="5, 5, 5, 5"
 					Value="{Binding Rating, Mode=TwoWay}" 

@@ -250,9 +250,11 @@ namespace VideoLib {
 
 				// stop buffering when atleast minNrBufferedPackets are read or the lastpacket(s)
 				if(isVideoReady && isAudioReady && nrBufferedPackets >= minNrBufferedPackets 
-					|| nrLastPacketsRead == nrLastPackets) 
+					|| nrLastPacketsRead == nrLastPackets || videoPackets->NrPacketsInQueue == videoPackets->MaxPackets ||
+					audioPackets->NrPacketsInQueue == audioPackets->MaxPackets) 
 				{
 
+					nrBufferedPackets = 0;
 					IsBuffering = false;
 									
 					setPacketQueueState(
@@ -478,7 +480,7 @@ namespace VideoLib {
 			void set(int value) {
 
 				if(value < 0) value = 0;
-				if(value > nrPackets) value = nrPackets;
+				if(value > MaxFreePackets) value = MaxFreePackets;
 				
 				minNrBufferedPackets = value;
 			}

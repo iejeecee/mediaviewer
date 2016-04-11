@@ -12,7 +12,17 @@ namespace MediaViewer.Progress
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            return ("Finished " + values[0] + " / " + values[1]);
+            int totalProgress = (int)values[0];
+            int totalProgressMax = (int)values[1];
+
+            String info = "Finished " + totalProgress;
+
+            if (totalProgressMax != 0)
+            {
+                info += " / " + totalProgressMax;
+            }
+
+            return (info);
         }
 
         public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)

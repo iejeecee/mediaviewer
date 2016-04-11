@@ -10,18 +10,19 @@
             </ResourceDictionary.MergedDictionaries>
             <Progress:TotalProgressTextConverter x:Key="totalProgressTextConverter"/>
             <Progress:WindowTitleConverter x:Key="windowTitleConverter"/>
+            <Progress:IsZeroConverter x:Key="isZeroConverter"/>
         </ResourceDictionary>
     </Window.Resources>
     <Window.Title>
         <MultiBinding Converter="{StaticResource windowTitleConverter}">
             <Binding Path="WindowTitle"/>
             <Binding Path="TotalProgress"/>
-            <Binding Path="TotalProgressMax"/>  
+            <Binding Path="TotalProgressMax"/>         
         </MultiBinding>
     </Window.Title>
     <Grid>
         <Grid>
-            <ProgressBar HorizontalAlignment="Stretch" Height="10" Maximum="{Binding TotalProgressMax}" Value="{Binding TotalProgress}" VerticalAlignment="Center"/>
+            <ProgressBar HorizontalAlignment="Stretch" Height="10" Maximum="{Binding TotalProgressMax}" Value="{Binding TotalProgress}" VerticalAlignment="Center" IsIndeterminate="{Binding TotalProgressMax, Converter={StaticResource isZeroConverter}}"/>
         </Grid>
     </Grid>
 </Window>

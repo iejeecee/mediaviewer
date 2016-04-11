@@ -54,7 +54,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                 using (MetadataDbCommands mediaCommand = new MetadataDbCommands())
                 {                                   
-                    location.NrImported = mediaCommand.getNrMetadataInLocation(location.FullName);
+                    location.NrImported = mediaCommand.getNrMetadataInDirectory(location.FullName);
                 }
             }
           

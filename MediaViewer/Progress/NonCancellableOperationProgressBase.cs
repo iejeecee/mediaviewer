@@ -40,6 +40,6 @@ namespace MediaViewer.Progress
             get { return totalProgressMax; }
             set { SetProperty(ref totalProgressMax, value); }
         }
-       
+        
     }
 }

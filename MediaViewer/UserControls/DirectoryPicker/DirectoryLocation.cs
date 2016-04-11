@@ -186,7 +186,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             {                
                 try
                 {
-                    FileUtils.walkDirectoryTree(new DirectoryInfo(location.FullName), getFiles, mediaFilesToDelete, true);
+                    FileUtils.iterateFilesInDirectory(new DirectoryInfo(location.FullName), getFiles, mediaFilesToDelete, true);
 
                     MediaFileState.delete(mediaFilesToDelete, tokenSource.Token);
 
@@ -264,7 +264,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
 
                     String newFullName = FullOldName.Remove(FullOldName.LastIndexOf('\\')) + "\\" + NewName;
 
-                    FileUtils.walkDirectoryTree(new DirectoryInfo(FullOldName), getFiles, mediaFilesToMove, true);
+                    FileUtils.iterateFilesInDirectory(new DirectoryInfo(FullOldName), getFiles, mediaFilesToMove, true);
 
                     TotalProgressMax = mediaFilesToMove.Count;
 

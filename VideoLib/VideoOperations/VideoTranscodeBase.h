@@ -86,7 +86,8 @@ protected:
 
 		if(streamMode == StreamTransformMode::COPY) 
 		{		
-			outStream = output->encoder->createStream(inStream);						
+			outStream = output->encoder->createStream(inStream);		
+			
 		} 
 		else if(streamMode == StreamTransformMode::ENCODE) 
 		{						

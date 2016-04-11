@@ -26,7 +26,7 @@ namespace MediaViewer.Model.Media.File
     {
         
         protected MediaFileItem(String location, MediaItemState state = MediaItemState.EMPTY)
-            : base(location, Path.GetFileNameWithoutExtension(location), state)
+            : base(location, Path.GetFileName(location), state)
         {
            
         }
@@ -55,12 +55,11 @@ namespace MediaViewer.Model.Media.File
                     // update newLocation in dictionary
                     Factory.renameInDictionary(oldLocation, newLocation);
 
-                    // update newLocation in the database
-                    // Note: don't use the base class getters/setters for metadata to
-                    // prevent triggering a onpropertychanged event while holding a write lock
+                    // update newLocation in the database                                 
                     if (Metadata != null)
                     {
-                        Metadata.Location = newLocation;
+                        Metadata.Location = FileUtils.getPathWithoutFileName(newLocation);
+                        Metadata.Name = Path.GetFileName(newLocation);
 
                         if (Metadata.IsImported)
                         {
@@ -75,10 +74,11 @@ namespace MediaViewer.Model.Media.File
                     {
                         using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
                         {
-                            Metadata = metadataCommands.findMetadataByLocation(oldLocation);
+                            Metadata = metadataCommands.findMetadataByLocation(FileUtils.getPathWithoutFileName(oldLocation), Path.GetFileName(oldLocation));
                             if (Metadata != null)
                             {
-                                Metadata.Location = newLocation;
+                                Metadata.Location = FileUtils.getPathWithoutFileName(newLocation);
+                                Name = Path.GetFileName(newLocation);
                                 Metadata = metadataCommands.update(Metadata);
                             }
 
@@ -93,7 +93,7 @@ namespace MediaViewer.Model.Media.File
                 }
 
                 base.Location = newLocation;
-                Name = Path.GetFileNameWithoutExtension(newLocation);
+                Name = Path.GetFileName(newLocation);
 
                 if(isMetadataChanged) {
 
@@ -334,8 +334,14 @@ namespace MediaViewer.Model.Media.File
             // If location is changed to it's new location it will not be be found in the current mediastate. 
             // So only update the location when mediafilewatcher is not active.               
             EnterWriteLock();
-            Location = newLocation;
-            ExitWriteLock(false);
+            try
+            {
+                Location = newLocation;
+            }
+            finally
+            {
+                ExitWriteLock(false);
+            }
                                              
             return (isImported = Metadata.IsImported);
                        
@@ -470,7 +476,8 @@ namespace MediaViewer.Model.Media.File
                             }
                             else
                             {
-                                // there is a live mediafileitem in the hash clashing with the newly renamed item
+                                // there is already a mediafileitem with newLocation in the dictionary      
+                                Logger.Log.Warn("Trying to rename item to existing item in media dictionary: " + oldLocation + " to " + newLocation);                                            
                                 throw new InvalidOperationException("Trying to rename item to existing item in media dictionary: " + oldLocation + " to " + newLocation);
                             }
                         }

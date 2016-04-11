@@ -46,7 +46,7 @@ namespace MediaViewer.Import
             CancelCommand.IsExecutable = true;
         }
 
-        public async Task exportAsync(ObservableCollection<ImportExportLocation> includeLocations, ObservableCollection<ImportExportLocation> excludeLocations)
+        public async Task exportAsync(ObservableCollection<ScanLocation> includeLocations, ObservableCollection<ScanLocation> excludeLocations)
         {
             
             TotalProgress = 0;
@@ -69,9 +69,9 @@ namespace MediaViewer.Import
                 return (false);
             }
 
-            ImportExportLocation location = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item1;
-            ObservableCollection<ImportExportLocation> excludeLocations = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item2;
-            List<String> items = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item3;
+            ScanLocation location = (state as Tuple<ScanLocation, ObservableCollection<ScanLocation>, List<String>>).Item1;
+            ObservableCollection<ScanLocation> excludeLocations = (state as Tuple<ScanLocation, ObservableCollection<ScanLocation>, List<String>>).Item2;
+            List<String> items = (state as Tuple<ScanLocation, ObservableCollection<ScanLocation>, List<String>>).Item3;
 
             String addItem = null;
 
@@ -109,7 +109,7 @@ namespace MediaViewer.Import
 
                 bool excluded = false;
 
-                foreach (ImportExportLocation excludeLocation in excludeLocations)
+                foreach (ScanLocation excludeLocation in excludeLocations)
                 {
                     if (excludeLocation.IsRecursive)
                     {
@@ -148,19 +148,19 @@ namespace MediaViewer.Import
             return (true);
         }
 
-        void export(ObservableCollection<ImportExportLocation> includeLocations, ObservableCollection<ImportExportLocation> excludeLocations)
+        void export(ObservableCollection<ScanLocation> includeLocations, ObservableCollection<ScanLocation> excludeLocations)
         {
             List<String> items = new List<String>();
 
-            foreach (ImportExportLocation location in includeLocations)
+            foreach (ScanLocation location in includeLocations)
             {
                 if (CancellationToken.IsCancellationRequested) return;
                 ItemInfo = "Searching files in: " + location.Location;
 
-                Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>> state =
-                    new Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>(location, excludeLocations, items);
+                Tuple<ScanLocation, ObservableCollection<ScanLocation>, List<String>> state =
+                    new Tuple<ScanLocation, ObservableCollection<ScanLocation>, List<String>>(location, excludeLocations, items);
 
-                FileUtils.walkDirectoryTree(new DirectoryInfo(location.Location),
+                FileUtils.iterateFilesInDirectory(new DirectoryInfo(location.Location),
                     getMediaFiles, state, location.IsRecursive);
 
                 InfoMessages.Add("Completed searching files in: " + location.Location);

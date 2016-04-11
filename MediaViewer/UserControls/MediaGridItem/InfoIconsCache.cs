@@ -27,6 +27,9 @@ namespace MediaViewer.UserControls.MediaGridItem
                 iconChars += i.ToString();
             }
 
+            MaxIconWidth = 32;
+            MaxIconHeight = 32;
+
             List<String> combos = generateCombinations(iconChars);
 
             generateImages(combos, icons, false);
@@ -38,12 +41,9 @@ namespace MediaViewer.UserControls.MediaGridItem
             for(int i = 1; i < combos.Count; i++)
             {
                 String combo = combos[i];
-
-                int maxIconWidth = 32;
-                int maxIconHeight = 32;
-
-                int imageWidth = combo.Length * maxIconWidth;
-                int imageHeight = maxIconHeight;       
+               
+                int imageWidth = combo.Length * MaxIconWidth;
+                int imageHeight = MaxIconHeight;       
 
                 RenderTargetBitmap bitmap = new RenderTargetBitmap(imageWidth, imageHeight, 96, 96, PixelFormats.Pbgra32);
 
@@ -56,9 +56,9 @@ namespace MediaViewer.UserControls.MediaGridItem
                     {
                         BitmapImage icon = icons[int.Parse(combo[j].ToString())];
 
-                        int x = j * maxIconWidth;
+                        int x = j * MaxIconWidth;
                         int y = 0;
-                        Rect destRect = new Rect(x, y, maxIconWidth, maxIconHeight);
+                        Rect destRect = new Rect(x, y, MaxIconWidth, MaxIconHeight);
 
                         drawingContext.DrawImage(icon, destRect);                      
 
@@ -113,7 +113,46 @@ namespace MediaViewer.UserControls.MediaGridItem
             return (newCombinations);
         }
 
-        public abstract BitmapSource getInfoIconsBitmap(MediaItem item);
-        
+        public int MaxIconHeight
+        {
+            protected set;
+            get;
+        }
+
+        public int MaxIconWidth
+        {
+            protected set;
+            get;
+        }
+
+        protected abstract String getKey(MediaItem item);      
+        public abstract String getToolTip(int iconNr, MediaItem item);
+
+        public BitmapSource getInfoIconsBitmap(MediaItem item)
+        {
+            if (item.ItemState != MediaItemState.LOADED || item.Metadata == null)
+            {
+                return (null);
+            }
+
+            String key = getKey(item);
+
+            if (String.IsNullOrEmpty(key))
+            {
+                return (null);
+            }
+            else
+            {
+                return (ImageHash[key]);
+            }
+        }
+
+        public int getNrIcons(MediaItem item)
+        {
+            String key = getKey(item);
+
+            return String.IsNullOrEmpty(key) ? 0 : key.Length;
+        }
+
     }
 }

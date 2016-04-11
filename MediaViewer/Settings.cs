@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediaViewer.MetaData;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -33,14 +34,19 @@ namespace MediaViewer.Properties
                 MetaDataUpdateDirectoryHistory = new ObservableCollection<string>();
             }
 
-            if (FilenamePresets == null)
+            if (FilenameRegexList == null)
             {
-                FilenamePresets = new ObservableCollection<string>();
+                FilenameRegexList = new ObservableCollection<FilenameRegex>();
             }
 
             if (FilenameHistory == null)
             {
                 FilenameHistory = new ObservableCollection<string>();
+            }
+
+            if (ReplaceFilenameHistory == null)
+            {
+                ReplaceFilenameHistory = new ObservableCollection<string>();
             }
 
             if (CreateDirectoryHistory == null)
@@ -116,15 +122,15 @@ namespace MediaViewer.Properties
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public ObservableCollection<String> FilenamePresets
+        public ObservableCollection<FilenameRegex> FilenameRegexList
         {
             get
             {
-                return ((ObservableCollection<String>)(this["FilenamePresets"]));
+                return ((ObservableCollection<FilenameRegex>)(this["FilenameRegexList"]));
             }
             set
             {
-                this["FilenamePresets"] = value;
+                this["FilenameRegexList"] = value;
             }
         }
 
@@ -139,6 +145,20 @@ namespace MediaViewer.Properties
             set
             {
                 this["FilenameHistory"] = value;
+            }
+        }
+
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public ObservableCollection<String> ReplaceFilenameHistory
+        {
+            get
+            {
+                return ((ObservableCollection<String>)(this["ReplaceFilenameHistory"]));
+            }
+            set
+            {
+                this["ReplaceFilenameHistory"] = value;
             }
         }
       

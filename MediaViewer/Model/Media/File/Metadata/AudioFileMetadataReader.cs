@@ -29,7 +29,9 @@ namespace MediaViewer.Model.Media.File.Metadata
             audio.SamplesPerSecond = mediaProbe.SamplesPerSecond;
             audio.BitsPerSample = (short)(mediaProbe.BytesPerSample * 8);
             audio.NrChannels = (short)mediaProbe.NrChannels;
-                                
+
+            audio.BitRate = mediaProbe.AudioBitRate == 0 ? (long?)null : mediaProbe.AudioBitRate;             
+       
             List<string> fsMetaData = mediaProbe.MetaData;
                
             try

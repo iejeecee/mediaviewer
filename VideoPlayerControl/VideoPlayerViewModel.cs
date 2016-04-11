@@ -116,9 +116,9 @@ namespace VideoPlayerControl
             set { videoDecoder.FrameQueue.MinNrBufferedPackets = value; }
         }
 
-        public int NrPackets
+        public int MaxNrBufferedPackets
         {
-            get { return videoDecoder.FrameQueue.MaxVideoPackets; }
+            get { return videoDecoder.FrameQueue.MaxFreePackets; }
         }
 
         enum SyncMode

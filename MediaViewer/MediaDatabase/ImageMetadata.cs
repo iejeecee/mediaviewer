@@ -13,7 +13,7 @@ namespace MediaViewer.MediaDatabase
         {
         }
 
-        public ImageMetadata(String location, Stream data) : base(location, data)  
+        public ImageMetadata(String location,  Stream data) : base(location, data)  
         {
             
         }
@@ -41,6 +41,8 @@ namespace MediaViewer.MediaDatabase
                 sb.Append(Width);
                 sb.Append("x");
                 sb.Append(Height);
+                sb.Append(", " + PixelFormat);
+                sb.Append(", " + BitsPerPixel + "bpp");
                 sb.AppendLine();
                 sb.AppendLine();
 

@@ -392,7 +392,7 @@ namespace MediaViewer.VideoPanel
             videoPlayer.Volume = Volume;
 
             videoPlayer.MinNrBufferedPackets = Settings.Default.VideoMinBufferedPackets;
-            VideoSettings.NrPackets = videoPlayer.NrPackets;
+            //VideoSettings.MaxNrBufferedPackets = videoPlayer.MaxNrBufferedPackets;
 
             IsInitialized = true;
             isInitializedSignal.Release();

@@ -119,7 +119,8 @@ d:DesignHeight="300" d:DesignWidth="300">
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Image x:Name="infoIconsImage" MaxHeight="11" ToolTip="Imported" Grid.Column="0"/>
+                    <Image x:Name="infoIconsImage" MaxHeight="11" Grid.Column="0" 
+                           MouseMove="infoIconsImage_MouseMove" MouseLeave="infoIconsImage_MouseLeave"/>
                     <TextBlock x:Name="extraInfoTextBlock" Grid.Column="1" TextAlignment="Right" FontSize="10" Foreground="Purple"/>
                     <Image x:Name="ratingImage" Grid.Column="1" Visibility="Collapsed" HorizontalAlignment="Right" VerticalAlignment="Center" Stretch="None"/>
                 </Grid>

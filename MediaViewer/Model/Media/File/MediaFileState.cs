@@ -76,13 +76,8 @@ namespace MediaViewer.Model.Media.File
 
         public void move(MediaFileItem item, String location, CancellableOperationProgressBase progress)
         {
-            List<MediaFileItem> dummy = new List<MediaFileItem>();
-            dummy.Add(item);
-
-            List<String> locationDummy = new List<string>();
-            locationDummy.Add(location);
-
-            move(dummy, locationDummy, progress);
+            
+            move(new List<MediaFileItem>{item}, new List<String>{location}, progress);
         }
 
         public void move(IEnumerable<MediaFileItem> items, IEnumerable<String> locations,
@@ -180,15 +175,18 @@ namespace MediaViewer.Model.Media.File
                     item.EnterUpgradeableReadLock();
                     try
                     {
+                        if (item.Metadata == null)
+                        {
+                            item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
+                                    MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, token);
+                        }
+
                         if (item.Metadata != null && item.Metadata.IsImported == true)
                         {
                             // skip if item is already imported
                             continue;
                         }
-
-                        item.readMetadata_URLock(MetadataFactory.ReadOptions.AUTO |
-                                MetadataFactory.ReadOptions.GENERATE_THUMBNAIL, token);
-
+                        
                         if (item.Metadata == null || item.Metadata is UnknownMetadata)
                         {
                             throw new MediaStateException("Error importing item, cannot read item metadata: " + item.Location);

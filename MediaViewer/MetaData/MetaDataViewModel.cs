@@ -39,6 +39,7 @@ namespace MediaViewer.MetaData
         void clear()
         {
             Filename = "";
+            ReplaceFilename = "";
             Location = "";
             
             Rating = 0;
@@ -117,12 +118,16 @@ namespace MediaViewer.MetaData
 
             FilenamePresetsCommand = new Command(() =>
             {
-                FilenamePresetsView filenamePreset = new FilenamePresetsView();
-                FilenamePresetsViewModel vm = (FilenamePresetsViewModel)filenamePreset.DataContext;
+                FilenameRegexView filenamePreset = new FilenameRegexView();
+                FilenameRegexViewModel vm = (FilenameRegexViewModel)filenamePreset.DataContext;
 
                 if (filenamePreset.ShowDialog() == true)
                 {
-                    Filename = vm.SelectedPreset;                    
+                    if (!vm.SelectedRegex.IsEmpty)
+                    {
+                        Filename = vm.SelectedRegex.Regex;
+                        ReplaceFilename = vm.SelectedRegex.Replace;
+                    }
                 }
 
             }); 
@@ -158,83 +163,20 @@ namespace MediaViewer.MetaData
                     Rating = null;
                 });
 
-            InsertCounterCommand = new Command<int?>((startIndex) =>
-            {
-                try
-                {                    
-                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.counterMarker + 
-                        MetaDataUpdateViewModel.defaultCounter + "\"");
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error(e);
-                }
-
-            });
-
-            InsertReplaceStringCommand = new Command<int?>((startIndex) =>
-            {
-                try
-                {
-                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.replaceMarker +
-                        ";\"");
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error(e);
-                }
-
-            });
-
-            InsertExistingFilenameCommand = new Command<int?>((startIndex) =>
-                {
-                    try
-                    {
-                        Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.oldFilenameMarker + "\"");
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Log.Error(e);
-                    }
-
-                });
-
-            InsertResolutionCommand = new Command<int?>((startIndex) =>
-            {
-                try
-                {
-                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.resolutionMarker + "\"");
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error(e);
-                }
-
-            });
-
-            InsertDateCommand = new Command<int?>((startIndex) =>
-            {
-                try
-                {
-                    Filename = Filename.Insert(startIndex.Value, "\"" + MetaDataUpdateViewModel.dateMarker 
-                        + MetaDataUpdateViewModel.defaultDateFormat + "\"");
-                }
-                catch (Exception e)
-                {
-                    Logger.Log.Error(e);
-                }
-
-            });
+           
          
 
             mediaFileWatcher.MediaFileState.ItemPropertyChanged += MediaState_ItemPropertiesChanged;
           
             FilenameHistory = Settings.Default.FilenameHistory;
+            ReplaceFilenameHistory = Settings.Default.ReplaceFilenameHistory;
 
             MovePathHistory = Settings.Default.MetaDataUpdateDirectoryHistory;
 
             FavoriteLocations = Settings.Default.FavoriteLocations;
-        
+
+            IsRegexEnabled = false;
+            ReplaceFilename = "";
         }
 
         private void MediaState_ItemPropertiesChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -307,7 +249,7 @@ namespace MediaViewer.MetaData
             }
         }
 
-        string filename;
+        String filename;
 
         public string Filename
         {
@@ -317,6 +259,23 @@ namespace MediaViewer.MetaData
                 SetProperty(ref filename, value);
             }
         }
+
+        String replaceFilename;
+
+        public String ReplaceFilename
+        {
+            get { return replaceFilename; }
+            set { SetProperty(ref replaceFilename, value); }
+        }
+
+        bool isRegexEnabled;
+
+        public bool IsRegexEnabled
+        {
+            get { return isRegexEnabled; }
+            set { SetProperty(ref isRegexEnabled, value); }
+        }
+
 
         String location;
 
@@ -331,12 +290,7 @@ namespace MediaViewer.MetaData
 
         public AsyncCommand WriteMetaDataCommand { get; set; }
         public Command ClearRatingCommand { get; set; }
-
-        public Command<int?> InsertCounterCommand {get;set;}
-        public Command<int?> InsertExistingFilenameCommand { get; set; }
-        public Command<int?> InsertResolutionCommand { get; set; }
-        public Command<int?> InsertDateCommand { get; set; }
-        public Command<int?> InsertReplaceStringCommand { get; set; }
+       
 
         public Command FilenamePresetsCommand { get; set; }
         public Command DirectoryPickerCommand { get; set; }
@@ -434,6 +388,8 @@ namespace MediaViewer.MetaData
             }
             SelectedMetaDataPreset = noPresetMetaData;
         }
+
+        
 
         Nullable<double> rating;
 
@@ -648,6 +604,7 @@ namespace MediaViewer.MetaData
         }
 
         public ObservableCollection<String> FilenameHistory { get; set; }
+        public ObservableCollection<String> ReplaceFilenameHistory { get; set; }
         public ObservableCollection<String> MovePathHistory { get; set; }
         public ObservableCollection<String> FavoriteLocations { get; set; }
 
@@ -725,8 +682,8 @@ namespace MediaViewer.MetaData
                     clear();
                 }
 
-                Filename = Path.GetFileNameWithoutExtension(metadata.Location);
-                Location = FileUtils.getPathWithoutFileName(metadata.Location);
+                Filename = Path.GetFileNameWithoutExtension(metadata.Name);
+                Location = metadata.Location;
 
                 DynamicProperties.Clear();
 
@@ -782,7 +739,7 @@ namespace MediaViewer.MetaData
                 if (items.Count > 1)
                 {
                     IsEnabled = true;
-                    BatchMode = true;
+                    BatchMode = true;                                 
                     IsReadOnly = false;
                     clear();
 
@@ -793,6 +750,7 @@ namespace MediaViewer.MetaData
                     BatchMode = false;
                     IsEnabled = false;
                     IsReadOnly = true;
+                    IsRegexEnabled = false;
                     clear();
                 }
 
@@ -907,8 +865,7 @@ namespace MediaViewer.MetaData
         void getVideoProperties(ObservableCollection<Tuple<String, String>> p, VideoMetadata video)
         {
            
-            p.Add(new Tuple<string, string>("", "VIDEO"));
-            p.Add(new Tuple<string, string>("Video Container", video.VideoContainer));
+            p.Add(new Tuple<string, string>("", "VIDEO"));            
             p.Add(new Tuple<string, string>("Video Codec", video.VideoCodec));
 
             foreach (Tuple<string, string> item in FormatMetaData.formatProperties(video))
@@ -916,19 +873,33 @@ namespace MediaViewer.MetaData
                 p.Add(item);
             }
 
-            p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));
-            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));            
+            p.Add(new Tuple<string, string>("Resolution", video.Width.ToString() + " x " + video.Height.ToString()));                        
             p.Add(new Tuple<string, string>("Pixel Format", video.PixelFormat));
             p.Add(new Tuple<string, string>("Bits Per Pixel", video.BitsPerPixel.ToString()));
             p.Add(new Tuple<string, string>("Frames Per Second", video.FramesPerSecond.ToString("0.##")));
-          
+
+            if (video.VideoBitRate.HasValue)
+            {
+                p.Add(new Tuple<string, string>("Video Rate", MiscUtils.formatSizeBytes(video.VideoBitRate.Value / 8) + "/s")); 
+            }
+
             if (!String.IsNullOrEmpty(video.AudioCodec))
             {
+                p.Add(new Tuple<string, string>("", "AUDIO"));
                 p.Add(new Tuple<string, string>("Audio Codec", video.AudioCodec));
                 p.Add(new Tuple<string, string>("Bits Per Sample", video.BitsPerSample.ToString()));
                 p.Add(new Tuple<string, string>("Samples Per Second", video.SamplesPerSecond.ToString()));
                 p.Add(new Tuple<string, string>("Nr Channels", video.NrChannels.ToString()));
-            }                
+
+                if (video.AudioBitRate.HasValue)
+                {
+                    p.Add(new Tuple<string, string>("Audio Rate", MiscUtils.formatSizeBytes(video.AudioBitRate.Value / 8) + "/s"));
+                }
+            }
+
+            p.Add(new Tuple<string, string>("", "FILE"));
+            p.Add(new Tuple<string, string>("Container", video.VideoContainer));
+            p.Add(new Tuple<string, string>("Duration", MiscUtils.formatTimeSeconds(video.DurationSeconds)));
 
         }
 
@@ -940,7 +911,12 @@ namespace MediaViewer.MetaData
             p.Add(new Tuple<string, string>("Audio Codec", audio.AudioCodec));
             p.Add(new Tuple<string, string>("Bits Per Sample", audio.BitsPerSample.ToString()));
             p.Add(new Tuple<string, string>("Samples Per Second", audio.SamplesPerSecond.ToString()));
-            p.Add(new Tuple<string, string>("Nr Channels", audio.NrChannels.ToString()));           
+            p.Add(new Tuple<string, string>("Nr Channels", audio.NrChannels.ToString()));
+
+            if (audio.BitRate.HasValue)
+            {
+                p.Add(new Tuple<string, string>("Rate", MiscUtils.formatSizeBytes(audio.BitRate.Value / 8) + "/s"));
+            }
         }
 
         public void OnNavigatedFrom(NavigationContext navigationContext)

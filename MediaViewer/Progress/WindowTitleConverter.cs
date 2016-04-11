@@ -15,22 +15,33 @@ namespace MediaViewer.Progress
             String title = (String)values[0];
             int totalProgress = (int)values[1];
             int totalProgressMax = (int)values[2];
+        
+            string info = "";
 
-            string info;
-
-            if (values.Count() > 3)
+            if (values.Count() > 4)
             {
                 int itemProgress = (int)values[3];
                 int itemProgressMax = (int)values[4];
+            
+                info = "Finished: " + totalProgress.ToString();
 
-                String totalProgressString = "Finished: " + totalProgress.ToString() + "/" + totalProgressMax.ToString() + ", ";
-                String itemProgressString = itemProgressMax != 0 ? "Progress: " + ((int)((itemProgress / (float)itemProgressMax) * 100)).ToString() + "%" : "";
+                if (totalProgressMax != 0)
+                {
+                    info += "/" + totalProgressMax.ToString();
+                }
 
-                info = totalProgressString + itemProgressString;
+                if (itemProgressMax != 0)
+                {
+                    info += itemProgressMax != 0 ? ", Progress: " + ((int)((itemProgress / (float)itemProgressMax) * 100)).ToString() + "%" : "";
+                }
+             
             }
             else
             {
-                info = "Finished: " + (int)((totalProgress / (double)totalProgressMax) * 100) + "%";               
+                if (totalProgressMax != 0)
+                {
+                    info = "Finished: " + (int)((totalProgress / (double)totalProgressMax) * 100) + "%";
+                }                
             }
 
             return (title + " - " + info);

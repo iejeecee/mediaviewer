@@ -124,14 +124,17 @@ MetaData::~MetaData() {
 		progressCallbackPtr.Free();	
 	}
 
-	if(xmpFile != nullptr) {
-
-		xmpFile->release();
-	}
+	this->!MetaData();
 }
 
+MetaData::!MetaData() {
 
+	if(xmpFile != NULL) {
 
+		xmpFile->release();
+		xmpFile = NULL;
+	}
+}
 
 void MetaData::setLogCallback(LogCallbackDelegate ^logCallback) {
 

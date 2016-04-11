@@ -72,8 +72,10 @@ public:
 	std::string pixelFormat;
 	int bitsPerPixel;
 	std::vector<std::string> metaData;
+	int64_t videoBitRate;
 
 	std::string audioCodecName;
+	int64_t audioBitRate;
 
 	VideoFrameGrabber() 
 	{
@@ -85,6 +87,8 @@ public:
 		audioCodecName = "";
 
 		bitsPerPixel = 0;
+		videoBitRate = 0;
+		audioBitRate = 0;
 	}
 
 	virtual void open(OpenVideoArgs ^args, System::Threading::CancellationToken ^ token) {
@@ -106,6 +110,7 @@ public:
 				bitsPerPixel = av_get_bits_per_pixel(pixFmtDescriptor);
 			}
 			
+			videoBitRate = getStream(getVideoStreamIndex())->getCodecContext()->bit_rate;
 		}
 
 		probe_dict(formatContext->metadata, "");
@@ -113,7 +118,9 @@ public:
 		// audio info
 		if(hasAudio()) {
 
-			audioCodecName = std::string(getAudioCodec()->name);		
+			audioCodecName = std::string(getAudioCodec()->name);	
+
+			audioBitRate = getStream(getAudioStreamIndex())->getCodecContext()->bit_rate;
 		}
 	}
 

@@ -95,6 +95,7 @@ namespace MediaViewer.Model.Media.Base.State
 
             try
             {
+               
                 UIMediaCollection.AddRange(items);             
                            
             }

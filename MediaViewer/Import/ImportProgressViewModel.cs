@@ -18,6 +18,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using MediaViewer.MediaDatabase.DbCommands;
+using MediaViewer.Model.Concurrency;
 
 namespace MediaViewer.Import
 {
@@ -42,167 +44,214 @@ namespace MediaViewer.Import
 
             OkCommand.IsExecutable = false;
             CancelCommand.IsExecutable = true;
+
+            TotalProgressMax = 0;
+            ItemProgressMax = 1;
         }
 
-        public async Task importAsync(ObservableCollection<ImportExportLocation> includeLocations, ObservableCollection<ImportExportLocation> excludeLocations)
-        {
-                        
+        public async Task importAsync(ObservableCollection<ScanLocation> includeLocations, ObservableCollection<ScanLocation> excludeLocations)
+        {                        
             TotalProgress = 0;
 
             await Task.Factory.StartNew(() =>
             {
                 import(includeLocations, excludeLocations);
 
-            }, CancellationToken);
+            }, CancellationToken, TaskCreationOptions.None, PriorityScheduler.BelowNormal);
+
+            TotalProgressMax = TotalProgress;      
 
             OkCommand.IsExecutable = true;
             CancelCommand.IsExecutable = false;
 
         }
 
-        private bool getMediaFiles(System.IO.FileInfo info, object state)
+        private void importItem(FileInfo info)
+        {
+            try
+            {
+                
+                ItemProgress = 0;
+
+                MediaFileItem mediaFile = MediaFileItem.Factory.create(info.FullName);
+
+                ItemInfo = "Importing: " + mediaFile.Location;
+
+                MediaFileState.import(mediaFile, CancellationToken);
+
+                ItemProgress = 1;
+                TotalProgress++;
+                InfoMessages.Add("Imported: " + mediaFile.Location);
+            }
+            catch (Exception e)
+            {
+                ItemInfo = "Error importing file: " + info.FullName;
+                InfoMessages.Add("Error importing file: " + info.FullName + " " + e.Message);
+                Logger.Log.Error("Error importing file: " + info.FullName, e);
+                MessageBox.Show("Error importing file: " + info.FullName + "\n\n" + e.Message,
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+
+            }
+
+        }
+
+        private bool iterateFiles(System.IO.DirectoryInfo location, object state)
         {
             if (CancellationToken.IsCancellationRequested)
             {
                 return (false);
             }
 
-            ImportExportLocation location = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item1;
-            ObservableCollection<ImportExportLocation> excludeLocations = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item2;
-            List<String> items = (state as Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>).Item3;
+            Tuple<ScanLocation, ObservableCollection<ScanLocation>> locationArgs = state as Tuple<ScanLocation, ObservableCollection<ScanLocation>>;
 
-            String addItem = null;
-
-            switch (location.MediaType)
+            ScanLocation scanLocation = locationArgs.Item1;
+            ObservableCollection<ScanLocation> excludeLocations = locationArgs.Item2;
+                    
+            FileInfo[] files = null;
+                    
+            try
             {
-                case Search.MediaType.All:
-                    {
-                        if (MediaViewer.Model.Utils.MediaFormatConvert.isMediaFile(info.Name))
-                        {
-                            addItem = info.FullName;
-                        }
-                        break;
-                    }
-                case Search.MediaType.Images:
-                    {
-                        if (MediaFormatConvert.isImageFile(info.Name))
-                        {
-                            addItem = info.FullName;
-                        }
-                        break;
-                    }
-                case Search.MediaType.Video:
-                    {
-                        if (MediaFormatConvert.isVideoFile(info.Name))
-                        {
-                            addItem = info.FullName;
-                        }
-                        break;
-                    }
-                case Search.MediaType.Audio:
-                    {
-                        if (MediaFormatConvert.isAudioFile(info.Name))
-                        {
-                            addItem = info.FullName;
-                        }
-                        break;
-                    }
+                files = location.GetFiles("*.*");
+            }       
+            catch (UnauthorizedAccessException e)
+            {           
+                Logger.Log.Warn(e.Message);
+            }
+            catch (DirectoryNotFoundException e)
+            {
+                Logger.Log.Warn(e.Message);
             }
 
-            if (addItem != null)
+            List<BaseMetadata> staleItems = new List<BaseMetadata>();
+
+            using(MetadataDbCommands metadataCommands = new MetadataDbCommands()) 
             {
-                String path = FileUtils.getPathWithoutFileName(addItem);
+                staleItems = metadataCommands.getAllMetadataInDirectory(location.FullName);            
+            }
 
-                bool excluded = false;
+            foreach (FileInfo info in files)
+            {
+                if (CancellationToken.IsCancellationRequested) return false;
 
-                foreach (ImportExportLocation excludeLocation in excludeLocations)
+                if (MediaViewer.Model.Utils.MediaFormatConvert.isMediaFile(info.Name))
                 {
-                    if (excludeLocation.IsRecursive)
-                    {
-                        if (path.StartsWith(excludeLocation.Location))
+                    staleItems.RemoveAll(x => x.Name.Equals(info.Name));
+                }
+
+                String addItem = null;
+
+                switch (scanLocation.MediaType)
+                {
+                    case Search.MediaType.All:
                         {
-                            if (excludeLocation.MediaType == Search.MediaType.All ||
-                                (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
-                                 (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
+                            if (MediaViewer.Model.Utils.MediaFormatConvert.isMediaFile(info.Name))
                             {
-                                excluded = true;
-                                break;
+                                addItem = info.FullName;
+                            }
+                            break;
+                        }
+                    case Search.MediaType.Images:
+                        {
+                            if (MediaFormatConvert.isImageFile(info.Name))
+                            {
+                                addItem = info.FullName;
+                            }
+                            break;
+                        }
+                    case Search.MediaType.Video:
+                        {
+                            if (MediaFormatConvert.isVideoFile(info.Name))
+                            {
+                                addItem = info.FullName;
+                            }
+                            break;
+                        }
+                    case Search.MediaType.Audio:
+                        {
+                            if (MediaFormatConvert.isAudioFile(info.Name))
+                            {
+                                addItem = info.FullName;
+                            }
+                            break;
+                        }
+                }
+
+                if (addItem != null)
+                {
+                    String path = FileUtils.getPathWithoutFileName(addItem);
+
+                    bool excluded = false;
+
+                    foreach (ScanLocation excludeLocation in excludeLocations)
+                    {
+                        if (excludeLocation.IsRecursive)
+                        {
+                            if (path.StartsWith(excludeLocation.Location))
+                            {
+                                if (excludeLocation.MediaType == Search.MediaType.All ||
+                                    (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
+                                     (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
+                                {
+                                    excluded = true;
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (path.Equals(excludeLocation.Location))
+                            {
+                                if (excludeLocation.MediaType == Search.MediaType.All ||
+                                    (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
+                                     (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
+                                {
+                                    excluded = true;
+                                    break;
+                                }
                             }
                         }
                     }
-                    else
+
+                    if (!excluded)
                     {
-                        if(path.Equals(excludeLocation.Location)) 
-                        {
-                            if (excludeLocation.MediaType == Search.MediaType.All ||
-                                (excludeLocation.MediaType == Search.MediaType.Images && MediaFormatConvert.isImageFile(addItem)) ||
-                                 (excludeLocation.MediaType == Search.MediaType.Video && MediaFormatConvert.isVideoFile(addItem)))
-                            {
-                                excluded = true;
-                                break;
-                            }
-                        }
+                        importItem(info);
+                    }
+                }
+            }
+
+            if(staleItems.Count > 0) {
+
+                using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
+                {
+                    foreach (BaseMetadata staleItem in staleItems)
+                    {
+                        metadataCommands.delete(staleItem);
                     }
                 }
 
-                if (!items.Contains(addItem) && !excluded)
-                {
-                    items.Add(addItem);
-                }
+                Logger.Log.Info("Removed " + staleItems.Count + " stale media items from " + location.FullName);
+                InfoMessages.Add("Removed " + staleItems.Count + " stale media items from " + location.FullName);
             }
 
             return (true);
         }
 
-        void import(ObservableCollection<ImportExportLocation> includeLocations, ObservableCollection<ImportExportLocation> excludeLocations)
+        void import(ObservableCollection<ScanLocation> includeLocations, ObservableCollection<ScanLocation> excludeLocations)
         {
             List<String> items = new List<String>();
 
-            foreach (ImportExportLocation location in includeLocations)
+            foreach (ScanLocation location in includeLocations)
             {
                 if (CancellationToken.IsCancellationRequested) return;
-                ItemInfo = "Searching files in: " + location.Location;
+                ItemInfo = "Importing files in: " + location.Location;
 
-                Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>> state = 
-                    new Tuple<ImportExportLocation, ObservableCollection<ImportExportLocation>, List<String>>(location, excludeLocations, items);
+                Tuple<ScanLocation, ObservableCollection<ScanLocation>> locationArgs = new Tuple<ScanLocation, ObservableCollection<ScanLocation>>(location, excludeLocations);
 
-                FileUtils.walkDirectoryTree(new DirectoryInfo(location.Location),
-                    getMediaFiles, state, location.IsRecursive);
-
-                InfoMessages.Add("Completed searching files in: " + location.Location);
-            }
-
-            TotalProgressMax = items.Count;
-            ItemProgressMax = 100;
-
-            foreach (String item in items)
-            {
-                try
-                {
-                    if (CancellationToken.IsCancellationRequested) return;
-                    ItemProgress = 0;
-                    
-                    MediaFileItem mediaFile = MediaFileItem.Factory.create(item);
-
-                    ItemInfo = "Importing: " + mediaFile.Location;
-
-                    MediaFileState.import(mediaFile, CancellationToken);
-
-                    ItemProgress = 100;
-                    TotalProgress++;
-                    InfoMessages.Add("Imported: " + mediaFile.Location);
-                }
-                catch (Exception e)
-                {
-                    ItemInfo = "Error importing file: " + item;
-                    InfoMessages.Add("Error importing file: " + item + " " + e.Message);
-                    Logger.Log.Error("Error importing file: " + item, e);
-                    MessageBox.Show("Error importing file: " + item + "\n\n" + e.Message,
-                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    return;
-
-                }
-            }
+                FileUtils.iterateDirectories(new DirectoryInfo(location.Location), iterateFiles, locationArgs);
+                
+            }            
+           
         }
       
         

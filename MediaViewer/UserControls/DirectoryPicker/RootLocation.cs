@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using MediaViewer.Model.Utils;
 
 namespace MediaViewer.UserControls.DirectoryPicker
 {
@@ -22,6 +23,66 @@ namespace MediaViewer.UserControls.DirectoryPicker
         {            
             LazyLoading = true;
                       
+            mediaFileState.NrImportedItemsChanged += mediaFileState_NrImportedItemsChanged;
+        }
+
+        protected void iterateChildren(Location location, Action<Location> func)
+        {
+            func(location);
+
+            foreach (Location child in location.Children)
+            {
+                iterateChildren(child, func);
+            }
+        }
+
+
+        protected virtual void mediaFileState_NrImportedItemsChanged(object sender, MediaStateChangedEventArgs e)
+        {
+
+            iterateChildren(this, (Action<Location>)(location => {
+                            
+                if (e.NewItems != null)
+                {
+                    foreach (MediaFileItem item in e.NewItems)
+                    {
+                        String path = FileUtils.getPathWithoutFileName(item.Location);
+
+                        if (path.Equals(location.FullName))
+                        {
+                            location.NrImported++;
+                        }
+                    }
+                }
+
+                if (e.OldItems != null)
+                {
+                    foreach (MediaFileItem item in e.OldItems)
+                    {
+                        String path = FileUtils.getPathWithoutFileName(item.Location);
+
+                        if (path.Equals(location.FullName))
+                        {
+                            location.NrImported--;
+                        }
+                      
+                    }
+                }
+
+                if (e.OldLocations != null)
+                {
+                    foreach (String oldLocation in e.OldLocations)
+                    {
+                        String path = FileUtils.getPathWithoutFileName(oldLocation);
+
+                        if (path.Equals(location.FullName))
+                        {
+                            location.NrImported--;
+                        }
+                    }
+                }
+
+            }));
         }
         
         protected override void LoadChildren()
@@ -36,11 +97,7 @@ namespace MediaViewer.UserControls.DirectoryPicker
             });
 
         }
-
-        protected override void importStateChanged(object sender, MediaStateChangedEventArgs e)
-        {
-            
-        }
+        
 
         List<SharpTreeNode> getDriveNodes()
         {

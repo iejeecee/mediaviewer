@@ -4,6 +4,7 @@ using MediaViewer.MediaDatabase;
 using MediaViewer.Model.Media.Base;
 using MediaViewer.Model.Media.Base.Metadata;
 using MediaViewer.Model.Media.File;
+using MediaViewer.Model.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,6 +38,11 @@ namespace MediaViewer.Model.Media.File.Metadata
             video.BitsPerPixel = (short)mediaProbe.BitsPerPixel;
 
             video.FramesPerSecond = mediaProbe.FrameRate;
+
+            video.VideoBitRate = mediaProbe.VideoBitRate == 0 ? (long?)null : mediaProbe.VideoBitRate;
+            video.AudioBitRate = mediaProbe.AudioBitRate == 0 ? (long?)null : mediaProbe.AudioBitRate;
+
+            video.MimeType = MediaFormatConvert.fileNameToMimeType(media.Name); 
 
             if (!String.IsNullOrEmpty(mediaProbe.AudioCodecName))
             {

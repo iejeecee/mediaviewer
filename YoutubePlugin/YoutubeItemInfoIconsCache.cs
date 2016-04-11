@@ -19,16 +19,9 @@ namespace YoutubePlugin
 
         }
 
-        public override System.Windows.Media.Imaging.BitmapSource getInfoIconsBitmap(MediaItem item)
+        protected override String getKey(MediaItem item)
         {
-            
             String key = "";
-
-            if (item.Metadata == null)
-            {
-                // error
-                return (null);
-            }
 
             if (item is YoutubeVideoItem)
             {
@@ -39,7 +32,7 @@ namespace YoutubePlugin
                 if (metadata.Height >= 2160)
                 {
                     key += "4";
-                } 
+                }
                 else if (metadata.Height >= 1080)
                 {
                     key += "0";
@@ -58,15 +51,55 @@ namespace YoutubePlugin
             {
                 key += "3";
             }
-            
-            if (String.IsNullOrEmpty(key))
+
+            return key;
+        }
+       
+        public override string getToolTip(int iconNr, MediaItem item)
+        {
+            String key = getKey(item);
+
+            if (String.IsNullOrEmpty(key)) return (null);
+
+            char icon = key[iconNr];
+
+            String toolTip = "";
+
+            switch (icon)
             {
-                return (null);
+                case '0':
+                    {
+                        toolTip = "1080p";
+                        break;
+                    }
+                case '1':
+                    {
+                        toolTip = "Playback Not Allowed";
+                        break;
+                    }
+                case '2':
+                    {
+                        toolTip = "Channel";
+                        break;
+                    }
+                case '3':
+                    {
+                        toolTip = "Playlist";
+                        break;
+                    }
+                case '4':
+                    {
+                        toolTip = "2160p";
+                        break;
+                    }    
+                default:
+                    {
+                        break;
+                    }
+
             }
-            else
-            {
-                return (ImageHash[key]);
-            }
+
+            return (toolTip);
         }
     }
 }

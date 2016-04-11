@@ -226,7 +226,8 @@ public:
 	
 		stream->avg_frame_rate      = copy->getAVStream()->avg_frame_rate;
 		stream->time_base           = copy->getAVStream()->time_base;
-		stream->sample_aspect_ratio = copy->getAVStream()->sample_aspect_ratio;		
+		stream->sample_aspect_ratio = copy->getAVStream()->sample_aspect_ratio;	
+		stream->codec->sample_aspect_ratio = stream->sample_aspect_ratio;
 
 		av_dict_copy(&stream->metadata, copy->getAVStream()->metadata, 0);
 

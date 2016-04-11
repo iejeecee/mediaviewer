@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Infrastructure.Annotations;
+using System.Data.Entity.ModelConfiguration;
 using System.IO;
 
 namespace MediaViewer.MediaDatabase
@@ -19,9 +21,8 @@ namespace MediaViewer.MediaDatabase
         {
             Tags = new List<Tag>();
 
-            Location = location;
-            Data = data;
-            MimeType = MediaFormatConvert.fileNameToMimeType(location);            
+            Location = location;         
+            Data = data;            
             Thumbnail = null;
 
             isReadOnly = false;
@@ -92,8 +93,15 @@ namespace MediaViewer.MediaDatabase
             get { return ""; }
         }
 
+        [NotMapped]
+        public virtual String FullLocation
+        {
+            get { return Location + "\\" + Name; }
+        }
+      
         public virtual void clear()
         {
+            Name = null;
 
             Author = null;
             Copyright = null;
@@ -126,9 +134,16 @@ namespace MediaViewer.MediaDatabase
         }
 
         public int Id { get; set; }
-
-        [Required]
+        
+        [Required]     
         public string Location { get; set; }
+              
+        [Required]    
+        public string Name { get; set; }
+
+        // these properties are configured in BaseMetadataMap using fluent api
+        public int LocationHash { get; private set; }       
+        public int LocationNameHash { get; private set; }
 
         public string Title { get; set; }
         public Nullable<double> Rating { get; set; }
@@ -156,10 +171,13 @@ namespace MediaViewer.MediaDatabase
         public virtual Thumbnail Thumbnail { get; set; }
         public virtual ICollection<Tag> Tags { get; set; }
 
-        /*public virtual AudioMetadata AudioMetadata { get; set; }
-        public virtual ImageMetadata ImageMetadata { get; set; }
-        public virtual UnknownMetadata UnknownMetadata { get; set; }
-        public virtual VideoMetadata VideoMetadata { get; set; }
-        */
+
+        public void calcHashes() {
+
+            LocationHash = MiscUtils.hashString(Location);
+            LocationNameHash = MiscUtils.hashString(FullLocation);
+        }
+
+        
     }
 }

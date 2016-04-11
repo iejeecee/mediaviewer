@@ -53,7 +53,7 @@ namespace MediaViewer.VideoPanel
             MinNrBufferedPackets = Settings.Default.VideoMinBufferedPackets;
             StepDurationSeconds = Settings.Default.VideoStepDurationSeconds;
 
-            NrPackets = 500;
+            MaxNrBufferedPackets = 1000;
         }
 
         int minNrBufferedPackets;
@@ -64,12 +64,12 @@ namespace MediaViewer.VideoPanel
             set { SetProperty(ref minNrBufferedPackets, value); }
         }
 
-        int nrPackets;
+        int maxNrBufferedPackets;
 
-        public int NrPackets
+        public int MaxNrBufferedPackets
         {
-            get { return nrPackets; }
-            set { SetProperty(ref nrPackets, value); }
+            get { return maxNrBufferedPackets; }
+            set { SetProperty(ref maxNrBufferedPackets, value); }
         }
 
         int videoScreenShotTimeOffset;

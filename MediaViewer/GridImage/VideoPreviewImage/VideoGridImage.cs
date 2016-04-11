@@ -74,15 +74,19 @@ namespace MediaViewer.GridImage.VideoPreviewImage
             
             labels.Add(new TextBlock(new Run("Video Codec: ")));
 
-            String videoCodecInfo = Video.VideoCodec + ", " + Video.Width + "x" + Video.Height + ", " + Video.FramesPerSecond.ToString("0.00") + "fps" + ", " + Video.PixelFormat;
+            String videoRate = Video.VideoBitRate.HasValue ? MiscUtils.formatSizeBytes(Video.VideoBitRate.Value / 8) + "/s" : "";
+
+            String videoCodecInfo = Video.VideoCodec + ", " + Video.Width + "x" + Video.Height + ", " + Video.FramesPerSecond.ToString("0.00") + "fps" + ", " + Video.PixelFormat + ", " + videoRate;
 
             values.Add(new TextBlock(new Run(videoCodecInfo)));
            
             if(Video.AudioCodec != null) {
 
+                String audioRate = Video.AudioBitRate.HasValue ? MiscUtils.formatSizeBytes(Video.AudioBitRate.Value / 8) + "/s" : "";
+
                 labels.Add(new TextBlock(new Run("Audio Codec: ")));
 
-                String audioCodecInfo = Video.AudioCodec + ", " + Video.NrChannels + "chan" + ", " + Video.SamplesPerSecond + "hz, " + Video.BitsPerSample + "bit";
+                String audioCodecInfo = Video.AudioCodec + ", " + Video.NrChannels + "chan" + ", " + Video.SamplesPerSecond + "hz, " + Video.BitsPerSample + "bit" + ", " + audioRate;
 
                 values.Add(new TextBlock(new Run(audioCodecInfo)));
             }

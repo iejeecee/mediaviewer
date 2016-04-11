@@ -38,8 +38,21 @@ MediaProbe::MediaProbe() {
 
 MediaProbe::~MediaProbe() {
 
-	delete frameGrabber;
-	gch.Free();
+	this->!MediaProbe();
+}
+
+MediaProbe::!MediaProbe() {
+
+	if(frameGrabber != NULL) {
+
+		delete frameGrabber;
+		frameGrabber = NULL;
+	}
+
+	if(gch.IsAllocated)
+	{
+		gch.Free();
+	}
 }
 
 void MediaProbe::UTF8ToWString(const std::string &input, String ^%output) {
@@ -83,7 +96,9 @@ void MediaProbe::open(String ^mediaLocation, System::Threading::CancellationToke
 		videoCodecName = marshal_as<String ^>(frameGrabber->videoCodecName);
 		frameRate = frameGrabber->getFrameRate();
 		pixelFormat =  marshal_as<String ^>(frameGrabber->pixelFormat);
-		bitsPerPixel = frameGrabber->bitsPerPixel;		
+		bitsPerPixel = frameGrabber->bitsPerPixel;	
+		videoBitRate = frameGrabber->videoBitRate;
+		audioBitRate = frameGrabber->audioBitRate;
 
 		audioCodecName = marshal_as<String ^>(frameGrabber->audioCodecName);
 		bytesPerSample = frameGrabber->getAudioBytesPerSample();

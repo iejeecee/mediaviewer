@@ -1,0 +1,195 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Video">
+      <UniqueIdentifier>{21d89778-1cf9-45d7-b417-fa45cf577bf4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Dash">
+      <UniqueIdentifier>{f3640692-2138-4dba-91d5-f1f37ff8da35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{0ee2ffc7-61a4-4e38-b7b3-81d4ba8ebdcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Frame">
+      <UniqueIdentifier>{14663f49-c5dd-4a2e-8b6f-0902ccb25207}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="FilterGraph">
+      <UniqueIdentifier>{3d0d7d79-b9f0-491d-b3ae-601a0c8a19f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer">
+      <UniqueIdentifier>{c0a92c1d-079a-4d88-8b35-6575b3a916f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer\MediaSource">
+      <UniqueIdentifier>{0703e03f-f16f-4b57-b16d-3df9bad1f53a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer\MediaSink">
+      <UniqueIdentifier>{79f42ec9-7904-46ce-a4c9-fed0ec2ef8f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer\MediaFilter">
+      <UniqueIdentifier>{f4588e8b-60bb-4270-a4e3-17be8329ae7a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer\MediaFilter\BufferSourceFilter">
+      <UniqueIdentifier>{b5ab7de1-5b82-4890-8d5e-4aaa52996b09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MediaTransformer\MediaFilter\BufferSinkFilter">
+      <UniqueIdentifier>{54078116-bfe5-4369-a33b-0a30c7a8d685}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Video\IVideoDecoder.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\Stream.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\Video.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\VideoDecoder.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\VideoDecoderFactory.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\VideoEncoder.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\VideoFramegrabber.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\VideoInit.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Video\WindowsFileUtil.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="Dash\DashVideoDecoder.h">
+      <Filter>Dash</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Utils.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame\AudioFrame.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame\Frame.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame\Packet.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="Frame\VideoFrame.h">
+      <Filter>Frame</Filter>
+    </ClInclude>
+    <ClInclude Include="FilterGraph\FilterGraph.h">
+      <Filter>FilterGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="Stdafx.h" />
+    <ClInclude Include="OpenVideoArgs.h" />
+    <ClInclude Include="VideoLibException.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Video\Stdafx.h">
+      <Filter>Video</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\BitStreamFilter.h">
+      <Filter>MediaTransformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MemoryStream.h">
+      <Filter>MediaTransformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MemoryStreamAVIOContext.h">
+      <Filter>MediaTransformer</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSinkFilter\AudioBufferSinkFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSinkFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSinkFilter\BufferSinkFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSinkFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSinkFilter\VideoBufferSinkFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSinkFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSourceFilter\AudioBufferSourceFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSourceFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSourceFilter\BufferSourceFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSourceFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\BufferSourceFilter\VideoBufferSourceFilter.h">
+      <Filter>MediaTransformer\MediaFilter\BufferSourceFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\Option.h">
+      <Filter>MediaTransformer\MediaFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSink\IMediaSink.h">
+      <Filter>MediaTransformer\MediaSink</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSink\MediaFileSink.h">
+      <Filter>MediaTransformer\MediaSink</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSink\MediaSinkState.h">
+      <Filter>MediaTransformer\MediaSink</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSource\IMediaSource.h">
+      <Filter>MediaTransformer\MediaSource</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSource\MediaFileSource.h">
+      <Filter>MediaTransformer\MediaSource</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaSource\MediaSourceState.h">
+      <Filter>MediaTransformer\MediaSource</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\MediaFilter.h">
+      <Filter>MediaTransformer\MediaFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaTransformer.h">
+      <Filter>MediaTransformer</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Rational.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\InMediaFilter.h">
+      <Filter>MediaTransformer\MediaFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\InOutMediaFilter.h">
+      <Filter>MediaTransformer\MediaFilter</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaTransformer\MediaFilter\OutMediaFilter.h">
+      <Filter>MediaTransformer\MediaFilter</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AssemblyInfo.cpp" />
+    <ClCompile Include="Stdafx.cpp" />
+    <ClCompile Include="Video\Video.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="Video\VideoInit.cpp">
+      <Filter>Video</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaTransformer\MediaTransformer.cpp">
+      <Filter>MediaTransformer</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaTransformer\MediaSink\MediaFileSink.cpp">
+      <Filter>MediaTransformer\MediaSink</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaTransformer\MediaSource\MediaFileSource.cpp">
+      <Filter>MediaTransformer\MediaSource</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="app.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="app.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

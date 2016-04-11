@@ -37,9 +37,11 @@ namespace MediaViewer.Model.Media.File
         ISOSpeedRating,
         // video    
         VideoCodec, 
+        VideoRate,
         FramesPerSecond,            
         PixelFormat,
         Duration,
+        AudioRate,
         BitsPerSample,
         SamplesPerSecond,
         NrChannels,
@@ -50,7 +52,8 @@ namespace MediaViewer.Model.Media.File
         Track,
         TotalTracks,
         Disc,
-        TotalDiscs
+        TotalDiscs,
+        Rate
     }
 
     public class MediaFileSortItem : SortItemBase<MediaFileSortMode> {
@@ -277,6 +280,45 @@ namespace MediaViewer.Model.Media.File
                             Nullable<double> bFPS = b.Item.Metadata is VideoMetadata ? new Nullable<double>((b.Item.Metadata as VideoMetadata).FramesPerSecond) : null;
 
                             return (onEquals(Nullable.Compare<double>(aFPS, bFPS),a,b));
+                        });
+                    break;
+                case MediaFileSortMode.VideoRate:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<long> aVideoRate = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).VideoBitRate : null;
+                            Nullable<long> bVideoRate = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).VideoBitRate : null;
+
+                            return (onEquals(Nullable.Compare<long>(aVideoRate, bVideoRate), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.AudioRate:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<long> aAudioRate = a.Item.Metadata is VideoMetadata ? (a.Item.Metadata as VideoMetadata).AudioBitRate : null;
+                            Nullable<long> bAudioRate = b.Item.Metadata is VideoMetadata ? (b.Item.Metadata as VideoMetadata).AudioBitRate : null;
+
+                            return (onEquals(Nullable.Compare<long>(aAudioRate, bAudioRate), a, b));
+                        });
+                    break;
+                case MediaFileSortMode.Rate:
+                    sortFunc = new Func<SelectableMediaItem, SelectableMediaItem, int>(
+                        (a, b) =>
+                        {
+                            int result = hasMediaTest(a, b);
+                            if (result != 0) return result;
+
+                            Nullable<long> aBitRate = a.Item.Metadata is AudioMetadata ? (a.Item.Metadata as AudioMetadata).BitRate : null;
+                            Nullable<long> bBitRate = b.Item.Metadata is AudioMetadata ? (b.Item.Metadata as AudioMetadata).BitRate : null;
+
+                            return (onEquals(Nullable.Compare<long>(aBitRate, bBitRate), a, b));
                         });
                     break;
                 case MediaFileSortMode.VideoCodec:

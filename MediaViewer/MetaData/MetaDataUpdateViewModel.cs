@@ -25,6 +25,7 @@ using MediaViewer.Infrastructure.Logging;
 using MediaViewer.Model.Concurrency;
 using MediaViewer.Properties;
 using MediaViewer.Model.Media.Base.Metadata;
+using System.Text.RegularExpressions;
 
 namespace MediaViewer.MetaData
 {
@@ -45,13 +46,14 @@ namespace MediaViewer.MetaData
             public int nrDigits;
         };
 
-        public const string oldFilenameMarker = "filename";
-        public const string counterMarker = "counter:";
-        public const string replaceMarker = "replace:";
-        public const string defaultCounter = "0001";
-        public const string resolutionMarker = "resolution";
-        public const string dateMarker = "date:";
-        public const string defaultDateFormat = "g";
+        int? counter;
+  
+        public const string counterMarker = "#counter1";
+        public const string widthMarker = "#width";
+        public const string heightMarker = "#height";
+        public const string bitrateMarker = "#bitrate";
+        public const string dateMarker = "#date";
+        public const string parentDirMarker = "#parentdir";
 
         public MetaDataUpdateViewModel(MediaFileWatcher mediaFileWatcher, IEventAggregator eventAggregator)
         {
@@ -64,6 +66,7 @@ namespace MediaViewer.MetaData
             CancelCommand.IsExecutable = true;
             OkCommand.IsExecutable = false;
 
+            counter = null;
 
         }
 
@@ -189,7 +192,7 @@ namespace MediaViewer.MetaData
                     oldFilename = Path.GetFileNameWithoutExtension(item.Location);
                     ext = Path.GetExtension(item.Location);
 
-                    newFilename = parseNewFilename(state.Filename, oldFilename, counters, item.Metadata);
+                    newFilename = parseNewFilename(state.Filename, state.ReplaceFilename, state.IsRegexEnabled, oldFilename, item.Metadata);
                     newPath = String.IsNullOrEmpty(state.Location) ? oldPath : state.Location;
                     newPath = newPath.TrimEnd('\\');
                 }
@@ -233,7 +236,7 @@ namespace MediaViewer.MetaData
 
                     if (success)
                     {
-                        string info = "Imported: " + item.Metadata.Location;
+                        string info = "Imported: " + item.Location;
 
                         InfoMessages.Add(info);
                         Logger.Log.Info(info);
@@ -389,140 +392,160 @@ namespace MediaViewer.MetaData
 
         
 
-        string parseNewFilename(string newFilename, string oldFilename, List<Counter> counters, BaseMetadata media)
+        string parseNewFilename(string newFilename, string replaceFilename, bool isRegexEnabled, string oldFilename, 
+            BaseMetadata media)
         {
-            if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
+            string outputFilename = null;
+
+            if (isRegexEnabled == false)
             {
-                return (oldFilename);
-            }
-
-            List<Tuple<String, String>> replaceArgs = new List<Tuple<string, string>>();
-
-            int nrCounters = 0;
-            string outputFileName = "";
-
-            for (int i = 0; i < newFilename.Length; i++)
-            {
-
-                if (newFilename[i].Equals('\"'))
+                if (String.IsNullOrEmpty(newFilename) || String.IsNullOrWhiteSpace(newFilename))
                 {
-                    // grab substring
-                    string subString = "";
-
-                    int k = i + 1;
-
-                    while (k < newFilename.Length && !newFilename[k].Equals('\"'))
-                    {
-                        subString += newFilename[k];
-                        k++;
-                    }
-
-                    // replace
-                    if (subString.Length > 0)
-                    {
-                        if (subString.StartsWith(oldFilenameMarker))
-                        {
-                            // insert old filename
-                            outputFileName += oldFilename;
-                        }
-                        else if (subString.StartsWith(counterMarker))
-                        {
-                            // insert counter
-                            nrCounters++;
-                            int counterValue;
-                            bool haveCounterValue = false;
-
-                            if (counters.Count < nrCounters)
-                            {
-                                String stringValue = subString.Substring(counterMarker.Length);
-                                haveCounterValue = int.TryParse(stringValue, out counterValue);
-
-                                if (haveCounterValue)
-                                {
-                                    counters.Add(new Counter(counterValue, stringValue.Length));
-                                }
-                            }
-                            else
-                            {
-                                counterValue = counters[nrCounters - 1].value;
-                                haveCounterValue = true;
-                            }
-
-                            if (haveCounterValue)
-                            {
-
-                                outputFileName += counterValue.ToString("D" + counters[nrCounters - 1].nrDigits);
-
-                                // increment counter
-                                counters[nrCounters - 1].value += 1;
-                            }
-                        }
-                        else if (subString.StartsWith(resolutionMarker))
-                        {
-
-                            int width = 0;
-                            int height = 0;
-
-                            if (media != null && media is ImageMetadata)
-                            {
-                                width = (media as ImageMetadata).Width;
-                                height = (media as ImageMetadata).Height;
-                            }
-                            else if (media != null && media is VideoMetadata)
-                            {
-                                width = (media as VideoMetadata).Width;
-                                height = (media as VideoMetadata).Height;
-                            }
-
-                            outputFileName += width.ToString() + "x" + height.ToString();
-
-                        }
-                        else if (subString.StartsWith(dateMarker))
-                        {
-                            String format = subString.Substring(dateMarker.Length);
-                            String dateString = "";
-
-                            if (media.CreationDate != null)
-                            {
-                                dateString = media.CreationDate.Value.ToString(format);
-                            }
-
-                            outputFileName += dateString;
-                        }
-                        else if (subString.StartsWith(replaceMarker))
-                        {
-                            String replaceString = subString.Substring(replaceMarker.Length);
-                            int index = replaceString.IndexOf(';');
-
-                            if (index == -1) continue;
-                            Tuple<String, String> args = new Tuple<string, string>(replaceString.Substring(0, index), replaceString.Substring(index + 1));
-
-                            if (String.IsNullOrEmpty(args.Item1) || String.IsNullOrWhiteSpace(args.Item1)) continue;
-                            if (args.Item2 == null) continue;
-
-                            replaceArgs.Add(args);
-                        }
-                    }
-
-                    if (newFilename[k].Equals('\"'))
-                    {
-                        i = k;
-                    }
+                    outputFilename = oldFilename;
                 }
                 else
                 {
-                    outputFileName += newFilename[i];
+                    outputFilename = newFilename;
+                }
+
+            }
+            else
+            {
+                Regex regex = new Regex(newFilename, RegexOptions.Singleline);
+               
+                replaceFilename = parseReplaceFilename(replaceFilename, media);
+
+                if (replaceFilename.Equals("#upper"))
+                {
+                    outputFilename = regex.Replace(oldFilename, m => m.Value.ToUpperInvariant());
+                }
+                else if (replaceFilename.Equals("#lower"))
+                {
+                    outputFilename = regex.Replace(oldFilename, m => m.Value.ToLowerInvariant());
+                }
+                else
+                {
+                    outputFilename = regex.Replace(oldFilename, replaceFilename);
                 }
             }
 
-            foreach (Tuple<String, String> arg in replaceArgs)
+            outputFilename = FileUtils.removeIllegalCharsFromFileName(outputFilename, "-");
+
+            return (outputFilename);
+        }
+
+        private string parseReplaceFilename(string replaceFilename, BaseMetadata media)
+        {
+            Regex counterRegEx = new Regex("#counter([0-9]+)");
+
+            replaceFilename = counterRegEx.Replace(replaceFilename, m =>
             {
-                outputFileName = outputFileName.Replace(arg.Item1, arg.Item2);
-            }
+                if (!counter.HasValue)
+                {
+                    int initialCount = int.Parse(m.Groups[1].Value);
+                    counter = initialCount;
+                }
+                else
+                {
+                    counter++;
+                }
 
-            outputFileName = FileUtils.removeIllegalCharsFromFileName(outputFileName, "-");
+                return (counter.ToString());
+            });
 
-            return (outputFileName);
+            Regex parentDirRegEx = new Regex(parentDirMarker);
+
+            replaceFilename = parentDirRegEx.Replace(replaceFilename, m =>
+            {
+                String directoryName = Path.GetDirectoryName(media.Location);
+                string parentDir = "";
+
+                int index = directoryName.LastIndexOf('\\');
+                if (index != -1 && index < directoryName.Length)
+                {
+                    parentDir = directoryName.Substring(index + 1);
+                }
+
+                return (parentDir);
+            });
+
+            Regex widthRegEx = new Regex(widthMarker);
+
+            replaceFilename = widthRegEx.Replace(replaceFilename, m =>
+            {
+                String width = media is VideoMetadata ? (media as VideoMetadata).Width.ToString() : "";
+                width = media is ImageMetadata ? (media as ImageMetadata).Width.ToString() : "";
+
+                return width;
+            });
+
+            Regex heightRegEx = new Regex(heightMarker);
+
+            replaceFilename = heightRegEx.Replace(replaceFilename, m =>
+            {
+                String height = media is VideoMetadata ? (media as VideoMetadata).Height.ToString() : "";
+                height = media is ImageMetadata ? (media as ImageMetadata).Height.ToString() : "";
+
+                return height;
+            });
+
+            Regex bitrateRegEx = new Regex(bitrateMarker);
+
+            replaceFilename = bitrateRegEx.Replace(replaceFilename, m =>
+            {
+                String bitrateKB = "";
+
+                if (media is VideoMetadata)                
+                {
+                    VideoMetadata video = media as VideoMetadata;
+
+                    long totalBitrate = 0;
+
+                    if (video.VideoBitRate.HasValue)
+                    {
+                        totalBitrate += video.VideoBitRate.Value;
+                    }
+
+                    if (video.AudioBitRate.HasValue)
+                    {
+                        totalBitrate += video.AudioBitRate.Value;
+                    }
+
+                    if (totalBitrate > 0)
+                    {
+                        bitrateKB = (totalBitrate / (8 * 1024)).ToString();
+                    }
+                }
+                else if (media is AudioMetadata)
+                {
+                    AudioMetadata audio = media as AudioMetadata;
+                  
+                    if (audio.BitRate.HasValue)
+                    {
+                        bitrateKB = (audio.BitRate.Value / (8 * 1024)).ToString();
+                    }
+                }
+
+                return bitrateKB;
+            });
+
+            Regex dateRegex = new Regex(dateMarker);
+
+            replaceFilename = bitrateRegEx.Replace(replaceFilename, m =>
+            {
+                String creationDate = "";
+
+                if (media.CreationDate.HasValue)
+                {
+
+                    creationDate = media.CreationDate.Value.ToString("dd/M/yyyy");
+                }
+
+                return creationDate;
+            });
+
+            return replaceFilename;
+           
         }
 
     }
@@ -542,6 +565,8 @@ namespace MediaViewer.MetaData
             Description = vm.Description;
             DescriptionEnabled = vm.DescriptionEnabled;
             Filename = vm.Filename;
+            ReplaceFilename = vm.ReplaceFilename;
+            IsRegexEnabled = vm.IsRegexEnabled;
             IsEnabled = vm.IsEnabled;
 
             lock (vm.Items)
@@ -589,6 +614,8 @@ namespace MediaViewer.MetaData
         public Nullable<double> Latitude { get; set; }
         public Nullable<double> Longitude { get; set; }
         public bool IsGeoTagEnabled { get; set; }
+        public String ReplaceFilename { get; set; }
+        public bool IsRegexEnabled { get; set; }
 
     }
 }
