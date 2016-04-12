@@ -683,7 +683,7 @@ namespace MediaViewer.MetaData
                 }
 
                 Filename = Path.GetFileNameWithoutExtension(metadata.Name);
-                Location = metadata.Location;
+                Location = metadata.Path;
 
                 DynamicProperties.Clear();
 

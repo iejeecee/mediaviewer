@@ -13,11 +13,13 @@ namespace MediaViewer.MediaDatabase.Mapping
     {
         public BaseMetadataMap()
         {
+            /*this.Property(t => t.Path).HasColumnName("Path").IsRequired();
+
             this.Property(t => t.LocationHash).HasColumnName("LocationHash")
                 .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_LocationHash")));
 
-            this.Property(t => t.LocationNameHash).HasColumnName("LocationNameHash")
-                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_LocationNameHash")));
+            this.Property(t => t.PathHash).HasColumnName("PathHash")
+                .HasColumnAnnotation("Index", new IndexAnnotation(new IndexAttribute("IX_PathHash")));*/
         }
     }
 }

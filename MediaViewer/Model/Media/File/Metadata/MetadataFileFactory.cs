@@ -38,24 +38,21 @@ namespace MediaViewer.Model.Media.File.Metadata
                 {
                     case MediaType.AUDIO_MEDIA:
                         {
-                            metadata = new AudioMetadata(FileUtils.getPathWithoutFileName(location), data);
-                            metadata.Name = Path.GetFileName(location);
+                            metadata = new AudioMetadata(location, data);                          
                             AudioFileMetadataReader reader = new AudioFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;
                         }
                     case MediaType.IMAGE_MEDIA:
                         {
-                            metadata = new ImageMetadata(FileUtils.getPathWithoutFileName(location), data);
-                            metadata.Name = Path.GetFileName(location);
+                            metadata = new ImageMetadata(location, data);                        
                             ImageFileMetadataReader reader = new ImageFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;
                         }                
                     case MediaType.VIDEO_MEDIA:
                         {
-                            metadata = new VideoMetadata(FileUtils.getPathWithoutFileName(location), data);
-                            metadata.Name = Path.GetFileName(location);
+                            metadata = new VideoMetadata(location, data);                       
                             VideoFileMetadataReader reader = new VideoFileMetadataReader();
                             reader.readMetadata(mediaProbe, data, options, metadata, token, timeoutSeconds);
                             break;

@@ -41,9 +41,7 @@ namespace MediaViewer.Model.Media.File.Metadata
 
             video.VideoBitRate = mediaProbe.VideoBitRate == 0 ? (long?)null : mediaProbe.VideoBitRate;
             video.AudioBitRate = mediaProbe.AudioBitRate == 0 ? (long?)null : mediaProbe.AudioBitRate;
-
-            video.MimeType = MediaFormatConvert.fileNameToMimeType(media.Name); 
-
+           
             if (!String.IsNullOrEmpty(mediaProbe.AudioCodecName))
             {
                 video.AudioCodec = mediaProbe.AudioCodecName;

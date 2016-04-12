@@ -127,7 +127,7 @@ namespace MediaViewer.Search
                 foreach (BaseMetadata result in results)
                 {                    
                     result.IsImported = true;
-                    MediaFileItem item = MediaFileItem.Factory.create(result.FullLocation, result);
+                    MediaFileItem item = MediaFileItem.Factory.create(result.Location, result);
 
                     items.Add(item);
                 }

@@ -147,7 +147,7 @@ namespace MediaViewer.Model.Utils
         }
 
         /// <summary>
-        /// Provides as stable serializable hash from a string
+        /// Provides a stable serializable hash from a string
         /// </summary>
         /// <param name="text">string to generate hash code for</param>
         /// <returns>hash value</returns>

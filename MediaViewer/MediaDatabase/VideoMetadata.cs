@@ -37,7 +37,7 @@ namespace MediaViewer.MediaDatabase
                
                 StringBuilder sb = new StringBuilder();
 
-                sb.AppendLine(Path.GetFileName(Location));
+                sb.AppendLine(System.IO.Path.GetFileName(Location));
                 sb.AppendLine();
 
                 sb.AppendLine("Mime type:");

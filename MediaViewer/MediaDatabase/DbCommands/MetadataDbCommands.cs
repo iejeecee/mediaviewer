@@ -61,27 +61,27 @@ namespace MediaViewer.MediaDatabase.DbCommands
 
         public int getNrMetadataInDirectory(String path)
         {
-            int locationHash = MiscUtils.hashString(path);
+            int pathHash = MiscUtils.hashString(path);
 
-            int result = Db.BaseMetadatas.Where(m => m.LocationHash == locationHash && m.Location.Equals(path)).Count();
+            int result = Db.BaseMetadatas.Where(m => m.PathHash == pathHash && m.Path.Equals(path)).Count();
 
             return (result);
         }
 
         public List<BaseMetadata> getAllMetadataInDirectory(String path)
         {
-            int locationHash = MiscUtils.hashString(path);
+            int pathHash = MiscUtils.hashString(path);
 
-            List<BaseMetadata> result = Db.BaseMetadatas.Where(m => m.LocationHash == locationHash && m.Location.Equals(path)).OrderBy(m => m.Name).ToList();
+            List<BaseMetadata> result = Db.BaseMetadatas.Where(m => m.PathHash == pathHash && m.Path.Equals(path)).OrderBy(m => m.Name).ToList();
 
             return (result);
         }
 
-        public BaseMetadata findMetadataByLocation(String location, String name)
+        public BaseMetadata findMetadataByLocation(String location)
         {
-            int locationNameHash = MiscUtils.hashString(location + "\\" + name);
+            int locationHash = MiscUtils.hashString(location);
 
-            BaseMetadata result = Db.BaseMetadatas.Include(m => m.Tags).Include(m => m.Thumbnail).FirstOrDefault(m => m.LocationNameHash == locationNameHash && m.Location.Equals(location) && m.Name.Equals(name));
+            BaseMetadata result = Db.BaseMetadatas.Include(m => m.Tags).Include(m => m.Thumbnail).FirstOrDefault(m => m.LocationHash == locationHash && m.Location.Equals(location));
            
             return (result);
         }
@@ -504,15 +504,15 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 newMetadata = audioMetadata;
             }
 
-            newMetadata.calcHashes();
+            //newMetadata.calcHashes();
 
-            FileInfo info = new FileInfo(newMetadata.FullLocation);
+            FileInfo info = new FileInfo(newMetadata.Location);
             info.Refresh();
 
             if (info.LastWriteTime < (DateTime)SqlDateTime.MinValue)
             {
 
-                Logger.Log.Warn("LastWriteTime for " + newMetadata.FullLocation + " smaller as SqlDateTime.MinValue");
+                Logger.Log.Warn("LastWriteTime for " + newMetadata.Location + " smaller as SqlDateTime.MinValue");
                 newMetadata.LastModifiedDate = (DateTime)SqlDateTime.MinValue;
 
             } else {
@@ -620,9 +620,9 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 Db.Entry<AudioMetadata>(updateMetadata as AudioMetadata).CurrentValues.SetValues(metadata);   
             }
 
-            updateMetadata.calcHashes();          
+            //updateMetadata.calcHashes();          
 
-            FileInfo info = new FileInfo(updateMetadata.FullLocation);
+            FileInfo info = new FileInfo(updateMetadata.Location);
             info.Refresh();
             updateMetadata.LastModifiedDate = info.LastWriteTime;
 
@@ -697,7 +697,7 @@ namespace MediaViewer.MediaDatabase.DbCommands
                 throw new DbEntityValidationException("Error deleting metadata, location cannot be null, empty or whitespace");
             }
 
-            BaseMetadata deleteMedia = findMetadataByLocation(metadata.Location, metadata.Name);
+            BaseMetadata deleteMedia = findMetadataByLocation(metadata.Location);
             if (deleteMedia == null)
             {
                 throw new DbEntityValidationException("Cannot delete non existing metadata: " + metadata.Location);

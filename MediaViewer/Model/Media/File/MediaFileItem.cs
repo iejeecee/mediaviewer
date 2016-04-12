@@ -58,9 +58,8 @@ namespace MediaViewer.Model.Media.File
                     // update newLocation in the database                                 
                     if (Metadata != null)
                     {
-                        Metadata.Location = FileUtils.getPathWithoutFileName(newLocation);
-                        Metadata.Name = Path.GetFileName(newLocation);
-
+                        Metadata.Location = newLocation;
+                        
                         if (Metadata.IsImported)
                         {
                             using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
@@ -74,11 +73,10 @@ namespace MediaViewer.Model.Media.File
                     {
                         using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
                         {
-                            Metadata = metadataCommands.findMetadataByLocation(FileUtils.getPathWithoutFileName(oldLocation), Path.GetFileName(oldLocation));
+                            Metadata = metadataCommands.findMetadataByLocation(oldLocation);
                             if (Metadata != null)
                             {
-                                Metadata.Location = FileUtils.getPathWithoutFileName(newLocation);
-                                Name = Path.GetFileName(newLocation);
+                                Metadata.Location = newLocation;                            
                                 Metadata = metadataCommands.update(Metadata);
                             }
 

@@ -129,9 +129,7 @@ namespace MediaViewer.Model.Media.Base.Metadata
             using (MetadataDbCommands metadataCommands = new MetadataDbCommands())
             {
 
-
-                metadata = metadataCommands.findMetadataByLocation(FileUtils.getPathWithoutFileName(location),
-                    Path.GetFileName(location));
+                metadata = metadataCommands.findMetadataByLocation(location);
 
                 if (metadata != null)
                 {

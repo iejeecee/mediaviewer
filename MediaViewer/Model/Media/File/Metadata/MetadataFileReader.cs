@@ -34,7 +34,7 @@ namespace MediaViewer.Model.Media.File.Metadata
             try
             {
                 
-                FileInfo info = new FileInfo(media.FullLocation);
+                FileInfo info = new FileInfo(media.Location);
                 info.Refresh();
                 media.LastModifiedDate = info.LastWriteTime < sqlMinDate ? sqlMinDate : info.LastWriteTime;
                 media.FileDate = info.CreationTime < sqlMinDate ? sqlMinDate : info.CreationTime;
@@ -42,7 +42,7 @@ namespace MediaViewer.Model.Media.File.Metadata
 
                 if (media.SupportsXMPMetadata == false) return;
 
-                xmpMetaDataReader.open(media.FullLocation, Consts.OpenOptions.XMPFiles_OpenForRead);
+                xmpMetaDataReader.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForRead);
                                     
                 readXMPMetadata(xmpMetaDataReader, media);
                 

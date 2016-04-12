@@ -21,6 +21,10 @@ namespace MediaViewer.MediaDatabase
         {
             Tags = new List<Tag>();
 
+            
+
+            MimeType = MediaFormatConvert.fileNameToMimeType(location);
+
             Location = location;         
             Data = data;            
             Thumbnail = null;
@@ -92,15 +96,10 @@ namespace MediaViewer.MediaDatabase
         {
             get { return ""; }
         }
-
-        [NotMapped]
-        public virtual String FullLocation
-        {
-            get { return Location + "\\" + Name; }
-        }
-      
+             
         public virtual void clear()
         {
+            Path = null;
             Name = null;
 
             Author = null;
@@ -134,16 +133,72 @@ namespace MediaViewer.MediaDatabase
         }
 
         public int Id { get; set; }
+
+        string location;
+        [Required]
+        public string Location
+        {
+            get
+            {
+                return location;
+            }
+            set
+            {
+                location = value;
+
+                if (location != null)
+                {
+                    LocationHash = MiscUtils.hashString(location);
+
+                    if (!FileUtils.isUrl(location))
+                    {
+                        Name = System.IO.Path.GetFileName(location);
+                        Path = FileUtils.getPathWithoutFileName(location);
+                    }
+
+                }
+                else
+                {
+                    LocationHash = 0;
+                }
+            }
+        }
         
-        [Required]     
-        public string Location { get; set; }
-              
         [Required]    
         public string Name { get; set; }
+      
+        string path;
 
-        // these properties are configured in BaseMetadataMap using fluent api
-        public int LocationHash { get; private set; }       
-        public int LocationNameHash { get; private set; }
+        [Column("Path")]
+        [Required]
+        public string Path
+        {
+            get
+            {
+                return path;
+            }
+            private set
+            {
+                path = value;
+
+                if (path != null)
+                {
+                    PathHash = MiscUtils.hashString(path);
+                }
+                else
+                {
+                    PathHash = 0;
+                }
+            }
+        }
+
+        [Column("LocationHash")]
+        [Index("IX_LocationHash")]
+        public int LocationHash { get; private set; }
+
+        [Column("PathHash")]
+        [Index("IX_PathHash")]
+        public int PathHash { get; private set; }
 
         public string Title { get; set; }
         public Nullable<double> Rating { get; set; }
@@ -172,11 +227,11 @@ namespace MediaViewer.MediaDatabase
         public virtual ICollection<Tag> Tags { get; set; }
 
 
-        public void calcHashes() {
+        /*public void calcHashes() {
 
             LocationHash = MiscUtils.hashString(Location);
-            LocationNameHash = MiscUtils.hashString(FullLocation);
-        }
+            PathHash = MiscUtils.hashString(Path);
+        }*/
 
         
     }

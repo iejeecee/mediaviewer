@@ -29,7 +29,7 @@ namespace MediaViewer.Model.Media.File.Metadata
             {
                if (media.SupportsXMPMetadata)
                {
-                   xmpMetaDataWriter.open(media.FullLocation, Consts.OpenOptions.XMPFiles_OpenForUpdate);
+                   xmpMetaDataWriter.open(media.Location, Consts.OpenOptions.XMPFiles_OpenForUpdate);
 
                    write(xmpMetaDataWriter, media);
                }
